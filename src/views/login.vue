@@ -164,6 +164,7 @@ export default {
         rememberMe: rememberMe === undefined ? false : Boolean(rememberMe),
       }; /*  */
     },
+    
     handleLogin() {
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
