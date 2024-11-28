@@ -1,500 +1,251 @@
 <template>
   <div class="app-container" v-loading="Loading">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px"
-      @submit.native.prevent>
-      <el-form-item label="项目名称" prop="name">
-        <el-input v-model="queryParams.name" placeholder="请输入项目名称" clearable @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
-          v-hasPermi="['system:project:add']">新增</el-button>
+    <el-row :gutter="20">
+      <el-col :span="4" :xs="24">
+        <div class="head-container">
+          <el-input v-model="filterName" placeholder="请输入行业分类" clearable size="small" prefix-icon="el-icon-search"
+            style="margin-bottom: 20px" class="serachInput" />
+          <el-button type="primary" size="mini" @click="importCli">框架导入</el-button>
+        </div>
+        <div class="head-container">
+          <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="false"
+            :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current @node-click="handleNodeClick" />
+        </div>
       </el-col>
-      <!-- <el-col :span="1.5">
-        <el-button type="success" plain icon="el-icon-edit" size="mini" :disabled="single" @click="handleUpdate"
-          v-hasPermi="['system:project:edit']">修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
-          v-hasPermi="['system:project:remove']">删除</el-button>
-      </el-col> -->
-      <!-- <el-col :span="1.5">
-        <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport"
-          v-hasPermi="['system:project:export']">导出</el-button>
-      </el-col> -->
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
-    <el-table v-loading="loading" :data="projectList" @selection-change="handleSelectionChange">
-      <el-table-column width="55" align="center" />
-      <!-- <el-table-column label="ID" align="center" prop="id" /> -->
-      <el-table-column label="项目名称" width="100" align="center">
-        <template slot-scope="scope">
-          <a class="projecClass" @click="projectNameJump(scope.row.name, scope.row.id, scope.row.agentServerId)">
-            {{ scope.row.name }}
-          </a>
-        </template>
-      </el-table-column>
-      <!-- <el-table-column  label="项目名称" align="center" prop="name" /> -->
-      <el-table-column label="URL" width="350" align="center" prop="url" />
-      <el-table-column label="Agent状态" width="100" align="center" prop="remark">
-        <template slot-scope="scope">
-          <div v-if="scope.row.agentStatus == 0">
-            <el-button @click="agentStatusBtn(scope.row.agentServerId)" size="mini" type="text">
-              <el-tooltip :content="msg" placement="top">
-                <div class="agentClassBack"></div>
-              </el-tooltip>
-            </el-button>
-          </div>
-          <div v-if="scope.row.agentStatus == 1">
-            <el-button size="mini" type="text">
-              <el-tooltip :content="msgVal" placement="top">
-                <div class="agentClass"></div>
-
-              </el-tooltip>
-            </el-button>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="API防护" align="center" prop="remark">
-        <template slot-scope="scope">
-          <div v-if="scope.row.protectStatus == 1">
-            <!-- 防护中 -->
-            <el-button @click="protectedView(scope.row)" size="mini" type="text">
-              <el-tooltip content="防护中,点击关闭" placement="top">
-                <div class="agentClass"></div>
-              </el-tooltip>
-            </el-button>
-          </div>
-          <div class="protionDiv" v-if="scope.row.protectStatus == -1">
-            <!-- <el-button size="mini" type="text" @click="portionBtn()">  -->
-            <el-button size="mini" type="text" @click="portionBtn(scope.row.id)">
-              <el-tooltip placement="top">
-                <!-- <div class="protectionClass"></div> -->
-              </el-tooltip>
-              开启防护
-            </el-button>
-          </div>
-          <div v-if="scope.row.protectStatus == 0">
-            <el-button size="mini" type="text">
-              <el-tooltip content="未开启,点击开启" placement="top">
-                <div class="agentClassBack" @click="protectedView(scope.row)"></div>
-              </el-tooltip>
-            </el-button>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="API数量" width="120" align="center">
-        <template slot-scope="scope">
-          <a class="projecClass" @click="projectName(scope.row.name, scope.row.id)">
-            {{ scope.row.apiNum }}
-          </a>
-        </template>
-      </el-table-column>
-      <el-table-column label="备注" width="350" align="center" prop="remark" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:project:edit']">修改</el-button>
-          <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-            v-hasPermi="['system:project:remove']">删除</el-button>
-          <el-button size="mini" type="text" icon="el-icon-tickets" @click="markingStatistics(scope.row)"
-            v-hasPermi="['system:project:remove']">打标统计</el-button>
-
-          <el-button size="mini" type="text" icon="el-icon-delete-solid" @click="deleteApi(scope.row)"
-            v-hasPermi="['system:project:remove']">删除API</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
-      @pagination="getList" />
-    <!-- 添加或修改项目列表对话框 -->
-    <div>
-      <el-dialog class="addOpen" :close-on-click-modal="false" :title="title" :visible.sync="open" width="500px"
-        append-to-body>
-        <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-          <el-form-item label="项目名称" prop="name">
-            <el-input v-model="form.name" placeholder="请输入项目名称" />
+      <!--用户数据-->
+      <el-col :span="20" :xs="24">
+        <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch"
+          label-width="90px">
+          <el-form-item label="子类名称" prop="fieldName">
+            <el-input v-model="queryParams.fieldName" placeholder="请输入子类名称" clearable
+              @keyup.enter.native="handleQuery" />
           </el-form-item>
-          <el-form-item label="URL" prop="url">
-            <el-input v-model="form.url" type="textarea" placeholder="请输入内容" />
+          <el-form-item label="来源" prop="project">
+            <el-select v-model="selectProjectId" placeholder="请选择项目名称" :loading="loading">
+              <el-option v-for="item in sourceList" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
+            </el-select>
           </el-form-item>
-          <el-form-item label="备注" prop="remark">
-            <el-input v-model="form.remark" placeholder="请输入备注" />
+          <el-form-item label="分级" prop="securityLevel">
+            <el-select v-model="queryParams.securityLevel" placeholder="全部">
+              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
+            </el-select>
           </el-form-item>
+          <el-form-item>
+            <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+          </el-form-item>
+          <div style="margin: 20px 0 20px 25px;">
+            <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleQuery">新增</el-button>
+            <el-button type="primary" icon="el-icon-edit" size="medium" @click="handleQuery">编辑</el-button>
+            <el-button type="info" icon="el-icon-delete" size="medium" @click="handleQuery">删除</el-button>
+            <el-button type="info" icon="el-icon-warning" size="medium" @click="handleQuery">禁用</el-button>
+          </div>
         </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确定</el-button>
-          <el-button @click="cancel">取 消</el-button>
-        </div>
-      </el-dialog>
-    </div>
-    <!-- 添加服务 -->
-    <div class="dialog">
-      <el-dialog :modal="true" :close-on-click-modal="false" :close-on-press-escape="false" class="log"
-        :visible.sync="centerDialogVisible" width="40%">
-        <div v-loading="AgentLoading">
-          <span class="order">使用Agent运行项目</span>
-          <div class="orderCla">
-            <div style="height: 300px; margin-top: 20px">
-              <el-steps direction="vertical" :space="100" :active="2">
-                <el-step title="下载Agent">
-                  <template slot="description">
-                    <a class="agentSpan" @click="agentBtn()">点击下载Agent</a>
-                  </template>
-                </el-step>
-                <el-step title="运行项目" class="el-step__main1" description="">
-                  <template slot="description">
-                    <!-- <button type="button" class="ourBtn" @click="outerBtn"> -->
-                    <div type="button" class="ourBtn">
-                      <div class="copyDiv">
-                        <el-link @click="outerBtn" :underline="false" icon="el-icon-document-copy"
-                          style="float:right">复制</el-link>
-                      </div>
-                      <div class="pClass1">
-                        {{ java }}<div class="divRed">Agent-Path</div>{{ dsky }}<div class="divNormal">{{ proName }}</div>
-                        {{ collector }}<div class="divNormal">{{ serviceIp }}</div>{{ Dbackend }}<div class="divNormal">
-                          {{ backendIp }}</div> -jar
-                        <div class="divRed"> project-name.jar</div>
-                      </div>
-                    </div>
-                    <p class="pClass">
-                      参数说明：<br />
-                      Agent-Path:第一步所下载的agent.jar文件的绝对路径<br />
-                      project-name.jar:替换为自已的项目<br />
-                      java配置参数正常写，红色的字体为需要替换的内容<br />
-                    </p>
-                    <div class="pClass">
-                      例:java -javaagent:<div class="divRed">D:\project\agent\agent.jar</div>
-                      --Dservice_name=<div class="divNormal">demo_name</div>
-                      -Dbackend_service=<div class="divNormal">10.10.1.101:11800</div>
-                      -jar
-                      <div class="divRed">demo.jar</div>
-                    </div>
-                  </template>
-                </el-step>
-                <el-button class="sure" type="primary" @click="AaddServiceBtn">确 定</el-button>
-              </el-steps>
-            </div>
-            <!-- <span slot="footer" class="dialog-footer"> -->
-          </div>
-        </div>
-      </el-dialog>
-    </div>
-    <!-- 开启防护 -->
-    <div>
-      <el-dialog title="开启防护" :modal="true" :close-on-click-modal="false" :close-on-press-escape="false" class="logdiv"
-        :visible.sync="protionlogVisible" width="30%">
-        <!-- <el-steps :align-center=true :active="0" finish-status="success">
-          <el-step title="填写网站信息"></el-step>
-          <el-step title="默认配置信息"></el-step>
-          <el-step title="选配配置信息"></el-step>
-          <el-step title="选配配置信息"></el-step>
-        </el-steps> -->
-        <div>
-          <div class="site">目标站点设置</div>
-          <el-form ref="protectionForm" :model="protectionForm" :rules="rules" label-width="80px">
-            <el-form-item label="目标站点" prop="endAddress">
-              <el-input v-model="protectionForm.endAddress" placeholder="请输入IP或域名" />
-            </el-form-item>
-            <el-form-item label="端口号" prop="port">
-              <el-input v-model="protectionForm.port" placeholder="请输入端口号" />
-            </el-form-item>
-            <div class="daili">
-              <el-form-item>
-                <div>
-                  <div class="site1">代理站点设置</div>
-                  <div class="kaiguan">
-                    <span class="yvming">域名匹配</span>
-                    <el-switch v-model="switchVal" active-color="#13ce66" inactive-color="#999">
-                    </el-switch>
-                  </div>
-                </div>
-              </el-form-item>
-            </div>
-            <div id="divId">
-              <el-form-item v-if="switchVal" label="代理站点" prop="domainName">
-                <el-input v-model="protectionForm.domainName" placeholder="请输入IP或域名" />
-              </el-form-item>
-            </div>
-            <el-form-item label="端口号" prop="portNum">
-              <el-input v-model="protectionForm.portNum" placeholder="请输入端口号" />
-            </el-form-item>
-            <el-form-item class="kaiqifanghu">
-              <el-button type="primary" @click="openGuard('protectionForm')">开启防护</el-button>
-            </el-form-item>
-          </el-form>
-        </div>
-      </el-dialog>
-    </div>
-    <div>
-      <el-dialog :modal="true" :close-on-click-modal="false" :close-on-press-escape="false"
-        :visible.sync="protionlogVisible_one" width="80%" title="站点及防护配置">
-        <el-steps :align-center=true :active="1" finish-status="success">
-          <el-step title="填写网站信息"></el-step>
-          <el-step title="默认配置信息"></el-step>
-          <el-step title="选配配置信息"></el-step>
-          <el-step title="选配配置信息"></el-step>
-        </el-steps>
-        <div>
-          <div class="flex-col">
-            <span class="thumbnail_21"></span>
-            <div class="text_32ss">站点相关</div>
-          </div>
-        </div>
-        <div slot="footer" class="dialog-footer">
-          <el-button>重置表单</el-button>
-          <el-button type="primary">下一步</el-button>
-        </div>
-      </el-dialog>
-    </div>
-    <!-- 防护查看 -->
-    <div>
-      <el-drawer :modal="false" :wrapperClosable="false" :close-on-press-escape="false" class="drawerDiv"
-        :visible.sync="protectedViewVisible">
-        <div class="section_3">
-          <div class="box_4"></div>
-          <div class="text_31">站点详情概览</div>
-        </div>
-        <div class="flex-row">
-          <div class="box_5">
-            <div class="flex-col">
-              <span class="thumbnail_21"></span>
-              <div class="text_32">基本信息</div>
-            </div>
-            <div class="flex-col1">
-              <div class="text_33">站点名称：</div>
-              <div class="text_34">mncjkshjsjndjs </div>
-            </div>
-            <div class="flex-col1">
-              <div class="text_33">策略：</div>
-              <div class="text_35">mncjkshjsjndjs </div>
-            </div>
-            <div class="flex-col1">
-              <div class="text_33">防护引擎：</div>
-              <span class="text_spa"></span>
-              <div class="text_36"> 已开启 </div>
-            </div>
-            <div class="flex-col1">
-              <div class="text_33">域名：</div>
-              <div class="text_34">无</div>
-            </div>
-          </div>
-          <div class="box_5">
-            <div class="flex-col">
-              <span class="thumbnail_21"></span>
-              <div class="text_32">代理配置</div>
-            </div>
-            <div class="flex-col1">
-              <div class="text_33">证书信息：</div>
-              <div class="text_34">- - </div>
-            </div>
-            <div class="flex-col1">
-              <div class="text_33">策略：</div>
-              <div class="text_35">低级防护 </div>
-            </div>
-            <div class="flex-col1">
-              <div class="text_33S">客户端长链接：</div>
-              <span class="text_spa"></span>
-              <div class="text_36"> 已开启 </div>
-            </div>
-            <div class="flex-col1">
-              <div class="text_33S">服务端长链接：</div>
-              <span class="text_spas"></span>
-              <div class="text_36S"> 已开启 </div>
-            </div>
-          </div>
-          <div class="box_5">
-            <div class="flex-cols">
-              <span class="thumbnail_21"></span>
-              <div class="text_32">防护配置</div>
-            </div>
-            <div class="flex-col1s">
-              <div class="text_33S">IP来源：</div>
-              <div class="text_34">X-Foxsnjshuhs </div>
-            </div>
-            <div class="flex-col1s">
-              <div class="text_33S">日志等级：</div>
-              <div class="text_34">全部(请求头+请求体+响应头+响应体) </div>
-            </div>
-            <div class="flex-col1s">
-              <div class="text_33S">请求体检测：</div>
-              <span class="text_spa"></span>
-              <div class="text_36"> 已开启 </div>
-            </div>
-            <div class="flex-col1s">
-              <div class="text_33S">响应体检测：</div>
-              <span class="text_spa"></span>
-              <div class="text_36"> 已开启 </div>
-            </div>
-            <div class="flex-col1s">
-              <div class="text_33S">阻断页面：</div>
-              <div class="text_34">默认阻断页面 </div>
-            </div>
-          </div>
-          <div class="box_5">
-            <div class="flex-cols">
-              <span class="thumbnail_21"></span>
-              <div class="text_32">高级配置</div>
-            </div>
-            <div class="flex-col1s">
-              <div class="text_33S">访问审计：</div>
-              <span class="text_spa"></span>
-              <div class="text_36"> 已开启 </div>
-            </div>
-            <div class="flex-col1s">
-              <div class="text_33S">病毒防护：</div>
-              <span class="text_spa"></span>
-              <div class="text_36"> 已开启 </div>
-            </div>
-          </div>
-        </div>
-        <div class="section_3">
-          <div class="box_4"></div>
-          <div class="text_31">透明防护</div>
-        </div>
-        <div class="text-wrapper_15">
-          <table class="wrapper">
-            <tr class="text_81">
-              <th>名称</th>
-              <th>协议</th>
-              <th>防护实例</th>
-              <th>地址</th>
-              <th>后端地址</th>
-              <th>后端端口</th>
-            </tr>
-            <tr>
-              <td colspan="6">暂无数据</td>
-              <!-- <td>Griffin</td>
-              <td>Peter</td>
-              <td>Griffin</td>
-              <td>Peter</td>
-              <td>Griffin</td> -->
-            </tr>
-          </table>
-        </div>
-        <div class="section_3">
-          <div class="box_4"></div>
-          <div class="text_31">透明防护</div>
-        </div>
-        <div class="text-wrapper_15">
-          <table class="wrapper">
-            <tr class="text_81">
-              <th>名称</th>
-              <th>协议</th>
-              <th>防护实例</th>
-              <th>地址</th>
-              <th>后端地址</th>
-              <th>后端端口</th>
-            </tr>
-            <tr>
-              <td colspan="6">暂无数据</td>
-              <!-- <td>Griffin</td>
-              <td>Peter</td>
-              <td>Griffin</td>
-              <td>Peter</td>
-              <td>Griffin</td> -->
-            </tr>
-          </table>
-        </div>
-        <div class="section_3">
-          <div class="box_4"></div>
-          <div class="text_31">旁路监听</div>
-        </div>
-        <div class="text-wrapper_15">
-          <table class="wrapper">
-            <tr class="text_81">
-              <th>名称</th>
-              <th>协议</th>
-              <th>防护实例</th>
-              <th>地址</th>
-              <th>后端地址</th>
-              <th>后端端口</th>
-            </tr>
-            <tr>
-              <td>Peter</td>
-              <td>Griffin</td>
-              <td>Peter</td>
-              <td>Griffin</td>
-              <td>Peter</td>
-              <td>Griffin</td>
-            </tr>
-          </table>
-        </div>
-      </el-drawer>
-    </div>
-    <!-- 打标统计 -->
-    <div>
-      <el-dialog class="dabiao" title="打标统计" :modal="true" :close-on-click-modal="true" :close-on-press-escape="false"
-        :visible.sync="markingVisible" width="40%">
-        <el-table height="500" :data="tableData" style="width: 100%;height: 500px; overflow: auto;">
-          <el-table-column prop="fieldName" label="策略">
+        <el-table v-loading="loading" :data="protectTableFieldList">
+          <!-- <el-table-column width="55" align="center" /> -->
+          <el-table-column label="子类名称" align="center" prop="fieldName" />
+          <el-table-column label="所属分级" align="center" prop="securityLevelName" />
+          <el-table-column label="来源" align="center" prop="selectProjectId">
+            <template slot-scope="scope">
+              <span>
+                {{ scope.row.selectProjectId == 1 ? '内置' : '自定义' }}
+              </span>
+            </template>
           </el-table-column>
-          <el-table-column prop="count" label="命中次数">
+          <el-table-column label="状态" align="center" prop="state">
+            <template slot-scope="scope">
+              <span>
+                {{ scope.row.state ? '启用' : '禁用' }}
+              </span>
+            </template>
           </el-table-column>
+          <el-table-column label="更新时间" align="center" prop="updataTime" />
         </el-table>
-      </el-dialog>
-    </div>
+        <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+          :limit.sync="queryParams.pageSize" @pagination="getList" />
+      </el-col>
+    </el-row>
+    <el-dialog title="导入框架" :visible.sync="importShow" width="500px" append-to-body :close-on-click-modal="false">
+      <div style="padding: 20px; display: flex; align-items: center;">
+        <span style="width:30%;">导入模板</span>
+        <el-input v-model="importFile" disabled placeholder="支持EXCEL格式文件导入（.xls, .xlsx)" style="margin-right: 10px;"></el-input>
+        <el-upload class="upload-demo" action="https://jsonplaceholder.typicode.com/posts/"
+          :limit="1"
+          :file-list="fileList" :show-file-list="false">
+          <el-button size="mini" type="primary">选择文件</el-button>
+        </el-upload>
+        </div>
+        <el-button style="margin-left: 100px;" size="small" type="text"  icon="el-icon-download">样例下载</el-button>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="importcancel">取 消</el-button>
+      </div>
+    </el-dialog>
+    <!-- 添加或修改数据库字段名对话框 -->
+    <el-dialog class="addDialog" :title="title" :visible.sync="open" width="400px" append-to-body
+      :close-on-click-modal="false">
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="安全级别" prop="securityLevel">
+          <!-- <el-input v-model="form.securityLevel" placeholder="请输入安全级别" /> -->
+          <el-select v-model="form.securityLevel" placeholder="请选择">
+            <el-option v-for="item in securityOptions" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="打标信息" prop="securityRule">
+          <el-select multiple filterable remote clearable reserve-keyword v-model="securityRuleList" placeholder="请选择"
+            :remote-method="securityList">
+            <el-option v-for="item in securityRuleOptions" :key="item.id" :label="item.sensitiveName"
+              :value="item.sensitiveName">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="行业分类" prop="categoryId">
+          <treeselect style="width: 85%;" v-model="form.categoryId" :options="categoryListEdit" :show-count="true"
+            placeholder="请选择行业分类" />
+        </el-form-item>
+        <el-form-item label="备注" prop="fieldRemark">
+          <el-input v-model="form.fieldRemark" placeholder="请输入备注" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
 import {
-  listProject,
-  getProject,
-  delProject,
-  addProject,
-  updateProject,
-  groupI,
-  enableSecurityI,
-  protectionSwitchI,
-  delApi
-} from "@/api/system/project";
-import { getIpsI } from "@/api/system/monitor";
-export default {
-  name: "Project",
-  data () {
-    return {
+  listProtectTableField,
+  getProtectTableField,
+  delProtectTableField,
+  addProtectTableField,
+  updateProtectTableField,
+  getProtectCategoryI,
+  getProtectSensitiveRuleI,
+  importI,
+  testI,
+  fieldDataI,
+  queryApisI
+} from "@/api/system/protectTableField";
+import { addProtectSensitiveRule } from "@/api/system/protectSensitiveRule";
+import { listAllProject } from "@/api/system/project";
+import Treeselect from "@riophae/vue-treeselect";
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
-      openGuardId: "",
-      switchVal: false,
+import { treeListI } from "@/api/system/protectCategory"
+import { listTableByProject, getDatabaseListI } from "@/api/system/protectTableField";
+export default {
+  name: "ProtectTableField",
+  components: { Treeselect },
+
+  data() {
+    return {
+      importFile:'', // 导入魔板文件名
+      fileList:[],//导入模板的文件数据
+      relevanceTable: [],
+      associatedVisible: false,
+      addSensitiveName: '',
+      addFormRule: {
+        sensitiveName: '',
+        maskRule: '',
+        enableStatus: true
+      },
+      remberNameRule: {},
+      fieldNameRule: {},
+      // 是否显示弹出层
+      openRule: false,
+      filterName: undefined,
+      defaultProps: {
+        children: "children",
+        label: "label"
+      },
+      showSucType: 0,
       Loading: false,
+      columnName: "",
       tableData: [],
       markingVisible: false,
-      AgentLoading: false,
-      protionlogVisible_one: false,
-      Dbackend: " -Dbackend.ip=",
-      collector: " -Dbackend_service=",
-      dsky: " -Dservice_name=",
-      java: "java -javaagent:",
-      protectionForm: {
-        endAddress: '',
-        port: null,
-        portNum: null,
-        domainName: '',
-      },
-      active: 0,
-      protectedViewVisible: false,
-      protionlogVisible: false,
-      msgVal: "正在运行",
-      msg: "未运行(点击查看启动参数)",
-      // AaddService: true,
-      // addOrder: false,
-      serIp: "",
-      serviceIp: "",
-      backendIp: "",
-      proName: "",
-      inpName: "",
-      ruleForm: {
-        // pass: '',
-        //   checkPass: '',
-        //   age: '',
-        name: "",
-      },
-      centerDialogVisible: false,
+      fullscreenLoading: false,
+      dataType: "",
+      // projectNameId:0,
+      selectProjectId: 0,
+      formProjectList: null,
+      sourceList: [
+        {
+          value: 0,
+          label: '全部'
+        },
+        {
+          value: 1,
+          label: '内置'
+        },
+        {
+          value: 2,
+          label: '自定义'
+        },
+      ],
+      dialogVisible: false,
+      securityRuleOptions: [],
+      ruleOptions: [
+        {
+          value: 1,
+          label: "1"
+        }, {
+          value: 2,
+          label: "2"
+        }, {
+          value: 3,
+          label: "3"
+        }, {
+          value: 4,
+          label: "4"
+        }, {
+          value: 5,
+          label: "5"
+        }],
+      securityOptions: [
+        {
+          value: 1,
+          label: "1"
+        }, {
+          value: 2,
+          label: "2"
+        }, {
+          value: 3,
+          label: "3"
+        }, {
+          value: 4,
+          label: "4"
+        }, {
+          value: 5,
+          label: "5"
+        }],
+
+      options: [
+        {
+          value: 0,
+          label: "全部"
+        }, {
+          value: 1,
+          label: "1级"
+        }, {
+          value: 2,
+          label: "2级"
+        }, {
+          value: 3,
+          label: "3级"
+        }, {
+          value: 4,
+          label: "4级"
+        }, {
+          value: 5,
+          label: "5级"
+        }],
+      safetyValue: '',
+      safetyValueId: 0,
       // 遮罩层
       loading: true,
       // 选中数组
@@ -507,386 +258,514 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
-      // 项目列表表格数据
-      projectList: [],
+      // 数据库字段名表格数据
+      protectTableFieldList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
       open: false,
+      securityRuleList: [],
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        name: null,
-        url: null,
+        categoryId: '',//左侧树id
+        fieldName: '',//子类名称
+        selectProjectId: 0,//来源
+        securityLevel: 0,//安全级别
       },
+      selectTable: "",
+      databaseName: '',
+      selectDatabaseId: 0,
+      selectTableId: 0,
+      categoryTable: "",
+      categoryTableEdit: "",
+      projectNameEdit: "",
+      tableList: [{ tableName: "全部", id: 0 }],
+      databasetableList: [{ targetDatabase: "全部", id: 0 }],
+      categoryList: [],
+      categoryListEdit: null,
       // 表单参数
       form: {},
       // 表单校验
       rules: {
-        portNum: [
-          { required: true, message: "请输入端口号", trigger: "change" },
+        sensitiveName: [
+          {
+            required: true, message: "规则名不能为空", trigger: "blur"
+          }
+        ],
+        sensitiveLevel: [
+          { required: true, message: "规则等级不能为空", trigger: "blur" }
+        ],
+        user: [
+          { required: true, message: "请输入数据库用户名称", trigger: "change" },
+        ],
+        databaseName: [
+          { required: true, message: "请输入数据库名称", trigger: "change" },
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' }
+        ],
+        method: [
+          { required: true, message: "请输入数据库地址", trigger: "change" },
           {
             pattern:
-              /^([1-9](\d{0,3}))$|^([1-5]\d{4})$|^(6[0-4]\d{3})$|^(65[0-4]\d{2})$|^(655[0-2]\d)$|^(6553[0-5])$/,
-            message:
-              "请输入1~65535之间的数字，禁止输入空格、中文、英文等.",
-          },
-          {
-            min: 1,
-            max: 5,
-            message: "长度在 1 到 5 个字符",
+              /(?:(?:1[0-9][0-9]\.)|(?:2[0-4][0-9]\.)|(?:25[0-5]\.)|(?:[1-9][0-9]\.)|(?:[0-9]\.)){3}(?:(?:1[0-9][0-9])|(?:2[0-4][0-9])|(?:25[0-5])|(?:[1-9][0-9])|(?:[0-9]))/,
+            message: "请输入正确的Ipv4地址。例如:Ipv4地址:192.168.0.1",
           },
         ],
         port: [
           { required: true, message: "请输入端口号", trigger: "change" },
           {
             pattern:
-              /^([1-9](\d{0,3}))$|^([1-5]\d{4})$|^(6[0-4]\d{3})$|^(65[0-4]\d{2})$|^(655[0-2]\d)$|^(6553[0-5])$/,
+              /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
             message:
-              "请输入1~65535之间的数字，禁止输入空格、中文、英文等.",
+              "请输入0~65535之间的5个数字",
           },
+
           {
             min: 1,
             max: 5,
-            message: "长度在 1 到 5 个字符",
-          },
-        ],
-        endAddress: [
-          { required: true, message: "请输入IP或域名", trigger: "change" }, ,
-          {
-            pattern:
-              /^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)|((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$/,
-            message: "请输入正确的IP或域名。例如:IP地址:192.168.0.1, 域名:google.com",
-          },
-          // {
-          //   min: 6,
-          //   max: 18,
-          //   message: "长度在 6 到 18 个字符",
-          // },
-        ],
-        domainName: [
-          { required: true, message: "请输入域名" },
-          {
-            pattern:
-              /^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)|((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$/,
-            message: "请输入正确的IP或域名。例如:IP地址:192.168.0.1, 域名:google.com",
-          },
-          {
-            min: 6,
-            max: 18,
-            message: "长度在 6 到 18 个字符",
-          },
-        ],
-        name: [
-          { required: true, message: "请输入服务名称" },
-          // {
-          //   pattern: /^[a-zA-Z][a-zA-Z0-9-]{5,17}$/,
-          //   message:
-          //     "请输入以字母开头的6~18之间字母、数字和连接线，禁止输入空格。",
-          // },
-          {
-            min: 1,
-            max: 100,
-            message: "长度在 1 到 100 个字符",
-          },
-        ],
-        url: [
-          {
-            required: true,
-            pattern:
-              /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/,
-            message: "请输入格式正确的路由",
-            trigger: "blur",
+            message: "长度在 1 ~ 5 个字符",
           },
         ],
       },
+      importShow: false,
     };
   },
-  created () {
+  watch: {
+    filterName(val) {
+      this.$refs.tree.filter(val);
+    }
+  },
+  created() {
+    this.categoryTable = "";
+    this.selectProject = "全部";
+    this.markingNume = 0;
+    this.selectTable = "全部";
+    this.databaseName = "全部";
     this.getList();
+    this.getProjectList();
+    this.getProtectCategory()
+    this.getProtectSensitiveRule()
   },
   methods: {
-    //删除Api
-    deleteApi (row) {
-      this.$confirm('是否要删除此列表下的所有API', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        let data = {
-          projectId: row.id,
-        }
-        delApi(data).then((res => {
-          this.$message({
-            message: res.msg,
-            duration: 3000,
-            type: 'success'
-          });
-          this.getList();
-        }))
-        // 用户点击确定按钮，执行相关操作
-      }).catch(() => {
-        // 用户点击了取消按钮，不做任何操作
+    importcancel(){
+      this.fileList.length = 0,
+      this.importFile = '',
+      this.importShow = false
+    },
+    importCli() {
+      this.importShow = true
+    },
+    jumpApi(url, id) {
+      const routeData = this.$router.resolve({
+        path: "/systemInfo/api",
+        query: { id: id, url: url },
       });
-
+      window.open(routeData.href, '_blank')
     },
-    // 开启防护
-    portionBtn (id) {
-      this.openGuardId = id
-      this.protectionForm = {
-        endAddress: '',
-        port: null,
-        portNum: null,
-        domainName: '',
+    timeFormat(value) {
+      let date = new Date(value);
+      let y = date.getFullYear();
+      let MM = date.getMonth() + 1;
+      MM = MM < 10 ? "0" + MM : MM;
+      let d = date.getDate();
+      d = d < 10 ? "0" + d : d;
+      let h = date.getHours();
+      h = h < 10 ? "0" + h : h;
+      let m = date.getMinutes();
+      m = m < 10 ? "0" + m : m;
+      let s = date.getSeconds();
+      s = s < 10 ? "0" + s : s;
+      return y + "-" + MM + "-" + d + " " + h + ":" + m;
+    },
+    fieldCli() {
+      this.fieldNameRule.unshift('')
+    },
+    deletfield(i) {
+      this.fieldNameRule.splice(i, 1)
+    },
+    deletCli(i) {
+      this.remberNameRule.splice(i, 1)
+    },
+    remberCli() {
+      if (this.remberNameRule == null) {
+        this.remberNameRule = []
       }
-      this.switchVal = false
-      this.protionlogVisible = true;
-      // if (this.switchVal == false) {
-      //   const div = document.querySelector("#divId");
-      //   if (div) {
-      //     div.parentNode.removeChild(div); // 删除 div 元素
-      //   }
-      // }
-      this.resetForm("protectionForm")
-    },
-    openGuard (formName) {
-      // if (this.switchVal == true) {
-      //   const div = document.querySelector("#divId");
-      //   if (div) {
-      //     div.parentNode.removeChild(div); // 删除 div 元素
-      //   }
-      // }
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          let data = {
-            projectId: this.openGuardId,
-            targetSite: this.protectionForm.endAddress,
-            targetSitePort: this.protectionForm.port,
-            proxySite: this.protectionForm.domainName,
-            proxySitePort: this.protectionForm.portNum
-          }
-          enableSecurityI(data).then((res => {
-            if (res.code == 200) {
-              this.$alert(res.msg, '提示', {
-                confirmButtonText: '确定',
-                callback: action => {
-                  this.protionlogVisible = false;
-                  this.Loading = true
-                  this.getList()
-                  this.Loading = false
-                }
-              })
-            } else {
-              this.$alert(res.msg, '提示', {
-                confirmButtonText: '确定',
-                callback: action => {
-                  this.protionlogVisible = true;
-                }
-              })
-            }
-          }))
+      this.remberNameRule.unshift('')
 
-        }
-
-      })
     },
-    /**打标统计 */
-    markingStatistics (row) {
-      this.Loading = true
+    handleAddRule(row) {
+      this.reset();
+      this.openRule = true
+      this.fieldNameRule = new Array(row.fieldName)
+      this.remberNameRule = []
+      this.remberNameRule.unshift('')
+      this.addFormRule.sensitiveName = row.fieldRemark
+      this.addFormRule.maskRule = row.fieldRemark
+
+    },
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.categoryName.indexOf(value) !== -1;
+    },
+    handleNodeClick(data) {
+      this.queryParams.categoryId = data.id;
+      this.handleQuery();
+    },
+    closeLoading() {
+      this.markingVisible = false
+
+    },
+    closeDialog() {
+      // this.reset()
+      this.showSucType = 0
+
+    },
+
+    // 导入
+    handleImport() {
+      this.showSucType = 0
+      this.projectNameEdit = null
+      this.dialogVisible = true
+      this.reset()
+    },
+    // 打标信息检索打标规则列表
+
+
+    securityList(query) {
+      if (query) {
+        // this.loading = true;
+        setTimeout(() => {
+          // this.loading = false;
+          this.getProtectSensitiveRule(query);
+        }, 200);
+      } else {
+        this.getProtectSensitiveRule("");
+      }
+
+    },
+
+    getProtectSensitiveRule(key) {
+      if (key) {
+        key = key.trim();
+      }
       let data = {
-        projectId: row.id,
-        order: "desc"
-      }
-      groupI(data).then((res => {
-        this.tableData = res.data
-        this.markingVisible = true
-        this.Loading = false
+        name: key
+      };
+      getProtectSensitiveRuleI(data).then((res => {
+        this.securityRuleOptions = res.data
+
       }))
     },
-    protionlogCik () {
-      this.protionlogVisible = false;
-      this.protionlogVisible_one = true
+
+    projectChangeEdit(e) {
+      this.projectNameEdit = e
+      this.form.projectName = e
     },
-    // 防护查看
-    protectedView (row) {
-      if (row.protectStatus == 0) {
-        this.$confirm('您是否要开启防护？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          let data = {
-            projectId: row.id,
-            status: 1
-          }
-          protectionSwitchI(data).then((res => {
-            row.protectStatus = 1
 
-          }))
 
-          // 用户点击确定按钮，执行相关操作
-        }).catch(() => {
-          // 用户点击了取消按钮，不做任何操作
-        });
+    /**
+    * 打标信息检索行业分类列表
+    */
+    categoryChangeEdit(value) {
+      this.categoryTableEdit = value;
+      this.form.categoryId = value
+    },
+    categoryChange(value) {
+      this.queryParams.categoryId = value;
+    },
+    categoryTableList(query) {
+      if (query) {
+        // this.loading = true;
+        setTimeout(() => {
+          // this.loading = false;
+          this.getProtectCategory(query);
+        }, 200);
       } else {
-        this.$confirm('您是否要关闭防护？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          let data = {
-            projectId: row.id,
-            status: 0
-          }
-          protectionSwitchI(data).then((res => {
-            row.protectStatus = 0
-          }))
-          // 用户点击确定按钮，执行相关操作
-        }).catch(() => {
-          // 用户点击了取消按钮，不做任何操作
-        });
+        this.getProtectCategory("");
       }
-      // this.protectedViewVisible = true
     },
-    AaddServiceBtn () {
-      this.centerDialogVisible = false;
-      // this.addOrder=true
-      // this.AaddService=false
-    },
-    outerBtn () {
-      // alert("复制按钮");
-      const input = document.createElement("input"); // 创建input对象
-      const testDiv = document.querySelector(".pClass1"); // 获取需要复制文字的容器
-      input.value = testDiv.innerText; // 设置复制内容
-      document.body.appendChild(input); // 添加临时实例
-      input.select(); // 选择实例内容
-      document.execCommand("Copy"); // 执行复制
-      document.body.removeChild(input); // 删除临时实例
-      this.$message.success("复制成功！");
-    },
-    // handlerChange(e) {
-    //   this.inpName = e;
-    // },
-    agentBtn () {
-      getIpsI().then((res) => {
-        window.location.href = res.data.agentUrl;
+    getProtectCategory(key) {
+      if (key) {
+        key = key.trim();
+      }
+      let data = {
+        name: key
+      };
+      treeListI(data).then((resp) => {
+        this.categoryList = resp.data;
+        if (this.categoryListEdit == null) {
+          let tempList = JSON.parse(JSON.stringify(this.categoryList))
+          for (let item of tempList) {
+            item.label = item.categoryName
+          }
+          this.categoryList = this.handleTree(tempList, "id")
+          this.categoryListEdit = this.handleTree(tempList, "id")
+
+        }
+
       });
     },
-    // Agent 状态按钮
-    agentStatusBtn (agentServerId) {
-      // this.AgentLoading = true
-      this.Loading = true;
-      this.proName = agentServerId;
-      getIpsI().then((res) => {
-        this.serviceIp = res.data.serverIp;
-        this.backendIp = res.data.backendIp;
-        this.Loading = false
-        this.centerDialogVisible = true;
+    categoryTableListEdit(query) {
+      if (query) {
+        // this.loading = true;
+        setTimeout(() => {
+          // this.loading = false;
+          this.getProtectCategoryEdit(query);
+        }, 200);
+      } else {
+        this.getProtectCategoryEdit("");
+      }
+    },
+    getProtectCategoryEdit(key) {
+      if (key) {
+        key = key.trim();
+      }
+      let data = {
+        name: key
+      };
+      getProtectCategoryI(data).then((resp) => {
+        let tempList = resp.data
+        for (let item of tempList) {
+          item.label = item.categoryName
+        }
+        this.categoryListEdit = this.handleTree(tempList, "id")
+        // this.categoryListEdit = this.handleTree(resp.data,"id")
       });
     },
-    projectName (i, id) {
-      this.$router.push({
-        path: "/systemInfo/api",
-        query: { id: id, name: i },
-      });
+    //数据库名称
+    databaseList(query) {
+      if (query) {
+        // this.loading = true;
+        setTimeout(() => {
+          // this.loading = false;
+          this.getDatabaseList(query)
+        }, 200);
+      } else {
+        this.getDatabaseList("");
+      }
     },
-    projectNameJump (i, id, agentServerId) {
-      this.$router.push({
-        path: "/systemInfo/monitor",
-        query: { name: i, id: id, agentServerId: agentServerId },
+
+    getDatabaseList(key) {
+      if (key) {
+        key = key.trim();
+      }
+      let params = {
+        projectId: this.selectProjectId,
+        databaseName: key,
+      };
+      getDatabaseListI(params).then((resp) => {
+        this.databasetableList = resp.data;
+        this.databasetableList.unshift({ targetDatabase: "全部", id: 0 })
+
       });
+
     },
-    /** 查询项目列表列表 */
-    getList () {
+
+
+    // 表名
+    queryTableList(query) {
+      if (query) {
+        // this.loading = true;
+        setTimeout(() => {
+          // this.loading = false;
+          this.getTableList(query);
+        }, 200);
+      } else {
+        this.getTableList("");
+      }
+    },
+
+    /** 查询数据库字段名列表 */
+    getList() {
       this.loading = true;
-      listProject(this.queryParams).then((response) => {
-        this.projectList = response.rows;
-        this.total = response.total;
-        this.loading = false;
+      let res = {
+        data: [
+          {
+            fieldName: '个人基本概况信息',//子类名称
+            selectProjectId: '内置',//来源
+            securityLevelName: '3级',//分级
+            id: 0,
+            state: true,
+            updataTime: '2024-11-13 23:31',
+          }
+        ],
+        total: 10,
+      }
+      this.protectTableFieldList = res.data;
+      this.loading = false;
+      // listProtectTableField(this.queryParams).then((response) => {
+      //   this.protectTableFieldList = response.rows;
+      //   this.total = response.total;
+      //   this.loading = false;
+      // });
+    },
+    databaseChange(value) {
+      this.selectDatabaseId = value
+      if (value == 0) {
+        this.selectTable = "全部";
+        this.selectTableId = ''
+        this.tableList = new Array({ tableName: "全部", id: 0 })
+      } else {
+        this.queryTableList()
+      }
+    },
+    projectChange(value) {
+      this.selectProjectId = value;
+      this.databaseName = "全部";
+      this.databaseList("")
+
+      this.tableList = new Array({ tableName: "全部", id: 0 })
+      this.selectTable = "全部";
+      this.selectTableId = ''
+    },
+    tableChange(value) {
+      this.selectTableId = value;
+    },
+    getProjectList(key) {
+      if (key) {
+        key = key.trim();
+      }
+      let params = {
+        name: key,
+      };
+      listAllProject(params).then((resp) => {
+        this.projectList = resp.data;
+        this.projectList.unshift({ name: "全部", id: 0 })
+        if (this.formProjectList == null) {
+          this.formProjectList = this.projectList;
+        }
       });
+    },
+    getProjectListEdit(key) {
+      if (key) {
+        key = key.trim();
+      }
+      let params = {
+        name: key,
+      };
+      listAllProject(params).then((resp) => {
+        this.formProjectListEdit = resp.data;
+        // this.projectList.unshift({ name: "全部", id: 0 })
+        if (this.formProjectListEdit == null) {
+          this.formProjectListEdit = this.projectList;
+        }
+      });
+    },
+    getTableList(key) {
+      if (key) {
+        key = key.trim();
+      }
+      let params = {
+        databaseId: this.selectDatabaseId,
+        tableName: key,
+      };
+      listTableByProject(params).then((resp) => {
+        this.tableList = resp.data;
+        this.tableList.unshift({ tableName: "全部", id: 0 })
+
+      });
+    },
+    queryProjectList(query) {
+      if (query !== "") {
+        this.loading = true;
+        setTimeout(() => {
+          this.loading = false;
+          this.getProjectList(query);
+        }, 200);
+      } else {
+        this.getProjectList();
+      }
     },
     // 取消按钮
-    cancel () {
+    cancel() {
       this.open = false;
-      this.reset();
+      // this.reset();
     },
     // 表单重置
-    reset () {
+    reset() {
       this.form = {
         id: null,
-        name: null,
-        url: null,
-        remark: null,
-        endAddress: null,
-        port: null,
-        domainName: null,
-        portNum: null,
+        projectId: null,
+        tableId: null,
+        fieldName: null,
+        fieldType: null,
+        fieldRemark: null,
+        addTime: null,
+        securityLevel: null,
+        tag: null,
+        securityRule: [],
+        categoryId: null,
       };
       this.resetForm("form");
     },
     /** 搜索按钮操作 */
-    handleQuery () {
+    handleQuery() {
       this.queryParams.pageNum = 1;
       this.getList();
+
     },
     /** 重置按钮操作 */
-    resetQuery () {
+    resetQuery() {
+      this.databaseName = "全部";
+      this.categoryTable = "全部";
+      this.selectTable = "全部";
+      this.markingNume = 0;
+      this.selectProjectId = 0;
+      this.queryParams.categoryId = undefined
+      this.$refs.tree.setCurrentKey(null);
       this.resetForm("queryForm");
       this.handleQuery();
     },
-    // 多选框选中数据
-    handleSelectionChange (selection) {
-      this.ids = selection.map((item) => item.id);
-      this.single = selection.length !== 1;
-      this.multiple = !selection.length;
-    },
     /** 新增按钮操作 */
-    handleAdd () {
+    handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加项目";
+      this.title = "添加数据库字段名";
     },
     /** 修改按钮操作 */
-    handleUpdate (row) {
+    handleUpdate(row) {
+      this.securityRuleList = JSON.parse(row.securityRule)
       this.reset();
       const id = row.id || this.ids;
-      getProject(id).then((response) => {
+      this.categoryTableEdit = row.categoryId
+      getProtectTableField(id).then((response) => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改项目";
+        this.title = "修改" + row.fieldName + "打标信息";
       });
     },
     /** 提交按钮 */
-    submitForm () {
+    submitForm() {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          this.loading = true;
+          this.form.securityRule = JSON.stringify(this.securityRuleList)
           if (this.form.id != null) {
-            updateProject(this.form).then((response) => {
+            updateProtectTableField(this.form).then((response) => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
-              this.loading = false;
             });
           } else {
-            addProject(this.form).then((response) => {
+            addProtectTableField(this.form).then((response) => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
-              this.loading = false;
             });
           }
         }
       });
+
     },
     /** 删除按钮操作 */
-    handleDelete (row) {
+    handleDelete(row) {
       const ids = row.id || this.ids;
       this.$modal
-        .confirm('是否确认删除项目列表编号为"' + ids + '"的数据项？')
+        .confirm('是否确认删除数据库字段名编号为"' + ids + '"的数据项？')
         .then(function () {
-          return delProject(ids);
+          return delProtectTableField(ids);
         })
         .then(() => {
           this.getList();
@@ -895,572 +774,188 @@ export default {
         .catch(() => { });
     },
     /** 导出按钮操作 */
-    handleExport () {
+    handleExport() {
       this.download(
-        "system/project/export",
+        "system/protectTableField/export",
         {
           ...this.queryParams,
         },
-        `project_${new Date().getTime()}.xlsx`
+        `protectTableField_${new Date().getTime()}.xlsx`
       );
     },
   },
 };
 </script>
+
 <style scoped>
-.kaiqifanghu /deep/ .el-form-item__content {
-  /* float: right !important; */
-  /* margin-left: 300px !important; */
-  margin-left: 200px !important;
+.el-popup-parent--hidden /deep/ .el-loading-mask {
+  background: "rgba(0, 0, 0, 0.7)" !important;
 }
 
-.daili /deep/ .kaiguan {
-  text-align: center;
+.addDialog /deep/ .el-input--medium {
+  width: 237px;
 }
 
-.daili /deep/ .el-form-item__content {
-  margin-left: 0 !important;
+.addMsg /deep/ .el-input--medium {
+  width: 237px;
 }
 
-.daili /deep/ .site1 {
-  /* margin-left: -150px !important; */
-  position: absolute;
-  left: 3%;
-  top: -10px;
+.addMsg /deep/ .el-dialog:not(.is-fullscreen) {
+  margin-top: 10% !important;
 }
 
-.daili {
-  width: 100%;
-}
-
-.yvming {
-  font-size: 16px;
-  font-family: PingFangSC-Medium, PingFang SC;
-  padding-right: 20px;
-}
-
-.kaiguan {
-  margin-top: 23px;
-}
-
-.site1 {
-  font-size: 16px;
-  font-family: PingFangSC-Medium, PingFang SC;
-  font-weight: 500;
-  color: #000000;
-  line-height: 24px;
-  margin-left: 34px;
-
-  /* margin-left: 20px; */
-  /* margin-top: 20px; */
-}
-
-.target {
-  width: 100%;
-  border-bottom: 1px dashed #eee;
-}
-
-.site {
-  font-size: 16px;
-  font-family: PingFangSC-Medium, PingFang SC;
-  font-weight: 500;
-  color: #000000;
-  line-height: 24px;
-  margin-left: 50px;
-}
-
-.copyDiv {
-  margin: 10px 10px 0px 0px;
-  height: 20px;
-  line-height: 20px;
-  /* border: 0;
-  background-color: transparent; */
-}
-
-::v-deep .el-step__head.is-success {
-  color: rgb(52, 158, 250);
-  border-color: rgb(52, 158, 250);
-}
-
-::v-deep .el-step__title.is-success {
-  font-weight: bold;
-  color: rgb(52, 158, 250);
-}
-
-::v-deep .el-step__description.is-success {
-  color: rgb(52, 158, 250);
-}
-
-.text-wrapper_15 {
-  border-radius: 2px 2px 0px 0px;
-  margin: 5px 0 0 25px;
-}
-
-.text_36S {
-  height: 36px;
-  line-height: 36px;
-  font-size: 14px;
-  color: #FF4D4F;
-  padding-left: 5px;
-}
-
-.text_36 {
-  height: 36px;
-  line-height: 36px;
-  font-size: 14px;
-  color: #52C41A;
-  padding-left: 5px;
+.addMsg /deep/ .el-dialog__body {
+  padding-bottom: 0;
 
 }
 
-.box_5 :nth-last-child(1) {
-  border: 0px;
+.addMsg /deep/ .el-dialog__footer {
+  padding-bottom: 32px;
+
 }
 
-.text_spas {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin: 15px 0 0 8px;
-  background-color: #FF4D4F;
-}
-
-.text_spa {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin: 15px 0 0 8px;
-  background-color: #52C41A;
-}
-
-.flex-col1s {
-  display: flex;
-  margin-left: 12px;
-  width: 355px;
+.sourceClass {
+  margin: 5px;
+  display: inline-block;
   height: 30px;
-  border-bottom: 1px solid #F1F1F1;
+  line-height: 28px;
+  color: #1890ff;
+  background-color: #e8f4ff;
+  /* border-color: #d1e9ff; */
+  border: 1px solid #d1e9ff;
+  padding: 0 5px 0 5px;
+  border-radius: 5px;
+  box-shadow: -2px 2px 5px 0px #e5f3ff;
 }
 
-.flex-cols {
-  position: relative;
-  display: flex;
+.success {
+  color: #67c23a;
 }
 
-.flex-col1 {
-  display: flex;
-  margin-left: 12px;
-  /* position: absolute;
-  left: 50%;
-  transform:  translateX(-50%); */
-  width: 355px;
-  height: 36px;
-  border-bottom: 1px solid #F1F1F1;
+.error {
+  color: #f56c6c;
 }
 
-.text_35 {
-  height: 36px;
-  line-height: 36px;
-  font-size: 14px;
-  color: #1890FF;
-}
-
-.text_34 {
-  height: 36px;
-  line-height: 36px;
-  font-size: 14px;
-}
-
-.flex-col {
-  position: relative;
-  display: flex;
-}
-
-.thumbnail_21 {
-  width: 2px;
-  height: 11px;
-  margin-top: 12px;
-  margin-left: 10px;
-  background: #1890FF !important;
-}
-
-.text_33S {
-  width: 98px;
-  text-align: right;
-  height: 36px;
-  color: rgba(0, 0, 0, 0.65);
-  font-size: 14px;
-  line-height: 36px;
-}
-
-.text_33 {
-  width: 70px;
-  text-align: right;
-  height: 36px;
-  color: rgba(0, 0, 0, 0.65);
-  font-size: 14px;
-  line-height: 36px;
-  /* padding-left: 10px; */
-}
-
-.text_32ss {
-  /* border-left: 1px solid #1890FF; */
-  width: 94%;
-  height: 36px;
-  overflow-wrap: break-word;
-  color: rgba(0, 0, 0, 0.65);
-  font-size: 14px;
-  font-family: PingFangSC-Medium;
-  font-weight: 500;
-  text-align: left;
-  white-space: nowrap;
-  line-height: 36px;
-  padding-left: 10px;
-}
-
-.text_32 {
-  /* border-left: 1px solid #1890FF; */
-  width: 94%;
-  height: 36px;
-  border-bottom: 1px solid #F1F1F1;
-  overflow-wrap: break-word;
-  color: rgba(0, 0, 0, 0.65);
-  font-size: 14px;
-  font-family: PingFangSC-Medium;
-  font-weight: 500;
-  text-align: left;
-  white-space: nowrap;
-  line-height: 36px;
-  padding-left: 10px;
-}
-
-.flex-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.text_81 {
-  background-color: rgba(250, 250, 250, 1);
-}
-
-.wrapper {
-  width: 770px;
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.65);
+.impShow {
   text-align: center;
-  height: 33px;
-  line-height: 33px;
 }
 
-
-
-.box_5 {
-  position: relative;
-  background-color: rgba(250, 250, 250, 1);
-  border-radius: 2px;
-  width: 375px;
-  height: 185px;
-  margin-left: 24px;
-  margin-top: 12px;
+.el-tree-node /deep/ .el-tree-node {
+  display: none;
 }
 
-.drawerDiv /deep/ .el-drawer__body {
-  position: relative;
+.addDialog /deep/ .el-select {
+  /* width:520px; */
+  width: 78%;
 }
 
-.section_3 {
-  display: flex;
-  width: 760px;
-  height: 24px;
-  margin: 24px 0 0 32px;
+.addDialog /deep/ .vue-treeselect__control {
+  /* width:520px; */
+  width: 111%;
+  margin: 0 !important;
 }
 
-.text_31 {
-  width: 96px;
-  height: 24px;
-  overflow-wrap: break-word;
-  color: rgba(0, 0, 0, 0.65);
-  font-size: 16px;
-  font-family: PingFangSC-Medium;
-  font-weight: 500;
-  text-align: left;
-  white-space: nowrap;
-  line-height: 24px;
-  margin-left: 8px;
+.addDialog /deep/ .selectClass {
+  /* width: 520px; */
+  width: 80%;
 }
 
-.thumbnail_20 {
+.addDialog /deep/ .el-input--medium {
+  /* width: 520px; */
+  width: 80%;
+  /* margin-right: 0 !important; */
+
+}
+
+.addDialog /deep/ .el-form-item__label {
+  width: 110px !important;
+}
+
+.addDialog /deep/ .el-form-item__content {
+  margin-left: 110px !important;
+}
+
+.fielRul {
+  margin-left: -10px;
+}
+
+.fielRul ::-webkit-scrollbar {
   width: 10px;
-  height: 10px;
-  margin: 7px 0 0 639px;
 }
 
-.box_4 {
-  background-color: rgba(24, 144, 255, 1);
-  border-radius: 50%;
-  width: 7px;
-  height: 7px;
-  margin-top: 9px;
+.fielRul ::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 5px;
 }
 
-.drawerDiv /deep/ .el-drawer__header {
-  margin-bottom: 0px;
-  /* padding: 0px; */
-  /* display: none; */
+.fielRul ::-webkit-scrollbar-track {
+  background-color: #f2f2f2;
 }
 
-.drawerDiv /deep/ .el-drawer {
-  width: 819px !important;
-
-  /* width: 80% !important; */
-
-  box-shadow: -6px 3px 21px 0px rgba(0, 0, 0, 0.13);
+.serclass /deep/ .el-input {
+  width: 64% !important;
 }
 
-.projecClass {
+.btn {
   border: 0;
   color: #409eff;
+  text-align: right;
+  padding-left: 20px;
+
+
 }
 
-.el-form-item__label {
-  font-size: 12px !important;
-  color: #a7aebb !important;
-}
-
-.agentSpan {
+.btn1 {
   color: #409eff;
+  text-align: right;
+  margin-left: 90%;
 }
 
-.order {
-  font-size: 16px;
-  padding: 10px;
-  display: block;
+.fieldName {
+  height: 150px !important;
+  overflow: auto !important;
+
+}
+
+.div1 {
+  position: relative;
+  /* width: 581px; */
+  width: 80%;
+
+
+}
+
+.spRul {
+  color: #ff4949;
+  width: 5px;
+  height: 5px;
+  /* margin-right: 5px; */
+  float: left;
   margin-top: 10px;
-  color: #000;
-  margin-bottom: 10px;
+  margin-left: 5px;
+  /* position: absolute;
+  left: -14px;
+  z-index: 999;
+  top: 10px; */
+
+
 }
 
-.orderCla {
-  padding-bottom: 50px;
+.associatedTxt /deep/ .el-table::before {
+  background-color: transparent;
 }
 
-.orderCla .el-steps--vertical div:nth-of-type(2) .el-step__main {
-  background: #f4f7fa;
-}
-
-.demo-ruleForm {
-  /* background-color: #ff5263; */
-  width: 100%;
-  height: 500px;
-  border-top: 1px solid #ececec;
-}
-
-.demo-ruleForm /deep/.el-form-item--medium {
-  margin-top: 20px;
-}
-
-.demo-ruleForm /deep/.el-form-item__content {
-  margin-left: 0 !important;
-}
-
-.form-footer {
-  padding-left: 100px;
-}
-
-
-.log /deep/ .el-dialog__body {
-  padding: 0 20px 80px 20px;
-}
-
-.log /deep/.el-step__main1 .el-step__main .el-step__description .ourBtn {
-  background-color: #f4f7fa;
-  /* height: 20px; */
-  border: 1px solid #e8ebed;
-  border-radius: 5px;
-}
-
-.log /deep/.el-step__description {
-  color: #000;
+.btns {
   font-size: 14px;
 }
 
-.log /deep/.el-step {
-  flex-basis: 25% !important;
-}
+.serachInput {
+  width: 60%;
+  margin-right: 10px;
 
-.log /deep/.el-step__title {
-  color: #000;
-}
-
-.log /deep/.el-step__main1 .el-step__main .el-step__description .pClass1 {
-  padding: 10px;
-  padding-top: 0;
-  background-color: #f4f7fa;
-  /* height: 20px; */
-  width: 98%;
-  border-radius: 5px;
-  /* border: 1px solid #e8ebed; */
-  text-align: left;
-}
-
-.log /deep/.el-step__main1 .el-step__main .el-step__description .pClass {
-  padding: 10px;
-  background-color: #f4f7fa;
-  /* height: 20px; */
-  width: 98%;
-  border-radius: 5px;
-  border: 1px solid #e8ebed;
-}
-
-.pClass {
-  margin-bottom: 10px;
-}
-
-.ourBtn {
-  cursor: pointer;
-  /* height: 20px; */
-  padding: 0;
-  border: 0;
-  width: 98%;
-  background: transparent;
-}
-
-.divRed {
-  display: inline;
-  color: #ec0c0c;
-}
-
-.divNormal {
-  display: inline-block;
-}
-
-.log /deep/ .add-el-form {
-  text-align: center;
-}
-
-/* .dialog-footer {
-  position: absolute;
-  right: 100px;
-  bottom: 50px;
-} */
-.sure {
-  /* float: right; */
-  position: absolute;
-  right: 20px;
-  margin-right: 20px;
-  bottom: 20px;
-}
-
-.agentClass {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background-color: #13ce66;
-}
-
-.agentClassBack {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background-color: #ccc;
-}
-
-.protectionClass {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: #ccc;
-  display: inline-block;
-}
-
-.protionDiv {
-  /* display: flex; */
-}
-
-.logdiv /deep/ .el-dialog {
-  margin-top: 300px !important;
-  /* height: 284px; */
-  background: #ffffff;
-  border-radius: 3px;
-}
-
-.logdiv /deep/ .el-dialog__title {
-  height: 24px;
-  font-size: 16px;
-  font-family: PingFangSC-Medium, PingFang SC;
-  font-weight: 500;
-  color: #000000;
-  line-height: 24px;
-}
-
-.el-steps--horizontal {
-  width: 99%;
-}
-
-.logdiv /deep/ .el-form {
-  width: 100%;
-  margin-top: 20px;
-  display: flex;
-  position: relative;
-  flex-direction: column;
-  align-items: center;
-}
-
-.logdiv /deep/ .el-form-item {
-  padding-bottom: 10px;
-  /* 高度 */
-}
-
-.logdiv /deep/.el-dialog__footer {
-  position: absolute;
-  right: 20px;
-  bottom: 5px;
-}
-
-.logdiv /deep/ .dialog-footer .cancelClass {
-  background: #FFF3EF;
-  border-radius: 2px;
-  border: 1px solid #ffccc6;
-  color: #F5222D;
-  font-family: PingFangSC-Regular, PingFang SC;
-  margin-right: 20px;
-}
-
-.el-message-box {
-  width: 400px !important;
-}
-
-.el-message-box__status {
-  font-size: 16px !important;
-}
-
-.dialog /deep/ .el-dialog__wrapper {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-
-.addOpen /deep/ .el-dialog:not(.is-fullscreen) {
-  margin-top: 321px !important;
-  height: 322px;
-  width: 551px !important;
-  position: relative;
-}
-
-.addOpen /deep/ .el-dialog__footer {
-  position: absolute;
-  bottom: 0px;
-  right: 0;
-}
-
-.addOpen /deep/ .el-textarea__inner {
-  max-height: 50px !important;
-}
-
-/* .dabiao {
-  height: 80%;
-} */
-
-.dabiao /deep/ .el-table::before {
-  background-color: transparent;
+  input {
+    height: 28px !important;
+    line-height: 28px !important;
+  }
 }
 </style>
