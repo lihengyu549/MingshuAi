@@ -5,14 +5,14 @@
         <h3>DSM数据安全地图</h3>
       </header>
       <el-button icon="el-icon-s-home" style="
-                                                        position: absolute;
-                                                        background-color: transparent;
-                                                        color: #25FFE8;
-                                                        font-size: 30px;
-                                                        border: 0;
-                                                        left: 0%;
-                                                        top: 34px;
-                                                      " @click="goHome">
+        position: absolute;
+        background-color: transparent;
+        color: #25FFE8;
+        font-size: 30px;
+        border: 0;
+        left: 0%;
+        top: 34px;
+      " @click="goHome">
       </el-button>
       <div class="time-content">
         <span>当前时间: </span><span id="time-content">{{ parseTime(new Date()) }}</span>
@@ -20,128 +20,29 @@
       <div class="wrapper">
         <div class="container-fluid">
           <div class="row fill-h">
-            <div class="col-lg-3 fill-h">
-              <div class="xpanel-wrapper xpanel-wrapper-3">
-                <div class="xpanel">
-                  <a class="lock" href="/systemInfo/project" target="_blank"> >> </a>
-                  <div class="title">项目API数TOP 10 </div>
-                  <div class="fill-h china" ref="main1">
-
-                  </div>
-
-                </div>
-              </div>
-              <div class="xpanel-wrapper xpanel-wrapper-3">
-                <div class="xpanel">
-                  <a class="lock" href="/systemInfo/blockRecord" target="_blank"> >> </a>
-                  <div class="title">今日攻击拦截TOP5</div>
-
-                  <div class="interception">
-                    <table style="width: 100%">
-                      <tbody>
-                        <tr style="height: 30px; width: 100%">
-                          <th style="border: 0px; width: 33%;color: #25FFE8;">项目名称</th>
-                          <th style="border: 0px; width: 33%;color: #25FFE8;">网站</th>
-                          <th style="border: 0px; width: 33%;color: #25FFE8;">拦截次数</th>
-                        </tr>
-                        <tr v-for="(item, index) in attackList" :key="index" style="height: 30px">
-                          <td>{{ item.site_name }}</td>
-                          <td>{{ item.site_url }}</td>
-                          <td>{{ item.num }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <!-- <div class="interception">
-                    <el-table
-                    class="tableCla"
-                    :data="top"
-                    style="width: 100%; background-color: #91d5ff !important;"
-                  >
-                    <el-table-column align="center" prop="site_name" label="项目名称">
-                    </el-table-column>
-                    <el-table-column
-                    align="center"
-                      prop="site_url"
-                      label="网站"
-                    ></el-table-column>
-                    <el-table-column align="center" prop="num" label="拦截次数">
-                    </el-table-column>
-                  </el-table>
-                  </div> -->
-                  <!-- <div class="fill-h global" style="width: 100%;height: 100%;" ref="main2"></div> -->
-                </div>
-              </div>
-              <!-- <div class="xpanel-wrapper xpanel-wrapper-3">
-                <div class="xpanel">
-                  <div class="title">密码统计</div>
-                  <div class="fill-h cipherComputing" ref="main6"></div>
-                </div>
-              </div> -->
-            </div>
-            <div class="col-lg-6 fill-h">
-              <div class="xpanel-wrapper xpanel-wrapper-2">
-                <div class="xpanel-X">
-                  <!-- 地图散点 -->
-                  <div class="fill-h walMap" ref="worldMap"></div>
-                </div>
-              </div>
-              <div class="xpanel-wrapper xpanel-wrapper-2">
-                <div class="xpanel-tab">
-                  <!-- 地图散点 -->
-                  <table class="data_list_head table">
-                    <tbody class="data_ul_head">
-                      <tr>
-                        <th style="border: 0px; text-align: center; width: 15%;color: #25FFE8;">
-                          项目
-                        </th>
-                        <th style="border: 0px; text-align: center; width: 22%;color: #25FFE8;">
-                          站点
-                        </th>
-                        <th style="border: 0px; text-align: center; width: 20%;color: #25FFE8;">
-                          攻击IP
-                        </th>
-                        <th style="border: 0px; text-align: center; width: 14%;color: #25FFE8;">
-                          攻击类型
-                        </th>
-                        <th style="border: 0px; text-align: center;color: #25FFE8;">
-                          攻击时间
-                        </th>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <div style="height: 85%">
-                    <div class="fill-h" id="datamian">
-                      <table class="data_list_head table" id="info_list">
-                        <!-- <tbody class="data_ul_head">
-                        <tr>
-                          <th style="border: 0px; width: 10%">类型</th>
-                          <th style="border: 0px; width: 25%">节点</th>
-                          <th style="border: 0px; width: 25%">来源IP</th>
-                          <th style="border: 0px; width: 29%">地理信息</th>
-                          <th style="border: 0px; width: 11%">攻击时间</th>
-                        </tr>
-                      </tbody> -->
-                      </table>
-                    </div>
-                  </div>
-                </div>
+            <div class="col-lg-9 fill-h">
+              <div class="xpanel-wrapper xpanel-wrapper-30">
+                <div class="fiveBox"></div>
+                <div class="fiveBox"></div>
+                <div class="fiveBox"></div>
+                <div class="fiveBox"></div>
+                <div class="fiveBox"></div>
               </div>
             </div>
             <div class="col-lg-3 fill-h">
-              <div class="xpanel-wrapper xpanel-wrapper-3">
+              <div class="xpanel-wrapper xpanel-wrapper-lzh">
                 <div class="xpanel">
-                  <div class="title">分类字段数 TOP 10</div>
-                  <div class="fill-h attackTypes" ref="main4"></div>
+                  <div class="title">数据分级分布</div>
+                  <div class="fill-h attackTypes" id="dataBing" ref="main4"></div>
                 </div>
               </div>
-              <!-- <div class="xpanel-wrapper xpanel-wrapper-3">
+              <div class="xpanel-wrapper xpanel-wrapper-lzh">
                 <div class="xpanel">
                   <div class="title">账号统计</div>
                   <div class="fill-h accountStatistics" ref="main5"></div>
                 </div>
-              </div> -->
-              <div class="xpanel-wrapper xpanel-wrapper-3">
+              </div>
+              <div class="xpanel-wrapper xpanel-wrapper-lzh">
                 <div class="xpanel">
                   <div class="title">敏感级别数统计</div>
                   <div v-if="show" class="fill-h ipTop" ref="main3"></div>
@@ -170,7 +71,7 @@ import "echarts-wordcloud";
 import "../assets/styles/bootstrap.css";
 import $ from "jquery";
 export default {
-  data () {
+  data() {
     return {
       show: true,
       attackList: [],
@@ -183,7 +84,7 @@ export default {
       timeout: null,
     };
   },
-  created () {
+  created() {
     echarts.registerMap("world", {
       type: "FeatureCollection",
       crs: {
@@ -209,13 +110,60 @@ export default {
     });
     this.initInfoListFunc();
   },
+  mounted() {
+    this.initChart()
+  },
   watch: {
-    $route () {
+    $route() {
       this.$router.go();
     },
   },
   methods: {
-    levelStatistic () {
+    initChart() {
+      var chartDom = document.getElementById('dataBing');
+      var myChart = echarts.init(chartDom);
+      var option;
+
+      option = {
+        legend: {
+          top: 'bottom'
+        },
+        toolbox: {
+          show: true,
+          feature: {
+            mark: { show: true },
+            dataView: { show: true, readOnly: false },
+            restore: { show: true },
+            saveAsImage: { show: true }
+          }
+        },
+        series: [
+          {
+            name: 'Nightingale Chart',
+            type: 'pie',
+            radius: [10, 50],
+            center: ['50%', '50%'],
+            roseType: 'area',
+            itemStyle: {
+              borderRadius: 8
+            },
+            data: [
+              { value: 40, name: 'rose 1' },
+              { value: 38, name: 'rose 2' },
+              { value: 32, name: 'rose 3' },
+              { value: 30, name: 'rose 4' },
+              { value: 28, name: 'rose 5' },
+              { value: 26, name: 'rose 6' },
+              { value: 22, name: 'rose 7' },
+              { value: 18, name: 'rose 8' }
+            ]
+          }
+        ]
+      };
+
+      option && myChart.setOption(option);
+    },
+    levelStatistic() {
       levelStatisticI().then((res) => {
         let leveTab = res.data;
         if (leveTab.length == 0) {
@@ -330,7 +278,7 @@ export default {
 
       });
     },
-    protectStatistic () {
+    protectStatistic() {
       protectStatisticI().then((res) => {
         let num = [];
         let name = [];
@@ -423,10 +371,10 @@ export default {
         });
       });
     },
-    goHome () {
+    goHome() {
       this.$router.push({ path: "/index" });
     },
-    apiStatistic () {
+    apiStatistic() {
       apiStatisticI().then((res) => {
         let topNum = [];
         let topName = [];
@@ -526,7 +474,7 @@ export default {
       });
     },
 
-    initInfoListFunc () {
+    initInfoListFunc() {
       getTopAttitudeI().then((res) => {
         this.attackList = res.data.top;
         let protectList = res.data.protectList;
@@ -577,7 +525,7 @@ export default {
       });
     },
 
-    worldMapFunc () {
+    worldMapFunc() {
       var convertData = function (data) {
         var res = [];
         for (var i = 0; i < data.length; i++) {
@@ -839,7 +787,7 @@ export default {
       // });
     },
   },
-  beforeDestroy () {
+  beforeDestroy() {
     if (this.timeoutTop) {
       clearInterval(this.timeoutTop);
     }
@@ -946,9 +894,11 @@ td {
 
 .title {
   color: #25FFE8;
-  text-align: center;
+  text-align: left;
   margin-top: 10px;
   font-weight: bold;
+  background-color: rgb(13, 27, 62);
+  padding: 10px;
 }
 
 .homex {
@@ -987,6 +937,10 @@ td {
   height: 50%;
 }
 
+.xpanel-wrapper-lzh {
+  height: 32%;
+}
+
 .xpanel-X {
   padding: 15px;
   height: 100%;
@@ -1010,7 +964,6 @@ td {
   padding: 15px;
   height: 100%;
   min-height: 170px;
-  background: url("../assets/images/xpanel.png") center no-repeat;
   background-size: 100% 100%;
   box-sizing: border-box;
 }
@@ -1018,9 +971,10 @@ td {
 #body-content {
   height: 100%;
   width: 100%;
-  background-color: #020051;
-  // background-image: url("../assets/images/data-background.png");
+  // background-color: #020051;
+  background-image: url("../assets/images/dataBgc.jpg");
   background-size: 100% 100%;
+  background-position: 100px, 100px;
   overflow: hidden;
   // overflow-y: hidden !important;
 }
@@ -1088,5 +1042,21 @@ body {
   float: right;
   color: #25FFE8;
   font-size: 20px;
+}
+
+.xpanel-wrapper-30 {
+  height: 30%;
+  position: relative;
+  display: flex;
+  justify-content: space-around
+}
+
+.fiveBox {
+  height: 140px;
+  width: 80px;
+  background: url('../assets/images/light.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  overflow: hidden;
 }
 </style>

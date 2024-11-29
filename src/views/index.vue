@@ -74,44 +74,6 @@
           <!-- <div class="wet-3"> </div> -->
         </div>
       </div>
-
-      <!-- <div class="headerview"> 
-
-        <div class="pic-4">
-          <div class="pic-i">
-           <svg t="1673434177114" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2385" width="25" height="25"><path d="M928 170.666667H426.666667v-32a53.393333 53.393333 0 0 0-53.333334-53.333334H224a53.393333 53.393333 0 0 0-53.333333 53.333334v32H96a53.393333 53.393333 0 0 0-53.333333 53.333333v661.333333a53.393333 53.393333 0 0 0 53.333333 53.333334h832a53.393333 53.393333 0 0 0 53.333333-53.333334V224a53.393333 53.393333 0 0 0-53.333333-53.333333zM213.333333 138.666667a10.666667 10.666667 0 0 1 10.666667-10.666667h149.333333a10.666667 10.666667 0 0 1 10.666667 10.666667v576a10.666667 10.666667 0 0 1-10.666667 10.666666H224a10.666667 10.666667 0 0 1-10.666667-10.666666z m725.333334 746.666666a10.666667 10.666667 0 0 1-10.666667 10.666667H96a10.666667 10.666667 0 0 1-10.666667-10.666667V224a10.666667 10.666667 0 0 1 10.666667-10.666667h74.666667v501.333334a53.393333 53.393333 0 0 0 53.333333 53.333333h149.333333a53.393333 53.393333 0 0 0 53.333334-53.333333V213.333333h501.333333a10.666667 10.666667 0 0 1 10.666667 10.666667zM533.333333 469.333333a21.333333 21.333333 0 0 1 21.333334 21.333334 21.333333 21.333333 0 0 1-21.333334 21.333333 21.333333 21.333333 0 0 1-21.333333-21.333333 21.333333 21.333333 0 0 1 21.333333-21.333334z m128 256a21.333333 21.333333 0 0 1 21.333334 21.333334 21.333333 21.333333 0 0 1-21.333334 21.333333 21.333333 21.333333 0 0 1-21.333333-21.333333 21.333333 21.333333 0 0 1 21.333333-21.333334z m0-128a21.333333 21.333333 0 0 1 21.333334 21.333334 21.333333 21.333333 0 0 1-21.333334 21.333333 21.333333 21.333333 0 0 1-21.333333-21.333333 21.333333 21.333333 0 0 1 21.333333-21.333334z m-128 128a21.333333 21.333333 0 0 1 21.333334 21.333334 21.333333 21.333333 0 0 1-21.333334 21.333333 21.333333 21.333333 0 0 1-21.333333-21.333333 21.333333 21.333333 0 0 1 21.333333-21.333334z m0-128a21.333333 21.333333 0 0 1 21.333334 21.333334 21.333333 21.333333 0 0 1-21.333334 21.333333 21.333333 21.333333 0 0 1-21.333333-21.333333 21.333333 21.333333 0 0 1 21.333333-21.333334z m128-128a21.333333 21.333333 0 0 1 21.333334 21.333334 21.333333 21.333333 0 0 1-21.333334 21.333333 21.333333 21.333333 0 0 1-21.333333-21.333333 21.333333 21.333333 0 0 1 21.333333-21.333334zM533.333333 298.666667h256a21.333333 21.333333 0 0 1 21.333334 21.333333 21.333333 21.333333 0 0 1-21.333334 21.333333H533.333333a21.333333 21.333333 0 0 1-21.333333-21.333333 21.333333 21.333333 0 0 1 21.333333-21.333333z m256 170.666666a21.333333 21.333333 0 0 1 21.333334 21.333334 21.333333 21.333333 0 0 1-21.333334 21.333333 21.333333 21.333333 0 0 1-21.333333-21.333333 21.333333 21.333333 0 0 1 21.333333-21.333334z m0 256a21.333333 21.333333 0 0 1 21.333334 21.333334 21.333333 21.333333 0 0 1-21.333334 21.333333 21.333333 21.333333 0 0 1-21.333333-21.333333 21.333333 21.333333 0 0 1 21.333333-21.333334z m0-128a21.333333 21.333333 0 0 1 21.333334 21.333334 21.333333 21.333333 0 0 1-21.333334 21.333333 21.333333 21.333333 0 0 1-21.333333-21.333333 21.333333 21.333333 0 0 1 21.333333-21.333334z" fill="#5C5C66" p-id="2386"></path></svg>
-          </div>
-          
-          
-        </div>
-        <div class="writing">
-          <div class="wet-1">00</div>
-          <div class="wet-2">其他</div>
-          <div class="wet-3"> </div>
-
-        </div>
-
-
-      </div>
-
-       <div class="headerview"> 
-
-        <div class="pic-5">
-          <div class="pic-i">
-           <svg t="1673434227565" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1287" width="25" height="25"><path d="M928 288H96v384h160v224h512V672h160zM704 832H320V544h384z m160-224h-96v-128H256v128h-96V352h704zM320 192h384v64h64V128H256v128h64v-64z" fill="#ffffff" p-id="1288"></path><path d="M384 608h256v64H384zM384 704h256v64H384z" fill="#ffffff" p-id="1289"></path><path d="M800 416m-32 0a32 32 0 1 0 64 0 32 32 0 1 0-64 0Z" fill="#ffffff" p-id="1290"></path></svg>
-          </div>
-          
-          
-        </div>
-        <div class="writing">
-          <div class="wet-1">00</div>
-          <div class="wet-2">其他</div>
-          <div class="wet-3"> </div>
-
-        </div>
-
-
-      </div> -->
     </div>
     <div>
       <my-indexlist></my-indexlist>
@@ -330,10 +292,73 @@
         </el-card>
       </el-col> -->
 
-        <el-col :span="24" class="card-box">
+        <el-col :span="12" class="card-box">
           <el-card>
             <div slot="header">
               <span>磁盘状态</span>
+            </div>
+            <div class="el-table el-table--enable-row-hover el-table--medium">
+              <table cellspacing="0" style="width: 100%">
+                <thead>
+                  <tr>
+                    <th class="el-table__cell el-table__cell is-leaf">
+                      <div class="cell">盘符路径</div>
+                    </th>
+                    <th class="el-table__cell is-leaf">
+                      <div class="cell">文件系统</div>
+                    </th>
+                    <th class="el-table__cell is-leaf">
+                      <div class="cell">盘符类型</div>
+                    </th>
+                    <th class="el-table__cell is-leaf">
+                      <div class="cell">总大小</div>
+                    </th>
+                    <th class="el-table__cell is-leaf">
+                      <div class="cell">可用大小</div>
+                    </th>
+                    <th class="el-table__cell is-leaf">
+                      <div class="cell">已用大小</div>
+                    </th>
+                    <th class="el-table__cell is-leaf">
+                      <div class="cell">已用百分比</div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody v-if="server.sysFiles">
+                  <tr v-for="(sysFile, index) in server.sysFiles" :key="index">
+                    <td class="el-table__cell is-leaf">
+                      <div class="cell">{{ sysFile.dirName }}</div>
+                    </td>
+                    <td class="el-table__cell is-leaf">
+                      <div class="cell">{{ sysFile.sysTypeName }}</div>
+                    </td>
+                    <td class="el-table__cell is-leaf">
+                      <div class="cell">{{ sysFile.typeName }}</div>
+                    </td>
+                    <td class="el-table__cell is-leaf">
+                      <div class="cell">{{ sysFile.total }}</div>
+                    </td>
+                    <td class="el-table__cell is-leaf">
+                      <div class="cell">{{ sysFile.free }}</div>
+                    </td>
+                    <td class="el-table__cell is-leaf">
+                      <div class="cell">{{ sysFile.used }}</div>
+                    </td>
+                    <td class="el-table__cell is-leaf">
+                      <div class="cell" :class="{ 'text-danger': sysFile.usage > 80 }">
+                        {{ sysFile.usage }}%
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </el-card>
+        </el-col>
+        <el-col :span="12" class="card-box">
+          <el-card>
+            <div slot="header">
+              <span>GPU</span>
             </div>
             <div class="el-table el-table--enable-row-hover el-table--medium">
               <table cellspacing="0" style="width: 100%">

@@ -6,8 +6,8 @@
       :rules="loginRules"
       class="login-form"
     >
-    <img class="imgCla" src="../assets/images/sihuanxingwang.png" alt="">
-      <h3 class="title">四环星网DSM</h3>
+    <img class="imgCla" src="https://img02.mockplus.cn/image/2021-08-27/fe611fb0-070d-11ec-adb2-d16e0e2a3f04.png" alt="">
+      <h3 class="title">AI分类分级平台</h3>
       <h5 class="tltCla">账户密码登录</h5>
       <el-form-item prop="username">
         <el-input
@@ -211,7 +211,9 @@ export default {
 .title {
   margin: 0px auto 30px auto;
   text-align: center;
-  color: #707070;
+  color: #000000;
+  font-weight: 700;
+  font-size: 25px;
 }
 
 .login-form {
@@ -281,12 +283,12 @@ height: 40px !important;
 }
 
 .imgCla{
-  left: 80px;
-  top: 0px;
+  left: 170px;
+  top: -60px;
   position: absolute;
-  display:inline-block;
+  display:block;
   width: 68px;
-height: 68px;
+  height: 68px;
 }
 .forgetBtn{
   position: absolute;
