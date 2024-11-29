@@ -38,8 +38,8 @@
               </div>
               <div class="xpanel-wrapper xpanel-wrapper-lzh">
                 <div class="xpanel">
-                  <div class="title">账号统计</div>
-                  <div class="fill-h accountStatistics" ref="main5"></div>
+                  <div class="title">数据源敏感字段数</div>
+                  <div class="fill-h accountStatistics" id="dataZhu" ref="main5"></div>
                 </div>
               </div>
               <div class="xpanel-wrapper xpanel-wrapper-lzh">
@@ -123,7 +123,6 @@ export default {
       var chartDom = document.getElementById('dataBing');
       var myChart = echarts.init(chartDom);
       var option;
-
       option = {
         legend: {
           top: 'bottom'
@@ -162,6 +161,44 @@ export default {
       };
 
       option && myChart.setOption(option);
+
+      var chartZhu = document.getElementById('dataZhu');
+      var myChartZhu = echarts.init(chartZhu);
+      var optionZhu;
+
+      optionZhu = {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          }
+        },
+        legend: {},
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          top:'10%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'value',
+          boundaryGap: [0, 0.01]
+        },
+        yAxis: {
+          type: 'category',
+          data: ['text1', 'text2', 'text3', 'text4', 'China', 'text5']
+        },
+        series: [
+          {
+            type: 'bar',
+            data: [1, 2, 3, 4, 4, 5]
+          }
+        ]
+      };
+
+      optionZhu && myChartZhu.setOption(optionZhu);
+
     },
     levelStatistic() {
       levelStatisticI().then((res) => {
