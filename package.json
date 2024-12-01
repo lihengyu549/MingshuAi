@@ -1,8 +1,8 @@
 {
   "name": "4star",
   "version": "3.6.1",
-  "description": "四环星网DSM",
-  "author": "四环星网",
+  "description": "AI分类分级平台",
+  "author": "分类分级平台",
   "license": "MIT",
   "scripts": {
     "dev": "vue-cli-service serve",
@@ -62,6 +62,7 @@
     "vue-cropper": "0.5.5",
     "vue-meta": "2.4.0",
     "vue-router": "3.4.9",
+    "vue-wordcloud": "^1.1.1",
     "vuedraggable": "2.24.3",
     "vuex": "3.6.0"
   },

@@ -7,7 +7,7 @@ function resolve(dir) {
 
 const CompressionPlugin = require('compression-webpack-plugin')
 
-const name = process.env.VUE_APP_TITLE || '四环星网DSM' // 网页标题
+const name = process.env.VUE_APP_TITLE || 'AI分类分级平台' // 网页标题
 
 const port = process.env.port || process.env.npm_config_port || 80 // 端口
 
@@ -46,7 +46,8 @@ module.exports = {
         // target: `http://192.168.3.10:8080`,
         // target: `http://127.0.0.1:8080`,
         // target: `http://sihs.hlg.d2w.cc:30977/`,
-        target: `http://117.134.9.113:18080/`,
+        // target: `http://117.134.9.113:18080/`,
+        target: `http://192.168.2.196:8080/`,
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''

@@ -2,7 +2,7 @@
   <div id="body-content">
     <div>
       <header class="header">
-        <h3>DSM数据安全地图</h3>
+        <h3>数据安全分类分级展示</h3>
       </header>
       <el-button icon="el-icon-s-home" style="
         position: absolute;
@@ -22,14 +22,41 @@
           <div class="row fill-h">
             <div class="col-lg-9 fill-h">
               <div class="xpanel-wrapper xpanel-wrapper-30">
-                <div class="fiveBox"></div>
-                <div class="fiveBox"></div>
-                <div class="fiveBox"></div>
-                <div class="fiveBox"></div>
-                <div class="fiveBox"></div>
+                <div class="fiveBox1">
+                  <div class="textFa">
+                    <span class="lightText">数据源数</span> <span class="footText">123</span>
+                  </div>
+                </div>
+                <div class="fiveBox2">
+                  <div class="textFa"><span class="lightText">表数</span> <span class="footText">22</span></div>
+                </div>
+                <div class="fiveBox3">
+                  <div class="textFa"><span class="lightText">字段数</span> <span class="footText">3</span></div>
+                </div>
+                <div class="fiveBox4">
+                  <div class="textFa"><span class="lightText">文件数</span> <span class="footText">455</span></div>
+                </div>
+                <div class="fiveBox5">
+                  <div class="textFa"><span class="lightText">已梳理占比</span> <span class="footText">123123</span></div>
+                </div>
+              </div>
+              <div>
+                <word-cloud
+      :data="words"
+      nameKey="name"
+      valueKey="value"
+      :color="myColors"
+      :fontSize="[20, 60]"
+      rotationSteps="0"
+      font-family="Roboto"
+      :spiral="spiral"
+      :showTooltip="true"
+      :wordClick="wordClickHandler"
+      :word-style="wordStyle"
+    />
               </div>
             </div>
-            <div class="col-lg-3 fill-h">
+            <div class="col-lg-lzh fill-h">
               <div class="xpanel-wrapper xpanel-wrapper-lzh">
                 <div class="xpanel">
                   <div class="title">数据分级分布</div>
@@ -40,12 +67,6 @@
                 <div class="xpanel">
                   <div class="title">数据源敏感字段数</div>
                   <div class="fill-h accountStatistics" id="dataZhu" ref="main5"></div>
-                </div>
-              </div>
-              <div class="xpanel-wrapper xpanel-wrapper-lzh">
-                <div class="xpanel">
-                  <div class="title">敏感级别数统计</div>
-                  <div v-if="show" class="fill-h ipTop" ref="main3"></div>
                 </div>
               </div>
             </div>
@@ -70,7 +91,11 @@ import * as echarts from "echarts";
 import "echarts-wordcloud";
 import "../assets/styles/bootstrap.css";
 import $ from "jquery";
+import WordCloud from 'vue-wordcloud'
 export default {
+  components: {
+    WordCloud
+  },
   data() {
     return {
       show: true,
@@ -82,36 +107,26 @@ export default {
       topTab: {},
       top: [{ site_name: "4444", site_url: "wangzhan", num: "222" }],
       timeout: null,
+      words: [
+        { name: 'Vue', value: 26 },
+        { name: 'JavaScript', value: 18 },
+        { name: 'Webpack', value: 15 },
+        { name: 'Babel', value: 10 },
+        { name: 'Node.js', value: 8 }
+      ],
+      myColors: ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b'],
+      spiral: 'archimedean'
     };
   },
   created() {
-    echarts.registerMap("world", {
-      type: "FeatureCollection",
-      crs: {
-        type: "name",
-        properties: { name: "urn:ogc:def:crs:OGC:1.3:CRS84" },
-      },
-      features: features,
-    });
+  },
+  mounted() {
+    this.initChart()
     this.timeoutTop = setInterval(() => {
       document.querySelector("#time-content").textContent = parseTime(
         new Date()
       );
     }, 1000);
-    this.timeout = setInterval(() => {
-      this.initInfoListFunc();
-    }, 5000);
-    this.$nextTick(() => {
-      this.worldMapFunc();
-      this.apiStatistic();
-      this.protectStatistic();
-      this.levelStatistic();
-      // this.getTopAttitude();
-    });
-    this.initInfoListFunc();
-  },
-  mounted() {
-    this.initChart()
   },
   watch: {
     $route() {
@@ -119,6 +134,22 @@ export default {
     },
   },
   methods: {
+    wordClickHandler(name, value, vm) {
+      console.log('Word clicked:', name, value)
+    },
+    wordStyle(word, weight) {
+      const fontSize = Math.min(60, Math.max(20, weight * 10));
+      const color = this.myColors[Math.floor(Math.random() * this.myColors.length)];
+      return {
+        fontSize: `${fontSize}px`,
+        color,
+        backgroundColor: color,
+        borderRadius: '50%',
+        padding: '5px',
+        display: 'inline-block',
+        margin: '5px'
+      };
+    },
     initChart() {
       var chartDom = document.getElementById('dataBing');
       var myChart = echarts.init(chartDom);
@@ -131,16 +162,14 @@ export default {
           show: true,
           feature: {
             mark: { show: true },
-            dataView: { show: true, readOnly: false },
-            restore: { show: true },
-            saveAsImage: { show: true }
+            dataView: { show: false, readOnly: false },
           }
         },
         series: [
           {
             name: 'Nightingale Chart',
             type: 'pie',
-            radius: [10, 50],
+            radius: [20, 150],
             center: ['50%', '50%'],
             roseType: 'area',
             itemStyle: {
@@ -159,7 +188,6 @@ export default {
           }
         ]
       };
-
       option && myChart.setOption(option);
 
       var chartZhu = document.getElementById('dataZhu');
@@ -178,7 +206,7 @@ export default {
           left: '3%',
           right: '4%',
           bottom: '3%',
-          top:'10%',
+          top: '10%',
           containLabel: true
         },
         xAxis: {
@@ -189,15 +217,57 @@ export default {
           type: 'category',
           data: ['text1', 'text2', 'text3', 'text4', 'China', 'text5']
         },
+
         series: [
           {
             type: 'bar',
-            data: [1, 2, 3, 4, 4, 5]
+            data: [1, 2, 3, 4, 4, 5],
           }
         ]
       };
 
       optionZhu && myChartZhu.setOption(optionZhu);
+
+      var bubbleChartDom = document.getElementById('bubbleChart');
+      var bubbleChart = echarts.init(bubbleChartDom);
+      var bubbleOption;
+
+      bubbleOption = {
+        title: {
+          text: '彩色气泡图示例'
+        },
+        tooltip: {
+          trigger: 'item',
+          formatter: function (params) {
+            return `X: ${params.value[0]}<br/>Y: ${params.value[1]}<br/>Size: ${params.value[2]}`;
+          }
+        },
+        xAxis: {
+          type: 'value',
+          name: 'X轴'
+        },
+        yAxis: {
+          type: 'value',
+          name: 'Y轴'
+        },
+        series: [{
+          name: '数据',
+          type: 'scatter',
+          symbolSize: function (data) {
+            return Math.sqrt(data[2]) * 5;
+          },
+          data: this.bubbleChartData,
+          itemStyle: {
+            color: function (params) {
+              // 根据数据大小动态设置颜色
+              var colorList = ['#c23531', '#2f4554', '#61a0a8', '#d48265', '#91c7ae', '#749f83', '#ca8622', '#bda29a', '#6e7074', '#546570', '#c4ccd3'];
+              return colorList[params.dataIndex % colorList.length];
+            }
+          }
+        }]
+      };
+
+      bubbleChart.setOption(bubbleOption);
 
     },
     levelStatistic() {
@@ -510,58 +580,6 @@ export default {
         });
       });
     },
-
-    initInfoListFunc() {
-      getTopAttitudeI().then((res) => {
-        this.attackList = res.data.top;
-        let protectList = res.data.protectList;
-        if (protectList.length > 0) {
-          protectList.reverse();
-        }
-        if (this.attackDynamicList.length == 0) {
-          for (let i = 0; i < protectList.length; i++) {
-            var _h = "";
-            _h += '    <tr class="data_list">';
-            _h += "        <td>" + protectList[i].site_name + "</td>";
-            _h += "        <td>" + protectList[i].site_url + "</td>";
-            _h += "        <td>" + protectList[i].ip + "</td>";
-            _h += "        <td>" + protectList[i].filter_rule + "</td>";
-            _h += "        <td>" + protectList[i].time + "</td>";
-            _h += "    </tr>";
-            $("#info_list").append(_h);
-            this.attackDynamicList = protectList;
-          }
-
-          var h4 = $("#datamian").prop("scrollHeight"); //等同 $('.out-box')[0].scrollHeight
-          $("#datamian").scrollTop(h4);
-        } else {
-          let lastMaxId =
-            this.attackDynamicList[this.attackDynamicList.length - 1].id;
-          let curMaxId = protectList[protectList.length - 1].id;
-          // 大数在最后面 [1,2,3] [1,2,3,4]
-
-          if (curMaxId > lastMaxId) {
-            for (let i = 0; i < protectList.length; i++) {
-              if (protectList[i].id > lastMaxId) {
-                var _h = "";
-                _h += '    <tr class="data_list">';
-                _h += "        <td>" + protectList[i].site_name + "</td>";
-                _h += "        <td>" + protectList[i].site_url + "</td>";
-                _h += "        <td>" + protectList[i].ip + "</td>";
-                _h += "        <td>" + protectList[i].filter_rule + "</td>";
-                _h += "        <td>" + protectList[i].time + "</td>";
-                _h += "    </tr>";
-                $("#info_list").append(_h);
-                this.attackDynamicList.push(protectList[i]);
-              }
-            }
-            var h4 = $("#datamian").prop("scrollHeight"); //等同 $('.out-box')[0].scrollHeight
-            $("#datamian").scrollTop(h4);
-          }
-        }
-      });
-    },
-
     worldMapFunc() {
       var convertData = function (data) {
         var res = [];
@@ -911,7 +929,7 @@ export default {
   bottom: 0;
   left: 0;
   right: 0;
-  min-height: 555px;
+  min-height: 605px;
 }
 
 .data_list:hover {
@@ -936,6 +954,7 @@ td {
   font-weight: bold;
   background-color: rgb(13, 27, 62);
   padding: 10px;
+  width: 100%;
 }
 
 .homex {
@@ -975,7 +994,8 @@ td {
 }
 
 .xpanel-wrapper-lzh {
-  height: 32%;
+  height: 50%;
+  background-color: rgba(5, 18, 56, 0.3);
 }
 
 .xpanel-X {
@@ -1009,7 +1029,7 @@ td {
   height: 100%;
   width: 100%;
   // background-color: #020051;
-  background-image: url("../assets/images/dataBgc.jpg");
+  background-image: url("../assets/images/dataBgc.png");
   background-size: 100% 100%;
   background-position: 100px, 100px;
   overflow: hidden;
@@ -1082,18 +1102,92 @@ body {
 }
 
 .xpanel-wrapper-30 {
-  height: 30%;
+  height: 40%;
   position: relative;
   display: flex;
   justify-content: space-around
 }
 
-.fiveBox {
-  height: 140px;
-  width: 80px;
-  background: url('../assets/images/light.png');
+.fiveBox1 {
+  position: absolute;
+  top: 100px;
+  left: 100px;
+  height: 160px;
+  width: 120px;
+  background: url('../assets/images/lightFoot.png');
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  overflow: hidden;
+}
+
+.fiveBox2 {
+  position: absolute;
+  top: 50px;
+  left: 350px;
+  height: 160px;
+  width: 120px;
+  background: url('../assets/images/lightFoot.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.fiveBox3 {
+  position: absolute;
+  top: 0px;
+  left: 600px;
+  height: 160px;
+  width: 120px;
+  background: url('../assets/images/lightFoot.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.fiveBox4 {
+  position: absolute;
+  top: 50px;
+  left: 850px;
+  height: 160px;
+  width: 120px;
+  background: url('../assets/images/lightFoot.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.fiveBox5 {
+  position: absolute;
+  top: 100px;
+  left: 1100px;
+  height: 160px;
+  width: 120px;
+  background: url('../assets/images/lightFoot.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.lightText {
+  color: #fff;
+  position: absolute;
+  top: 140px;
+  left: 10px;
+  text-align: center;
+  width: 100px;
+  display: inline-block;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.footText {
+  color: #fff;
+  position: absolute;
+  top: 50px;
+  left: 7px;
+  text-align: center;
+  width: 100px;
+  display: inline-block;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.textFa {
+  position: relative;
 }
 </style>

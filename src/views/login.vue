@@ -6,9 +6,8 @@
       :rules="loginRules"
       class="login-form"
     >
-    <img class="imgCla" src="https://img02.mockplus.cn/image/2021-08-27/fe611fb0-070d-11ec-adb2-d16e0e2a3f04.png" alt="">
+    <img class="imgCla" src="../assets/images/loginIcon.png" alt="">
       <h3 class="title">AI分类分级平台</h3>
-      <h5 class="tltCla">账户密码登录</h5>
       <el-form-item prop="username">
         <el-input
           v-model="loginForm.username"
@@ -56,13 +55,6 @@
           <img :src="codeUrl" @click="getCode" class="login-code-img" />
         </div>
       </el-form-item>
-      <el-checkbox
-        v-model="loginForm.rememberMe"
-        style="margin: 0px 0px 25px 0px"
-        >记住密码</el-checkbox
-      >
-
-      <button  class="forgetBtn" @click.prevent="fogBtn">忘记密码</button>
       <el-form-item style="width: 100%">
         <el-button
           :loading="loading"
@@ -84,11 +76,8 @@
     <!--  底部  -->
     <div class="el-login-footer">
       <span
-        >Copyright © 2018-2023
-        <a href="http://www.4star.net.cn/" target="blank">4star.net.cn</a> All
-        Rights Reserved</span
+        >Copyright @超圣科技2024</span
       >
-      <a href=""></a>
     </div>
   </div>
 </template>
@@ -140,9 +129,6 @@ export default {
     this.getCookie();
   },
   methods: {
-    fogBtn(){
-
-    },
     getCode() {
       getCodeImg().then((res) => {
         this.captchaEnabled =
@@ -205,11 +191,10 @@ export default {
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-image: url("../assets/images/login-background.jpg");
-  background-size: cover;
+  background-image: linear-gradient(to bottom, rgb(82, 130, 255) 65%, rgb(243, 243, 243) 35%);
 }
 .title {
-  margin: 0px auto 30px auto;
+  margin: 30px auto 30px auto;
   text-align: center;
   color: #000000;
   font-weight: 700;
@@ -220,7 +205,9 @@ export default {
   position: relative;
   border-radius: 6px;
   width: 400px;
-  padding: 25px 25px 5px 25px;
+  background-color: #fff;
+  padding: 75px 25px 5px 25px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23); /* 添加立体阴影 */
   .el-input {
     height: 38px;
     input {
@@ -284,7 +271,7 @@ height: 40px !important;
 
 .imgCla{
   left: 170px;
-  top: -60px;
+  top: 15px;
   position: absolute;
   display:block;
   width: 68px;
@@ -300,5 +287,8 @@ height: 40px !important;
 .el-checkbox__label{
 color: #000 !important;
 }
-
+.footer{
+  height: 30%;
+  background-color: #fff;
+}
 </style>

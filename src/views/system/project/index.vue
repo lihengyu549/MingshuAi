@@ -3,8 +3,11 @@
     <el-row :gutter="20">
       <el-col :span="4" :xs="24">
         <div class="head-container">
-          <el-input v-model="filterName" placeholder="请输入行业分类" clearable size="small" prefix-icon="el-icon-search"
-            style="margin-bottom: 20px" class="serachInput" />
+          <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
+            placeholder="全部" style="margin-bottom: 20px">
+            <el-option v-for="item in treeOptions" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
           <el-button type="primary" size="mini" @click="importCli">框架导入</el-button>
         </div>
         <div class="head-container">
@@ -14,14 +17,14 @@
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch"
+        <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" v-show="showSearch"
           label-width="90px">
           <el-form-item label="子类名称" prop="fieldName">
             <el-input v-model="queryParams.fieldName" placeholder="请输入子类名称" clearable
               @keyup.enter.native="handleQuery" />
           </el-form-item>
-          <el-form-item label="来源" prop="project">
-            <el-select v-model="selectProjectId" placeholder="请选择项目名称" :loading="loading">
+          <el-form-item label="来源" prop="selectProjectId">
+            <el-select v-model="queryParams.selectProjectId" placeholder="请选择项目名称" :loading="loading">
               <el-option v-for="item in sourceList" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
@@ -37,14 +40,16 @@
             <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
           </el-form-item>
           <div style="margin: 20px 0 20px 25px;">
-            <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleQuery">新增</el-button>
-            <el-button type="primary" icon="el-icon-edit" size="medium" @click="handleQuery">编辑</el-button>
-            <el-button type="info" icon="el-icon-delete" size="medium" @click="handleQuery">删除</el-button>
-            <el-button type="info" icon="el-icon-warning" size="medium" @click="handleQuery">禁用</el-button>
+            <el-button type="primary" icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
+            <el-button type="primary" icon="el-icon-refresh" size="medium" @click="enabledFn">启用</el-button>
+            <el-button type="primary" icon="el-icon-delete" size="medium" @click="delectFn">删除</el-button>
+            <el-button type="primary" icon="el-icon-warning" size="medium" @click="disabledFn">禁用</el-button>
           </div>
         </el-form>
-        <el-table v-loading="loading" :data="protectTableFieldList">
+        <el-table v-loading="loading" :data="protectTableFieldList" ref="tableRef">
           <!-- <el-table-column width="55" align="center" /> -->
+          <el-table-column type="selection" width="60" align="center">
+          </el-table-column>
           <el-table-column label="子类名称" align="center" prop="fieldName" />
           <el-table-column label="所属分级" align="center" prop="securityLevelName" />
           <el-table-column label="来源" align="center" prop="selectProjectId">
@@ -62,57 +67,78 @@
             </template>
           </el-table-column>
           <el-table-column label="更新时间" align="center" prop="updataTime" />
+          <el-table-column label="操作" align="center">
+            <template slot-scope="scope">
+              <el-button type="text" size="medium" @click="editFn(scope.row)">编辑</el-button>
+              <el-button type="text" size="medium" @click="lookFn(scope.row)">查看</el-button>
+            </template>
+          </el-table-column>
         </el-table>
         <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
           :limit.sync="queryParams.pageSize" @pagination="getList" />
       </el-col>
     </el-row>
-    <el-dialog title="导入框架" :visible.sync="importShow" width="500px" append-to-body :close-on-click-modal="false">
-      <div style="padding: 20px; display: flex; align-items: center;">
-        <span style="width:30%;">导入模板</span>
-        <el-input v-model="importFile" disabled placeholder="支持EXCEL格式文件导入（.xls, .xlsx)" style="margin-right: 10px;"></el-input>
-        <el-upload class="upload-demo" action="https://jsonplaceholder.typicode.com/posts/"
-          :limit="1"
-          :file-list="fileList" :show-file-list="false">
-          <el-button size="mini" type="primary">选择文件</el-button>
-        </el-upload>
-        </div>
-        <el-button style="margin-left: 100px;" size="small" type="text"  icon="el-icon-download">样例下载</el-button>
+    <el-dialog title="导入框架" :visible.sync="importData.importShow" width="700px" append-to-body
+      :close-on-click-modal="false">
+      <el-form class="importForm" :model="importData" size="medium" ref="importData" :inline="true" label-width="120px">
+        <el-form-item label="框架名称" prop="cliName">
+          <el-input v-model="importData.cliName" placeholder="请输入框架名称"></el-input>
+        </el-form-item>
+        <el-form-item label="导入框架" prop="importFile">
+          <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
+        </el-form-item>
+        <el-form-item class="uploadClass">
+          <el-upload class="upload-demo" action="https://jsonplaceholder.typicode.com/posts/" :limit="1"
+            :file-list="importData.fileList" accept=".xls,.xlsx" :show-file-list="false"
+            :before-upload="importFileBeforeUpload">
+            <el-button size="mini" type="primary">选择文件</el-button>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <el-button style="margin-left: 100px;" size="small" type="text" icon="el-icon-download">样例下载</el-button>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="importcancel">取 消</el-button>
       </div>
     </el-dialog>
-    <!-- 添加或修改数据库字段名对话框 -->
-    <el-dialog class="addDialog" :title="title" :visible.sync="open" width="400px" append-to-body
+
+    <el-dialog :title="addOrEdit.title" :visible.sync="addOrEdit.show" width="700px" append-to-body
       :close-on-click-modal="false">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="安全级别" prop="securityLevel">
-          <!-- <el-input v-model="form.securityLevel" placeholder="请输入安全级别" /> -->
-          <el-select v-model="form.securityLevel" placeholder="请选择">
-            <el-option v-for="item in securityOptions" :key="item.value" :label="item.label" :value="item.value">
+      <el-form :model="addOrEdit" size="medium" :rules="addOrEditRules" ref="addOrEdit" label-width="120px" style="padding-right: 60px;">
+        <el-form-item label="子类名称" prop="aaa1">
+          <el-input v-model="addOrEdit.aaa1" placeholder="请输入子类名称"></el-input>
+        </el-form-item>
+        <el-form-item class="addSelectClass" label="所属分类" prop="categoryId">
+          <el-select ref="addSelectRef" v-model="categoryName">
+            <el-option style="height: 100%; padding: 0" value="">
+              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="false"
+                :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current
+                @node-click="addHandleNodeClick" />
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="打标信息" prop="securityRule">
-          <el-select multiple filterable remote clearable reserve-keyword v-model="securityRuleList" placeholder="请选择"
-            :remote-method="securityList">
-            <el-option v-for="item in securityRuleOptions" :key="item.id" :label="item.sensitiveName"
-              :value="item.sensitiveName">
+        <el-form-item class="addSelectClass" prop="securityLevel" label="所属分级">
+          <el-select v-model="addOrEdit.securityLevel" placeholder="全部">
+            <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="行业分类" prop="categoryId">
-          <treeselect style="width: 85%;" v-model="form.categoryId" :options="categoryListEdit" :show-count="true"
-            placeholder="请选择行业分类" />
-        </el-form-item>
-        <el-form-item label="备注" prop="fieldRemark">
-          <el-input v-model="form.fieldRemark" placeholder="请输入备注" />
+        <el-form-item v-if="addOrEdit.isedit || addOrEdit.islook" class="addSelectClass" label="AI自学习内容">
+          <el-tag
+            v-for="tag in tags"
+            :key="tag.name" 
+            class="mx-1"
+            closable
+            :type="tag.type"
+            style="margin: 0 10px;"
+          >
+            {{ tag.name }}
+          </el-tag>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" v-if="!addOrEdit.islook" @click="addSubmitForm">确 定</el-button>
+        <el-button @click="addCancel">取 消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -144,11 +170,67 @@ export default {
 
   data() {
     return {
-      importFile:'', // 导入魔板文件名
-      fileList:[],//导入模板的文件数据
-      relevanceTable: [],
-      associatedVisible: false,
-      addSensitiveName: '',
+      importData: {
+        importFile: '', // 导入魔板文件名
+        fileList: [],//导入模板的文件数据
+        cliName: '',//框架名称
+        importShow: false,
+      },
+      categoryName: '',
+      treeData: {
+        selectId: '0',
+      },
+      treeOptions: [
+        {
+          value: '0',
+          label: '金融'
+        },
+        {
+          value: '1',
+          label: '行业'
+        }],
+      addOrEdit: {
+        title: '新增',
+        show: false,
+        isedit:false,
+        islook:false,
+        categoryId: '',
+        securityLevel: '',
+        aaa1: '',//子类名称
+        id: '',
+        data:{},
+      },
+      tags: [
+          { name: '标签一', type: 'info' },
+          { name: '标签二', type: 'info' },
+          { name: '标签三', type: 'info' },
+          { name: '标签四', type: 'info' },
+          { name: '标签五', type: 'info' }
+        ],
+      // 表单校验
+      addOrEditRules: {
+        categoryId: [
+          {
+            required: true, message: "请选择所属分类", trigger: "blur"
+          }
+        ],
+        securityLevel: [
+          { required: true, message: "请选择所属分级", trigger: "blur" },
+        ],
+        aaa1: [
+          { required: true, message: "请输入子类名称", trigger: "blur" }
+        ],
+      },
+      
+      // 查询参数
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        categoryId: '0',//左侧树id
+        fieldName: '',//子类名称
+        selectProjectId: 0,//来源
+        securityLevel: 0,//安全级别
+      },
       addFormRule: {
         sensitiveName: '',
         maskRule: '',
@@ -165,13 +247,7 @@ export default {
       },
       showSucType: 0,
       Loading: false,
-      columnName: "",
-      tableData: [],
       markingVisible: false,
-      fullscreenLoading: false,
-      dataType: "",
-      // projectNameId:0,
-      selectProjectId: 0,
       formProjectList: null,
       sourceList: [
         {
@@ -187,8 +263,6 @@ export default {
           label: '自定义'
         },
       ],
-      dialogVisible: false,
-      securityRuleOptions: [],
       ruleOptions: [
         {
           value: 1,
@@ -223,12 +297,8 @@ export default {
           value: 5,
           label: "5"
         }],
-
-      options: [
+      addOptions: [
         {
-          value: 0,
-          label: "全部"
-        }, {
           value: 1,
           label: "1级"
         }, {
@@ -243,7 +313,30 @@ export default {
         }, {
           value: 5,
           label: "5级"
-        }],
+        },
+      ],
+      options: [
+        {
+          value: 0,
+          label: "全部"
+        },
+        {
+          value: 1,
+          label: "1级"
+        }, {
+          value: 2,
+          label: "2级"
+        }, {
+          value: 3,
+          label: "3级"
+        }, {
+          value: 4,
+          label: "4级"
+        }, {
+          value: 5,
+          label: "5级"
+        },
+      ],
       safetyValue: '',
       safetyValueId: 0,
       // 遮罩层
@@ -265,20 +358,10 @@ export default {
       // 是否显示弹出层
       open: false,
       securityRuleList: [],
-      // 查询参数
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        categoryId: '',//左侧树id
-        fieldName: '',//子类名称
-        selectProjectId: 0,//来源
-        securityLevel: 0,//安全级别
-      },
       selectTable: "",
-      databaseName: '',
       selectDatabaseId: 0,
       selectTableId: 0,
-      categoryTable: "",
+      categoryTable: "全部",
       categoryTableEdit: "",
       projectNameEdit: "",
       tableList: [{ tableName: "全部", id: 0 }],
@@ -299,9 +382,6 @@ export default {
         ],
         user: [
           { required: true, message: "请输入数据库用户名称", trigger: "change" },
-        ],
-        databaseName: [
-          { required: true, message: "请输入数据库名称", trigger: "change" },
         ],
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' }
@@ -330,7 +410,6 @@ export default {
           },
         ],
       },
-      importShow: false,
     };
   },
   watch: {
@@ -339,24 +418,115 @@ export default {
     }
   },
   created() {
-    this.categoryTable = "";
-    this.selectProject = "全部";
-    this.markingNume = 0;
-    this.selectTable = "全部";
-    this.databaseName = "全部";
     this.getList();
     this.getProjectList();
     this.getProtectCategory()
-    this.getProtectSensitiveRule()
   },
   methods: {
-    importcancel(){
-      this.fileList.length = 0,
-      this.importFile = '',
-      this.importShow = false
+    addFn() {
+      this.addOrEdit.title = '新增'
+      this.addOrEdit.show = true
+      this.addOrEdit.islook = false
+      this.addOrEdit.isedit = false
+    },
+
+    /** 新增确定方法 */
+    addSubmitForm() {
+      this.$refs["addOrEdit"].validate((valid) => {
+        if (valid) {
+          if (this.addOrEdit.id != null) {
+            updateProtectTableField(this.addOrEdit).then((response) => {
+              this.$modal.msgSuccess("修改成功");
+              this.open = false;
+              this.getList();
+            });
+          } else {
+            addProtectTableField(this.addOrEdit).then((response) => {
+              this.$modal.msgSuccess("新增成功");
+              this.open = false;
+              this.getList();
+            });
+          }
+        }else {
+          return false
+        }
+      });
+
+    },
+    // 新增取消
+    addCancel() {
+      this.addOrEdit.categoryId = ''
+      this.addOrEdit.securityLevel = ''
+      this.addOrEdit.aaa1 = ''
+      this.addOrEdit.show = false
+      this.addOrEdit.islook = false
+    },
+    addHandleNodeClick(node) {
+      this.$refs.addSelectRef.blur()
+      this.addOrEdit.categoryId = node.id
+      this.categoryName = node.label
+    },
+    editFn(row) {
+      this.addOrEdit.data = row
+      this.addOrEdit.show = true
+      this.addOrEdit.title = '编辑'
+      this.addOrEdit.isedit = true
+      this.addOrEdit.islook = false
+    },
+    lookFn(row) {
+      this.addOrEdit.data = row
+      this.addOrEdit.show = true
+      this.addOrEdit.title = '查看'
+      this.addOrEdit.islook = true
+    },
+    enabledFn() {
+      let data = this.$refs.tableRef.selection
+      if (data && data.length > 0) {
+        let ids = data.map(item => item.id)
+        // 接口
+      } else {
+        this.$message({ message: '请选择至少一条数据', type: 'warning' })
+      }
+    },
+    delectFn() {
+      let data = this.$refs.tableRef.selection
+      if (data && data.length > 0) {
+        let ids = data.map(item => item.id)
+        // 接口
+      } else {
+        this.$message({ message: '请选择至少一条数据', type: 'warning' })
+      }
+    },
+    disabledFn() {
+      let data = this.$refs.tableRef.selection
+      if (data && data.length > 0) {
+        let ids = data.map(item => item.id)
+        // 接口
+      } else {
+        this.$message({ message: '请选择至少一条数据', type: 'warning' })
+      }
+    },
+    // 左侧树下拉选change事件
+    treeOptionsSelectChange(val) {
+      if (val) {
+        this.getProtectCategory(val)
+      }
+    },
+    // 文件上传前钩子
+    importFileBeforeUpload(val) {
+      this.importData.importFile = val.name
+      // 暂时禁止上传，等接口
+      return false
+    },
+    // 导入取消
+    importcancel() {
+      this.fileList = [],
+        this.importData.cliName = ''
+      this.importData.importFile = ''
+      this.importData.importShow = false
     },
     importCli() {
-      this.importShow = true
+      this.importData.importShow = true
     },
     jumpApi(url, id) {
       const routeData = this.$router.resolve({
@@ -396,16 +566,6 @@ export default {
       this.remberNameRule.unshift('')
 
     },
-    handleAddRule(row) {
-      this.reset();
-      this.openRule = true
-      this.fieldNameRule = new Array(row.fieldName)
-      this.remberNameRule = []
-      this.remberNameRule.unshift('')
-      this.addFormRule.sensitiveName = row.fieldRemark
-      this.addFormRule.maskRule = row.fieldRemark
-
-    },
     filterNode(value, data) {
       if (!value) return true;
       return data.categoryName.indexOf(value) !== -1;
@@ -414,26 +574,6 @@ export default {
       this.queryParams.categoryId = data.id;
       this.handleQuery();
     },
-    closeLoading() {
-      this.markingVisible = false
-
-    },
-    closeDialog() {
-      // this.reset()
-      this.showSucType = 0
-
-    },
-
-    // 导入
-    handleImport() {
-      this.showSucType = 0
-      this.projectNameEdit = null
-      this.dialogVisible = true
-      this.reset()
-    },
-    // 打标信息检索打标规则列表
-
-
     securityList(query) {
       if (query) {
         // this.loading = true;
@@ -445,47 +585,6 @@ export default {
         this.getProtectSensitiveRule("");
       }
 
-    },
-
-    getProtectSensitiveRule(key) {
-      if (key) {
-        key = key.trim();
-      }
-      let data = {
-        name: key
-      };
-      getProtectSensitiveRuleI(data).then((res => {
-        this.securityRuleOptions = res.data
-
-      }))
-    },
-
-    projectChangeEdit(e) {
-      this.projectNameEdit = e
-      this.form.projectName = e
-    },
-
-
-    /**
-    * 打标信息检索行业分类列表
-    */
-    categoryChangeEdit(value) {
-      this.categoryTableEdit = value;
-      this.form.categoryId = value
-    },
-    categoryChange(value) {
-      this.queryParams.categoryId = value;
-    },
-    categoryTableList(query) {
-      if (query) {
-        // this.loading = true;
-        setTimeout(() => {
-          // this.loading = false;
-          this.getProtectCategory(query);
-        }, 200);
-      } else {
-        this.getProtectCategory("");
-      }
     },
     getProtectCategory(key) {
       if (key) {
@@ -503,9 +602,7 @@ export default {
           }
           this.categoryList = this.handleTree(tempList, "id")
           this.categoryListEdit = this.handleTree(tempList, "id")
-
         }
-
       });
     },
     categoryTableListEdit(query) {
@@ -535,26 +632,12 @@ export default {
         // this.categoryListEdit = this.handleTree(resp.data,"id")
       });
     },
-    //数据库名称
-    databaseList(query) {
-      if (query) {
-        // this.loading = true;
-        setTimeout(() => {
-          // this.loading = false;
-          this.getDatabaseList(query)
-        }, 200);
-      } else {
-        this.getDatabaseList("");
-      }
-    },
-
-    getDatabaseList(key) {
+      getDatabaseList(key) {
       if (key) {
         key = key.trim();
       }
       let params = {
         projectId: this.selectProjectId,
-        databaseName: key,
       };
       getDatabaseListI(params).then((resp) => {
         this.databasetableList = resp.data;
@@ -563,21 +646,6 @@ export default {
       });
 
     },
-
-
-    // 表名
-    queryTableList(query) {
-      if (query) {
-        // this.loading = true;
-        setTimeout(() => {
-          // this.loading = false;
-          this.getTableList(query);
-        }, 200);
-      } else {
-        this.getTableList("");
-      }
-    },
-
     /** 查询数据库字段名列表 */
     getList() {
       this.loading = true;
@@ -601,25 +669,6 @@ export default {
       //   this.total = response.total;
       //   this.loading = false;
       // });
-    },
-    databaseChange(value) {
-      this.selectDatabaseId = value
-      if (value == 0) {
-        this.selectTable = "全部";
-        this.selectTableId = ''
-        this.tableList = new Array({ tableName: "全部", id: 0 })
-      } else {
-        this.queryTableList()
-      }
-    },
-    projectChange(value) {
-      this.selectProjectId = value;
-      this.databaseName = "全部";
-      this.databaseList("")
-
-      this.tableList = new Array({ tableName: "全部", id: 0 })
-      this.selectTable = "全部";
-      this.selectTableId = ''
     },
     tableChange(value) {
       this.selectTableId = value;
@@ -709,14 +758,8 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.databaseName = "全部";
-      this.categoryTable = "全部";
-      this.selectTable = "全部";
-      this.markingNume = 0;
-      this.selectProjectId = 0;
-      this.queryParams.categoryId = undefined
       this.$refs.tree.setCurrentKey(null);
-      this.resetForm("queryForm");
+      this.resetForm("queryParams");
       this.handleQuery();
     },
     /** 新增按钮操作 */
@@ -741,7 +784,6 @@ export default {
     submitForm() {
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          this.form.securityRule = JSON.stringify(this.securityRuleList)
           if (this.form.id != null) {
             updateProtectTableField(this.form).then((response) => {
               this.$modal.msgSuccess("修改成功");
@@ -957,5 +999,22 @@ export default {
     height: 28px !important;
     line-height: 28px !important;
   }
+}
+
+.importForm /deep/ .el-form-item--medium {
+  width: 70%;
+
+}
+
+.importForm /deep/ .el-form-item__content {
+  width: calc(100% - 145px);
+}
+
+.uploadClass {
+  width: 20% !important;
+}
+
+.addSelectClass /deep/ .el-select {
+  width: calc(100%);
 }
 </style>
