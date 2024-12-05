@@ -51,8 +51,8 @@
           <!-- <el-table-column width="55" align="center" /> -->
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
-          <el-table-column label="子类名称" align="center" prop="fieldName" />
-          <el-table-column label="所属分级" align="center" prop="securityLevelName" />
+          <el-table-column label="子类名称" align="center" prop="attachData" />
+          <el-table-column label="所属分级" align="center" prop="minSecurityLevel" />
           <el-table-column label="来源" align="center" prop="selectProjectId">
             <template slot-scope="scope">
               <span>
@@ -63,7 +63,7 @@
           <el-table-column label="状态" align="center" prop="state">
             <template slot-scope="scope">
               <span>
-                {{ scope.row.state ? '启用' : '禁用' }}
+                {{ scope.row.enable ? '启用' : '禁用' }}
               </span>
             </template>
           </el-table-column>
@@ -83,7 +83,7 @@
       :close-on-click-modal="false">
       <el-form class="importForm" :model="importData" size="medium" ref="importData" :inline="true" label-width="120px">
         <el-form-item label="框架名称" prop="cliName">
-          <el-input v-model="importData.cliName" placeholder="请输入框架名称"></el-input>
+          <el-input v-model="importData.cliName" @input="nameTestingFn(importData.cliName)" placeholder="请输入框架名称"></el-input>
         </el-form-item>
         <el-form-item label="导入框架" prop="importFile">
           <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
@@ -107,10 +107,10 @@
       :close-on-click-modal="false">
       <el-form :model="addOrEdit" size="medium" :rules="addOrEditRules" ref="addOrEdit" label-width="120px"
         style="padding-right: 60px;">
-        <el-form-item label="子类名称" prop="aaa1">
-          <el-input v-model="addOrEdit.aaa1" placeholder="请输入子类名称"></el-input>
+        <el-form-item label="子类名称" prop="name">
+          <el-input v-model="addOrEdit.data.name" placeholder="请输入子类名称"></el-input>
         </el-form-item>
-        <el-form-item class="addSelectClass" label="所属分类" prop="categoryId">
+        <el-form-item class="addSelectClass" label="所属父类" prop="categoryId">
           <el-select ref="addSelectRef" v-model="categoryName">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
@@ -120,7 +120,7 @@
           </el-select>
         </el-form-item>
         <el-form-item class="addSelectClass" prop="securityLevel" label="所属分级">
-          <el-select v-model="addOrEdit.securityLevel" placeholder="全部">
+          <el-select v-model="addOrEdit.data.securityLevel" placeholder="全部">
             <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -158,7 +158,7 @@ import { listAllProject } from "@/api/system/project";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
-import { treeListI } from "@/api/system/protectCategory"
+import { treeListI,categoryImport,getAttachData,attachStatus,forceLogout,updataAttach,nameTesting,addData } from "@/api/system/protectCategory"
 import { listTableByProject, getDatabaseListI } from "@/api/system/protectTableField";
 export default {
   name: "ProtectTableField",
@@ -193,7 +193,7 @@ export default {
         islook: false,
         categoryId: '',
         securityLevel: '',
-        aaa1: '',//子类名称
+        name: '',//子类名称
         id: '',
         data: {},
       },
@@ -214,7 +214,7 @@ export default {
         securityLevel: [
           { required: true, message: "请选择所属分级", trigger: "blur" },
         ],
-        aaa1: [
+        name: [
           { required: true, message: "请输入子类名称", trigger: "blur" }
         ],
       },
@@ -303,7 +303,7 @@ export default {
       safetyValue: '',
       safetyValueId: 0,
       // 遮罩层
-      loading: true,
+      loading: false,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -381,8 +381,6 @@ export default {
     }
   },
   created() {
-    this.getList();
-    this.getProjectList();
     this.getProtectCategory()
   },
   methods: {
@@ -398,13 +396,13 @@ export default {
       this.$refs["addOrEdit"].validate((valid) => {
         if (valid) {
           if (this.addOrEdit.id != null) {
-            updateProtectTableField(this.addOrEdit).then((response) => {
+            updataAttach(this.addOrEdit).then((response) => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            addProtectTableField(this.addOrEdit).then((response) => {
+            addData(this.addOrEdit).then((response) => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -420,7 +418,7 @@ export default {
     addCancel() {
       this.addOrEdit.categoryId = ''
       this.addOrEdit.securityLevel = ''
-      this.addOrEdit.aaa1 = ''
+      this.addOrEdit.name = ''
       this.addOrEdit.show = false
       this.addOrEdit.islook = false
     },
@@ -447,20 +445,43 @@ export default {
       this.addOrEdit.islook = true
     },
     enabledFn(flag) {
-      let data = this.$refs.tableRef.selection
-      if (data && data.length > 0) {
+      let dataS = this.$refs.tableRef.selection
+      if (dataS && dataS.length > 0) {
         this.$confirm(`确定批量${flag}吗`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          let ids = data.map(item => item.id)
+          let ids = dataS.map(item => {
+            return item.id
+          })
+          let data = {
+            ids : ids.join(',')
+          }
           if(flag == '启用'){
-
+            data.enable = true
+            attachStatus(data).then(res=>{
+              if(res.data == 2) {
+                this.$message.success(res.msg)
+                this.getList()
+              }
+            })
           }else if(flag == '禁用'){
-
+            data.enable = false
+            attachStatus(data).then(res=>{
+              if(res.data == 2) {
+                this.$message.success(res.msg)
+                this.getList()
+              }
+            })
           }else if(flag == '删除') {
-
+            forceLogout(data).then(res=>{
+              if(res.data == 2) {
+                this.$message.success(res.msg)
+                this.getList()
+              }
+            })
+            forceLogout
           }else {
             this.$message({ message: '未知异常', type: 'warning' })
           }
@@ -493,6 +514,13 @@ export default {
     },
     importCli() {
       this.importData.importShow = true
+    },
+
+    nameTestingFn(val){
+      this.importData.cliName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
+      // nameTesting().then(res=>{
+      //   console.log(res);
+      // })
     },
     // tags 关闭方法
     handleClose(tag, index) {
@@ -542,7 +570,7 @@ export default {
       return data.categoryName.indexOf(value) !== -1;
     },
     handleNodeClick(data) {
-      this.queryParams.categoryId = data.id;
+      this.queryParams.nodeId = data.id;
       this.handleQuery();
     },
 
@@ -577,6 +605,7 @@ export default {
       };
       treeListI(data).then((resp) => {
         this.categoryList = resp.data;
+        this.queryParams.nodeId = resp.data[0].id;
         if (this.categoryListEdit == null) {
           let tempList = JSON.parse(JSON.stringify(this.categoryList))
           for (let item of tempList) {
@@ -587,33 +616,33 @@ export default {
         }
       });
     },
-    categoryTableListEdit(query) {
-      if (query) {
-        // this.loading = true;
-        setTimeout(() => {
-          // this.loading = false;
-          this.getProtectCategoryEdit(query);
-        }, 200);
-      } else {
-        this.getProtectCategoryEdit("");
-      }
-    },
-    getProtectCategoryEdit(key) {
-      if (key) {
-        key = key.trim();
-      }
-      let data = {
-        name: key
-      };
-      getProtectCategoryI(data).then((resp) => {
-        let tempList = resp.data
-        for (let item of tempList) {
-          item.label = item.categoryName
-        }
-        this.categoryListEdit = this.handleTree(tempList, "id")
-        // this.categoryListEdit = this.handleTree(resp.data,"id")
-      });
-    },
+    // categoryTableListEdit(query) {
+    //   if (query) {
+    //     // this.loading = true;
+    //     setTimeout(() => {
+    //       // this.loading = false;
+    //       this.getProtectCategoryEdit(query);
+    //     }, 200);
+    //   } else {
+    //     this.getProtectCategoryEdit("");
+    //   }
+    // },
+    // getProtectCategoryEdit(key) {
+    //   if (key) {
+    //     key = key.trim();
+    //   }
+    //   let data = {
+    //     name: key
+    //   };
+    //   getProtectCategoryI(data).then((resp) => {
+    //     let tempList = resp.data
+    //     for (let item of tempList) {
+    //       item.label = item.categoryName
+    //     }
+    //     this.categoryListEdit = this.handleTree(tempList, "id")
+    //     // this.categoryListEdit = this.handleTree(resp.data,"id")
+    //   });
+    // },
 
     getDatabaseList(key) {
       if (key) {
@@ -631,64 +660,12 @@ export default {
     },
     /** 查询数据库字段名列表 */
     getList() {
-      console.log(this.queryParams);
       this.loading = true;
-      let res = {
-        data: [
-          {
-            fieldName: '个人基本概况信息',//子类名称
-            selectProjectId: '内置',//来源
-            securityLevelName: '3级',//分级
-            id: 0,
-            state: true,
-            updataTime: '2024-11-13 23:31',
-          }, {
-            fieldName: '个人基本概况信息',//子类名称
-            selectProjectId: '内置',//来源
-            securityLevelName: '3级',//分级
-            id: 0,
-            state: true,
-            updataTime: '2024-11-13 23:31',
-          },{
-            fieldName: '个人基本概况信息',//子类名称
-            selectProjectId: '内置',//来源
-            securityLevelName: '3级',//分级
-            id: 0,
-            state: true,
-            updataTime: '2024-11-13 23:31',
-          },{
-            fieldName: '个人基本概况信息',//子类名称
-            selectProjectId: '内置',//来源
-            securityLevelName: '3级',//分级
-            id: 0,
-            state: true,
-            updataTime: '2024-11-13 23:31',
-          },{
-            fieldName: '个人基本概况信息',//子类名称
-            selectProjectId: '内置',//来源
-            securityLevelName: '3级',//分级
-            id: 0,
-            state: true,
-            updataTime: '2024-11-13 23:31',
-          },{
-            fieldName: '个人基本概况信息',//子类名称
-            selectProjectId: '内置',//来源
-            securityLevelName: '3级',//分级
-            id: 0,
-            state: true,
-            updataTime: '2024-11-13 23:31',
-          },
-        ],
-        total: 10,
-      }
-      this.protectTableFieldList = res.data;
-      this.loading = false;
-        this.total = res.total;
-      // listProtectTableField(this.queryParams).then((response) => {
-      //   this.protectTableFieldList = response.rows;
-      //   this.total = response.total;
-      //   this.loading = false;
-      // });
+      getAttachData(this.queryParams).then((response) => {
+        this.protectTableFieldList = response.data.rows;
+        this.total = response.data.total;
+        this.loading = false;
+      });
     },
     tableChange(value) {
       this.selectTableId = value;
@@ -723,20 +700,20 @@ export default {
         }
       });
     },
-    getTableList(key) {
-      if (key) {
-        key = key.trim();
-      }
-      let params = {
-        databaseId: this.selectDatabaseId,
-        tableName: key,
-      };
-      listTableByProject(params).then((resp) => {
-        this.tableList = resp.data;
-        this.tableList.unshift({ tableName: "全部", id: 0 })
+    // getTableList(key) {
+    //   if (key) {
+    //     key = key.trim();
+    //   }
+    //   let params = {
+    //     databaseId: this.selectDatabaseId,
+    //     tableName: key,
+    //   };
+    //   listTableByProject(params).then((resp) => {
+    //     this.tableList = resp.data;
+    //     this.tableList.unshift({ tableName: "全部", id: 0 })
 
-      });
-    },
+    //   });
+    // },
     queryProjectList(query) {
       if (query !== "") {
         this.loading = true;

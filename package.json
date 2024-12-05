@@ -52,6 +52,7 @@
     "jsencrypt": "3.0.0-rc.1",
     "less-loader": "^5.0.0",
     "nprogress": "0.2.0",
+    "qs": "^6.13.1",
     "quill": "1.3.7",
     "relation-graph": "^1.1.0",
     "screenfull": "5.0.2",

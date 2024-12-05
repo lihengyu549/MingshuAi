@@ -402,8 +402,8 @@ export default {
   created () {
     // this.loading = true;
     // this.openLoading();
-    this.getStatistics();
-    this.getList();
+    // this.getStatistics();
+    // this.getList();
   },
 
   methods: {

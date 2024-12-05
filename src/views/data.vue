@@ -199,69 +199,67 @@ export default {
       };
 
       optionZhu && myChartZhu.setOption(optionZhu);
-      var ROOT_PATH = '/examples';
-var chartDomP = document.getElementById('chartDomP');
-var myChartP = echarts.init(chartDomP);
-var optionP;
 
-myChart.showLoading();
-$.getJSON(
-  ROOT_PATH + '/data/asset/data/npmdepgraph.min10.json',
-  function (json) {
-    myChartP.hideLoading();
-    myChartP.setOption(
-      (optionP = {
+      const chartDomP = document.getElementById('chartDomP')
+      const myChartP = echarts.init(chartDomP)
+
+      const optionP = {
         title: {
-          text: 'NPM Dependencies'
+          text: '词云气泡图',
+          left: 'center'
         },
-        animationDurationUpdate: 1500,
-        animationEasingUpdate: 'quinticInOut',
-        series: [
-          {
-            type: 'graph',
-            layout: 'none',
-            // progressiveThreshold: 700,
-            data: json.nodes.map(function (node) {
-              return {
-                x: node.x,
-                y: node.y,
-                id: node.id,
-                name: node.label,
-                symbolSize: node.size,
-                itemStyle: {
-                  color: node.color
-                }
-              };
-            }),
-            edges: json.edges.map(function (edge) {
-              return {
-                source: edge.sourceID,
-                target: edge.targetID
-              };
-            }),
-            emphasis: {
-              focus: 'adjacency',
-              label: {
-                position: 'right',
-                show: true
+        tooltip: {
+          show: true
+        },
+        series: [{
+          type: 'wordCloud',
+          shape: 'circle',
+          sizeRange: [12, 50], // 字体大小范围
+          rotationRange: [-90, 90], // 旋转角度范围
+          rotationStep: 45,
+          gridSize: 2,
+          drawOutOfBound: false,
+          textStyle: {
+            normal: {
+              color: function() {
+                return 'rgb(' + [
+                  Math.round(Math.random() * 160),
+                  Math.round(Math.random() * 160),
+                  Math.round(Math.random() * 160)
+                ].join(',') + ')'
               }
             },
-            roam: true,
-            lineStyle: {
-              show: false,
-              width: 0,
-              curveness: 0.3,
-              opacity: 0.7
+            emphasis: {
+              shadowBlur: 10,
+              shadowColor: '#333'
             }
-          }
-        ]
-      }),
-      true
-    );
-  }
-);
+          },
+          data: [
+            {name: 'JavaScript', value: 10000},
+            {name: 'Vue.js', value: 6181},
+            {name: 'ECharts', value: 4386},
+            {name: 'React', value: 4055},
+            {name: 'Node.js', value: 2467},
+            {name: 'D3.js', value: 2244},
+            {name: 'Webpack', value: 1898},
+            {name: 'Babel', value: 1484},
+            {name: 'TypeScript', value: 1112},
+            {name: 'HTML5', value: 965},
+            {name: 'CSS3', value: 847},
+            {name: 'Sass', value: 582},
+            {name: 'Less', value: 555},
+            {name: 'Gulp', value: 550},
+            {name: 'Grunt', value: 462},
+            {name: 'NPM', value: 366},
+            {name: 'Yarn', value: 360},
+            {name: 'Git', value: 282},
+            {name: 'SVN', value: 273},
+            {name: 'Docker', value: 265}
+          ]
+        }]
+      }
 
-optionP && myChartP.setOption(optionP);
+      myChartP.setOption(optionP)
     },
     goHome() {
       this.$router.push({ path: "/index" });

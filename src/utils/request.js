@@ -114,7 +114,7 @@ service.interceptors.response.use(
     }
 
     else if (code == 4003) {
-      location.href = "/license";
+      location.href = "/index";
     }
 
     else if (code !== 200) {

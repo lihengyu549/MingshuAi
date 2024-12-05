@@ -236,7 +236,7 @@ export default {
   mounted () {
     // this.currViewC = this.currView;
     // this.serverId = this.currentServerIdC;
-    this.loadAllData();
+    // this.loadAllData();
   },
   //方法集合
   methods: {
