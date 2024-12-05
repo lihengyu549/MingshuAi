@@ -20,33 +20,34 @@
         <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" v-show="showSearch"
           label-width="90px">
           <el-form-item label="子类名称" prop="fieldName">
-            <el-input v-model="queryParams.fieldName" placeholder="请输入子类名称" clearable
+            <el-input v-model="queryParams.fieldName" @input="inputSearch" placeholder="请输入子类名称" clearable
               @keyup.enter.native="handleQuery" />
           </el-form-item>
           <el-form-item label="来源" prop="selectProjectId">
-            <el-select v-model="queryParams.selectProjectId" placeholder="请选择项目名称" :loading="loading">
+            <el-select v-model="queryParams.selectProjectId" @change="selectProjectIdChange" placeholder="请选择项目名称"
+              :loading="loading">
               <el-option v-for="item in sourceList" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="分级" prop="securityLevel">
-            <el-select v-model="queryParams.securityLevel" placeholder="全部">
+            <el-select v-model="queryParams.securityLevel" @change="selectProjectIdChange" placeholder="全部">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+            <!-- <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button> -->
             <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
           </el-form-item>
           <div style="margin: 20px 0 20px 25px;">
             <el-button type="primary" icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
-            <el-button type="primary" icon="el-icon-refresh" size="medium" @click="enabledFn">启用</el-button>
-            <el-button type="primary" icon="el-icon-delete" size="medium" @click="delectFn">删除</el-button>
-            <el-button type="primary" icon="el-icon-warning" size="medium" @click="disabledFn">禁用</el-button>
+            <el-button type="primary" icon="el-icon-refresh" size="medium" @click="enabledFn('启用')">启用</el-button>
+            <el-button type="primary" icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
+            <el-button type="primary" icon="el-icon-warning" size="medium" @click="enabledFn('禁用')">禁用</el-button>
           </div>
         </el-form>
-        <el-table v-loading="loading" :data="protectTableFieldList" ref="tableRef">
+        <el-table v-loading="loading" :data="protectTableFieldList" ref="tableRef" class="tableBox">
           <!-- <el-table-column width="55" align="center" /> -->
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
@@ -104,15 +105,16 @@
 
     <el-dialog :title="addOrEdit.title" :visible.sync="addOrEdit.show" width="700px" append-to-body
       :close-on-click-modal="false">
-      <el-form :model="addOrEdit" size="medium" :rules="addOrEditRules" ref="addOrEdit" label-width="120px" style="padding-right: 60px;">
+      <el-form :model="addOrEdit" size="medium" :rules="addOrEditRules" ref="addOrEdit" label-width="120px"
+        style="padding-right: 60px;">
         <el-form-item label="子类名称" prop="aaa1">
           <el-input v-model="addOrEdit.aaa1" placeholder="请输入子类名称"></el-input>
         </el-form-item>
         <el-form-item class="addSelectClass" label="所属分类" prop="categoryId">
           <el-select ref="addSelectRef" v-model="categoryName">
             <el-option style="height: 100%; padding: 0" value="">
-              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="false"
-                :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current
+              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
+                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
                 @node-click="addHandleNodeClick" />
             </el-option>
           </el-select>
@@ -124,14 +126,8 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="addOrEdit.isedit || addOrEdit.islook" class="addSelectClass" label="AI自学习内容">
-          <el-tag
-            v-for="tag in tags"
-            :key="tag.name" 
-            class="mx-1"
-            closable
-            :type="tag.type"
-            style="margin: 0 10px;"
-          >
+          <el-tag v-for="(tag, index) in tags" :key="tag.name" class="mx-1" closable @close="handleClose(tag, index)"
+            :type="tag.type" style="margin: 0 10px;">
             {{ tag.name }}
           </el-tag>
         </el-form-item>
@@ -177,6 +173,7 @@ export default {
         importShow: false,
       },
       categoryName: '',
+      debounceTimeout: null,//防抖动
       treeData: {
         selectId: '0',
       },
@@ -192,21 +189,21 @@ export default {
       addOrEdit: {
         title: '新增',
         show: false,
-        isedit:false,
-        islook:false,
+        isedit: false,
+        islook: false,
         categoryId: '',
         securityLevel: '',
         aaa1: '',//子类名称
         id: '',
-        data:{},
+        data: {},
       },
       tags: [
-          { name: '标签一', type: 'info' },
-          { name: '标签二', type: 'info' },
-          { name: '标签三', type: 'info' },
-          { name: '标签四', type: 'info' },
-          { name: '标签五', type: 'info' }
-        ],
+        { name: '标签一', type: 'info' },
+        { name: '标签二', type: 'info' },
+        { name: '标签三', type: 'info' },
+        { name: '标签四', type: 'info' },
+        { name: '标签五', type: 'info' }
+      ],
       // 表单校验
       addOrEditRules: {
         categoryId: [
@@ -221,7 +218,7 @@ export default {
           { required: true, message: "请输入子类名称", trigger: "blur" }
         ],
       },
-      
+
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -263,40 +260,6 @@ export default {
           label: '自定义'
         },
       ],
-      ruleOptions: [
-        {
-          value: 1,
-          label: "1"
-        }, {
-          value: 2,
-          label: "2"
-        }, {
-          value: 3,
-          label: "3"
-        }, {
-          value: 4,
-          label: "4"
-        }, {
-          value: 5,
-          label: "5"
-        }],
-      securityOptions: [
-        {
-          value: 1,
-          label: "1"
-        }, {
-          value: 2,
-          label: "2"
-        }, {
-          value: 3,
-          label: "3"
-        }, {
-          value: 4,
-          label: "4"
-        }, {
-          value: 5,
-          label: "5"
-        }],
       addOptions: [
         {
           value: 1,
@@ -447,7 +410,7 @@ export default {
               this.getList();
             });
           }
-        }else {
+        } else {
           return false
         }
       });
@@ -462,9 +425,13 @@ export default {
       this.addOrEdit.islook = false
     },
     addHandleNodeClick(node) {
-      this.$refs.addSelectRef.blur()
-      this.addOrEdit.categoryId = node.id
-      this.categoryName = node.label
+      if (node.children && node.children.length > 0) {
+        node.disabled = true;
+      } else {
+        this.$refs.addSelectRef.blur()
+        this.addOrEdit.categoryId = node.id
+        this.categoryName = node.label
+      }
     },
     editFn(row) {
       this.addOrEdit.data = row
@@ -479,29 +446,28 @@ export default {
       this.addOrEdit.title = '查看'
       this.addOrEdit.islook = true
     },
-    enabledFn() {
+    enabledFn(flag) {
       let data = this.$refs.tableRef.selection
       if (data && data.length > 0) {
-        let ids = data.map(item => item.id)
-        // 接口
-      } else {
-        this.$message({ message: '请选择至少一条数据', type: 'warning' })
-      }
-    },
-    delectFn() {
-      let data = this.$refs.tableRef.selection
-      if (data && data.length > 0) {
-        let ids = data.map(item => item.id)
-        // 接口
-      } else {
-        this.$message({ message: '请选择至少一条数据', type: 'warning' })
-      }
-    },
-    disabledFn() {
-      let data = this.$refs.tableRef.selection
-      if (data && data.length > 0) {
-        let ids = data.map(item => item.id)
-        // 接口
+        this.$confirm(`确定批量${flag}吗`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let ids = data.map(item => item.id)
+          if(flag == '启用'){
+
+          }else if(flag == '禁用'){
+
+          }else if(flag == '删除') {
+
+          }else {
+            this.$message({ message: '未知异常', type: 'warning' })
+          }
+          // 接口
+        }).catch(() => {
+          
+         });
       } else {
         this.$message({ message: '请选择至少一条数据', type: 'warning' })
       }
@@ -527,6 +493,11 @@ export default {
     },
     importCli() {
       this.importData.importShow = true
+    },
+    // tags 关闭方法
+    handleClose(tag, index) {
+      console.log('shanchu');
+      this.tags.splice(index, 1);
     },
     jumpApi(url, id) {
       const routeData = this.$router.resolve({
@@ -573,6 +544,17 @@ export default {
     handleNodeClick(data) {
       this.queryParams.categoryId = data.id;
       this.handleQuery();
+    },
+
+    // 定时器，防抖使用
+    inputSearch(data) {
+      clearTimeout(this.debounceTimeout);
+      this.debounceTimeout = setTimeout(() => {
+        this.getList()
+      }, 500); // 设置防抖的时间间隔为300毫秒
+    },
+    selectProjectIdChange() {
+      this.getList()
     },
     securityList(query) {
       if (query) {
@@ -632,7 +614,8 @@ export default {
         // this.categoryListEdit = this.handleTree(resp.data,"id")
       });
     },
-      getDatabaseList(key) {
+
+    getDatabaseList(key) {
       if (key) {
         key = key.trim();
       }
@@ -648,6 +631,7 @@ export default {
     },
     /** 查询数据库字段名列表 */
     getList() {
+      console.log(this.queryParams);
       this.loading = true;
       let res = {
         data: [
@@ -658,12 +642,48 @@ export default {
             id: 0,
             state: true,
             updataTime: '2024-11-13 23:31',
-          }
+          }, {
+            fieldName: '个人基本概况信息',//子类名称
+            selectProjectId: '内置',//来源
+            securityLevelName: '3级',//分级
+            id: 0,
+            state: true,
+            updataTime: '2024-11-13 23:31',
+          },{
+            fieldName: '个人基本概况信息',//子类名称
+            selectProjectId: '内置',//来源
+            securityLevelName: '3级',//分级
+            id: 0,
+            state: true,
+            updataTime: '2024-11-13 23:31',
+          },{
+            fieldName: '个人基本概况信息',//子类名称
+            selectProjectId: '内置',//来源
+            securityLevelName: '3级',//分级
+            id: 0,
+            state: true,
+            updataTime: '2024-11-13 23:31',
+          },{
+            fieldName: '个人基本概况信息',//子类名称
+            selectProjectId: '内置',//来源
+            securityLevelName: '3级',//分级
+            id: 0,
+            state: true,
+            updataTime: '2024-11-13 23:31',
+          },{
+            fieldName: '个人基本概况信息',//子类名称
+            selectProjectId: '内置',//来源
+            securityLevelName: '3级',//分级
+            id: 0,
+            state: true,
+            updataTime: '2024-11-13 23:31',
+          },
         ],
         total: 10,
       }
       this.protectTableFieldList = res.data;
       this.loading = false;
+        this.total = res.total;
       // listProtectTableField(this.queryParams).then((response) => {
       //   this.protectTableFieldList = response.rows;
       //   this.total = response.total;
@@ -1016,5 +1036,8 @@ export default {
 
 .addSelectClass /deep/ .el-select {
   width: calc(100%);
+}
+.tableBox{
+  height: calc(100% - 158px - 52px);
 }
 </style>

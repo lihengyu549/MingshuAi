@@ -40,21 +40,7 @@
                   <div class="textFa"><span class="lightText">已梳理占比</span> <span class="footText">123123</span></div>
                 </div>
               </div>
-              <div>
-                <word-cloud
-      :data="words"
-      nameKey="name"
-      valueKey="value"
-      :color="myColors"
-      :fontSize="[20, 60]"
-      rotationSteps="0"
-      font-family="Roboto"
-      :spiral="spiral"
-      :showTooltip="true"
-      :wordClick="wordClickHandler"
-      :word-style="wordStyle"
-    />
-              </div>
+              <div id="chartDomP"></div>
             </div>
             <div class="col-lg-lzh fill-h">
               <div class="xpanel-wrapper xpanel-wrapper-lzh">
@@ -91,10 +77,8 @@ import * as echarts from "echarts";
 import "echarts-wordcloud";
 import "../assets/styles/bootstrap.css";
 import $ from "jquery";
-import WordCloud from 'vue-wordcloud'
 export default {
   components: {
-    WordCloud
   },
   data() {
     return {
@@ -107,15 +91,19 @@ export default {
       topTab: {},
       top: [{ site_name: "4444", site_url: "wangzhan", num: "222" }],
       timeout: null,
-      words: [
-        { name: 'Vue', value: 26 },
-        { name: 'JavaScript', value: 18 },
-        { name: 'Webpack', value: 15 },
-        { name: 'Babel', value: 10 },
-        { name: 'Node.js', value: 8 }
-      ],
-      myColors: ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b'],
-      spiral: 'archimedean'
+      data1: {
+        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple'],
+        datasets: [
+          {
+            label: '# of Votes',
+            data: [12, 19, 3, 5, 2],
+            backgroundColor: ['Red', 'Blue', 'Yellow', 'Green', 'Purple']
+          }
+        ]
+      },
+      options: {
+        // 配置项
+      }
     };
   },
   created() {
@@ -134,22 +122,6 @@ export default {
     },
   },
   methods: {
-    wordClickHandler(name, value, vm) {
-      console.log('Word clicked:', name, value)
-    },
-    wordStyle(word, weight) {
-      const fontSize = Math.min(60, Math.max(20, weight * 10));
-      const color = this.myColors[Math.floor(Math.random() * this.myColors.length)];
-      return {
-        fontSize: `${fontSize}px`,
-        color,
-        backgroundColor: color,
-        borderRadius: '50%',
-        padding: '5px',
-        display: 'inline-block',
-        margin: '5px'
-      };
-    },
     initChart() {
       var chartDom = document.getElementById('dataBing');
       var myChart = echarts.init(chartDom);
@@ -227,619 +199,72 @@ export default {
       };
 
       optionZhu && myChartZhu.setOption(optionZhu);
+      var ROOT_PATH = '/examples';
+var chartDomP = document.getElementById('chartDomP');
+var myChartP = echarts.init(chartDomP);
+var optionP;
 
-      var bubbleChartDom = document.getElementById('bubbleChart');
-      var bubbleChart = echarts.init(bubbleChartDom);
-      var bubbleOption;
-
-      bubbleOption = {
+myChart.showLoading();
+$.getJSON(
+  ROOT_PATH + '/data/asset/data/npmdepgraph.min10.json',
+  function (json) {
+    myChartP.hideLoading();
+    myChartP.setOption(
+      (optionP = {
         title: {
-          text: '彩色气泡图示例'
+          text: 'NPM Dependencies'
         },
-        tooltip: {
-          trigger: 'item',
-          formatter: function (params) {
-            return `X: ${params.value[0]}<br/>Y: ${params.value[1]}<br/>Size: ${params.value[2]}`;
-          }
-        },
-        xAxis: {
-          type: 'value',
-          name: 'X轴'
-        },
-        yAxis: {
-          type: 'value',
-          name: 'Y轴'
-        },
-        series: [{
-          name: '数据',
-          type: 'scatter',
-          symbolSize: function (data) {
-            return Math.sqrt(data[2]) * 5;
-          },
-          data: this.bubbleChartData,
-          itemStyle: {
-            color: function (params) {
-              // 根据数据大小动态设置颜色
-              var colorList = ['#c23531', '#2f4554', '#61a0a8', '#d48265', '#91c7ae', '#749f83', '#ca8622', '#bda29a', '#6e7074', '#546570', '#c4ccd3'];
-              return colorList[params.dataIndex % colorList.length];
-            }
-          }
-        }]
-      };
-
-      bubbleChart.setOption(bubbleOption);
-
-    },
-    levelStatistic() {
-      levelStatisticI().then((res) => {
-        let leveTab = res.data;
-        if (leveTab.length == 0) {
-          this.show = false
-        } else {
-          this.show = true
-          let levelStatisticList = [];
-          for (let i = 0; i < leveTab.length; i++) {
-            levelStatisticList.push({
-              value: leveTab[i].number,
-              name: leveTab[i].securityLevel + "级"
-            });
-          }
-
-          console.log(levelStatisticList);
-          let main3 = echarts.init(this.$refs.main3, "macarons");
-          var option = {
-            legend: {
-              top: '2%',
-              left: 'center',
-              textStyle: {
-                color: '#fff',
-                fontSize: 12
+        animationDurationUpdate: 1500,
+        animationEasingUpdate: 'quinticInOut',
+        series: [
+          {
+            type: 'graph',
+            layout: 'none',
+            // progressiveThreshold: 700,
+            data: json.nodes.map(function (node) {
+              return {
+                x: node.x,
+                y: node.y,
+                id: node.id,
+                name: node.label,
+                symbolSize: node.size,
+                itemStyle: {
+                  color: node.color
+                }
+              };
+            }),
+            edges: json.edges.map(function (edge) {
+              return {
+                source: edge.sourceID,
+                target: edge.targetID
+              };
+            }),
+            emphasis: {
+              focus: 'adjacency',
+              label: {
+                position: 'right',
+                show: true
               }
             },
-
-            tooltip: {
-              trigger: "item",
-              formatter: "{a} <br/>{b} : {c} ({d}%)",
-            },
-            color: [
-              new echarts.graphic.LinearGradient(1, 0, 0, 0, [{
-                offset: 0,
-                color: '#0075FF'
-              }, {
-                offset: 1,
-                color: '#00DFFF'
-              }]),
-              new echarts.graphic.LinearGradient(1, 0, 0, 0, [{
-                offset: 0,
-                color: '#8E98FF'
-              }, {
-                offset: 1,
-                color: '#436BFD'
-              }]),
-              new echarts.graphic.LinearGradient(1, 0, 0, 0, [{
-                offset: 0,
-                color: '#005CFF'
-              }, {
-                offset: 1,
-                color: '#097FFB'
-              }]),
-
-              new echarts.graphic.LinearGradient(1, 0, 0, 0, [{
-                offset: 0,
-                color: '#11E8D8'
-              }, {
-                offset: 1,
-                color: '#2DD700'
-              }])
-            ],
-            series: [
-              {
-                name: "敏感级别字段分布",
-                type: "pie",
-                radius: "60%",
-                center: ["50%", "50%"],
-                label: {
-                  normal: {
-                    show: true, //展示
-                    position: "outside", // outside表示文本显示位置为外部
-                  },
-                  emphasis: {
-                    //文本样式
-                    show: true, //展示
-                    textStyle: {
-                      //文本样式
-                      fontSize: "14",
-                      fontWeight: "600",
-                    },
-                  },
-                },
-                labelLine: {
-                  //引导线设置
-                  normal: {
-                    show: true, //引导线显示
-                  },
-                },
-                data: levelStatisticList,
-                itemStyle: {
-                  emphasis: {
-                    shadowBlur: 10,
-                    shadowOffsetX: 0,
-                    shadowColor: "rgba(0, 0, 0, 0.5)",
-                  },
-                },
-              },
-            ],
-          };
-
-          main3.setOption(option);
-          //图表自适应
-          window.addEventListener("resize", function () {
-            var chartcontent = document.querySelector(".ipTop");
-            if (chartcontent != null) {
-              main3.resize(); // myChart 是实例对象
+            roam: true,
+            lineStyle: {
+              show: false,
+              width: 0,
+              curveness: 0.3,
+              opacity: 0.7
             }
-          });
+          }
+        ]
+      }),
+      true
+    );
+  }
+);
 
-        }
-
-
-      });
-    },
-    protectStatistic() {
-      protectStatisticI().then((res) => {
-        let num = [];
-        let name = [];
-        let tab = res.data;
-        for (let i = 0; i < tab.length; i++) {
-          num.push(tab[i].number);
-          name.push(tab[i].categoryName);
-        }
-        let lens = 9 - num.length;
-        for (let i = 0; i <= lens; i++) {
-          num.push('')
-          name.push('')
-        }
-        num.reverse()
-        name.reverse()
-        let main4 = echarts.init(this.$refs.main4, "macarons");
-        var option = {
-          tooltip: {},
-          xAxis: {
-            type: "value",
-            show: false,
-          },
-          yAxis: {
-
-            data: name,
-            axisLine: {
-              show: false // 隐藏纵轴线
-            },
-            axisTick: {
-              show: false // 隐藏纵轴刻度线
-            },
-            splitLine: { show: false },
-            // type: "category",
-
-            axisLabel: {
-              textStyle: {
-                color: '#fff' // Y 轴刻度标签字体颜色
-              },
-              formatter: function (value, index) {
-                // 根据名称长度决定是否显示完整名称或者只显示部分名称
-                var threshold = 5;
-                if (value.length > threshold) {
-                  return value.substring(0, threshold) + "...";
-                } else {
-                  return value;
-                }
-              },
-            },
-          },
-          grid: {
-            left: "0%",
-            right: "10%",
-            bottom: "5%",
-            top: "3%",
-            containLabel: true,
-          },
-          series: [
-            {
-              barWidth: 20,
-              data: num,
-              type: "bar",
-              label: {
-                normal: {
-                  show: true,
-                  position: "outside",//将文字显示在柱状图内部
-                  color: "#fff",
-
-                },
-              },
-              itemStyle: {
-                normal: {
-                  barBorderRadius: 5,
-                  // color: "#49b2c0",
-                  color: new echarts.graphic.LinearGradient(
-                    1, 0, 0, 0, // 渐变色的起止位置，可以自己调整
-                    [
-                      { offset: 0, color: '#00C4FF' }, // 渐变色的起始颜色
-                      { offset: 1, color: '#008AFE' } // 渐变色的结束颜色
-                    ]
-                  ),
-                },
-              },
-            },
-          ],
-        };
-        main4.setOption(option);
-        //图表自适应
-        window.addEventListener("resize", function () {
-          main4.resize(); // myChart 是实例对象
-        });
-      });
+optionP && myChartP.setOption(optionP);
     },
     goHome() {
       this.$router.push({ path: "/index" });
-    },
-    apiStatistic() {
-      apiStatisticI().then((res) => {
-        let topNum = [];
-        let topName = [];
-        let topTab = res.data;
-        for (let i = 0; i < topTab.length; i++) {
-          topNum.push(topTab[i].number);
-          topName.push(topTab[i].projectName);
-        }
-        let lens = 9 - topNum.length
-        for (let i = 0; i <= lens; i++) {
-          topNum.push("")
-          topName.push("")
-        }
-        topNum.reverse()
-        topName.reverse()
-        let main1 = echarts.init(this.$refs.main1, "macarons");
-        var option = {
-          tooltip: {},
-          xAxis: {
-            type: "value",
-            show: false,
-          },
-          yAxis: {
-            axisLine: {
-              show: false // 隐藏纵轴线
-            },
-            axisTick: {
-              show: false // 隐藏纵轴刻度线
-            },
-            // splitLine: {
-            //   show: false // 隐藏网格线
-            // },
-            // show: false,
-            data: topName,
-            splitLine: { show: false },
-            type: "category",
-
-            axisLabel: {
-              textStyle: {
-                color: '#fff' // Y 轴刻度标签字体颜色
-              },
-              formatter: function (value, index) {
-                // 根据名称长度决定是否显示完整名称或者只显示部分名称
-                var threshold = 5;
-                if (value.length > threshold) {
-                  return value.substring(0, threshold) + "...";
-                } else {
-                  return value;
-                }
-              },
-            },
-          },
-          grid: {
-            left: "0%",
-            right: "0%",
-            bottom: "5%",
-            top: "3%",
-            containLabel: true,
-          },
-          series: [
-            {
-              barWidth: 20,
-              data: topNum,
-              type: "bar",
-              label: {
-                show: true,
-                position: 'outside', // 将文字显示在柱状图外部
-                fontSize: 14, // 设置字体大小
-                color: '#fff', // 设置文字颜色
-                // normal: {
-                //   show: true,
-                //   position: "inside",//将文字显示在柱状图内部
-                //   color: "#fff",
-
-                // },
-              },
-              itemStyle: {
-                normal: {
-                  barBorderRadius: 10,
-                  // color: "#49b2c0",
-                  color: new echarts.graphic.LinearGradient(
-                    1, 0, 0, 0, // 渐变色的起止位置，可以自己调整
-                    [
-                      { offset: 0, color: '#00AC98' }, // 渐变色的起始颜色
-                      { offset: 1, color: '#008AFE' } // 渐变色的结束颜色
-                    ]
-                  ),
-                },
-              },
-            },
-          ],
-        };
-        main1.setOption(option);
-        window.addEventListener("resize", function () {
-          main1.resize();
-        });
-      });
-    },
-    worldMapFunc() {
-      var convertData = function (data) {
-        var res = [];
-        for (var i = 0; i < data.length; i++) {
-          var dataItem = data[i];
-          var fromCoord = geoCoordMap[dataItem[0].name];
-          var toCoord = geoCoordMap[dataItem[1].name];
-          if (fromCoord && toCoord) {
-            res.push([
-              {
-                coord: fromCoord,
-                value: dataItem[0].value,
-              },
-              {
-                coord: toCoord,
-              },
-            ]);
-          }
-        }
-        return res;
-      };
-      let worldMap = echarts.init(this.$refs.worldMap, "macarons");
-      var geoCoordArry = [];
-      for (var item in geoCoordMap) {
-        geoCoordArry.push(item);
-      }
-      var attckData = [];
-      // var attckCityList = [{ name: "中国", value: "12" },
-      //   { name: "美国", value: "52" },
-      //   { name: "英国", value: "52" },
-      //   { name: "俄罗斯", value: "52" },
-      //   { name: "巴西", value: "52" },
-      //   { name: "澳大利亚", value: "52" },
-      // ];
-
-      var series = [];
-      getMapDataI().then((res) => {
-        // 攻击点
-        let attckCityList = [];
-        if (res.data.map && JSON.stringify(res.data.map.info) != "{}") {
-          for (let item of res.data.map.info) {
-            attckCityList.push({ name: item[0], value: item[1] });
-          }
-        }
-        // 被攻击地点
-        var attckCity = ["北京"];
-        for (var i = 0; i < attckCityList.length; i++) {
-          if (geoCoordArry.indexOf(attckCityList[i].name) > -1) {
-            var acctckJson = [
-              {
-                name: attckCityList[i].name,
-                value: attckCityList[i].value,
-              },
-              {
-                name: attckCity,
-              },
-            ];
-
-            attckData.push(acctckJson);
-          }
-        }
-        [[attckCity, attckData]].forEach(function (item, i) {
-          series.push(
-            {
-              name: "",
-              type: "lines",
-              zlevel: 1,
-              effect: {
-                show: true,
-                color: "#0bc7f3",
-                period: 2.5, //箭头指向速度，值越小速度越快
-                trailLength: 0.05, //特效尾迹长度[0,1]值越大，尾迹越长重
-                symbol: "arrow", //箭头图标
-                symbolSize: 5, //图标大小
-              },
-              lineStyle: {
-                normal: {
-                  color: "#0bc7f3",
-                  width: 1, //尾迹线条宽度
-                  opacity: 0, //尾迹线条透明度
-                  curveness: 0.3, //尾迹线条曲直度
-                },
-              },
-              data: convertData(item[1]),
-            },
-            {
-              type: "effectScatter",
-              coordinateSystem: "geo",
-              zlevel: 2,
-              rippleEffect: {
-                //涟漪特效
-                period: 4, //动画时间，值越小速度越快
-                brushType: "stroke", //波纹绘制方式 stroke, fill
-                scale: 4, //波纹圆环最大限制，值越大波纹越大
-              },
-              symbol: "circle",
-              symbolSize: function (val) {
-                return 4 + val[2] / 1000; //圆环大小
-              },
-              itemStyle: {
-                normal: {
-                  show: true,
-                },
-                emphasis: {
-                  show: true,
-                  color: "#FF6A6A",
-                },
-              },
-              data: item[1].map(function (dataItem) {
-                return {
-                  name: dataItem[0].name,
-                  value: geoCoordMap[dataItem[0].name].push([
-                    dataItem[0].value,
-                  ]),
-                  // value: "写死".concat([dataItem[0].value]),
-                };
-              }),
-            },
-            //被攻击点
-            {
-              type: "scatter",
-              coordinateSystem: "geo",
-              zlevel: 2,
-              rippleEffect: {
-                period: 4,
-                brushType: "stroke",
-                scale: 4,
-              },
-              label: {
-                normal: {
-                  show: true,
-                  color: "red",
-                  position: "right",
-                  formatter: "{b}",
-                },
-                emphasis: {
-                  show: true,
-                  color: "#FF6A6A",
-                },
-              },
-              symbol: "pin",
-              symbolSize: 25,
-              itemStyle: {
-                normal: {
-                  show: true,
-                  color: "red",
-                },
-                emphasis: {
-                  show: true,
-                  color: "#FF6A6A",
-                },
-              },
-              data: [
-                {
-                  name: item[0],
-                  value: geoCoordMap[item[0]].concat([100]),
-                  // value: "写2死".concat([100]),
-                  visualMap: false,
-                },
-              ],
-            }
-          );
-        });
-        var worldMapOpt = {
-          tooltip: {
-            trigger: "item",
-            backgroundColor: "#1540a1",
-            borderColor: "#FFFFCC",
-            showDelay: 0,
-            hideDelay: 0,
-            enterable: true,
-            transitionDuration: 0,
-            extraCssText: "z-index:100",
-            formatter: function (params, ticket, callback) {
-              var res = "";
-              var name = params.name;
-              var value =
-                typeof params.value[params.seriesIndex + 1] == "undefined"
-                  ? 0
-                  : params.value[params.seriesIndex + 1];
-              res =
-                "<span style='color:#fff;'>" +
-                name +
-                "</span><br/>数据：" +
-                value;
-              return params.data.name && params.data.name[0];
-            },
-          },
-          visualMap: {
-            //图例值控制
-            show: false,
-            type: "piecewise",
-            pieces: [
-              {
-                max: 80,
-                color: "#00e200",
-              },
-              {
-                min: 80,
-                max: 120,
-                color: "#f5ff00",
-              },
-              {
-                min: 120,
-                color: "#ff0500",
-              },
-
-            ],
-            calculable: true,
-          },
-          geo: {
-            map: "world",
-            show: true,
-            label: {
-              emphasis: {
-                show: false,
-              },
-            },
-            roam: true,
-            layoutCenter: ["50%", "50%"], //地图位置
-            layoutSize: "190%",
-            itemStyle: {
-              normal: {
-                show: "true",
-                color: "#04284e", //地图背景色
-                borderColor: "#5bc1c9", //省市边界线
-              },
-              emphasis: {
-                show: "true",
-                color: "rgba(37, 43, 61, .5)", //悬浮背景
-              },
-            },
-          },
-          legend: {
-            orient: "vertical",
-            top: "30",
-            left: "center",
-            align: "right",
-            textStyle: {
-              color: "#fff",
-              fontSize: 20,
-            },
-            itemWidth: 50,
-            itemHeight: 30,
-            selectedMode: "multiple",
-          },
-          series: series,
-        };
-
-        worldMap.setOption(worldMapOpt);
-      });
-
-      //图表自适应
-      // window.addEventListener("resize", function () {
-      // var chartcontent = document.querySelector(".walMap");
-      //   if (chartcontent != null) {
-
-      //   }
-      // worldMap.resize(); // myChart 是实例对象
-      // });
     },
   },
   beforeDestroy() {
