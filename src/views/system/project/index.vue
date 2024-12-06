@@ -671,6 +671,7 @@ export default {
       this.selectTableId = value;
     },
     getProjectList(key) {
+      /*
       if (key) {
         key = key.trim();
       }
@@ -684,8 +685,10 @@ export default {
           this.formProjectList = this.projectList;
         }
       });
+      */
     },
     getProjectListEdit(key) {
+      /*
       if (key) {
         key = key.trim();
       }
@@ -699,6 +702,7 @@ export default {
           this.formProjectListEdit = this.projectList;
         }
       });
+      */
     },
     // getTableList(key) {
     //   if (key) {
@@ -767,6 +771,7 @@ export default {
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
+      /*
       this.securityRuleList = JSON.parse(row.securityRule)
       this.reset();
       const id = row.id || this.ids;
@@ -776,19 +781,21 @@ export default {
         this.open = true;
         this.title = "修改" + row.fieldName + "打标信息";
       });
+      */
     },
     /** 提交按钮 */
     submitForm() {
+      /*
       this.$refs["form"].validate((valid) => {
         if (valid) {
           if (this.form.id != null) {
-            updateProtectTableField(this.form).then((response) => {
+            updateProtectTableField(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            addProtectTableField(this.form).then((response) => {
+            addProtectTableField(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -796,10 +803,11 @@ export default {
           }
         }
       });
-
+      */
     },
     /** 删除按钮操作 */
     handleDelete(row) {
+      /*
       const ids = row.id || this.ids;
       this.$modal
         .confirm('是否确认删除数据库字段名编号为"' + ids + '"的数据项？')
@@ -811,6 +819,7 @@ export default {
           this.$modal.msgSuccess("删除成功");
         })
         .catch(() => { });
+      */
     },
     /** 导出按钮操作 */
     handleExport() {

@@ -46,9 +46,9 @@ module.exports = {
         // target: `http://192.168.3.10:8080`,
         // target: `http://127.0.0.1:8080`,
         // target: `http://sihs.hlg.d2w.cc:30977/`,
-        // target: `http://117.134.9.113:18080/`,  
+        target: `http://117.134.9.113:18080/`,  
         // target: `http://192.168.2.196:8080/`,
-        target: `http://120.24.191.90:8082/`,//公网测试  
+        // target: `http://120.24.191.90:8082/`,//公网测试  
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
