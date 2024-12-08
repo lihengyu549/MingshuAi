@@ -20,9 +20,9 @@
 
         <!-- <screenfull id="screenfull" class="right-menu-item hover-effect" /> -->
 
-        <el-tooltip content="布局大小" effect="dark" placement="bottom">
+        <!-- <el-tooltip content="布局大小" effect="dark" placement="bottom">
           <size-select id="size-select" class="right-menu-item hover-effect" />
-        </el-tooltip>
+        </el-tooltip> -->
 <!-- 
         <el-dropdown content="切换模式" effect="dark" placement="bottom">
           <i class="pattern">
@@ -137,7 +137,7 @@ export default {
 .navbar {
   position: fixed !important;
   z-index: 1000;
-  width: 98%;
+  width: 92%;
   height: 50px;
   overflow: hidden;
   position: relative;

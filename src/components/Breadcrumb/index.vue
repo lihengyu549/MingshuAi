@@ -20,9 +20,9 @@ export default {
   watch: {
     $route (route) {
       // if you go to the redirect page, do not update the breadcrumbs
-      if (route.path.startsWith('/redirect/')) {
-        return
-      }
+      // if (route.path.startsWith('/redirect/')) {
+      //   return
+      // }
       this.getBreadcrumb()
     }
   },
@@ -50,7 +50,7 @@ export default {
     handleLink (item) {
       const { redirect, path } = item
       if (redirect) {
-        this.$router.push(redirect)
+        // this.$router.push(redirect)
         return
       }
       this.$router.push(path)

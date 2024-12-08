@@ -26,11 +26,11 @@
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
-          v-hasPermi="['system:proxys:add']">新增</el-button>
+          v-hasPermi="['system:proxys:add']">新增数据库</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="warning" plain icon="el-icon-download" size="mini" @click="deliveryStrategy"
-          v-hasPermi="['system:proxys:export']">一键下发策略</el-button>
+        <el-button type="primary" plain icon="el-icon-download" size="mini" @click="deliveryStrategy"
+          v-hasPermi="['system:proxys:export']">新增Excel文件</el-button>
       </el-col>
 
 
@@ -49,92 +49,21 @@
     <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange">
       <!-- <el-table-column type="selection" width="55" align="center" /> -->
       <!-- <el-table-column label="id" align="center" prop="id" /> -->
-      <el-table-column label="项目名称" align="center" prop="projectName" />
-      <el-table-column label="数据库名称" align="center" prop="targetDatabase" />
-      <el-table-column label="数据库地址" align="center" prop="targetIp" />
-      <el-table-column label="数据库端口" align="center" prop="targetPort" />
-      <el-table-column label="数据库用户" align="center" prop="targetUserName" />
-      <el-table-column label="数据库密码" align="center">
+      <el-table-column label="数据源名称" align="center" prop="projectName" />
+      <el-table-column label="数据源类型" align="center" prop="targetDatabase" />
+      <el-table-column label="业务系统" align="center" prop="targetIp" />
+      <el-table-column label="创建时间" align="center" prop="targetPort" />
+      <el-table-column label="扫描状态" align="center" prop="targetUserName" />
+      <el-table-column label="操作" align="center" width="150" class-name="small-padding">
         <template slot-scope="scope">
-          <div>{{ scope.row.targetUserPassword }}</div>
-          <span v-if="scope.row.showTag == 1"><img style="width: 20px;
-          height: 15px;" @click="switchShowTagFunc(scope.row)" src="@/assets/images/hide-icon.png"></span>
-          <span v-if="scope.row.showTag == 0">
-            <img style="width: 20px;
-          height: 15px;" @click="switchShowTagFunc(scope.row)" src="@/assets/images/show-icon.png">
-          </span>
-        </template>
-      </el-table-column>
-      <el-table-column label="代理ip" align="center" prop="proxyIp" />
-      <el-table-column label="代理端口" align="center" prop="">
-        <template slot-scope="scope">
-          {{ scope.row.proxyPort || '--' }}
-        </template>
-      </el-table-column>
-      <el-table-column label="用户数量" align="center" prop="proxyIp">
-        <template slot-scope="scope">
-          <a style="color: #409eff;" @click="databasesNum(scope.row.targetDatabase, scope.row.id)">
-            {{ scope.row.userCount }}
-          </a>
-        </template>
-
-      </el-table-column>
-      <el-table-column label="运行状态" align="center" prop="">
-        <template slot-scope="scope">
-          <el-switch v-model="scope.row.proxyStatus" @change="handleSwitchChange(scope.row)" active-color="#1890ff"
-            inactive-color="#999">
-          </el-switch>
-        </template>
-      </el-table-column>
-      <el-table-column label="打标状态" align="center" prop="">
-        <template slot-scope="scope">
-          <!-- <span>{{ scope.row.state }}</span> -->
-          <div v-if="scope.row.state == 'COMPLETE'">
-            <!-- 防护中 -->
-
-            <el-tooltip content="打标成功" placement="top">
-              <div class="agentClass"></div>
-            </el-tooltip>
-          </div>
-
-          <div v-if="scope.row.state == 'RUNNING'">
-
-            <el-tooltip content="打标中,请稍后..." placement="top">
-              <div class="agentClassBack"></div>
-            </el-tooltip>
-          </div>
-          <div v-if="scope.row.state == 'NONE'">
-
-            <el-tooltip content="未打标" placement="top">
-              <div class="agentNONE"></div>
-            </el-tooltip>
-          </div>
-          <div v-if="scope.row.state == 'ERR'">
-
-            <el-tooltip content="打标失败" placement="top">
-              <div class="agentERR"></div>
-            </el-tooltip>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <!-- <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:proxys:edit']"
-          >修改</el-button> -->
-          <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-            v-hasPermi="['system:proxys:remove']">删除</el-button>
-
-          <el-button size="mini" type="text" icon="el-icon-edit-outline" @click="dataMarking(scope.row)"
-            v-hasPermi="['system:proxys:remove']"> 数据打标</el-button>
-          <el-button size="mini" type="text" icon="el-icon-user" @click="addUsers(scope.row)"
-            v-hasPermi="['system:proxyUser:add']">添加用户</el-button>
-          <el-button size="mini" type="text" icon="el-icon-folder-opened" @click="strategyPush(scope.row)"
-            v-hasPermi="['system:proxys:remove']"> 策略下发</el-button>
+          <el-button size="mini" type="text" @click="scanFn(scope.row)"
+            v-hasPermi="['system:proxys:edit']">扫描</el-button>
+          <el-button size="mini" type="text" @click="editFn(scope.row)"
+            v-hasPermi="['system:proxys:remove']">编辑</el-button>
+          <el-button size="mini" type="text" @click="lookFn(scope.row)" v-hasPermi="['system:proxys:remove']">
+            查看</el-button>
+          <el-button size="mini" type="text" @click="deleteFn(scope.row)"
+            v-hasPermi="['system:proxyUser:add']">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -156,47 +85,44 @@
       </div>
     </el-dialog>
     <!-- 添加或修改数据库代理对话框 -->
-    <el-dialog class="addMsg" :title="title" :visible.sync="open" width="450px" append-to-body
+    <el-dialog class="addMsg" :title="title" :visible.sync="open" width="550px" append-to-body
       :close-on-click-modal="false">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px" @submit.native.prevent>
-        <el-form-item label="项目名称" prop="projectName" :rules="rules.projectName">
-          <!-- <el-input v-model="form.projectId" placeholder="请输入项目名称" />
-           -->
-          <el-select v-model="form.projectName" placeholder="请输入项目名称" filterable remote clearable
-            @change="projectChangeEdit($event)">
-            <el-option v-for="item in formProjectListEdit" :key="item.id" :label="item.name" :value="item.id">
-            </el-option>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="数据库地址" prop="targetIp" :rules="rules.targetIp">
-          <el-input v-model="form.targetIp" placeholder="请输入数据库地址" />
-        </el-form-item>
+      <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
         <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
           <el-select v-model="form.databaseType" placeholder="请选择数据库类型">
             <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="数据库端口" prop="targetPort" :rules="rules.targetPort">
-          <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
+        <el-form-item label="数据源名称" prop="projectName" :rules="rules.projectName">
+          <el-input v-model="form.projectId" placeholder="请输入项目名称" />
         </el-form-item>
-        <el-form-item label="数据库用户" prop="targetUserName" :rules="rules.targetUserName">
-          <el-input v-model="form.targetUserName" placeholder="请输入数据库用户名称" />
-        </el-form-item>
-        <el-form-item label="数据库密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
-          <el-input v-model="form.targetUserPassword" placeholder="请输入数据库密码" />
-        </el-form-item>
-        <el-form-item label="数据库名称" prop="targetDatabase" :rules="rules.targetDatabase">
-          <!-- 
-          <el-input v-if="show" v-model="form.targetDatabase" placeholder="请输入数据库名称" /> -->
-          <el-select ref="selectRef" allow-create filterable multiple clearable v-model="form.targetDatabase"
-            placeholder="请选择数据库名称">
-            <el-option v-for="item in targetDataList" :key="item.id" :label="item.name" :value="item.value">
+        <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
+          <el-select v-model="form.projectName" placeholder="请输入项目名称" filterable remote clearable
+            @change="projectChangeEdit($event)">
+            <el-option v-for="item in formProjectListEdit" :key="item.id" :label="item.name" :value="item.id">
             </el-option>
           </el-select>
+        </el-form-item>
+        <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
+          <el-input v-model="form.targetIp" placeholder="请输入数据库地址" />
+        </el-form-item>
+        <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
+          <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
+        </el-form-item>
+        <el-form-item label="库名" prop="targetDatabase" :rules="rules.targetDatabase">
+          <el-input v-model="form.targetDatabase" placeholder="请输入数据库用户名称" />
+        </el-form-item>
+        <el-form-item label="来源业务系统" prop="targetDatabase" :rules="rules.targetDatabase">
+          <el-input v-model="form.targetDatabase" placeholder="请输入数据库用户名称" />
+        </el-form-item>
+        <el-form-item label="账号" prop="targetDatabase" :rules="rules.targetDatabase">
+          <el-input v-model="form.targetDatabase" placeholder="请输入数据库用户名称" />
+        </el-form-item>
+        <el-form-item label="密码" prop="targetDatabase" class="passwordBtn" :rules="rules.targetDatabase">
+          <el-input v-model="form.targetDatabase" placeholder="请输入数据库用户名称" />
           <div class="getDiv">
-            <el-button type="primary" @click="getDatabaseName">获 取</el-button>
+            <el-button type="primary" @click="connectTest">测试</el-button>
           </div>
         </el-form-item>
         <div class="impShow" v-show="showSucType > 0">
@@ -213,8 +139,32 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="connectTest('form')">测试</el-button>
-        <!-- <el-button @click="cancel">取 消</el-button> -->
+        <!-- <el-button @click="cancleFn">取消</el-button> -->
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
+    
+    <el-dialog title="导入框架" :visible.sync="importData.importShow" width="700px" append-to-body
+      :close-on-click-modal="false">
+      <el-form class="importForm" :model="importData" size="medium" ref="importData" :inline="true" label-width="120px">
+        <el-form-item label="框架名称" prop="cliName">
+          <el-input v-model="importData.cliName" @input="nameTestingFn(importData.cliName)" placeholder="请输入框架名称"></el-input>
+        </el-form-item>
+        <el-form-item label="导入框架" prop="importFile">
+          <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
+        </el-form-item>
+        <el-form-item class="uploadClass">
+          <el-upload class="upload-demo" action="https://jsonplaceholder.typicode.com/posts/" :limit="1"
+            :file-list="importData.fileList" accept=".xls,.xlsx" :show-file-list="false"
+            :before-upload="importFileBeforeUpload">
+            <el-button size="mini" type="primary">选择文件</el-button>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <el-button style="margin-left: 100px;" size="small" type="text" icon="el-icon-download">样例下载</el-button>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="importcancel">取 消</el-button>
       </div>
     </el-dialog>
     <!-- 数据打标 -->
@@ -266,8 +216,14 @@ import Log from "@/views/monitor/job/log.vue";
 
 export default {
   name: "Proxys",
-  data () {
+  data() {
     return {
+      importData: {
+        importFile: '', // 导入魔板文件名
+        fileList: [],//导入模板的文件数据
+        cliName: '',//框架名称
+        importShow: false,
+      },
       samplingNum: 10,
       checkList: true,
       show: true,
@@ -282,8 +238,8 @@ export default {
       targetDataList: [],
       databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRES", id: 3, value: "POSTGRES" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       formProjectListEdit: [],
-      selectProjectListEdit: [{ name: "全部", id: 0 }, { name: "Excel文件", id: 1 },{ name: "数据库", id: 2 }], // 数据源类型
-      scanStatusList: [{ name: "全部", id: 0 }, { name: "扫描中", id: 1 },{ name: "扫描成功", id: 2 },{ name: "扫描失败", id: 3 },{ name: "待扫描", id: 4 }], // 扫描类型
+      selectProjectListEdit: [{ name: "全部", id: 0 }, { name: "Excel文件", id: 1 }, { name: "数据库", id: 2 }], // 数据源类型
+      scanStatusList: [{ name: "全部", id: 0 }, { name: "扫描中", id: 1 }, { name: "扫描成功", id: 2 }, { name: "扫描失败", id: 3 }, { name: "待扫描", id: 4 }], // 扫描类型
       projectNameEdit: "",
       // 遮罩层
       loading: true,
@@ -309,8 +265,8 @@ export default {
         pageNum: 1,
         pageSize: 10,
         selectProjectName: 0,
-        saomiaoId:0,
-        scanId:0,
+        saomiaoId: 0,
+        scanId: 0,
 
 
         proxyId: null,
@@ -374,14 +330,24 @@ export default {
     };
   },
 
-  created () {
+  created() {
     // this.queryParams.selectProjectName = "全部"
     // this.queryParams.projectId = 0
     // this.getList();
     // this.getProjectListEdit()
   },
   methods: {
-    findDatabaseValueByName (name) {
+    scanFn(row) {
+      // 扫描
+    },
+    editFn(row) {
+      // 编辑
+    }, lookFn(row) {
+      // 查看
+    }, deleteFn(row) {
+      // 删除
+    },
+    findDatabaseValueByName(name) {
       let value;
       for (let i = 0; i < this.databaseTypeList.length; i++) {
         if (name == this.databaseTypeList[i].name) {
@@ -390,8 +356,20 @@ export default {
       }
       return value
     },
+        // 文件上传前钩子
+        importFileBeforeUpload(val) {
+      this.importData.importFile = val.name
+      // 暂时禁止上传，等接口
+      return false
+    },    // 导入取消
+    importcancel() {
+      this.fileList = [],
+        this.importData.cliName = ''
+      this.importData.importFile = ''
+      this.importData.importShow = false
+    },
     // 获取数据库名称
-    getDatabaseName () {
+    getDatabaseName() {
       this.targetDataList = []
       this.showSucType = 0
       this.form.targetDatabase = false
@@ -428,10 +406,10 @@ export default {
       })
 
     },
-    handleInput (e) {
+    handleInput(e) {
       this.samplingNum = e
     },
-    markingCli () {
+    markingCli() {
       this.$confirm('您是否要开始数据打标？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -464,36 +442,37 @@ export default {
       });
 
     },
-    handleChange (value) {
+    handleChange(value) {
       this.radio = value
     },
-    deliveryStrategy () {
-      this.$confirm('您是否要一键下发策略？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        strategyAll().then((res => {
-          this.$message({
-            message: "一键下发策略成功",
-            duration: 5000,
-            type: 'success'
-          });
+    deliveryStrategy() {
+      this.importData.importShow = true
+      // this.$confirm('您是否要一键下发策略？', '提示', {
+      //   confirmButtonText: '确定',
+      //   cancelButtonText: '取消',
+      //   type: 'warning'
+      // }).then(() => {
+      //   strategyAll().then((res => {
+      //     this.$message({
+      //       message: "一键下发策略成功",
+      //       duration: 5000,
+      //       type: 'success'
+      //     });
 
-        }))
-        // 用户点击确定按钮，执行相关操作
-      }).catch(() => {
-        // 用户点击了取消按钮，不做任何操作
-      });
+      //   }))
+      //   // 用户点击确定按钮，执行相关操作
+      // }).catch(() => {
+      //   // 用户点击了取消按钮，不做任何操作
+      // });
     },
 
-    databasesNum (name, id) {
+    databasesNum(name, id) {
       this.$router.push({
         path: "/risk/proxyUser",
         query: { id: id, name: name },
       });
     },
-    addSubmitForm () {
+    addSubmitForm() {
       this.$refs["addForm"].validate((valid) => {
         if (valid) {
           this.addForm.proxyDatabaseId = this.addUserId
@@ -511,18 +490,18 @@ export default {
 
     },
     // 取消按钮
-    addCancel () {
+    addCancel() {
       this.addUserVisible = false;
       this.addReset();
     },
     //添加用户
-    addUsers (row) {
+    addUsers(row) {
       this.addReset();
       this.addUserId = row.id
       this.addUserVisible = true
     },
     // 运行状态
-    handleSwitchChange (row) {
+    handleSwitchChange(row) {
       row.proxyStatus = !row.proxyStatus
       if (row.proxyStatus == true) {
         this.$confirm('您是否要关闭运行状态？', '提示', {
@@ -563,7 +542,7 @@ export default {
       }
 
     },
-    switchShowTagFunc (row) {
+    switchShowTagFunc(row) {
       if (row.showTag == 1) {
         row.showTag = 0
         row.targetUserPassword = '******'
@@ -572,7 +551,7 @@ export default {
         row.targetUserPassword = row.oldPassword
       }
     },
-    strategyPush (row) {
+    strategyPush(row) {
       this.$confirm('您是否要开始策略下发？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -593,7 +572,7 @@ export default {
       });
 
     },
-    dataMarking (row) {
+    dataMarking(row) {
       this.markingI = row.id
       this.samplingNum = 10
       this.radio = "1"
@@ -634,7 +613,7 @@ export default {
 
 
     },
-    getProjectListEdit (key) {
+    getProjectListEdit(key) {
       if (key) {
         key = key.trim();
       }
@@ -652,26 +631,30 @@ export default {
         // }
       });
     },
-    selectProjectChangeEdit (e) {
+    selectProjectChangeEdit(e) {
       this.projectNameEdit = e
       // this.form.projectName = 
       this.queryParams.projectId = e
 
     },
 
-    projectChangeEdit (e) {
+    projectChangeEdit(e) {
       this.projectNameEdit = e
       // this.form.projectName = 
       this.form.projectId = e
 
     },
     /** 查询数据库代理列表 */
-    getList () {
-      this.loading = true;
-
+    getList() {
+      this.loading = false;
       if (this.queryParams.projectId == 0) {
         this.queryParams.projectId = null
       }
+      this.proxysList = [{
+        id: 1,
+        projectName: 'wqeqwe'
+      }]
+      return
       listProxys(this.queryParams).then(response => {
         this.proxysList = response.rows;
         for (let item of this.proxysList) {
@@ -684,20 +667,20 @@ export default {
       });
     },
     // 取消按钮
-    cancel () {
+    cancel() {
       this.open = false;
       this.showSucType = 0
       this.reset();
     },
     // 表单重置
-    addReset () {
+    addReset() {
       this.addForm = {
         userName: null,
         userPassword: null,
       }
       this.resetForm("addForm");
     },
-    reset () {
+    reset() {
       this.form = {
         // id: null,
         //  proxyId: null,
@@ -717,7 +700,7 @@ export default {
       this.resetForm("form");
     },
     // 连接测试
-    connectTest (formName) {
+    connectTest(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           let data = JSON.parse(JSON.stringify(this.form))
@@ -748,25 +731,25 @@ export default {
       })
     },
     /** 搜索按钮操作 */
-    handleQuery () {
+    handleQuery() {
       this.queryParams.pageNum = 1;
       this.getList();
     },
     /** 重置按钮操作 */
-    resetQuery () {
+    resetQuery() {
       this.queryParams.selectProjectName = "全部"
       this.queryParams.projectId = null
       this.resetForm("queryForm");
       this.handleQuery();
     },
     // 多选框选中数据
-    handleSelectionChange (selection) {
+    handleSelectionChange(selection) {
       this.ids = selection.map(item => item.id)
       this.single = selection.length !== 1
       this.multiple = !selection.length
     },
     /** 新增按钮操作 */
-    handleAdd () {
+    handleAdd() {
       // this.show = true
       // this.form.projectName = "ruoyi-auth"
       // this.form.targetIp = "192.168.3.14"
@@ -779,10 +762,10 @@ export default {
       this.targetDataList = []
       this.reset();
       this.open = true;
-      this.title = "添加数据库";
+      this.title = "新增数据源";
     },
     /** 修改按钮操作 */
-    handleUpdate (row) {
+    handleUpdate(row) {
       this.reset();
       const id = row.id || this.ids
       getProxys(id).then(response => {
@@ -792,7 +775,7 @@ export default {
       });
     },
     /** 提交按钮 */
-    submitForm () {
+    submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.id != null) {
@@ -821,20 +804,20 @@ export default {
       });
     },
     /** 删除按钮操作 */
-    deleteClick (ids) {
+    deleteClick(ids) {
       delProxys(ids).then(() => {
         this.getList();
         this.$modal.msgSuccess("删除成功");
         this.deleteVisible = false
       }).catch(() => { })
     },
-    handleDelete (row) {
+    handleDelete(row) {
       this.serialNumber = row.id || this.ids;
       this.deleteVisible = true
 
     },
     /** 导出按钮操作 */
-    handleExport () {
+    handleExport() {
       this.download('system/proxys/export', {
         ...this.queryParams
       }, `proxys_${new Date().getTime()}.xlsx`)
@@ -862,7 +845,6 @@ export default {
 }
 
 .addMsg /deep/ .el-form-item__label {
-  width: 92px !important;
   text-align: left;
 }
 
@@ -940,4 +922,23 @@ export default {
   border-radius: 50%;
   background-color: #ccc;
 }
+.addMsg /deep/ .el-input{
+  width: 80%;
+}
+.addMsg /deep/ .el-select{
+  width: 100%;
+}
+.importForm /deep/ .el-form-item--medium {
+  width: 70%;
+
+}
+
+.importForm /deep/ .el-form-item__content {
+  width: calc(100% - 145px);
+}
+
+.uploadClass {
+  width: 20% !important;
+}
+
 </style>

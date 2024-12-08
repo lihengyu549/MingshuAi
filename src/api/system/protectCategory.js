@@ -4,7 +4,7 @@ import qs from 'qs'
 //获取分类框架列表
 export function treeListI (data) {
   return request({
-    url: '/ruoyi-system/category/list/all',
+    url: '/system/category/list/all',
     method: 'get',
     params: data
 
@@ -56,7 +56,14 @@ export function updataAttach(query) {
     params: query
   })
 }
-
+// 获取所有分类框架名称
+export function getFrameworks (data) {
+  return request({
+    url: '/system/category/list/all/frameworks',
+    method: 'get',
+    params: data
+  })
+}
 // 测试名称是否可用
 export function nameTesting (data) {
   return request({

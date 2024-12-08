@@ -5,7 +5,7 @@
         <div class="head-container">
           <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
             placeholder="全部" style="margin-bottom: 20px">
-            <el-option v-for="item in treeOptions" :key="item.value" :label="item.label" :value="item.value">
+            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
           <el-button type="primary" size="mini" @click="importCli">框架导入</el-button>
@@ -158,7 +158,7 @@ import { listAllProject } from "@/api/system/project";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
-import { treeListI,categoryImport,getAttachData,attachStatus,forceLogout,updataAttach,nameTesting,addData } from "@/api/system/protectCategory"
+import { treeListI,categoryImport,getAttachData,attachStatus,forceLogout,updataAttach,nameTesting,addData,getFrameworks } from "@/api/system/protectCategory"
 import { listTableByProject, getDatabaseListI } from "@/api/system/protectTableField";
 export default {
   name: "ProtectTableField",
@@ -381,7 +381,7 @@ export default {
     }
   },
   created() {
-    this.getProtectCategory()
+    this.gettreeOptionsList()
   },
   methods: {
     addFn() {
@@ -495,9 +495,14 @@ export default {
     },
     // 左侧树下拉选change事件
     treeOptionsSelectChange(val) {
-      if (val) {
-        this.getProtectCategory(val)
-      }
+      this.getProtectCategory(val)
+    },
+    gettreeOptionsList() {
+      getFrameworks().then((response) => {
+        this.treeOptions = response.data
+        this.queryParams.categoryId = response.data[0].id
+        this.getProtectCategory(this.queryParams.categoryId)
+      });
     },
     // 文件上传前钩子
     importFileBeforeUpload(val) {
@@ -597,23 +602,25 @@ export default {
 
     },
     getProtectCategory(key) {
-      if (key) {
-        key = key.trim();
-      }
       let data = {
         name: key
       };
       treeListI(data).then((resp) => {
-        this.categoryList = resp.data;
-        this.queryParams.nodeId = resp.data[0].id;
-        if (this.categoryListEdit == null) {
+        this.categoryList = resp.data
+        for(let index in resp.data) {
+          if(resp.data[index].parentId === 0) {
+            this.categoryList.splice(index,1)
+            break
+          }
+        }
+        this.queryParams.nodeId = this.categoryList[0].id;
           let tempList = JSON.parse(JSON.stringify(this.categoryList))
           for (let item of tempList) {
             item.label = item.categoryName
           }
           this.categoryList = this.handleTree(tempList, "id")
           this.categoryListEdit = this.handleTree(tempList, "id")
-        }
+          
       });
     },
     // categoryTableListEdit(query) {
