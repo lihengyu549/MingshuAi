@@ -1,13 +1,28 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="px">
-      <el-form-item label="项目名称">
-        <el-select v-model="queryParams.selectProjectName" placeholder="请输入项目名称" filterable remote clearable
+      <!-- <el-form-item label="分类分级框架">
+        <el-select v-model="queryParams.selectProjectName" placeholder="请输入分类分级框架" filterable remote clearable
           @change="selectProjectChangeEdit($event)">
           <el-option v-for="item in selectProjectListEdit" :key="item.id" :label="item.name" :value="item.id">
           </el-option>
         </el-select>
+      </el-form-item> -->
+      <el-form-item label="数据源名称" prop="sourceName">
+        <el-input v-model="queryParams.sourceName" placeholder="请输入数据源名称" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
+      <el-form-item label="数据库类型" prop="databaseType" >
+          <el-select clearable v-model="queryParams.databaseType" placeholder="请选择数据库类型">
+            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="扫描状态" prop="maskComplete">
+          <el-select clearable v-model="queryParams.maskComplete" placeholder="请选择扫描状态">
+            <el-option v-for="item in maskCompleteStatus" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
       <el-form-item label="数据库名称" prop="targetDatabase">
         <el-input v-model="queryParams.targetDatabase" placeholder="请输入数据库名称" clearable
           @keyup.enter.native="handleQuery" />
@@ -44,10 +59,10 @@
           v-hasPermi="['system:proxys:remove']">删除</el-button>
       </el-col> -->
 
-      <el-col :span="1.5">
+      <!-- <el-col :span="1.5">
         <el-button type="warning" plain icon="el-icon-download" size="mini" @click="deliveryStrategy"
           v-hasPermi="['system:proxys:export']">一键下发策略</el-button>
-      </el-col>
+      </el-col> -->
 
 
       <!-- <el-col :span="1.5">
@@ -65,8 +80,10 @@
     <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange">
       <!-- <el-table-column type="selection" width="55" align="center" /> -->
       <!-- <el-table-column label="id" align="center" prop="id" /> -->
-      <el-table-column label="项目名称" align="center" prop="projectName" />
+      <el-table-column label="分类分级框架" align="center" prop="projectName" />
       <el-table-column label="数据库名称" align="center" prop="targetDatabase" />
+      <el-table-column label="数据源名称" align="center" prop="sourceName" />
+      <el-table-column label="来源业务系统" align="center" prop="businessName" />
       <el-table-column label="数据库地址" align="center" prop="targetIp" />
       <el-table-column label="数据库端口" align="center" prop="targetPort" />
       <el-table-column label="数据库用户" align="center" prop="targetUserName" />
@@ -81,53 +98,51 @@
           </span>
         </template>
       </el-table-column>
-      <el-table-column label="代理ip" align="center" prop="proxyIp" />
-      <el-table-column label="代理端口" align="center" prop="">
+      <!-- <el-table-column label="代理ip" align="center" prop="proxyIp" /> -->
+      <!-- <el-table-column label="代理端口" align="center" prop="">
         <template slot-scope="scope">
           {{ scope.row.proxyPort || '--' }}
         </template>
-      </el-table-column>
-      <el-table-column label="用户数量" align="center" prop="proxyIp">
+      </el-table-column> -->
+      <!-- <el-table-column label="用户数量" align="center" prop="proxyIp">
         <template slot-scope="scope">
           <a style="color: #409eff;" @click="databasesNum(scope.row.targetDatabase, scope.row.id)">
             {{ scope.row.userCount }}
           </a>
         </template>
 
-      </el-table-column>
-      <el-table-column label="运行状态" align="center" prop="">
+      </el-table-column> -->
+      <!-- <el-table-column label="运行状态" align="center" prop="">
         <template slot-scope="scope">
           <el-switch v-model="scope.row.proxyStatus" @change="handleSwitchChange(scope.row)" active-color="#1890ff"
             inactive-color="#999">
           </el-switch>
         </template>
-      </el-table-column>
-      <el-table-column label="打标状态" align="center" prop="">
+      </el-table-column> -->
+      <el-table-column label="扫描状态" align="center" prop="">
         <template slot-scope="scope">
           <!-- <span>{{ scope.row.state }}</span> -->
           <div v-if="scope.row.state == 'COMPLETE'">
             <!-- 防护中 -->
-
-            <el-tooltip content="打标成功" placement="top">
+            <el-tooltip content="扫描完成" placement="top">
               <div class="agentClass"></div>
             </el-tooltip>
           </div>
 
           <div v-if="scope.row.state == 'RUNNING'">
 
-            <el-tooltip content="打标中,请稍后..." placement="top">
+            <el-tooltip content="扫描中,请稍后..." placement="top">
               <div class="agentClassBack"></div>
             </el-tooltip>
           </div>
           <div v-if="scope.row.state == 'NONE'">
 
-            <el-tooltip content="未打标" placement="top">
+            <el-tooltip content="未扫描" placement="top">
               <div class="agentNONE"></div>
             </el-tooltip>
           </div>
           <div v-if="scope.row.state == 'ERR'">
-
-            <el-tooltip content="打标失败" placement="top">
+            <el-tooltip content="扫描失败" placement="top">
               <div class="agentERR"></div>
             </el-tooltip>
           </div>
@@ -146,18 +161,18 @@
             v-hasPermi="['system:proxys:remove']">删除</el-button>
 
           <el-button size="mini" type="text" icon="el-icon-edit-outline" @click="dataMarking(scope.row)"
-            v-hasPermi="['system:proxys:remove']"> 数据打标</el-button>
-          <el-button size="mini" type="text" icon="el-icon-user" @click="addUsers(scope.row)"
-            v-hasPermi="['system:proxyUser:add']">添加用户</el-button>
-          <el-button size="mini" type="text" icon="el-icon-folder-opened" @click="strategyPush(scope.row)"
-            v-hasPermi="['system:proxys:remove']"> 策略下发</el-button>
+            v-hasPermi="['system:proxys:remove']"> 开始扫描</el-button>
+          <!-- <el-button size="mini" type="text" icon="el-icon-user" @click="addUsers(scope.row)"
+            v-hasPermi="['system:proxyUser:add']">添加用户</el-button> -->
+          <!-- <el-button size="mini" type="text" icon="el-icon-folder-opened" @click="strategyPush(scope.row)"
+            v-hasPermi="['system:proxys:remove']"> 策略下发</el-button> -->
         </template>
       </el-table-column>
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
     <!-- 添加用户 -->
-    <el-dialog title="添加用户" :visible.sync="addUserVisible" width="450px" append-to-body :close-on-click-modal="false">
+    <!-- <el-dialog title="添加用户" :visible.sync="addUserVisible" width="450px" append-to-body :close-on-click-modal="false">
       <el-form ref="addForm" :model="addForm" :rules="rules" label-width="80px" @submit.native.prevent>
         <el-form-item label="用户名称" prop="userName">
           <el-input v-model="addForm.userName" placeholder="请输入用户名称" />
@@ -170,31 +185,36 @@
         <el-button type="primary" @click="addSubmitForm()">确 定</el-button>
         <el-button @click="addCancel">取 消</el-button>
       </div>
-    </el-dialog>
+    </el-dialog> -->
     <!-- 添加或修改数据库代理对话框 -->
     <el-dialog class="addMsg" :title="title" :visible.sync="open" width="450px" append-to-body
       :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px" @submit.native.prevent>
-        <el-form-item label="项目名称" prop="projectName" :rules="rules.projectName">
-          <!-- <el-input v-model="form.projectId" placeholder="请输入项目名称" />
-           -->
-          <el-select v-model="form.projectName" placeholder="请输入项目名称" filterable remote clearable
-            @change="projectChangeEdit($event)">
-            <el-option v-for="item in formProjectListEdit" :key="item.id" :label="item.name" :value="item.id">
-            </el-option>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="数据库地址" prop="targetIp" :rules="rules.targetIp">
-          <el-input v-model="form.targetIp" placeholder="请输入数据库地址" />
-        </el-form-item>
         <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
           <el-select v-model="form.databaseType" placeholder="请选择数据库类型">
             <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="数据库端口" prop="targetPort" :rules="rules.targetPort">
+        
+        <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
+          <el-input v-model="form.sourceName" placeholder="请输入数据源名称" />
+        </el-form-item>
+        <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
+          <!-- <el-input v-model="form.projectId" placeholder="请输入分类分级框架" />
+           -->
+          <el-select v-model="form.projectName" placeholder="请输入分类分级框架" filterable remote clearable
+            @change="projectChangeEdit($event)">
+            <el-option v-for="item in formProjectListEdit" :key="item.id" :label="item.name" :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
+          <el-input v-model="form.targetIp" placeholder="请输入主机IP地址" />
+        </el-form-item>
+
+        <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
           <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
         </el-form-item>
         <el-form-item label="数据库用户" prop="targetUserName" :rules="rules.targetUserName">
@@ -219,6 +239,9 @@
           <div class="success" v-if="showSucType == 1">连接成功</div>
           <div class="error" v-if="showSucType == 2">连接失败</div>
         </div>
+        <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
+          <el-input v-model="form.businessName" placeholder="请输入来源业务系统" />
+        </el-form-item>
         <!-- <p>代理数据库信息</p>
         <el-form-item label="代理端口" prop="proxyPort">
           <el-input v-model="form.proxyPort" placeholder="请输入代理端口" />
@@ -233,8 +256,8 @@
         <!-- <el-button @click="cancel">取 消</el-button> -->
       </div>
     </el-dialog>
-    <!-- 数据打标 -->
-    <el-dialog class="marking" title="数据打标" :visible.sync="markingVisible" width="450px" append-to-body
+    <!-- 数据扫描 -->
+    <el-dialog class="marking" title="数据扫描" :visible.sync="markingVisible" width="450px" append-to-body
       :close-on-click-modal="false">
       <div style="text-align: center;">
         <el-radio-group v-model="radio" @change="handleChange">
@@ -246,9 +269,9 @@
           <el-input style="width: 60%;" type="number" v-model="samplingNum" placeholder="请输入抽样数量"
             @input="handleInput"></el-input>
         </div>
-        <div style="margin-top: 10px;">
-          <el-checkbox v-model="checkList" label="启用NLP打标规则（姓名、民族、地址）"></el-checkbox>
-        </div>
+        <!-- <div style="margin-top: 10px;">
+          <el-checkbox v-model="checkList" label="启用NLP扫描规则（姓名、民族、地址）"></el-checkbox>
+        </div> -->
         <div style="text-align: right;">
           <el-button type="primary" @click="markingCli">确定</el-button>
         </div>
@@ -260,7 +283,7 @@
         <div style="height: 66px;">
           <i class="el-icon-warning" style="color: #ffba00; font-size: 30px;margin-right: 5px;"></i>
           <span style="position: absolute; top: 5px; ">是否确认删除数据库代理编号为{{ serialNumber }}的数据项,<span
-              style="color: red;">并同时关联删除打标记录、API关联记录、数据库用户?</span></span>
+              style="color: red;">并同时关联删除扫描记录</span></span>
         </div>
         <div style="text-align: right;">
           <el-button @click="deleteVisible = false">取消</el-button>
@@ -296,6 +319,20 @@ export default {
       dataType: "",
       targetDataList: [],
       databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRES", id: 3, value: "POSTGRES" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
+      maskCompleteStatus:[{
+          value: 'COMPLETE',
+          label: '扫描完成'
+        }, {
+          value: 'RUNNING',
+          label: '扫描中'
+        }, {
+          value: 'NONE',
+          label: '未扫描'
+        }, {
+          value: 'ERR',
+          label: '扫描失败'
+        }
+      ],
       formProjectListEdit: [],
       selectProjectListEdit: [{ name: "全部", id: 0 }],
       projectNameEdit: "",
@@ -352,7 +389,7 @@ export default {
           { required: true, message: "用户名称不能为空", trigger: "blur" },
         ],
         databaseType: [{ required: true, message: '请选择数据库类型', trigger: 'blur' }],
-        projectName: [{ required: true, message: '请选择选项目名称', trigger: 'blur' }],
+        projectName: [{ required: true, message: '请选择选分类分级框架', trigger: 'blur' }],
         targetUserName: [
           { required: true, message: "请输入数据库用户名称", trigger: "change" },
         ],
@@ -442,7 +479,7 @@ export default {
       this.samplingNum = e
     },
     markingCli () {
-      this.$confirm('您是否要开始数据打标？', '提示', {
+      this.$confirm('您是否要开始数据扫描？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -461,7 +498,7 @@ export default {
 
         }
         databaseMaskI(data).then((res => {
-          this.$alert('数据已提交', '数据打标', {
+          this.$alert('数据已提交', '数据扫描', {
             confirmButtonText: '确定',
             type: 'success'
           });
@@ -609,7 +646,7 @@ export default {
       this.radio = "1"
       this.checkList = true
       if (row.state == "COMPLETE") {
-        this.$confirm('您已经打标成功,是否要重新开始数据打标？', '提示', {
+        this.$confirm('您已经扫描成功,是否要重新开始数据扫描？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -622,14 +659,14 @@ export default {
         });
       } else if (row.state == "RUNNING") {
         this.$message({
-          message: '数据正在打标中,请稍后...',
+          message: '数据正在扫描中,请稍后...',
           type: 'warning'
         });
       } else if (row.state == "NONE") {
 
         this.markingVisible = true
       } else if (row.state == "ERR") {
-        this.$confirm('数据打标失败,是否重新开始打标？', '提示', {
+        this.$confirm('数据扫描失败,是否重新开始扫描？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'error'

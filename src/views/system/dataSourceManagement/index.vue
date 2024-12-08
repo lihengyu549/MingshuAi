@@ -130,7 +130,7 @@
             v-hasPermi="['system:proxys:remove']">删除</el-button>
 
           <el-button size="mini" type="text" icon="el-icon-edit-outline" @click="dataMarking(scope.row)"
-            v-hasPermi="['system:proxys:remove']"> 数据打标</el-button>
+            v-hasPermi="['system:proxys:remove']"> 开始扫描</el-button>
           <el-button size="mini" type="text" icon="el-icon-user" @click="addUsers(scope.row)"
             v-hasPermi="['system:proxyUser:add']">添加用户</el-button>
           <el-button size="mini" type="text" icon="el-icon-folder-opened" @click="strategyPush(scope.row)"
@@ -217,8 +217,8 @@
         <!-- <el-button @click="cancel">取 消</el-button> -->
       </div>
     </el-dialog>
-    <!-- 数据打标 -->
-    <el-dialog class="marking" title="数据打标" :visible.sync="markingVisible" width="450px" append-to-body
+    <!-- 开始扫描 -->
+    <el-dialog class="marking" title="开始扫描" :visible.sync="markingVisible" width="450px" append-to-body
       :close-on-click-modal="false">
       <div style="text-align: center;">
         <el-radio-group v-model="radio" @change="handleChange">
@@ -230,9 +230,9 @@
           <el-input style="width: 60%;" type="number" v-model="samplingNum" placeholder="请输入抽样数量"
             @input="handleInput"></el-input>
         </div>
-        <div style="margin-top: 10px;">
+        <!-- <div style="margin-top: 10px;">
           <el-checkbox v-model="checkList" label="启用NLP打标规则（姓名、民族、地址）"></el-checkbox>
-        </div>
+        </div> -->
         <div style="text-align: right;">
           <el-button type="primary" @click="markingCli">确定</el-button>
         </div>
@@ -432,7 +432,7 @@ export default {
       this.samplingNum = e
     },
     markingCli () {
-      this.$confirm('您是否要开始数据打标？', '提示', {
+      this.$confirm('您是否要开始数据扫描？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -451,7 +451,7 @@ export default {
 
         }
         databaseMaskI(data).then((res => {
-          this.$alert('数据已提交', '数据打标', {
+          this.$alert('数据已提交', '开始扫描', {
             confirmButtonText: '确定',
             type: 'success'
           });
@@ -599,7 +599,7 @@ export default {
       this.radio = "1"
       this.checkList = true
       if (row.state == "COMPLETE") {
-        this.$confirm('您已经打标成功,是否要重新开始数据打标？', '提示', {
+        this.$confirm('您已经打标成功,是否要重新开始开始扫描？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -612,14 +612,14 @@ export default {
         });
       } else if (row.state == "RUNNING") {
         this.$message({
-          message: '数据正在打标中,请稍后...',
+          message: '数据正在扫描中,请稍后...',
           type: 'warning'
         });
       } else if (row.state == "NONE") {
 
         this.markingVisible = true
       } else if (row.state == "ERR") {
-        this.$confirm('数据打标失败,是否重新开始打标？', '提示', {
+        this.$confirm('开始扫描失败,是否重新开始扫描？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'error'
