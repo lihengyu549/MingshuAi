@@ -205,7 +205,7 @@
            -->
           <el-select v-model="form.projectName" placeholder="请输入分类分级框架" filterable remote clearable
             @change="projectChangeEdit($event)">
-            <el-option v-for="item in formProjectListEdit" :key="item.id" :label="item.name" :value="item.id">
+            <el-option v-for="item in formProjectListEdit" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -301,6 +301,7 @@ import {
 
 import { listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, createProxys, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseListI } from "@/api/system/proxys";
 import { listAllProject, } from "@/api/system/project";
+import { getFrameworks } from "@/api/system/protectCategory"
 
 export default {
   name: "Proxys",
@@ -688,7 +689,8 @@ export default {
       let params = {
         name: key,
       };
-      listAllProject(params).then((resp) => {
+
+      getFrameworks(params).then((resp) => {
         this.formProjectListEdit = resp.data;
         let data = JSON.parse(JSON.stringify(this.formProjectListEdit))
 
