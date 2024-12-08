@@ -14,10 +14,10 @@
       <!--用户数据-->
       <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="90px">
-          <el-form-item label="项目名称" prop="project">
-            <el-select v-model="selectProject" filterable remote reserve-keyword placeholder="请选择项目名称"
+          <el-form-item label="行业分类" prop="project">
+            <el-select v-model="selectProject" filterable remote reserve-keyword placeholder="请选择行业分类"
               :remote-method="queryProjectList" :loading="loading" @change="projectChange($event)">
-              <el-option v-for="item in projectList" :key="item.id" :label="item.name" :value="item.id">
+              <el-option v-for="item in projectList" :key="item.id" :label="item.categoryName" :value="item.id">
               </el-option>
             </el-select>
           </el-form-item>
@@ -42,6 +42,10 @@
             <el-input v-model="queryParams.fieldRemark" placeholder="请输入字段备注" clearable
               @keyup.enter.native="handleQuery" />
           </el-form-item>
+          <el-form-item label="来源业务系统" prop="businessName">
+            <el-input v-model="queryParams.businessName" placeholder="请输入来源业务系统" clearable
+              @keyup.enter.native="handleQuery" />
+          </el-form-item>
           <el-form-item label="安全级别" prop="securityLevel">
             <!-- <el-input v-model="queryParams.securityLevel" placeholder="请输入安全级别" clearable @keyup.enter.native="handleQuery" /> -->
             <el-select v-model="queryParams.securityLevel" placeholder="全部">
@@ -49,15 +53,15 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="打标信息" prop="tag">
-            <el-input v-model="queryParams.tag" placeholder="请输入打标信息" clearable @keyup.enter.native="handleQuery" />
+          <el-form-item label="分类" prop="tag">
+            <el-input v-model="queryParams.tag" placeholder="请输入分类" clearable @keyup.enter.native="handleQuery" />
           </el-form-item>
-          <el-form-item label="打标结果">
+          <!-- <el-form-item label="打标结果">
             <el-select v-model="markingNume" placeholder="全部">
               <el-option v-for="item in markingOptions" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item>
             <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
             <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -89,19 +93,20 @@
         </el-row>
         <el-table v-loading="loading" :data="protectTableFieldList" @selection-change="handleSelectionChange">
           <!-- <el-table-column width="55" align="center" /> -->
-          <el-table-column label="项目名" align="center" prop="projectName" />
+          <el-table-column label="行业框架" align="center" prop="projectName" />
           <el-table-column label="库名" align="center" prop="databaseName" />
           <el-table-column label="表名" align="center" prop="tableName" />
           <el-table-column label="字段名" align="center" prop="fieldName" />
           <el-table-column label="字段类型" align="center" prop="fieldType" />
           <el-table-column label="字段备注" align="center" prop="fieldRemark" />
           <el-table-column label="安全级别" align="center" prop="securityLevel" />
-          <el-table-column label="打标信息" align="center" prop="securityRule">
+          <el-table-column label="来源业务系统" align="center" prop="businessName" />
+          <!-- <el-table-column label="打标信息" align="center" prop="securityRule">
             <template slot-scope="scope">
               <div class="sourceClass" v-for="item in JSON.parse(scope.row.securityRule)">{{ item }}</div>
             </template>
-          </el-table-column>
-          <el-table-column label="行业分类" align="center" prop="categoryName" />
+          </el-table-column> -->
+          <el-table-column label="分类" align="center" prop="categoryName" />
           <el-table-column label="添加时间" align="center" prop="addTime" width="180">
             <template slot-scope="scope">
               <span>{{ parseTime(scope.row.addTime, "{y}-{m}-{d} {h}:{m}:{s}") }}</span>
@@ -114,12 +119,12 @@
               <!-- <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
             v-hasPermi="['system:protectTableField:remove']">删除</el-button> -->
               <el-button class="btns" size="mini" type="text" icon="el-icon-edit-outline" @click="sampleValue(scope.row)"
-                v-hasPermi="['system:protectSensitiveRule:edit']">示例值</el-button>
+                v-hasPermi="['system:protectSensitiveRule:edit']">查看样本</el-button>
 
-              <el-button class="btns" size="mini" type="text" icon="el-icon-document"
-                @click="handleAddRule(scope.row)">添加规则</el-button>
-              <el-button class="btns" size="mini" type="text" icon="el-icon-attract"
-                @click="relevanceApi(scope.row)">关联API</el-button>
+              <!-- <el-button class="btns" size="mini" type="text" icon="el-icon-document"
+                @click="handleAddRule(scope.row)">添加规则</el-button> -->
+              <!-- <el-button class="btns" size="mini" type="text" icon="el-icon-attract"
+                @click="relevanceApi(scope.row)">关联API</el-button> -->
             </template>
           </el-table-column>
         </el-table>
@@ -361,8 +366,7 @@ import { addProtectSensitiveRule } from "@/api/system/protectSensitiveRule";
 import { listAllProject } from "@/api/system/project";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-
-import { treeListI } from "@/api/system/protectCategory"
+import { treeListI, categoryImport, getAttachData, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory"
 import { listTableByProject, getDatabaseListI } from "@/api/system/protectTableField";
 export default {
   name: "ProtectTableField",
@@ -707,7 +711,7 @@ export default {
             this.tableData.push({ "data": valueList[i] })
           }
         }
-        this.title = row.fieldName + " 示例值";
+        this.title = row.fieldName + " 样本";
         this.markingVisible = true
         // this.Loading = false
       }))
@@ -1016,9 +1020,9 @@ export default {
       let params = {
         name: key,
       };
-      listAllProject(params).then((resp) => {
+      getFrameworks(params).then((resp) => {
         this.projectList = resp.data;
-        this.projectList.unshift({ name: "全部", id: 0 })
+        this.projectList.unshift({ categoryName: "全部", id: 0 })
         if (this.formProjectList == null) {
           this.formProjectList = this.projectList;
         }
@@ -1031,7 +1035,7 @@ export default {
       let params = {
         name: key,
       };
-      listAllProject(params).then((resp) => {
+      getFrameworks(params).then((resp) => {
         this.formProjectListEdit = resp.data;
         // this.projectList.unshift({ name: "全部", id: 0 })
         if (this.formProjectListEdit == null) {
