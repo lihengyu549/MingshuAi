@@ -65,7 +65,8 @@
           <el-table-column label="更新时间" align="center" prop="updataTime" />
           <el-table-column label="操作" align="center">
             <template slot-scope="scope">
-              <el-button type="text" size="medium" :disabled="scope.row.dataSource === '内置'" @click="editFn(scope.row)">编辑</el-button>
+              <el-button type="text" size="medium" :disabled="scope.row.dataSource === '内置'"
+                @click="editFn(scope.row)">编辑</el-button>
               <el-button type="text" size="medium" @click="lookFn(scope.row)">查看</el-button>
             </template>
           </el-table-column>
@@ -74,7 +75,7 @@
           :limit.sync="queryParams.pageSize" @pagination="getList" />
       </el-col>
     </el-row>
-    <el-dialog title="导入框架" :visible.sync="importData.importShow" width="700px" append-to-body
+    <el-dialog title="导入框架" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px" append-to-body
       :close-on-click-modal="false">
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px">
@@ -100,7 +101,7 @@
       </div>
     </el-dialog>
     <!-- 新增编辑框 -->
-    <el-dialog :title="addOrEdit.title" :visible.sync="addOrEdit.show" width="700px" append-to-body
+    <el-dialog :title="addOrEdit.title" v-loading="importDataLoading" :visible.sync="addOrEdit.show" width="700px" append-to-body
       :close-on-click-modal="addOrEdit.flag == 3">
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" style="padding-right: 60px;">
@@ -222,7 +223,7 @@ export default {
           { required: true, message: "请选择导入框架文件", trigger: "blur" },
         ],
       },
-      treeID:'',
+      treeID: '',
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -237,6 +238,7 @@ export default {
         categoryId: '',
         minSecurityLevel: null,
       },
+      importDataLoading:false,
       remberNameRule: {},
       fieldNameRule: {},
       // 是否显示弹出层
@@ -246,6 +248,7 @@ export default {
         children: "children",
         label: "label"
       },
+      isName: true,
       showSucType: 0,
       Loading: false,
       markingVisible: false,
@@ -404,28 +407,38 @@ export default {
       this.addOrEditDataRuls.id = ''
     },
     /** 新增确定方法 */
-    addSubmitForm() {
-      this.$refs["addOrEdit"].validate((valid) => {
+    async addSubmitForm() {
+      this.$refs["addOrEdit"].validate(async (valid) => {
         let params = {
           name: this.addOrEditDataRuls.attachData,
           nodeId: this.addOrEditDataRuls.categoryId,
           securityLevel: this.addOrEditDataRuls.minSecurityLevel,
         }
         if (valid) {
+          this.importDataLoading = true
+          await this.rulsNameIsRight(this.addOrEditDataRuls.categoryId, params.name)
+          if (!this.isName) {
+            this.$modal.msgError("框架名称重复,请更改");
+          this.importDataLoading = false
+          return
+          }
           if (this.addOrEditDataRuls.id != null) {
             params.id = this.addOrEditDataRuls.id
             updataAttach(params).then((response) => {
               this.$modal.msgSuccess("修改成功");
               this.getList();
               this.addOrEdit.show = false
-            });
+              this.importDataLoading = false
+        });
           } else {
             addData(params).then((response) => {
               this.$modal.msgSuccess("新增成功");
               this.getList();
               this.addOrEdit.show = false
-            });
+              this.importDataLoading = false
+        });
           }
+          this.importDataLoading = false
         } else {
           return false
         }
@@ -438,7 +451,10 @@ export default {
       this.addOrEdit.show = false
     },
     addHandleNodeClick(node) {
+      let msg = ''
       if (node.children && node.children.length > 0) {
+        if(node.children[0].parentId == node.id)
+        msg += this.addNodeName
         node.disabled = true;
       } else {
         this.addNodeName = node.categoryName
@@ -463,7 +479,7 @@ export default {
       this.addOrEdit.show = true
       this.addOrEdit.title = '查看'
     },
-    messsucc(res,flag){
+    messsucc(res, flag) {
       this.$message.success(`${res.msg},${flag}${res.data}个`)
     },
     enabledFn(flag) {
@@ -484,7 +500,7 @@ export default {
             data.enable = true
             attachStatus(data).then(res => {
               if (res.code == 200) {
-                this.messsucc(res,flag)
+                this.messsucc(res, flag)
                 this.getList()
               }
             })
@@ -492,13 +508,13 @@ export default {
             data.enable = false
             attachStatus(data).then(res => {
               if (res.code == 200) {
-                this.messsucc(res,flag)
+                this.messsucc(res, flag)
                 this.getList()
               }
             })
           } else if (flag == '删除') {
-            for(let item of dataS) {
-              if(item.dataSource === '内置') {
+            for (let item of dataS) {
+              if (item.dataSource === '内置') {
                 this.$message({
                   type: 'warning',
                   message: '内置数据源不允许删除',
@@ -508,7 +524,7 @@ export default {
             }
             forceLogout(data).then(res => {
               if (res.code == 200) {
-                this.messsucc(res,flag)
+                this.messsucc(res, flag)
                 this.getList()
               }
             })
@@ -546,13 +562,12 @@ export default {
     handleFileChange(file, fileList) {
       this.importData.importFile = file.raw.name
       this.importData.fileList = fileList;
-      console.log(this.importData.fileList);
-
     },
     // 导入取消
     importcancel() {
       this.importData.categoryName = ''
       this.importData.importFile = ''
+      this.importData.fileList = []
       this.importData.importShow = false
     },
     importCli() {
@@ -725,7 +740,7 @@ export default {
       this.loading = true;
       let params = {
         ...this.queryParams,
-        nodeId:this.treeID
+        nodeId: this.treeID
       }
       getAttachData(params).then((response) => {
         this.protectTableFieldList = response.data.rows;
@@ -836,21 +851,38 @@ export default {
       });
       */
     },
+    async rulsNameIsRight(id, name) {
+      let params = {
+        nodeId: id,
+        name,
+      }
+      let res = await nameTesting(params)
+      this.isName = res.data
+    },
     /** 提交按钮 */
-    submitForm() {
-      this.$refs["importData"].validate((valid) => {
+    async submitForm() {
+      this.$refs["importData"].validate(async (valid) => {
         if (valid) {
-
+          this.importDataLoading = true
+          await this.rulsNameIsRight(0, this.importData.categoryName)
+          if (!this.isName) {
+            this.$modal.msgError("框架名称重复,请更改");
+            this.importDataLoading = false
+          return
+          }
           const formData = new FormData();
           // 将文件数组添加到 FormData 对象中
           formData.append('file', this.importData.fileList[0].raw);
           formData.append('categoryName', this.importData.categoryName);
-          categoryImport(formData).then(response => {
-            this.$modal.msgSuccess("新增成功");
-            // this.getList();
-            this.importData.importShow = false
-            this.gettreeOptionsList()
-          });
+          let res = await categoryImport(formData);
+          this.$modal.msgSuccess("新增成功");
+          // this.getList();
+          this.importData.categoryName = ''
+          this.importData.importFile = ''
+          this.importData.fileList = []
+          this.importData.importShow = false
+          this.gettreeOptionsList()
+          this.importDataLoading = true
         }
       });
     },

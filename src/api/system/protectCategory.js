@@ -75,7 +75,7 @@ export function getFrameworks (data) {
 // 测试名称是否可用
 export function nameTesting (data) {
   return request({
-    url: '/category/name/testing',
+    url: '/system/category/name/testing',
     method: 'get',
     params: data
   })
