@@ -75,8 +75,8 @@
           :limit.sync="queryParams.pageSize" @pagination="getList" />
       </el-col>
     </el-row>
-    <el-dialog title="导入框架" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px" append-to-body
-      :close-on-click-modal="false">
+    <el-dialog title="导入框架" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"
+      append-to-body :close-on-click-modal="false">
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px">
         <el-form-item label="框架名称" prop="categoryName">
@@ -101,8 +101,8 @@
       </div>
     </el-dialog>
     <!-- 新增编辑框 -->
-    <el-dialog :title="addOrEdit.title" v-loading="importDataLoading" :visible.sync="addOrEdit.show" width="700px" append-to-body
-      :close-on-click-modal="addOrEdit.flag == 3">
+    <el-dialog :title="addOrEdit.title" v-loading="importDataLoading" :visible.sync="addOrEdit.show" width="700px"
+      append-to-body :close-on-click-modal="addOrEdit.flag == 3">
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" style="padding-right: 60px;">
         <el-form-item label="子类名称" prop="attachData">
@@ -238,7 +238,7 @@ export default {
         categoryId: '',
         minSecurityLevel: null,
       },
-      importDataLoading:false,
+      importDataLoading: false,
       remberNameRule: {},
       fieldNameRule: {},
       // 是否显示弹出层
@@ -419,8 +419,8 @@ export default {
           await this.rulsNameIsRight(this.addOrEditDataRuls.categoryId, params.name)
           if (!this.isName) {
             this.$modal.msgError("框架名称重复,请更改");
-          this.importDataLoading = false
-          return
+            this.importDataLoading = false
+            return
           }
           if (this.addOrEditDataRuls.id != null) {
             params.id = this.addOrEditDataRuls.id
@@ -429,14 +429,20 @@ export default {
               this.getList();
               this.addOrEdit.show = false
               this.importDataLoading = false
-        });
+            })
+            .catch((err)=>{
+              this.importDataLoading = false
+            })
           } else {
             addData(params).then((response) => {
               this.$modal.msgSuccess("新增成功");
               this.getList();
               this.addOrEdit.show = false
               this.importDataLoading = false
-        });
+            })
+            .catch((err)=>{
+              this.importDataLoading = false
+            })
           }
           this.importDataLoading = false
         } else {
@@ -445,19 +451,44 @@ export default {
       });
 
     },
+
     // 新增取消
     addCancel() {
       this.addOrEditDataRuls = {}
       this.addOrEdit.show = false
     },
+    // 递归函数，查找父节点的 label 并返回完整的路径
+    findParentLabelsById(tree, nodeId, path = []) {
+      if (!Array.isArray(tree)) {
+        console.error('Expected tree to be an array but got:', tree);
+        return null;
+      }
+      for (const node of tree) {
+        if (node.children && node.children.length > 0) {
+          for (const child of node.children) {
+            if (child.id === nodeId) {
+              return [...path, node.label];
+            }
+          }
+          const found = this.findParentLabelsById(node.children, nodeId, [...path, node.label]);
+          if (found) {
+            return found;
+          }
+        }
+      }
+      return null; // 如果没有找到，返回 null
+    },
+
     addHandleNodeClick(node) {
-      let msg = ''
       if (node.children && node.children.length > 0) {
-        if(node.children[0].parentId == node.id)
-        msg += this.addNodeName
         node.disabled = true;
       } else {
-        this.addNodeName = node.categoryName
+        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+        if (parentLabels) {
+          this.addNodeName = parentLabels.join('/') + '/' + node.categoryName + '/';
+        } else {
+          this.addNodeName = node.categoryName + '/';
+        }
         this.addOrEditDataRuls.categoryId = node.id
         this.$refs.addSelectRef.blur()
       }
@@ -476,6 +507,7 @@ export default {
     lookFn(row) {
       this.addOrEdit.flag = 3
       this.addOrEditDataRuls = row
+      this.addNodeName = this.findParentLabelsById(this.categoryList, row.categoryId)
       this.addOrEdit.show = true
       this.addOrEdit.title = '查看'
     },
@@ -868,21 +900,26 @@ export default {
           if (!this.isName) {
             this.$modal.msgError("框架名称重复,请更改");
             this.importDataLoading = false
-          return
+            return
           }
           const formData = new FormData();
           // 将文件数组添加到 FormData 对象中
           formData.append('file', this.importData.fileList[0].raw);
           formData.append('categoryName', this.importData.categoryName);
-          let res = await categoryImport(formData);
-          this.$modal.msgSuccess("新增成功");
-          // this.getList();
-          this.importData.categoryName = ''
-          this.importData.importFile = ''
-          this.importData.fileList = []
-          this.importData.importShow = false
-          this.gettreeOptionsList()
-          this.importDataLoading = true
+          await categoryImport(formData).then(res=>{
+            this.$modal.msgSuccess("新增成功");
+            // this.getList();
+            this.importData.categoryName = ''
+            this.importData.importFile = ''
+            this.importData.fileList = []
+            this.importData.importShow = false
+            this.gettreeOptionsList()
+            this.importDataLoading = false
+          })
+          .catch((err) =>{
+            this.importDataLoading = false
+          })
+
         }
       });
     },
