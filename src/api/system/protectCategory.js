@@ -1,10 +1,11 @@
 import request from '@/utils/request'
+import {stringify} from '@/utils/ruoyi'
 import qs from 'qs'
 
 //获取分类框架列表
 export function treeListI (data) {
   return request({
-    url: '/ruoyi-system/category/list/all',
+    url: '/system/category/list/by/parentId',
     method: 'get',
     params: data
 
@@ -13,9 +14,12 @@ export function treeListI (data) {
 // 从Excel中导入分类分级数据
 export function categoryImport (query) {
   return request({
-    url: '/category/import',
+    url: '/system/category/import',
     method: 'post',
-    params: query
+    headers: {
+      "Content-Type":"multipart/form-data; ",
+    },
+    data: query
   })
 }
 
@@ -41,22 +45,33 @@ export function attachStatus(data) {
 }
 
 // 删除子类数据
-export function forceLogout() {
+export function forceLogout(data) {
   return request({
-    url: '/category/delete/attach/data',
-    method: 'delete'
+    url: '/system/category/delete/attach/data',
+    method: 'delete',
+    headers: {
+      "Content-Type":"application/x-www-form-urlencoded",
+    },
+    data: stringify(data)
   })
 }
 
 // 更新子类数据
 export function updataAttach(query) {
   return request({
-    url: '/ruoyi-system/category/edit/attach/data',
+    url: '/system/category/edit/attach/data',
     method: 'post',
     params: query
   })
 }
-
+// 获取所有分类框架名称
+export function getFrameworks (data) {
+  return request({
+    url: '/system/category/list/all/frameworks',
+    method: 'get',
+    params: data
+  })
+}
 // 测试名称是否可用
 export function nameTesting (data) {
   return request({
@@ -69,7 +84,7 @@ export function nameTesting (data) {
 // 增加子类数据
 export function addData(data) {
   return request({
-    url: '/ruoyi-system/category/add/attach/data',
+    url: '/system/category/add/attach/data',
     method: 'post',
     headers: {
       "Content-Type":"application/x-www-form-urlencoded",
