@@ -139,26 +139,9 @@
   </div>
 </template>
 <script>
-import {
-  listProtectTableField,
-  getProtectTableField,
-  delProtectTableField,
-  addProtectTableField,
-  updateProtectTableField,
-  getProtectCategoryI,
-  getProtectSensitiveRuleI,
-  importI,
-  testI,
-  fieldDataI,
-  queryApisI
-} from "@/api/system/protectTableField";
-import { addProtectSensitiveRule } from "@/api/system/protectSensitiveRule";
-import { listAllProject } from "@/api/system/project";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-
 import { treeListI, categoryImport, getAttachData, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory"
-import { listTableByProject, getDatabaseListI } from "@/api/system/protectTableField";
 export default {
   name: "ProtectTableField",
   components: { Treeselect },
@@ -173,9 +156,6 @@ export default {
       },
       categoryName: '',
       debounceTimeout: null,//防抖动
-      treeData: {
-        selectId: '0',
-      },
       treeOptions: [
         {
           value: '0',
@@ -239,20 +219,13 @@ export default {
         minSecurityLevel: null,
       },
       importDataLoading: false,
-      remberNameRule: {},
-      fieldNameRule: {},
-      // 是否显示弹出层
-      openRule: false,
       filterName: undefined,
       defaultProps: {
         children: "children",
         label: "label"
       },
       isName: true,
-      showSucType: 0,
       Loading: false,
-      markingVisible: false,
-      formProjectList: null,
       sourceList: [
         {
           value: 0,
@@ -307,16 +280,8 @@ export default {
           label: "5级"
         },
       ],
-      safetyValue: '',
-      safetyValueId: 0,
       // 遮罩层
       loading: false,
-      // 选中数组
-      ids: [],
-      // 非单个禁用
-      single: true,
-      // 非多个禁用
-      multiple: true,
       // 显示搜索条件
       showSearch: true,
       // 总条数
@@ -327,61 +292,10 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
-      securityRuleList: [],
-      selectTable: "",
-      selectDatabaseId: 0,
-      selectTableId: 0,
-      categoryTable: "全部",
-      categoryTableEdit: "",
-      projectNameEdit: "",
-      tableList: [{ tableName: "全部", id: 0 }],
-      databasetableList: [{ targetDatabase: "全部", id: 0 }],
       categoryList: [],
       yuanCategoryList: [],
       categoryListEdit: null,
       addNodeName: "",
-      // 表单参数
-      form: {},
-      // 表单校验
-      rules: {
-        sensitiveName: [
-          {
-            required: true, message: "规则名不能为空", trigger: "blur"
-          }
-        ],
-        sensitiveLevel: [
-          { required: true, message: "规则等级不能为空", trigger: "blur" }
-        ],
-        user: [
-          { required: true, message: "请输入数据库用户名称", trigger: "change" },
-        ],
-        password: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
-        ],
-        method: [
-          { required: true, message: "请输入数据库地址", trigger: "change" },
-          {
-            pattern:
-              /(?:(?:1[0-9][0-9]\.)|(?:2[0-4][0-9]\.)|(?:25[0-5]\.)|(?:[1-9][0-9]\.)|(?:[0-9]\.)){3}(?:(?:1[0-9][0-9])|(?:2[0-4][0-9])|(?:25[0-5])|(?:[1-9][0-9])|(?:[0-9]))/,
-            message: "请输入正确的Ipv4地址。例如:Ipv4地址:192.168.0.1",
-          },
-        ],
-        port: [
-          { required: true, message: "请输入端口号", trigger: "change" },
-          {
-            pattern:
-              /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
-            message:
-              "请输入0~65535之间的5个数字",
-          },
-
-          {
-            min: 1,
-            max: 5,
-            message: "长度在 1 ~ 5 个字符",
-          },
-        ],
-      },
     };
   },
   watch: {
@@ -460,7 +374,6 @@ export default {
     // 递归函数，查找父节点的 label 并返回完整的路径
     findParentLabelsById(tree, nodeId, path = []) {
       if (!Array.isArray(tree)) {
-        console.error('Expected tree to be an array but got:', tree);
         return null;
       }
       for (const node of tree) {
@@ -616,13 +529,13 @@ export default {
     handleClose(tag, index) {
       this.tags.splice(index, 1);
     },
-    jumpApi(url, id) {
-      const routeData = this.$router.resolve({
-        path: "/systemInfo/api",
-        query: { id: id, url: url },
-      });
-      window.open(routeData.href, '_blank')
-    },
+    // jumpApi(url, id) {
+    //   const routeData = this.$router.resolve({
+    //     path: "/systemInfo/api",
+    //     query: { id: id, url: url },
+    //   });
+    //   window.open(routeData.href, '_blank')
+    // },
     timeFormat(value) {
       let date = new Date(value);
       let y = date.getFullYear();
@@ -637,22 +550,6 @@ export default {
       let s = date.getSeconds();
       s = s < 10 ? "0" + s : s;
       return y + "-" + MM + "-" + d + " " + h + ":" + m;
-    },
-    fieldCli() {
-      this.fieldNameRule.unshift('')
-    },
-    deletfield(i) {
-      this.fieldNameRule.splice(i, 1)
-    },
-    deletCli(i) {
-      this.remberNameRule.splice(i, 1)
-    },
-    remberCli() {
-      if (this.remberNameRule == null) {
-        this.remberNameRule = []
-      }
-      this.remberNameRule.unshift('')
-
     },
     filterNode(value, data) {
       if (!value) return true;
@@ -684,18 +581,6 @@ export default {
       })
       this.getList()
     },
-    securityList(query) {
-      if (query) {
-        // this.loading = true;
-        setTimeout(() => {
-          // this.loading = false;
-          this.getProtectSensitiveRule(query);
-        }, 200);
-      } else {
-        this.getProtectSensitiveRule("");
-      }
-
-    },
     getProtectCategory(key) {
       this.treeLoading = true
       let data = {
@@ -725,49 +610,6 @@ export default {
         this.treeLoading = false
       });
     },
-    // categoryTableListEdit(query) {
-    //   if (query) {
-    //     // this.loading = true;
-    //     setTimeout(() => {
-    //       // this.loading = false;
-    //       this.getProtectCategoryEdit(query);
-    //     }, 200);
-    //   } else {
-    //     this.getProtectCategoryEdit("");
-    //   }
-    // },
-    // getProtectCategoryEdit(key) {
-    //   if (key) {
-    //     key = key.trim();
-    //   }
-    //   let data = {
-    //     name: key
-    //   };
-    //   getProtectCategoryI(data).then((resp) => {
-    //     let tempList = resp.data
-    //     for (let item of tempList) {
-    //       item.label = item.categoryName
-    //     }
-    //     this.categoryListEdit = this.handleTree(tempList, "id")
-    //     // this.categoryListEdit = this.handleTree(resp.data,"id")
-    //   });
-    // },
-
-    getDatabaseList(key) {
-      if (key) {
-        key = key.trim();
-      }
-      let params = {
-        projectId: this.dataSource,
-      };
-      getDatabaseListI(params).then((resp) => {
-        this.databasetableList = resp.data;
-        this.databasetableList.unshift({ targetDatabase: "全部", id: 0 })
-
-      });
-
-    },
-    /** 查询数据库字段名列表 */
     getList() {
       this.loading = true;
       let params = {
@@ -779,73 +621,6 @@ export default {
         this.total = response.data.total;
         this.loading = false;
       });
-    },
-    tableChange(value) {
-      this.selectTableId = value;
-    },
-    getProjectList(key) {
-      /*
-      if (key) {
-        key = key.trim();
-      }
-      let params = {
-        name: key,
-      };
-      listAllProject(params).then((resp) => {
-        this.projectList = resp.data;
-        this.projectList.unshift({ name: "全部", id: 0 })
-        if (this.formProjectList == null) {
-          this.formProjectList = this.projectList;
-        }
-      });
-      */
-    },
-    getProjectListEdit(key) {
-      /*
-      if (key) {
-        key = key.trim();
-      }
-      let params = {
-        name: key,
-      };
-      listAllProject(params).then((resp) => {
-        this.formProjectListEdit = resp.data;
-        // this.projectList.unshift({ name: "全部", id: 0 })
-        if (this.formProjectListEdit == null) {
-          this.formProjectListEdit = this.projectList;
-        }
-      });
-      */
-    },
-    // getTableList(key) {
-    //   if (key) {
-    //     key = key.trim();
-    //   }
-    //   let params = {
-    //     databaseId: this.selectDatabaseId,
-    //     tableName: key,
-    //   };
-    //   listTableByProject(params).then((resp) => {
-    //     this.tableList = resp.data;
-    //     this.tableList.unshift({ tableName: "全部", id: 0 })
-
-    //   });
-    // },
-    queryProjectList(query) {
-      if (query !== "") {
-        this.loading = true;
-        setTimeout(() => {
-          this.loading = false;
-          this.getProjectList(query);
-        }, 200);
-      } else {
-        this.getProjectList();
-      }
-    },
-    // 取消按钮
-    cancel() {
-      this.open = false;
-      // this.reset();
     },
     // 表单重置
     reset() {
@@ -862,26 +637,6 @@ export default {
       // this.$refs.tree.setCurrentKey(null);
       this.resetForm("queryParams");
       this.handleQuery();
-    },
-    /** 新增按钮操作 */
-    handleAdd() {
-      this.reset();
-      this.open = true;
-      this.title = "添加数据库字段名";
-    },
-    /** 修改按钮操作 */
-    handleUpdate(row) {
-      /*
-      this.securityRuleList = JSON.parse(row.securityRule)
-      this.reset();
-      const id = row.id || this.ids;
-      this.categoryTableEdit = row.categoryId
-      getProtectTableField(id).then((response) => {
-        this.form = response.data;
-        this.open = true;
-        this.title = "修改" + row.fieldName + "打标信息";
-      });
-      */
     },
     async rulsNameIsRight(id, name) {
       let params = {
@@ -923,32 +678,16 @@ export default {
         }
       });
     },
-    /** 删除按钮操作 */
-    handleDelete(row) {
-      /*
-      const ids = row.id || this.ids;
-      this.$modal
-        .confirm('是否确认删除数据库字段名编号为"' + ids + '"的数据项？')
-        .then(function () {
-          return delProtectTableField(ids);
-        })
-        .then(() => {
-          this.getList();
-          this.$modal.msgSuccess("删除成功");
-        })
-        .catch(() => { });
-      */
-    },
-    /** 导出按钮操作 */
-    handleExport() {
-      this.download(
-        "system/protectTableField/export",
-        {
-          ...this.queryParams,
-        },
-        `protectTableField_${new Date().getTime()}.xlsx`
-      );
-    },
+    // /** 导出按钮操作 */
+    // handleExport() {
+    //   this.download(
+    //     "system/protectTableField/export",
+    //     {
+    //       ...this.queryParams,
+    //     },
+    //     `protectTableField_${new Date().getTime()}.xlsx`
+    //   );
+    // },
   },
 };
 </script>
@@ -958,42 +697,9 @@ export default {
   background: "rgba(0, 0, 0, 0.7)" !important;
 }
 
-.addDialog /deep/ .el-input--medium {
-  width: 237px;
-}
-
 .addMsg /deep/ .el-input--medium {
   width: 237px;
 }
-
-.addMsg /deep/ .el-dialog:not(.is-fullscreen) {
-  margin-top: 10% !important;
-}
-
-.addMsg /deep/ .el-dialog__body {
-  padding-bottom: 0;
-
-}
-
-.addMsg /deep/ .el-dialog__footer {
-  padding-bottom: 32px;
-
-}
-
-.sourceClass {
-  margin: 5px;
-  display: inline-block;
-  height: 30px;
-  line-height: 28px;
-  color: #1890ff;
-  background-color: #e8f4ff;
-  /* border-color: #d1e9ff; */
-  border: 1px solid #d1e9ff;
-  padding: 0 5px 0 5px;
-  border-radius: 5px;
-  box-shadow: -2px 2px 5px 0px #e5f3ff;
-}
-
 .success {
   color: #67c23a;
 }
@@ -1001,120 +707,9 @@ export default {
 .error {
   color: #f56c6c;
 }
-
-.impShow {
-  text-align: center;
-}
-
 .el-tree-node /deep/ .el-tree-node {
   display: none;
 }
-
-.addDialog /deep/ .el-select {
-  /* width:520px; */
-  width: 78%;
-}
-
-.addDialog /deep/ .vue-treeselect__control {
-  /* width:520px; */
-  width: 111%;
-  margin: 0 !important;
-}
-
-.addDialog /deep/ .selectClass {
-  /* width: 520px; */
-  width: 80%;
-}
-
-.addDialog /deep/ .el-input--medium {
-  /* width: 520px; */
-  width: 80%;
-  /* margin-right: 0 !important; */
-
-}
-
-.addDialog /deep/ .el-form-item__label {
-  width: 110px !important;
-}
-
-.addDialog /deep/ .el-form-item__content {
-  margin-left: 110px !important;
-}
-
-.fielRul {
-  margin-left: -10px;
-}
-
-.fielRul ::-webkit-scrollbar {
-  width: 10px;
-}
-
-.fielRul ::-webkit-scrollbar-thumb {
-  background-color: #888;
-  border-radius: 5px;
-}
-
-.fielRul ::-webkit-scrollbar-track {
-  background-color: #f2f2f2;
-}
-
-.serclass /deep/ .el-input {
-  width: 64% !important;
-}
-
-.btn {
-  border: 0;
-  color: #409eff;
-  text-align: right;
-  padding-left: 20px;
-
-
-}
-
-.btn1 {
-  color: #409eff;
-  text-align: right;
-  margin-left: 90%;
-}
-
-.fieldName {
-  height: 150px !important;
-  overflow: auto !important;
-
-}
-
-.div1 {
-  position: relative;
-  /* width: 581px; */
-  width: 80%;
-
-
-}
-
-.spRul {
-  color: #ff4949;
-  width: 5px;
-  height: 5px;
-  /* margin-right: 5px; */
-  float: left;
-  margin-top: 10px;
-  margin-left: 5px;
-  /* position: absolute;
-  left: -14px;
-  z-index: 999;
-  top: 10px; */
-
-
-}
-
-.associatedTxt /deep/ .el-table::before {
-  background-color: transparent;
-}
-
-.btns {
-  font-size: 14px;
-}
-
 .serachInput {
   width: 60%;
   margin-right: 10px;
