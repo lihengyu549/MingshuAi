@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="px">
+    <el-form :model="queryParams" ref="queryForm" class="yuanDataClass" size="small" :inline="true" v-show="showSearch" label-width="px">
       <!-- <el-form-item label="分类分级框架">
         <el-select v-model="queryParams.selectProjectName" placeholder="请输入分类分级框架" filterable remote clearable
           @change="selectProjectChangeEdit($event)">
@@ -17,13 +17,30 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="扫描状态" prop="maskComplete">
+        
+      <el-form-item label="来源业务系统" prop="sourceName">
+        <el-input v-model="queryParams.sourceName" placeholder="请输入数据源名称" clearable @keyup.enter.native="handleQuery" />
+      </el-form-item>
+      
+      <el-form-item label="分类分级框架" prop="databaseType" >
+          <el-select clearable v-model="queryParams.databaseType" placeholder="请选择数据库类型">
+            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="发布状态" prop="maskComplete">
           <el-select clearable v-model="queryParams.maskComplete" placeholder="请选择扫描状态">
             <el-option v-for="item in maskCompleteStatus" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-      <el-form-item label="数据库名称" prop="targetDatabase">
+        <el-form-item label="执行状态" prop="maskComplete">
+          <el-select clearable v-model="queryParams.maskComplete" placeholder="请选择扫描状态">
+            <el-option v-for="item in maskCompleteStatus" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+      <!-- <el-form-item label="数据库名称" prop="targetDatabase">
         <el-input v-model="queryParams.targetDatabase" placeholder="请输入数据库名称" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
@@ -32,7 +49,7 @@
       </el-form-item>
       <el-form-item label="数据库端口" prop="targetPort">
         <el-input v-model="queryParams.targetPort" placeholder="请输入数据库端口" clearable @keyup.enter.native="handleQuery" />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -40,8 +57,20 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
-          v-hasPermi="['system:proxys:add']">新增</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd"
+          v-hasPermi="['system:proxys:add']">新增数据库</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd"
+          v-hasPermi="['system:proxys:add']">新增Excel文件</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd"
+          v-hasPermi="['system:proxys:add']">执行</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd"
+          v-hasPermi="['system:proxys:add']">删除</el-button>
       </el-col>
       <!-- <el-col :span="1.5">
         <el-button
@@ -187,16 +216,15 @@
       </div>
     </el-dialog> -->
     <!-- 添加或修改数据库代理对话框 -->
-    <el-dialog class="addMsg" :title="title" :visible.sync="open" width="450px" append-to-body
+    <el-dialog class="addMsg" :title="title" :visible.sync="open" width="580px" append-to-body
       :close-on-click-modal="false">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px" @submit.native.prevent>
+      <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
         <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
           <el-select v-model="form.databaseType" placeholder="请选择数据库类型">
             <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
             </el-option>
           </el-select>
         </el-form-item>
-        
         <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
           <el-input v-model="form.sourceName" placeholder="请输入数据源名称" />
         </el-form-item>
@@ -911,7 +939,6 @@ export default {
 }
 
 .addMsg /deep/ .el-form-item__label {
-  width: 92px !important;
   text-align: left;
 }
 
@@ -988,5 +1015,23 @@ export default {
   height: 15px;
   border-radius: 50%;
   background-color: #ccc;
+}
+.addMsg /deep/ .el-input{
+  width: 80%;
+}
+.addMsg /deep/ .el-select{
+  width: 80%;
+}
+.addMsg .el-select /deep/ .el-input{
+  width: 100%;
+}
+.yuanDataClass{
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.yuanDataClass /deep/ .el-form-item{
+  width: 30%;
 }
 </style>

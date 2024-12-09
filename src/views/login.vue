@@ -111,6 +111,7 @@ export default {
       loading: false,
       // 验证码开关
       captchaEnabled: true,
+      register:false,
     };
   },
   watch: {

@@ -152,13 +152,13 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="addSubmitForm()">确 定</el-button>
-        <el-button @click="addCancel">取 消</el-button>
+        <el-button @click="addCancel">取 消</el-button> 
       </div>
     </el-dialog>
     <!-- 添加或修改数据库代理对话框 -->
     <el-dialog class="addMsg" :title="title" :visible.sync="open" width="450px" append-to-body
       :close-on-click-modal="false">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px" @submit.native.prevent>
+      <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
         <el-form-item label="项目名称" prop="projectName" :rules="rules.projectName">
           <!-- <el-input v-model="form.projectId" placeholder="请输入项目名称" />
            -->
@@ -187,7 +187,7 @@
         <el-form-item label="数据库密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
           <el-input v-model="form.targetUserPassword" placeholder="请输入数据库密码" />
         </el-form-item>
-        <el-form-item label="数据库名称" prop="targetDatabase" :rules="rules.targetDatabase">
+        <el-form-item label="数据库名称" prop="targetDatabase" class="passwordBtn" :rules="rules.targetDatabase">
           <!-- 
           <el-input v-if="show" v-model="form.targetDatabase" placeholder="请输入数据库名称" /> -->
           <el-select ref="selectRef" allow-create filterable multiple clearable v-model="form.targetDatabase"

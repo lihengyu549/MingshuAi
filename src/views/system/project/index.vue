@@ -62,7 +62,7 @@
               </span>
             </template>
           </el-table-column>
-          <el-table-column label="更新时间" align="center" prop="updataTime" />
+          <el-table-column label="更新时间" align="center" prop="updateTime" />
           <el-table-column label="操作" align="center">
             <template slot-scope="scope">
               <el-button type="text" size="medium" :disabled="scope.row.dataSource === '内置'"
@@ -94,7 +94,7 @@
           </el-upload>
         </el-form-item>
       </el-form>
-      <el-button style="margin-left: 100px;" size="small" type="text" icon="el-icon-download">样例下载</el-button>
+      <el-button style="margin-left: 100px;" size="small" type="text" @click="downloadFile" id="btnDownload" icon="el-icon-download">样例下载</el-button>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="importcancel">取 消</el-button>
@@ -226,6 +226,7 @@ export default {
       },
       isName: true,
       Loading: false,
+      url:`${process.env.VUE_APP_BASE_API}/static/file/auth.zip`,
       sourceList: [
         {
           value: 0,
@@ -327,6 +328,7 @@ export default {
           name: this.addOrEditDataRuls.attachData,
           nodeId: this.addOrEditDataRuls.categoryId,
           securityLevel: this.addOrEditDataRuls.minSecurityLevel,
+          additional:this.addNodeName
         }
         if (valid) {
           this.importDataLoading = true
@@ -398,7 +400,7 @@ export default {
       } else {
         const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
         if (parentLabels) {
-          this.addNodeName = parentLabels.join('/') + '/' + node.categoryName + '/';
+          this.addNodeName = parentLabels.join('//') + '//' + node.categoryName ;
         } else {
           this.addNodeName = node.categoryName + '/';
         }
@@ -411,6 +413,7 @@ export default {
       this.addOrEditDataRuls = row
       this.addOrEdit.show = true
       this.addOrEdit.title = '编辑'
+      this.addNodeName = row.owner
       this.yuanCategoryList.forEach(item => {
         if (this.addOrEditDataRuls.categoryId == item.id) {
           this.addNodeName = item.categoryName
@@ -420,7 +423,7 @@ export default {
     lookFn(row) {
       this.addOrEdit.flag = 3
       this.addOrEditDataRuls = row
-      this.addNodeName = this.findParentLabelsById(this.categoryList, row.categoryId)
+      this.addNodeName = row.owner
       this.addOrEdit.show = true
       this.addOrEdit.title = '查看'
     },
@@ -662,7 +665,7 @@ export default {
           formData.append('file', this.importData.fileList[0].raw);
           formData.append('categoryName', this.importData.categoryName);
           await categoryImport(formData).then(res=>{
-            this.$modal.msgSuccess("新增成功");
+            this.messsucc(res,'导入条目数量共');
             // this.getList();
             this.importData.categoryName = ''
             this.importData.importFile = ''
@@ -678,6 +681,14 @@ export default {
         }
       });
     },
+    downloadFile() {
+      const link = document.createElement('a');
+      link.href = '/2.xlsx'; // 替换为你的文件路径
+      link.download = '分类分级框架模板.xlsx'; // 设置下载后的文件名
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
     // /** 导出按钮操作 */
     // handleExport() {
     //   this.download(
