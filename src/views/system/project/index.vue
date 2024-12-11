@@ -30,7 +30,7 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="分级" prop="levelId">
+          <el-form-item label="安全分级" prop="levelId">
             <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" placeholder="全部">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
@@ -38,12 +38,12 @@
           </el-form-item>
           <el-form-item>
             <!-- <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button> -->
-            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+            <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
           </el-form-item>
           <div style="margin: 20px 0 20px 25px;">
             <el-button type="primary" icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
-            <el-button type="primary" icon="el-icon-refresh" size="medium" @click="enabledFn('启用')">启用</el-button>
             <el-button type="primary" icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
+            <el-button type="primary" icon="el-icon-refresh" size="medium" @click="enabledFn('启用')">启用</el-button>
             <el-button type="primary" icon="el-icon-warning" size="medium" @click="enabledFn('禁用')">禁用</el-button>
           </div>
         </el-form>
@@ -80,7 +80,7 @@
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px">
         <el-form-item label="框架名称" prop="categoryName">
-          <el-input v-model="importData.categoryName" @input="nameTestingFn(importData.categoryName)"
+          <el-input v-model="importData.categoryName" @input="nameTestingFn(importData.categoryName)" maxlength="50"
             placeholder="请输入框架名称"></el-input>
         </el-form-item>
         <el-form-item label="导入框架" prop="importFile">
@@ -106,10 +106,10 @@
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" style="padding-right: 60px;">
         <el-form-item label="子类名称" prop="attachData">
-          <el-input v-model="addOrEditDataRuls.attachData" placeholder="请输入子类名称"></el-input>
+          <el-input v-model="addOrEditDataRuls.attachData" :disabled="addOrEdit.flag == 3" @input="sonNameTestingFn(addOrEditDataRuls.attachData)" maxlength="50" placeholder="请输入子类名称"></el-input>
         </el-form-item>
         <el-form-item class="addSelectClass" label="所属父类" prop="categoryId">
-          <el-select ref="addSelectRef" v-model="addNodeName">
+          <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
                 :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
@@ -118,7 +118,7 @@
           </el-select>
         </el-form-item>
         <el-form-item class="addSelectClass" prop="minSecurityLevel" label="所属分级">
-          <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部">
+          <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部" :disabled="addOrEdit.flag == 3">
             <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -156,15 +156,7 @@ export default {
       },
       categoryName: '',
       debounceTimeout: null,//防抖动
-      treeOptions: [
-        {
-          value: '0',
-          label: '金融'
-        },
-        {
-          value: '1',
-          label: '行业'
-        }],
+      treeOptions: [],
       addOrEdit: {
         title: '新增',
         show: false,
@@ -360,7 +352,6 @@ export default {
               this.importDataLoading = false
             })
           }
-          this.importDataLoading = false
         } else {
           return false
         }
@@ -400,9 +391,9 @@ export default {
       } else {
         const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
         if (parentLabels) {
-          this.addNodeName = parentLabels.join('//') + '//' + node.categoryName ;
+          this.addNodeName = parentLabels.join('-') + '-' + node.categoryName ;
         } else {
-          this.addNodeName = node.categoryName + '/';
+          this.addNodeName = node.categoryName + '-';
         }
         this.addOrEditDataRuls.categoryId = node.id
         this.$refs.addSelectRef.blur()
@@ -410,15 +401,15 @@ export default {
     },
     editFn(row) {
       this.addOrEdit.flag = 2
-      this.addOrEditDataRuls = row
+      this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
       this.addOrEdit.show = true
       this.addOrEdit.title = '编辑'
       this.addNodeName = row.owner
-      this.yuanCategoryList.forEach(item => {
-        if (this.addOrEditDataRuls.categoryId == item.id) {
-          this.addNodeName = item.categoryName
-        }
-      });
+      // this.yuanCategoryList.forEach(item => {
+      //   if (this.addOrEditDataRuls.categoryId == item.id) {
+      //     this.addNodeName = item.categoryName
+      //   }
+      // });
     },
     lookFn(row) {
       this.addOrEdit.flag = 3
@@ -527,6 +518,9 @@ export default {
       // nameTesting().then(res=>{
       //   console.log(res);
       // })
+    },
+    sonNameTestingFn(val) {
+      this.addOrEditDataRuls.attachData = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
     },
     // tags 关闭方法
     handleClose(tag, index) {
@@ -656,7 +650,7 @@ export default {
           this.importDataLoading = true
           await this.rulsNameIsRight(0, this.importData.categoryName)
           if (!this.isName) {
-            this.$modal.msgError("框架名称重复,请更改");
+            this.$modal.msgError("子类名称重复");
             this.importDataLoading = false
             return
           }
@@ -683,7 +677,7 @@ export default {
     },
     downloadFile() {
       const link = document.createElement('a');
-      link.href = '/2.xlsx'; // 替换为你的文件路径
+      link.href = '/file.xlsx'; // 替换为你的文件路径
       link.download = '分类分级框架模板.xlsx'; // 设置下载后的文件名
       document.body.appendChild(link);
       link.click();

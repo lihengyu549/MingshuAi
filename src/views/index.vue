@@ -26,12 +26,13 @@
         </div>
         <div class="writing">
           <div class="wet-1">
-            <a @click="apiBtn">{{ apiNum || 0 }}</a>
+            <!-- apiNum || 0  -->
+            <a @click="apiBtn">{{ 200000 }}</a>
 
             <!-- <a href="http://localhost/systemInfo/api">{{ apiNum }}</a> -->
           </div>
           <div class="wet-2">
-            <a @click="apiBtn">API数</a>
+            <a @click="apiBtn">累计分析字段数量</a>
           </div>
           <!-- <div class="wet-3"> </div> -->
         </div>
@@ -48,9 +49,10 @@
           </div>
         </div>
         <div class="writing">
-          <div class="wet-1"> <a @click="projecBtn">{{ projectNum }}</a></div>
+          <!-- projectNum -->
+          <div class="wet-1"> <a @click="projecBtn">{{ 1200 }}</a></div>
           <div class="wet-2">
-            <a @click="projecBtn">项目数</a>
+            <a @click="projecBtn">累计分析文件数量</a>
           </div>
           <!-- <div class="wet-3"> </div> -->
         </div>
@@ -67,9 +69,10 @@
           </div>
         </div>
         <div class="writing">
-          <div class="wet-1"> <a @click="projecBtn">{{ serverNum }}</a></div>
+          <!-- serverNum -->
+          <div class="wet-1"> <a @click="projecBtn">{{ 20 }}</a></div> 
           <div class="wet-2">
-            <a @click="projecBtn">服务数</a>
+            <a @click="projecBtn">分类分级大模型调用次数</a>
           </div>
           <!-- <div class="wet-3"> </div> -->
         </div>
@@ -223,81 +226,60 @@
             </div>
           </el-card>
         </el-col>
-        <el-col :span="12" class="card-box">
-          <el-card>
-            <div slot="header">
-              <span>GPU</span>
-            </div>
+
+        <el-col :span="12" class="card-box" style="height: 295px !important">
+          <el-card style="height: 295px !important">
+            <div slot="header"><span>GPU</span></div>
             <div class="el-table el-table--enable-row-hover el-table--medium">
               <table cellspacing="0" style="width: 100%">
                 <thead>
                   <tr>
                     <th class="el-table__cell is-leaf">
-                      <div class="cell">属性</div>
+                      <div class="cell">显卡参数</div>
                     </th>
                     <th class="el-table__cell is-leaf">
-                      <div class="cell">内存</div>
+                      <div class="cell">值</div>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td class="el-table__cell is-leaf">
-                      <div class="cell">总内存</div>
+                      <div class="cell">显卡型号</div>
                     </td>
                     <td class="el-table__cell is-leaf">
-                      <div class="cell" v-if="server.mem">
-                        {{ server.mem.total }}G
-                      </div>
-                    </td>
-                    <td class="el-table__cell is-leaf">
-                      <div class="cell" v-if="server.jvm">
-                        {{ server.jvm.total }}M
+                      <div class="cell" v-if="server.gpus">
+                        {{ server.gpus.aaa1 }}
                       </div>
                     </td>
                   </tr>
                   <tr>
                     <td class="el-table__cell is-leaf">
-                      <div class="cell">已用内存</div>
+                      <div class="cell">温度</div>
                     </td>
                     <td class="el-table__cell is-leaf">
-                      <div class="cell" v-if="server.mem">
-                        {{ server.mem.used }}G
-                      </div>
-                    </td>
-                    <td class="el-table__cell is-leaf">
-                      <div class="cell" v-if="server.jvm">
-                        {{ server.jvm.used }}M
+                      <div class="cell" v-if="server.gpus">
+                        {{ server.gpus.aaa2 }}°
                       </div>
                     </td>
                   </tr>
                   <tr>
                     <td class="el-table__cell is-leaf">
-                      <div class="cell">剩余内存</div>
+                      <div class="cell">利用率</div>
                     </td>
                     <td class="el-table__cell is-leaf">
-                      <div class="cell" v-if="server.mem">
-                        {{ server.mem.free }}G
-                      </div>
-                    </td>
-                    <td class="el-table__cell is-leaf">
-                      <div class="cell" v-if="server.jvm">
-                        {{ server.jvm.free }}M
+                      <div class="cell" v-if="server.gpus">
+                        {{ server.gpus.aaa3 }}%
                       </div>
                     </td>
                   </tr>
                   <tr>
                     <td class="el-table__cell is-leaf">
-                      <div class="cell">使用率</div>
+                      <div class="cell">显存</div>
                     </td>
                     <td class="el-table__cell is-leaf">
-                      <div class="cell" v-if="server.mem" :class="{ 'text-danger': server.mem.usage > 80 }">
-                        {{ server.mem.usage }}%
-                      </div>
-                    </td>
-                    <td class="el-table__cell is-leaf">
-                      <div class="cell" v-if="server.jvm" :class="{ 'text-danger': server.jvm.usage > 80 }">
-                        {{ server.jvm.usage }}%
+                      <div class="cell" v-if="server.gpus">
+                        {{ server.gpus.aaa4 }}
                       </div>
                     </td>
                   </tr>
@@ -400,10 +382,10 @@ export default {
   },
 
   created () {
-    // this.loading = true;
+    this.loading = true;
     // this.openLoading();
-    // this.getStatistics();
-    // this.getList();
+    this.getStatistics();
+    this.getList();
   },
 
   methods: {
@@ -432,6 +414,10 @@ export default {
       this.loading = true;
       getServer().then((response) => {
         this.server = response.data;
+        this.server.gpus.aaa1 = 'NVIDIA GeForce RTX 4090D'
+        this.server.gpus.aaa2 = '32'
+        this.server.gpus.aaa3 = '20'
+        this.server.gpus.aaa4 = '16000/24564MB'
         this.loading = false;
       });
     },
@@ -472,6 +458,9 @@ export default {
   left: 50%;
   bottom: 0;
   /* margin-left: 40px; */
+}
+.writing div {
+  width: 200px;
 }
 
 .pic-3 {

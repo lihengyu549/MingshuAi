@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" class="yuanDataClass" size="small" :inline="true" v-show="showSearch" label-width="px">
+    <el-form :model="queryParams" ref="queryForm" class="yuanDataClass" size="small" :inline="true" v-show="showSearch" label-width="auto">
       <!-- <el-form-item label="分类分级框架">
         <el-select v-model="queryParams.selectProjectName" placeholder="请输入分类分级框架" filterable remote clearable
           @change="selectProjectChangeEdit($event)">
@@ -50,9 +50,9 @@
       <el-form-item label="数据库端口" prop="targetPort">
         <el-input v-model="queryParams.targetPort" placeholder="请输入数据库端口" clearable @keyup.enter.native="handleQuery" />
       </el-form-item> -->
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+      <el-form-item class="searchBtn">
+        <el-button type="primary" icon="el-icon-search" size="small" @click="handleQuery">搜索</el-button>
+        <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
     <el-row :gutter="10" class="mb8">
@@ -61,7 +61,7 @@
           v-hasPermi="['system:proxys:add']">新增数据库</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd"
+        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleEcelFn"
           v-hasPermi="['system:proxys:add']">新增Excel文件</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -226,7 +226,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
-          <el-input v-model="form.sourceName" placeholder="请输入数据源名称" />
+          <el-input v-model="form.sourceName" @input="nameTestingFn(importData.categoryName)" maxlength="50" placeholder="请输入数据源名称" />
         </el-form-item>
         <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
           <!-- <el-input v-model="form.projectId" placeholder="请输入分类分级框架" />
@@ -245,13 +245,13 @@
         <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
           <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
         </el-form-item>
-        <el-form-item label="数据库用户" prop="targetUserName" :rules="rules.targetUserName">
+        <el-form-item label="用户" prop="targetUserName" :rules="rules.targetUserName">
           <el-input v-model="form.targetUserName" placeholder="请输入数据库用户名称" />
         </el-form-item>
-        <el-form-item label="数据库密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
+        <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
           <el-input v-model="form.targetUserPassword" placeholder="请输入数据库密码" />
         </el-form-item>
-        <el-form-item label="数据库名称" prop="targetDatabase" :rules="rules.targetDatabase">
+        <el-form-item label="库名" prop="targetDatabase" :rules="rules.targetDatabase">
           <!-- 
           <el-input v-if="show" v-model="form.targetDatabase" placeholder="请输入数据库名称" /> -->
           <el-select ref="selectRef" allow-create filterable multiple clearable v-model="form.targetDatabase"
@@ -319,6 +319,41 @@
         </div>
       </div>
     </el-dialog>
+    
+    <el-dialog title="导入框架" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"
+      append-to-body :close-on-click-modal="false">
+      <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
+        :inline="true" label-width="120px">
+        <el-form-item label="框架名称" prop="categoryName">
+          <el-input v-model="importData.categoryName" @input="nameTestingFn(importData.categoryName)"
+            placeholder="请输入框架名称"></el-input>
+        </el-form-item>
+        
+        <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryName">
+          <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
+            placeholder="全部">
+            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        
+        <el-form-item label="导入框架" prop="importFile">
+          <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
+        </el-form-item>
+        <el-form-item class="uploadClass">
+          <el-upload class="upload-demo" :limit="1" :file-list="importData.fileList" :auto-upload="false"
+            :http-request="submitForm" action="" accept=".xls,.xlsx" :show-file-list="false"
+            :on-change="handleFileChange">
+            <el-button size="mini" type="primary">选择文件</el-button>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <el-button style="margin-left: 100px;" size="small" type="text" @click="downloadFile" id="btnDownload" icon="el-icon-download">样例下载</el-button>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitFormExcelFn">确 定</el-button>
+        <el-button @click="importcancel">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -335,6 +370,8 @@ export default {
   name: "Proxys",
   data () {
     return {
+      treeOptions: [],
+
       samplingNum: 10,
       checkList: true,
       show: true,
@@ -417,6 +454,9 @@ export default {
         userName: [
           { required: true, message: "用户名称不能为空", trigger: "blur" },
         ],
+        sourceName:[{
+          required: true, message: "用户名称不能为空", trigger: "blur"
+        }],
         databaseType: [{ required: true, message: '请选择数据库类型', trigger: 'blur' }],
         projectName: [{ required: true, message: '请选择选分类分级框架', trigger: 'blur' }],
         targetUserName: [
@@ -446,7 +486,25 @@ export default {
             message: "长度在 1 ~ 5 个字符",
           },
         ],
-      }
+      },
+      importDataLoading: false,
+      importData: {
+        importFile: '', // 导入魔板文件名
+        fileList: [],//导入模板的文件数据
+        categoryName: '',//框架名称
+        importShow: false,
+      },
+          // 表单校验
+          importDataRules: {
+        categoryName: [
+          {
+            required: true, message: "请输入框架名称", trigger: "blur"
+          }
+        ],
+        importFile: [
+          { required: true, message: "请选择导入框架文件", trigger: "blur" },
+        ],
+      },
     };
   },
 
@@ -455,8 +513,22 @@ export default {
     // this.queryParams.projectId = 0
     this.getList();
     this.getProjectListEdit()
+    this.gettreeOptionsList()
   },
   methods: {
+    
+    nameTestingFn(val) {
+      this.importData.categoryName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
+      // nameTesting().then(res=>{
+      //   console.log(res);
+      // })
+    },
+    gettreeOptionsList() {
+      this.Loading = true
+      getFrameworks().then((response) => {
+        this.treeOptions = response.data
+      });
+    },
     findDatabaseValueByName (name) {
       let value;
       for (let i = 0; i < this.databaseTypeList.length; i++) {
@@ -910,6 +982,28 @@ export default {
       this.deleteVisible = true
 
     },
+    handleEcelFn(){
+      this.importData.importShow = true
+    },
+    handleFileChange(file, fileList) {
+      this.importData.importFile = file.raw.name
+      this.importData.fileList = fileList;
+    },
+    // 导入取消
+    importcancel() {
+      this.importData.categoryName = ''
+      this.importData.importFile = ''
+      this.importData.fileList = []
+      this.importData.importShow = false
+    },
+    downloadFile() {
+      const link = document.createElement('a');
+      link.href = '/2.xlsx'; // 替换为你的文件路径
+      link.download = '分类分级框架模板.xlsx'; // 设置下载后的文件名
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
     /** 导出按钮操作 */
     handleExport () {
       this.download('system/proxys/export', {
@@ -1033,5 +1127,37 @@ export default {
 }
 .yuanDataClass /deep/ .el-form-item{
   width: 30%;
+}
+.yuanDataClass /deep/ .el-form-item__label{
+  width: 25%;
+}
+.yuanDataClass /deep/ .el-form-item__content{
+  width: 75%;
+}
+.yuanDataClass /deep/ .el-select{
+  width: 100%;
+}
+.searchBtn{
+  margin-left: auto;
+  height: 100%;
+}
+.searchBtn /deep/ .el-form-item__content{
+   margin-left: 203px
+}
+
+.importForm /deep/ .el-form-item--medium {
+  width: 70%;
+
+}
+
+.importForm /deep/ .el-form-item__content {
+  width: calc(100% - 145px);
+}
+
+.uploadClass {
+  width: 20% !important;
+}
+.addSelectClass /deep/ .el-select {
+  width: calc(100%);
 }
 </style>
