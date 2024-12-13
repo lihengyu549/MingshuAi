@@ -40,7 +40,7 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd"
+        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdda"
           v-hasPermi="['system:proxys:add']">确认勾选项</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -53,19 +53,25 @@
       <!-- <el-table-column type="selection" width="55" align="center" /> -->
       <!-- <el-table-column label="id" align="center" prop="id" /> -->
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="字段名" align="center" prop="aaa1" />
-      <el-table-column label="字段注释" align="center" prop="aaa1" />
-      <el-table-column label="来源业务系统" align="center" prop="aaa1" />
-      <el-table-column label="数据源" align="center" prop="aaa1" />
-      <el-table-column label="所属库" align="center" prop="aaa1" />
-      <el-table-column label="所属表" align="center" prop="aaa1" />
-      <el-table-column label="分类" align="center" prop="aaa1" />
-      <el-table-column label="安全分级" align="center" prop="aaa1" />
-      <el-table-column label="样本" align="center" prop="aaa1">
+      <el-table-column label="字段名" align="center" prop="aaa1" show-overflow-tooltip />
+      <el-table-column label="字段注释" align="center" prop="aaa2" show-overflow-tooltip />
+      <el-table-column label="来源业务系统" align="center" prop="aaa3" show-overflow-tooltip />
+      <el-table-column label="数据源" align="center" prop="aaa4" show-overflow-tooltip />
+      <el-table-column label="所属库" align="center" prop="aaa5" show-overflow-tooltip />
+      <el-table-column label="所属表" align="center" prop="aaa6" show-overflow-tooltip />
+      <el-table-column label="分类" align="center" prop="aaa7" show-overflow-tooltip />
+      <el-table-column label="安全分级" align="center" prop="aaa8" show-overflow-tooltip />
+      <el-table-column label="样本" align="center" prop="aaa9" show-overflow-tooltip>
         <template slot-scope="scope">
           <el-tooltip placement="bottom" effect="light">
-            <div slot="content">多行信息<br />第二行信息<br />多行信息<br />多行信息<br />多行信息<br />多行信息<br /></div>
-            <el-button size="mini" type="text" >查看</el-button>
+            <div slot="content">
+              <el-table :data="tableData" height="250" border class="tableCla" style="width: 100%">
+                <el-table-column type="index" label="序号" width="50" />
+                <el-table-column prop="date" label="字段值" width="100">
+                </el-table-column>
+              </el-table>
+            </div>
+            <el-button size="mini" type="text">查看</el-button>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -79,12 +85,26 @@
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
-    <el-dialog class="deleteCla" title="系统提示" :visible.sync="deleteVisible" width="450px" append-to-body
+    <el-dialog title="分类分级框架结果修改" :visible.sync="deleteVisible" width="650px" style="padding: 0 20px;" append-to-body
       :close-on-click-modal="false">
+      <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
+        <el-form-item label="分类" prop="aaa1">
+          <el-input v-model="resultForm.aaa1" placeholder="请输入分类" clearable @keyup.enter.native="handleQuery" />
+        </el-form-item>
+        <el-form-item label="安全分级" class="addSelectClass" prop="aaa2">
+        <el-select v-model="resultForm.aaa2" placeholder="请选择">
+            <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span>
+          <el-button type="primary" @click="deleteVisible = false"> 确定 </el-button>
+          <el-button @click="deleteVisible = false">取消</el-button>
+        </span>
+      </template>
     </el-dialog>
-    <el-drawer title="结果查看" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl" size="80%"
-      :before-close="handleClose">
-    </el-drawer>
   </div>
 </template>
 
@@ -101,6 +121,49 @@ export default {
   name: "ProxysResult",
   data() {
     return {
+      addOptions: [
+        {
+          value: 1,
+          label: "1级"
+        }, {
+          value: 2,
+          label: "2级"
+        }, {
+          value: 3,
+          label: "3级"
+        }, {
+          value: 4,
+          label: "4级"
+        }, {
+          value: 5,
+          label: "5级"
+        },
+      ],
+      resultForm: {
+        aaa1: '',
+        aaa2: '',
+      },
+      tableData: [{
+        date: '安徽',
+        name: '阿吉',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '河南',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '山东',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '北京',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '北京',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }],
       addOptions: [
         {
           value: 1,
@@ -181,8 +244,6 @@ export default {
       loading: true,
       // 选中数组
       ids: [],
-      // 非单个禁用
-      single: true,
       // 非多个禁用
       multiple: true,
       showSucType: 0,
@@ -303,7 +364,6 @@ export default {
     // this.queryParams.selectProjectName = "全部"
     // this.queryParams.projectId = 0
     this.getList();
-    this.getProjectListEdit()
     this.gettreeOptionsList()
   },
   methods: {
@@ -330,6 +390,9 @@ export default {
       //   console.log(res);
       // })
     },
+
+    handleAdda() { },
+    handleEcelFn() { },
     gettreeOptionsList() {
       this.Loading = true
       getFrameworks().then((response) => {
@@ -407,76 +470,6 @@ export default {
     messsucc(res, flag) {
       this.$message.success(`${res.msg},${flag}${res.data}个`)
     },
-    submitFormExcelFn() {
-      this.$refs["importData"].validate(async (valid) => {
-        if (valid) {
-          this.importDataLoading = true
-          // await this.rulsNameIsRight(this.importData.categoryId, params.name)
-          if (!true) {
-            this.$modal.msgError("框架名称重复,请更改");
-            this.importDataLoading = false
-            return
-          } else {
-            const formData = new FormData();
-            // 将文件数组添加到 FormData 对象中
-            formData.append('file', this.importData.fileList[0].raw);
-            formData.append('categoryId', this.importData.categoryId);
-            formData.append('sourceName', this.importData.sourceName);
-            await importExcel(formData).then(res => {
-              this.messsucc(res, '导入条目数量共');
-              // this.getList();
-              this.importData.categoryName = ''
-              this.importData.importFile = ''
-              this.importData.fileList = []
-              this.importData.importShow = false
-              this.gettreeOptionsList()
-              this.importDataLoading = false
-            })
-              .catch((err) => {
-                this.importDataLoading = false
-              })
-          }
-        } else {
-          return false
-        }
-      });
-    },
-    handleClose() {
-      this.drawerShow = false
-    },
-    markingCli() {
-      this.$confirm('您是否要开始数据扫描？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        let ck = ''
-        if (this.checkList == true) {
-          ck = '1'
-        } else {
-          ck = '0'
-        }
-        let data = {
-          nlp: ck,
-          proxyId: this.markingI,
-          type: this.radio,
-          samplingSize: this.samplingNum
-
-        }
-        databaseMaskI(data).then((res => {
-          this.$alert('数据已提交', '数据扫描', {
-            confirmButtonText: '确定',
-            type: 'success'
-          });
-          this.markingVisible = false
-          this.getList();
-        }))
-        // 用户点击确定按钮，执行相关操作
-      }).catch(() => {
-        // 用户点击了取消按钮，不做任何操作
-      });
-
-    },
 
     // 定时器，防抖使用
     inputSearch(data) {
@@ -485,224 +478,43 @@ export default {
         this.getList()
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
-    handleChange(value) {
-      this.radio = value
-    },
-    deliveryStrategy() {
-      this.$confirm('您是否要一键下发策略？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        strategyAll().then((res => {
-          this.$message({
-            message: "一键下发策略成功",
-            duration: 5000,
-            type: 'success'
-          });
-
-        }))
-        // 用户点击确定按钮，执行相关操作
-      }).catch(() => {
-        // 用户点击了取消按钮，不做任何操作
-      });
-    },
-
-    databasesNum(name, id) {
-      this.$router.push({
-        path: "/risk/proxyUser",
-        query: { id: id, name: name },
-      });
-    },
-    addSubmitForm() {
-      this.$refs["addForm"].validate((valid) => {
-        if (valid) {
-          this.addForm.proxyDatabaseId = this.addUserId
-          usersAddI(this.addForm).then((response) => {
-            this.$message({
-              message: "添加成功",
-              duration: 3000,
-              type: 'success'
-            });
-            this.addUserVisible = false;
-            this.getList();
-          });
-        }
-      });
-
-    },
-    // 取消按钮
-    addCancel() {
-      this.addUserVisible = false;
-      this.addReset();
-    },
-    //添加用户
-    addUsers(row) {
-      this.addReset();
-      this.addUserId = row.id
-      this.addUserVisible = true
-    },
-    // 运行状态
-    handleSwitchChange(row) {
-      row.proxyStatus = !row.proxyStatus
-      if (row.proxyStatus == true) {
-        this.$confirm('您是否要关闭运行状态？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          let data = {
-            proxyId: row.id,
-          }
-          stopI(data).then((res => {
-            row.proxyStatus = false
-            this.getList()
-          }))
-
-          // 用户点击确定按钮，执行相关操作
-        }).catch(() => {
-          // 用户点击了取消按钮，不做任何操作
-        });
-      } else {
-        this.$confirm('您是否要开启运行状态？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          let data = {
-            proxyId: row.id,
-          }
-          startI(data).then((res => {
-            row.proxyStatus = true
-            this.getList()
-          }))
-          // 用户点击确定按钮，执行相关操作
-        }).catch(() => {
-          // 用户点击了取消按钮，不做任何操作
-        });
-
-      }
-
-    },
-    switchShowTagFunc(row) {
-      if (row.showTag == 1) {
-        row.showTag = 0
-        row.targetUserPassword = '******'
-      } else {
-        row.showTag = 1
-        row.targetUserPassword = row.oldPassword
-      }
-    },
-    strategyPush(row) {
-      this.$confirm('您是否要开始策略下发？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        let data = {
-          proxyId: row.id,
-        }
-        strategyPushI(data).then((res => {
-
-          this.$alert(res.msg, '策略下发', {
-            confirmButtonText: '确定',
-          });
-        }))
-        // 用户点击确定按钮，执行相关操作
-      }).catch(() => {
-        // 用户点击了取消按钮，不做任何操作
-      });
-
-    },
-    dataMarking(row) {
-      this.markingI = row.id
-      this.samplingNum = 10
-      this.radio = "1"
-      this.checkList = true
-      if (row.state == "COMPLETE") {
-        this.$confirm('您已经扫描成功,是否要重新开始数据扫描？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-
-          this.markingVisible = true
-          // 用户点击确定按钮，执行相关操作
-        }).catch(() => {
-          // 用户点击了取消按钮，不做任何操作
-        });
-      } else if (row.state == "RUNNING") {
-        this.$message({
-          message: '数据正在扫描中,请稍后...',
-          type: 'warning'
-        });
-      } else if (row.state == "NONE") {
-
-        this.markingVisible = true
-      } else if (row.state == "ERR") {
-        this.$confirm('数据扫描失败,是否重新开始扫描？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'error'
-        }).then(() => {
-          this.markingVisible = true
-          // 用户点击确定按钮，执行相关操作
-        }).catch(() => {
-          // 用户点击了取消按钮，不做任何操作
-        });
-
-      }
-
-
-    },
-    getProjectListEdit(key) {
-      if (key) {
-        key = key.trim();
-      }
-      let params = {
-        name: key,
-      };
-
-      getFrameworks(params).then((resp) => {
-        this.formProjectListEdit = resp.data;
-        let data = JSON.parse(JSON.stringify(this.formProjectListEdit))
-
-        this.selectProjectListEdit = data;
-        this.selectProjectListEdit.unshift({ name: "全部", id: 0 })
-        // if (this.formProjectListEdit == null) {
-        //   this.formProjectListEdit = this.projectList;
-        // }
-      });
-    },
-    selectProjectChangeEdit(e) {
-      this.projectNameEdit = e
-      // this.form.projectName = 
-      this.queryParams.projectId = e
-
-    },
-
-    projectChangeEdit(e) {
-      this.projectNameEdit = e
-      // this.form.projectName = 
-      this.form.projectId = e
-
-    },
     /** 查询数据库代理列表 */
     getList() {
       this.loading = true;
       if (this.queryParams.projectId == 0) {
         this.queryParams.projectId = null
       }
-      listProxys(this.queryParams).then(response => {
-        this.proxysList = response.rows;
-        for (let item of this.proxysList) {
-          item.showTag = 0
-          item.oldPassword = item.targetUserPassword
-          item.targetUserPassword = '******'
-        }
-        this.total = response.total;
-        this.loading = false;
-      });
+      this.proxysList = [{
+        id: 0,
+        aaa1: 'ADDRESS',
+        aaa2: '通讯地址',
+        aaa3: '测试系统',
+        aaa4: '数据源01',
+        aaa5: 'database01',
+        aaa6: 'table01',
+        aaa7: '未分类',
+        aaa8: '未分级',
+        aaa9: '未确认',
+      }, {
+        id: 1,
+        aaa1: 'BANK_NO',
+        aaa2: '银行编号',
+        aaa3: '测试系统',
+        aaa4: '数据源01',
+        aaa5: 'database02',
+        aaa6: 'table01',
+        aaa7: '客户-个人-个人自然信息-信息资产管理信息',
+        aaa8: '2级',
+        aaa9: '已确认',
+      },
+      ],
+        this.total = 20;
+      this.loading = false;
+      // listProxys(this.queryParams).then(response => {
+      //   this.proxysList = response.rows;
+      //   this.total = response.total;
+      //   this.loading = false;
+      // });
     },
     // 取消按钮
     cancel() {
@@ -737,37 +549,6 @@ export default {
       };
       this.resetForm("form");
     },
-    // 连接测试
-    connectTest(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          let data = JSON.parse(JSON.stringify(this.form))
-          delete data.projectName
-          data.targetDatabase = JSON.stringify(data.targetDatabase)
-          data.databaseType = this.findDatabaseValueByName(this.form.databaseType)
-          // for (let i = 0; i < this.databaseTypeList.length; i++) {
-          //   if (this.form.databaseType == this.databaseTypeList[i].name) {
-          //     data.databaseType = this.databaseTypeList[i].value
-          //   }
-          // }
-          connectTestI(data).then((res => {
-            if (res.code == 200) {
-              this.showSucType = 1
-            } else {
-              this.showSucType = 2
-            }
-
-          })).catch(() => {
-            this.showSucType = 2
-          })
-
-        } else {
-          // console.log('error submit!!');
-          return false;
-        }
-
-      })
-    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
@@ -783,156 +564,14 @@ export default {
     // 多选框选中数据
     handleSelectionChange(selection) {
       this.ids = selection.map(item => item.id)
-      this.single = selection.length !== 1
       this.multiple = !selection.length
-    },
-    /** 新增按钮操作 */
-    handleAdd() {
-      // this.show = true
-      // this.form.projectName = "ruoyi-auth"
-      // this.form.targetIp = "192.168.3.14"
-      // this.form.databaseType = "MYSQL"
-      // this.form.targetPort = "3306"
-      // this.form.targetUserName = "root"
-      // this.form.targetUserPassword = "Mysql123!@#"
-      this.showSucType = 0
-      this.projectNameEdit = null
-      this.targetDataList = []
-      this.reset();
-      this.open = true;
-      this.title = "添加数据库";
-    },
-    /** 修改按钮操作 */
-    handleUpdate(row) {
-      this.reset();
-      const id = row.id || this.ids
-      getProxys(id).then(response => {
-        this.form = response.data;
-        this.open = true;
-        this.title = "修改数据库";
-      });
-    },
-    /** 提交按钮 */
-    submitForm() {
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          if (this.form.id != null) {
-            updateProxys(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            });
-          } else {
-            let data = JSON.parse(JSON.stringify(this.form))
-            delete data.projectName
-            data.targetDatabase = JSON.stringify(data.targetDatabase)
-            data.databaseType = this.findDatabaseValueByName(this.form.databaseType)
-            // for (let i = 0; i < this.databaseTypeList.length; i++) {
-            //   if (this.form.databaseType == this.databaseTypeList[i].name) {
-            //     data.databaseType = this.databaseTypeList[i].value
-            //   }
-            // }
-            createProxys(data).then(response => {
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            });
-          }
-        }
-      });
-    },
-    /** 删除按钮操作 */
-    deleteClick(ids) {
-      delProxys(ids).then(() => {
-        this.getList();
-        this.$modal.msgSuccess("删除成功");
-        this.deleteVisible = false
-      }).catch(() => { })
-    },
-    handleDelete(row) {
-      this.serialNumber = row.id || this.ids;
-      this.deleteVisible = true
-
     },
     handleEcelFn() {
       this.importData.importShow = true
       this.resetForm("importData");
     },
-    handleFileChange(file, fileList) {
-      this.importData.importFile = file.raw.name
-      this.importData.fileList = fileList;
-    },
-    // 导入取消
-    importcancel() {
-      this.importData.categoryId = ''
-      this.importData.importFile = ''
-      this.importData.sourceName = ''
-      this.importData.fileList = []
-      this.importData.importShow = false
-    },
-    downloadFile() {
-      const link = document.createElement('a');
-      link.href = '/2.xlsx'; // 替换为你的文件路径
-      link.download = '分类分级框架模板.xlsx'; // 设置下载后的文件名
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    },
-    /** 导出按钮操作 */
-    handleExport() {
-      this.download('system/proxys/export', {
-        ...this.queryParams
-      }, `proxys_${new Date().getTime()}.xlsx`)
-    },
-
-    executeFn() {
-      let dataS = this.$refs.tableRef.selection
-      let isWancheng
-      if (dataS && dataS.length > 0) {
-        this.$confirm(`确定执行所选中的项吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          for (let val of dataS) {
-            if (val.status == '已完成') {
-              isWancheng = true
-            }
-          }
-          let ids = dataS.map(item => {
-            return item.id
-          })
-          let data = {
-            ids: ids.join(',')
-          }
-          if (isWancheng) {
-            this.$confirm(`重新执行任务，将会覆盖数据源上一次执行的所有结果`, '提示', {
-              confirmButtonText: '确定',
-              cancelButtonText: '取消',
-              type: 'warning'
-            }).then(() => {
-              forceLogout(data).then(res => {
-                if (res.code == 200) {
-                  this.messsucc(res, flag)
-                  this.getList()
-                }
-              })
-            })
-          } else {
-            forceLogout(data).then(res => {
-              if (res.code == 200) {
-                this.messsucc(res, flag)
-                this.getList()
-              }
-            })
-          }
-        })
-      } else {
-        this.$message({ message: '至少选择一条数据', type: 'warning' })
-      }
-    },
     resultExdit(row) {
-
+      this.deleteVisible = true
     },
   }
 };
@@ -959,7 +598,9 @@ export default {
 .addMsg /deep/ .el-form-item__label {
   text-align: left;
 }
-
+.addSelectClass /deep/ .el-select {
+  width: calc(100%);
+}
 .spanClass {
   position: absolute;
   left: -58px;
@@ -987,10 +628,6 @@ export default {
 
 .marking /deep/ .el-dialog:not(.is-fullscreen) {
   margin-top: 25vh !important;
-}
-
-.deleteCla /deep/ .el-dialog__body {
-  padding-top: 0;
 }
 
 .getDiv {
@@ -1033,18 +670,6 @@ export default {
   height: 15px;
   border-radius: 50%;
   background-color: #ccc;
-}
-
-.addMsg /deep/ .el-input {
-  width: 80%;
-}
-
-.addMsg /deep/ .el-select {
-  width: 80%;
-}
-
-.addMsg .el-select /deep/ .el-input {
-  width: 100%;
 }
 
 .yuanDataClass {
@@ -1094,5 +719,9 @@ export default {
 
 .addSelectClass /deep/ .el-select {
   width: calc(100%);
+}
+
+.tableCla {
+  height: 266px !important;
 }
 </style>

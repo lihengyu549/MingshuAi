@@ -370,7 +370,7 @@
         <el-button @click="importcancel">取 消</el-button>
       </div>
     </el-dialog>
-    <el-drawer title="结果查看" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl" size="80%"
+    <el-drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl" size="80%"
       :before-close="handleClose">
       <Result />
     </el-drawer>
@@ -1386,5 +1386,9 @@ export default {
 
 .addSelectClass /deep/ .el-select {
   width: calc(100%);
+}
+
+.dialogClass /deep/ .el-drawer__body{
+  overflow: hidden!important;
 }
 </style>

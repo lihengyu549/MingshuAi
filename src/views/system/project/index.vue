@@ -89,7 +89,7 @@
         <el-form-item class="uploadClass">
           <el-upload class="upload-demo" :limit="1" :file-list="importData.fileList" :auto-upload="false"
             :http-request="submitForm" action="" accept=".xls,.xlsx" :show-file-list="false"
-            :on-change="handleFileChange">
+            :on-change="handleFileChange" :on-exceed="handleFileExceed">
             <el-button size="mini" type="primary">选择文件</el-button>
           </el-upload>
         </el-form-item>
@@ -500,6 +500,11 @@ export default {
     // },
     handleFileChange(file, fileList) {
       this.importData.importFile = file.raw.name
+      this.importData.fileList = fileList;
+    },
+    handleFileExceed(files, fileList){
+      console.log(fileList);
+      this.importData.importFile = files[0].name
       this.importData.fileList = fileList;
     },
     // 导入取消
