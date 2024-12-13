@@ -2,377 +2,88 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" class="yuanDataClass" size="small" :inline="true" v-show="showSearch"
       label-width="auto">
-      <!-- <el-form-item label="分类分级框架">
-        <el-select v-model="queryParams.selectProjectName" placeholder="请输入分类分级框架" filterable remote clearable
-          @change="selectProjectChangeEdit($event)">
-          <el-option v-for="item in selectProjectListEdit" :key="item.id" :label="item.name" :value="item.id">
-          </el-option>
-        </el-select>
-      </el-form-item> -->
-      <el-form-item label="数据源名称" prop="sourceName">
-        <el-input v-model="queryParams.sourceName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+      <el-form-item label="分类" prop="aaa1">
+        <el-input v-model="queryParams.aaa1" @input="inputSearch" placeholder="请输入分类" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="数据库类型" prop="databaseType">
-        <el-select clearable v-model="queryParams.databaseType" @change="inputSearch" placeholder="请选择数据库类型">
+      <el-form-item label="安全分级" prop="aaa2">
+        <el-select clearable v-model="queryParams.aaa2" @change="inputSearch" placeholder="请选择">
+          <el-option v-for="item in addOptions" :key="item.id" :label="item.label" :value="item.name">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="确认状态" prop="aaa3">
+        <el-select clearable v-model="queryParams.aaa3" @change="inputSearch" placeholder="请选择">
+          <el-option v-for="item in aaa3List" :key="item.id" :label="item.label" :value="item.name">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="所属库" prop="aaa4">
+        <el-select clearable v-model="queryParams.aaa4" @change="inputSearch" placeholder="请选择">
           <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
           </el-option>
         </el-select>
       </el-form-item>
-
-      <el-form-item label="来源业务系统" prop="sourceName">
-        <el-input v-model="queryParams.sourceName" @input="inputSearch" placeholder="请输入数据源名称" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-
-      <el-form-item label="分类分级框架" prop="databaseType">
-        <el-select clearable v-model="queryParams.databaseType" @change="inputSearch" placeholder="请选择数据库类型">
-          <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="发布状态" prop="maskComplete">
-        <el-select clearable v-model="queryParams.maskComplete" @change="inputSearch" placeholder="请选择扫描状态">
+      <el-form-item label="所属表" prop="aaa5">
+        <el-select clearable v-model="queryParams.aaa5" @change="inputSearch" placeholder="请选择">
           <el-option v-for="item in publishStatus" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="执行状态" prop="maskComplete">
-        <el-select clearable v-model="queryParams.maskComplete" @change="inputSearch" placeholder="请选择扫描状态">
-          <el-option v-for="item in executeStatus" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <!-- <el-form-item label="数据库名称" prop="targetDatabase">
-        <el-input v-model="queryParams.targetDatabase" placeholder="请输入数据库名称" clearable
+      <el-form-item label="来源业务系统" prop="aaa6">
+        <el-input v-model="queryParams.aaa6" @input="inputSearch" placeholder="请输入来源业务系统" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="数据库地址" prop="targetIp">
-        <el-input v-model="queryParams.targetIp" placeholder="请输入数据库地址" clearable @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="数据库端口" prop="targetPort">
-        <el-input v-model="queryParams.targetPort" placeholder="请输入数据库端口" clearable @keyup.enter.native="handleQuery" />
-      </el-form-item> -->
       <el-form-item class="searchBtn">
-        <!-- <el-button type="primary" icon="el-icon-search" v-show="false" size="small" @click="handleQuery">搜索</el-button> -->
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd"
-          v-hasPermi="['system:proxys:add']">新增数据库</el-button>
+          v-hasPermi="['system:proxys:add']">确认勾选项</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleEcelFn"
-          v-hasPermi="['system:proxys:addExcel']">新增Excel文件</el-button>
+          v-hasPermi="['system:proxys:addExcel']">确认过滤项</el-button>
       </el-col>
-      <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="executeFn"
-          v-hasPermi="['system:proxys:execute']">执行</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="deleteFn"
-          v-hasPermi="['system:proxys:delete']">删除</el-button>
-      </el-col>
-      <!-- <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['system:proxys:edit']"
-        >修改</el-button>
-      </el-col> -->
-      <!-- <el-col :span="1.5">
-        <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
-          v-hasPermi="['system:proxys:remove']">删除</el-button>
-      </el-col> -->
-
-      <!-- <el-col :span="1.5">
-        <el-button type="warning" plain icon="el-icon-download" size="mini" @click="deliveryStrategy"
-          v-hasPermi="['system:proxys:export']">一键下发策略</el-button>
-      </el-col> -->
-
-
-      <!-- <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          @click="handleExport"
-          v-hasPermi="['system:proxys:export']"
-        >导出</el-button>
-      </el-col> -->
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+      <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
     <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
       <!-- <el-table-column type="selection" width="55" align="center" /> -->
       <!-- <el-table-column label="id" align="center" prop="id" /> -->
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="数据源名称" align="center" prop="sourceName" />
-      <el-table-column label="数据源类型" align="center" prop="projectName" />
-      <el-table-column label="来源业务系统" align="center" prop="businessName" />
-      <el-table-column label="分类分级框架" align="center" prop="projectName" />
-      <el-table-column label="字段数量" align="center" prop="projectName" />
-      <el-table-column label="执行状态" align="center" prop="projectName" />
-      <el-table-column label="发布状态" align="center" prop="projectName" />
-      <el-table-column label="更新时间" align="center" prop="updateTime" />
-      <!-- <el-table-column label="数据库名称" align="center" prop="targetDatabase" />
-      <el-table-column label="数据源名称" align="center" prop="sourceName" />
-      <el-table-column label="来源业务系统" align="center" prop="businessName" />
-      <el-table-column label="数据库地址" align="center" prop="targetIp" />
-      <el-table-column label="数据库端口" align="center" prop="targetPort" />
-      <el-table-column label="数据库用户" align="center" prop="targetUserName" /> -->
-      <!-- <el-table-column label="数据库密码" align="center">
+      <el-table-column label="字段名" align="center" prop="aaa1" />
+      <el-table-column label="字段注释" align="center" prop="aaa1" />
+      <el-table-column label="来源业务系统" align="center" prop="aaa1" />
+      <el-table-column label="数据源" align="center" prop="aaa1" />
+      <el-table-column label="所属库" align="center" prop="aaa1" />
+      <el-table-column label="所属表" align="center" prop="aaa1" />
+      <el-table-column label="分类" align="center" prop="aaa1" />
+      <el-table-column label="安全分级" align="center" prop="aaa1" />
+      <el-table-column label="样本" align="center" prop="aaa1">
         <template slot-scope="scope">
-          <div>{{ scope.row.targetUserPassword }}</div>
-          <span v-if="scope.row.showTag == 1"><img style="width: 20px;
-          height: 15px;" @click="switchShowTagFunc(scope.row)" src="@/assets/images/hide-icon.png"></span>
-          <span v-if="scope.row.showTag == 0">
-            <img style="width: 20px;
-          height: 15px;" @click="switchShowTagFunc(scope.row)" src="@/assets/images/show-icon.png">
-          </span>
+          <el-tooltip placement="bottom" effect="light">
+            <div slot="content">多行信息<br />第二行信息<br />多行信息<br />多行信息<br />多行信息<br />多行信息<br /></div>
+            <el-button size="mini" type="text" >查看</el-button>
+          </el-tooltip>
         </template>
-</el-table-column> -->
-      <!-- <el-table-column label="代理ip" align="center" prop="proxyIp" /> -->
-      <!-- <el-table-column label="代理端口" align="center" prop="">
-        <template slot-scope="scope">
-          {{ scope.row.proxyPort || '--' }}
-        </template>
-      </el-table-column> -->
-      <!-- <el-table-column label="用户数量" align="center" prop="proxyIp">
-        <template slot-scope="scope">
-          <a style="color: #409eff;" @click="databasesNum(scope.row.targetDatabase, scope.row.id)">
-            {{ scope.row.userCount }}
-          </a>
-        </template>
-
-      </el-table-column> -->
-      <!-- <el-table-column label="运行状态" align="center" prop="">
-        <template slot-scope="scope">
-          <el-switch v-model="scope.row.proxyStatus" @change="handleSwitchChange(scope.row)" active-color="#1890ff"
-            inactive-color="#999">
-          </el-switch>
-        </template>
-      </el-table-column> -->
-      <!-- <el-table-column label="扫描状态" align="center" prop="">
-        <template slot-scope="scope">
-          <div v-if="scope.row.state == 'COMPLETE'">
-            <el-tooltip content="扫描完成" placement="top">
-              <div class="agentClass"></div>
-            </el-tooltip>
-          </div>
-
-          <div v-if="scope.row.state == 'RUNNING'">
-
-            <el-tooltip content="扫描中,请稍后..." placement="top">
-              <div class="agentClassBack"></div>
-            </el-tooltip>
-          </div>
-          <div v-if="scope.row.state == 'NONE'">
-
-            <el-tooltip content="未扫描" placement="top">
-              <div class="agentNONE"></div>
-            </el-tooltip>
-          </div>
-          <div v-if="scope.row.state == 'ERR'">
-            <el-tooltip content="扫描失败" placement="top">
-              <div class="agentERR"></div>
-            </el-tooltip>
-          </div>
-        </template>
-      </el-table-column> -->
+      </el-table-column>
+      <el-table-column label="确认状态" align="center" prop="aaa1" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <!-- <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:proxys:edit']"
-          >修改</el-button> -->
-          <el-button size="mini" type="text" @click="resultLookFn(scope.row)"
-            v-hasPermi="['system:proxys:resultLook']">结果查看</el-button>
-          <el-button size="mini" type="text" @click="resultReleaseFn(scope.row)"
-            v-hasPermi="['system:proxys:resultRelease']">结果发布</el-button>
-          <!-- <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-            v-hasPermi="['system:proxys:remove']">删除</el-button> -->
-
-          <!-- <el-button size="mini" type="text" icon="el-icon-edit-outline" @click="dataMarking(scope.row)"
-            v-hasPermi="['system:proxys:remove']"> 开始扫描</el-button> -->
-          <!-- <el-button size="mini" type="text" icon="el-icon-user" @click="addUsers(scope.row)"
-            v-hasPermi="['system:proxyUser:add']">添加用户</el-button> -->
-          <!-- <el-button size="mini" type="text" icon="el-icon-folder-opened" @click="strategyPush(scope.row)"
-            v-hasPermi="['system:proxys:remove']"> 策略下发</el-button> -->
+          <el-button size="mini" type="text" @click="resultExdit(scope.row)"
+            v-hasPermi="['system:proxys:resultLook']">结果修改</el-button>
         </template>
       </el-table-column>
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
-    <!-- 添加用户 -->
-    <!-- <el-dialog title="添加用户" :visible.sync="addUserVisible" width="450px" append-to-body :close-on-click-modal="false">
-      <el-form ref="addForm" :model="addForm" :rules="rules" label-width="80px" @submit.native.prevent>
-        <el-form-item label="用户名称" prop="userName">
-          <el-input v-model="addForm.userName" placeholder="请输入用户名称" />
-        </el-form-item>
-        <el-form-item label="用户密码" prop="userPassword">
-          <el-input type="password" v-model="addForm.userPassword" placeholder="请输入用户密码" />
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="addSubmitForm()">确 定</el-button>
-        <el-button @click="addCancel">取 消</el-button>
-      </div>
-    </el-dialog> -->
-    <!-- 添加或修改数据库代理对话框 -->
-    <el-dialog class="addMsg" :title="title" :visible.sync="open" width="580px" append-to-body
-      :close-on-click-modal="false">
-      <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
-        <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
-          <el-select v-model="form.databaseType" placeholder="请选择数据库类型">
-            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
-          <el-input v-model="form.sourceName" @input="nameTestingFn(form.sourceName)" maxlength="50"
-            placeholder="请输入数据源名称" />
-        </el-form-item>
-        <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
-          <!-- <el-input v-model="form.projectId" placeholder="请输入分类分级框架" />
-           -->
-          <el-select v-model="form.projectName" placeholder="请输入分类分级框架" filterable remote clearable
-            @change="projectChangeEdit($event)">
-            <el-option v-for="item in formProjectListEdit" :key="item.id" :label="item.categoryName" :value="item.id">
-            </el-option>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
-          <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
-        </el-form-item>
-
-        <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
-          <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
-        </el-form-item>
-        <el-form-item label="用户" prop="targetUserName" :rules="rules.targetUserName">
-          <el-input v-model="form.targetUserName" placeholder="请输入数据库用户名称" />
-        </el-form-item>
-        <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
-          <el-input v-model="form.targetUserPassword" maxlegth="100" placeholder="请输入数据库密码" />
-        </el-form-item>
-        <el-form-item label="库名" prop="targetDatabase" :rules="rules.targetDatabase">
-          <!-- 
-          <el-input v-if="show" v-model="form.targetDatabase" placeholder="请输入数据库名称" /> -->
-          <el-select ref="selectRef" allow-create @change="targetDatabaseChange" filterable multiple clearable
-            v-model="form.targetDatabase" placeholder="请选择数据库名称">
-            <el-option v-if="targetDataList.length" key="all" label="全选" value="all"></el-option>
-            <el-option v-for="item in targetDataList" :key="item.value" :label="item.name" :value="item.value">
-            </el-option>
-          </el-select>
-          <div class="getDiv">
-            <el-button type="primary" @click="getDatabaseName">获 取</el-button>
-          </div>
-        </el-form-item>
-        <div class="impShow" v-show="showSucType > 0">
-          <div class="success" v-if="showSucType == 1">连接成功</div>
-          <div class="error" v-if="showSucType == 2">连接失败</div>
-        </div>
-        <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
-          <el-input v-model="form.businessName" maxlength="50" @input="businessNameFn(form.businessName)"
-            placeholder="请输入来源业务系统" />
-        </el-form-item>
-        <!-- <p>代理数据库信息</p>
-        <el-form-item label="代理端口" prop="proxyPort">
-          <el-input v-model="form.proxyPort" placeholder="请输入代理端口" />
-        </el-form-item>
-        <el-form-item label="代理ip" prop="proxyIp">
-          <el-input v-model="form.proxyIp" placeholder="请输入代理ip" />
-        </el-form-item>-->
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="connectTest('form')">测试</el-button>
-        <!-- <el-button @click="cancel">取 消</el-button> -->
-      </div>
-    </el-dialog>
-    <!-- 数据扫描 -->
-    <el-dialog class="marking" title="数据扫描" :visible.sync="markingVisible" width="450px" append-to-body
-      :close-on-click-modal="false">
-      <div style="text-align: center;">
-        <el-radio-group v-model="radio" @change="handleChange">
-          <el-radio label="1">追加</el-radio>
-          <el-radio label="0">覆盖</el-radio>
-        </el-radio-group>
-        <div style="display: flex; justify-content: center; margin-top: 10px; ">
-          <div style="margin-right: 5px;line-height: 36px; ">抽样数量:</div>
-          <el-input style="width: 60%;" type="number" v-model="samplingNum" placeholder="请输入抽样数量"
-            @input="handleInput"></el-input>
-        </div>
-        <!-- <div style="margin-top: 10px;">
-          <el-checkbox v-model="checkList" label="启用NLP扫描规则（姓名、民族、地址）"></el-checkbox>
-        </div> -->
-        <div style="text-align: right;">
-          <el-button type="primary" @click="markingCli">确定</el-button>
-        </div>
-      </div>
-    </el-dialog>
     <el-dialog class="deleteCla" title="系统提示" :visible.sync="deleteVisible" width="450px" append-to-body
       :close-on-click-modal="false">
-      <div style="position: relative; ">
-        <div style="height: 66px;">
-          <i class="el-icon-warning" style="color: #ffba00; font-size: 30px;margin-right: 5px;"></i>
-          <span style="position: absolute; top: 5px; ">是否确认删除数据库代理编号为{{ serialNumber }}的数据项,<span
-              style="color: red;">并同时关联删除扫描记录</span></span>
-        </div>
-        <div style="text-align: right;">
-          <el-button @click="deleteVisible = false">取消</el-button>
-          <el-button type="primary" @click="deleteClick(serialNumber)">确定</el-button>
-        </div>
-      </div>
-    </el-dialog>
-
-    <el-dialog title="新增Excel文件" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"
-      append-to-body :close-on-click-modal="false">
-      <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
-        :inline="true" label-width="120px">
-        <el-form-item label="数据源名称" prop="sourceName">
-          <el-input v-model="importData.sourceName" maxlength="50" @input="importNameTestingFn(importData.sourceName)"
-            placeholder="请输入数据源名称"></el-input>
-        </el-form-item>
-
-        <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
-          <el-select v-model="importData.categoryId" class="serachInput" placeholder="全部">
-            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
-            </el-option>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="导入框架" prop="importFile">
-          <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
-        </el-form-item>
-        <el-form-item class="uploadClass">
-          <el-upload class="upload-demo" :limit="1" :file-list="importData.fileList" :auto-upload="false"
-            :http-request="submitFormExcelFn" action="" accept=".xls,.xlsx,csv" :show-file-list="false"
-            :on-change="handleFileChange">
-            <el-button size="mini" type="primary">选择文件</el-button>
-          </el-upload>
-        </el-form-item>
-      </el-form>
-      <el-button style="margin-left: 100px;" size="small" type="text" @click="downloadFile" id="btnDownload"
-        icon="el-icon-download">样例下载</el-button>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitFormExcelFn">确 定</el-button>
-        <el-button @click="importcancel">取 消</el-button>
-      </div>
     </el-dialog>
     <el-drawer title="结果查看" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl" size="80%"
       :before-close="handleClose">
-      <Result />
     </el-drawer>
   </div>
 </template>
@@ -385,12 +96,31 @@ import {
 import { listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseListI } from "@/api/system/proxys";
 import { listAllProject, } from "@/api/system/project";
 import { treeListI, categoryImport, getAttachData, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory"
-import Result from './components/result.vue'
+
 export default {
-  name: "Proxys",
-  components: { Result },
+  name: "ProxysResult",
   data() {
     return {
+      addOptions: [
+        {
+          value: 1,
+          label: "1级"
+        }, {
+          value: 2,
+          label: "2级"
+        }, {
+          value: 3,
+          label: "3级"
+        }, {
+          value: 4,
+          label: "4级"
+        }, {
+          value: 5,
+          label: "5级"
+        },
+      ],
+      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRES", id: 3, value: "POSTGRES" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
+
       treeOptions: [],
       drawerShow: false,
       samplingNum: 10,
@@ -470,21 +200,23 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        selectProjectName: "全部",
-        proxyId: null,
-        proxyPort: null,
-        proxyUserName: null,
-        proxyUserPassword: null,
-        proxyIp: null,
-        targetIp: null,
-        targetPort: null,
-        targetDatabase: "",
-        targetUserName: null,
-        targetUserPassword: null,
-        protocolPort: null,
-        projectId: null,
-        proxyStatus: null
+        aaa1: '',
+        aaa2: '',
+        aaa3: '',
+        aaa4: '',
+        aaa5: '',
+        aaa6: '',
       },
+      aaa3List: [
+        {
+          value: '1',
+          label: '已确认'
+        },
+        {
+          value: '2',
+          label: '未确认'
+        },
+      ],
       // 表单参数
       form: {
         // projectName: null,
@@ -1156,76 +888,52 @@ export default {
     executeFn() {
       let dataS = this.$refs.tableRef.selection
       let isWancheng
-      let isZhixingzhong
       if (dataS && dataS.length > 0) {
-        for (let val of dataS) {
-          if (val.status == '执行中') {
-            isZhixingzhong = true
-            return
-          } else if (val.status == '已完成') {
-            isWancheng = true
-          }
-        }
-        if (isZhixingzhong) {
-          this.$message({ message: '选中任务包含执行中任务，无法批量执行', type: 'warning' })
-        } else if (isWancheng) {
-          this.$confirm(`选中任务包含已完成任务，重新执行任务，将会覆盖数据源上一次执行的所有结果`, '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            forceLogout(data).then(res => {
-              if (res.code == 200) {
-                this.messsucc(res, flag)
-                this.getList()
-              }
-            })
-          })
-        } else {
-          forceLogout(data).then(res => {
-            if (res.code == 200) {
-              this.messsucc(res, flag)
-              this.getList()
-            }
-          })
-        }
-      } else {
-        this.$message({ message: '至少选择一条数据', type: 'warning' })
-      }
-    },
-    deleteFn() {
-      let dataS = this.$refs.tableRef.selection
-      if (dataS && dataS.length > 0) {
-        this.$confirm(`确定删除所选中的项吗`, '提示', {
+        this.$confirm(`确定执行所选中的项吗`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
+          for (let val of dataS) {
+            if (val.status == '已完成') {
+              isWancheng = true
+            }
+          }
           let ids = dataS.map(item => {
             return item.id
           })
           let data = {
             ids: ids.join(',')
           }
-          forceLogout(data).then(res => {
-            if (res.code == 200) {
-              this.messsucc(res, flag)
-              this.getList()
-            }
-          })
+          if (isWancheng) {
+            this.$confirm(`重新执行任务，将会覆盖数据源上一次执行的所有结果`, '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
+              forceLogout(data).then(res => {
+                if (res.code == 200) {
+                  this.messsucc(res, flag)
+                  this.getList()
+                }
+              })
+            })
+          } else {
+            forceLogout(data).then(res => {
+              if (res.code == 200) {
+                this.messsucc(res, flag)
+                this.getList()
+              }
+            })
+          }
         })
       } else {
         this.$message({ message: '至少选择一条数据', type: 'warning' })
       }
     },
-    resultLookFn(row) {
-      this.drawerShow = true
-      return
-      if (row.status == '未发布') {
-        this.drawerShow = true
-      }
+    resultExdit(row) {
+
     },
-    resultReleaseFn(row) { },
   }
 };
 </script>
@@ -1368,7 +1076,7 @@ export default {
 }
 
 .searchBtn /deep/ .el-form-item__content {
-  margin-left: 263px
+  margin-left: 240px
 }
 
 .importForm /deep/ .el-form-item--medium {

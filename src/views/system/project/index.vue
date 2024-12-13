@@ -52,7 +52,7 @@
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
           <el-table-column label="子类名称" align="center" prop="attachData" />
-          <el-table-column label="所属分级" align="center" prop="minSecurityLevel" />
+          <el-table-column label="安全分级" align="center" prop="minSecurityLevel" />
           <el-table-column label="来源" align="center" prop="dataSource">
           </el-table-column>
           <el-table-column label="状态" align="center" prop="state">
@@ -117,7 +117,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item class="addSelectClass" prop="minSecurityLevel" label="所属分级">
+        <el-form-item class="addSelectClass" prop="minSecurityLevel" label="安全分级">
           <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部" :disabled="addOrEdit.flag == 3">
             <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
@@ -141,7 +141,7 @@
 <script>
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { treeListI, categoryImport, getAttachData, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory"
+import { treeListI, categoryImport, getAttachData, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory";
 export default {
   name: "ProtectTableField",
   components: { Treeselect },
@@ -174,11 +174,11 @@ export default {
       addOrEditRules: {
         categoryId: [
           {
-            required: true, message: "请选择所属分类", trigger: "blur"
+            required: true, message: "请选择所属父级", trigger: "blur"
           }
         ],
         minSecurityLevel: [
-          { required: true, message: "请选择所属分级", trigger: "blur" },
+          { required: true, message: "请选择安全分级", trigger: "blur" },
         ],
         attachData: [
           { required: true, message: "请输入子类名称", trigger: "blur" }

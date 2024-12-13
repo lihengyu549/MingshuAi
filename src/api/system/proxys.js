@@ -124,3 +124,15 @@ export function databaseListI (data) {
     loading: true,
   })
 }
+// 获取数据库列表
+export function importExcel (data) {
+
+  return request({
+    url: '/system/proxy/database/importExcel',
+    method: 'post',
+    headers: {
+      "Content-Type":"multipart/form-data; ",
+    },
+    data: data,
+  })
+}
