@@ -34,7 +34,12 @@
         <el-input v-model="queryParams.aaa6" @input="inputSearch" placeholder="请输入来源业务系统" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item class="searchBtn">
+      
+      <el-form-item>
+      </el-form-item>
+      <el-form-item>
+      </el-form-item>
+      <el-form-item label=" " class="searchBtn">
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
@@ -680,7 +685,7 @@ export default {
 }
 
 .yuanDataClass /deep/ .el-form-item {
-  width: 30%;
+  width: 32%;
 }
 
 .yuanDataClass /deep/ .el-form-item__label {
@@ -696,12 +701,15 @@ export default {
 }
 
 .searchBtn {
-  margin-left: auto;
   height: 100%;
 }
 
 .searchBtn /deep/ .el-form-item__content {
-  margin-left: 240px
+  /* margin-left: 385px */
+  /* width: 75%; */
+  display: flex;
+  justify-content: flex-end
+
 }
 
 .importForm /deep/ .el-form-item--medium {

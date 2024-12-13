@@ -1389,6 +1389,6 @@ export default {
 }
 
 .dialogClass /deep/ .el-drawer__body{
-  overflow: hidden!important;
+  /* overflow: hidden!important; */
 }
 </style>
