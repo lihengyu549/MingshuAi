@@ -1,5 +1,33 @@
 import request from '@/utils/request'
 
+
+//获取分类框架列表
+export function getDatabaseList (data) {
+  return request({
+    url: '/system/protectTableField/getDatabaseList',
+    method: 'get',
+    params: data
+
+  })
+}
+//列表
+export function protectTableFieldList (query) {
+  return request({
+    url: '/system/protectTableField/list',
+    method: 'get',
+    params: query,
+
+  })
+}
+//导出
+export function exportReport (query) {
+  return request({
+    url: '/system/protectTableField/exportReport',
+    method: 'get',
+    params: query,
+
+  })
+}
 // 查询数据库字段名列表
 export function listProtectTableField (query) {
   return request({
