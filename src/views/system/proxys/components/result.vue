@@ -61,7 +61,7 @@
       <el-table-column label="字段名" align="center" prop="aaa1" show-overflow-tooltip />
       <el-table-column label="字段注释" align="center" prop="aaa2" show-overflow-tooltip />
       <el-table-column label="来源业务系统" align="center" prop="aaa3" show-overflow-tooltip />
-      <el-table-column label="数据源" align="center" prop="aaa4" show-overflow-tooltip />
+      <!-- <el-table-column label="数据源" align="center" prop="aaa4" show-overflow-tooltip /> -->
       <el-table-column label="所属库" align="center" prop="aaa5" show-overflow-tooltip />
       <el-table-column label="所属表" align="center" prop="aaa6" show-overflow-tooltip />
       <el-table-column label="分类" align="center" prop="aaa7" show-overflow-tooltip />
