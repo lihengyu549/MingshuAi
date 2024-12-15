@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" class="yuanDataClass" size="small" :inline="true" v-show="showSearch"
+  <div class="app-container" v-loading="mainLoading">
+    <el-form :model="queryParams" ref="queryForm" class="yuanDataClass" size="small" :inline="true"
       label-width="auto">
       <!-- <el-form-item label="分类分级框架">
         <el-select v-model="queryParams.selectProjectName" placeholder="请输入分类分级框架" filterable remote clearable
@@ -13,26 +13,26 @@
         <el-input v-model="queryParams.sourceName" @input="inputSearch" placeholder="请输入数据源名称" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="数据库类型" prop="databaseType">
-        <el-select clearable v-model="queryParams.databaseType" @change="inputSearch" placeholder="请选择数据库类型">
-          <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
+      <el-form-item label="数据源类型" prop="sourceType">
+        <el-select clearable v-model="queryParams.sourceType" @change="inputSearch" placeholder="请选择数据库类型">
+          <el-option v-for="item in dataYTpeList" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
 
-      <el-form-item label="来源业务系统" prop="sourceName">
-        <el-input v-model="queryParams.sourceName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+      <el-form-item label="来源业务系统" prop="businessName">
+        <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入数据源名称" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
 
-      <el-form-item label="分类分级框架" prop="databaseType">
-        <el-select clearable v-model="queryParams.databaseType" @change="inputSearch" placeholder="请选择数据库类型">
-          <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
+      <el-form-item label="分类分级框架" prop="projectId">
+        <el-select clearable v-model="queryParams.projectId" @change="inputSearch" placeholder="请选择数据库类型">
+          <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="发布状态" prop="maskComplete">
-        <el-select clearable v-model="queryParams.maskComplete" @change="inputSearch" placeholder="请选择扫描状态">
+      <el-form-item label="发布状态" prop="publishStatus">
+        <el-select clearable v-model="queryParams.publishStatus" @change="inputSearch" placeholder="请选择扫描状态">
           <el-option v-for="item in publishStatus" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
@@ -68,7 +68,7 @@
           v-hasPermi="['system:proxys:addExcel']">新增Excel文件</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="executeFn"
+        <el-button type="primary" icon="el-icon-plus" size="medium" @click="implementFn"
           v-hasPermi="['system:proxys:execute']">执行</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -107,19 +107,27 @@
           v-hasPermi="['system:proxys:export']"
         >导出</el-button>
       </el-col> -->
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
     <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
       <!-- <el-table-column type="selection" width="55" align="center" /> -->
       <!-- <el-table-column label="id" align="center" prop="id" /> -->
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="数据源名称" align="center" prop="sourceName" />
-      <el-table-column label="数据源类型" align="center" prop="projectName" />
+      <el-table-column label="数据源类型" align="center" prop="databaseType" />
       <el-table-column label="来源业务系统" align="center" prop="businessName" />
       <el-table-column label="分类分级框架" align="center" prop="projectName" />
-      <el-table-column label="字段数量" align="center" prop="projectName" />
-      <el-table-column label="执行状态" align="center" prop="projectName" />
-      <el-table-column label="发布状态" align="center" prop="projectName" />
+      <el-table-column label="字段数量" align="center" prop="fieldCount" />
+      <el-table-column label="执行状态" align="center" prop="state">
+
+        <template slot-scope="scope">
+          <span>{{ stateMsg(scope.row.state) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="发布状态" align="center" prop="publishStatus">
+        <template slot-scope="scope">
+          <span>{{ scope.row.publishStatus == 0 ? '未发布' : '已发布' }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="更新时间" align="center" prop="updateTime" />
       <!-- <el-table-column label="数据库名称" align="center" prop="targetDatabase" />
       <el-table-column label="数据源名称" align="center" prop="sourceName" />
@@ -197,8 +205,8 @@
           >修改</el-button> -->
           <el-button size="mini" type="text" @click="resultLookFn(scope.row)"
             v-hasPermi="['system:proxys:resultLook']">结果查看</el-button>
-          <el-button size="mini" type="text" @click="resultReleaseFn(scope.row)"
-            v-hasPermi="['system:proxys:resultRelease']">结果发布</el-button>
+          <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
+            @click="resultReleaseFn(scope.row)" v-hasPermi="['system:proxys:resultRelease']">结果发布</el-button>
           <!-- <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
             v-hasPermi="['system:proxys:remove']">删除</el-button> -->
 
@@ -239,15 +247,14 @@
           </el-select>
         </el-form-item>
         <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
-          <el-input v-model="form.sourceName" @input="nameTestingFn(form.sourceName)" maxlength="50"
-            placeholder="请输入数据源名称" />
+          <el-input v-model="form.sourceName" @input="nameTestingFn(form.sourceName)"
+            @blur="getNameTestingFn(form.sourceName)" maxlength="50" placeholder="请输入数据源名称" />
         </el-form-item>
         <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
           <!-- <el-input v-model="form.projectId" placeholder="请输入分类分级框架" />
            -->
-          <el-select v-model="form.projectName" placeholder="请输入分类分级框架" filterable remote clearable
-            @change="projectChangeEdit($event)">
-            <el-option v-for="item in formProjectListEdit" :key="item.id" :label="item.categoryName" :value="item.id">
+          <el-select v-model="form.projectName" placeholder="请输入分类分级框架" clearable @change="projectChangeEdit($event)">
+            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -341,8 +348,8 @@
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px">
         <el-form-item label="数据源名称" prop="sourceName">
-          <el-input v-model="importData.sourceName" maxlength="50" @input="importNameTestingFn(importData.sourceName)"
-            placeholder="请输入数据源名称"></el-input>
+          <el-input v-model="importData.sourceName" maxlength="50" @blur="getNameTestingFn(importData.sourceName)"
+            @input="importNameTestingFn(importData.sourceName)" placeholder="请输入数据源名称"></el-input>
         </el-form-item>
 
         <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
@@ -370,9 +377,9 @@
         <el-button @click="importcancel">取 消</el-button>
       </div>
     </el-dialog>
-    <el-drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl" size="80%"
-      :before-close="handleClose">
-      <Result />
+    <el-drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
+      size="80%" :before-close="handleClose">
+      <Result :treeOptions="treeOptions" :drawerData="drawerData"/>
     </el-drawer>
   </div>
 </template>
@@ -382,9 +389,15 @@ import {
   usersAddI
 } from "@/api/system/proxyUser";
 
-import { listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseListI } from "@/api/system/proxys";
+import {
+  listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys,
+  importExcel, publish, createProxys, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, databaseListI
+} from "@/api/system/proxys";
 import { listAllProject, } from "@/api/system/project";
-import { treeListI, categoryImport, getAttachData, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory"
+import {
+  treeListI, categoryImport, getAttachData, attachStatus,
+  forceLogout, updataAttach, nameTesting, addData, getFrameworks, checkSourceName
+} from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 export default {
   name: "Proxys",
@@ -394,6 +407,7 @@ export default {
       treeOptions: [],
       drawerShow: false,
       samplingNum: 10,
+      drawerData:null,
       checkList: true,
       show: true,
       serialNumber: "",
@@ -404,28 +418,24 @@ export default {
       addUserId: 0,
       addUserVisible: false,
       dataType: "",
+      mainLoading: false,
       targetDataList: [],
-      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRES", id: 3, value: "POSTGRES" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
-      maskCompleteStatus: [{
-        value: 'COMPLETE',
-        label: '扫描完成'
-      }, {
-        value: 'RUNNING',
-        label: '扫描中'
-      }, {
-        value: 'NONE',
-        label: '未扫描'
-      }, {
-        value: 'ERR',
-        label: '扫描失败'
-      }
+      dataYTpeList: [
+        {
+          value: 'DATABASE',
+          label: '数据库'
+        }, {
+          value: 'FILE',
+          label: 'Excel表'
+        }
       ],
+      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRES", id: 3, value: "POSTGRES" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       publishStatus: [
         {
-          value: 'COMPLETE',
+          value: 0,
           label: '未发布'
         }, {
-          value: 'RUNNING',
+          value: 1,
           label: '已发布'
         },
       ],
@@ -470,20 +480,25 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        selectProjectName: "全部",
-        proxyId: null,
-        proxyPort: null,
-        proxyUserName: null,
-        proxyUserPassword: null,
-        proxyIp: null,
-        targetIp: null,
-        targetPort: null,
-        targetDatabase: "",
-        targetUserName: null,
-        targetUserPassword: null,
-        protocolPort: null,
-        projectId: null,
-        proxyStatus: null
+        sourceType: '',
+        sourceName: '',
+        businessName: '',
+        proxyId: '',
+        publishStatus: '',
+        maskComplete: '',
+        projectId: '',
+        // proxyPort: null,
+        // proxyUserName: null,
+        // proxyUserPassword: null,
+        // proxyIp: null,
+        // targetIp: null,
+        // targetPort: null,
+        // targetDatabase: "",
+        // targetUserName: null,
+        // targetUserPassword: null,
+        // protocolPort: null,
+        // projectId: null,
+        // proxyStatus: null
       },
       // 表单参数
       form: {
@@ -568,21 +583,40 @@ export default {
   },
 
   created() {
-    // this.queryParams.selectProjectName = "全部"
     // this.queryParams.projectId = 0
-    this.getList();
-    this.getProjectListEdit()
+    // this.getProjectListEdit()
     this.gettreeOptionsList()
+    this.getList()
   },
   methods: {
-
+    getNameTestingFn(val) {
+      let params = {
+        sourceName: val
+      }
+      if (val) {
+        checkSourceName(params).then((res) => {
+          return res.msg == '可以使用'
+        })
+          .catch((err) => {
+            this.form.sourceName = ''
+            return false
+          })
+      } else {
+        return false
+      }
+    },
     nameTestingFn(val) {
       this.form.sourceName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-      // nameTesting().then(res=>{
-      //   console.log(res);
-      // })
     },
-
+    stateMsg(val) {
+      let msg = ''
+      for (let item of this.executeStatus) {
+        if (item.value == val) {
+          msg = item.label
+        }
+      }
+      return msg
+    },
     businessNameFn(val) {
       this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
       // nameTesting().then(res=>{
@@ -599,9 +633,10 @@ export default {
       // })
     },
     gettreeOptionsList() {
-      this.Loading = true
+      this.mainLoading = true
       getFrameworks().then((response) => {
         this.treeOptions = response.data
+        this.mainLoading = false
       });
     },
     targetDatabaseChange(value) {
@@ -680,8 +715,8 @@ export default {
         if (valid) {
           this.importDataLoading = true
           // await this.rulsNameIsRight(this.importData.categoryId, params.name)
-          if (!true) {
-            this.$modal.msgError("框架名称重复,请更改");
+          if (this.getNameTestingFn()) {
+            this.$modal.msgError("数据源名称重复,请更改");
             this.importDataLoading = false
             return
           } else {
@@ -810,6 +845,60 @@ export default {
       this.addUserId = row.id
       this.addUserVisible = true
     },
+    implementFn() {
+      let dataS = this.$refs.tableRef.selection
+      let flagList // 状态数据
+      if (dataS && dataS.length > 0) {
+        flagList = dataS.map(item => {
+          return item.state
+        })
+        if (flagList.includes('RUNNING')) {
+          this.$message({ message: '选中任务包含执行中任务，无法批量执行', type: 'warning' })
+          return
+        }
+        if (flagList.includes('NONE')) {
+          this.$confirm(`选中任务包含已完成任务，重新执行任务，将会覆盖数据源上一次执行的所有结果`, '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            let ids = dataS.map(item => {
+              return item.id
+            })
+            let params = {
+              proxyIds: ids.join(',')
+            }
+            databaseMask(params).then(res => {
+              if (res.code == 200) {
+                this.$message.success(res.msg)
+                this.getList()
+              }
+            })
+          })
+          return
+        }
+        this.$confirm(`确定删除所选中的项吗`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let ids = dataS.map(item => {
+            return item.id
+          })
+          let params = {
+            proxyIds: ids.join(',')
+          }
+          databaseMask(params).then(res => {
+            if (res.code == 200) {
+              this.$message.success(res.msg)
+              this.getList()
+            }
+          })
+        })
+      } else {
+        this.$message({ message: '至少选择一条数据', type: 'warning' })
+      }
+    },
     // 运行状态
     handleSwitchChange(row) {
       row.proxyStatus = !row.proxyStatus
@@ -930,11 +1019,9 @@ export default {
       let params = {
         name: key,
       };
-
       getFrameworks(params).then((resp) => {
         this.formProjectListEdit = resp.data;
         let data = JSON.parse(JSON.stringify(this.formProjectListEdit))
-
         this.selectProjectListEdit = data;
         this.selectProjectListEdit.unshift({ name: "全部", id: 0 })
         // if (this.formProjectListEdit == null) {
@@ -958,16 +1045,13 @@ export default {
     /** 查询数据库代理列表 */
     getList() {
       this.loading = true;
-      if (this.queryParams.projectId == 0) {
-        this.queryParams.projectId = null
-      }
       listProxys(this.queryParams).then(response => {
         this.proxysList = response.rows;
-        for (let item of this.proxysList) {
-          item.showTag = 0
-          item.oldPassword = item.targetUserPassword
-          item.targetUserPassword = '******'
-        }
+        // for (let item of this.proxysList) {
+        //   item.showTag = 0
+        //   item.oldPassword = item.targetUserPassword
+        //   item.targetUserPassword = '******'
+        // }
         this.total = response.total;
         this.loading = false;
       });
@@ -988,12 +1072,6 @@ export default {
     },
     reset() {
       this.form = {
-        // id: null,
-        //  proxyId: null,
-        //  proxyPort: null,
-        //  proxyUserName: null,
-        //  proxyUserPassword: null,
-        //   proxyIp: null,
         targetIp: null,
         targetPort: null,
         targetDatabase: [],
@@ -1043,7 +1121,6 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.queryParams.selectProjectName = "全部"
       this.queryParams.projectId = null
       this.resetForm("queryForm");
       this.handleQuery();
@@ -1056,13 +1133,6 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      // this.show = true
-      // this.form.projectName = "ruoyi-auth"
-      // this.form.targetIp = "192.168.3.14"
-      // this.form.databaseType = "MYSQL"
-      // this.form.targetPort = "3306"
-      // this.form.targetUserName = "root"
-      // this.form.targetUserPassword = "Mysql123!@#"
       this.showSucType = 0
       this.projectNameEdit = null
       this.targetDataList = []
@@ -1195,7 +1265,34 @@ export default {
     },
     deleteFn() {
       let dataS = this.$refs.tableRef.selection
+      let flagList // 为1 代表选中数据中有执行中的，2为没有执行中，但是有执行完成的
       if (dataS && dataS.length > 0) {
+        flagList = dataS.map(item => {
+          return item.state
+        })
+        if (flagList.includes('RUNNING')) {
+          this.$message({ message: '选中任务包含执行中任务，无法批量删除', type: 'warning' })
+          return
+        }
+        if (flagList.includes('NONE')) {
+          this.$confirm(`删除任务，将会删除数据源所关联的所有执行结果,确定删除吗`, '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            let ids = dataS.map(item => {
+              return item.id
+            })
+            let idsParams = ids.join(',')
+            delProxys(idsParams).then(res => {
+              if (res.code == 200) {
+                this.$message.success(res.msg)
+                this.getList()
+              }
+            })
+          })
+          return
+        }
         this.$confirm(`确定删除所选中的项吗`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -1204,12 +1301,10 @@ export default {
           let ids = dataS.map(item => {
             return item.id
           })
-          let data = {
-            ids: ids.join(',')
-          }
-          forceLogout(data).then(res => {
+          let idsParams = ids.join(',')
+          delProxys(idsParams).then(res => {
             if (res.code == 200) {
-              this.messsucc(res, flag)
+              this.$message.success(res.msg)
               this.getList()
             }
           })
@@ -1219,13 +1314,22 @@ export default {
       }
     },
     resultLookFn(row) {
-      this.drawerShow = true
-      return
-      if (row.status == '未发布') {
+      if (row.publishStatus == 0) {
+        this.drawerData = row
         this.drawerShow = true
+      } else {
+        this.$router.push('/protectTableField')
       }
     },
-    resultReleaseFn(row) { },
+    resultReleaseFn(row) {
+      this.loading = true
+      publish(row.id).then(res => {
+        if (res.code == 200) {
+          this.$message({ message: res.msg, type: 'success' })
+          this.getList()
+        }
+      })
+    },
   }
 };
 </script>
@@ -1388,7 +1492,7 @@ export default {
   width: calc(100%);
 }
 
-.dialogClass /deep/ .el-drawer__body{
+.dialogClass /deep/ .el-drawer__body {
   /* overflow: hidden!important; */
 }
 </style>

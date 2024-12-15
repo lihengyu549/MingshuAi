@@ -2,36 +2,41 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" class="yuanDataClass" size="small" :inline="true" v-show="showSearch"
       label-width="auto">
-      <el-form-item label="分类" prop="aaa1">
-        <el-input v-model="queryParams.aaa1" @input="inputSearch" placeholder="请输入分类" clearable
-          @keyup.enter.native="handleQuery" />
+      <el-form-item label="分类分级框架" prop="projectId">
+          <el-select ref="addSelectRef" v-model="addNodeName">
+            <el-option style="height: 100%; padding: 0" value="">
+              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
+                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+                @node-click="addHandleNodeClick" />
+            </el-option>
+          </el-select>
       </el-form-item>
-      <el-form-item label="安全分级" prop="aaa2">
-        <el-select clearable v-model="queryParams.aaa2" @change="inputSearch" placeholder="请选择">
+      <el-form-item label="安全分级" prop="securityLevel">
+        <el-select clearable v-model="queryParams.securityLevel" @change="inputSearch" placeholder="请选择">
           <el-option v-for="item in addOptions" :key="item.id" :label="item.label" :value="item.name">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="确认状态" prop="aaa3">
-        <el-select clearable v-model="queryParams.aaa3" @change="inputSearch" placeholder="请选择">
+      <el-form-item label="确认状态" prop="confirm">
+        <el-select clearable v-model="queryParams.confirm" @change="inputSearch" placeholder="请选择">
           <el-option v-for="item in aaa3List" :key="item.id" :label="item.label" :value="item.name">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="所属库" prop="aaa4">
-        <el-select clearable v-model="queryParams.aaa4" @change="inputSearch" placeholder="请选择">
+      <el-form-item label="所属库" prop="databaseId">
+        <el-select clearable v-model="queryParams.databaseId" @change="inputSearch" placeholder="请选择">
           <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="所属表" prop="aaa5">
-        <el-select clearable v-model="queryParams.aaa5" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in publishStatus" :key="item.value" :label="item.label" :value="item.value">
+      <el-form-item label="所属表" prop="tableId">
+        <el-select clearable v-model="queryParams.tableId" @change="inputSearch" placeholder="请选择">
+          <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="来源业务系统" prop="aaa6">
-        <el-input v-model="queryParams.aaa6" @input="inputSearch" placeholder="请输入来源业务系统" clearable
+      <el-form-item label="来源业务系统" prop="businessName">
+        <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入来源业务系统" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
       
@@ -58,14 +63,14 @@
       <!-- <el-table-column type="selection" width="55" align="center" /> -->
       <!-- <el-table-column label="id" align="center" prop="id" /> -->
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="字段名" align="center" prop="aaa1" show-overflow-tooltip />
-      <el-table-column label="字段注释" align="center" prop="aaa2" show-overflow-tooltip />
-      <el-table-column label="来源业务系统" align="center" prop="aaa3" show-overflow-tooltip />
-      <!-- <el-table-column label="数据源" align="center" prop="aaa4" show-overflow-tooltip /> -->
-      <el-table-column label="所属库" align="center" prop="aaa5" show-overflow-tooltip />
-      <el-table-column label="所属表" align="center" prop="aaa6" show-overflow-tooltip />
-      <el-table-column label="分类" align="center" prop="aaa7" show-overflow-tooltip />
-      <el-table-column label="安全分级" align="center" prop="aaa8" show-overflow-tooltip />
+      <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip />
+      <el-table-column label="字段注释" align="center" prop="fieldRemark" show-overflow-tooltip />
+      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
+      <!-- <el-table-column label="数据源" align="center" prop="databaseId" show-overflow-tooltip /> -->
+      <el-table-column label="所属库" align="center" prop="tableName" show-overflow-tooltip />
+      <el-table-column label="所属表" align="center" prop="databaseName" show-overflow-tooltip />
+      <el-table-column label="分类" align="center" prop="projectName" show-overflow-tooltip />
+      <el-table-column label="安全分级" align="center" prop="securityLevel" show-overflow-tooltip />
       <el-table-column label="样本" align="center" prop="aaa9" show-overflow-tooltip>
         <template slot-scope="scope">
           <el-tooltip placement="bottom" effect="light">
@@ -80,7 +85,11 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="确认状态" align="center" prop="aaa1" />
+      <el-table-column label="确认状态" align="center" prop="confirm" >
+        <template slot-scope="scope">
+          <span>{{ scope.row.confirm == 0 ? '未确认' : '已确认' }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="resultExdit(scope.row)"
@@ -96,8 +105,8 @@
         <el-form-item label="分类" prop="aaa1">
           <el-input v-model="resultForm.aaa1" placeholder="请输入分类" clearable @keyup.enter.native="handleQuery" />
         </el-form-item>
-        <el-form-item label="安全分级" class="addSelectClass" prop="aaa2">
-        <el-select v-model="resultForm.aaa2" placeholder="请选择">
+        <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
+        <el-select v-model="resultForm.securityLevel" placeholder="请选择">
             <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -118,12 +127,23 @@ import {
   usersAddI
 } from "@/api/system/proxyUser";
 
-import { listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseListI } from "@/api/system/proxys";
+import { listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
+   startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseListI,protectTableFieldList} from "@/api/system/proxys";
 import { listAllProject, } from "@/api/system/project";
 import { treeListI, categoryImport, getAttachData, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory"
 
 export default {
   name: "ProxysResult",
+  props: {
+    treeOptions: {
+      type: Array,
+      default: [],
+    },
+    drawerData: {
+      type: Object,
+      default: {},
+    }
+  },
   data() {
     return {
       addOptions: [
@@ -144,9 +164,18 @@ export default {
           label: "5级"
         },
       ],
+      treeID:'',
+      categoryList: [],
+      yuanCategoryList:[],
+      addNodeName:'',
+      categoryListEdit:[],
+      defaultProps: {
+        children: "children",
+        label: "label"
+      },
       resultForm: {
         aaa1: '',
-        aaa2: '',
+        securityLevel: '',
       },
       tableData: [{
         date: '安徽',
@@ -188,8 +217,6 @@ export default {
         },
       ],
       databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRES", id: 3, value: "POSTGRES" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
-
-      treeOptions: [],
       drawerShow: false,
       samplingNum: 10,
       checkList: true,
@@ -218,14 +245,7 @@ export default {
         label: '扫描失败'
       }
       ],
-      publishStatus: [
-        {
-          value: 'COMPLETE',
-          label: '未发布'
-        }, {
-          value: 'RUNNING',
-          label: '已发布'
-        },
+      surfaceList: [
       ],
       executeStatus: [
         {
@@ -266,12 +286,12 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        aaa1: '',
-        aaa2: '',
-        aaa3: '',
-        aaa4: '',
-        aaa5: '',
-        aaa6: '',
+        projectId: '',
+        securityLevel: '',
+        confirm: '',
+        databaseId: '',
+        tableId: '',
+        businessName: '',
       },
       aaa3List: [
         {
@@ -366,10 +386,14 @@ export default {
   },
 
   created() {
+    if(this.drawerData && this.drawerData.targetDatabase) {
+      const cleanedDatabase = this.drawerData.targetDatabase.replace(/,$/, '');
+      this.surfaceList = cleanedDatabase.split(',')
+    }
+    this.getProtectCategory()
     // this.queryParams.selectProjectName = "全部"
     // this.queryParams.projectId = 0
     this.getList();
-    this.gettreeOptionsList()
   },
   methods: {
 
@@ -398,12 +422,12 @@ export default {
 
     handleAdda() { },
     handleEcelFn() { },
-    gettreeOptionsList() {
-      this.Loading = true
-      getFrameworks().then((response) => {
-        this.treeOptions = response.data
-      });
-    },
+    // gettreeOptionsList() {
+    //   this.Loading = true
+    //   getFrameworks().then((response) => {
+    //     this.treeOptions = response.data
+    //   });
+    // },
     targetDatabaseChange(value) {
       if (value.includes('all')) {
         this.form.targetDatabase = this.targetDataList.map(item => item.value);
@@ -480,46 +504,19 @@ export default {
     inputSearch(data) {
       clearTimeout(this.debounceTimeout);
       this.debounceTimeout = setTimeout(() => {
-        this.getList()
+      this.getList()
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
     /** 查询数据库代理列表 */
     getList() {
       this.loading = true;
-      if (this.queryParams.projectId == 0) {
-        this.queryParams.projectId = null
-      }
-      this.proxysList = [{
-        id: 0,
-        aaa1: 'ADDRESS',
-        aaa2: '通讯地址',
-        aaa3: '测试系统',
-        aaa4: '数据源01',
-        aaa5: 'database01',
-        aaa6: 'table01',
-        aaa7: '未分类',
-        aaa8: '未分级',
-        aaa9: '未确认',
-      }, {
-        id: 1,
-        aaa1: 'BANK_NO',
-        aaa2: '银行编号',
-        aaa3: '测试系统',
-        aaa4: '数据源01',
-        aaa5: 'database02',
-        aaa6: 'table01',
-        aaa7: '客户-个人-个人自然信息-信息资产管理信息',
-        aaa8: '2级',
-        aaa9: '已确认',
-      },
-      ],
-        this.total = 20;
-      this.loading = false;
-      // listProxys(this.queryParams).then(response => {
-      //   this.proxysList = response.rows;
-      //   this.total = response.total;
-      //   this.loading = false;
-      // });
+      console.log(this.queryParams);
+      
+      protectTableFieldList(this.queryParams).then(response => {
+        this.proxysList = response.rows;
+        this.total = response.total;
+        this.loading = false;
+      });
     },
     // 取消按钮
     cancel() {
@@ -561,9 +558,7 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.queryParams.selectProjectName = "全部"
-      this.queryParams.projectId = null
-      this.resetForm("queryForm");
+      this.resetForm("queryParams");
       this.handleQuery();
     },
     // 多选框选中数据
@@ -578,6 +573,79 @@ export default {
     resultExdit(row) {
       this.deleteVisible = true
     },
+    
+    addHandleNodeClick(node) {
+      if (node.children && node.children.length > 0) {
+        node.disabled = true;
+      } else {
+        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+        if (parentLabels) {
+          this.addNodeName = parentLabels.join('-') + '-' + node.categoryName ;
+        } else {
+          this.addNodeName = node.categoryName;
+        }
+        this.queryParams.projectId = node.id
+        this.$refs.addSelectRef.blur()
+        this.getList()
+      }
+    },
+    
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.categoryName.indexOf(value) !== -1;
+    },
+    
+    getProtectCategory(key) {
+      this.treeLoading = true
+      let data = {
+        parentId: '0'
+      };
+      treeListI(data).then((resp) => {
+        this.categoryList = resp.data
+        this.yuanCategoryList = resp.data
+        if (resp.data.length == 0) {
+          this.Loading = false
+        } else {
+          let tempList = JSON.parse(JSON.stringify(this.categoryList))
+          for (let item of tempList) {
+            item.label = item.categoryName
+          }
+          this.categoryList = this.handleTree(tempList, "id")
+          console.log(this.categoryList);
+          
+          this.categoryListEdit = this.handleTree(tempList, "id")
+        }
+        this.Loading = false
+        this.treeLoading = false
+      });
+    },
+    
+    handleNodeClick(data) {
+      this.treeID = data.id;
+      this.handleQuery();
+    },
+    
+    // 递归函数，查找父节点的 label 并返回完整的路径
+    findParentLabelsById(tree, nodeId, path = []) {
+      if (!Array.isArray(tree)) {
+        return null;
+      }
+      for (const node of tree) {
+        if (node.children && node.children.length > 0) {
+          for (const child of node.children) {
+            if (child.id === nodeId) {
+              return [...path, node.label];
+            }
+          }
+          const found = this.findParentLabelsById(node.children, nodeId, [...path, node.label]);
+          if (found) {
+            return found;
+          }
+        }
+      }
+      return null; // 如果没有找到，返回 null
+    },
+
   }
 };
 </script>

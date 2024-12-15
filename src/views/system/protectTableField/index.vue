@@ -411,9 +411,9 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     getProtectCategory(key) {
       this.treeLoading = true
       let data = {
-        parentId: key,
+        projectId: key,
       };
-      treeListI(data).then((resp) => {
+      getDatabaseList(data).then((resp) => {
         this.categoryList = resp.data
         if (resp.data.length == 0) {
           this.Loading = false

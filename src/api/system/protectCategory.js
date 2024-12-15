@@ -92,6 +92,15 @@ export function addData(data) {
     data: qs.stringify(data)
   })
 }
+
+// 测试数据库名称是否重复
+export function checkSourceName(data) {
+  return request({
+    url: '/system/proxy/checkSourceName',
+    method: 'get',
+    params: data
+  })
+}
 // -----------------------------------------
 
 // 分页查询节点的子类数据

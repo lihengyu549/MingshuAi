@@ -10,7 +10,6 @@ export function listProxys (query) {
     params: query
   })
 }
-
 // 查询数据库代理详细
 export function getProxys (id) {
   return request({
@@ -27,6 +26,16 @@ export function addProxys (data) {
     data: data
   })
 }
+
+// 执行
+export function databaseMask (data) {
+  return request({
+    url: '/system/proxy/database/mask',
+    method: 'post',
+    data: stringify(data)
+  })
+}
+
 /**
  * 测试数据库联通性
  */
@@ -58,9 +67,9 @@ export function updateProxys (data) {
 }
 
 // 删除数据库代理
-export function delProxys (id) {
+export function delProxys (ids) {
   return request({
-    url: '/system/proxy/' + id,
+    url: '/system/proxy/' + ids,
     method: 'delete',
     loading: true,
   })
@@ -116,7 +125,6 @@ export function strategyAll () {
 
 // 获取数据库列表
 export function databaseListI (data) {
-
   return request({
     url: '/system/proxy/database/list',
     method: 'post',
@@ -124,9 +132,8 @@ export function databaseListI (data) {
     loading: true,
   })
 }
-// 获取数据库列表
+// 新增Execl文件
 export function importExcel (data) {
-
   return request({
     url: '/system/proxy/database/importExcel',
     method: 'post',
@@ -134,5 +141,20 @@ export function importExcel (data) {
       "Content-Type":"multipart/form-data; ",
     },
     data: data,
+  })
+}
+// 新增Execl文件
+export function publish (id) {
+  return request({
+    url: '/system/proxy/publish/' + id,
+    method: 'post',
+  })
+}
+//结果查看分页
+export function protectTableFieldList (data) {
+  return request({
+    url: '/system/protectTableField/list',
+    method: 'get',
+    params:data,
   })
 }
