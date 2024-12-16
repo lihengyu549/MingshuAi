@@ -57,7 +57,7 @@
         <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleEcelFn"
           v-hasPermi="['system:proxys:addExcel']">确认过滤项</el-button>
       </el-col>
-      <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
+      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
     <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
       <!-- <el-table-column type="selection" width="55" align="center" /> -->
@@ -286,10 +286,10 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        projectId: '',
+        projectId: this.drawerData.projectId,
         securityLevel: '',
         confirm: '',
-        databaseId: '',
+        databaseId: this.drawerData.id,
         tableId: '',
         businessName: '',
       },

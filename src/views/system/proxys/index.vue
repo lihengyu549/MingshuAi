@@ -1,6 +1,6 @@
 <template>
   <div class="app-container" v-loading="mainLoading">
-    <el-form :model="queryParams" ref="queryForm" class="yuanDataClass" size="small" :inline="true"
+    <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small" :inline="true"
       label-width="auto">
       <!-- <el-form-item label="分类分级框架">
         <el-select v-model="queryParams.selectProjectName" placeholder="请输入分类分级框架" filterable remote clearable
@@ -107,6 +107,7 @@
           v-hasPermi="['system:proxys:export']"
         >导出</el-button>
       </el-col> -->
+      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
     <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
       <!-- <el-table-column type="selection" width="55" align="center" /> -->
@@ -442,13 +443,13 @@ export default {
       executeStatus: [
         {
           value: 'COMPLETE',
-          label: '待执行'
+          label: '执行完成'
         }, {
           value: 'RUNNING',
           label: '执行中'
         }, {
           value: 'NONE',
-          label: '执行完成'
+          label: '待执行'
         }, {
           value: 'ERR',
           label: '执行失败'
@@ -1314,6 +1315,10 @@ export default {
       }
     },
     resultLookFn(row) {
+      if(row.state == 'RUNNING') {
+        this.$message({ message: '当前状态为运行中，无法发布', type: 'warning' })
+        return
+      }
       if (row.publishStatus == 0) {
         this.drawerData = row
         this.drawerShow = true
@@ -1322,12 +1327,20 @@ export default {
       }
     },
     resultReleaseFn(row) {
+      if(row.state == 'RUNNING') {
+        this.$message({ message: '当前状态为运行中，无法发布', type: 'warning' })
+        return
+      }
       this.loading = true
       publish(row.id).then(res => {
         if (res.code == 200) {
           this.$message({ message: res.msg, type: 'success' })
           this.getList()
-        }
+          this.loading = false
+    }
+      })
+      .catch(err =>{
+        this.loading = false
       })
     },
   }
