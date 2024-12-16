@@ -101,6 +101,15 @@ export function checkSourceName(data) {
     params: data
   })
 }
+
+
+// 测试名称是否可用
+export function listTableByProject (databaseId) {
+  return request({
+    url: '/system/protectTableField/listTableByProject?databaseId='+databaseId,
+    method: 'get',
+  })
+}
 // -----------------------------------------
 
 // 分页查询节点的子类数据

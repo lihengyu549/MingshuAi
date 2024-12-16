@@ -36,6 +36,32 @@ export function databaseMask (data) {
   })
 }
 
+// 确认过滤项
+export function confirmList (data) {
+  return request({
+    url: '/system/protectTableField/confirmList',
+    method: 'post',
+    data: stringify(data)
+  })
+}
+// 确认勾选项
+export function confirmIds (data) {
+  return request({
+    url: '/system/protectTableField/confirm/'+ data,
+    method: 'post',
+  })
+}
+// 修改
+export function updateFiledRule (data) {
+  return request({
+    url: '/system/protectTableField/updateFiledRule',
+    method: 'put',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    data: data
+  })
+}
 /**
  * 测试数据库联通性
  */
@@ -135,7 +161,7 @@ export function databaseListI (data) {
 // 新增Execl文件
 export function importExcel (data) {
   return request({
-    url: '/system/proxy/database/importExcel',
+    url: '/system/datasource/import',
     method: 'post',
     headers: {
       "Content-Type":"multipart/form-data; ",

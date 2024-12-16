@@ -503,7 +503,6 @@ export default {
       this.importData.fileList = fileList;
     },
     handleFileExceed(files, fileList){
-      console.log(fileList);
       this.importData.importFile = files[0].name
       this.importData.fileList = fileList;
     },

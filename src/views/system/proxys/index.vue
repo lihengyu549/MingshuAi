@@ -349,8 +349,9 @@
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px">
         <el-form-item label="数据源名称" prop="sourceName">
-          <el-input v-model="importData.sourceName" maxlength="50" @blur="getNameTestingFn(importData.sourceName)"
-            @input="importNameTestingFn(importData.sourceName)" placeholder="请输入数据源名称"></el-input>
+          <el-input v-model="importData.sourceName" maxlength="50"
+            @blur="getimortantNameTestingFn(importData.sourceName)" @input="importNameTestingFn(importData.sourceName)"
+            placeholder="请输入数据源名称"></el-input>
         </el-form-item>
 
         <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
@@ -366,7 +367,7 @@
         <el-form-item class="uploadClass">
           <el-upload class="upload-demo" :limit="1" :file-list="importData.fileList" :auto-upload="false"
             :http-request="submitFormExcelFn" action="" accept=".xls,.xlsx,csv" :show-file-list="false"
-            :on-change="handleFileChange">
+            :on-change="handleFileChange" :on-exceed="handleFileExceed">
             <el-button size="mini" type="primary">选择文件</el-button>
           </el-upload>
         </el-form-item>
@@ -380,7 +381,7 @@
     </el-dialog>
     <el-drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
       size="80%" :before-close="handleClose">
-      <Result :treeOptions="treeOptions" :drawerData="drawerData"/>
+      <Result :treeOptions="treeOptions" :drawerData="drawerData" />
     </el-drawer>
   </div>
 </template>
@@ -408,7 +409,7 @@ export default {
       treeOptions: [],
       drawerShow: false,
       samplingNum: 10,
-      drawerData:null,
+      drawerData: null,
       checkList: true,
       show: true,
       serialNumber: "",
@@ -590,7 +591,8 @@ export default {
     this.getList()
   },
   methods: {
-    getNameTestingFn(val) {
+    getNameTestingFn(val, from) {
+      this.importDataLoading = true
       let params = {
         sourceName: val
       }
@@ -599,10 +601,35 @@ export default {
           return res.msg == '可以使用'
         })
           .catch((err) => {
-            this.form.sourceName = ''
+            form.sourceName = ''
+            this.importDataLoading = false
             return false
           })
       } else {
+        form.sourceName = ''
+        this.importDataLoading = false
+        return false
+      }
+    },
+
+    getimortantNameTestingFn(val, from) {
+      this.importDataLoading = true
+      let params = {
+        sourceName: val
+      }
+      if (val) {
+        checkSourceName(params).then((res) => {
+            this.importDataLoading = false
+          return res.msg == '可以使用'
+        })
+          .catch((err) => {
+            this.importData.sourceName = ''
+            this.importDataLoading = false
+            return false
+          })
+      } else {
+        this.importData.sourceName = ''
+        this.importDataLoading = false
         return false
       }
     },
@@ -716,30 +743,25 @@ export default {
         if (valid) {
           this.importDataLoading = true
           // await this.rulsNameIsRight(this.importData.categoryId, params.name)
-          if (this.getNameTestingFn()) {
-            this.$modal.msgError("数据源名称重复,请更改");
+
+          const formData = new FormData();
+          // 将文件数组添加到 FormData 对象中
+          formData.append('file', this.importData.fileList[0].raw);
+          formData.append('frameworkNameId', this.importData.categoryId);
+          formData.append('sourceName', this.importData.sourceName);
+          await importExcel(formData).then(res => {
+            this.messsucc(res, '导入条目数量共');
+            // this.getList();
+            this.importData.categoryName = ''
+            this.importData.importFile = ''
+            this.importData.fileList = []
+            this.importData.importShow = false
+            this.gettreeOptionsList()
             this.importDataLoading = false
-            return
-          } else {
-            const formData = new FormData();
-            // 将文件数组添加到 FormData 对象中
-            formData.append('file', this.importData.fileList[0].raw);
-            formData.append('categoryId', this.importData.categoryId);
-            formData.append('sourceName', this.importData.sourceName);
-            await importExcel(formData).then(res => {
-              this.messsucc(res, '导入条目数量共');
-              // this.getList();
-              this.importData.categoryName = ''
-              this.importData.importFile = ''
-              this.importData.fileList = []
-              this.importData.importShow = false
-              this.gettreeOptionsList()
+          })
+            .catch((err) => {
               this.importDataLoading = false
             })
-              .catch((err) => {
-                this.importDataLoading = false
-              })
-          }
         } else {
           return false
         }
@@ -747,6 +769,10 @@ export default {
     },
     handleClose() {
       this.drawerShow = false
+    },
+    handleFileExceed(files, fileList) {
+      this.importData.importFile = files[0].name
+      this.importData.fileList = fileList;
     },
     markingCli() {
       this.$confirm('您是否要开始数据扫描？', '提示', {
@@ -1315,7 +1341,7 @@ export default {
       }
     },
     resultLookFn(row) {
-      if(row.state == 'RUNNING') {
+      if (row.state == 'RUNNING') {
         this.$message({ message: '当前状态为运行中，无法发布', type: 'warning' })
         return
       }
@@ -1327,7 +1353,7 @@ export default {
       }
     },
     resultReleaseFn(row) {
-      if(row.state == 'RUNNING') {
+      if (row.state == 'RUNNING') {
         this.$message({ message: '当前状态为运行中，无法发布', type: 'warning' })
         return
       }
@@ -1337,11 +1363,11 @@ export default {
           this.$message({ message: res.msg, type: 'success' })
           this.getList()
           this.loading = false
-    }
+        }
       })
-      .catch(err =>{
-        this.loading = false
-      })
+        .catch(err => {
+          this.loading = false
+        })
     },
   }
 };

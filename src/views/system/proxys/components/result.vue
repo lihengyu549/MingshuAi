@@ -1,37 +1,37 @@
 <template>
-  <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" class="yuanDataClass" size="small" :inline="true" v-show="showSearch"
-      label-width="auto">
-      <el-form-item label="分类分级框架" prop="projectId">
-          <el-select ref="addSelectRef" v-model="addNodeName">
-            <el-option style="height: 100%; padding: 0" value="">
-              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
-                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
-                @node-click="addHandleNodeClick" />
-            </el-option>
-          </el-select>
+  <div class="app-container" v-loading="loading">
+    <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
+      v-show="showSearch" label-width="auto">
+      <el-form-item label="分类分级框架" prop="categoryId">
+        <el-select ref="addSelectRef" v-model="addNodeName">
+          <el-option style="height: 100%; padding: 0" value="">
+            <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
+              :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+              @node-click="addHandleNodeClick" />
+          </el-option>
+        </el-select>
       </el-form-item>
       <el-form-item label="安全分级" prop="securityLevel">
         <el-select clearable v-model="queryParams.securityLevel" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in addOptions" :key="item.id" :label="item.label" :value="item.name">
+          <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="确认状态" prop="confirm">
         <el-select clearable v-model="queryParams.confirm" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in aaa3List" :key="item.id" :label="item.label" :value="item.name">
+          <el-option v-for="item in confirmList" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="所属库" prop="databaseId">
-        <el-select clearable v-model="queryParams.databaseId" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
+      <el-form-item label="所属库" prop="databaseName">
+        <el-select clearable v-model="queryParams.databaseName" @change="inputSearch" placeholder="请选择">
+          <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="所属表" prop="tableId">
         <el-select clearable v-model="queryParams.tableId" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
+          <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.id">
           </el-option>
         </el-select>
       </el-form-item>
@@ -39,7 +39,7 @@
         <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入来源业务系统" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      
+
       <el-form-item>
       </el-form-item>
       <el-form-item>
@@ -69,15 +69,15 @@
       <!-- <el-table-column label="数据源" align="center" prop="databaseId" show-overflow-tooltip /> -->
       <el-table-column label="所属库" align="center" prop="tableName" show-overflow-tooltip />
       <el-table-column label="所属表" align="center" prop="databaseName" show-overflow-tooltip />
-      <el-table-column label="分类" align="center" prop="projectName" show-overflow-tooltip />
+      <el-table-column label="分类" align="center" prop="categoryName" show-overflow-tooltip />
       <el-table-column label="安全分级" align="center" prop="securityLevel" show-overflow-tooltip />
-      <el-table-column label="样本" align="center" prop="aaa9" show-overflow-tooltip>
+      <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
         <template slot-scope="scope">
           <el-tooltip placement="bottom" effect="light">
             <div slot="content">
-              <el-table :data="tableData" height="250" border class="tableCla" style="width: 100%">
+              <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
                 <el-table-column type="index" label="序号" width="50" />
-                <el-table-column prop="date" label="字段值" width="100">
+                <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
                 </el-table-column>
               </el-table>
             </div>
@@ -85,7 +85,7 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="确认状态" align="center" prop="confirm" >
+      <el-table-column label="确认状态" align="center" prop="confirm">
         <template slot-scope="scope">
           <span>{{ scope.row.confirm == 0 ? '未确认' : '已确认' }}</span>
         </template>
@@ -99,14 +99,20 @@
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
-    <el-dialog title="分类分级框架结果修改" :visible.sync="deleteVisible" width="650px" style="padding: 0 20px;" append-to-body
-      :close-on-click-modal="false">
+    <el-dialog title="分类分级框架结果修改" v-loading="updataLoading" :visible.sync="deleteVisible" width="650px"
+      style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
       <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
-        <el-form-item label="分类" prop="aaa1">
-          <el-input v-model="resultForm.aaa1" placeholder="请输入分类" clearable @keyup.enter.native="handleQuery" />
+        <el-form-item label="分类分级框架" class="addSelectClass">
+          <el-select ref="resultSelectRef" v-model="resultFormNodeName">
+            <el-option style="height: 100%; padding: 0" value="">
+              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
+                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+                @node-click="resultHandleNodeClick" />
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
-        <el-select v-model="resultForm.securityLevel" placeholder="请选择">
+          <el-select v-model="resultForm.securityLevel" placeholder="请选择">
             <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -114,8 +120,8 @@
       </el-form>
       <template #footer>
         <span>
-          <el-button type="primary" @click="deleteVisible = false"> 确定 </el-button>
-          <el-button @click="deleteVisible = false">取消</el-button>
+          <el-button type="primary" @click="updataResultFn"> 确定 </el-button>
+          <el-button @click="updataResultCanelFn">取消</el-button>
         </span>
       </template>
     </el-dialog>
@@ -127,10 +133,17 @@ import {
   usersAddI
 } from "@/api/system/proxyUser";
 
-import { listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
-   startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseListI,protectTableFieldList} from "@/api/system/proxys";
+import {
+  listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
+  startI, stopI, databaseMaskI, strategyPushI, strategyAll,
+  databaseListI, confirmIds, protectTableFieldList, confirmList, updateFiledRule
+} from "@/api/system/proxys";
 import { listAllProject, } from "@/api/system/project";
-import { treeListI, categoryImport, getAttachData, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory"
+import {
+  treeListI, categoryImport, getAttachData, attachStatus,
+  forceLogout, updataAttach, nameTesting, addData,
+  getFrameworks, listTableByProject
+} from "@/api/system/protectCategory"
 
 export default {
   name: "ProxysResult",
@@ -146,6 +159,7 @@ export default {
   },
   data() {
     return {
+      updataLoading: false,
       addOptions: [
         {
           value: 1,
@@ -164,18 +178,20 @@ export default {
           label: "5级"
         },
       ],
-      treeID:'',
+      resultFormNodeName: '',
+      treeID: '',
       categoryList: [],
-      yuanCategoryList:[],
-      addNodeName:'',
-      categoryListEdit:[],
+      yuanCategoryList: [],
+      addNodeName: '',
+      categoryListEdit: [],
       defaultProps: {
         children: "children",
         label: "label"
       },
       resultForm: {
-        aaa1: '',
+        categoryId: '',
         securityLevel: '',
+        id: '',
       },
       tableData: [{
         date: '安徽',
@@ -292,8 +308,10 @@ export default {
         databaseId: this.drawerData.id,
         tableId: '',
         businessName: '',
+        databaseName: '',
+        categoryId: '',
       },
-      aaa3List: [
+      confirmList: [
         {
           value: '1',
           label: '已确认'
@@ -365,6 +383,7 @@ export default {
         categoryId: '',//框架名称
         importShow: false,
       },
+      tableList: [],
       debounceTimeout: null,
       // 表单校验
       importDataRules: {
@@ -386,7 +405,7 @@ export default {
   },
 
   created() {
-    if(this.drawerData && this.drawerData.targetDatabase) {
+    if (this.drawerData && this.drawerData.targetDatabase) {
       const cleanedDatabase = this.drawerData.targetDatabase.replace(/,$/, '');
       this.surfaceList = cleanedDatabase.split(',')
     }
@@ -395,7 +414,17 @@ export default {
     // this.queryParams.projectId = 0
     this.getList();
   },
+  mounted() {
+    this.getListTableByProject()
+  },
   methods: {
+    getListTableByProject() {
+      listTableByProject(this.drawerData.id).then(res => {
+        if (res.code == 200) {
+          this.tableList = res.data
+        }
+      })
+    },
 
     nameTestingFn(val) {
       this.form.sourceName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
@@ -420,14 +449,42 @@ export default {
       // })
     },
 
-    handleAdda() { },
-    handleEcelFn() { },
-    // gettreeOptionsList() {
-    //   this.Loading = true
-    //   getFrameworks().then((response) => {
-    //     this.treeOptions = response.data
-    //   });
-    // },
+    handleAdda() {
+      this.loading = true
+      let dataS = this.$refs.tableRef.selection
+      if (dataS && dataS.length > 0) {
+        this.$confirm(`确定当前勾选项吗`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let ids = dataS.map(item => {
+            return item.id
+          })
+          let data = ids.join(',')
+          confirmIds(data).then(res => {
+            if (res.code == 200) {
+              this.$message({ message: res.msg, type: 'success' })
+              this.getList()
+              this.loading = false
+            }
+          })
+          // 接口
+        }).catch(() => {
+          this.loading = false
+        });
+      } else {
+        this.$message({ message: '请选择至少一条数据', type: 'warning' })
+      }
+    },
+    handleEcelFn() {
+      confirmList(this.queryParams).then(res => {
+        if (res.code === 200) {
+          this.$message.success(res.msg)
+        }
+      })
+    },
+
     targetDatabaseChange(value) {
       if (value.includes('all')) {
         this.form.targetDatabase = this.targetDataList.map(item => item.value);
@@ -495,7 +552,30 @@ export default {
       let res = await nameTesting(params)
       this.isName = res.data
     },
-
+    updataResultFn() {
+      this.updataLoading = true
+      updateFiledRule(this.resultForm).then(res => {
+        if (res.code == 200) {
+          this.$message({
+            message: res.msg,
+            type: 'success'
+          })
+        }
+        this.deleteVisible = false
+        this.resultFormNodeName = ''
+        this.resetForm('resultForm')
+        this.getList()
+        this.updataLoading = false
+      })
+        .catch(err => {
+          this.updataLoading = false
+        })
+    },
+    updataResultCanelFn() {
+      this.deleteVisible = false
+      this.resultFormNodeName = ''
+      this.resetForm('resultForm')
+    },
     messsucc(res, flag) {
       this.$message.success(`${res.msg},${flag}${res.data}个`)
     },
@@ -504,52 +584,20 @@ export default {
     inputSearch(data) {
       clearTimeout(this.debounceTimeout);
       this.debounceTimeout = setTimeout(() => {
-      this.getList()
+        this.getList()
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
     /** 查询数据库代理列表 */
     getList() {
       this.loading = true;
-      console.log(this.queryParams);
-      
       protectTableFieldList(this.queryParams).then(response => {
         this.proxysList = response.rows;
+        this.proxysList.forEach(ele => {
+          ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
+        })
         this.total = response.total;
         this.loading = false;
       });
-    },
-    // 取消按钮
-    cancel() {
-      this.open = false;
-      this.showSucType = 0
-      this.reset();
-    },
-    // 表单重置
-    addReset() {
-      this.addForm = {
-        userName: null,
-        userPassword: null,
-      }
-      this.resetForm("addForm");
-    },
-    reset() {
-      this.form = {
-        // id: null,
-        //  proxyId: null,
-        //  proxyPort: null,
-        //  proxyUserName: null,
-        //  proxyUserPassword: null,
-        //   proxyIp: null,
-        targetIp: null,
-        targetPort: null,
-        targetDatabase: [],
-        targetUserName: null,
-        targetUserPassword: null,
-        //  protocolPort: null,
-        projectId: null,
-        // proxyStatus: "0"
-      };
-      this.resetForm("form");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -558,6 +606,7 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
+      this.addNodeName = ''
       this.resetForm("queryParams");
       this.handleQuery();
     },
@@ -566,35 +615,46 @@ export default {
       this.ids = selection.map(item => item.id)
       this.multiple = !selection.length
     },
-    handleEcelFn() {
-      this.importData.importShow = true
-      this.resetForm("importData");
-    },
     resultExdit(row) {
+      this.resultForm.id = row.id
       this.deleteVisible = true
     },
-    
+
     addHandleNodeClick(node) {
       if (node.children && node.children.length > 0) {
         node.disabled = true;
       } else {
         const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
         if (parentLabels) {
-          this.addNodeName = parentLabels.join('-') + '-' + node.categoryName ;
+          this.addNodeName = parentLabels.join('-') + '-' + node.categoryName;
         } else {
           this.addNodeName = node.categoryName;
         }
-        this.queryParams.projectId = node.id
+        this.queryParams.categoryId = node.id
         this.$refs.addSelectRef.blur()
         this.getList()
       }
     },
-    
+
+    resultHandleNodeClick(node) {
+      if (node.children && node.children.length > 0) {
+        node.disabled = true;
+      } else {
+        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+        if (parentLabels) {
+          this.resultFormNodeName = parentLabels.join('-') + '-' + node.categoryName;
+        } else {
+          this.resultFormNodeName = node.categoryName;
+        }
+        this.resultForm.categoryId = node.id
+        this.$refs.resultSelectRef.blur()
+      }
+    },
     filterNode(value, data) {
       if (!value) return true;
       return data.categoryName.indexOf(value) !== -1;
     },
-    
+
     getProtectCategory(key) {
       this.treeLoading = true
       let data = {
@@ -611,20 +671,18 @@ export default {
             item.label = item.categoryName
           }
           this.categoryList = this.handleTree(tempList, "id")
-          console.log(this.categoryList);
-          
           this.categoryListEdit = this.handleTree(tempList, "id")
         }
         this.Loading = false
         this.treeLoading = false
       });
     },
-    
+
     handleNodeClick(data) {
       this.treeID = data.id;
       this.handleQuery();
     },
-    
+
     // 递归函数，查找父节点的 label 并返回完整的路径
     findParentLabelsById(tree, nodeId, path = []) {
       if (!Array.isArray(tree)) {
@@ -671,9 +729,11 @@ export default {
 .addMsg /deep/ .el-form-item__label {
   text-align: left;
 }
+
 .addSelectClass /deep/ .el-select {
   width: calc(100%);
 }
+
 .spanClass {
   position: absolute;
   left: -58px;
@@ -777,7 +837,6 @@ export default {
   /* width: 75%; */
   display: flex;
   justify-content: flex-end
-
 }
 
 .importForm /deep/ .el-form-item--medium {
