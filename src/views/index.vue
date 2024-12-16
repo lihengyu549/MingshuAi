@@ -249,7 +249,7 @@
                     </td>
                     <td class="el-table__cell is-leaf">
                       <div class="cell" v-if="server.gpus">
-                        {{ server.gpus.aaa1 }}
+                        {{ server.gpus[0].name }}
                       </div>
                     </td>
                   </tr>
@@ -259,7 +259,7 @@
                     </td>
                     <td class="el-table__cell is-leaf">
                       <div class="cell" v-if="server.gpus">
-                        {{ server.gpus.aaa2 }}°
+                        {{server.gpus[0].temperature }}°
                       </div>
                     </td>
                   </tr>
@@ -269,7 +269,7 @@
                     </td>
                     <td class="el-table__cell is-leaf">
                       <div class="cell" v-if="server.gpus">
-                        {{ server.gpus.aaa3 }}%
+                        {{ server.gpus[0].utilization }}%
                       </div>
                     </td>
                   </tr>
@@ -279,7 +279,7 @@
                     </td>
                     <td class="el-table__cell is-leaf">
                       <div class="cell" v-if="server.gpus">
-                        {{ server.gpus.aaa4 }}
+                        {{ server.gpus[0].memoryUtilization }}
                       </div>
                     </td>
                   </tr>
@@ -414,10 +414,6 @@ export default {
       this.loading = true;
       getServer().then((response) => {
         this.server = response.data;
-        this.server.gpus.aaa1 = 'NVIDIA GeForce RTX 4090D'
-        this.server.gpus.aaa2 = '32'
-        this.server.gpus.aaa3 = '20'
-        this.server.gpus.aaa4 = '16000/24564MB'
         this.loading = false;
       });
     },
