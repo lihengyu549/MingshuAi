@@ -883,7 +883,7 @@ export default {
           this.$message({ message: '选中任务包含执行中任务，无法批量执行', type: 'warning' })
           return
         }
-        if (flagList.includes('NONE')) {
+        if (flagList.includes('COMPLETE')) {
           this.$confirm(`选中任务包含已完成任务，重新执行任务，将会覆盖数据源上一次执行的所有结果`, '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
@@ -904,7 +904,7 @@ export default {
           })
           return
         }
-        this.$confirm(`确定删除所选中的项吗`, '提示', {
+        this.$confirm(`确定执行所选中的项吗`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -1301,7 +1301,7 @@ export default {
           this.$message({ message: '选中任务包含执行中任务，无法批量删除', type: 'warning' })
           return
         }
-        if (flagList.includes('NONE')) {
+        if (flagList.includes('COMPLETE')) {
           this.$confirm(`删除任务，将会删除数据源所关联的所有执行结果,确定删除吗`, '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
@@ -1342,7 +1342,7 @@ export default {
     },
     resultLookFn(row) {
       if (row.state == 'RUNNING') {
-        this.$message({ message: '当前状态为运行中，无法发布', type: 'warning' })
+        this.$message({ message: '当前状态为运行中，无法查看', type: 'warning' })
         return
       }
       if (row.publishStatus == 0) {
