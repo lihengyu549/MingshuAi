@@ -10,6 +10,30 @@ export function getDatabaseList (data) {
 
   })
 }
+// API获取打标结果
+export function getDatabaseSource (query) {
+  return request({
+    url: `/system/protectTableField/getDatabaseSource?databaseId=${query}`,
+    method: 'get',
+  })
+}
+// 列表数据-分页、搜索
+export function listByPublished (data) {
+  return request({
+    url: `/system/protectTableField/listByPublished`,
+    method: 'get',
+    params: data
+  })
+}
+// 列表数据-导出Excel
+export function exportReport (data) {
+  return request({
+    url: `/system/protectTableField/exportReport`,
+    method: 'get',
+    params: data
+  })
+}
+// --------------------------------
 //列表
 export function protectTableFieldList (query) {
   return request({
@@ -20,14 +44,14 @@ export function protectTableFieldList (query) {
   })
 }
 //导出
-export function exportReport (query) {
-  return request({
-    url: '/system/protectTableField/exportReport',
-    method: 'get',
-    params: query,
+// export function exportReport (query) {
+//   return request({
+//     url: '/system/protectTableField/exportReport',
+//     method: 'get',
+//     params: query,
 
-  })
-}
+//   })
+// }
 // 查询数据库字段名列表
 export function listProtectTableField (query) {
   return request({

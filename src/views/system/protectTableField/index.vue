@@ -13,13 +13,13 @@
         <div class="head-container" v-loading="treeLoading">
           <el-tree :data="categoryList" :props="defaultProps" show-checkbox default-expand-all
             :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current
-            @node-click="handleNodeClick" />
+            @node-click="handleNodeClick" @check="treeCheck" />
         </div>
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" label-width="100px">
-          <el-form-item label="分类" prop="name">
+          <el-form-item label="分类" prop="categoryId">
             <el-input v-model="queryParams.name" @input="inputSearch" placeholder="请输入子类名称" clearable
               @keyup.enter.native="handleQuery" />
           </el-form-item>
@@ -29,8 +29,8 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="来源业务系统" prop="name">
-            <el-input v-model="queryParams.name" @input="inputSearch" placeholder="请输入子类名称" clearable
+          <el-form-item label="来源业务系统" prop="businessName">
+            <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入子类名称" clearable
               @keyup.enter.native="handleQuery" />
           </el-form-item>
           <el-form-item>
@@ -39,7 +39,7 @@
           </el-form-item>
           <div style="margin: 20px 20px 20px 0; display: flex;justify-content: flex-end;">
             <el-button type="primary" icon="el-icon-refresh" size="medium" @click="apiSumbit()">aip调用</el-button>
-            <el-button type="primary" icon="el-icon-warning" size="medium" @click="enabledFn('禁用')">清单导出</el-button>
+            <el-button type="primary" icon="el-icon-warning" size="medium" @click="downloadFile()">清单导出</el-button>
           </div>
         </el-form>
 
@@ -104,7 +104,7 @@
 <script>
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getDatabaseList, protectTableFieldList, exportReport } from "@/api/system/protectTableField";
+import { getDatabaseList, protectTableFieldList, exportReport,getDatabaseSource,listByPublished } from "@/api/system/protectTableField";
 import { getFrameworks, treeListI, } from "@/api/system/protectCategory";
 
 export default {
@@ -223,19 +223,14 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         pageSize: 10,
         categoryId: '',//左侧树id
         name: '',//子类名称
-        dataSourceId: 0,//来源
         levelId: -1,//安全级别
-      },
-      addOrEditDataRuls: {
-        attachData: '',
-        categoryId: '',
-        minSecurityLevel: null,
+        businessName:'',
       },
       apiDialogLoading: false,
       filterName: undefined,
       defaultProps: {
-        children: "children",
-        label: "label"
+        children: "tableList",
+        label: "tableName"
       },
       Loading: false,
       addOptions: [
@@ -313,6 +308,11 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     //api调用
     apiSumbit() {
       // 调接口拿api里的值
+      let databaseId = '328'
+      getDatabaseSource(databaseId).then(res=>{
+        console.log(res);
+        
+      })
       this.apiDialogShow = true
     },
     enabledFn(flag) {
@@ -389,6 +389,9 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
       if (!value) return true;
       return data.categoryName.indexOf(value) !== -1;
     },
+    treeCheck(data) {
+      this.treeID = data.id;
+    },
     handleNodeClick(data) {
       this.treeID = data.id;
       this.handleQuery();
@@ -424,15 +427,15 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
           //     break
           //   }
           // }
-          this.categoryList.unshift({
-            ancestors: "0",
-            categoryDescribe: "",
-            categoryName: "全部",
-            id: 1340,
-            minSecurityLevel: -1,
-            nodeLayerIndex: 1,
-            parentId: 0,
-          })
+          // this.categoryList.unshift({
+          //   ancestors: "0",
+          //   categoryDescribe: "",
+          //   categoryName: "全部",
+          //   id: 1340,
+          //   minSecurityLevel: -1,
+          //   nodeLayerIndex: 1,
+          //   parentId: 0,
+          // })
           this.treeID = this.categoryList[0].id;
           let tempList = JSON.parse(JSON.stringify(this.categoryList))
           for (let item of tempList) {
@@ -451,7 +454,7 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         ...this.queryParams,
         projectId: this.treeID
       }
-      protectTableFieldList(params).then((response) => {
+      listByPublished(params).then((response) => {
         this.protectTableFieldList = response.data.rows;
         this.total = response.data.total;
         this.loading = false;
@@ -488,7 +491,7 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         // 创建一个a标签并设置href属性
         const link = document.createElement('a');
         link.href = url;
-        link.download = '分类分级框架模板.xlsx'; // 设置下载后的文件名
+        link.download = '数据资产目录.xlsx'; // 设置下载后的文件名
         // 将a标签添加到DOM中
         document.body.appendChild(link);
         // 触发点击事件
