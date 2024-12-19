@@ -156,7 +156,7 @@
                       <div class="cell">属性</div>
                     </th>
                     <th class="el-table__cell is-leaf">
-                      <div class="cell">内存</div>
+                      <div class="cell">值</div>
                     </th>
                   </tr>
                 </thead>
