@@ -4,14 +4,14 @@
       <el-col :span="4" :xs="24">
         <div class="head-container">
           <span style="display: inline-block;background-color: #eee; font-size: 14px; padding: 5px 10px;">所属框架</span>
-          <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
+          <el-select v-model="projectId" class="serachInput" @change="treeOptionsSelectChange"
             placeholder="全部" style="margin-bottom: 20px">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </div>
         <div class="head-container" v-loading="treeLoading">
-          <el-tree :data="categoryList" :props="defaultProps" show-checkbox default-expand-all
+          <el-tree :data="dataCategoryList" :props="defaultProps" show-checkbox default-expand-all
             :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current
             @node-click="handleNodeClick" @check="treeCheck" />
         </div>
@@ -19,18 +19,23 @@
       <!--用户数据-->
       <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" label-width="100px">
-          <el-form-item label="分类" prop="categoryId">
-            <el-input v-model="queryParams.name" @input="inputSearch" placeholder="请输入子类名称" clearable
-              @keyup.enter.native="handleQuery" />
-          </el-form-item>
-          <el-form-item label="安全分级" prop="levelId">
-            <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" placeholder="全部">
+          <el-form-item label="分类" class="addSelectClass">
+          <el-select ref="resultSelectRef" v-model="resultFormNodeName" @change="getList">
+            <el-option style="height: 100%; padding: 0" value="">
+              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
+                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+                @node-click="resultHandleNodeClick" />
+            </el-option>
+          </el-select>
+        </el-form-item>
+          <el-form-item label="安全分级" prop="securityLevel">
+            <el-select v-model="queryParams.securityLevel" clearable @change="getList" placeholder="全部">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="来源业务系统" prop="businessName">
-            <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入子类名称" clearable
+            <el-input v-model="queryParams.businessName" clearable @input="inputSearch" placeholder="请输入来源业务系统"
               @keyup.enter.native="handleQuery" />
           </el-form-item>
           <el-form-item>
@@ -46,33 +51,26 @@
         <el-table v-loading="loading" :data="protectTableFieldList" @selection-change="handleSelectionChange"
           class="tableBox" ref="tableRef">
           <el-table-column type="selection" width="60" align="center" />
-          <el-table-column label="字段名" align="center" prop="aaa1" show-overflow-tooltip />
-          <el-table-column label="字段注释" align="center" prop="aaa2" show-overflow-tooltip />
-          <el-table-column label="来源业务系统" align="center" prop="aaa3" show-overflow-tooltip />
-          <el-table-column label="数据源" align="center" prop="aaa4" show-overflow-tooltip />
-          <el-table-column label="所属库" align="center" prop="aaa5" show-overflow-tooltip />
-          <el-table-column label="所属表" align="center" prop="aaa6" show-overflow-tooltip />
-          <el-table-column label="分类" align="center" prop="aaa7" show-overflow-tooltip />
-          <el-table-column label="安全分级" align="center" prop="aaa8" show-overflow-tooltip />
-          <el-table-column label="样本" align="center" prop="aaa9" show-overflow-tooltip>
+          <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip />
+          <el-table-column label="字段注释" align="center" prop="fieldRemark" show-overflow-tooltip />
+          <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
+          <el-table-column label="数据源" align="center" prop="sourceName" show-overflow-tooltip />
+          <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
+          <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
+          <el-table-column label="分类" align="center" prop="categoryName" show-overflow-tooltip />
+          <el-table-column label="安全分级" align="center" prop="securityLevel" show-overflow-tooltip />
+          <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
             <template slot-scope="scope">
               <el-tooltip placement="bottom" effect="light">
                 <div slot="content">
-                  <el-table :data="tableData" height="250" border class="tableCla" style="width: 100%">
+                  <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
                     <el-table-column type="index" label="序号" width="50" />
-                    <el-table-column prop="date" label="字段值" width="100">
+                    <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
                     </el-table-column>
                   </el-table>
                 </div>
                 <el-button size="mini" type="text">查看</el-button>
               </el-tooltip>
-            </template>
-          </el-table-column>
-          <el-table-column label="确认状态" align="center" prop="aaa1" />
-          <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-            <template slot-scope="scope">
-              <el-button size="mini" type="text" @click="resultExdit(scope.row)"
-                v-hasPermi="['system:proxys:resultLook']">结果修改</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -82,7 +80,7 @@
     </el-row>
     <!-- 新增编辑框 -->
     <el-dialog title="获取打标结果" v-loading="apiDialogLoading" :visible.sync="apiDialogShow" width="800px" append-to-body
-      :close-on-click-modal="false">
+      :close-on-click-modal="true">
       <div class="apiDialogMain">
         <div class="apiDialogMain_head">
           <div>请求示例：</div>
@@ -91,8 +89,10 @@
         </div>
         <div class="apiDialogMain_body">
           <div>响应示例：</div>
+          <!-- <pre v-html="textarea2"></pre>
           <div><el-input readonly resize="none" type="textarea" :rows="16" placeholder="请输入内容" v-model="textarea2">
-            </el-input></div>
+            </el-input></div> -->
+          <vue-json-viewer :value="textarea2"></vue-json-viewer>
         </div>
       </div>
       <div slot="footer" class="dialog-footer">
@@ -104,12 +104,12 @@
 <script>
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getDatabaseList, protectTableFieldList, exportReport,getDatabaseSource,listByPublished } from "@/api/system/protectTableField";
+import { getDatabaseList, protectTableFieldList, exportReport, getDatabaseSource, listByPublished } from "@/api/system/protectTableField";
 import { getFrameworks, treeListI, } from "@/api/system/protectCategory";
-
+import VueJsonViewer from 'vue-json-viewer';
 export default {
   name: "ProtectTableField",
-  components: { Treeselect },
+  components: { Treeselect, VueJsonViewer },
 
   data() {
     return {
@@ -125,93 +125,7 @@ export default {
       treeOptions: [],
       treeLoading: false,
       treeID: '',
-      textarea2: `{
-  "frame": {
-    "name": "finance",
-    "dataSources": [
-      {
-        "name": "PrimaryDataSource",
-        "databases": [
-          {
-            "database": "database01",
-            "tables": [
-              {
-                "table": "table01",
-                "fields": [
-                  {
-                    "field": "name",
-                    "details": {
-                      "classification": "个人基本信息概况",
-                      "securityLevel": "3级"
-                    }
-                  },
-                  {
-                    "field": "address",
-                    "details": {
-                      "classification": "地址信息",
-                      "securityLevel": "2级"
-                    }
-                  }
-                ]
-              },
-              {
-                "table": "table02",
-                "fields": [
-                  {
-                    "field": "orderNumber",
-                    "details": {
-                      "classification": "订单编号",
-                      "securityLevel": "1级"
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "database": "database02",
-            "tables": [
-              {
-                "table": "table03",
-                "fields": [
-                  {
-                    "field": "productID",
-                    "details": {
-                      "classification": "产品标识",
-                      "securityLevel": "1级"
-                    }
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "SecondaryDataSource",
-        "databases": [
-          {
-            "database": "database03",
-            "tables": [
-              {
-                "table": "table04",
-                "fields": [
-                  {
-                    "field": "employeeID",
-                    "details": {
-                      "classification": "员工标识",
-                      "securityLevel": "4级"
-                    }
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }
-}`,
+      textarea2: '',
       textarea: `GET /cnsec/v1/classify_result?xxxxxxxxxxxxxxxxxxx
 Host: 172.22.163.254:8443
 timestamp: 1686192038
@@ -223,14 +137,19 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         pageSize: 10,
         categoryId: '',//左侧树id
         name: '',//子类名称
-        levelId: -1,//安全级别
-        businessName:'',
+        securityLevel: null,//安全级别
+        businessName: '',
       },
+      projectId:'',
       apiDialogLoading: false,
       filterName: undefined,
       defaultProps: {
-        children: "tableList",
-        label: "tableName"
+        children: "children",
+        label: "label"
+      },
+      dataDefaultProps: {
+        children: "children",
+        label: "label"
       },
       Loading: false,
       addOptions: [
@@ -252,10 +171,6 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         },
       ],
       options: [
-        {
-          value: -1,
-          label: "全部"
-        },
         {
           value: 1,
           label: "1级"
@@ -279,8 +194,10 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
       total: 0,
       // 数据库字段名表格数据
       protectTableFieldList: [],
-      categoryList: [],
+      dataCategoryList: [],
       categoryListEdit: null,
+      categoryList:[],
+      resultFormNodeName:'',
     };
   },
   watch: {
@@ -290,6 +207,7 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
   },
   created() {
     this.gettreeOptionsList()
+    this.getList()
   },
   methods: {
     // 多选框选中数据
@@ -308,10 +226,9 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     //api调用
     apiSumbit() {
       // 调接口拿api里的值
-      let databaseId = '328'
-      getDatabaseSource(databaseId).then(res=>{
-        console.log(res);
-        
+      let databaseId = '337'
+      getDatabaseSource(databaseId).then(res => {
+        this.textarea2 = JSON.parse(JSON.stringify(res))
       })
       this.apiDialogShow = true
     },
@@ -375,14 +292,20 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     // 左侧树下拉选change事件
     treeOptionsSelectChange(val) {
       this.getProtectCategory(val)
+      this.getProtectCategoryQuery(val)
     },
     gettreeOptionsList() {
       this.Loading = true
       getFrameworks().then((response) => {
         this.treeOptions = response.data
         this.Loading = false
-        this.queryParams.categoryId = response.data[0].id
-        this.getProtectCategory(this.queryParams.categoryId)
+        if (this.$route.params && this.$route.params.id) {
+          this.projectId = this.$route.params.projectId
+        } else {
+          this.projectId = response.data[0].id
+        }
+        this.getProtectCategory(this.projectId)
+        this.getProtectCategoryQuery(this.projectId)
       });
     },
     filterNode(value, data) {
@@ -404,30 +327,23 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         this.getList()
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
-    selectProjectIdChange(val) {
-      this.options.forEach((item) => {
-        if (val == item.value)
-          this.queryParams.level = item.label
-      })
-      this.getList()
-    },
     getProtectCategory(key) {
       this.treeLoading = true
       let data = {
         projectId: key,
       };
       getDatabaseList(data).then((resp) => {
-        this.categoryList = resp.data
+        this.dataCategoryList = resp.data
         if (resp.data.length == 0) {
           this.Loading = false
         } else {
           // for (let index in resp.data) {
           //   if (resp.data[index].parentId === 0) {
-          //     this.categoryList.splice(index, 1)
+          //     this.dataCategoryList.splice(index, 1)
           //     break
           //   }
           // }
-          // this.categoryList.unshift({
+          // this.dataCategoryList.unshift({
           //   ancestors: "0",
           //   categoryDescribe: "",
           //   categoryName: "全部",
@@ -436,12 +352,12 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
           //   nodeLayerIndex: 1,
           //   parentId: 0,
           // })
-          this.treeID = this.categoryList[0].id;
-          let tempList = JSON.parse(JSON.stringify(this.categoryList))
+          this.treeID = this.dataCategoryList[0].id;
+          let tempList = JSON.parse(JSON.stringify(this.dataCategoryList))
           for (let item of tempList) {
             item.label = item.categoryName
           }
-          this.categoryList = this.handleTree(tempList, "id")
+          this.dataCategoryList = this.handleTree(tempList, "id")
           this.categoryListEdit = this.handleTree(tempList, "id")
         }
         this.Loading = false
@@ -455,8 +371,10 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         projectId: this.treeID
       }
       listByPublished(params).then((response) => {
-        this.protectTableFieldList = response.data.rows;
-        this.total = response.data.total;
+        if(response.code == 200 && response.rows){
+          this.protectTableFieldList = response.rows || [];
+          this.total = response.total;
+        }
         this.loading = false;
       });
     },
@@ -473,6 +391,9 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     /** 重置按钮操作 */
     resetQuery() {
       // this.$refs.tree.setCurrentKey(null);
+      this.resultFormNodeName = '',
+      this.queryParams.categoryId = ''
+      this.queryParams.securityLevel = ''
       this.resetForm("queryParams");
       this.handleQuery();
     },
@@ -485,7 +406,7 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         };
         const res = await exportReport(params);
         // 创建一个Blob对象
-        const blob = new Blob([res], { type: 'application/vnd.ms-excel' });
+        const blob = new Blob([res], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         // 创建一个URL对象
         const url = window.URL.createObjectURL(blob);
         // 创建一个a标签并设置href属性
@@ -505,9 +426,71 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
       } catch (error) {
         this.loading = false;
         this.$message.error('导出失败，请稍后再试');
-        console.error(error);
       }
-    }
+    },    
+    getProtectCategoryQuery(key) {
+      this.treeLoading = true
+      let data = {
+        parentId: key
+      };
+      treeListI(data).then((resp) => {
+        this.categoryList = resp.data
+        this.yuanCategoryList = resp.data
+        if (resp.data.length == 0) {
+          this.Loading = false
+        } else {
+          let tempList = JSON.parse(JSON.stringify(this.categoryList))
+          for (let item of tempList) {
+            item.label = item.categoryName
+          }
+          this.categoryList = this.handleTree(tempList, "id")
+          this.categoryListEdit = this.handleTree(tempList, "id")
+        }
+        this.Loading = false
+        this.treeLoading = false
+      });
+    },
+    resultHandleNodeClick(node) {
+      if (node.children && node.children.length > 0) {
+        node.disabled = true;
+      } else {
+        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+        if (parentLabels) {
+          this.resultFormNodeName = parentLabels.join('-') + '-' + node.categoryName;
+        } else {
+          this.resultFormNodeName = node.categoryName;
+        }
+        this.queryParams.categoryId = node.id
+        this.$refs.resultSelectRef.blur()
+        this.handleQuery()
+      }
+    },
+
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.categoryName.indexOf(value) !== -1;
+    },
+
+    // 递归函数，查找父节点的 label 并返回完整的路径
+    findParentLabelsById(tree, nodeId, path = []) {
+      if (!Array.isArray(tree)) {
+        return null;
+      }
+      for (const node of tree) {
+        if (node.children && node.children.length > 0) {
+          for (const child of node.children) {
+            if (child.id === nodeId) {
+              return [...path, node.label];
+            }
+          }
+          const found = this.findParentLabelsById(node.children, nodeId, [...path, node.label]);
+          if (found) {
+            return found;
+          }
+        }
+      }
+      return null; // 如果没有找到，返回 null
+    },
   },
 };
 </script>
@@ -566,5 +549,11 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
 
 .apiDialogMain {
   padding: 20px;
+}
+
+.apiDialogMain_body /deep/ .jv-container {
+  max-height: 350px;
+  overflow-y: scroll;
+
 }
 </style>

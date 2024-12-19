@@ -50,11 +50,11 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdda"
+        <el-button type="primary" icon="el-icon-aim" size="medium" @click="handleAdda"
           v-hasPermi="['system:proxys:add']">确认勾选项</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleEcelFn"
+        <el-button type="primary" icon="el-icon-more" size="medium" @click="handleEcelFn"
           v-hasPermi="['system:proxys:addExcel']">确认过滤项</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
@@ -478,9 +478,12 @@ export default {
       }
     },
     handleEcelFn() {
+      this.loading = true
       confirmList(this.queryParams).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
+          this.getList()
+          this.loading = false
         }
       })
     },
@@ -658,7 +661,7 @@ export default {
     getProtectCategory(key) {
       this.treeLoading = true
       let data = {
-        parentId: '0'
+        parentId: this.drawerData.projectId
       };
       treeListI(data).then((resp) => {
         this.categoryList = resp.data

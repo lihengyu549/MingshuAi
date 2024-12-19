@@ -27,12 +27,12 @@
         <div class="writing">
           <div class="wet-1">
             <!-- apiNum || 0  -->
-            <a @click="apiBtn">{{ 200000 }}</a>
+            <a @click="apiBtn">{{ indexData.datasourceNum }}</a>
 
             <!-- <a href="http://localhost/systemInfo/api">{{ apiNum }}</a> -->
           </div>
           <div class="wet-2">
-            <a @click="apiBtn">累计分析字段数量</a>
+            <a @click="apiBtn">数据源</a>
           </div>
           <!-- <div class="wet-3"> </div> -->
         </div>
@@ -50,9 +50,9 @@
         </div>
         <div class="writing">
           <!-- projectNum -->
-          <div class="wet-1"> <a @click="projecBtn">{{ 1200 }}</a></div>
+          <div class="wet-1"> <a @click="projecBtn">{{ indexData.datasourceNum }}</a></div>
           <div class="wet-2">
-            <a @click="projecBtn">累计分析文件数量</a>
+            <a @click="projecBtn">字段数量</a>
           </div>
           <!-- <div class="wet-3"> </div> -->
         </div>
@@ -72,7 +72,7 @@
           <!-- serverNum -->
           <div class="wet-1"> <a @click="projecBtn">{{ 20 }}</a></div> 
           <div class="wet-2">
-            <a @click="projecBtn">分类分级大模型调用次数</a>
+            <a @click="projecBtn">字段梳理率</a>
           </div>
           <!-- <div class="wet-3"> </div> -->
         </div>
@@ -373,6 +373,7 @@ export default {
       apiNum: "",
       // 服务器信息
       server: [],
+      indexData:{},
     };
   },
   watch: {
@@ -403,6 +404,7 @@ export default {
     },
     getStatistics () {
       getStatisticsI().then((res) => {
+        this.indexData = res.data
         this.apiNum = res.data.apiNum;
         this.projectNum = res.data.projectNum;
         this.serverNum = res.data.serverNum;

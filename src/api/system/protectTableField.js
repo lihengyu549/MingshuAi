@@ -30,7 +30,8 @@ export function exportReport (data) {
   return request({
     url: `/system/protectTableField/exportReport`,
     method: 'get',
-    params: data
+    params: data,
+    responseType: 'blob' //响应数据格式配置
   })
 }
 // --------------------------------

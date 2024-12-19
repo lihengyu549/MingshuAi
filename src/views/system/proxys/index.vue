@@ -68,11 +68,11 @@
           v-hasPermi="['system:proxys:addExcel']">新增Excel文件</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="implementFn"
+        <el-button type="primary" icon="el-icon-thumb" size="medium" @click="implementFn"
           v-hasPermi="['system:proxys:execute']">执行</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="deleteFn"
+        <el-button type="primary" icon="el-icon-close" size="medium" @click="deleteFn"
           v-hasPermi="['system:proxys:delete']">删除</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
@@ -217,14 +217,16 @@
             @blur="getimortantNameTestingFn(importData.sourceName)" @input="importNameTestingFn(importData.sourceName)"
             placeholder="请输入数据源名称"></el-input>
         </el-form-item>
-
         <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
           <el-select v-model="importData.categoryId" class="serachInput" placeholder="全部">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-
+        <el-form-item label="来源业务系统" prop="businessName">
+          <el-input v-model="importData.businessName" maxlength="50"
+            placeholder="请输入数据源名称"></el-input>
+        </el-form-item>
         <el-form-item label="导入框架" prop="importFile">
           <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
         </el-form-item>
@@ -425,6 +427,7 @@ export default {
         fileList: [],//导入模板的文件数据
         categoryId: '',//框架名称
         importShow: false,
+        businessName:'',
       },
       debounceTimeout: null,
       // 表单校验
@@ -432,6 +435,11 @@ export default {
         sourceName: [
           {
             required: true, message: "请输入数据源名称", trigger: "blur"
+          }
+        ],
+        businessName: [
+          {
+            required: true, message: "请输入来源业务系统", trigger: "blur"
           }
         ],
         categoryId: [
@@ -611,6 +619,7 @@ export default {
           formData.append('file', this.importData.fileList[0].raw);
           formData.append('frameworkNameId', this.importData.categoryId);
           formData.append('sourceName', this.importData.sourceName);
+          formData.append('businessName', this.importData.businessName);
           await importExcel(formData).then(res => {
             this.messsucc(res, '导入条目数量共');
             // this.getList();
@@ -950,6 +959,7 @@ export default {
       this.importData.categoryId = ''
       this.importData.importFile = ''
       this.importData.sourceName = ''
+      this.importData.businessName = ''
       this.importData.fileList = []
       this.importData.importShow = false
     },
@@ -1067,7 +1077,7 @@ export default {
         this.drawerData = row
         this.drawerShow = true
       } else {
-        this.$router.push('/protectTableField')
+        this.$router.push({name: 'ProtectTableField', params: row})
       }
     },
     resultReleaseFn(row) {
