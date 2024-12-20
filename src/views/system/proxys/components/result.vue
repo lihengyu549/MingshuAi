@@ -2,7 +2,7 @@
   <div class="app-container" v-loading="loading">
     <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
       v-show="showSearch" label-width="auto">
-      <el-form-item label="分类分级框架" prop="categoryId">
+      <el-form-item label="分类" prop="categoryId">
         <el-select ref="addSelectRef" v-model="addNodeName">
           <el-option style="height: 100%; padding: 0" value="">
             <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
@@ -102,7 +102,7 @@
     <el-dialog title="分类分级框架结果修改" v-loading="updataLoading" :visible.sync="deleteVisible" width="650px"
       style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
       <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
-        <el-form-item label="分类分级框架" class="addSelectClass">
+        <el-form-item label="分类" class="addSelectClass">
           <el-select ref="resultSelectRef" v-model="resultFormNodeName">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
