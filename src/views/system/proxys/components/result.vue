@@ -12,8 +12,8 @@
         </el-select>
       </el-form-item>
       <el-form-item label="安全分级" prop="securityLevel">
-        <el-select clearable v-model="queryParams.securityLevel" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
+        <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch" placeholder="请选择">
+          <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
@@ -70,7 +70,7 @@
       <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
       <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
       <el-table-column label="分类" align="center" prop="categoryName" show-overflow-tooltip />
-      <el-table-column label="安全分级" align="center" prop="securityLevel" show-overflow-tooltip />
+      <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
       <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
         <template slot-scope="scope">
           <el-tooltip placement="bottom" effect="light">
@@ -113,7 +113,7 @@
         </el-form-item>
         <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
           <el-select v-model="resultForm.securityLevel" placeholder="请选择">
-            <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
+            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -146,6 +146,7 @@ import {
 } from "@/api/system/protectCategory"
 
 export default {
+  dicts: ['sys_risk_level'],
   name: "ProxysResult",
   props: {
     treeOptions: {
@@ -303,7 +304,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
         projectId: this.drawerData.projectId,
-        securityLevel: '',
+        securityLevel: [],
         confirm: '',
         databaseId: this.drawerData.id,
         tableId: '',
@@ -587,13 +588,18 @@ export default {
     inputSearch(data) {
       clearTimeout(this.debounceTimeout);
       this.debounceTimeout = setTimeout(() => {
-        this.getList()
+        this.handleQuery()
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
     /** 查询数据库代理列表 */
     getList() {
       this.loading = true;
-      protectTableFieldList(this.queryParams).then(response => {
+      let params = {
+        ...this.queryParams,
+        securityLevel:this.queryParams.securityLevel.length?this.queryParams.securityLevel.join():'-1'
+
+      }
+      protectTableFieldList(params).then(response => {
         this.proxysList = response.rows;
         this.proxysList.forEach(ele => {
           ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))

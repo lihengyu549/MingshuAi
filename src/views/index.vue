@@ -50,7 +50,7 @@
         </div>
         <div class="writing">
           <!-- projectNum -->
-          <div class="wet-1"> <a @click="projecBtn">{{ indexData.datasourceNum }}</a></div>
+          <div class="wet-1"> <a @click="projecBtn">{{ indexData.fieldNum }}</a></div>
           <div class="wet-2">
             <a @click="projecBtn">字段数量</a>
           </div>
@@ -70,7 +70,7 @@
         </div>
         <div class="writing">
           <!-- serverNum -->
-          <div class="wet-1"> <a @click="projecBtn">{{ 20 }}</a></div> 
+          <div class="wet-1"> <a @click="projecBtn">{{ fieldSort+'%'}}</a></div> 
           <div class="wet-2">
             <a @click="projecBtn">字段梳理率</a>
           </div>
@@ -374,6 +374,7 @@ export default {
       // 服务器信息
       server: [],
       indexData:{},
+      fieldSort:'',
     };
   },
   watch: {
@@ -408,6 +409,7 @@ export default {
         this.apiNum = res.data.apiNum;
         this.projectNum = res.data.projectNum;
         this.serverNum = res.data.serverNum;
+        this.fieldSort = ((res.data.publishedFieldNum / res.data.fieldNum) * 100).toFixed(2);
       });
     },
     /** 查询服务器信息 */

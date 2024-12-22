@@ -13,7 +13,7 @@ export function getDatabaseList (data) {
 // API获取打标结果
 export function getDatabaseSource (query) {
   return request({
-    url: `/system/protectTableField/getDatabaseSource?databaseId=${query}`,
+    url: `/system/protectTableField/getDatabaseSource?projectId=${query}`,
     method: 'get',
   })
 }

@@ -683,7 +683,7 @@ export default {
     inputSearch(data) {
       clearTimeout(this.debounceTimeout);
       this.debounceTimeout = setTimeout(() => {
-        this.getList()
+        this.handleQuery()
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
     handleChange(value) {

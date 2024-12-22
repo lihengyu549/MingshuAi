@@ -4,33 +4,33 @@
       <el-col :span="4" :xs="24">
         <div class="head-container">
           <span style="display: inline-block;background-color: #eee; font-size: 14px; padding: 5px 10px;">所属框架</span>
-          <el-select v-model="projectId" class="serachInput" @change="treeOptionsSelectChange"
-            placeholder="全部" style="margin-bottom: 20px">
+          <el-select v-model="projectId" class="serachInput" @change="treeOptionsSelectChange" placeholder="全部"
+            style="margin-bottom: 20px">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </div>
         <div class="head-container" v-loading="treeLoading">
-          <el-tree :data="dataCategoryList" :props="defaultProps" show-checkbox default-expand-all
-            :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current
-            @node-click="handleNodeClick" @check="treeCheck" />
+          <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox
+            default-expand-all :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree" node-key="id"
+             @check="treeCheck" :highlightCurrent="isHighlight"/>
         </div>
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" label-width="100px">
           <el-form-item label="分类" class="addSelectClass">
-          <el-select ref="resultSelectRef" v-model="resultFormNodeName" @change="getList">
-            <el-option style="height: 100%; padding: 0" value="">
-              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
-                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
-                @node-click="resultHandleNodeClick" />
-            </el-option>
-          </el-select>
-        </el-form-item>
+            <el-select ref="resultSelectRef" v-model="resultFormNodeName" @change="handleQuery">
+              <el-option style="height: 100%; padding: 0" value="">
+                <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
+                  :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+                  @node-click="resultHandleNodeClick" />
+              </el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item label="安全分级" prop="securityLevel">
-            <el-select v-model="queryParams.securityLevel" clearable @change="getList" placeholder="全部">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+            <el-select v-model="queryParams.securityLevel" clearable multiple @change="handleQuery" placeholder="全部">
+              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
@@ -58,7 +58,7 @@
           <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
           <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
           <el-table-column label="分类" align="center" prop="categoryName" show-overflow-tooltip />
-          <el-table-column label="安全分级" align="center" prop="securityLevel" show-overflow-tooltip />
+          <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
           <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
             <template slot-scope="scope">
               <el-tooltip placement="bottom" effect="light">
@@ -111,6 +111,7 @@ export default {
   name: "ProtectTableField",
   components: { Treeselect, VueJsonViewer },
 
+  dicts: ['sys_risk_level'],
   data() {
     return {
       importData: {
@@ -119,6 +120,7 @@ export default {
         categoryName: '',//框架名称
         importShow: false,
       },
+      isHighlight:false,
       apiDialogLoading: false,
       apiDialogShow: false,
       debounceTimeout: null,//防抖动
@@ -137,10 +139,10 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         pageSize: 10,
         categoryId: '',//左侧树id
         name: '',//子类名称
-        securityLevel: null,//安全级别
+        securityLevel: [],//安全级别
         businessName: '',
       },
-      projectId:'',
+      projectId: '',
       apiDialogLoading: false,
       filterName: undefined,
       defaultProps: {
@@ -148,8 +150,8 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         label: "label"
       },
       dataDefaultProps: {
-        children: "children",
-        label: "label"
+        children: "list",
+        label: "name"
       },
       Loading: false,
       addOptions: [
@@ -196,8 +198,8 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
       protectTableFieldList: [],
       dataCategoryList: [],
       categoryListEdit: null,
-      categoryList:[],
-      resultFormNodeName:'',
+      categoryList: [],
+      resultFormNodeName: '',
     };
   },
   watch: {
@@ -207,7 +209,6 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
   },
   created() {
     this.gettreeOptionsList()
-    this.getList()
   },
   methods: {
     // 多选框选中数据
@@ -226,8 +227,8 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     //api调用
     apiSumbit() {
       // 调接口拿api里的值
-      let databaseId = '337'
-      getDatabaseSource(databaseId).then(res => {
+      let projectId = this.projectId
+      getDatabaseSource(projectId).then(res => {
         this.textarea2 = JSON.parse(JSON.stringify(res))
       })
       this.apiDialogShow = true
@@ -304,6 +305,7 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         } else {
           this.projectId = response.data[0].id
         }
+        this.getList()
         this.getProtectCategory(this.projectId)
         this.getProtectCategoryQuery(this.projectId)
       });
@@ -312,19 +314,80 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
       if (!value) return true;
       return data.categoryName.indexOf(value) !== -1;
     },
-    treeCheck(data) {
-      this.treeID = data.id;
-    },
-    handleNodeClick(data) {
-      this.treeID = data.id;
+    treeCheck(data, node) {
+      let list = this.$refs.tree.getCheckedNodes()
+      let treeList = []
+      if(list.length > 0){
+        treeList = list.filter(item => item.level === 2)
+      }
+      this.treeID = treeList.map(item => item.id).join()
       this.handleQuery();
     },
 
+    // getSimpleCheckedNodeIds(originData) {
+    //   // 定义数组
+    //   const checkedNodeIds = []
+    //   // 判断是否为全选，若为全选状态返回被选中的父节点数据，不为全选状态正常返回被选中的子节点的数据
+    //   const isAllChecked = function (node) {
+    //     const childNodes = node.root ? node.root.childNodes : node.childNodes || []
+    //     childNodes.forEach(child => {
+    //       if (child.checked) {
+    //         checkedNodeIds.push(child.data)
+    //       }
+    //       if (child.indeterminate) {
+    //         isAllChecked(child)
+    //       }
+    //     })
+    //   }
+    //   isAllChecked(originData)
+    //   return checkedNodeIds
+    // },
+    HandleNodeClickFn(node) {
+      console.log(node);
+      
+  // 获取当前选中的节点
+  const checkedNodes = this.$refs.tree.getCheckedNodes();
+
+  // 检查当前节点是否已经选中
+  const isChecked = checkedNodes.some(cn => cn.id === node.id);
+  if (isChecked) {
+    // 如果当前节点已经选中，则取消选中
+    const newCheckedNodes = checkedNodes.filter(cn => cn.id !== node.id);
+    // 取消选中当前节点及其所有子节点
+    const childNodes = this.getAllChildNodes(node);
+    const nodesToUncheck = [node, ...childNodes];
+    const finalCheckedNodes = newCheckedNodes.filter(cn => !nodesToUncheck.some(n => n.id === cn.id));
+    this.$refs.tree.setCheckedNodes(finalCheckedNodes);
+  } else {
+    // 如果当前节点未选中，则选中
+    const childNodes = this.getAllChildNodes(node);
+    const nodesToCheck = [node, ...childNodes];
+    const allCheckedNodes = [...checkedNodes, ...nodesToCheck];
+    this.$refs.tree.setCheckedNodes(allCheckedNodes);
+  }
+      let list = this.$refs.tree.getCheckedNodes()
+      let treeList = []
+      if(list.length > 0){
+        treeList = list.filter(item => item.level === 2)
+      }
+      this.treeID = treeList.map(item => item.id)
+      // this.handleQuery()      
+    },
+    getAllChildNodes(node) {
+      let children = [];
+      if (node.children && node.children.length > 0) {
+        children = node.children;
+        for (let child of node.children) {
+          children = children.concat(this.getAllChildNodes(child));
+        }
+      }
+      return children;
+    },
     // 定时器，防抖使用
     inputSearch(data) {
       clearTimeout(this.debounceTimeout);
       this.debounceTimeout = setTimeout(() => {
-        this.getList()
+        this.handleQuery()
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
     getProtectCategory(key) {
@@ -367,11 +430,16 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     getList() {
       this.loading = true;
       let params = {
-        ...this.queryParams,
-        projectId: this.treeID
+        tableIds: this.treeID,
+        projectId: this.projectId,
+        securityLevelIds:this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join():'-1',
+        businessName:this.queryParams.businessName,
+        pageNum: this.queryParams.pageNum,
+        pageSize: this.queryParams.pageSize,
+        categoryId:this.queryParams.categoryId
       }
       listByPublished(params).then((response) => {
-        if(response.code == 200 && response.rows){
+        if (response.code == 200 && response.rows) {
           this.protectTableFieldList = response.rows || [];
           this.total = response.total;
         }
@@ -393,7 +461,6 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
       // this.$refs.tree.setCurrentKey(null);
       this.resultFormNodeName = '',
       this.queryParams.categoryId = ''
-      this.queryParams.securityLevel = ''
       this.resetForm("queryParams");
       this.handleQuery();
     },
@@ -401,8 +468,13 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
       try {
         this.loading = true;
         const params = {
-          ...this.queryParams,
-          projectId: this.treeID
+          tableIds: this.treeID,
+          projectId: this.projectId,
+          securityLevelIds:this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join():'-1',
+          businessName:this.queryParams.businessName,
+          pageNum: this.queryParams.pageNum,
+          pageSize: this.queryParams.pageSize,
+          categoryId:this.queryParams.categoryId
         };
         const res = await exportReport(params);
         // 创建一个Blob对象
@@ -427,7 +499,7 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         this.loading = false;
         this.$message.error('导出失败，请稍后再试');
       }
-    },    
+    },
     getProtectCategoryQuery(key) {
       this.treeLoading = true
       let data = {
@@ -443,7 +515,7 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
           for (let item of tempList) {
             item.label = item.categoryName
           }
-          this.categoryList = this.handleTree(tempList, "id")
+          this.categoryList = this.handleTree(tempList, "id",)
           this.categoryListEdit = this.handleTree(tempList, "id")
         }
         this.Loading = false

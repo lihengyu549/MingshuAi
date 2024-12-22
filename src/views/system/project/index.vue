@@ -31,8 +31,8 @@
             </el-select>
           </el-form-item>
           <el-form-item label="安全分级" prop="levelId">
-            <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" placeholder="全部">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+            <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple placeholder="全部">
+              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
@@ -119,7 +119,7 @@
         </el-form-item>
         <el-form-item class="addSelectClass" prop="minSecurityLevel" label="安全分级">
           <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部" :disabled="addOrEdit.flag == 3">
-            <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
+            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -145,7 +145,7 @@ import { treeListI, categoryImport, getAttachData, attachStatus, forceLogout, up
 export default {
   name: "ProtectTableField",
   components: { Treeselect },
-
+  dicts: ['sys_risk_level'],
   data() {
     return {
       importData: {
@@ -203,7 +203,7 @@ export default {
         categoryId: '',//左侧树id
         name: '',//子类名称
         dataSourceId: 0,//来源
-        levelId: -1,//安全级别
+        levelId: [],//安全级别
       },
       addOrEditDataRuls: {
         attachData: '',
@@ -565,22 +565,18 @@ export default {
     inputSearch(data) {
       clearTimeout(this.debounceTimeout);
       this.debounceTimeout = setTimeout(() => {
-        this.getList()
+        this.handleQuery()
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
     selectProjectIdChange(val) {
-      this.options.forEach((item) => {
-        if (val == item.value)
-          this.queryParams.level = item.label
-      })
-      this.getList()
+      this.handleQuery()
     },
     dataSourceIdIdChange(val) {
       this.sourceList.forEach((item) => {
         if (val == item.value)
           this.queryParams.dataSource = item.label
       })
-      this.getList()
+      this.handleQuery()
     },
     getProtectCategory(key) {
       this.treeLoading = true
@@ -609,13 +605,15 @@ export default {
         }
         this.Loading = false
         this.treeLoading = false
+      this.getList()
       });
     },
     getList() {
       this.loading = true;
       let params = {
         ...this.queryParams,
-        nodeId: this.treeID
+        nodeId: this.treeID,
+        levelId:this.queryParams.levelId.length?this.queryParams.levelId.join():'-1'
       }
       getAttachData(params).then((response) => {
         this.protectTableFieldList = response.data.rows;
@@ -636,6 +634,7 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       // this.$refs.tree.setCurrentKey(null);
+      this.treeID = this.categoryList[0].id
       this.resetForm("queryParams");
       this.handleQuery();
     },

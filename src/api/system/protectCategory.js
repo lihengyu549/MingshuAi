@@ -26,7 +26,7 @@ export function categoryImport (query) {
 // 分页查询节点的子类数据
 export function getAttachData (data) {
   return request({
-    url: '/ruoyi-system/category/list/attach/data',
+    url: '/system/category/list/attach/data',
     method: 'get',
     params: data
   })
