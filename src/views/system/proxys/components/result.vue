@@ -318,7 +318,7 @@ export default {
           label: '已确认'
         },
         {
-          value: '2',
+          value: '0',
           label: '未确认'
         },
       ],
@@ -480,12 +480,19 @@ export default {
     },
     handleEcelFn() {
       this.loading = true
-      confirmList(this.queryParams).then(res => {
+      let params = {
+        ...this.queryParams,
+        securityLevel:this.queryParams.securityLevel.join()
+      }
+      confirmList(params).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
           this.getList()
           this.loading = false
         }
+      })
+      .catch(err=>{
+        this.loading = false
       })
     },
 
@@ -597,7 +604,6 @@ export default {
       let params = {
         ...this.queryParams,
         securityLevel:this.queryParams.securityLevel.length?this.queryParams.securityLevel.join():'-1'
-
       }
       protectTableFieldList(params).then(response => {
         this.proxysList = response.rows;

@@ -11,9 +11,9 @@
           </el-select>
         </div>
         <div class="head-container" v-loading="treeLoading">
-          <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox
-            default-expand-all :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree" node-key="id"
-             @check="treeCheck" :highlightCurrent="isHighlight"/>
+          <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox default-expand-all
+            :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree" node-key="id" @check="treeCheck"
+            :highlightCurrent="isHighlight" />
         </div>
       </el-col>
       <!--用户数据-->
@@ -30,7 +30,8 @@
           </el-form-item>
           <el-form-item label="安全分级" prop="securityLevel">
             <el-select v-model="queryParams.securityLevel" clearable multiple @change="handleQuery" placeholder="全部">
-              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
+              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+                :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
@@ -120,7 +121,7 @@ export default {
         categoryName: '',//框架名称
         importShow: false,
       },
-      isHighlight:false,
+      isHighlight: false,
       apiDialogLoading: false,
       apiDialogShow: false,
       debounceTimeout: null,//防抖动
@@ -294,6 +295,7 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     treeOptionsSelectChange(val) {
       this.getProtectCategory(val)
       this.getProtectCategoryQuery(val)
+      this.getList()
     },
     gettreeOptionsList() {
       this.Loading = true
@@ -317,7 +319,7 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     treeCheck(data, node) {
       let list = this.$refs.tree.getCheckedNodes()
       let treeList = []
-      if(list.length > 0){
+      if (list.length > 0) {
         treeList = list.filter(item => item.level === 2)
       }
       this.treeID = treeList.map(item => item.id).join()
@@ -342,37 +344,36 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     //   isAllChecked(originData)
     //   return checkedNodeIds
     // },
-    HandleNodeClickFn(node) {
-      console.log(node);
-      
-  // 获取当前选中的节点
-  const checkedNodes = this.$refs.tree.getCheckedNodes();
+    // HandleNodeClickFn(node) {
 
-  // 检查当前节点是否已经选中
-  const isChecked = checkedNodes.some(cn => cn.id === node.id);
-  if (isChecked) {
-    // 如果当前节点已经选中，则取消选中
-    const newCheckedNodes = checkedNodes.filter(cn => cn.id !== node.id);
-    // 取消选中当前节点及其所有子节点
-    const childNodes = this.getAllChildNodes(node);
-    const nodesToUncheck = [node, ...childNodes];
-    const finalCheckedNodes = newCheckedNodes.filter(cn => !nodesToUncheck.some(n => n.id === cn.id));
-    this.$refs.tree.setCheckedNodes(finalCheckedNodes);
-  } else {
-    // 如果当前节点未选中，则选中
-    const childNodes = this.getAllChildNodes(node);
-    const nodesToCheck = [node, ...childNodes];
-    const allCheckedNodes = [...checkedNodes, ...nodesToCheck];
-    this.$refs.tree.setCheckedNodes(allCheckedNodes);
-  }
-      let list = this.$refs.tree.getCheckedNodes()
-      let treeList = []
-      if(list.length > 0){
-        treeList = list.filter(item => item.level === 2)
-      }
-      this.treeID = treeList.map(item => item.id)
-      // this.handleQuery()      
-    },
+    //   // 获取当前选中的节点
+    //   const checkedNodes = this.$refs.tree.getCheckedNodes();
+
+    //   // 检查当前节点是否已经选中
+    //   const isChecked = checkedNodes.some(cn => cn.id === node.id);
+    //   if (isChecked) {
+    //     // 如果当前节点已经选中，则取消选中
+    //     const newCheckedNodes = checkedNodes.filter(cn => cn.id !== node.id);
+    //     // 取消选中当前节点及其所有子节点
+    //     const childNodes = this.getAllChildNodes(node);
+    //     const nodesToUncheck = [node, ...childNodes];
+    //     const finalCheckedNodes = newCheckedNodes.filter(cn => !nodesToUncheck.some(n => n.id === cn.id));
+    //     this.$refs.tree.setCheckedNodes(finalCheckedNodes);
+    //   } else {
+    //     // 如果当前节点未选中，则选中
+    //     const childNodes = this.getAllChildNodes(node);
+    //     const nodesToCheck = [node, ...childNodes];
+    //     const allCheckedNodes = [...checkedNodes, ...nodesToCheck];
+    //     this.$refs.tree.setCheckedNodes(allCheckedNodes);
+    //   }
+    //   let list = this.$refs.tree.getCheckedNodes()
+    //   let treeList = []
+    //   if (list.length > 0) {
+    //     treeList = list.filter(item => item.level === 2)
+    //   }
+    //   this.treeID = treeList.map(item => item.id)
+    //   // this.handleQuery()      
+    // },
     getAllChildNodes(node) {
       let children = [];
       if (node.children && node.children.length > 0) {
@@ -415,7 +416,7 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
           //   nodeLayerIndex: 1,
           //   parentId: 0,
           // })
-          this.treeID = this.dataCategoryList[0].id;
+          this.treeID = this.dataCategoryList.length ?this.dataCategoryList.length[0].id:null;
           let tempList = JSON.parse(JSON.stringify(this.dataCategoryList))
           for (let item of tempList) {
             item.label = item.categoryName
@@ -432,11 +433,11 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
       let params = {
         tableIds: this.treeID,
         projectId: this.projectId,
-        securityLevelIds:this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join():'-1',
-        businessName:this.queryParams.businessName,
+        securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : null,
+        businessName: this.queryParams.businessName,
         pageNum: this.queryParams.pageNum,
         pageSize: this.queryParams.pageSize,
-        categoryId:this.queryParams.categoryId
+        categoryId: this.queryParams.categoryId
       }
       listByPublished(params).then((response) => {
         if (response.code == 200 && response.rows) {
@@ -460,7 +461,7 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     resetQuery() {
       // this.$refs.tree.setCurrentKey(null);
       this.resultFormNodeName = '',
-      this.queryParams.categoryId = ''
+        this.queryParams.categoryId = ''
       this.resetForm("queryParams");
       this.handleQuery();
     },
@@ -470,11 +471,11 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         const params = {
           tableIds: this.treeID,
           projectId: this.projectId,
-          securityLevelIds:this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join():'-1',
-          businessName:this.queryParams.businessName,
+          securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : '-1',
+          businessName: this.queryParams.businessName,
           pageNum: this.queryParams.pageNum,
           pageSize: this.queryParams.pageSize,
-          categoryId:this.queryParams.categoryId
+          categoryId: this.queryParams.categoryId
         };
         const res = await exportReport(params);
         // 创建一个Blob对象

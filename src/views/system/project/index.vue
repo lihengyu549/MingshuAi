@@ -24,7 +24,7 @@
               @keyup.enter.native="handleQuery" />
           </el-form-item>
           <el-form-item label="来源" prop="dataSourceId">
-            <el-select v-model="queryParams.dataSourceId" @change="dataSourceIdIdChange" placeholder="请选择项目名称"
+            <el-select v-model="queryParams.dataSourceId" clearable @change="dataSourceIdIdChange" placeholder="全部"
               :loading="loading">
               <el-option v-for="item in sourceList" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
@@ -52,7 +52,7 @@
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
           <el-table-column label="子类名称" align="center" prop="attachData" />
-          <el-table-column label="安全分级" align="center" prop="minSecurityLevel" />
+          <el-table-column label="安全分级" align="center" prop="securityLevelName" />
           <el-table-column label="来源" align="center" prop="dataSource">
           </el-table-column>
           <el-table-column label="状态" align="center" prop="state">
@@ -202,7 +202,7 @@ export default {
         pageSize: 10,
         categoryId: '',//左侧树id
         name: '',//子类名称
-        dataSourceId: 0,//来源
+        dataSourceId: '',//来源
         levelId: [],//安全级别
       },
       addOrEditDataRuls: {
@@ -220,10 +220,6 @@ export default {
       Loading: false,
       url:`${process.env.VUE_APP_BASE_API}/static/file/auth.zip`,
       sourceList: [
-        {
-          value: 0,
-          label: '全部'
-        },
         {
           value: 1,
           label: '内置'
@@ -605,7 +601,7 @@ export default {
         }
         this.Loading = false
         this.treeLoading = false
-      this.getList()
+        this.getList()
       });
     },
     getList() {
@@ -613,7 +609,8 @@ export default {
       let params = {
         ...this.queryParams,
         nodeId: this.treeID,
-        levelId:this.queryParams.levelId.length?this.queryParams.levelId.join():'-1'
+        levelId:this.queryParams.levelId.length?this.queryParams.levelId.join():'-1',
+        dataSourceId:this.queryParams.dataSourceId?this.queryParams.dataSourceId:0,
       }
       getAttachData(params).then((response) => {
         this.protectTableFieldList = response.data.rows;

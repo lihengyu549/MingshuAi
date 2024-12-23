@@ -965,8 +965,8 @@ export default {
     },
     downloadFile() {
       const link = document.createElement('a');
-      link.href = '/2.xlsx'; // 替换为你的文件路径
-      link.download = '分类分级框架模板.xlsx'; // 设置下载后的文件名
+      link.href = '/importFile.xlsx'; // 替换为你的文件路径
+      link.download = '元数据导入样例.xlsx'; // 设置下载后的文件名
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
