@@ -626,12 +626,17 @@ export default {
             this.importData.categoryName = ''
             this.importData.importFile = ''
             this.importData.fileList = []
+            this.importData.businessName = ''
             this.importData.importShow = false
             this.gettreeOptionsList()
             this.importDataLoading = false
           })
             .catch((err) => {
-              this.importDataLoading = false
+              this.importDataLoading = false              
+              this.importData.categoryName = ''
+              this.importData.importFile = ''
+              this.importData.businessName = ''
+              this.importData.fileList = []
             })
         } else {
           return false

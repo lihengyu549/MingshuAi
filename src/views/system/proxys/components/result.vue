@@ -482,7 +482,7 @@ export default {
       this.loading = true
       let params = {
         ...this.queryParams,
-        securityLevel:this.queryParams.securityLevel.join()
+        securityLevelIds:this.queryParams.securityLevel.join()
       }
       confirmList(params).then(res => {
         if (res.code === 200) {
@@ -603,7 +603,9 @@ export default {
       this.loading = true;
       let params = {
         ...this.queryParams,
-        securityLevel:this.queryParams.securityLevel.length?this.queryParams.securityLevel.join():'-1'
+        securityLevel:'',
+        securityLevelIds:this.queryParams.securityLevel.join(),
+        tableIds:this.queryParams.tableId
       }
       protectTableFieldList(params).then(response => {
         this.proxysList = response.rows;

@@ -93,7 +93,11 @@
           <!-- <pre v-html="textarea2"></pre>
           <div><el-input readonly resize="none" type="textarea" :rows="16" placeholder="请输入内容" v-model="textarea2">
             </el-input></div> -->
-          <vue-json-viewer :value="textarea2"></vue-json-viewer>
+          <vue-json-viewer :copyable="true" preview-mode :expanded="true" :value="textarea2">
+            <template  slot="copy">
+              <i class="el-icon-document-copy" title="复制"></i>
+            </template>
+          </vue-json-viewer>
         </div>
       </div>
       <div slot="footer" class="dialog-footer">
