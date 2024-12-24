@@ -11,7 +11,8 @@
           <el-button type="primary" size="mini" @click="importCli">框架导入</el-button>
         </div>
         <div class="head-container" v-loading="treeLoading">
-          <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="false"
+          <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
+            :current-node-key="treeID" :expand-on-click-node="false"
             :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current @node-click="handleNodeClick" />
         </div>
       </el-col>
@@ -32,7 +33,8 @@
           </el-form-item>
           <el-form-item label="安全分级" prop="levelId">
             <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple placeholder="全部">
-              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
+              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+                :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
@@ -94,7 +96,8 @@
           </el-upload>
         </el-form-item>
       </el-form>
-      <el-button style="margin-left: 100px;" size="small" type="text" @click="downloadFile" id="btnDownload" icon="el-icon-download">样例下载</el-button>
+      <el-button style="margin-left: 100px;" size="small" type="text" @click="downloadFile" id="btnDownload"
+        icon="el-icon-download">样例下载</el-button>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="importcancel">取 消</el-button>
@@ -106,7 +109,8 @@
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" style="padding-right: 60px;">
         <el-form-item label="子类名称" prop="attachData">
-          <el-input v-model="addOrEditDataRuls.attachData" :disabled="addOrEdit.flag == 3" @input="sonNameTestingFn(addOrEditDataRuls.attachData)" maxlength="50" placeholder="请输入子类名称"></el-input>
+          <el-input v-model="addOrEditDataRuls.attachData" :disabled="addOrEdit.flag == 3"
+            @input="sonNameTestingFn(addOrEditDataRuls.attachData)" maxlength="50" placeholder="请输入子类名称"></el-input>
         </el-form-item>
         <el-form-item class="addSelectClass" label="所属父类" prop="categoryId">
           <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3">
@@ -119,7 +123,8 @@
         </el-form-item>
         <el-form-item class="addSelectClass" prop="minSecurityLevel" label="安全分级">
           <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部" :disabled="addOrEdit.flag == 3">
-            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
+            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+              :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -218,7 +223,7 @@ export default {
       },
       isName: true,
       Loading: false,
-      url:`${process.env.VUE_APP_BASE_API}/static/file/auth.zip`,
+      url: `${process.env.VUE_APP_BASE_API}/static/file/auth.zip`,
       sourceList: [
         {
           value: 1,
@@ -294,6 +299,10 @@ export default {
   },
   created() {
     this.gettreeOptionsList()
+
+  },
+  mounted() {
+
   },
   methods: {
     addFn() {
@@ -316,7 +325,7 @@ export default {
           name: this.addOrEditDataRuls.attachData,
           nodeId: this.addOrEditDataRuls.categoryId,
           securityLevel: this.addOrEditDataRuls.minSecurityLevel,
-          additional:this.addNodeName
+          additional: this.addNodeName
         }
         if (valid) {
           this.importDataLoading = true
@@ -334,9 +343,9 @@ export default {
               this.addOrEdit.show = false
               this.importDataLoading = false
             })
-            .catch((err)=>{
-              this.importDataLoading = false
-            })
+              .catch((err) => {
+                this.importDataLoading = false
+              })
           } else {
             addData(params).then((response) => {
               this.$modal.msgSuccess("新增成功");
@@ -344,9 +353,9 @@ export default {
               this.addOrEdit.show = false
               this.importDataLoading = false
             })
-            .catch((err)=>{
-              this.importDataLoading = false
-            })
+              .catch((err) => {
+                this.importDataLoading = false
+              })
           }
         } else {
           return false
@@ -387,7 +396,7 @@ export default {
       } else {
         const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
         if (parentLabels) {
-          this.addNodeName = parentLabels.join('-') + '-' + node.categoryName ;
+          this.addNodeName = parentLabels.join('-') + '-' + node.categoryName;
         } else {
           this.addNodeName = node.categoryName + '-';
         }
@@ -482,8 +491,10 @@ export default {
       this.Loading = true
       getFrameworks().then((response) => {
         this.treeOptions = response.data
-        this.queryParams.categoryId = response.data[0].id
-        this.getProtectCategory(this.queryParams.categoryId)
+        if (response.data.length > 0) {
+          this.queryParams.categoryId = response.data[0].id;
+          this.getProtectCategory(this.queryParams.categoryId);
+        }
       });
     },
     // // 文件上传前钩子
@@ -498,7 +509,7 @@ export default {
       this.importData.importFile = file.raw.name
       this.importData.fileList = fileList;
     },
-    handleFileExceed(files, fileList){
+    handleFileExceed(files, fileList) {
       this.importData.importFile = files[0].name
       this.importData.fileList = fileList;
     },
@@ -592,6 +603,10 @@ export default {
             }
           }
           this.treeID = this.categoryList[0].id;
+    this.$nextTick(function () {
+      this.$refs.tree.setCurrentKey(this.treeID);
+      this.$refs.tree.setCurrentKey(this.treeID);
+    });
           let tempList = JSON.parse(JSON.stringify(this.categoryList))
           for (let item of tempList) {
             item.label = item.categoryName
@@ -609,8 +624,8 @@ export default {
       let params = {
         ...this.queryParams,
         nodeId: this.treeID,
-        levelId:this.queryParams.levelId.length?this.queryParams.levelId.join():'-1',
-        dataSourceId:this.queryParams.dataSourceId?this.queryParams.dataSourceId:0,
+        levelId: this.queryParams.levelId.length ? this.queryParams.levelId.join() : '-1',
+        dataSourceId: this.queryParams.dataSourceId ? this.queryParams.dataSourceId : 0,
       }
       getAttachData(params).then((response) => {
         this.protectTableFieldList = response.data.rows;
@@ -658,8 +673,8 @@ export default {
           // 将文件数组添加到 FormData 对象中
           formData.append('file', this.importData.fileList[0].raw);
           formData.append('categoryName', this.importData.categoryName);
-          await categoryImport(formData).then(res=>{
-            this.messsucc(res,'导入条目数量共');
+          await categoryImport(formData).then(res => {
+            this.messsucc(res, '导入条目数量共');
             // this.getList();
             this.importData.categoryName = ''
             this.importData.importFile = ''
@@ -668,9 +683,9 @@ export default {
             this.gettreeOptionsList()
             this.importDataLoading = false
           })
-          .catch((err) =>{
-            this.importDataLoading = false
-          })
+            .catch((err) => {
+              this.importDataLoading = false
+            })
 
         }
       });
@@ -705,6 +720,7 @@ export default {
 .addMsg /deep/ .el-input--medium {
   width: 237px;
 }
+
 .success {
   color: #67c23a;
 }
@@ -712,9 +728,11 @@ export default {
 .error {
   color: #f56c6c;
 }
+
 .el-tree-node /deep/ .el-tree-node {
   display: none;
 }
+
 .serachInput {
   width: 60%;
   margin-right: 10px;
@@ -745,4 +763,11 @@ export default {
 .tableBox {
   height: calc(100% - 158px - 52px);
 }
+
+/* ::v-deep
+  .el-tree--highlight-current
+  .el-tree-node.is-current
+  > .el-tree-node__content {
+  background-color: #baf !important;
+} */
 </style>

@@ -24,13 +24,13 @@
         </el-select>
       </el-form-item>
       <el-form-item label="所属库" prop="databaseName">
-        <el-select clearable v-model="queryParams.databaseName" @change="inputSearch" placeholder="请选择">
+        <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn" placeholder="请选择">
           <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="所属表" prop="tableId">
-        <el-select clearable v-model="queryParams.tableId" @change="inputSearch" placeholder="请选择">
+        <el-select clearable v-model="queryParams.tableId" :disabled="!queryParams.databaseName" @change="inputSearch" placeholder="全部">
           <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.id">
           </el-option>
         </el-select>
@@ -420,7 +420,11 @@ export default {
   },
   methods: {
     getListTableByProject() {
-      listTableByProject(this.drawerData.id).then(res => {
+      let data = {
+        databaseId:this.drawerData.id,
+        databaseName:this.queryParams.databaseName
+      }
+      listTableByProject(data).then(res => {
         if (res.code == 200) {
           this.tableList = res.data
         }
@@ -563,6 +567,11 @@ export default {
       let res = await nameTesting(params)
       this.isName = res.data
     },
+    databaseNameFn() {
+      this.queryParams.tableId=''
+      this.inputSearch()
+      this.getListTableByProject()
+  },
     updataResultFn() {
       this.updataLoading = true
       updateFiledRule(this.resultForm).then(res => {
@@ -675,7 +684,8 @@ export default {
     getProtectCategory(key) {
       this.treeLoading = true
       let data = {
-        parentId: this.drawerData.projectId
+        parentId: this.drawerData.projectId,
+        needSub:1,
       };
       treeListI(data).then((resp) => {
         this.categoryList = resp.data

@@ -104,9 +104,9 @@ export function checkSourceName(data) {
 
 
 // 测试名称是否可用
-export function listTableByProject (databaseId) {
+export function listTableByProject (data) {
   return request({
-    url: '/system/protectTableField/listTableByProject?databaseId='+databaseId,
+    url: '/system/protectTableField/listTableByProject?databaseId='+data.databaseId+'&databaseName='+data.databaseName,
     method: 'get',
   })
 }

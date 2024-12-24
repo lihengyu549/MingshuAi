@@ -93,9 +93,9 @@
           <!-- <pre v-html="textarea2"></pre>
           <div><el-input readonly resize="none" type="textarea" :rows="16" placeholder="请输入内容" v-model="textarea2">
             </el-input></div> -->
-          <vue-json-viewer :copyable="true" preview-mode :expanded="true" :value="textarea2">
-            <template  slot="copy">
-              <i class="el-icon-document-copy" title="复制"></i>
+          <vue-json-viewer preview-mode :value="textarea2" :copyable="copyable">
+            <template slot="copy">
+              <i class="el-icon-document-copy" title="复制" @click="mgsElemesFn"></i>
             </template>
           </vue-json-viewer>
         </div>
@@ -111,7 +111,10 @@ import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import { getDatabaseList, protectTableFieldList, exportReport, getDatabaseSource, listByPublished } from "@/api/system/protectTableField";
 import { getFrameworks, treeListI, } from "@/api/system/protectCategory";
+import Cookies from "js-cookie";
 import VueJsonViewer from 'vue-json-viewer';
+import 'vue-json-viewer/style.css'
+import router from "@/router";
 export default {
   name: "ProtectTableField",
   components: { Treeselect, VueJsonViewer },
@@ -133,11 +136,6 @@ export default {
       treeLoading: false,
       treeID: '',
       textarea2: '',
-      textarea: `GET /cnsec/v1/classify_result?xxxxxxxxxxxxxxxxxxx
-Host: 172.22.163.254:8443
-timestamp: 1686192038
-Authorization: OPXSrxZ4MdzIJ8DOaE7R:c07ccce5c5a061d32ff8acef501dd46162ddddec808afc46ef64000ca083af08
-User-Agent: Apifox/1.0.0 (https://apifox.com)`,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -205,6 +203,10 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
       categoryListEdit: null,
       categoryList: [],
       resultFormNodeName: '',
+      Token: '',
+      textarea: ``,
+      copyable: { copyText: '复制', copiedText: '复制成功' },
+      routeDataShow: false,
     };
   },
   watch: {
@@ -213,9 +215,26 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     }
   },
   created() {
-    this.gettreeOptionsList()
+    this.init()
   },
   methods: {
+    async init() {
+      if (this.$route.params && this.$route.params.id) {
+        this.routeDataShow = true
+      }
+      await this.gettreeOptionsList()
+    },
+    httpDemo() {
+
+      this.Token = Cookies.get("Admin-Token")
+      this.textarea = `GET /system/protectTableField/getDatabaseSource?projectId=${this.projectId}
+Host: 172.0.0.1:8080
+accept:application/json, text/plain, */*
+Authorization:Bearer ${this.Token}`
+    },
+    mgsElemesFn() {
+      this.$message.success('复制成功');
+    },
     // 多选框选中数据
     handleSelectionChange(selection) {
       this.ids = selection.map(item => item.id)
@@ -297,9 +316,10 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     },
     // 左侧树下拉选change事件
     treeOptionsSelectChange(val) {
+      this.routeDataShow = false
+      this.httpDemo()
       this.getProtectCategory(val)
       this.getProtectCategoryQuery(val)
-      this.getList()
     },
     gettreeOptionsList() {
       this.Loading = true
@@ -311,8 +331,8 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         } else {
           this.projectId = response.data[0].id
         }
-        this.getList()
-        this.getProtectCategory(this.projectId)
+       this.getProtectCategory(this.projectId)
+        this.httpDemo()
         this.getProtectCategoryQuery(this.projectId)
       });
     },
@@ -325,9 +345,14 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
       let treeList = []
       if (list.length > 0) {
         treeList = list.filter(item => item.level === 2)
+        this.treeID = treeList.map(item => item.id).join()
+        this.handleQuery();
+      }else{
+        this.protectTableFieldList =[]
+        this.queryParams.pageNum = 1
+        this.queryParams.pageSize = 10
+        this.total = 0
       }
-      this.treeID = treeList.map(item => item.id).join()
-      this.handleQuery();
     },
 
     // getSimpleCheckedNodeIds(originData) {
@@ -395,6 +420,21 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
         this.handleQuery()
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
+    selectAllFirstLevelNodes(data) {
+      if (this.routeDataShow) {
+        data = data.map(item => {
+          if (item.id == this.$route.params.id) {
+            return item
+          }
+        })
+      }
+      // 设置这些节点为选中状态
+      this.$refs.tree.setCheckedNodes(data);
+      let treeList = []
+      let list = this.$refs.tree.getCheckedNodes()
+      treeList = list.filter(item => item.level === 2)
+      this.treeID = treeList.map(item => item.id).join()
+    },
     getProtectCategory(key) {
       this.treeLoading = true
       let data = {
@@ -420,7 +460,10 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
           //   nodeLayerIndex: 1,
           //   parentId: 0,
           // })
-          this.treeID = this.dataCategoryList.length ?this.dataCategoryList.length[0].id:null;
+          this.$nextTick(function () {
+            this.selectAllFirstLevelNodes(this.dataCategoryList)
+            this.getList()
+          });
           let tempList = JSON.parse(JSON.stringify(this.dataCategoryList))
           for (let item of tempList) {
             item.label = item.categoryName
@@ -428,7 +471,7 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
           this.dataCategoryList = this.handleTree(tempList, "id")
           this.categoryListEdit = this.handleTree(tempList, "id")
         }
-        this.Loading = false
+      this.Loading = false
         this.treeLoading = false
       });
     },
@@ -508,7 +551,8 @@ User-Agent: Apifox/1.0.0 (https://apifox.com)`,
     getProtectCategoryQuery(key) {
       this.treeLoading = true
       let data = {
-        parentId: key
+        parentId: key,
+        needSub: 1,
       };
       treeListI(data).then((resp) => {
         this.categoryList = resp.data

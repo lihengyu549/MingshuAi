@@ -580,7 +580,6 @@ export default {
               for (let i = 0; i < list.length; i++) {
                 this.targetDataList.push({ id: i, value: list[i], label: list[i] })
               }
-              this.targetDataList.unshift({ id: -1, value: -1, label: '全部' })
               this.$message({
                 message: res.msg,
                 type: 'success'
@@ -625,17 +624,17 @@ export default {
             // this.getList();
             this.importData.categoryName = ''
             this.importData.importFile = ''
+            this.importData.sourceName = ''
+            this.importData.categoryId = ''
             this.importData.fileList = []
             this.importData.businessName = ''
+            this.resetQuery()
             this.importData.importShow = false
-            this.gettreeOptionsList()
             this.importDataLoading = false
           })
             .catch((err) => {
               this.importDataLoading = false              
-              this.importData.categoryName = ''
               this.importData.importFile = ''
-              this.importData.businessName = ''
               this.importData.fileList = []
             })
         } else {
