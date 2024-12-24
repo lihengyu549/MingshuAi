@@ -58,7 +58,7 @@
           <el-table-column label="数据源" align="center" prop="sourceName" show-overflow-tooltip />
           <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
           <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
-          <el-table-column label="分类" align="center" prop="categoryName" show-overflow-tooltip />
+          <el-table-column label="分类" align="center" prop="categoryName" min-width="250" show-overflow-tooltip />
           <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
           <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
             <template slot-scope="scope">
