@@ -86,6 +86,17 @@
           </div>
         </div>
       </div>
+      <div class="box1">
+        <div class="head">
+          <div>分类分级统计</div>
+          <div>03</div>
+        </div>
+        <div class="boxThreeMain">
+          <div>
+            <h4 style="color: #bbcefd;">数据分类分布</h4>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -594,5 +605,12 @@ ul li.odd {
   .echartsBoxThree{
     width: 100%;
     height: 100%;
+  }
+  .boxThreeMain{
+    width: 100%;
+    height: 300px;
+    background-color: #09102b;
+    padding: 10px 0;
+    margin-top: 10px;
   }
 </style>

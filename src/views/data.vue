@@ -40,7 +40,9 @@
                   <div class="textFa"><span class="lightText">已梳理占比</span> <span class="footText">123123</span></div>
                 </div>
               </div>
-              <div id="chartDomP"></div>
+              <div id="chartDomP" style="width: 100%;height: 400px;">
+                <!-- <DataPupop></DataPupop> -->
+              </div>
             </div>
             <div class="col-lg-lzh fill-h">
               <div class="xpanel-wrapper xpanel-wrapper-lzh">
@@ -76,9 +78,11 @@ import {
 import * as echarts from "echarts";
 import "echarts-wordcloud";
 import "../assets/styles/bootstrap.css";
+import DataPupop from "./dataPupop";
 import $ from "jquery";
 export default {
   components: {
+    DataPupop
   },
   data() {
     return {
@@ -101,6 +105,16 @@ export default {
           }
         ]
       },
+      chart: null,
+      bubbleData: [
+        { name: '个人地理\n位置信息', value: [-7, 0], size: 150, color: 'red' },
+        { name: '个人健康\n生理信息', value: [-15, 140], size: 100, color: '#4169E1' },
+        { name: '个人身份信息', value: [0, 140], size: 100, color: '#4169E1' },
+        { name: '个人基本信息', value: [5, 5], size: 100, color: '#4169E1' },
+        { name: '个人联系信息', value: [0, -140], size: 100, color: '#4169E1' },
+        { name: '个人教育信息', value: [-15, -140], size: 100, color: '#4169E1' },
+        { name: '个人工作信息', value: [-15, -5], size: 100, color: '#4169E1' },
+      ],
       options: {
         // 配置项
       }
@@ -200,71 +214,125 @@ export default {
 
       optionZhu && myChartZhu.setOption(optionZhu);
 
-      const chartDomP = document.getElementById('chartDomP')
-      const myChartP = echarts.init(chartDomP)
+      // const chartDomP = document.getElementById('chartDomP')
+      // const myChartP = echarts.init(chartDomP)
 
-      const optionP = {
-        title: {
-          text: '词云气泡图',
-          left: 'center'
-        },
-        tooltip: {
-          show: true
-        },
-        series: [{
-          type: 'wordCloud',
-          shape: 'circle',
-          sizeRange: [12, 50], // 字体大小范围
-          rotationRange: [-90, 90], // 旋转角度范围
-          rotationStep: 45,
-          gridSize: 2,
-          drawOutOfBound: false,
-          textStyle: {
-            normal: {
-              color: function() {
-                return 'rgb(' + [
-                  Math.round(Math.random() * 160),
-                  Math.round(Math.random() * 160),
-                  Math.round(Math.random() * 160)
-                ].join(',') + ')'
-              }
-            },
-            emphasis: {
-              shadowBlur: 10,
-              shadowColor: '#333'
-            }
-          },
-          data: [
-            {name: 'JavaScript', value: 10000},
-            {name: 'Vue.js', value: 6181},
-            {name: 'ECharts', value: 4386},
-            {name: 'React', value: 4055},
-            {name: 'Node.js', value: 2467},
-            {name: 'D3.js', value: 2244},
-            {name: 'Webpack', value: 1898},
-            {name: 'Babel', value: 1484},
-            {name: 'TypeScript', value: 1112},
-            {name: 'HTML5', value: 965},
-            {name: 'CSS3', value: 847},
-            {name: 'Sass', value: 582},
-            {name: 'Less', value: 555},
-            {name: 'Gulp', value: 550},
-            {name: 'Grunt', value: 462},
-            {name: 'NPM', value: 366},
-            {name: 'Yarn', value: 360},
-            {name: 'Git', value: 282},
-            {name: 'SVN', value: 273},
-            {name: 'Docker', value: 265}
-          ]
-        }]
+      // const optionP = {
+      //   title: {
+      //     text: '词云气泡图',
+      //     left: 'center'
+      //   },
+      //   tooltip: {
+      //     show: true
+      //   },
+      //   series: [{
+      //     type: 'wordCloud',
+      //     shape: 'circle',
+      //     sizeRange: [12, 50], // 字体大小范围
+      //     rotationRange: [-90, 90], // 旋转角度范围
+      //     rotationStep: 45,
+      //     gridSize: 2,
+      //     drawOutOfBound: false,
+      //     textStyle: {
+      //       normal: {
+      //         color: function () {
+      //           return 'rgb(' + [
+      //             Math.round(Math.random() * 160),
+      //             Math.round(Math.random() * 160),
+      //             Math.round(Math.random() * 160)
+      //           ].join(',') + ')'
+      //         }
+      //       },
+      //       emphasis: {
+      //         shadowBlur: 10,
+      //         shadowColor: '#333'
+      //       }
+      //     },
+      //     data: [
+      //       { name: 'JavaScript', value: 10000 },
+      //       { name: 'Vue.js', value: 6181 },
+      //       { name: 'ECharts', value: 4386 },
+      //       { name: 'React', value: 4055 },
+      //       { name: 'Node.js', value: 2467 },
+      //       { name: 'D3.js', value: 2244 },
+      //       { name: 'Webpack', value: 1898 },
+      //       { name: 'Babel', value: 1484 },
+      //       { name: 'TypeScript', value: 1112 },
+      //       { name: 'HTML5', value: 965 },
+      //       { name: 'CSS3', value: 847 },
+      //       { name: 'Sass', value: 582 },
+      //       { name: 'Less', value: 555 },
+      //       { name: 'Gulp', value: 550 },
+      //       { name: 'Grunt', value: 462 },
+      //       { name: 'NPM', value: 366 },
+      //       { name: 'Yarn', value: 360 },
+      //       { name: 'Git', value: 282 },
+      //       { name: 'SVN', value: 273 },
+      //       { name: 'Docker', value: 265 }
+      //     ]
+      //   }]
+      // }
+
+      // myChartP.setOption(optionP)
+      // 引入散点图
+      require('echarts/lib/chart/scatter');
+      var chartDomP = document.getElementById('chartDomP');
+      var myChartP = echarts.init(chartDomP);
+      // 设置中心气泡的位置和大小
+      const centerBubble = [0, 0, 50]; // x, y, radius
+      const radius = 50; // 将环绕半径减小到 50 或其他适合的值
+      const angleStep = 2 * Math.PI / 6; // 每个气泡之间的角度
+
+      // 计算环绕气泡的位置
+      const surroundingBubbles = [];
+      for (let i = 0; i < 6; i++) {
+        const angle = i * angleStep;
+        const x = centerBubble[0] + radius * Math.cos(angle);
+        const y = centerBubble[1] + radius * Math.sin(angle);
+        surroundingBubbles.push([x, y, 30]); // x, y, radius
       }
 
-      myChartP.setOption(optionP)
+      // 合并中心气泡和环绕气泡
+      const bubbleData = [centerBubble, ...surroundingBubbles];
+      // 指定图表的配置项和数据
+      var optionP = {
+        backgroundColor: 'transparent', // 设置图表背景为透明
+        xAxis: {
+          show: false, // 不显示 x 轴
+        },
+        yAxis: {
+          show: false, // 不显示 y 轴
+        },
+        grid: {
+          show: false, // 不显示网格
+        }, series: [
+          {
+            type: 'scatter',
+            data: bubbleData,
+            symbolSize: function (data) {
+              return data[2];
+            },
+            itemStyle: {
+              normal: {
+                opacity: 0.8
+              }
+            }
+          }
+        ]
+      };
+
+      // 使用刚指定的配置项和数据显示图表。
+      myChartP.setOption(optionP);
+
+      window.addEventListener('resize', () => {
+        this.chart && this.chart.resize();
+      });
     },
     goHome() {
       this.$router.push({ path: "/index" });
     },
   },
+
   beforeDestroy() {
     if (this.timeoutTop) {
       clearInterval(this.timeoutTop);
@@ -272,6 +340,11 @@ export default {
     if (this.timeout) {
       clearInterval(this.timeout);
     }
+
+    if (this.chart) {
+      this.chart.dispose();
+    }
+    window.removeEventListener('resize', this.chart && this.chart.resize);
   },
 };
 </script>
@@ -455,7 +528,6 @@ td {
   background-image: url("../assets/images/dataBgc.png");
   background-size: 100% 100%;
   background-position: 100px, 100px;
-  overflow: hidden;
   // overflow-y: hidden !important;
 }
 
