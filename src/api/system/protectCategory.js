@@ -110,6 +110,15 @@ export function listTableByProject (data) {
     method: 'get',
   })
 }
+
+// 分析报告
+export function dashboardList(data) {
+  return request({
+    url: '/system/dashboard/list',
+    method: 'get',
+    params: data
+  })
+}
 // -----------------------------------------
 
 // 分页查询节点的子类数据
