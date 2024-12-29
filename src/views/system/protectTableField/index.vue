@@ -518,7 +518,7 @@ Authorization:Bearer ${this.Token}`
         const params = {
           tableIds: this.treeID,
           projectId: this.projectId,
-          securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : '-1',
+          securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : null,
           businessName: this.queryParams.businessName,
           pageNum: this.queryParams.pageNum,
           pageSize: this.queryParams.pageSize,

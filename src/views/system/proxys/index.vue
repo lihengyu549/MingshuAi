@@ -60,20 +60,16 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd"
-          v-hasPermi="['system:proxys:add']">新增数据库</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd">新增数据库</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleEcelFn"
-          v-hasPermi="['system:proxys:addExcel']">新增Excel文件</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleEcelFn">新增Excel文件</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-thumb" size="medium" @click="implementFn"
-          v-hasPermi="['system:proxys:execute']">执行</el-button>
+        <el-button type="primary" icon="el-icon-thumb" size="medium" @click="implementFn">执行</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-close" size="medium" @click="deleteFn"
-          v-hasPermi="['system:proxys:delete']">删除</el-button>
+        <el-button type="primary" icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -98,10 +94,9 @@
       <el-table-column label="更新时间" align="center" prop="updateTime" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="resultLookFn(scope.row)"
-            v-hasPermi="['system:proxys:resultLook']">结果查看</el-button>
+          <el-button size="mini" type="text" @click="resultLookFn(scope.row)">结果查看</el-button>
           <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
-            @click="resultReleaseFn(scope.row)" v-hasPermi="['system:proxys:resultRelease']">结果发布</el-button>
+            @click="resultReleaseFn(scope.row)">结果发布</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -224,8 +219,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="来源业务系统" prop="businessName">
-          <el-input v-model="importData.businessName" maxlength="50"
-            placeholder="请输入数据源名称"></el-input>
+          <el-input v-model="importData.businessName" maxlength="50" placeholder="请输入数据源名称"></el-input>
         </el-form-item>
         <el-form-item label="导入框架" prop="importFile">
           <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
@@ -427,7 +421,7 @@ export default {
         fileList: [],//导入模板的文件数据
         categoryId: '',//框架名称
         importShow: false,
-        businessName:'',
+        businessName: '',
       },
       debounceTimeout: null,
       // 表单校验
@@ -489,7 +483,7 @@ export default {
       }
       if (val) {
         checkSourceName(params).then((res) => {
-            this.importDataLoading = false
+          this.importDataLoading = false
           return res.msg == '可以使用'
         })
           .catch((err) => {
@@ -633,7 +627,7 @@ export default {
             this.importDataLoading = false
           })
             .catch((err) => {
-              this.importDataLoading = false              
+              this.importDataLoading = false
               this.importData.importFile = ''
               this.importData.fileList = []
             })
@@ -1081,7 +1075,7 @@ export default {
         this.drawerData = row
         this.drawerShow = true
       } else {
-        this.$router.push({name: 'ProtectTableField', params: row})
+        this.$router.push({ name: 'ProtectTableField', params: row })
       }
     },
     resultReleaseFn(row) {

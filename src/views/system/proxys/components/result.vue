@@ -30,7 +30,8 @@
         </el-select>
       </el-form-item>
       <el-form-item label="所属表" prop="tableId">
-        <el-select clearable v-model="queryParams.tableId" :disabled="!queryParams.databaseName" @change="inputSearch" placeholder="全部">
+        <el-select clearable v-model="queryParams.tableId" :disabled="!queryParams.databaseName" @change="inputSearch"
+          placeholder="全部">
           <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.id">
           </el-option>
         </el-select>
@@ -50,12 +51,10 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-aim" size="medium" @click="handleAdda"
-          v-hasPermi="['system:proxys:add']">确认勾选项</el-button>
+        <el-button type="primary" icon="el-icon-aim" size="medium" @click="handleAdda">确认勾选项</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-more" size="medium" @click="handleEcelFn"
-          v-hasPermi="['system:proxys:addExcel']">确认过滤项</el-button>
+        <el-button type="primary" icon="el-icon-more" size="medium" @click="handleEcelFn">确认过滤项</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -92,8 +91,7 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="resultExdit(scope.row)"
-            v-hasPermi="['system:proxys:resultLook']">结果修改</el-button>
+          <el-button size="mini" type="text" @click="resultExdit(scope.row)">结果修改</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -113,7 +111,8 @@
         </el-form-item>
         <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
           <el-select v-model="resultForm.securityLevel" placeholder="请选择">
-            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
+            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+              :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -421,8 +420,8 @@ export default {
   methods: {
     getListTableByProject() {
       let data = {
-        databaseId:this.drawerData.id,
-        databaseName:this.queryParams.databaseName
+        databaseId: this.drawerData.id,
+        databaseName: this.queryParams.databaseName
       }
       listTableByProject(data).then(res => {
         if (res.code == 200) {
@@ -486,7 +485,7 @@ export default {
       this.loading = true
       let params = {
         ...this.queryParams,
-        securityLevelIds:this.queryParams.securityLevel.join()
+        securityLevelIds: this.queryParams.securityLevel.join()
       }
       confirmList(params).then(res => {
         if (res.code === 200) {
@@ -495,9 +494,9 @@ export default {
           this.loading = false
         }
       })
-      .catch(err=>{
-        this.loading = false
-      })
+        .catch(err => {
+          this.loading = false
+        })
     },
 
     targetDatabaseChange(value) {
@@ -568,10 +567,10 @@ export default {
       this.isName = res.data
     },
     databaseNameFn() {
-      this.queryParams.tableId=''
+      this.queryParams.tableId = ''
       this.inputSearch()
       this.getListTableByProject()
-  },
+    },
     updataResultFn() {
       this.updataLoading = true
       updateFiledRule(this.resultForm).then(res => {
@@ -612,9 +611,9 @@ export default {
       this.loading = true;
       let params = {
         ...this.queryParams,
-        securityLevel:'',
-        securityLevelIds:this.queryParams.securityLevel.join(),
-        tableIds:this.queryParams.tableId
+        securityLevel: '',
+        securityLevelIds: this.queryParams.securityLevel.join(),
+        tableIds: this.queryParams.tableId
       }
       protectTableFieldList(params).then(response => {
         this.proxysList = response.rows;
@@ -685,7 +684,7 @@ export default {
       this.treeLoading = true
       let data = {
         parentId: this.drawerData.projectId,
-        needSub:1,
+        needSub: 1,
       };
       treeListI(data).then((resp) => {
         this.categoryList = resp.data

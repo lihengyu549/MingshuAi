@@ -115,11 +115,11 @@
     <div>
       <div class="title_txt">
         <p class="text">技术支持邮箱</p>
-        <span style="color:#545454 ; margin-right: 20px;">liuy@4star.net.cn</span>
+        <span style="color:#545454 ; margin-right: 20px;">support@cnsec.cn</span>
       </div>
       <div class="title_txt">
         <p class="text">技术支持电话</p>
-        <span style="color:#545454 ; margin-right: 20px;">010-64927864</span>
+        <span style="color:#545454 ; margin-right: 20px;">400-706-1706</span>
       </div>
     </div>
     <!-- <div > -->

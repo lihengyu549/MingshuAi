@@ -1,6 +1,5 @@
 <template>
   <div class="app-container main">
-
     <div class="writeBgc">
       <div style="display: flex;justify-content: space-between;align-items: center;padding: 10px;">
         <div style="height: 36px;display: flex;">
@@ -11,99 +10,111 @@
             </el-option>
           </el-select>
         </div>
-        <div style="height: 100%;"><el-button type="primary" size="medium" @click="editFn(scope.row)">导出报告</el-button>
+        <div style="height: 100%;"><el-button type="primary" size="medium" @click="handleExport()">导出报告</el-button>
         </div>
       </div>
-      <div class="hede_bgc">
-        <div class="hede_bgc-text">数据资产概览 分类分级报告</div>
-      </div>
-      <div class="box1">
-        <div class="head">
-          <div>数据资产概况</div>
-          <div>01</div>
+      <div class="pdf-cell" ref="pdfDownload" v-loading="echarsLoding">
+
+        <div class="hede_bgc">
+          <div class="hede_bgc-text">数据资产概览 分类分级报告</div>
         </div>
-        <el-table v-loading="tableBoxloading" :data="tableData" class="tableBox" ref="tableRef">
-          <el-table-column label="数据源（个）" align="center" prop="datasourceCount" show-overflow-tooltip />
-          <el-table-column label="数据库（个）" align="center" prop="databaseCount" show-overflow-tooltip />
-          <el-table-column label="数据表（张）" align="center" prop="dataTableCount" show-overflow-tooltip />
-          <el-table-column label="字段（个）" align="center" prop="dataFieldCount" show-overflow-tooltip />
-          <el-table-column label="未梳理字段（个）" align="center" prop="notConfirmFieldCount" show-overflow-tooltip />
-          <el-table-column label="梳理率（%）" align="center" prop="confirmProportion" show-overflow-tooltip>
-            <!-- <template slot-scope="scope">
+        <div class="box1 page-break" ref="pdfDownload">
+          <div class="head">
+            <div>数据资产概况</div>
+            <div>01</div>
+          </div>
+          <el-table v-loading="tableBoxloading" :data="tableData" class="tableBox" ref="tableRef">
+            <el-table-column label="数据源（个）" align="center" prop="datasourceCount" show-overflow-tooltip />
+            <el-table-column label="数据库（个）" align="center" prop="databaseCount" show-overflow-tooltip />
+            <el-table-column label="数据表（张）" align="center" prop="dataTableCount" show-overflow-tooltip />
+            <el-table-column label="字段（个）" align="center" prop="dataFieldCount" show-overflow-tooltip />
+            <el-table-column label="未梳理字段（个）" align="center" prop="notConfirmFieldCount" show-overflow-tooltip />
+            <el-table-column label="梳理率（%）" align="center" prop="confirmProportion" show-overflow-tooltip>
+              <!-- <template slot-scope="scope">
               <span>{{ (scope.confirmProportion) }}%</span>
             </template> -->
-          </el-table-column>
-        </el-table>
-        <div style="display: flex;justify-content: space-between;align-items: center;padding:10px 30px;">
-          <div id="echartsOne" class="echartsOneClass"></div>
-          <div id="echartsTwo" class="echartsTwoClass"></div>
-        </div>
-      </div>
-      <div class="box1">
-        <div class="head">
-          <div>数据资产统计</div>
-          <div>02</div>
-        </div>
-        <div class="ul_box">
-          <div style="display: flex; justify-content: space-between;">
-            <div style="margin-right: 20px;">
-              <h4>数据库排行</h4>
-              <ul>
-                <li v-for="(item, i) in datasourceTop" :key="i" :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
-                  <span :class="i >= 3 ? 'pentagon' : `pentagon${i + 1}`"> <span>{{ i + 1 }}</span></span>
-                  {{ item.databaseType }}
-                </li>
-              </ul>
-            </div>
-            <div style="margin-right: 20px;">
-              <h4>数据表排行</h4>
-              <ul>
-                <li v-for="(item, i) in tableTop" :key="i" :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
-                  <span :class="i >= 3 ? 'pentagon' : `pentagon${i + 1}`"> <span>{{ i + 1 }}</span></span>
-                  {{ item.sourceName }}
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4>字段数量排行</h4>
-              <ul>
-                <li v-for="(item, i) in fieldTop" :key="i" :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
-                  <span :class="i >= 3 ? 'pentagon' : `pentagon${i + 1}`"> <span>{{ i + 1 }}</span></span>
-                  {{ item.sourceName }}
-                </li>
-              </ul>
-            </div>
+            </el-table-column>
+          </el-table>
+          <div style="display: flex;justify-content: space-between;align-items: center;padding:10px;">
+            <div id="echartsOne" class="echartsOneClass"></div>
+            <div id="echartsTwo" class="echartsTwoClass"></div>
           </div>
         </div>
-        <div class="progress_echarts">
-          <div class="progress-box left-box">
-            <h4 class="progress_echarts_text">数据库主机排行</h4>
-            <div v-for="item in ipTop">
-              <span>{{ item.label }}</span>
-              <el-progress :stroke-width="26" :percentage="item.value" :format="format">
-              </el-progress>
-            </div>
-          </div>
-          <div class="progress-box right-box">
-            <h4 class="progress_echarts_text">数据库类型数量排行</h4>
-            <div id="echartsThree" class="echartsBoxThree"></div>
-          </div>
-        </div>
-      </div>
-      <div class="box1">
-        <div>
+        <div class="box1">
           <div class="head">
-            <div>分类分级统计</div>
-            <div>03</div>
+            <div>数据资产统计</div>
+            <div>02</div>
           </div>
-          <div class="boxThreeMain">
-            <div style="width: 48%;">
-              <h4 style="color: #bbcefd;">数据分类分布</h4>
-              <div id="zhuSort" style="width: 100%;height: 300px;"></div>
+          <div class="ul_box">
+            <div style="display: flex; justify-content: space-between;">
+              <div style="margin-right: 20px;">
+                <h4 style="color: #696969;margin: 10px 0;">库数量排行</h4>
+                <ul>
+                  <li v-for="(item, i) in datasourceTop" :key="i" :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
+                    <span :class="i >= 3 ? 'pentagon' : `pentagon${i + 1}`"> <span>{{ i + 1 }}</span></span>
+                    <span class="sort-name-count">
+                      <span> {{ item.source_name }}</span>
+                      <span style="float: right;"> {{ item.item_count }}</span>
+                    </span>
+                  </li>
+                </ul>
+              </div>
+              <div style="margin-right: 20px;">
+                <h4 style="color: #696969;margin: 10px 0;">表数量排行</h4>
+                <ul>
+                  <li v-for="(item, i) in tableTop" :key="i" :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
+                    <span :class="i >= 3 ? 'pentagon' : `pentagon${i + 1}`"> <span>{{ i + 1 }}</span></span>
+                    <span class="sort-name-count">
+                      <span> {{ item.sourceName }}</span>
+                      <span style="float: right;"> {{ item.tableCount }}</span>
+                    </span>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 style="color: #696969;margin: 10px 0;">字段数量排行</h4>
+                <ul>
+                  <li v-for="(item, i) in fieldTop" :key="i" :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
+                    <span :class="i >= 3 ? 'pentagon' : `pentagon${i + 1}`"> <span>{{ i + 1 }}</span></span>
+                    <span class="sort-name-count">
+                      <span> {{ item.sourceName }}</span>
+                      <span style="float: right;"> {{ item.fieldCount }}</span>
+                    </span>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <div style="width: 48%;">
-              <h4 style="color: #bbcefd;">数据分类分布</h4>
-              <div id="chartDomLast" style="width: 100%;height: 300px;"></div>
+          </div>
+          <div class="progress_echarts">
+            <div class="progress-box left-box">
+              <h4 style="margin-bottom: 20px;" class="progress_echarts_text">数据库主机排行</h4>
+              <div v-for="item in ipTop">
+                <span>{{ item.label }}</span>
+                <el-progress :stroke-width="26" :percentage="item.value" :format="format">
+                </el-progress>
+              </div>
+            </div>
+            <div class="progress-box right-box">
+              <h4 class="progress_echarts_text">数据库类型数量排行</h4>
+              <div id="echartsThree" class="echartsBoxThree"></div>
+            </div>
+          </div>
+        </div>
+        <div class="box1">
+          <div>
+            <div class="head">
+              <div>分类分级统计</div>
+              <div>03</div>
+            </div>
+            <div class="boxThreeMain">
+              <div style="width: 48%;">
+                <h4 style="color: #696969;">数据分类分布</h4>
+                <div id="zhuSort" style="width: 100%;height: 300px;"></div>
+              </div>
+              <div style="width: 48%;">
+                <h4 style="color: #696969;">数据分级分布</h4>
+                <div id="chartDomLast" style="width: 100%;height: 300px;"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -113,38 +124,35 @@
 </template>
 
 <script>
-import { getFrameworks,dashboardList } from "@/api/system/protectCategory";
+import { getFrameworks, dashboardList } from "@/api/system/protectCategory";
+import { downloadPDF } from "@/utils/pdf.js"  //工具方法，导出操作
+import html2pdf from 'html2pdf.js';
 export default {
   name: "Post",
   dicts: ['sys_normal_disable'],
   data() {
     return {
+      echarsLoding: false,
       // 查询参数
       queryParams: {
         categoryId: '',
       },
-      allData:{},
+      allData: {},
       treeOptions: [],
       tableBoxloading: false,
       months: [],
-      last6MonthsConfirmCounts:[],
-      last6MonthsAddCounts:[],
-      tableData: [
-        {
-          aaa1: 6,
-          aaa2: 10,
-          aaa3: 266,
-          aaa4: 3140,
-          aaa5: 3131,
-          aaa6: 0.2,
-        }
-      ],
-      fieldTop:[],
-      tableTop:[],
-      datasourceTop:[],
+      last6MonthsConfirmCounts: [],
+      last6MonthsAddCounts: [],
+      tableData: [],
+      fieldTop: [],
+      tableTop: [],
+      datasourceTop: [],
       ipTop: [],
-      dataTypeList:[],
-      dataTypeListData:[],
+      dataTypeList: [],
+      dataTypeListData: [],
+      securityTop: [],
+      securityTotal: 0,
+      subclassTop: []
     }
   },
   created() {
@@ -153,6 +161,21 @@ export default {
   mounted() {
   },
   methods: {
+    handleExport() {
+      const element = this.$refs.pdfDownload;
+      html2pdf()
+        .from(element)
+        .set({
+          margin: 1,
+          filename: '分类分级分析报告.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'mm', format: 'b4', orientation: 'portrait' },
+          pagebreak: { mode: 'avoid-all' }
+        })
+        .save();
+      // downloadPDF(this.$refs.pdfDownload)
+    },
     earchsInit() {
       var echarts = require('echarts');
       var chartDomOne = document.getElementById('echartsOne');
@@ -227,7 +250,7 @@ export default {
               }
             },
             // 最近6个月得数据
-            data:this.getLast6MonthsConfirmCounts()
+            data: this.getLast6MonthsConfirmCounts()
           }
         ]
       };
@@ -361,15 +384,7 @@ export default {
         dataset: [
           {
             dimensions: ['name', 'score'],
-            source: [
-              ['单位联系信息', 41,],
-              ['交易基本信息', 20,],
-              ['一般员工信息', 52],
-              ['单位基本概况', 37,],
-              ['基础标签信息', 25],
-              ['音效管理信息', 19],
-              ['个人基本信息概况', 71],
-            ]
+            source: this.subclassTop
           },
 
           {
@@ -398,26 +413,27 @@ export default {
       var optionLast;
 
       optionLast = {
-        color: ['#50d7dc', '#61bee5', '#fabe3d', '#fa893d', '#fb461d'],
+        color: ['#50d7dc', '#61bee5', '#fabe3d', '#fa893d', '#fb461d', '#eee'],
         tooltip: {
           trigger: 'item',
-          color: '#fff',
+          color: '#000',
         },
         legend: {
           icon: 'circle',
           //（顺时针左上，右上，右下，左下）
           orient: 'vertical',
           top: 'center',
-          right: '2%',
+          right: '10%',
           textStyle: {
-            color: '#fff',
+            color: '#000',
           },
         },
         series: [
           {
-            name: 'Access From',
+            name: '',
             type: 'pie',
             radius: ['40%', '60%'],
+            center: ['30%', '50%'], // 第一个值调整左右，第二个值调整上下
             avoidLabelOverlap: false,
             label: {
               show: false,
@@ -432,45 +448,23 @@ export default {
             labelLine: {
               show: false
             },
-            data: [
-              { value: 1048, name: '1级' },
-              { value: 735, name: '2级' },
-              { value: 580, name: '3级' },
-              { value: 484, name: '4级' },
-              { value: 300, name: '5级' }
-            ]
+            data: this.securityTop
           }
         ],
-
         graphic: [
-
-          {
-            type: 'circle',
-            shape: {
-              r: 55 // 内层空心圆的半径
-            },
-            style: {
-              fill: 'none', // 填充颜色为无
-              stroke: '#fff', // 边框颜色
-              lineWidth: 4 // 边框宽度
-            },
-            left: 'center',
-            top: 'center'
-          },
           {
             type: 'text',
-            left: 'center',
-            top: 'center',
+            left: '22%', // 设置文字的水平位置
+            top: '43%', // 设置文字的垂直位置
             style: {
-              text: `${4140}
-
-数据总量`, // 你想要显示的文字
+              text: `${123}
+数据总量`,
               textAlign: 'center',
-              fill: '#fff',
+              fill: '#000',
               fontSize: 20,
               fontWeight: 600,
-              overflow: 'break',
-            }
+            },
+            z: 100 // 确保文字在饼图之上
           }
         ]
       };
@@ -488,59 +482,87 @@ export default {
     //   }
     //   return months.reverse(); // 反转数组，使当前月份在最后
     // },
-    getLast6MonthsAddCounts(){
+    getLast6MonthsAddCounts() {
       return this.last6MonthsAddCounts
     },
-    getLast6MonthsConfirmCounts(){
+    getLast6MonthsConfirmCounts() {
       return this.last6MonthsConfirmCounts
     },
-    getAddMonthAndData(data){
-      for(let key in data) {
+    getAddMonthAndData(data) {
+      for (let key in data) {
         this.last6MonthsAddCounts.push(data[key])
-        this.months.push(key.slice(-2)+'月')
+        this.months.push(key.slice(-2) + '月')
       }
     },
-    getMonthAndData(data){
-      for(let key in data) {
+    getMonthAndData(data) {
+      for (let key in data) {
         this.last6MonthsConfirmCounts.push(data[key])
       }
     },
     dashboardList() {
-      dashboardList({categoryId:this.queryParams.categoryId}).then(res=>{
+      this.echarsLoding = true
+      this.resetList()
+      dashboardList({ categoryId: this.queryParams.categoryId }).then(res => {
         this.allData = res.data
         let item = res.data
         let obj = {
-            dataTableCount: item.dataTableCount,
-            databaseCount: item.databaseCount,
-            datasourceCount: item.datasourceCount,
-            dataFieldCount: item.dataFieldCount,
-            notConfirmFieldCount: item.notConfirmFieldCount,
-            confirmCount: item.confirmCount,
-            confirmCount: item.confirmCount,
-            confirmProportion:item.confirmProportion
+          dataTableCount: item.dataTableCount,
+          databaseCount: item.databaseCount,
+          datasourceCount: item.datasourceCount,
+          dataFieldCount: item.dataFieldCount,
+          notConfirmFieldCount: item.notConfirmFieldCount,
+          confirmCount: item.confirmCount,
+          confirmCount: item.confirmCount,
+          confirmProportion: item.confirmProportion
         }
         this.tableData = [obj]
         this.getAddMonthAndData(res.data.last6MonthsAddCounts)
         this.getMonthAndData(res.data.last6MonthsConfirmCounts)
         this.getIpAndData(res.data.ipTop)
         this.getDataTypeAndData(res.data.dataTypeTop)
+        this.getSecurityTopData(res.data.securityTop)
+        this.getSortTopData(res.data.subclassTop)
         this.datasourceTop = res.data.datasourceTop
         this.fieldTop = res.data.fieldTop
         this.tableTop = res.data.tableTop
         this.earchsInit()
+        this.echarsLoding = false
       })
+        .catch(err => {
+          this.echarsLoding = false
+        });
     },
-    getIpAndData(data){
-      for(let key in data) {
+
+    getSortTopData(data) {
+      this.subclassTop = data.map(item => {
+        return [item.subclassName, item.count]
+      })
+      for (let value of data) {
+        this.securityTotal += value.count
+      }
+    },
+    getSecurityTopData(data) {
+      this.securityTop = data.map(item => {
+        return {
+          name: item.securityLevel + '：' + item.count,
+          value: item.count,
+        }
+      })
+      for (let value of data) {
+        this.securityTotal += value.count
+      }
+    },
+    getIpAndData(data) {
+      for (let key in data) {
         this.ipTop.push({
           value: data[key] * 10,
-          label:key
+          label: key
         })
       }
     },
-    
-    getDataTypeAndData(data){
-      for(let key in data) {
+
+    getDataTypeAndData(data) {
+      for (let key in data) {
         this.dataTypeList.push(key)
         this.dataTypeListData.push(data[key])
       }
@@ -561,7 +583,22 @@ export default {
 
     // 左侧树下拉选change事件
     treeOptionsSelectChange(val) {
+      this.dashboardList()
     },
+    resetList() {
+      this.securityTotal = 0
+      this.securityTop = []
+      this.dataTypeListData = []
+      this.dataTypeList = []
+      this.ipTop = []
+      this.datasourceTop = []
+      this.tableTop = []
+      this.fieldTop = []
+      this.tableData = []
+      this.last6MonthsAddCounts = []
+      this.last6MonthsConfirmCounts = []
+      this.months = []
+    }
   }
 };
 </script>
@@ -572,7 +609,7 @@ export default {
 
 .writeBgc {
   background-color: #fff;
-  width: 60%;
+  width: 55%;
   margin: 0 auto;
 }
 
@@ -639,9 +676,8 @@ export default {
 
 .echartsOneClass {
   height: 300px;
-  width: 40%;
+  width: 50%;
   margin-top: 20px;
-  margin-right: 40px;
 }
 
 .echartsTwoClass {
@@ -796,20 +832,24 @@ ul li.odd {
   align-items: center;
   width: 100%;
   height: 350px;
-  background-color: #09102b;
   padding: 10px 0;
   margin-top: 10px;
 
   h4 {
-    padding: 10px 0 10px 5px;
-    background-color: #0c1743;
+    padding: 0 0 0 5px;
     margin: 0;
-    font-size: 20px;
-    font-weight: 700;
-    text-shadow:
-      1px 1px 2px #888,
-      2px 2px 2px #888,
-      3px 3px 2px #888;
   }
+}
+
+.page-break {
+  page-break-before: always;
+}
+
+h4 {
+  font-size: 16px !important;
+}
+.sort-name-count{
+  width: calc(100% - 25px);
+  display: inline-block;
 }
 </style>
