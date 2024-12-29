@@ -457,7 +457,7 @@ export default {
             left: '22%', // 设置文字的水平位置
             top: '43%', // 设置文字的垂直位置
             style: {
-              text: `${123}
+              text: `${this.securityTotal}
 数据总量`,
               textAlign: 'center',
               fill: '#000',
@@ -537,9 +537,6 @@ export default {
       this.subclassTop = data.map(item => {
         return [item.subclassName, item.count]
       })
-      for (let value of data) {
-        this.securityTotal += value.count
-      }
     },
     getSecurityTopData(data) {
       this.securityTop = data.map(item => {
