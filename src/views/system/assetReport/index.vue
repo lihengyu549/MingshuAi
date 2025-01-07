@@ -454,7 +454,7 @@ export default {
         graphic: [
           {
             type: 'text',
-            left: '22%', // 设置文字的水平位置
+            left: '21%', // 设置文字的水平位置
             top: '43%', // 设置文字的垂直位置
             style: {
               text: `${this.securityTotal}

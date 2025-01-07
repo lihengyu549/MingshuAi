@@ -70,7 +70,7 @@
         </div>
         <div class="writing">
           <!-- serverNum -->
-          <div class="wet-1"> <span @click="projecBtn">{{ fieldSort+'%'}}</span></div> 
+          <div class="wet-1"> <span @click="projecBtn">{{ fieldSort + '%' }}</span></div>
           <div class="wet-2">
             <span @click="projecBtn">字段梳理率</span>
           </div>
@@ -259,7 +259,7 @@
                     </td>
                     <td class="el-table__cell is-leaf">
                       <div class="cell" v-if="server.gpus">
-                        {{server.gpus[0].temperature }}°
+                        {{ server.gpus[0].temperature }}°
                       </div>
                     </td>
                   </tr>
@@ -365,7 +365,7 @@ export default {
   components: {
     "my-indexlist": MyIndexlist,
   },
-  data () {
+  data() {
     return {
       loading: false,
       serverNum: "",
@@ -373,17 +373,17 @@ export default {
       apiNum: "",
       // 服务器信息
       server: [],
-      indexData:{},
-      fieldSort:'',
+      indexData: {},
+      fieldSort: '',
     };
   },
   watch: {
-    $route () {
+    $route() {
       this.$router.go()
     }
   },
 
-  created () {
+  created() {
     this.loading = true;
     // this.openLoading();
     this.getStatistics();
@@ -391,32 +391,34 @@ export default {
   },
 
   methods: {
-    projecBtn () {
+    projecBtn() {
       return
       this.$router.push({ path: '/systemInfo/monitor' });
     },
-    projecBtn () {
+    projecBtn() {
       return
       this.$router.push({ path: '/systemInfo/project' });
     },
-    apiBtn () {
+    apiBtn() {
       return
       this.$router.push({ path: '/systemInfo/api' });
     },
-    goData () {
+    goData() {
       this.$router.push({ path: '/data' });
     },
-    getStatistics () {
+    getStatistics() {
       getStatisticsI().then((res) => {
         this.indexData = res.data
         this.apiNum = res.data.apiNum;
         this.projectNum = res.data.projectNum;
         this.serverNum = res.data.serverNum;
-        this.fieldSort = ((res.data.publishedFieldNum / res.data.fieldNum) * 100).toFixed(2);
+        let publishedFieldNum = parseFloat(res.data.publishedFieldNum) || 0
+        let fieldNum = parseFloat(res.data.fieldNum) || 0
+        this.fieldSort = ((publishedFieldNum / fieldNum * 100) || 0).toFixed(2)
       });
     },
     /** 查询服务器信息 */
-    getList () {
+    getList() {
       //  this.$modal.closeLoading();
       this.loading = true;
       getServer().then((response) => {
@@ -425,7 +427,7 @@ export default {
       });
     },
     // 打开加载层
-    openLoading () {
+    openLoading() {
       this.$modal.loading("正在加载服务监控数据，请稍候！");
     },
   },
@@ -462,8 +464,8 @@ export default {
   bottom: 0;
   /* margin-left: 40px; */
 }
-.writing div {
-}
+
+.writing div {}
 
 .pic-3 {
   border: 3px solid #eeeeee;
