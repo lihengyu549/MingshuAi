@@ -248,8 +248,11 @@
                       <div class="cell">显卡型号</div>
                     </td>
                     <td class="el-table__cell is-leaf">
-                      <div class="cell" v-if="server.gpus">
+                      <div class="cell" v-if="server.gpus&&server.gpus.length">
                         {{ server.gpus[0].name }}
+                      </div>
+                      <div class="cell" v-else>
+                        暂无信息
                       </div>
                     </td>
                   </tr>
@@ -258,8 +261,11 @@
                       <div class="cell">温度</div>
                     </td>
                     <td class="el-table__cell is-leaf">
-                      <div class="cell" v-if="server.gpus">
+                      <div class="cell" v-if="server.gpus&&server.gpus.length">
                         {{server.gpus[0].temperature }}°
+                      </div>
+                      <div class="cell" v-else>
+                        暂无信息
                       </div>
                     </td>
                   </tr>
@@ -268,8 +274,11 @@
                       <div class="cell">利用率</div>
                     </td>
                     <td class="el-table__cell is-leaf">
-                      <div class="cell" v-if="server.gpus">
+                      <div class="cell" v-if="server.gpus&&server.gpus.length">
                         {{ server.gpus[0].utilization }}%
+                      </div>
+                      <div class="cell" v-else>
+                        暂无信息
                       </div>
                     </td>
                   </tr>
@@ -278,8 +287,11 @@
                       <div class="cell">显存</div>
                     </td>
                     <td class="el-table__cell is-leaf">
-                      <div class="cell" v-if="server.gpus">
+                      <div class="cell" v-if="server.gpus&&server.gpus.length">
                         {{ server.gpus[0].memoryUtilization }}
+                      </div>
+                      <div class="cell" v-else>
+                        暂无信息
                       </div>
                     </td>
                   </tr>
