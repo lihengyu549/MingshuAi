@@ -221,7 +221,7 @@
         <el-form-item label="来源业务系统" prop="businessName">
           <el-input v-model="importData.businessName" maxlength="50" placeholder="请输入数据源名称"></el-input>
         </el-form-item>
-        <el-form-item label="导入框架" prop="importFile">
+        <el-form-item label="导入文件" prop="importFile">
           <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
         </el-form-item>
         <el-form-item class="uploadClass">
@@ -450,7 +450,7 @@ export default {
           }
         ],
         importFile: [
-          { required: true, message: "请选择导入框架文件", trigger: "blur" },
+          { required: true, message: "请选择导入文件", trigger: "blur" },
         ],
       },
     };

@@ -111,12 +111,9 @@ service.interceptors.response.use(
       return Promise.reject('error')
     } else if (code == 400) {
       return res.data
+    }else if (code == 4003) {
+      location.href = "/license";
     }
-
-    else if (code == 4003) {
-      location.href = "/index";
-    }
-
     else if (code !== 200) {
       Notification.error({ title: msg })
       return Promise.reject('error')
