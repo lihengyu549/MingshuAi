@@ -489,6 +489,9 @@ Authorization:Bearer ${this.Token}`
       listByPublished(params).then((response) => {
         if (response.code == 200 && response.rows) {
           this.protectTableFieldList = response.rows || [];
+          this.protectTableFieldList.forEach(ele => {
+          ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
+        })
           this.total = response.total;
         }
         this.loading = false;
@@ -676,5 +679,8 @@ Authorization:Bearer ${this.Token}`
   max-height: 350px;
   overflow-y: scroll;
 
+}
+.tableCla {
+  height: 266px !important;
 }
 </style>
