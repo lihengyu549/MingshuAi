@@ -1,7 +1,7 @@
 <template>
   <div class="app-container" v-loading="Loading">
     <el-row :gutter="20">
-      <el-col :span="4" :xs="24">
+      <el-col :span="4" :xs="24" style="height: calc(100vh - 75px); overflow-y: auto;">
         <div class="head-container">
           <span style="display: inline-block;background-color: #eee; font-size: 14px; padding: 5px 10px;">所属框架</span>
           <el-select v-model="projectId" class="serachInput" @change="treeOptionsSelectChange" placeholder="全部"
@@ -624,6 +624,18 @@ Authorization:Bearer ${this.Token}`
   background: "rgba(0, 0, 0, 0.7)" !important;
 }
 
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
 .addMsg /deep/ .el-input--medium {
   width: 237px;
 }
