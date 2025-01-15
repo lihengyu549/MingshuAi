@@ -21,8 +21,8 @@ export function getDatabaseSource (query) {
 export function listByPublished (data) {
   return request({
     url: `/system/protectTableField/listByPublished`,
-    method: 'get',
-    params: data
+    method: 'post',
+    data: data
   })
 }
 // 列表数据-导出Excel
