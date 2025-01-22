@@ -11,7 +11,7 @@
           </el-select>
         </div>
         <div class="head-container" v-loading="treeLoading">
-          <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox default-expand-all
+          <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox
             :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree" node-key="id" @check="treeCheck"
             :highlightCurrent="isHighlight" />
         </div>
@@ -207,6 +207,7 @@ export default {
       textarea: ``,
       copyable: { copyText: '复制', copiedText: '复制成功' },
       routeDataShow: false,
+      treeIds:[]
     };
   },
   watch: {
@@ -316,6 +317,8 @@ Authorization:Bearer ${this.Token}`
     },
     // 左侧树下拉选change事件
     treeOptionsSelectChange(val) {
+      this.queryParams.pageNum = 1
+      this.queryParams.pageSize = 10
       this.routeDataShow = false
       this.httpDemo()
       this.getProtectCategory(val)
@@ -346,6 +349,7 @@ Authorization:Bearer ${this.Token}`
       if (list.length > 0) {
         treeList = list.filter(item => item.level === 2)
         this.treeID = treeList.map(item => item.id).join()
+        this.treeIds = treeList.map(item => item.id)
         this.handleQuery();
       }else{
         this.protectTableFieldList =[]
@@ -434,6 +438,7 @@ Authorization:Bearer ${this.Token}`
       let list = this.$refs.tree.getCheckedNodes()
       treeList = list.filter(item => item.level === 2)
       this.treeID = treeList.map(item => item.id).join()
+      this.treeIds = treeList.map(item => item.id)
     },
     getProtectCategory(key) {
       this.treeLoading = true
@@ -478,9 +483,11 @@ Authorization:Bearer ${this.Token}`
     getList() {
       this.loading = true;
       let params = {
-        tableIds: this.treeID,
+        // tableIds: this.treeID,
+        tableIds: this.treeIds,
         projectId: this.projectId,
-        securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : null,
+        securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel : null,
+        // securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : null,
         businessName: this.queryParams.businessName,
         pageNum: this.queryParams.pageNum,
         pageSize: this.queryParams.pageSize,
@@ -521,7 +528,8 @@ Authorization:Bearer ${this.Token}`
         const params = {
           tableIds: this.treeID,
           projectId: this.projectId,
-          securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : null,
+          securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel : null,
+          // securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : null,
           businessName: this.queryParams.businessName,
           pageNum: this.queryParams.pageNum,
           pageSize: this.queryParams.pageSize,
