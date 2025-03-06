@@ -107,7 +107,7 @@
       :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
         <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
-          <el-select v-model="form.databaseType" placeholder="请选择数据库类型">
+          <el-select v-model="form.databaseType" placeholder="请选择数据库类型" @change="databaseTypeChange($event)">
             <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
             </el-option>
           </el-select>
@@ -136,7 +136,15 @@
         <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
           <el-input v-model="form.targetUserPassword" maxlegth="100" placeholder="请输入数据库密码" />
         </el-form-item>
-        <el-form-item label="库名" prop="targetDatabase" :rules="rules.targetDatabase">
+        <el-form-item v-show="isServiesNameRequired" label="服务名" prop="connectionValue" :rules="rules.connectionValue()">
+          <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput(form.connectionValue)"
+            placeholder="请输入" />
+        </el-form-item>
+        <el-form-item v-show="isServiesNameRequired" label="连接方式">
+          <el-radio v-model="connectionType" label="0">SID</el-radio>
+          <el-radio v-model="connectionType" label="1">Service Name</el-radio>
+        </el-form-item>
+        <el-form-item label="表名" prop="targetDatabase" :rules="rules.targetDatabase">
           <!-- 
           <el-input v-if="show" v-model="form.targetDatabase" placeholder="请输入数据库名称" /> -->
           <el-select ref="selectRef" allow-create @change="targetDatabaseChange" filterable multiple clearable
@@ -261,6 +269,7 @@ import {
   forceLogout, updataAttach, nameTesting, addData, getFrameworks, checkSourceName
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
+import Vue from 'vue';
 export default {
   name: "Proxys",
   components: { Result },
@@ -371,9 +380,12 @@ export default {
       // 表单参数
       form: {
         // projectName: null,
+        aaa:'1',
         projectId: null,
-        sourceName: ''
-      },
+        sourceName: '',
+        databaseType:'',
+    },
+      connectionType:'1',
       addForm: {},
       // 表单校验
       rules: {
@@ -400,6 +412,13 @@ export default {
         targetUserPassword: [
           { required: true, message: '请输入密码', trigger: 'blur' }
         ],
+        connectionValue: () => {
+          return [{ 
+            required:this.isServiesNameRequired,
+            message: '请输入', 
+            trigger: 'blur'
+          }]
+        },
         targetIp: [
           { required: true, message: "请输入数据库地址", trigger: "change" },
           {
@@ -431,6 +450,7 @@ export default {
         importShow: false,
         businessName: '',
       },
+      isServiesNameRequired:false,
       debounceTimeout: null,
       // 表单校验
       importDataRules: {
@@ -463,6 +483,13 @@ export default {
     this.getList()
   },
   methods: {
+    databaseTypeChange(val){
+      if(val =='ORACLE'){
+        this.isServiesNameRequired = true
+      }else{
+        this.isServiesNameRequired = false
+      }
+    },
     getNameTestingFn(val, from) {
       this.importDataLoading = true
       let params = {
@@ -473,12 +500,12 @@ export default {
           return res.msg == '可以使用'
         })
           .catch((err) => {
-            form.sourceName = ''
+            this.form.sourceName = ''
             this.importDataLoading = false
             return false
           })
       } else {
-        form.sourceName = ''
+        this.form.sourceName = ''
         this.importDataLoading = false
         return false
       }
@@ -519,6 +546,12 @@ export default {
     },
     businessNameFn(val) {
       this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
+      // nameTesting().then(res=>{
+      //   console.log(res);
+      // })
+    },
+    serviesNameInput(val) {
+      this.form.connectionValue = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
       // nameTesting().then(res=>{
       //   console.log(res);
       // })
@@ -568,6 +601,8 @@ export default {
             targetPort: this.form.targetPort,
             targetUserName: this.form.targetUserName,
             targetUserPassword: this.form.targetUserPassword,
+            connectionType: this.connectionType,
+            connectionValue: this.form.connectionValue,
             databaseType: this.findDatabaseValueByName(this.form.databaseType)
             // targetIp: "192.168.3.14",
             // targetPort: "3306",
@@ -819,7 +854,6 @@ export default {
       this.projectNameEdit = e
       // this.form.projectName = 
       this.form.projectId = e
-
     },
     /** 查询数据库代理列表 */
     getList() {
@@ -855,6 +889,7 @@ export default {
           let data = JSON.parse(JSON.stringify(this.form))
           delete data.projectName
           data.targetDatabase = JSON.stringify(data.targetDatabase)
+          data.connectionType = this.connectionType
           data.databaseType = this.findDatabaseValueByName(this.form.databaseType)
           // for (let i = 0; i < this.databaseTypeList.length; i++) {
           //   if (this.form.databaseType == this.databaseTypeList[i].name) {
@@ -901,6 +936,7 @@ export default {
       this.showSucType = 0
       this.projectNameEdit = null
       this.targetDataList = []
+      this.connectionType = '1'
       this.reset();
       this.open = true;
       this.title = "添加数据库";
@@ -928,6 +964,7 @@ export default {
           } else {
             let data = JSON.parse(JSON.stringify(this.form))
             delete data.projectName
+            data.connectionType = this.connectionType
             data.targetDatabase = JSON.stringify(data.targetDatabase)
             data.databaseType = this.findDatabaseValueByName(this.form.databaseType)
             // for (let i = 0; i < this.databaseTypeList.length; i++) {
@@ -1106,6 +1143,11 @@ export default {
   }
 };
 </script>
+<style>
+input[aria-hidden=true] {
+  display: none !important;
+}
+</style>
 <style scoped>
 .addMsg /deep/ .el-input--medium {
   width: 237px;
