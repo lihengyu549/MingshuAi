@@ -184,3 +184,12 @@ export function protectTableFieldList (data) {
     params:data,
   })
 }
+// 获取数据库列表
+export function getListTables (data) {
+  return request({
+    url: '/system/proxy/database/listTables',
+    method: 'post',
+    data: data,
+    loading: true,
+  })
+}

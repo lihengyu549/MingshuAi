@@ -46,6 +46,9 @@
         <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleEcelFn">新增Excel文件</el-button>
       </el-col>
       <el-col :span="1.5">
+        <el-button type="primary" icon="el-icon-thumb" size="medium" @click="implementFn">执行</el-button>
+      </el-col>
+      <el-col :span="1.5">
         <el-button type="primary" icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
@@ -71,9 +74,9 @@
       <el-table-column label="更新时间" align="center" prop="updateTime" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="resultLookFn(scope.row)">开始扫描</el-button>
+          <el-button size="mini" type="text" @click="resultLookFn(scope.row)">结果查看</el-button>
           <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
-            @click="resultReleaseFn(scope.row)">编辑</el-button>
+            @click="resultReleaseFn(scope.row)">结果发布</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -124,6 +127,15 @@
         </el-form-item>
         <el-form-item label="扫描内容" prop="scanContentMsg" :rules="rules.scanContentMsg">
           <div @click="scanContentFn()"><el-input v-model="form.scanContentMsg" readonly placeholder="点击获取扫描配置" /></div>
+          <!-- <el-select ref="selectRef" allow-create @change="targetDatabaseChange" filterable multiple clearable
+            v-model="form.targetDatabase" placeholder="请选择数据库名称">
+            <el-option v-if="targetDataList.length" key="all" label="全选" value="all"></el-option>
+            <el-option v-for="item in targetDataList" :key="item.value" :label="item.name" :value="item.value">
+            </el-option>
+          </el-select>
+          <div class="getDiv">
+            <el-button type="primary" @click="getDatabaseName">获 取</el-button>
+          </div> -->
         </el-form-item>
         <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
           <el-input v-model="form.businessName" maxlength="50" @input="businessNameFn(form.businessName)"
@@ -174,6 +186,7 @@
         </div>
       </div>
     </el-dialog>
+
     <el-dialog title="新增Excel文件" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"
       append-to-body :close-on-click-modal="false">
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
@@ -215,9 +228,59 @@
       <Result :treeOptions="treeOptions" :drawerData="drawerData" />
     </el-drawer>
 
-    <el-dialog class="deleteCla" title="扫描配置" :visible.sync="scanContentShow" width="850px" append-to-body
+    <el-dialog class="deleteCla" title="扫描配置" :visible.sync="scanContentShow" width="750px" append-to-body
       :close-on-click-modal="false">
-      <TableSelector />
+      <div style="position: relative;">
+        <div class="data-selector">
+          <!-- 左侧可选列表和中间搜索框 -->
+          <el-card class="combined-panel">
+            <div class="left-panel">
+              <div slot="header" class="clearfix">
+                <span>可选</span>
+              </div>
+              <el-checkbox v-model="checkAll" @change="handleCheckAllChange" class="leftCheckAll">全选</el-checkbox>
+              <div v-for="option in options" :key="option.value" class="option-item leftCheckAll"
+                :class="{ 'active': option === activeOption }" @click.stop="expandOption(option)">
+                <el-checkbox v-model="checkedOptions" :label="option.value" @change="toggleMiddleOptions(option)"
+                  :indeterminate="option.indeterminate">
+                  {{ option.label }}
+                </el-checkbox>
+                <i class="el-icon-arrow-right expand-icon"></i>
+              </div>
+            </div>
+            <div class="middle-panel">
+              <el-input placeholder="请输入表名" v-model="searchQuery" clearable>
+                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+              </el-input>
+              <el-checkbox v-if="middleCheckVisible" v-model="checkAllMiddle" :indeterminate="isIndeterminate"
+                @change="handleMiddleCheckAllChange">
+                全选
+              </el-checkbox>
+              <el-checkbox-group v-model="checkedTables" @change="handleCheckedTablesChange">
+                <el-checkbox v-for="table in filteredTables" :label="table.value" :key="table.value">{{ table.label
+                }}</el-checkbox>
+              </el-checkbox-group>
+            </div>
+          </el-card>
+          <!-- 右侧已选列表 -->
+          <el-card class="right-panel">
+            <div slot="header" class="clearfix">
+              <span>已选 ({{ selectedCount }}张数据表 + {{ fieldCount }}个字段)</span>
+              <el-button style="float: right; padding: 3px 0" type="text" @click="clearSelection">清空</el-button>
+            </div>
+            <ul>
+              <li v-for="item in selectedItems" :key="item.label">
+                {{ item.label }} ({{ item.fieldCount }}个字段)
+                <el-button type="text" icon="el-icon-close" @click="removeItemByLabel(item.label)"></el-button>
+              </li>
+            </ul>
+          </el-card>
+        </div>
+        <div style="text-align: right;">
+          <el-button @click="scanContentShow = false">取消</el-button>
+          <el-button type="primary" @click="confirmSelection">确定</el-button>
+        </div>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -237,58 +300,66 @@ import {
   forceLogout, updataAttach, nameTesting, addData, getFrameworks, checkSourceName
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
-import TableSelector from './components/TableSelector.vue'
 import Vue from 'vue';
 export default {
   name: "Proxys",
-  components: { Result,TableSelector,},
+  components: { Result },
   data() {
     return {
+      checkAll: false, // 左侧全选
+      isIndeterminateLeft: false, // 左侧半选数据
+      isIndeterminate: false, // 中间半选数据
+      checkAllMiddle: false, // 中间全选框
+      checkedOptions: [], // 左侧绑定数据
       options: [
         {
           value: '1',
           label: 'kms',
           children: [
-            { value: 'kms_certificate', label: 'kms_certificate', count: 200, parentID: '1', },
-            { value: 'ksm_config', label: 'ksm_config', count: 300, parentID: '1', },
-            { value: 'ksm_dcit', label: 'ksm_dcit', count: 200, parentID: '1', },
-            { value: 'kms_hadoop_key', label: 'kms_hadoop_key', count: 200, parentID: '1', },
-            { value: 'kms_key_pair', label: 'kms_key_pair', count: 200, parentID: '1', }
+            { value: 'kms_certificate', label: 'kms_certificate (100字段)', count: 200, parentID: '1', },
+            { value: 'ksm_config', label: 'ksm_config (300字段)', count: 300, },
+            { value: 'ksm_dcit', label: 'ksm_dcit (400字段)' },
+            { value: 'kms_hadoop_key', label: 'kms_hadoop_key (200字段)' },
+            { value: 'kms_key_pair', label: 'kms_key_pair (600字段)' }
           ]
         },
         {
           value: '2',
           label: 'scheduler',
           children: [
-            { value: 'scheduler_task', label: 'scheduler_task', count: 200, parentID: '2', },
-            { value: 'scheduler_log', label: 'scheduler_log', count: 200, parentID: '2', }
+            { value: 'scheduler_task', label: 'scheduler_task (50字段)' },
+            { value: 'scheduler_log', label: 'scheduler_log (200字段)' }
           ]
         },
         {
           value: '3',
           label: 'uim',
           children: [
-            { value: 'uim_user', label: 'uim_user', count: 200, parentID: '3', },
-            { value: 'uim_role', label: 'uim_role', count: 200, parentID: '3', }
+            { value: 'uim_user', label: 'uim_user (300字段)' },
+            { value: 'uim_role', label: 'uim_role (150字段)' }
           ]
         },
         {
           value: '4',
           label: 'sem',
           children: [
-            { value: 'sem_data', label: 'sem_data', count: 200, parentID: '4', },
-            { value: 'sem_config', label: 'sem_config', count: 200, parentID: '4', }
+            { value: 'sem_data', label: 'sem_data (400字段)' },
+            { value: 'sem_config', label: 'sem_config (100字段)' }
           ]
         },
         {
           value: '5',
           label: 'demo',
           children: [
-            { value: 'demo_table', label: 'demo_table', count: 200, parentID: '5', }
+            { value: 'demo_table', label: 'demo_table (200字段)' }
           ]
         }
-      ],
-      scanContentShow: true, // 扫描配置弹框
+      ], // 左侧复选数据
+      searchQuery: '', // 中间搜索
+      checkedTables: [], // 中间绑定数据
+      tables: [], // 中间数据
+      selectedItems: [], // 右侧数据
+      scanContentShow: false, // 扫描配置弹框
       treeOptions: [],
       drawerShow: false,
       samplingNum: 10,
@@ -476,13 +547,279 @@ export default {
     };
   },
   computed: {
+    filteredTables() {
+      return this.tables.filter(table => table.label.toLowerCase().includes(this.searchQuery.toLowerCase()));
+    },
+    selectedCount() {
+      return this.selectedItems.length;
+    },
+    fieldCount() {
+      return this.selectedItems.reduce((total, item) => total + item.fieldCount, 0);
+    },
   },
   created() {
     // this.queryParams.projectId = 0
+    // this.getProjectListEdit()
     this.gettreeOptionsList()
     this.getList()
   },
   methods: {
+    toggleMiddleOptions(option) {
+      if (this.checkedOptions.includes(option.value)) {
+        // 如果左侧复选框被选中，自动选中其对应的中间复选框
+        option.children.forEach(child => {
+          if (!this.checkedTables.includes(child.value)) {
+            this.checkedTables.push(child.value);
+            child.checked = true;
+          }
+        });
+      } else {
+        // 如果左侧复选框被取消选中，取消选中其对应的中间复选框
+        option.children.forEach(child => {
+          this.checkedTables = this.checkedTables.filter(tableValue => tableValue !== child.value);
+          child.checked = false;
+        });
+      }
+
+      this.updateCheckAllState();
+      this.updateMiddleCheckAllState();
+      this.updateLeftPanelState();
+      this.updateSelectedItems(); // 更新右侧数据
+    },
+    handleCheckAllChange(value) {
+      if (value) {
+        this.checkedOptions = this.options.map(option => option.value);
+        this.options.forEach(option => {
+          option.children.forEach(child => {
+            if (!this.checkedTables.includes(child.value)) {
+              this.checkedTables.push(child.value);
+              child.checked = true;
+            }
+          });
+        });
+      } else {
+        this.checkedOptions = [];
+        this.checkedTables = [];
+        this.options.forEach(option => {
+          option.children.forEach(child => {
+            child.checked = false;
+          });
+        });
+      }
+
+      this.updateMiddleCheckAllState();
+      this.updateLeftPanelState();
+      this.updateSelectedItems(); // 更新右侧数据
+    },
+    handleMiddleCheckAllChange(value) {
+      if (value) {
+        this.checkedTables = this.tables.map(table => table.value);
+        this.tables.forEach(table => {
+          table.checked = true;
+        });
+      } else {
+        this.checkedTables = [];
+        this.tables.forEach(table => {
+          table.checked = false;
+        });
+      }
+
+      this.updateCheckAllState();
+      this.updateMiddleCheckAllState();
+      this.updateLeftPanelState();
+      this.updateSelectedItems(); // 更新右侧数据
+    },
+    expandOption(option) {
+      console.log(option);
+
+      // 直接从 options 的 children 中获取数据并填充到 middle-panel 中
+      this.tables = option.children;
+      this.middleCheckVisible = true; // 显示中间全选复选框
+      this.updateMiddleCheckAllState();
+      this.updateSelectedItems(); // 更新右侧数据
+
+      // 设置当前活跃的选项
+      this.activeOption = option;
+    },
+    handleCheckedTablesChange(value) {
+      this.selectedItems = this.tables.filter(table => value.includes(table.value)).map(table => ({
+        value: table.value,
+        label: table.label,
+        fieldCount: parseInt(table.label.match(/\d+/)[0]) || 0
+      }));
+
+      // 更新左侧父节点复选框的状态
+      this.updateLeftPanelState();
+
+      // 更新右侧展示的数据
+      this.updateSelectedItems();
+
+      this.updateCheckAllState();
+      this.updateMiddleCheckAllState();
+    },
+    removeItem(item) {
+      this.checkedTables = this.checkedTables.filter(value => value !== item.value);
+      this.tables.find(table => table.value === item.value).checked = false;
+
+      // 更新右侧展示的数据
+      this.updateSelectedItems();
+
+      this.updateCheckAllState();
+      this.updateMiddleCheckAllState();
+      this.updateLeftPanelState();
+    },
+    clearSelection() {
+      this.checkedTables = [];
+      this.selectedItems = [];
+      this.checkAllMiddle = false;
+      this.checkedOptions = [];
+      this.options.forEach(option => {
+        option.children.forEach(child => {
+          child.checked = false;
+        });
+      });
+
+      // 更新右侧展示的数据
+      this.updateSelectedItems();
+
+      this.updateLeftPanelState();
+    },
+    /**
+     * 更新左侧全选复选框的状态
+     * 根据当前已选中的选项数量来决定左侧全选复选框的状态（选中、未选中）
+     */
+    updateCheckAllState() {
+      // 计算已选中的选项数量
+      const checkedCount = this.checkedOptions.length;
+      // 获取所有可选项的总数
+      const totalOptionsCount = this.options.length;
+
+      // 如果没有任何选项被选中，则将左侧全选复选框设置为未选中状态
+      if (checkedCount === 0) {
+        this.checkAll = false;
+      }
+      // 如果所有选项都被选中，则将左侧全选复选框设置为选中状态
+      else if (checkedCount === totalOptionsCount) {
+        this.checkAll = true;
+      }
+      // 如果部分选项被选中，则保持左侧全选复选框为未选中状态
+      else {
+        this.checkAll = false;
+      }
+    },
+    /**
+     * 更新中间面板的全选状态和半选状态
+     * 根据当前选中的子节点数量来决定中间面板的全选复选框和半选状态
+     */
+    updateMiddleCheckAllState() {
+      // 获取当前选中的子节点数量
+      const checkedCount = this.checkedTables.length;
+      // 获取中间面板中所有子节点的总数
+      const totalTablesCount = this.tables.length;
+
+      // 如果没有子节点被选中
+      if (checkedCount === 0) {
+        this.checkAllMiddle = false; // 中间全选复选框不选中
+        this.isIndeterminate = false; // 中间复选框不处于半选状态
+      }
+      // 如果所有子节点都被选中
+      else if (checkedCount === totalTablesCount) {
+        this.checkAllMiddle = true; // 中间全选复选框选中
+        this.isIndeterminate = false; // 中间复选框不处于半选状态
+      }
+      // 如果部分子节点被选中
+      else {
+        this.checkAllMiddle = false; // 中间全选复选框不选中
+        this.isIndeterminate = true; // 中间复选框处于半选状态
+      }
+    },
+    /**
+     * 更新左侧面板的状态
+     * 根据当前选中的子节点数量来决定左侧父节点的全选、半选状态和高亮显示
+     */
+    updateLeftPanelState() {
+      // 遍历所有左侧选项
+      for (let i = 0; i < this.options.length; i++) {
+        const option = this.options[i];
+        // 获取当前选项的所有子节点值
+        const childrenValues = option.children.map(child => child.value);
+        // 获取当前选中的子节点
+        const checkedChildren = this.checkedTables.filter(value => childrenValues.includes(value));
+
+        if (checkedChildren.length === 0) {
+          // 如果没有子节点被选中
+          this.checkedOptions = this.checkedOptions.filter(opt => opt !== option.value); // 移除该选项的选中状态
+          option.indeterminate = false; // 设置非半选状态
+        } else if (checkedChildren.length === option.children.length) {
+          // 如果所有子节点都被选中
+          if (!this.checkedOptions.includes(option.value)) {
+            this.checkedOptions.push(option.value); // 添加该选项到选中状态
+          }
+          option.indeterminate = false; // 设置非半选状态
+        } else {
+          // 如果部分子节点被选中
+          if (!this.checkedOptions.includes(option.value)) {
+            this.checkedOptions.push(option.value); // 添加该选项到选中状态
+          }
+          option.indeterminate = true; // 设置半选状态
+        }
+      }
+      // 更新左侧全选复选框的半选状态
+      this.isIndeterminateLeft = this.checkedOptions.length > 0 && this.checkedOptions.length < this.options.length;
+    },
+    /**
+     * 根据标签移除对应的子节点
+     * 通过标签找到父节点，然后移除该父节点下的所有子节点
+     * @param {string} label - 父节点的标签
+     */
+    removeItemByLabel(label) {
+      // 根据标签找到对应的父节点
+      const parentOption = this.options.find(option => option.label === label);
+      if (parentOption) {
+        // 遍历父节点的所有子节点并移除它们
+        parentOption.children.forEach(child => {
+          this.removeItem(child);
+        });
+      }
+    },
+    /**
+     * 更新选中的项目列表
+     * 根据已选中的表（checkedTables）更新右侧已选列表（selectedItems）
+     * 计算每个父节点的字段总数
+     */
+    updateSelectedItems() {
+      // 创建一个 Set 来存储选中的父节点标签，确保唯一性
+      const selectedParentLabels = new Set();
+      // 创建一个对象来存储每个父节点的字段总数
+      const fieldCountMap = {};
+
+      // 清空当前的选中项目列表
+      this.selectedItems = [];
+      // 遍历所有已选中的表
+      this.checkedTables.forEach(tableValue => {
+        // 根据表值找到对应的表对象
+        const table = this.tables.find(table => table.value === tableValue);
+        if (table) {
+          // 找到包含该表的父节点
+          const parentOption = this.options.find(option => option.children.some(child => child.value === tableValue));
+          if (parentOption) {
+            // 将父节点的标签添加到 Set 中
+            selectedParentLabels.add(parentOption.label);
+            // 初始化或累加该父节点的字段总数
+            if (!fieldCountMap[parentOption.label]) {
+              fieldCountMap[parentOption.label] = 0;
+            }
+            fieldCountMap[parentOption.label] += parseInt(table.label.match(/\d+/)[0]) || 0;
+          }
+        }
+      });
+
+      // 将 Set 转换为数组，并为每个父节点创建一个对象，包含标签和字段总数
+      this.selectedItems = Array.from(selectedParentLabels).map(label => ({
+        label: label,
+        fieldCount: fieldCountMap[label]
+      }));
+    },
     databaseTypeChange(val) {
       if (val == 'ORACLE') {
         this.isServiesNameRequired = true
@@ -546,15 +883,24 @@ export default {
     },
     businessNameFn(val) {
       this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
+      // nameTesting().then(res=>{
+      //   console.log(res);
+      // })
     },
     serviesNameInput(val) {
       this.form.connectionValue = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
+      // nameTesting().then(res=>{
+      //   console.log(res);
+      // })
     },
     targetIpRulesFn() {
 
     },
     importNameTestingFn(val) {
       this.importData.sourceName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
+      // nameTesting().then(res=>{
+      //   console.log(res);
+      // })
     },
     gettreeOptionsList() {
       this.mainLoading = true
@@ -721,8 +1067,129 @@ export default {
     handleChange(value) {
       this.radio = value
     },
+    deliveryStrategy() {
+      this.$confirm('您是否要一键下发策略？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        strategyAll().then((res => {
+          this.$message({
+            message: "一键下发策略成功",
+            duration: 5000,
+            type: 'success'
+          });
+
+        }))
+        // 用户点击确定按钮，执行相关操作
+      }).catch(() => {
+        // 用户点击了取消按钮，不做任何操作
+      });
+    },
+
+    databasesNum(name, id) {
+      this.$router.push({
+        path: "/risk/proxyUser",
+        query: { id: id, name: name },
+      });
+    },
+    addSubmitForm() {
+      this.$refs["addForm"].validate((valid) => {
+        if (valid) {
+          this.addForm.proxyDatabaseId = this.addUserId
+          usersAddI(this.addForm).then((response) => {
+            this.$message({
+              message: "添加成功",
+              duration: 3000,
+              type: 'success'
+            });
+            this.getList();
+          });
+        }
+      });
+
+    },
+    implementFn() {
+      let dataS = this.$refs.tableRef.selection
+      let flagList // 状态数据
+      if (dataS && dataS.length > 0) {
+        flagList = dataS.map(item => {
+          return item.state
+        })
+        if (flagList.includes('RUNNING')) {
+          this.$message({ message: '选中任务包含执行中任务，无法批量执行', type: 'warning' })
+          return
+        }
+        if (flagList.includes('COMPLETE')) {
+          this.$confirm(`选中任务包含已完成任务，重新执行任务，将会覆盖数据源上一次执行的所有结果`, '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            let ids = dataS.map(item => {
+              return item.id
+            })
+            let params = {
+              proxyIds: ids.join(',')
+            }
+            databaseMask(params).then(res => {
+              if (res.code == 200) {
+                this.$message.success(res.msg)
+                this.getList()
+              }
+            })
+          })
+          return
+        }
+        this.$confirm(`确定执行所选中的项吗`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let ids = dataS.map(item => {
+            return item.id
+          })
+          let params = {
+            proxyIds: ids.join(',')
+          }
+          databaseMask(params).then(res => {
+            if (res.code == 200) {
+              this.$message.success(res.msg)
+              this.getList()
+            }
+          })
+        })
+      } else {
+        this.$message({ message: '至少选择一条数据', type: 'warning' })
+      }
+    },
+    getProjectListEdit(key) {
+      if (key) {
+        key = key.trim();
+      }
+      let params = {
+        name: key,
+      };
+      getFrameworks(params).then((resp) => {
+        this.formProjectListEdit = resp.data;
+        let data = JSON.parse(JSON.stringify(this.formProjectListEdit))
+        this.selectProjectListEdit = data;
+        this.selectProjectListEdit.unshift({ name: "全部", id: 0 })
+        // if (this.formProjectListEdit == null) {
+        //   this.formProjectListEdit = this.projectList;
+        // }
+      });
+    },
+    selectProjectChangeEdit(e) {
+      this.projectNameEdit = e
+      // this.form.projectName = 
+      this.queryParams.projectId = e
+
+    },
+
     projectChangeEdit(e) {
       this.projectNameEdit = e
+      // this.form.projectName = 
       this.form.projectId = e
     },
     /** 查询数据库代理列表 */
@@ -810,6 +1277,16 @@ export default {
       this.reset();
       this.open = true;
       this.title = "添加数据库";
+    },
+    /** 修改按钮操作 */
+    handleUpdate(row) {
+      this.reset();
+      const id = row.id || this.ids
+      getProxys(id).then(response => {
+        this.form = response.data;
+        this.open = true;
+        this.title = "修改数据库";
+      });
     },
     /** 提交按钮 */
     submitForm() {
@@ -1014,6 +1491,18 @@ export default {
       // let res = await getListTables(data)
       this.scanContentShow = true
     },
+    confirmSelection() {
+      this.scanContentShow = false;
+      // 确保右侧已选列表中的内容正确
+      this.selectedItems = this.tables.filter(table => this.checkedTables.includes(table.value)).map(table => ({
+        value: table.value,
+        label: table.label,
+        fieldCount: parseInt(table.label.match(/\d+/)[0]) || 0
+      }));
+
+      // 更新右侧展示的数据
+      this.updateSelectedItems();
+    },
   }
 };
 </script>
@@ -1045,6 +1534,23 @@ input[aria-hidden=true] {
   text-align: left;
 }
 
+.spanClass {
+  position: absolute;
+  left: -58px;
+  color: red;
+  top: 1px;
+}
+
+.spanClass1 {
+  position: absolute;
+  left: -71px;
+  color: red;
+}
+
+.impShow {
+  text-align: center;
+}
+
 .success {
   color: #67c23a;
 }
@@ -1059,6 +1565,48 @@ input[aria-hidden=true] {
 
 .deleteCla /deep/ .el-dialog__body {
   padding-top: 0;
+}
+
+.getDiv {
+  display: inline-block;
+  margin-left: 5px;
+}
+
+.getDiv /deep/ .el-button {
+  width: 60px;
+  padding: 10px 13px
+}
+
+.agentClass {
+  width: 15px;
+  height: 15px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background-color: #13ce66;
+}
+
+.agentClassBack {
+  width: 15px;
+  height: 15px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background-color: #ffba00;
+}
+
+.agentERR {
+  margin: 0 auto;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: red;
+}
+
+.agentNONE {
+  margin: 0 auto;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: #ccc;
 }
 
 .addMsg /deep/ .el-input {
@@ -1122,4 +1670,108 @@ input[aria-hidden=true] {
   width: calc(100%);
 }
 
+.dialogClass /deep/ .el-drawer__body {
+  /* overflow: hidden!important; */
+}
+
+.data-selector {
+  display: flex;
+  height: 400px;
+}
+
+.combined-panel {
+  display: flex;
+  width: 100%;
+  margin: 10px;
+  flex-direction: row;
+  /* 确保是水平排列 */
+}
+
+.left-panel {
+  flex: 1;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  background-color: #fff;
+  margin-right: 10px;
+  /* 添加右侧间距 */
+}
+
+.middle-panel {
+  width: 55%;
+  padding: 10px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  background-color: #fff;
+  margin-right: 10px;
+  /* 添加右侧间距 */
+}
+
+.left-panel {
+  border-right: 1px solid #ebeef5;
+}
+
+.middle-panel {
+  border-left: 1px solid #ebeef5;
+}
+
+.right-panel {
+  width: calc(33.33% - 20px);
+  margin: 10px;
+}
+
+.middle-panel .el-input {
+  margin-bottom: 10px;
+}
+
+.right-panel ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.right-panel li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+}
+
+/* 添加复选框的上下外边距 */
+.left-panel /deep/ .el-checkbox,
+.middle-panel /deep/ .el-checkbox,
+.right-panel /deep/ .el-checkbox {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  display: block;
+  width: 100%;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.expand-icon {
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.combined-panel /deep/ .el-card__body {
+  display: flex !important;
+  width: 100%;
+}
+
+.option-item.selected {
+  background-color: #e6f7ff;
+  /* 高亮颜色 */
+}
+
+.leftCheckAll {
+  padding: 0 10px;
+}
+
+.option-item.active {
+  background-color: #e6f7ff;
+  /* 当前活跃的背景颜色 */
+}
 </style>
