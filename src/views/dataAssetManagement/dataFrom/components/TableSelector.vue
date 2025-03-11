@@ -8,11 +8,13 @@
                     <div class="canChoose_left">
                         <el-tree ref="tree" :data="options" show-checkbox node-key="value" :default-expand-all="true"
                             :default-checked-keys="[]" :props="defaultProps" :expand-on-click-node="false"
-                             @node-click="leftTreeClickFn">
+                            @node-click="leftTreeClickFn" filter :filter-node-method="filterNode"
+                            @check="leftTreeCheckFn">
                         </el-tree>
                     </div>
                     <div class="canChoose_right">
-                        <el-input style="margin-bottom: 10px;" placeholder="请输入表名" v-model="searchQuery" clearable>
+                        <el-input style="margin-bottom: 10px;" placeholder="请输入表名" v-model="searchQuery"
+                            @input="inputSearch" clearable>
                             <i slot="prefix" class="el-input__icon el-icon-search"></i>
                         </el-input>
                         <div id="aaa"></div>
@@ -25,13 +27,18 @@
             <!-- 右侧已选列表 -->
             <el-card class="right-panel">
                 <div slot="header" class="clearfix">
-                    <span>已选 ({{ selectedCount }}张数据表 + {{ fieldCount }}个字段)</span>
-                    <el-button style="float: right; padding: 3px 0" type="text" @click="clearSelection">清空</el-button>
+                    <span>已选 <span class="right-panel-text">({{ selectedItemsParent.length }}张表 + {{ fieldCount
+                            }}个字段)</span></span>
+                    <el-button style="float: right; padding: 3px 0;color: blue;" type="text"
+                        @click="clearSelection">清空</el-button>
                 </div>
                 <ul>
-                    <li v-for="item in options" v-show="isShowFn(item.value)" :key="item.label">
+                    <li v-for="item in selectedItemsParent" :key="item.value">
                         {{ item.label }}
-                        <el-button type="text" icon="el-icon-close" @click="removeItemByLabel(item.label)"></el-button>
+                        <div>
+                            <span style="margin-right: 10px;">已选{{ item.checkedCount }}张表</span>
+                            <el-button type="text" icon="el-icon-close" @click="removeItemByLabel(item)"></el-button>
+                        </div>
                     </li>
                 </ul>
             </el-card>
@@ -80,7 +87,7 @@ export default {
                             value: '3',
                             label: 'uim',
                             children: [
-                                { value: 'uim_user', label: 'uim_user', count: 200, parentID: '3', },
+                                { value: 'uim_user', label: 'uim_user', count: 200000000, parentID: '3', },
                                 { value: 'uim_role', label: 'uim_role', count: 200, parentID: '3', }
                             ]
                         },
@@ -109,45 +116,41 @@ export default {
             indeterminateKeys: [], // 用于存储半选状态的节点
             selectedItems: [], // 右侧数据】
             selectedItemsChild: [],// 右侧数据的子节点数据
+            selectedItemsParent: [],// 右側父節點
+            selectedItemsChildCount: [],// 右側傻逼阿季增加的无用数据展示
         };
     },
     mounted() {
         this.init()
     },
     computed: {
-        selectedCount() {
-            return this.selectedItems.length;
-        },
         fieldCount() {
             return this.selectedItemsChild.reduce((total, item) => total + item.count, 0);
         },
     },
     watch: {
-        filteredTables: {
-            handler(newVal) {
-                console.log(newVal);
 
-            },
-            deep: true // 深度监听
-        }
     },
     methods: {
-        init(){
-            this.$nextTick(()=>{
+        init() {
+            this.$nextTick(() => {
                 let aaa = document.getElementById('aaa')
-                const {left,top} = aaa.getBoundingClientRect()
+                const { left, top } = aaa.getBoundingClientRect()
                 let treeNode = document.querySelectorAll('.el-tree-node__children')
                 let padding = document.querySelectorAll('.el-tree-node__content')
-                                
-                padding.forEach((item, index)=>{
+
+                padding.forEach((item, index) => {
                     item.style.paddingLeft = 0
                 })
-                treeNode.forEach((item, index)=>{
-                    if(index > 0){
+                treeNode.forEach((item, index) => {
+                    if (index > 0) {
                         item.style.left = left + 'px'
                         item.style.top = top + 'px'
                         item.style.position = 'fixed'
                         item.style.visibility = 'hidden'
+                        item.style.width = '253px'
+                        item.style.maxHeight = '521px'
+
                     }
                 })
             })
@@ -187,20 +190,20 @@ export default {
         leftTreeClickFn(data, parmas, node) {
             if (data.value !== '0') {
                 let index
-                this.options[0].children.forEach((item,i)=>{
-                    if(item.value === data.value){
+                this.options[0].children.forEach((item, i) => {
+                    if (item.value === data.value) {
                         index = i
                     }
                 })
-                if(index !== undefined){
+                if (index !== undefined) {
                     let showtrue = document.querySelector('.el-tree-node__children').childNodes
-                    showtrue.forEach((item, i)=>{
-                        if(index == i){
+                    showtrue.forEach((item, i) => {
+                        if (index == i) {
                             item.querySelector('.el-tree-node__children').style.visibility = 'initial'
-                        }else {
+                        } else {
                             item.querySelector('.el-tree-node__children').style.visibility = 'hidden'
                         }
-})
+                    })
                 }
                 // let treeNode = document.querySelectorAll('.el-tree-node__children')
                 // treeNode.forEach((item, index)=>{
@@ -210,31 +213,64 @@ export default {
                 //     }
                 // })
             }
-        },        clearSelection() {
-            this.checkedTables = [];
-            this.selectedItems = [];
-            this.checkAllMiddle = false;
-            this.checkedOptions = [];
-            this.options.forEach(option => {
-                option.children.forEach(child => {
-                    child.checked = false;
-                });
-            });
+        },
+        clearSelection() {
+            this.selectedItemsParent = []
+            this.selectedItemsChild = []
+            this.$refs.tree.setCheckedKeys([])
         },
         /**
      * 根据标签移除对应的子节点
      * 通过标签找到父节点，然后移除该父节点下的所有子节点
-     * @param {string} label - 父节点的标签
+     * @param {string} value - 父节点
      */
-        removeItemByLabel(label) {
-            // 根据标签找到对应的父节点
-            const parentOption = this.options.find(option => option.label === label);
-            if (parentOption) {
-                // 遍历父节点的所有子节点并移除它们
-                parentOption.children.forEach(child => {
-                    this.removeItem(child);
-                });
+        removeItemByLabel(value) {
+            this.$refs.tree.setChecked(value, false)
+            let ids = value.children.forEach(item => this.$refs.tree.setChecked(item.value, false))
+            let stateList = this.$refs.tree.getHalfCheckedNodes().concat(...this.$refs.tree.getCheckedNodes())
+            stateList.checkedNodes = this.$refs.tree.getCheckedNodes()
+            stateList.halfCheckedNodes = this.$refs.tree.getHalfCheckedNodes()
+            this.leftTreeCheckFn(null, stateList)
+        },
+        leftTreeCheckFn(data, stateList) {
+            let parentList = []
+            let sonList = []
+            sonList = stateList.checkedNodes
+            parentList = stateList.checkedNodes.concat(stateList.halfCheckedNodes);
+            this.selectedItemsParent = parentList.filter(item => {
+                if (item.children && item.children.length && item.value !== '0') {
+                    return item
+                }
+            })
+            this.selectedItemsChild = sonList.filter(item => {
+                if (item.parentID) {
+                    return item
+                }
+            })
+            // 示例：获取特定父节点下的被选中子节点
+            this.selectedItemsParent.forEach((item) => {
+                item.checkedCount = this.getCheckedChildrenByParent(item.value, sonList).length;
+            })
+        },
+        inputSearch(val) {
+            this.$refs.tree.filter(val);
+        },
+        filterNode(value, data) {
+            if (!value) return true;
+            if (data.children && data.children.length) {
+                return true
+            } else {
+                return data.label.indexOf(value) !== -1;
             }
+        },
+        /**
+ * 获取特定节点下的被选中子节点
+ * @param {string} parentId - 父节点的 value
+ * @param {Array} checkedNodes - 所有被选中的节点
+ * @returns {Array} - 特定节点下的被选中子节点
+ */
+        getCheckedChildrenByParent(parentId, checkedNodes) {
+            return checkedNodes.filter(node => node.parentID === parentId);
         },
 
     }
@@ -247,12 +283,47 @@ export default {
     width: 100%;
     height: 600px;
     display: flex;
+
+}
+
+/deep/ ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+/deep/::-webkit-scrollbar-thumb {
+    background-color: #0003;
+    border-radius: 10px;
+    transition: all .2s ease-in-out;
+}
+
+/deep/::-webkit-scrollbar-track {
+    border-radius: 10px;
+}
+
+ul {
+    padding: 0;
+    /* 移除内边距 */
+    margin: 0;
+    /* 移除外边距 */
+    list-style: none;
+    /* 移除项目符号 */
+}
+
+li {
+    padding: 0;
+    /* 如果需要，也可以移除列表项的内边距 */
+    margin: 0;
+    /* 如果需要，也可以移除列表项的外边距 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .canChoose {
     width: 65%;
     height: 100%;
-    margin-right: 40px;
+    margin-right: 20px;
 }
 
 .canChoose_main {
@@ -263,10 +334,14 @@ export default {
 
 .canChoose_left {
     height: 100%;
+    overflow-y: auto;
     width: 45%;
     border-right: 2px solid #c7c7c7;
 }
-
+.canChoose_left /deep/ .el-tree-node__children {
+    height: 534px;
+    overflow-y: auto;
+ }
 /deep/.el-tree-node {
     height: 40px;
 }
@@ -292,6 +367,7 @@ export default {
 
 .left-panel /deep/.el-card__body {
     height: 100%;
+    padding: 10px;
 }
 
 .canChoose_right {
@@ -310,8 +386,13 @@ export default {
 }
 
 .dowmChoose {
-    width: 33%;
+    width: 40%;
     height: 100%;
+}
+
+.dowmChoose .el-card /deep/ .el-card__body {
+    max-height: 534px;
+    overflow-y: auto;
 }
 
 .left-panel {
@@ -327,7 +408,14 @@ export default {
 .right-panel {
     height: 100%;
 }
-/deep/ .el-tree-node__expand-icon,/deep/.expand-icon-box{
+
+/deep/ .el-tree-node__expand-icon,
+/deep/.expand-icon-box {
     display: none;
+}
+
+.right-panel-text {
+    color: #c4c4c4;
+    margin-left: 5px;
 }
 </style>
