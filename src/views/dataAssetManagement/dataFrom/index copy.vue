@@ -1488,7 +1488,7 @@ export default {
         connectionValue: this.form.connectionValue,
         databaseType: this.findDatabaseValueByName(this.form.databaseType)
       }
-      // let res = await getListTables(data)
+      let res = await getListTables(data)
       this.scanContentShow = true
     },
     confirmSelection() {

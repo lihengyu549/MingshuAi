@@ -10,6 +10,14 @@
                             :default-checked-keys="[]" :props="defaultProps" :expand-on-click-node="false"
                             @node-click="leftTreeClickFn" filter :filter-node-method="filterNode"
                             @check="leftTreeCheckFn">
+                            <div slot-scope="{ node }" class="tree-node">
+                                <el-tooltip :content="node.label" :disabled="isShowTooltip" :open-delay="300"
+                                    placement="top" effect="dark">
+                                    <span class="over-ellipsis" @mouseover="mouseOver($event)">
+                                        {{ node.label }}
+                                    </span>
+                                </el-tooltip>
+                            </div>
                         </el-tree>
                     </div>
                     <div class="canChoose_right">
@@ -50,8 +58,16 @@
 import { tree } from 'd3';
 
 export default {
+    name: "TableSelector",
+    props: {
+        scanContentTreeData: {
+            type: Array,
+            default: [],
+        },
+    },
     data() {
         return {
+            isShowTooltip: false,
             middleCheckVisible: false, // 新增属性，控制中间全选复选框的显示与隐藏
             checkAllMiddle: false, // 中间全选框
             isIndeterminate: false, // 中间半选数据
@@ -64,48 +80,7 @@ export default {
                     value: '0',
                     label: '全选',
                     children: [
-                        {
-                            value: '1',
-                            label: 'kms',
-                            children: [
-                                { value: 'kms_certificate', label: 'kms_certificate', count: 200, parentID: '1', },
-                                { value: 'ksm_config', label: 'ksm_config', count: 300, parentID: '1', },
-                                { value: 'ksm_dcit', label: 'ksm_dcit', count: 200, parentID: '1', },
-                                { value: 'kms_hadoop_key', label: 'kms_hadoop_key', count: 200, parentID: '1', },
-                                { value: 'kms_key_pair', label: 'kms_key_pair', count: 200, parentID: '1', }
-                            ]
-                        },
-                        {
-                            value: '2',
-                            label: 'scheduler',
-                            children: [
-                                { value: 'scheduler_task', label: 'scheduler_task', count: 200, parentID: '2', },
-                                { value: 'scheduler_log', label: 'scheduler_log', count: 200, parentID: '2', }
-                            ]
-                        },
-                        {
-                            value: '3',
-                            label: 'uim',
-                            children: [
-                                { value: 'uim_user', label: 'uim_user', count: 200000000, parentID: '3', },
-                                { value: 'uim_role', label: 'uim_role', count: 200, parentID: '3', }
-                            ]
-                        },
-                        {
-                            value: '4',
-                            label: 'sem',
-                            children: [
-                                { value: 'sem_data', label: 'sem_data', count: 200, parentID: '4', },
-                                { value: 'sem_config', label: 'sem_config', count: 200, parentID: '4', }
-                            ]
-                        },
-                        {
-                            value: '5',
-                            label: 'demo',
-                            children: [
-                                { value: 'demo_table', label: 'demo_table', count: 200, parentID: '5', }
-                            ]
-                        }
+
                     ]
                 }
             ],
@@ -120,12 +95,15 @@ export default {
             selectedItemsChildCount: [],// 右側傻逼阿季增加的无用数据展示
         };
     },
+    created() {
+        this.options[0].children.push(...this.scanContentTreeData);
+    },
     mounted() {
         this.init()
     },
     computed: {
         fieldCount() {
-            return this.selectedItemsChild.reduce((total, item) => total + item.count, 0);
+            return this.selectedItemsChild.reduce((total, item) => total + parseInt(item.count), 0);
         },
     },
     watch: {
@@ -227,7 +205,7 @@ export default {
         removeItemByLabel(value) {
             this.$refs.tree.setChecked(value, false)
             let ids = value.children.forEach(item => this.$refs.tree.setChecked(item.value, false))
-            let stateList = this.$refs.tree.getHalfCheckedNodes().concat(...this.$refs.tree.getCheckedNodes())
+            // let stateList = this.$refs.tree.getHalfCheckedNodes().concat(...this.$refs.tree.getCheckedNodes())
             stateList.checkedNodes = this.$refs.tree.getCheckedNodes()
             stateList.halfCheckedNodes = this.$refs.tree.getHalfCheckedNodes()
             this.leftTreeCheckFn(null, stateList)
@@ -257,22 +235,27 @@ export default {
         },
         filterNode(value, data) {
             if (!value) return true;
-            if (data.children && data.children.length) {
+            if (data.children) {
                 return true
             } else {
                 return data.label.indexOf(value) !== -1;
             }
         },
         /**
- * 获取特定节点下的被选中子节点
- * @param {string} parentId - 父节点的 value
- * @param {Array} checkedNodes - 所有被选中的节点
- * @returns {Array} - 特定节点下的被选中子节点
- */
+         * 获取特定节点下的被选中子节点
+         * @param {string} parentId - 父节点的 value
+         * @param {Array} checkedNodes - 所有被选中的节点
+         * @returns {Array} - 特定节点下的被选中子节点
+         */
         getCheckedChildrenByParent(parentId, checkedNodes) {
             return checkedNodes.filter(node => node.parentID === parentId);
         },
-
+        mouseOver(event) {
+            //在data里边记得要定义一个isShowTooltip默认为false
+            this.isShowTooltip =
+                event.currentTarget.scrollWidth <= event.currentTarget.clientWidth;
+            // console.log("222");
+        },
     }
 };
 </script>
@@ -338,10 +321,12 @@ li {
     width: 45%;
     border-right: 2px solid #c7c7c7;
 }
+
 .canChoose_left /deep/ .el-tree-node__children {
     height: 534px;
     overflow-y: auto;
- }
+}
+
 /deep/.el-tree-node {
     height: 40px;
 }
@@ -417,5 +402,23 @@ li {
 .right-panel-text {
     color: #c4c4c4;
     margin-left: 5px;
+}
+
+.tree-node {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    /* padding-right: 8px; */
+}
+
+.over-ellipsis {
+    display: block;
+    width: 140PX;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    -webkit-line-clamp: 1;
 }
 </style>

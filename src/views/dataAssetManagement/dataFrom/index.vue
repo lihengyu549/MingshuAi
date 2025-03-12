@@ -24,12 +24,12 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="主机信息" prop="aaaa">
-        <el-input v-model="queryParams.aaaa" @input="inputSearch" placeholder="请输入数据源名称" clearable
+      <el-form-item label="主机信息" prop="targetIp">
+        <el-input v-model="queryParams.targetIp" @input="inputSearch" placeholder="请输入数据源名称" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="扫描状态" prop="bbbb">
-        <el-select clearable v-model="queryParams.bbbb" @change="inputSearch" placeholder="请选择扫描状态">
+      <el-form-item label="扫描状态" prop="scanState">
+        <el-select clearable v-model="queryParams.scanState" @change="inputSearch" placeholder="请选择扫描状态">
           <el-option v-for="item in scanPlanStateList" :key="item.id" :label="item.name" :value="item.id">
           </el-option>
         </el-select>
@@ -53,21 +53,23 @@
     <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="数据源名称" align="center" prop="sourceName" />
+
+      <el-table-column label="主机信息" align="center" prop="targetIp">
+        <template slot-scope="scope">
+          <span>{{ scope.row.targetIp }}:{{ scope.row.targetPort }}</span>
+        </template>
+      </el-table-column>
+
       <el-table-column label="数据源类型" align="center" prop="databaseType" />
       <el-table-column label="来源业务系统" align="center" prop="businessName" />
       <el-table-column label="分类分级框架" align="center" prop="projectName" />
-      <el-table-column label="字段数量" align="center" prop="fieldCount" />
-      <el-table-column label="执行状态" align="center" prop="state">
 
+      <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
-          <span>{{ stateMsg(scope.row.state) }}</span>
+          <span>1221</span>
         </template>
       </el-table-column>
-      <el-table-column label="发布状态" align="center" prop="publishStatus">
-        <template slot-scope="scope">
-          <span>{{ scope.row.publishStatus == 0 ? '未发布' : '已发布' }}</span>
-        </template>
-      </el-table-column>
+      <el-table-column label="耗时" align="center" prop="scanTime" />
       <el-table-column label="更新时间" align="center" prop="updateTime" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -217,7 +219,11 @@
 
     <el-dialog class="deleteCla" title="扫描配置" :visible.sync="scanContentShow" width="850px" append-to-body
       :close-on-click-modal="false">
-      <TableSelector />
+      <TableSelector :scanContentTreeData="scanContentTreeData" ref="scanContentTreeRef" />
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="scanContentSubmitFn">确 定</el-button>
+        <el-button @click="importcancel">取 消</el-button>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -288,8 +294,9 @@ export default {
           ]
         }
       ],
-      scanContentShow: true, // 扫描配置弹框
+      scanContentShow: false, // 扫描配置弹框
       treeOptions: [],
+      scanContentTreeData:[],//// 扫描配置树数据
       drawerShow: false,
       samplingNum: 10,
       drawerData: null,
@@ -312,7 +319,7 @@ export default {
           label: 'Excel表'
         }
       ],
-      scanPlanStateList: [{ name: "全部", id: 0 }, { name: "扫描中", id: 1 }, { name: "扫描成功", id: 2 }, { name: "扫描失败", id: 3 }, { name: "待扫描", id: 4 }], // 扫描类型
+      scanPlanStateList: [ { name: "扫描中", id: 2}, { name: "扫描完成", id: 1 }, { name: "扫描失败", id: 3 }, { name: "待扫描", id:0 }], // 扫描类型
       databaseTypeList: [
         { name: "MYSQL", id: 0, value: "MYSQL" },
         { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
@@ -1009,11 +1016,30 @@ export default {
         targetUserPassword: this.form.targetUserPassword,
         connectionType: this.connectionType,
         connectionValue: this.form.connectionValue,
-        databaseType: this.findDatabaseValueByName(this.form.databaseType)
+        databaseType: this.findDatabaseValueByName(this.form.databaseType),
       }
-      // let res = await getListTables(data)
-      this.scanContentShow = true
+      let res = await getListTables(data)
+      if (res.data.option.length == 0) {
+        this.$message({ message: '暂无数据，请稍后再试', type: 'warning' })
+      } else {
+        this.scanContentTreeData = res.data.option
+        this.scanContentShow = true
+    }
     },
+    scanContentSubmitFn(){
+      let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item=>item.value !== '0'))
+      let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item=>item.value !== '0'))
+      let allData = [...checkedNodes,...halfCheckedNodes]
+      console.log(allData);
+      let params = {}
+      for(let item of allData){
+        if(item.children){
+          params[item.value] = item.label
+        }else{
+          if()
+        }
+      }
+    }
   }
 };
 </script>
