@@ -219,7 +219,7 @@
 
     <el-dialog class="deleteCla" title="扫描配置" :visible.sync="scanContentShow" width="850px" append-to-body
       :close-on-click-modal="false">
-      <TableSelector :scanContentTreeData="scanContentTreeData" ref="scanContentTreeRef" />
+      <TableSelector v-if="scanContentShow" :scanContentTreeData="scanContentTreeData" ref="scanContentTreeRef" />
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="scanContentSubmitFn">确 定</el-button>
         <el-button @click="importcancel">取 消</el-button>
@@ -1031,14 +1031,28 @@ export default {
       let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item=>item.value !== '0'))
       let allData = [...checkedNodes,...halfCheckedNodes]
       console.log(allData);
+      
       let params = {}
       for(let item of allData){
         if(item.children){
-          params[item.value] = item.label
+          let obj = {
+            [item.label]:[]
+          }
+          params = Object.assign(params,obj)
         }else{
-          if()
+          params[item.databaseName].push({
+            schemaName:item.schemaName,
+            tableName:item.label,
+            tableRemark:item.tableRemark,
+            databaseName:item.databaseName,
+            projectId:'',
+            agentServerId:'',
+            fieldCount:item.count,
+            fields:'',
+          })
         }
       }
+      console.log(params);
     }
   }
 };

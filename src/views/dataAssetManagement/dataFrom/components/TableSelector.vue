@@ -7,7 +7,7 @@
                 <div class="canChoose_main">
                     <div class="canChoose_left">
                         <el-tree ref="tree" :data="options" show-checkbox node-key="value" :default-expand-all="true"
-                            :default-checked-keys="[]" :props="defaultProps" :expand-on-click-node="false"
+                            :default-checked-keys="defaultArr" :props="defaultProps" :expand-on-click-node="false"
                             @node-click="leftTreeClickFn" filter :filter-node-method="filterNode"
                             @check="leftTreeCheckFn">
                             <div slot-scope="{ node }" class="tree-node">
@@ -67,6 +67,7 @@ export default {
     },
     data() {
         return {
+            defaultArr: ['0'],
             isShowTooltip: false,
             middleCheckVisible: false, // 新增属性，控制中间全选复选框的显示与隐藏
             checkAllMiddle: false, // 中间全选框
@@ -80,7 +81,6 @@ export default {
                     value: '0',
                     label: '全选',
                     children: [
-
                     ]
                 }
             ],
@@ -131,16 +131,14 @@ export default {
 
                     }
                 })
+                let stateList = {
+                    checkedNodes: [],
+                    halfCheckedNodes: []
+                }
+                stateList.checkedNodes = this.$refs.tree.getCheckedNodes()
+                stateList.halfCheckedNodes = this.$refs.tree.getHalfCheckedNodes()
+                this.leftTreeCheckFn(null, stateList)
             })
-        },
-        isShowFn(id) {
-            if (this.$refs.tree) {
-                const checkedData = this.$refs.tree.getCheckedNodes();// 选中数据
-                const CheckedNodes = this.$refs.tree.getHalfCheckedNodes();//半选数据
-            } else {
-                return false
-            }
-
         },
         // 获取 value 不等于 0 的所有 children
         getChildren(options) {
@@ -205,7 +203,11 @@ export default {
         removeItemByLabel(value) {
             this.$refs.tree.setChecked(value, false)
             let ids = value.children.forEach(item => this.$refs.tree.setChecked(item.value, false))
-            // let stateList = this.$refs.tree.getHalfCheckedNodes().concat(...this.$refs.tree.getCheckedNodes())
+            stateList = {
+                checkedNodes: [],
+                halfCheckedNodes: []
+            }
+            let stateList = this.$refs.tree.getHalfCheckedNodes().concat(...this.$refs.tree.getCheckedNodes())
             stateList.checkedNodes = this.$refs.tree.getCheckedNodes()
             stateList.halfCheckedNodes = this.$refs.tree.getHalfCheckedNodes()
             this.leftTreeCheckFn(null, stateList)
@@ -215,6 +217,10 @@ export default {
             let sonList = []
             sonList = stateList.checkedNodes
             parentList = stateList.checkedNodes.concat(stateList.halfCheckedNodes);
+            if (data && data.value == '0' && parentList.length === 0) {
+                this.defaultArr = []
+            }
+
             this.selectedItemsParent = parentList.filter(item => {
                 if (item.children && item.children.length && item.value !== '0') {
                     return item
