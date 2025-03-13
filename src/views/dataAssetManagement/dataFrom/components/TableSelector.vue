@@ -7,7 +7,7 @@
                 <div class="canChoose_main">
                     <div class="canChoose_left">
                         <el-tree ref="tree" :data="options" show-checkbox node-key="value" :default-expand-all="true"
-                            :default-checked-keys="defaultArr" :props="defaultProps" :expand-on-click-node="false"
+                            :default-checked-keys="treeCheckedData" :props="defaultProps" :expand-on-click-node="false"
                             @node-click="leftTreeClickFn" filter :filter-node-method="filterNode"
                             @check="leftTreeCheckFn">
                             <div slot-scope="{ node }" class="tree-node">
@@ -25,7 +25,7 @@
                             @input="inputSearch" clearable>
                             <i slot="prefix" class="el-input__icon el-icon-search"></i>
                         </el-input>
-                        <div id="aaa"></div>
+                        <div id="treeChildrenNode" style="margin-top: 20px;"></div>
                     </div>
                 </div>
 
@@ -64,10 +64,14 @@ export default {
             type: Array,
             default: [],
         },
+        treeCheckedData:{
+            type: Array,
+            default: [],
+        }
     },
     data() {
         return {
-            defaultArr: ['0'],
+            defaultArr: [],
             isShowTooltip: false,
             middleCheckVisible: false, // 新增属性，控制中间全选复选框的显示与隐藏
             checkAllMiddle: false, // 中间全选框
@@ -97,6 +101,9 @@ export default {
     },
     created() {
         this.options[0].children.push(...this.scanContentTreeData);
+        if(this.treeCheckedData.length > 0){
+
+        }
     },
     mounted() {
         this.init()
@@ -112,11 +119,10 @@ export default {
     methods: {
         init() {
             this.$nextTick(() => {
-                let aaa = document.getElementById('aaa')
-                const { left, top } = aaa.getBoundingClientRect()
+                let treeChildrenNode = document.getElementById('treeChildrenNode')
+                const { left, top } = treeChildrenNode.getBoundingClientRect()
                 let treeNode = document.querySelectorAll('.el-tree-node__children')
                 let padding = document.querySelectorAll('.el-tree-node__content')
-
                 padding.forEach((item, index) => {
                     item.style.paddingLeft = 0
                 })

@@ -66,16 +66,15 @@
 
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
-          <span>1221</span>
+          <span>{{ scanStateName?scanStateName:scope.row.scanState }}</span>
         </template>
       </el-table-column>
       <el-table-column label="耗时" align="center" prop="scanTime" />
       <el-table-column label="更新时间" align="center" prop="updateTime" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="resultLookFn(scope.row)">开始扫描</el-button>
-          <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
-            @click="resultReleaseFn(scope.row)">编辑</el-button>
+          <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)" :disabled="scope.row.scanState == 2">开始扫描</el-button>
+          <el-button size="mini" type="text" @click="scanContentEdit(scope.row)">编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -124,8 +123,9 @@
           <el-radio v-model="connectionType" label="0">SID</el-radio>
           <el-radio v-model="connectionType" label="1">Service Name</el-radio>
         </el-form-item>
-        <el-form-item label="扫描内容" prop="scanContentMsg" :rules="rules.scanContentMsg">
-          <div @click="scanContentFn()"><el-input v-model="form.scanContentMsg" readonly placeholder="点击获取扫描配置" /></div>
+        <el-form-item label="扫描内容" prop="tabelCheckedName" :rules="rules.tabelCheckedName">
+          <div @click="scanContentFn()"><el-input v-model="form.tabelCheckedName" readonly placeholder="点击获取扫描配置" />
+          </div>
         </el-form-item>
         <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
           <el-input v-model="form.businessName" maxlength="50" @input="businessNameFn(form.businessName)"
@@ -217,12 +217,12 @@
       <Result :treeOptions="treeOptions" :drawerData="drawerData" />
     </el-drawer>
 
-    <el-dialog class="deleteCla" title="扫描配置" :visible.sync="scanContentShow" width="850px" append-to-body
+    <el-dialog class="deleteCla" title="扫描配置" v-loading="scanContentLoading" :visible.sync="scanContentShow" width="850px" append-to-body
       :close-on-click-modal="false">
-      <TableSelector v-if="scanContentShow" :scanContentTreeData="scanContentTreeData" ref="scanContentTreeRef" />
+      <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData" :scanContentTreeData="scanContentTreeData" ref="scanContentTreeRef" />
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="scanContentSubmitFn">确 定</el-button>
-        <el-button @click="importcancel">取 消</el-button>
+        <el-button @click="scanContentShow = false">取 消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -247,56 +247,15 @@ import TableSelector from './components/TableSelector.vue'
 import Vue from 'vue';
 export default {
   name: "Proxys",
-  components: { Result,TableSelector,},
+  components: { Result, TableSelector, },
   data() {
     return {
-      options: [
-        {
-          value: '1',
-          label: 'kms',
-          children: [
-            { value: 'kms_certificate', label: 'kms_certificate', count: 200, parentID: '1', },
-            { value: 'ksm_config', label: 'ksm_config', count: 300, parentID: '1', },
-            { value: 'ksm_dcit', label: 'ksm_dcit', count: 200, parentID: '1', },
-            { value: 'kms_hadoop_key', label: 'kms_hadoop_key', count: 200, parentID: '1', },
-            { value: 'kms_key_pair', label: 'kms_key_pair', count: 200, parentID: '1', }
-          ]
-        },
-        {
-          value: '2',
-          label: 'scheduler',
-          children: [
-            { value: 'scheduler_task', label: 'scheduler_task', count: 200, parentID: '2', },
-            { value: 'scheduler_log', label: 'scheduler_log', count: 200, parentID: '2', }
-          ]
-        },
-        {
-          value: '3',
-          label: 'uim',
-          children: [
-            { value: 'uim_user', label: 'uim_user', count: 200, parentID: '3', },
-            { value: 'uim_role', label: 'uim_role', count: 200, parentID: '3', }
-          ]
-        },
-        {
-          value: '4',
-          label: 'sem',
-          children: [
-            { value: 'sem_data', label: 'sem_data', count: 200, parentID: '4', },
-            { value: 'sem_config', label: 'sem_config', count: 200, parentID: '4', }
-          ]
-        },
-        {
-          value: '5',
-          label: 'demo',
-          children: [
-            { value: 'demo_table', label: 'demo_table', count: 200, parentID: '5', }
-          ]
-        }
-      ],
       scanContentShow: false, // 扫描配置弹框
+      scanStateName:false,// 扫描中展示
+      scanContentLoading:false,
       treeOptions: [],
-      scanContentTreeData:[],//// 扫描配置树数据
+      treeCheckedData:[],//树节点已选中数据
+      scanContentTreeData: [],//// 扫描配置树数据
       drawerShow: false,
       samplingNum: 10,
       drawerData: null,
@@ -319,7 +278,7 @@ export default {
           label: 'Excel表'
         }
       ],
-      scanPlanStateList: [ { name: "扫描中", id: 2}, { name: "扫描完成", id: 1 }, { name: "扫描失败", id: 3 }, { name: "待扫描", id:0 }], // 扫描类型
+      scanPlanStateList: [{ name: "扫描中", id: 2 }, { name: "扫描完成", id: 1 }, { name: "扫描失败", id: 3 }, { name: "待扫描", id: 0 }], // 扫描类型
       databaseTypeList: [
         { name: "MYSQL", id: 0, value: "MYSQL" },
         { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
@@ -390,6 +349,7 @@ export default {
         projectId: null,
         sourceName: '',
         databaseType: '',
+        tabels: [],
       },
       connectionType: '1',
       addForm: {},
@@ -479,7 +439,7 @@ export default {
           { required: true, message: "请选择导入文件", trigger: "blur" },
         ],
       },
-      middleCheckVisible: false, // 新增属性，控制中间全选复选框的显示与隐藏
+      tabelCheckedName: '',
     };
   },
   computed: {
@@ -978,9 +938,19 @@ export default {
         this.$message({ message: '至少选择一条数据', type: 'warning' })
       }
     },
-    resultLookFn(row) {
-      if (row.state == 'RUNNING') {
-        this.$message({ message: '当前状态为运行中，无法查看', type: 'warning' })
+    scanStateClickFn(row) {
+      if (row.scanState != 0) {
+        this.$confirm(`再次扫描将会覆盖之前的所有扫描结果，确定继续吗？`, '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.scanStateName='扫描中'
+            // aaaa(params).then(res=>{
+            //   this.scanStateName = false
+            //   this.getList()
+            // })
+          })
         return
       }
       if (row.publishStatus == 0) {
@@ -990,69 +960,73 @@ export default {
         this.$router.push({ name: 'ProtectTableField', params: row })
       }
     },
-    resultReleaseFn(row) {
-      if (row.state == 'RUNNING') {
-        this.$message({ message: '当前状态为运行中，无法发布', type: 'warning' })
-        return
-      }
-      this.loading = true
-      publish(row.id).then(res => {
-        if (res.code == 200) {
-          this.$message({ message: res.msg, type: 'success' })
-          this.getList()
-          this.loading = false
-        }
+    scanContentEdit(row) {
+      this.form = row
+      this.open = true
+      this.scanContentLoading = true
+      bbbb(params).then(res=>{
+        this.scanContentLoading = false
+        this.treeCheckedData = ['0']
       })
-        .catch(err => {
-          this.loading = false
-        })
+      // if (row.state == 'RUNNING') {
+      //   this.$message({ message: '当前状态为运行中，无法发布', type: 'warning' })
+      //   return
+      // }
+      // this.form = row
     },
     // 扫描内容点击事件
     async scanContentFn() {
-      let data = {
-        targetIp: this.form.targetIp,
-        targetPort: this.form.targetPort,
-        targetUserName: this.form.targetUserName,
-        targetUserPassword: this.form.targetUserPassword,
-        connectionType: this.connectionType,
-        connectionValue: this.form.connectionValue,
-        databaseType: this.findDatabaseValueByName(this.form.databaseType),
-      }
-      let res = await getListTables(data)
-      if (res.data.option.length == 0) {
-        this.$message({ message: '暂无数据，请稍后再试', type: 'warning' })
-      } else {
-        this.scanContentTreeData = res.data.option
-        this.scanContentShow = true
-    }
-    },
-    scanContentSubmitFn(){
-      let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item=>item.value !== '0'))
-      let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item=>item.value !== '0'))
-      let allData = [...checkedNodes,...halfCheckedNodes]
-      console.log(allData);
-      
-      let params = {}
-      for(let item of allData){
-        if(item.children){
-          let obj = {
-            [item.label]:[]
+      this.$refs["form"].validate(async valid => {
+        if (valid) {
+          let data = {
+            targetIp: this.form.targetIp,
+            targetPort: this.form.targetPort,
+            targetUserName: this.form.targetUserName,
+            targetUserPassword: this.form.targetUserPassword,
+            connectionType: this.connectionType,
+            connectionValue: this.form.connectionValue,
+            databaseType: this.findDatabaseValueByName(this.form.databaseType),
           }
-          params = Object.assign(params,obj)
-        }else{
+          let res = await getListTables(data)
+          if (res.data.option.length == 0) {
+            this.$message({ message: '暂无数据，请稍后再试', type: 'warning' })
+          } else {
+            this.scanContentTreeData = res.data.option
+            this.scanContentShow = true
+          }
+        }
+      })
+
+    },
+    scanContentSubmitFn() {
+      let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
+      let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
+      let allData = [...checkedNodes, ...halfCheckedNodes]
+
+      let params = {}
+      for (let item of allData) {
+        if (item.children) {
+          let obj = {
+            [item.label]: []
+          }
+          this.form.targetDatabase.push(item.label)
+            params = Object.assign(params, obj)
+        } else {
           params[item.databaseName].push({
-            schemaName:item.schemaName,
-            tableName:item.label,
-            tableRemark:item.tableRemark,
-            databaseName:item.databaseName,
-            projectId:'',
-            agentServerId:'',
-            fieldCount:item.count,
-            fields:'',
+            schemaName: item.schemaName,
+            tableName: item.label,
+            tableRemark: item.tableRemark,
+            databaseName: item.databaseName,
+            projectId: '',
+            agentServerId: '',
+            fieldCount: item.count,
+            fields: '',
           })
         }
       }
-      console.log(params);
+      this.form.tabels = params
+      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedItemsParent.length}张表 共${this.$refs.scanContentTreeRef.fieldCount}个字段`
+      this.scanContentShow = false
     }
   }
 };
@@ -1161,5 +1135,4 @@ input[aria-hidden=true] {
 .addSelectClass /deep/ .el-select {
   width: calc(100%);
 }
-
 </style>

@@ -407,7 +407,7 @@ export default {
           { required: true, message: "请输入数据库用户名称", trigger: "change" },
         ],
         targetDatabase: [
-          { required: true, message: "请选择数据库名称", trigger: "change" },
+          { required: true, message: "请选择数据库名称", trigger: "blur" },
         ],
         targetUserPassword: [
           { required: true, message: '请输入密码', trigger: 'blur' }
