@@ -237,10 +237,8 @@ import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys,
   importExcel, publish, createProxys, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI
 } from "@/api/system/proxys";
-import { listAllProject, } from "@/api/system/project";
 import {
-  treeListI, categoryImport, getAttachData, attachStatus,
-  forceLogout, updataAttach, nameTesting, addData, getFrameworks, checkSourceName
+  forceLogout, nameTesting, dataSacn, getFrameworks, checkSourceName,getDatabaseAndTablesById
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import TableSelector from './components/TableSelector.vue'
@@ -946,25 +944,21 @@ export default {
             type: 'warning'
           }).then(() => {
             this.scanStateName='扫描中'
-            // aaaa(params).then(res=>{
-            //   this.scanStateName = false
-            //   this.getList()
-            // })
+            dataSacn({ proxyIds: row.id }).then(res=>{
+              this.scanStateName = false
+              this.getList()
+            })
           })
-        return
-      }
-      if (row.publishStatus == 0) {
-        this.drawerData = row
-        this.drawerShow = true
-      } else {
-        this.$router.push({ name: 'ProtectTableField', params: row })
+          .catch(()=>{
+            this.scanStateName = '扫描失败'
+          })
       }
     },
     scanContentEdit(row) {
       this.form = row
       this.open = true
       this.scanContentLoading = true
-      bbbb(params).then(res=>{
+      getDatabaseAndTablesById(row.id).then(res=>{
         this.scanContentLoading = false
         this.treeCheckedData = ['0']
       })

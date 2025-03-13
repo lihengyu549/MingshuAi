@@ -173,3 +173,22 @@ export function insertCategoryTreeI (data) {
     data: data
   })
 }
+
+// 扫描数据源
+export function dataSacn (data) {
+  return request({
+    url: '/system/proxy/database/dataSacn',
+    method: 'post',
+    headers: {
+      "Content-Type":"multipart/form-data; ",
+    },
+    params: data,
+  })
+}
+// 查询指定数据源信息
+export function getDatabaseAndTablesById (data) {
+  return request({
+    url: `/system/proxy/database/getDatabaseAndTablesById?id=${data}`,
+    method: 'get',
+  })
+}
