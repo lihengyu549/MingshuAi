@@ -56,7 +56,7 @@
 
       <el-table-column label="主机信息" align="center" prop="targetIp">
         <template slot-scope="scope">
-          <span>{{ scope.row.targetIp }}:{{ scope.row.targetPort }}</span>
+          <span>{{ scope.row.targetIp?scope.row.targetIp+':':scope.row.targetIp }}{{ scope.row.targetPort }}</span>
         </template>
       </el-table-column>
 
@@ -66,7 +66,10 @@
 
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
-          <span>{{stateMsg(scope.row.scanState) }}</span>
+          <div style="display: flex; align-items: center;justify-content: center;">
+            <img style="display: block; width: 20px;margin-right: 10px;" :src="imgSrc[scope.row.scanState]" alt="">
+            <span> {{ stateMsg(scope.row.scanState) }}</span>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="耗时(毫秒)" align="center" prop="scanTime" />
@@ -74,8 +77,9 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
-            :disabled="scanStateBtnDisabled">开始扫描</el-button>
-          <el-button size="mini" type="text" @click="scanContentEdit(scope.row)">编辑</el-button>
+            :disabled="scope.row.scanState == 'RUNNING'||scope.row.databaseType == 'Excel'">开始扫描</el-button>
+          <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
+            @click="scanContentEdit(scope.row)">编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -142,7 +146,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="connectTest('form')">测试</el-button>
+        <el-button @click="open = false">取消</el-button>
       </div>
     </el-dialog>
     <!-- 数据扫描 -->
@@ -178,7 +182,7 @@
       </div>
     </el-dialog>
     <el-dialog title="新增Excel文件" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"
-      append-to-body :close-on-click-modal="false">
+      append-to-body :close-on-click-modal="true">
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px">
         <el-form-item label="数据源名称" prop="sourceName">
@@ -240,11 +244,12 @@ import {
   importExcel, publish, createProxys, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI
 } from "@/api/system/proxys";
 import {
-  forceLogout, nameTesting, dataSacn, getFrameworks, checkSourceName, getDatabaseAndTablesById
+  forceLogout, nameTesting, dataSacn, getFrameworks, checkSourceName, getDatabaseAndTablesById, updateDatabaseAndTables
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import TableSelector from './components/TableSelector.vue'
 import Vue from 'vue';
+import { js } from "js-beautify";
 export default {
   name: "Proxys",
   components: { Result, TableSelector, },
@@ -269,6 +274,12 @@ export default {
       markingVisible: false,
       addUserId: 0,
       mainLoading: false,
+      imgSrc: {
+        'ERR': require('@/assets/stateImg/stateDanger.png'),
+        'COMPLETE': require('@/assets/stateImg/stateSuess.png'),
+        'NONE': require('@/assets/stateImg/stateWaiting.png'),
+        'RUNNING': require('@/assets/stateImg/stateing.png'),
+      },
       targetDataList: [],
       dataYTpeList: [
         {
@@ -279,7 +290,6 @@ export default {
           label: 'Excel表'
         }
       ],
-      scanPlanStateList: [{ name: "扫描中", id: 2 }, { name: "扫描完成", id: 1 }, { name: "扫描失败", id: 3 }, { name: "待扫描", id: 0 }], // 扫描类型
       databaseTypeList: [
         { name: "MYSQL", id: 0, value: "MYSQL" },
         { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
@@ -736,7 +746,13 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.id != null) {
-            updateProxys(this.form).then(response => {
+            let data = JSON.parse(JSON.stringify(this.form))
+            delete data.projectName
+            data.connectionType = this.connectionType
+            data.id = this.form.id
+            data.targetDatabase = JSON.stringify(data.targetDatabase)
+            data.databaseType = this.findDatabaseValueByName(this.form.databaseType)
+            updateDatabaseAndTables(data).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
@@ -771,7 +787,11 @@ export default {
     },
     handleEcelFn() {
       this.importData.importShow = true
-      this.resetForm("importData");
+      this.importData.categoryId = ''
+      this.importData.importFile = ''
+      this.importData.sourceName = ''
+      this.importData.businessName = ''
+      this.importData.fileList = []
     },
     handleFileChange(file, fileList) {
       this.importData.importFile = file.raw.name
@@ -846,7 +866,7 @@ export default {
       let flagList // 为1 代表选中数据中有执行中的，2为没有执行中，但是有执行完成的
       if (dataS && dataS.length > 0) {
         flagList = dataS.map(item => {
-          return item.state
+          return item.scanState
         })
         if (flagList.includes('RUNNING')) {
           this.$message({ message: '选中任务包含执行中任务，无法批量删除', type: 'warning' })
@@ -900,8 +920,16 @@ export default {
         }).then(() => {
           dataSacn({ proxyIds: row.id }).then(async res => {
             // this.scanStateName = false
-           await this.getList()
+            await this.getList()
+          })
         })
+          .catch(() => {
+            this.getList()
+          })
+      } else {
+        dataSacn({ proxyIds: row.id }).then(async res => {
+          // this.scanStateName = false
+          await this.getList()
         })
           .catch(() => {
             this.getList()
@@ -909,28 +937,34 @@ export default {
       }
     },
     scanContentEdit(row) {
-      this.form = row
-      this.open = true
-      this.scanContentLoading = true
-      getDatabaseAndTablesById(row.id).then(res => {
-        console.log(res);
-        
-        this.scanContentLoading = false
-        if(res.data && res.data.options && res.data.options.length){
-          this.treeCheckedData = res.data.options.map(item=>{
-            return item.value            
-          })
-          console.log(this.treeCheckedData);
-          
-        }else {
-          this.treeCheckedData = ['0']
-        }
-      })
-      // if (row.state == 'RUNNING') {
-      //   this.$message({ message: '当前状态为运行中，无法发布', type: 'warning' })
-      //   return
-      // }
-      // this.form = row
+      if (row.databaseType == "Excel") {
+        this.importData.importFile = row.importFile
+        this.importData.categoryId = row.categoryId
+        this.importData.id = row.id
+        this.importData.sourceName = row.sourceName
+        this.importData.businessName = row.businessName
+        this.importData.importShow = true
+      } else {
+        this.form = JSON.parse(JSON.stringify(row))
+        this.form.tabelCheckedName = row.scanContent
+        this.open = true
+        this.scanContentLoading = true
+        getDatabaseAndTablesById(row.id).then(res => {
+          this.scanContentLoading = false
+          if (res.data && res.data.options && res.data.options.length) {
+            this.treeCheckedData = res.data.options.map(item => {
+              return item.value
+            })
+          } else {
+            this.treeCheckedData = ['0']
+          }
+        })
+        // if (row.state == 'RUNNING') {
+        //   this.$message({ message: '当前状态为运行中，无法发布', type: 'warning' })
+        //   return
+        // }
+        // this.form = row
+      }
     },
     // 扫描内容点击事件
     async scanContentFn() {
@@ -960,6 +994,7 @@ export default {
       let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
       let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
       let allData = [...checkedNodes, ...halfCheckedNodes]
+      
       let targetDatabaseArr = []
       let params = {}
       for (let item of allData) {
@@ -987,7 +1022,7 @@ export default {
       this.form.tabels = params
       this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedItemsParent.length}张表 共${this.$refs.scanContentTreeRef.fieldCount}个字段`
       this.scanContentShow = false
-    }
+    },
   }
 };
 </script>

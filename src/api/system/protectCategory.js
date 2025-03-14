@@ -192,3 +192,12 @@ export function getDatabaseAndTablesById (data) {
     method: 'get',
   })
 }
+// 修改数据库和指定表数据
+
+export function updateDatabaseAndTables (data) {
+  return request({
+    url: `/system/proxy/database/updateDatabaseAndTables`,
+    method: 'post',
+    data:data
+  })
+}
