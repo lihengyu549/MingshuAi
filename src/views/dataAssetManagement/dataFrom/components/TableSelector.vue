@@ -101,9 +101,6 @@ export default {
     },
     created() {
         this.options[0].children.push(...this.scanContentTreeData);
-        if(this.treeCheckedData.length > 0){
-
-        }
     },
     mounted() {
         this.init()

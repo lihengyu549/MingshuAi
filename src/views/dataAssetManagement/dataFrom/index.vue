@@ -30,7 +30,7 @@
       </el-form-item>
       <el-form-item label="扫描状态" prop="scanState">
         <el-select clearable v-model="queryParams.scanState" @change="inputSearch" placeholder="请选择扫描状态">
-          <el-option v-for="item in scanPlanStateList" :key="item.id" :label="item.name" :value="item.id">
+          <el-option v-for="item in executeStatus" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
@@ -66,14 +66,15 @@
 
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
-          <span>{{ scanStateName?scanStateName:scope.row.scanState }}</span>
+          <span>{{stateMsg(scope.row.scanState) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="耗时" align="center" prop="scanTime" />
+      <el-table-column label="耗时(毫秒)" align="center" prop="scanTime" />
       <el-table-column label="更新时间" align="center" prop="updateTime" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)" :disabled="scope.row.scanState == 2">开始扫描</el-button>
+          <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
+            :disabled="scanStateBtnDisabled">开始扫描</el-button>
           <el-button size="mini" type="text" @click="scanContentEdit(scope.row)">编辑</el-button>
         </template>
       </el-table-column>
@@ -217,9 +218,10 @@
       <Result :treeOptions="treeOptions" :drawerData="drawerData" />
     </el-drawer>
 
-    <el-dialog class="deleteCla" title="扫描配置" v-loading="scanContentLoading" :visible.sync="scanContentShow" width="850px" append-to-body
-      :close-on-click-modal="false">
-      <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData" :scanContentTreeData="scanContentTreeData" ref="scanContentTreeRef" />
+    <el-dialog class="deleteCla" title="扫描配置" v-loading="scanContentLoading" :visible.sync="scanContentShow"
+      width="850px" append-to-body :close-on-click-modal="false">
+      <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData"
+        :scanContentTreeData="scanContentTreeData" ref="scanContentTreeRef" />
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="scanContentSubmitFn">确 定</el-button>
         <el-button @click="scanContentShow = false">取 消</el-button>
@@ -238,7 +240,7 @@ import {
   importExcel, publish, createProxys, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI
 } from "@/api/system/proxys";
 import {
-  forceLogout, nameTesting, dataSacn, getFrameworks, checkSourceName,getDatabaseAndTablesById
+  forceLogout, nameTesting, dataSacn, getFrameworks, checkSourceName, getDatabaseAndTablesById
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import TableSelector from './components/TableSelector.vue'
@@ -249,10 +251,11 @@ export default {
   data() {
     return {
       scanContentShow: false, // 扫描配置弹框
-      scanStateName:false,// 扫描中展示
-      scanContentLoading:false,
+      scanStateName: false,// 扫描中展示
+      scanContentLoading: false,
       treeOptions: [],
-      treeCheckedData:[],//树节点已选中数据
+      scanStateBtnDisabled: false,// 扫描按钮禁用条件
+      treeCheckedData: [],//树节点已选中数据
       scanContentTreeData: [],//// 扫描配置树数据
       drawerShow: false,
       samplingNum: 10,
@@ -296,16 +299,16 @@ export default {
       executeStatus: [
         {
           value: 'COMPLETE',
-          label: '执行完成'
+          label: '扫描完成'
         }, {
           value: 'RUNNING',
-          label: '执行中'
+          label: '扫描中'
         }, {
           value: 'NONE',
-          label: '待执行'
+          label: '待扫描'
         }, {
           value: 'ERR',
-          label: '执行失败'
+          label: '扫描失败'
         }
       ],
       formProjectListEdit: [],
@@ -391,19 +394,18 @@ export default {
           },
         ],
         targetPort: [
-          { required: true, message: "请输入端口号", trigger: "change" },
+          { required: true, message: "请输入端口号", trigger: "blur" },
           {
             pattern:
               /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
             message:
               "请输入0~65535之间的5个数字",
           },
-
-          {
-            min: 1,
-            max: 5,
-            message: "长度在 1 ~ 5 个字符",
-          },
+          // {
+          //   min: 1,
+          //   max: 5,
+          //   message: "长度在 1 ~ 5 个字符",
+          // },
         ],
       },
       importDataLoading: false,
@@ -528,14 +530,6 @@ export default {
         this.mainLoading = false
       });
     },
-    targetDatabaseChange(value) {
-      if (value.includes('all')) {
-        this.form.targetDatabase = this.targetDataList.map(item => item.value);
-      } else {
-        // 移除全选选项
-        this.form.targetDatabase = value.filter(val => val !== 'all');
-      }
-    },
     findDatabaseValueByName(name) {
       let value;
       for (let i = 0; i < this.databaseTypeList.length; i++) {
@@ -545,46 +539,7 @@ export default {
       }
       return value
     },
-    // 获取数据库名称
-    getDatabaseName() {
-      this.targetDataList = []
-      this.showSucType = 0
-      this.form.targetDatabase = false
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          let data = {
-            targetIp: this.form.targetIp,
-            targetPort: this.form.targetPort,
-            targetUserName: this.form.targetUserName,
-            targetUserPassword: this.form.targetUserPassword,
-            connectionType: this.connectionType,
-            connectionValue: this.form.connectionValue,
-            databaseType: this.findDatabaseValueByName(this.form.databaseType)
-            // targetIp: "192.168.3.14",
-            // targetPort: "3306",
-            // targetUserName: "root",
-            // targetUserPassword: "Mysql123!@#",
-            // databaseType: "MYSQL"
-          }
-          databaseListI(data).then((res => {
-            if (res.code == 200) {
-              this.targetDataList = []
-              let list = res.data
-              for (let i = 0; i < list.length; i++) {
-                this.targetDataList.push({ id: i, value: list[i], label: list[i] })
-              }
-              this.$message({
-                message: res.msg,
-                type: 'success'
-              });
-              this.$refs.selectRef.toggleMenu()
-            }
-          }))
-          this.form.targetDatabase = ''
-        }
-      })
 
-    },
     handleInput(e) {
       this.samplingNum = e
     },
@@ -937,20 +892,19 @@ export default {
       }
     },
     scanStateClickFn(row) {
-      if (row.scanState != 0) {
+      if (row.scanState == 'COMPLETE') {
         this.$confirm(`再次扫描将会覆盖之前的所有扫描结果，确定继续吗？`, '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            this.scanStateName='扫描中'
-            dataSacn({ proxyIds: row.id }).then(res=>{
-              this.scanStateName = false
-              this.getList()
-            })
-          })
-          .catch(()=>{
-            this.scanStateName = '扫描失败'
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          dataSacn({ proxyIds: row.id }).then(async res => {
+            // this.scanStateName = false
+           await this.getList()
+        })
+        })
+          .catch(() => {
+            this.getList()
           })
       }
     },
@@ -958,9 +912,19 @@ export default {
       this.form = row
       this.open = true
       this.scanContentLoading = true
-      getDatabaseAndTablesById(row.id).then(res=>{
+      getDatabaseAndTablesById(row.id).then(res => {
+        console.log(res);
+        
         this.scanContentLoading = false
-        this.treeCheckedData = ['0']
+        if(res.data && res.data.options && res.data.options.length){
+          this.treeCheckedData = res.data.options.map(item=>{
+            return item.value            
+          })
+          console.log(this.treeCheckedData);
+          
+        }else {
+          this.treeCheckedData = ['0']
+        }
       })
       // if (row.state == 'RUNNING') {
       //   this.$message({ message: '当前状态为运行中，无法发布', type: 'warning' })
@@ -996,16 +960,17 @@ export default {
       let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
       let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
       let allData = [...checkedNodes, ...halfCheckedNodes]
-
+      let targetDatabaseArr = []
       let params = {}
       for (let item of allData) {
         if (item.children) {
           let obj = {
             [item.label]: []
           }
-          this.form.targetDatabase.push(item.label)
-            params = Object.assign(params, obj)
+          targetDatabaseArr.push(item.label)
+          params = Object.assign(params, obj)
         } else {
+          this.treeCheckedData.push(item.value)
           params[item.databaseName].push({
             schemaName: item.schemaName,
             tableName: item.label,
@@ -1018,6 +983,7 @@ export default {
           })
         }
       }
+      this.form.targetDatabase = targetDatabaseArr
       this.form.tabels = params
       this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedItemsParent.length}张表 共${this.$refs.scanContentTreeRef.fieldCount}个字段`
       this.scanContentShow = false
