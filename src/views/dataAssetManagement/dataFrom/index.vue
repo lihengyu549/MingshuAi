@@ -24,8 +24,8 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="主机信息" prop="targetIp">
-        <el-input v-model="queryParams.targetIp" @input="inputSearch" placeholder="请输入数据源名称" clearable
+      <el-form-item label="主机信息" prop="targetIpPort">
+        <el-input v-model="queryParams.targetIpPort" @input="inputSearch" placeholder="请输入数据源名称" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="扫描状态" prop="scanState">
@@ -54,9 +54,9 @@
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="数据源名称" align="center" prop="sourceName" />
 
-      <el-table-column label="主机信息" align="center" prop="targetIp">
+      <el-table-column label="主机信息" align="center" prop="targetIpPort">
         <template slot-scope="scope">
-          <span>{{ scope.row.targetIp?scope.row.targetIp+':':scope.row.targetIp }}{{ scope.row.targetPort }}</span>
+          <span>{{ scope.row.targetIpPort }}</span>
         </template>
       </el-table-column>
 
@@ -77,7 +77,7 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
-            :disabled="scope.row.scanState == 'RUNNING'||scope.row.databaseType == 'Excel'">开始扫描</el-button>
+            :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel'">开始扫描</el-button>
           <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
             @click="scanContentEdit(scope.row)">编辑</el-button>
         </template>
@@ -96,8 +96,8 @@
           </el-select>
         </el-form-item>
         <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
-          <el-input v-model="form.sourceName" @input="nameTestingFn(form.sourceName)"
-            @blur="getNameTestingFn(form.sourceName)" maxlength="50" placeholder="请输入数据源名称" />
+          <el-input v-model="form.sourceName" @blur="getNameTestingFn(form.sourceName)" maxlength="50"
+            placeholder="请输入数据源名称" />
         </el-form-item>
         <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
           <el-select v-model="form.projectName" placeholder="请输入分类分级框架" clearable @change="projectChangeEdit($event)">
@@ -117,7 +117,7 @@
           <el-input v-model="form.targetUserName" placeholder="请输入数据库用户名称" />
         </el-form-item>
         <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
-          <el-input v-model="form.targetUserPassword" maxlegth="100" placeholder="请输入数据库密码" />
+          <el-input v-model="form.targetUserPassword" show-password maxlegth="100" placeholder="请输入数据库密码" />
         </el-form-item>
         <el-form-item v-show="isServiesNameRequired" label="服务名" prop="connectionValue"
           :rules="rules.connectionValue()">
@@ -129,7 +129,9 @@
           <el-radio v-model="connectionType" label="1">Service Name</el-radio>
         </el-form-item>
         <el-form-item label="扫描内容" prop="tabelCheckedName" :rules="rules.tabelCheckedName">
-          <div @click="scanContentFn()"><el-input v-model="form.tabelCheckedName" readonly placeholder="点击获取扫描配置" />
+          <div @click="scanContentFn()"><el-input style="position: relative;" readonly >
+          </el-input>
+          <el-tag style="position: absolute;top: 4px;left: 6px;">{{form.tabelCheckedName?form.tabelCheckedName:'点击选择扫描内容'}}</el-tag>
           </div>
         </el-form-item>
         <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
@@ -181,7 +183,7 @@
         </div>
       </div>
     </el-dialog>
-    <el-dialog title="新增Excel文件" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"
+    <el-dialog :title="titleExcel" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"
       append-to-body :close-on-click-modal="true">
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px">
@@ -222,8 +224,8 @@
       <Result :treeOptions="treeOptions" :drawerData="drawerData" />
     </el-drawer>
 
-    <el-dialog class="deleteCla" title="扫描配置" v-loading="scanContentLoading" :visible.sync="scanContentShow"
-      width="850px" append-to-body :close-on-click-modal="false">
+    <el-dialog title="扫描配置" class="scanContentBox" v-loading="scanContentLoading" :visible.sync="scanContentShow"
+      width="950px" append-to-body :close-on-click-modal="false">
       <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData"
         :scanContentTreeData="scanContentTreeData" ref="scanContentTreeRef" />
       <div slot="footer" class="dialog-footer">
@@ -363,6 +365,7 @@ export default {
         tabels: [],
       },
       connectionType: '1',
+      titleExcel: '新增Excel文件',
       addForm: {},
       // 表单校验
       rules: {
@@ -510,7 +513,7 @@ export default {
       }
     },
     nameTestingFn(val) {
-      this.form.sourceName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
+      this.form.sourceName = val.replace(/[^a-zA-Z0-9]/g, "")
     },
     stateMsg(val) {
       let msg = ''
@@ -569,32 +572,47 @@ export default {
       this.$refs["importData"].validate(async (valid) => {
         if (valid) {
           this.importDataLoading = true
+          if (this.importData.id) {
+            let data  = {
+              tabelCheckedName:this.importData.importFile,
+              businessName:this.importData.businessName,
+              sourceName:this.importData.sourceName,
+              frameworkNameId:this.importData.categoryId,
+              id:this.importData.id,
+            }
+            updateDatabaseAndTables(data).then(res => {
+
+            })
+          } else {
+
+            const formData = new FormData();
+            // 将文件数组添加到 FormData 对象中
+            formData.append('file', this.importData.fileList[0].raw);
+            formData.append('frameworkNameId', this.importData.categoryId);
+            formData.append('sourceName', this.importData.sourceName);
+            formData.append('businessName', this.importData.businessName);
+            formData.append('tabelCheckedName', this.importData.importFile);
+            await importExcel(formData).then(res => {
+              this.messsucc(res, '导入条目数量共');
+              // this.getList();
+              this.importData.categoryName = ''
+              this.importData.importFile = ''
+              this.importData.sourceName = ''
+              this.importData.categoryId = ''
+              this.importData.fileList = []
+              this.importData.businessName = ''
+              this.resetQuery()
+              this.importData.importShow = false
+              this.importDataLoading = false
+            })
+              .catch((err) => {
+                this.importDataLoading = false
+                this.importData.importFile = ''
+                this.importData.fileList = []
+              })
+          }
           // await this.rulsNameIsRight(this.importData.categoryId, params.name)
 
-          const formData = new FormData();
-          // 将文件数组添加到 FormData 对象中
-          formData.append('file', this.importData.fileList[0].raw);
-          formData.append('frameworkNameId', this.importData.categoryId);
-          formData.append('sourceName', this.importData.sourceName);
-          formData.append('businessName', this.importData.businessName);
-          await importExcel(formData).then(res => {
-            this.messsucc(res, '导入条目数量共');
-            // this.getList();
-            this.importData.categoryName = ''
-            this.importData.importFile = ''
-            this.importData.sourceName = ''
-            this.importData.categoryId = ''
-            this.importData.fileList = []
-            this.importData.businessName = ''
-            this.resetQuery()
-            this.importData.importShow = false
-            this.importDataLoading = false
-          })
-            .catch((err) => {
-              this.importDataLoading = false
-              this.importData.importFile = ''
-              this.importData.fileList = []
-            })
         } else {
           return false
         }
@@ -744,25 +762,21 @@ export default {
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
+        let data = JSON.parse(JSON.stringify(this.form))
+        delete data.projectName
+        data.targetDatabase = JSON.stringify(data.targetDatabase)
+        data.databaseType = this.findDatabaseValueByName(this.form.databaseType)
+        data.connectionType = this.connectionType
+        data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
         if (valid) {
           if (this.form.id != null) {
-            let data = JSON.parse(JSON.stringify(this.form))
-            delete data.projectName
-            data.connectionType = this.connectionType
             data.id = this.form.id
-            data.targetDatabase = JSON.stringify(data.targetDatabase)
-            data.databaseType = this.findDatabaseValueByName(this.form.databaseType)
             updateDatabaseAndTables(data).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            let data = JSON.parse(JSON.stringify(this.form))
-            delete data.projectName
-            data.connectionType = this.connectionType
-            data.targetDatabase = JSON.stringify(data.targetDatabase)
-            data.databaseType = this.findDatabaseValueByName(this.form.databaseType)
             // for (let i = 0; i < this.databaseTypeList.length; i++) {
             //   if (this.form.databaseType == this.databaseTypeList[i].name) {
             //     data.databaseType = this.databaseTypeList[i].value
@@ -791,6 +805,7 @@ export default {
       this.importData.importFile = ''
       this.importData.sourceName = ''
       this.importData.businessName = ''
+      this.titleExcel = '新增Excel文件'
       this.importData.fileList = []
     },
     handleFileChange(file, fileList) {
@@ -939,7 +954,8 @@ export default {
     scanContentEdit(row) {
       if (row.databaseType == "Excel") {
         this.importData.importFile = row.importFile
-        this.importData.categoryId = row.categoryId
+        this.titleExcel = "编辑Excel";
+        this.importData.categoryId = row.projectId
         this.importData.id = row.id
         this.importData.sourceName = row.sourceName
         this.importData.businessName = row.businessName
@@ -947,6 +963,7 @@ export default {
       } else {
         this.form = JSON.parse(JSON.stringify(row))
         this.form.tabelCheckedName = row.scanContent
+        this.title = "编辑数据库";
         this.open = true
         this.scanContentLoading = true
         getDatabaseAndTablesById(row.id).then(res => {
@@ -994,7 +1011,7 @@ export default {
       let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
       let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
       let allData = [...checkedNodes, ...halfCheckedNodes]
-      
+
       let targetDatabaseArr = []
       let params = {}
       for (let item of allData) {
@@ -1020,7 +1037,7 @@ export default {
       }
       this.form.targetDatabase = targetDatabaseArr
       this.form.tabels = params
-      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedItemsParent.length}张表 共${this.$refs.scanContentTreeRef.fieldCount}个字段`
+      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedItemsChild.length}张表 共${this.$refs.scanContentTreeRef.fieldCount}个字段`
       this.scanContentShow = false
     },
   }
@@ -1069,7 +1086,9 @@ input[aria-hidden=true] {
 .deleteCla /deep/ .el-dialog__body {
   padding-top: 0;
 }
-
+.scanContentBox /deep/ .el-dialog__body{
+  padding: 20px;
+}
 .addMsg /deep/ .el-input {
   width: 80%;
 }

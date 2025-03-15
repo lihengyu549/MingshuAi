@@ -8,7 +8,13 @@ export function listData(query) {
     params: query
   })
 }
-
+// 查询字典数据列表-贺贺
+export function listDataQueryUrl(query) {
+  return request({
+    url: `/system/dict/data/list?dictType=${query}`,
+    method: 'get',
+  })
+}
 // 查询字典数据详细
 export function getData(dictCode) {
   return request({

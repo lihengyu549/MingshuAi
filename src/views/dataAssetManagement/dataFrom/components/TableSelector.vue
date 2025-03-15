@@ -35,7 +35,7 @@
             <!-- 右侧已选列表 -->
             <el-card class="right-panel">
                 <div slot="header" class="clearfix">
-                    <span>已选 <span class="right-panel-text">({{ selectedItemsParent.length }}张表 + {{ fieldCount
+                    <span>已选 <span class="right-panel-text">({{ selectedItemsChild.length }}张表 + {{ fieldCount
                             }}个字段)</span></span>
                     <el-button style="float: right; padding: 3px 0;color: blue;" type="text"
                         @click="clearSelection">清空</el-button>
