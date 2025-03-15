@@ -963,6 +963,13 @@ export default {
       } else {
         this.form = JSON.parse(JSON.stringify(row))
         this.form.tabelCheckedName = row.scanContent
+        let targetDatabaseCopy = row.targetDatabase
+        let targetDatabaseArr
+        if(targetDatabaseCopy.length>1){
+          targetDatabaseArr = targetDatabaseCopy.split(',')
+          targetDatabaseArr.splice(targetDatabaseArr.length-1,1)
+      }
+        this.form.targetDatabase = targetDatabaseArr
         this.title = "编辑数据库";
         this.open = true
         this.scanContentLoading = true
