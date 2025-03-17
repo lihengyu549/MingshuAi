@@ -32,7 +32,7 @@
           </el-form-item>
           <el-form-item label="识别方式" prop="levelId">
             <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple placeholder="全部">
-              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+              <el-option v-for="item in addOptions" :key="item.value" :label="item.label"
                 :value="item.value">
               </el-option>
             </el-select>
@@ -52,9 +52,9 @@
           <!-- <el-table-column width="55" align="center" /> -->
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
-          <el-table-column label="子类名称" align="center" prop="attachData" />
-          <el-table-column label="安全分级" align="center" prop="securityLevelName" />
-          <el-table-column label="来源" align="center" prop="dataSource">
+          <el-table-column label="规则名称" align="center" prop="attachData" />
+          <el-table-column label="识别对象" align="center" prop="securityLevelName" />
+          <el-table-column label="识别方式" align="center" prop="dataSource">
           </el-table-column>
           <el-table-column label="状态" align="center" prop="state">
             <template slot-scope="scope">
@@ -76,56 +76,28 @@
           :limit.sync="queryParams.pageSize" @pagination="getList" />
       </el-col>
     </el-row>
-    <el-dialog title="导入框架" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"
-      append-to-body :close-on-click-modal="false">
-      <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
-        :inline="true" label-width="120px">
-        <el-form-item label="框架名称" prop="categoryName">
-          <el-input v-model="importData.categoryName" @input="nameTestingFn(importData.categoryName)" maxlength="50"
-            placeholder="请输入框架名称"></el-input>
-        </el-form-item>
-        <el-form-item label="导入框架" prop="importFile">
-          <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
-        </el-form-item>
-        <el-form-item class="uploadClass">
-          <el-upload class="upload-demo" :limit="1" :file-list="importData.fileList" :auto-upload="false"
-            :http-request="submitForm" action="" accept=".xls,.xlsx" :show-file-list="false"
-            :on-change="handleFileChange" :on-exceed="handleFileExceed">
-            <el-button size="mini" type="primary">选择文件</el-button>
-          </el-upload>
-        </el-form-item>
-      </el-form>
-      <el-button style="margin-left: 100px;" size="small" type="text" @click="downloadFile" id="btnDownload"
-        icon="el-icon-download">样例下载</el-button>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="importcancel">取 消</el-button>
-      </div>
-    </el-dialog>
     <!-- 新增编辑框 -->
     <el-dialog :title="addOrEdit.title" v-loading="importDataLoading" :visible.sync="addOrEdit.show" width="700px"
       append-to-body :close-on-click-modal="addOrEdit.flag == 3">
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" style="padding-right: 60px;">
-        <el-form-item label="子类名称" prop="attachData">
-          <el-input v-model="addOrEditDataRuls.attachData" :disabled="addOrEdit.flag == 3"
-            @input="sonNameTestingFn(addOrEditDataRuls.attachData)" maxlength="50" placeholder="请输入子类名称"></el-input>
+        <el-form-item label="规则名称" prop="aaaa">
+          <el-input v-model="addOrEditDataRuls.aaaa" :disabled="addOrEdit.flag == 3"
+            maxlength="50" placeholder="请输入规则名称"></el-input>
         </el-form-item>
-        <el-form-item class="addSelectClass" label="所属父类" prop="categoryId">
-          <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3">
-            <el-option style="height: 100%; padding: 0" value="">
-              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
-                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
-                @node-click="addHandleNodeClick" />
-            </el-option>
-          </el-select>
+        <el-form-item class="addSelectClass" label="识别对象" prop="bbbb">
+            <el-select v-model="addOrEditDataRuls.bbbb" multiple placeholder="全部">
+              <el-option v-for="item in addOptions" :key="item.value" :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
         </el-form-item>
-        <el-form-item class="addSelectClass" prop="minSecurityLevel" label="安全分级">
-          <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部" :disabled="addOrEdit.flag == 3">
-            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
+        <el-form-item class="addSelectClass" prop="cccc" label="识别方式">
+            <el-select v-model="queryParams.cccc" multiple placeholder="全部">
+              <el-option v-for="item in addOptions" :key="item.value" :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
         </el-form-item>
         <el-form-item v-if="false" class="addSelectClass" label="AI自学习内容">
           <el-tag v-for="(tag, index) in tags" :key="tag.name" class="mx-1" closable @close="handleClose(tag, index)"
@@ -226,52 +198,28 @@ export default {
       sourceList: [
         {
           value: 1,
-          label: '内置'
+          label: '名称匹配'
         },
         {
           value: 2,
-          label: '自定义'
+          label: '注释匹配'
+        },
+        {
+          value: 3,
+          label: '内容匹配'
         },
       ],
       addOptions: [
         {
           value: 1,
-          label: "1级"
+          label: "精准"
         }, {
           value: 2,
-          label: "2级"
+          label: "包含"
         }, {
           value: 3,
-          label: "3级"
-        }, {
-          value: 4,
-          label: "4级"
-        }, {
-          value: 5,
-          label: "5级"
-        },
-      ],
-      options: [
-        {
-          value: -1,
-          label: "全部"
-        },
-        {
-          value: 1,
-          label: "1级"
-        }, {
-          value: 2,
-          label: "2级"
-        }, {
-          value: 3,
-          label: "3级"
-        }, {
-          value: 4,
-          label: "4级"
-        }, {
-          value: 5,
-          label: "5级"
-        },
+          label: "正则"
+        }
       ],
       // 遮罩层
       loading: false,
@@ -306,16 +254,10 @@ export default {
   methods: {
     addFn() {
       this.addOrEdit.flag = 1
-      this.addOrEdit.title = '新增'
+      this.addOrEdit.title = '新增匹配规则'
       this.addOrEdit.show = true
       this.addOrEditDataRuls = {}
       this.addNodeName = ''
-    },
-    clearAddFromData() {
-      this.addOrEditDataRuls.attachData = ''
-      this.addOrEditDataRuls.categoryId = ''
-      this.addOrEditDataRuls.minSecurityLevel = null
-      this.addOrEditDataRuls.id = ''
     },
     /** 新增确定方法 */
     async addSubmitForm() {
@@ -367,41 +309,6 @@ export default {
     addCancel() {
       this.addOrEditDataRuls = {}
       this.addOrEdit.show = false
-    },
-    // 递归函数，查找父节点的 label 并返回完整的路径
-    findParentLabelsById(tree, nodeId, path = []) {
-      if (!Array.isArray(tree)) {
-        return null;
-      }
-      for (const node of tree) {
-        if (node.children && node.children.length > 0) {
-          for (const child of node.children) {
-            if (child.id === nodeId) {
-              return [...path, node.label];
-            }
-          }
-          const found = this.findParentLabelsById(node.children, nodeId, [...path, node.label]);
-          if (found) {
-            return found;
-          }
-        }
-      }
-      return null; // 如果没有找到，返回 null
-    },
-
-    addHandleNodeClick(node) {
-      if (node.children && node.children.length > 0) {
-        node.disabled = true;
-      } else {
-        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
-        if (parentLabels) {
-          this.addNodeName = parentLabels.join('-') + '-' + node.categoryName;
-        } else {
-          this.addNodeName = node.categoryName + '-';
-        }
-        this.addOrEditDataRuls.categoryId = node.id
-        this.$refs.addSelectRef.blur()
-      }
     },
     editFn(row) {
       this.addOrEdit.flag = 2
@@ -506,38 +413,7 @@ export default {
     //   // 暂时禁止上传，等接口
     //   return false
     // },
-    handleFileChange(file, fileList) {
-      this.importData.importFile = file.raw.name
-      this.importData.fileList = fileList;
-    },
-    handleFileExceed(files, fileList) {
-      this.importData.importFile = files[0].name
-      this.importData.fileList = fileList;
-    },
-    // 导入取消
-    importcancel() {
-      this.importData.categoryName = ''
-      this.importData.importFile = ''
-      this.importData.fileList = []
-      this.importData.importShow = false
-    },
-    importCli() {
-      this.importData.importShow = true
-    },
 
-    nameTestingFn(val) {
-      this.importData.categoryName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-      // nameTesting().then(res=>{
-      //   console.log(res);
-      // })
-    },
-    sonNameTestingFn(val) {
-      this.addOrEditDataRuls.attachData = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-    },
-    // tags 关闭方法
-    handleClose(tag, index) {
-      this.tags.splice(index, 1);
-    },
     // jumpApi(url, id) {
     //   const routeData = this.$router.resolve({
     //     path: "/systemInfo/api",
@@ -545,21 +421,6 @@ export default {
     //   });
     //   window.open(routeData.href, '_blank')
     // },
-    timeFormat(value) {
-      let date = new Date(value);
-      let y = date.getFullYear();
-      let MM = date.getMonth() + 1;
-      MM = MM < 10 ? "0" + MM : MM;
-      let d = date.getDate();
-      d = d < 10 ? "0" + d : d;
-      let h = date.getHours();
-      h = h < 10 ? "0" + h : h;
-      let m = date.getMinutes();
-      m = m < 10 ? "0" + m : m;
-      let s = date.getSeconds();
-      s = s < 10 ? "0" + s : s;
-      return y + "-" + MM + "-" + d + " " + h + ":" + m;
-    },
     filterNode(value, data) {
       if (!value) return true;
       return data.categoryName.indexOf(value) !== -1;
@@ -634,10 +495,6 @@ export default {
         this.loading = false;
       });
     },
-    // 表单重置
-    reset() {
-      this.resetForm("form");
-    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
@@ -659,56 +516,6 @@ export default {
       let res = await nameTesting(params)
       this.isName = res.data
     },
-    /** 提交按钮 */
-    async submitForm() {
-      this.$refs["importData"].validate(async (valid) => {
-        if (valid) {
-          this.importDataLoading = true
-          await this.rulsNameIsRight(0, this.importData.categoryName)
-          if (!this.isName) {
-            this.$modal.msgError("子类名称重复");
-            this.importDataLoading = false
-            return
-          }
-          const formData = new FormData();
-          // 将文件数组添加到 FormData 对象中
-          formData.append('file', this.importData.fileList[0].raw);
-          formData.append('categoryName', this.importData.categoryName);
-          await categoryImport(formData).then(res => {
-            this.messsucc(res, '导入条目数量共');
-            // this.getList();
-            this.importData.categoryName = ''
-            this.importData.importFile = ''
-            this.importData.fileList = []
-            this.importData.importShow = false
-            this.gettreeOptionsList()
-            this.importDataLoading = false
-          })
-            .catch((err) => {
-              this.importDataLoading = false
-            })
-
-        }
-      });
-    },
-    downloadFile() {
-      const link = document.createElement('a');
-      link.href = '/file.xlsx'; // 替换为你的文件路径
-      link.download = '分类分级框架模板.xlsx'; // 设置下载后的文件名
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-    // /** 导出按钮操作 */
-    // handleExport() {
-    //   this.download(
-    //     "system/protectTableField/export",
-    //     {
-    //       ...this.queryParams,
-    //     },
-    //     `protectTableField_${new Date().getTime()}.xlsx`
-    //   );
-    // },
   },
 };
 </script>
