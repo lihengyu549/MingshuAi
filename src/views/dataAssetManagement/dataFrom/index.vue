@@ -362,7 +362,7 @@ export default {
         projectId: null,
         sourceName: '',
         databaseType: '',
-        tabels: [],
+        tables: [],
       },
       connectionType: '1',
       titleExcel: '新增Excel文件',
@@ -1038,12 +1038,12 @@ export default {
             projectId: '',
             agentServerId: '',
             fieldCount: item.count,
-            fields: '',
+            fields: null,
           })
         }
       }
       this.form.targetDatabase = targetDatabaseArr
-      this.form.tabels = params
+      this.form.tables = params
       this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedItemsChild.length}张表 共${this.$refs.scanContentTreeRef.fieldCount}个字段`
       this.scanContentShow = false
     },
