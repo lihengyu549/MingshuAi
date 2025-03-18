@@ -1,23 +1,23 @@
 <template>
   <div class="app-container">
-    <el-card class="card-box">
+    <el-card class="card-box" v-loading="cardLoading">
       <div>
         <h4 class="title">
           <div class="blue-circle"></div><span>脏数据识别</span>
         </h4>
         <div class="contBox" style="display: flex;justify-content: flex-start;align-items: center;">
           <div style="width: 20%; display: flex; justify-content: flex-start;align-items: center;">
-            <el-switch v-model="value" active-color="#009dff" inactive-color="#e0e0e0"></el-switch>
-            <div style="margin-left: 15px;">样本全部为空</div>
+            <el-switch v-model="allData.DirtyData.DirtyData1.state" active-color="#009dff" inactive-color="#e0e0e0"></el-switch>
+            <div style="margin-left: 15px;">{{ allData.DirtyData.DirtyData1.label }}</div>
           </div>
           <div style="width: 20%; display: flex; justify-content: flex-start;align-items: center;">
-            <el-switch v-model="value2" active-color="#009dff" inactive-color="#e0e0e0"></el-switch>
-            <div style="margin-left: 15px;">样本内容为单个字符或者数字</div>
+            <el-switch v-model="allData.DirtyData.DirtyData2.state" active-color="#009dff" inactive-color="#e0e0e0"></el-switch>
+            <div style="margin-left: 15px;">{{ allData.DirtyData.DirtyData2.label }}</div>
           </div>
           <div style="width: 20%; display: flex; justify-content: flex-start;align-items: center;">
-            <el-switch v-model="value3" active-color="#009dff" inactive-color="#e0e0e0"></el-switch>
-            <div style="margin:0 15px;">样本重复率高于</div>
-            <el-input :disabled="!value3" style="width: 20%;"></el-input>
+            <el-switch v-model="allData.DirtyData.DirtyData3.state" active-color="#009dff" inactive-color="#e0e0e0"></el-switch>
+            <div style="margin:0 15px;">{{ allData.DirtyData.DirtyData3.label }}</div>
+            <el-input :disabled="!allData.DirtyData.DirtyData3.state" v-model="allData.DirtyData.DirtyData3.value" style="width: 20%;"></el-input>
           </div>
         </div>
       </div>
@@ -27,11 +27,11 @@
         </h4>
         <div class="contBox" style="display: flex;justify-content: flex-start;align-items: center;">
           <span style="margin-right: 20px;">抽样数量</span>
-          <el-radio-group v-model="radio">
-            <el-radio :label="5">5</el-radio>
-            <el-radio :label="10">10</el-radio>
-            <el-radio :label="15">15</el-radio>
-            <el-radio :label="20">20</el-radio>
+          <el-radio-group v-model="allData.SampleExtraction.value">
+            <el-radio label="5">5</el-radio>
+            <el-radio label="10">10</el-radio>
+            <el-radio label="15">15</el-radio>
+            <el-radio label="20">20</el-radio>
           </el-radio-group>
         </div>
       </div>
@@ -41,9 +41,12 @@
         </h4>
         <div class="contBox" style="display: flex;justify-content: flex-start;align-items: center;">
           <div>及格分</div>
-          <el-input :disabled="!value3" style="width: 5%; margin: 0 20px;"></el-input>
+          <el-input v-model="allData.DataTableQualityScore.value" style="width: 5%; margin: 0 20px;"></el-input>
           <div> <i class="el-icon-warning"></i>输入范围在30 ~ 100之间，低于及格分的数据表不会进行打标</div>
         </div>
+      </div>
+      <div class="foot_btn">
+        <el-button type="primary" @click="submit">确 定</el-button>
       </div>
     </el-card>
   </div>
@@ -51,7 +54,7 @@
 
 <script>
 import { treeselect as menuTreeselect, roleMenuTreeselect } from "@/api/system/menu";
-import { listDataQueryUrl } from "@/api/system/dict/data";
+import { listByTacticsQueryUrl,updateByTactics } from "@/api/system/dict/data";
 
 export default {
   name: "matchingStrategy",
@@ -62,6 +65,8 @@ export default {
       value2: true,
       value3: true,
       radio: 20,
+      allData: {},
+      cardLoading:true,
     };
   },
   created() {
@@ -69,31 +74,46 @@ export default {
   },
   methods: {
     getlistData() {
-      listDataQueryUrl('sys_scan_tactics').then(res => {
-        console.log(res);
-
+      listByTacticsQueryUrl('sys_scan_tactics').then(res => {
+          this.cardLoading = true
+          if (res.code == 200) {
+          this.allData = res.data
+          this.cardLoading = false
+        }
+      })
+    },
+    submit(){
+      updateByTactics(this.allData).then(res=>{
+        if(res.code == 200){
+          this.$message({
+            message: '修改成功',
+            type: 'success'
+          });
+          this.getlistData()
+        }
       })
     }
   }
 };
 </script>
 <style scoped lang="scss">
-.app-container{
+.app-container {
   overflow-y: auto;
+
   ::v-deep ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+    width: 6px;
+    height: 6px;
+  }
 
-::v-deep ::-webkit-scrollbar-thumb {
-  background-color: #0003;
-  border-radius: 10px;
-  transition: all .2s ease-in-out;
-}
+  ::v-deep ::-webkit-scrollbar-thumb {
+    background-color: #0003;
+    border-radius: 10px;
+    transition: all .2s ease-in-out;
+  }
 
-::v-deep ::-webkit-scrollbar-track {
-  border-radius: 10px;
-}
+  ::v-deep ::-webkit-scrollbar-track {
+    border-radius: 10px;
+  }
 }
 
 
@@ -117,8 +137,14 @@ export default {
 .contBox {
   padding: 20px;
 }
-.card-box{
+
+.card-box {
   height: 820px;
   overflow-y: auto;
+}
+.foot_btn{
+  position: fixed;
+    right: 37px;
+    bottom: 56px;
 }
 </style>

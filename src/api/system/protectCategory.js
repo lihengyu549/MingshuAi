@@ -201,3 +201,18 @@ export function updateDatabaseAndTables (data) {
     data:data
   })
 }
+// 查询框架接口
+export function getParentIdTree (parentId) {
+  return request({
+    url: `/system/category/list/by/parentId?parentId=${parentId}`,
+    method: 'get',
+  })
+}
+// 匹配策略列表
+export function getListitem (params) {
+  return request({
+    url: `/system/category/list/attach/data/item`,
+    method: 'get',
+    params:params,
+  })
+}

@@ -9,10 +9,18 @@ export function listData(query) {
   })
 }
 // 查询字典数据列表-贺贺
-export function listDataQueryUrl(query) {
+export function listByTacticsQueryUrl(query) {
   return request({
-    url: `/system/dict/data/list?dictType=${query}`,
+    url: `/system/dict/data/listByTactics?dictType=${query}`,
     method: 'get',
+  })
+}
+// 修改扫描策略接口-贺贺
+export function updateByTactics(data) {
+  return request({
+    url: `/system/dict/data/updateByTactics`,
+    method: 'post',
+    data:data
   })
 }
 // 查询字典数据详细

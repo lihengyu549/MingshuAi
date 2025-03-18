@@ -1017,8 +1017,7 @@ export default {
     scanContentSubmitFn() {
       let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
       let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
-      let allData = [...checkedNodes, ...halfCheckedNodes]
-
+      let allData = [ ...halfCheckedNodes,...checkedNodes,]
       let targetDatabaseArr = []
       let params = {}
       for (let item of allData) {
@@ -1026,7 +1025,6 @@ export default {
           let obj = {
             [item.label]: []
           }
-          targetDatabaseArr.push(item.label)
           params = Object.assign(params, obj)
         } else {
           this.treeCheckedData.push(item.value)

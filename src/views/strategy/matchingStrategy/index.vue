@@ -10,30 +10,29 @@
           </el-select>
         </div>
         <div class="head-container" v-loading="treeLoading">
-          <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
-            :current-node-key="treeID" :expand-on-click-node="false"
-            :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current @node-click="handleNodeClick" />
+          <el-tree style="overflow-y: auto;height: 785px;" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
+            :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
+            node-key="id" highlight-current @node-click="handleNodeClick" />
         </div>
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" v-show="showSearch"
           label-width="90px">
-          <el-form-item label="规则名称" prop="name">
-            <el-input v-model="queryParams.name" @input="inputSearch" placeholder="请输入子类名称" clearable
+          <el-form-item label="规则名称" prop="ruleName">
+            <el-input v-model="queryParams.ruleName" @input="inputSearch" placeholder="请输入规则名称" clearable
               @keyup.enter.native="handleQuery" />
           </el-form-item>
-          <el-form-item label="识别对象" prop="dataSourceId">
-            <el-select v-model="queryParams.dataSourceId" clearable @change="dataSourceIdIdChange" placeholder="全部"
+          <el-form-item label="识别对象" prop="recognizeObject">
+            <el-select v-model="queryParams.recognizeObject" clearable @change="dataSourceIdIdChange" placeholder="全部"
               :loading="loading">
-              <el-option v-for="item in sourceList" :key="item.value" :label="item.label" :value="item.value">
+              <el-option v-for="item in recognizeObjectList" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="识别方式" prop="levelId">
-            <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple placeholder="全部">
-              <el-option v-for="item in addOptions" :key="item.value" :label="item.label"
-                :value="item.value">
+          <el-form-item label="识别方式" prop="recognizeWay">
+            <el-select v-model="queryParams.recognizeWay" @change="selectProjectIdChange" multiple placeholder="全部">
+              <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
@@ -42,7 +41,8 @@
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
           </el-form-item>
           <div style="margin: 20px 0 20px 25px;">
-            <el-button type="primary" icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
+            <el-button type="primary" icon="el-icon-plus" size="medium" :disabled="isChildrenNode"
+              @click="addFn">新增</el-button>
             <el-button type="primary" icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
             <el-button type="primary" icon="el-icon-refresh" size="medium" @click="enabledFn('启用')">启用</el-button>
             <el-button type="primary" icon="el-icon-warning" size="medium" @click="enabledFn('禁用')">禁用</el-button>
@@ -52,9 +52,9 @@
           <!-- <el-table-column width="55" align="center" /> -->
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
-          <el-table-column label="规则名称" align="center" prop="attachData" />
-          <el-table-column label="识别对象" align="center" prop="securityLevelName" />
-          <el-table-column label="识别方式" align="center" prop="dataSource">
+          <el-table-column label="规则名称" align="center" prop="ruleName" />
+          <el-table-column label="识别对象" align="center" prop="recognizeObject" />
+          <el-table-column label="识别方式" align="center" prop="recognizeWay">
           </el-table-column>
           <el-table-column label="状态" align="center" prop="state">
             <template slot-scope="scope">
@@ -82,28 +82,26 @@
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" style="padding-right: 60px;">
         <el-form-item label="规则名称" prop="aaaa">
-          <el-input v-model="addOrEditDataRuls.aaaa" :disabled="addOrEdit.flag == 3"
-            maxlength="50" placeholder="请输入规则名称"></el-input>
+          <el-input v-model="addOrEditDataRuls.aaaa" :disabled="addOrEdit.flag == 3" maxlength="50"
+            placeholder="请输入规则名称"></el-input>
         </el-form-item>
-        <el-form-item class="addSelectClass" label="识别对象" prop="bbbb">
-            <el-select v-model="addOrEditDataRuls.bbbb" multiple placeholder="全部">
-              <el-option v-for="item in addOptions" :key="item.value" :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
+        <el-form-item label="识别对象" class="addSelectClass" prop="bbbb">
+          <el-select v-model="addOrEditDataRuls.bbbb" multiple placeholder="全部">
+            <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
         </el-form-item>
-        <el-form-item class="addSelectClass" prop="cccc" label="识别方式">
-            <el-select v-model="queryParams.cccc" multiple placeholder="全部">
-              <el-option v-for="item in addOptions" :key="item.value" :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
+        <el-form-item prop="cccc" class="addSelectClass" label="识别方式">
+          <el-select v-model="queryParams.cccc" multiple placeholder="全部">
+            <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
         </el-form-item>
-        <el-form-item v-if="false" class="addSelectClass" label="AI自学习内容">
-          <el-tag v-for="(tag, index) in tags" :key="tag.name" class="mx-1" closable @close="handleClose(tag, index)"
-            :type="tag.type" style="margin: 0 10px;">
-            {{ tag.name }}
-          </el-tag>
+        <el-form-item class="rulesContClass" label="规则内容(匹配一下任意一条)">
+          <div v-for="(item, index) in aaaa" :key="index + itme">
+            <el-input v-model="item.name" />
+            <span @click="delAddSelect(index)">删除</span>
+          </div>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -117,7 +115,7 @@
 <script>
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { treeListI, categoryImport, getAttachData, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory";
+import { getParentIdTree, categoryImport, getListitem, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory";
 export default {
   name: "ProtectTableField",
   components: { Treeselect },
@@ -131,6 +129,7 @@ export default {
         importShow: false,
       },
       categoryName: '',
+      isChildrenNode: true,
       debounceTimeout: null,//防抖动
       treeOptions: [],
       addOrEdit: {
@@ -138,6 +137,22 @@ export default {
         show: false,
         flag: 1,// 1新增 2编辑 3查看
       },
+      aaaa: [
+        {
+          name: 'name',
+          id: 1
+        },
+
+        {
+          name: 'id',
+          id: 2
+        },
+
+        {
+          name: 'abc',
+          id: 3
+        }
+      ],
       treeLoading: false,
       tags: [
         { name: '标签一', type: 'info' },
@@ -195,7 +210,7 @@ export default {
       isName: true,
       Loading: false,
       url: `${process.env.VUE_APP_BASE_API}/static/file/auth.zip`,
-      sourceList: [
+      recognizeObjectList: [
         {
           value: 1,
           label: '名称匹配'
@@ -258,6 +273,9 @@ export default {
       this.addOrEdit.show = true
       this.addOrEditDataRuls = {}
       this.addNodeName = ''
+    },
+    delAddSelect(index) {
+      this.aaaa.splice(index, 1)
     },
     /** 新增确定方法 */
     async addSubmitForm() {
@@ -427,6 +445,11 @@ export default {
     },
     handleNodeClick(data) {
       this.treeID = data.id;
+      if (!data.children) {
+        this.isChildrenNode = false
+      } else {
+        this.isChildrenNode = true
+      }
       this.handleQuery();
     },
 
@@ -441,7 +464,7 @@ export default {
       this.handleQuery()
     },
     dataSourceIdIdChange(val) {
-      this.sourceList.forEach((item) => {
+      this.recognizeObjectList.forEach((item) => {
         if (val == item.value)
           this.queryParams.dataSource = item.label
       })
@@ -449,10 +472,7 @@ export default {
     },
     getProtectCategory(key) {
       this.treeLoading = true
-      let data = {
-        parentId: key
-      };
-      treeListI(data).then((resp) => {
+      getParentIdTree(key).then((resp) => {
         this.categoryList = resp.data
         this.yuanCategoryList = resp.data
         if (resp.data.length == 0) {
@@ -465,10 +485,10 @@ export default {
             }
           }
           this.treeID = this.categoryList[0].id;
-    this.$nextTick(function () {
-      this.$refs.tree.setCurrentKey(this.treeID);
-      this.$refs.tree.setCurrentKey(this.treeID);
-    });
+          this.$nextTick(function () {
+            this.$refs.tree.setCurrentKey(this.treeID);
+            this.$refs.tree.setCurrentKey(this.treeID);
+          });
           let tempList = JSON.parse(JSON.stringify(this.categoryList))
           for (let item of tempList) {
             item.label = item.categoryName
@@ -485,11 +505,9 @@ export default {
       this.loading = true;
       let params = {
         ...this.queryParams,
-        nodeId: this.treeID,
-        levelId: this.queryParams.levelId.length ? this.queryParams.levelId.join() : '-1',
-        dataSourceId: this.queryParams.dataSourceId ? this.queryParams.dataSourceId : 0,
+        dataId: this.treeID,
       }
-      getAttachData(params).then((response) => {
+      getListitem(params).then((response) => {
         this.protectTableFieldList = response.data.rows;
         this.total = response.data.total;
         this.loading = false;
@@ -523,6 +541,21 @@ export default {
 <style scoped>
 .el-popup-parent--hidden /deep/ .el-loading-mask {
   background: "rgba(0, 0, 0, 0.7)" !important;
+}
+
+.app-container /deep/ ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.app-container /deep/::-webkit-scrollbar-thumb {
+    background-color: #0003;
+    border-radius: 10px;
+    transition: all .2s ease-in-out;
+}
+
+.app-container /deep/::-webkit-scrollbar-track {
+    border-radius: 10px;
 }
 
 .addMsg /deep/ .el-input--medium {
@@ -566,6 +599,15 @@ export default {
 
 .addSelectClass /deep/ .el-select {
   width: calc(100%);
+}
+
+.rulesContClass {
+  height: 300px;
+  overflow-y: auto;
+}
+
+.rulesContClass /deep/ .el-input {
+  width: calc(70%);
 }
 
 .tableBox {
