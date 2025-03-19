@@ -204,7 +204,7 @@ export function updateDatabaseAndTables (data) {
 // 查询框架接口
 export function getParentIdTree (parentId) {
   return request({
-    url: `/system/category/list/by/parentId?parentId=${parentId}`,
+    url: `/system/category/list/by/parentId?parentId=${parentId}&needSub=${1}`,
     method: 'get',
   })
 }
@@ -214,5 +214,21 @@ export function getListitem (params) {
     url: `/system/category/list/attach/data/item`,
     method: 'get',
     params:params,
+  })
+}
+// 新增匹配规则接口
+export function addAttachDataItme (data) {
+  return request({
+    url: `/system/category/add/attach/data/item`,
+    method: 'post',
+    data:data,
+  })
+}
+// 修改匹配规则接口
+export function updateAttachDataItme (data) {
+  return request({
+    url: `/system/category/update/attach/data/item`,
+    method: 'post',
+    data:data,
   })
 }

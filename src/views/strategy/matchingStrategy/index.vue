@@ -10,9 +10,9 @@
           </el-select>
         </div>
         <div class="head-container" v-loading="treeLoading">
-          <el-tree style="overflow-y: auto;height: 785px;" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
-            :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
-            node-key="id" highlight-current @node-click="handleNodeClick" />
+          <el-tree style="overflow-y: auto;height: 785px;" :data="categoryList" :props="defaultProps"
+            :default-expanded-keys="[treeID]" :current-node-key="treeID" :expand-on-click-node="false"
+            :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current @node-click="handleNodeClick" />
         </div>
       </el-col>
       <!--用户数据-->
@@ -31,7 +31,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="识别方式" prop="recognizeWay">
-            <el-select v-model="queryParams.recognizeWay" @change="selectProjectIdChange" multiple placeholder="全部">
+            <el-select v-model="queryParams.recognizeWay" @change="selectProjectIdChange" placeholder="全部">
               <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
@@ -41,7 +41,7 @@
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
           </el-form-item>
           <div style="margin: 20px 0 20px 25px;">
-            <el-button type="primary" icon="el-icon-plus" size="medium" :disabled="isChildrenNode"
+            <el-button type="primary" icon="el-icon-plus" size="medium" :disabled="isChildrenNode !== 4" 
               @click="addFn">新增</el-button>
             <el-button type="primary" icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
             <el-button type="primary" icon="el-icon-refresh" size="medium" @click="enabledFn('启用')">启用</el-button>
@@ -53,8 +53,19 @@
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
           <el-table-column label="规则名称" align="center" prop="ruleName" />
-          <el-table-column label="识别对象" align="center" prop="recognizeObject" />
+          <el-table-column label="识别对象" align="center" prop="recognizeObject">
+            <template slot-scope="scope">
+              <span>
+                {{ recognizeObjectMsg(scope.row.recognizeObject) }}
+              </span>
+            </template>
+          </el-table-column>
           <el-table-column label="识别方式" align="center" prop="recognizeWay">
+            <template slot-scope="scope">
+              <span>
+                {{ recognizeWayMsg(scope.row.recognizeWay) }}
+              </span>
+            </template>
           </el-table-column>
           <el-table-column label="状态" align="center" prop="state">
             <template slot-scope="scope">
@@ -81,26 +92,40 @@
       append-to-body :close-on-click-modal="addOrEdit.flag == 3">
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" style="padding-right: 60px;">
-        <el-form-item label="规则名称" prop="aaaa">
-          <el-input v-model="addOrEditDataRuls.aaaa" :disabled="addOrEdit.flag == 3" maxlength="50"
+        <el-form-item label="规则名称" prop="ruleName">
+          <el-input v-model="addOrEditDataRuls.ruleName" :disabled="addOrEdit.flag == 3" maxlength="50"
             placeholder="请输入规则名称"></el-input>
         </el-form-item>
-        <el-form-item label="识别对象" class="addSelectClass" prop="bbbb">
-          <el-select v-model="addOrEditDataRuls.bbbb" multiple placeholder="全部">
+        <el-form-item label="识别对象" class="addSelectClass" prop="recognizeObject">
+          <el-select v-model="addOrEditDataRuls.recognizeObject" placeholder="全部">
+            <el-option v-for="item in recognizeObjectList" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="recognizeWay" class="addSelectClass" label="识别方式">
+          <el-select v-model="addOrEditDataRuls.recognizeWay" placeholder="全部">
             <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item prop="cccc" class="addSelectClass" label="识别方式">
-          <el-select v-model="queryParams.cccc" multiple placeholder="全部">
-            <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
+        <el-form-item label="相似度" v-show="addOrEditDataRuls.recognizeObject == '3'" prop="ruleValue"
+          class="ruleValueClass">
+          <el-input v-model="addOrEditDataRuls.ruleValue" :disabled="addOrEdit.flag == 3" placeholder="请输入"
+            @input="numberInputFn" />
+          <span style="font-size: 18px;margin-left: 10px;">%</span>
+          <span style="margin-left: 30px;font-size: 14px;"><i class="el-icon-warning"></i>
+            设置与字段内容匹配的阈值</span>
         </el-form-item>
-        <el-form-item class="rulesContClass" label="规则内容(匹配一下任意一条)">
-          <div v-for="(item, index) in aaaa" :key="index + itme">
-            <el-input v-model="item.name" />
-            <span @click="delAddSelect(index)">删除</span>
+        <el-form-item class="rulesContClass" label="规则内容">
+          <div style="display: flex; justify-content: space-between; align-items: center;margin-bottom: 15px;">
+            <span style="color: rgb(188 188 188);font-size:15px;">(匹配以下任意一条)</span>
+            <span class="addTextBtn" @click="rulesContAddFn">添加</span>
+          </div>
+          <div class="forDiv">
+            <div v-for="(item, index) in ruleContent" :key="index" style="margin-bottom: 15px;">
+              <el-input v-model="item.name" />
+              <span @click="delAddSelect(index)" style="margin-left: 20px; color: red;">删除</span>
+            </div>
           </div>
         </el-form-item>
       </el-form>
@@ -115,7 +140,8 @@
 <script>
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getParentIdTree, categoryImport, getListitem, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory";
+import { getParentIdTree, getListitem, attachStatus, forceLogout, updataAttach, nameTesting, getFrameworks, addAttachDataItme } from "@/api/system/protectCategory";
+import { number } from "echarts";
 export default {
   name: "ProtectTableField",
   components: { Treeselect },
@@ -137,43 +163,27 @@ export default {
         show: false,
         flag: 1,// 1新增 2编辑 3查看
       },
-      aaaa: [
-        {
-          name: 'name',
-          id: 1
-        },
-
-        {
-          name: 'id',
-          id: 2
-        },
-
-        {
-          name: 'abc',
-          id: 3
-        }
+      ruleContent: [
       ],
       treeLoading: false,
-      tags: [
-        { name: '标签一', type: 'info' },
-        { name: '标签二', type: 'info' },
-        { name: '标签三', type: 'info' },
-        { name: '标签四', type: 'info' },
-        { name: '标签五', type: 'info' }
-      ],
       // 表单校验
       addOrEditRules: {
-        categoryId: [
-          {
-            required: true, message: "请选择所属父级", trigger: "blur"
-          }
+        ruleName: [
+          { required: true, message: "请输入规则名称", trigger: "blur" }
         ],
-        minSecurityLevel: [
-          { required: true, message: "请选择安全分级", trigger: "blur" },
+        recognizeObject: [
+          { required: true, message: "请选择识别对象", trigger: "change" }
         ],
-        attachData: [
-          { required: true, message: "请输入子类名称", trigger: "blur" }
+        recognizeWay: [
+          { required: true, message: "请选择识别方式", trigger: "change" }
         ],
+        ruleValue: [
+          { required: true, message: "请输入相似度", trigger: "blur" },
+          { pattern: /^(?:[1-9]|[1-9][0-9]|100)$/, message: "请输入1到100之间的正整数", trigger: "blur" }
+        ],
+        ruleContent: [
+          { validator: this.validateRuleContent, trigger: "change" }
+        ]
       },
       // 表单校验
       importDataRules: {
@@ -197,9 +207,6 @@ export default {
         levelId: [],//安全级别
       },
       addOrEditDataRuls: {
-        attachData: '',
-        categoryId: '',
-        minSecurityLevel: null,
       },
       importDataLoading: false,
       filterName: undefined,
@@ -212,27 +219,27 @@ export default {
       url: `${process.env.VUE_APP_BASE_API}/static/file/auth.zip`,
       recognizeObjectList: [
         {
-          value: 1,
+          value: '1',
           label: '名称匹配'
         },
         {
-          value: 2,
+          value: '2',
           label: '注释匹配'
         },
         {
-          value: 3,
+          value: '3',
           label: '内容匹配'
         },
       ],
       addOptions: [
         {
-          value: 1,
+          value: '1',
           label: "精准"
         }, {
-          value: 2,
+          value: '2',
           label: "包含"
         }, {
-          value: 3,
+          value: '3',
           label: "正则"
         }
       ],
@@ -274,26 +281,62 @@ export default {
       this.addOrEditDataRuls = {}
       this.addNodeName = ''
     },
+    // 数字输入框input事件
+    numberInputFn(val) {
+      this.addOrEditDataRuls.ruleValue = val.replace(/[^0-9]/g, '');
+      let numberVal = parseInt(val)
+      if (numberVal > 100) {
+        this.addOrEditDataRuls.ruleValue = '100'
+      }
+    },
+    // 新增规则内容
+    rulesContAddFn() {
+      this.ruleContent.push({ name: '' })
+    },
+    recognizeObjectMsg(val) {
+      for (let item of this.recognizeObjectList) {
+        if (val == item.value) {
+          return item.label
+
+        }
+      }
+    },
+    recognizeWayMsg(val) {
+      for (let item of this.addOptions) {
+        if (val == item.value) {
+          return item.label
+
+        }
+      }
+    },
     delAddSelect(index) {
-      this.aaaa.splice(index, 1)
+      this.ruleContent.splice(index, 1)
+    },
+    // 自定义校验规则
+    validateRuleContent(rule, value, callback) {
+      if (this.ruleContent.length === 0) {
+        callback(new Error("至少需要一条规则内容"));
+      } else {
+        callback();
+      }
     },
     /** 新增确定方法 */
     async addSubmitForm() {
       this.$refs["addOrEdit"].validate(async (valid) => {
+        let nameList = this.ruleContent.map(item => {
+          return item.name
+        })
         let params = {
-          name: this.addOrEditDataRuls.attachData,
-          nodeId: this.addOrEditDataRuls.categoryId,
-          securityLevel: this.addOrEditDataRuls.minSecurityLevel,
-          additional: this.addNodeName
+          categoryDataId: this.treeID,
+          ruleName: this.addOrEditDataRuls.ruleName,
+          recognizeObject: this.addOrEditDataRuls.recognizeObject,
+          recognizeWay: this.addOrEditDataRuls.recognizeWay,
+          ruleValue: this.addOrEditDataRuls.ruleValue,
+          ruleContent: nameList.join(),
+          state: true,
         }
         if (valid) {
           this.importDataLoading = true
-          await this.rulsNameIsRight(this.addOrEditDataRuls.categoryId, params.name)
-          if (!this.isName) {
-            this.$modal.msgError("框架名称重复,请更改");
-            this.importDataLoading = false
-            return
-          }
           if (this.addOrEditDataRuls.id != null) {
             params.id = this.addOrEditDataRuls.id
             updataAttach(params).then((response) => {
@@ -306,7 +349,7 @@ export default {
                 this.importDataLoading = false
               })
           } else {
-            addData(params).then((response) => {
+            addAttachDataItme(params).then((response) => {
               this.$modal.msgSuccess("新增成功");
               this.getList();
               this.addOrEdit.show = false
@@ -445,11 +488,7 @@ export default {
     },
     handleNodeClick(data) {
       this.treeID = data.id;
-      if (!data.children) {
-        this.isChildrenNode = false
-      } else {
-        this.isChildrenNode = true
-      }
+      this.isChildrenNode = data.nodeLayerIndex
       this.handleQuery();
     },
 
@@ -537,25 +576,40 @@ export default {
   },
 };
 </script>
+<style>
+.rulesContClass ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 
+.rulesContClass ::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.rulesContClass ::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+</style>
 <style scoped>
 .el-popup-parent--hidden /deep/ .el-loading-mask {
   background: "rgba(0, 0, 0, 0.7)" !important;
 }
 
 .app-container /deep/ ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  width: 6px;
+  height: 6px;
 }
 
 .app-container /deep/::-webkit-scrollbar-thumb {
-    background-color: #0003;
-    border-radius: 10px;
-    transition: all .2s ease-in-out;
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
 }
 
 .app-container /deep/::-webkit-scrollbar-track {
-    border-radius: 10px;
+  border-radius: 10px;
 }
 
 .addMsg /deep/ .el-input--medium {
@@ -603,15 +657,36 @@ export default {
 
 .rulesContClass {
   height: 300px;
+}
+
+.forDiv {
   overflow-y: auto;
+  height: 300px;
 }
 
 .rulesContClass /deep/ .el-input {
-  width: calc(70%);
+  width: calc(80%);
+}
+
+.rulesContClass /deep/ .el-form-item__label {
+  width: 100%;
+}
+
+.ruleValueClass /deep/ .el-input {
+  width: calc(20%);
 }
 
 .tableBox {
   height: calc(100% - 158px - 52px);
+}
+
+.addTextBtn {
+  font-weight: 700;
+  color: #1890ff;
+}
+
+.addTextBtn:hover {
+  cursor: pointer;
 }
 
 /* ::v-deep
