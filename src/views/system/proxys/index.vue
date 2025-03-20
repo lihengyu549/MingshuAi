@@ -113,7 +113,8 @@
           </el-select>
         </el-form-item>
         <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
-          <el-input v-model="form.sourceName" @input="nameTestingFn(form.sourceName)"
+          <!-- @input="nameTestingFn(form.sourceName)" -->
+          <el-input v-model="form.sourceName" 
             @blur="getNameTestingFn(form.sourceName)" maxlength="50" placeholder="请输入数据源名称" />
         </el-form-item>
         <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
@@ -162,8 +163,10 @@
           <div class="error" v-if="showSucType == 2">连接失败</div>
         </div>
         <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
-          <el-input v-model="form.businessName" maxlength="50" @input="businessNameFn(form.businessName)"
+          <!-- @input="businessNameFn(form.businessName)" -->
+          <el-input v-model="form.businessName" maxlength="50" 
             placeholder="请输入来源业务系统" />
+            <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
         </el-form-item>
         <!-- <p>代理数据库信息</p>
         <el-form-item label="代理端口" prop="proxyPort">
@@ -216,8 +219,9 @@
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px">
         <el-form-item label="数据源名称" prop="sourceName">
+          <!-- @input="importNameTestingFn(importData.sourceName)" -->
           <el-input v-model="importData.sourceName" maxlength="50"
-            @blur="getimortantNameTestingFn(importData.sourceName)" @input="importNameTestingFn(importData.sourceName)"
+            @blur="getimortantNameTestingFn(importData.sourceName)" 
             placeholder="请输入数据源名称"></el-input>
         </el-form-item>
         <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
@@ -228,6 +232,7 @@
         </el-form-item>
         <el-form-item label="来源业务系统" prop="businessName">
           <el-input v-model="importData.businessName" maxlength="50" placeholder="请输入数据源名称"></el-input>
+            <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
         </el-form-item>
         <el-form-item label="导入文件" prop="importFile">
           <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
@@ -1291,7 +1296,7 @@ input[aria-hidden=true] {
 }
 
 .importForm /deep/ .el-form-item--medium {
-  width: 70%;
+  width: 75%;
 
 }
 

@@ -41,7 +41,7 @@
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
           </el-form-item>
           <div style="margin: 20px 0 20px 25px;">
-            <el-button type="primary" icon="el-icon-plus" size="medium" :disabled="isChildrenNode !== 4" 
+            <el-button type="primary" icon="el-icon-plus" size="medium" :disabled="isChildrenNode !== 4"
               @click="addFn">新增</el-button>
             <el-button type="primary" icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
             <el-button type="primary" icon="el-icon-refresh" size="medium" @click="enabledFn('启用')">启用</el-button>
@@ -70,7 +70,7 @@
           <el-table-column label="状态" align="center" prop="state">
             <template slot-scope="scope">
               <span>
-                {{ scope.row.enable ? '启用' : '禁用' }}
+                {{ scope.row.state === '0' ? '启用' : '禁用' }}
               </span>
             </template>
           </el-table-column>
@@ -97,13 +97,13 @@
             placeholder="请输入规则名称"></el-input>
         </el-form-item>
         <el-form-item label="识别对象" class="addSelectClass" prop="recognizeObject">
-          <el-select v-model="addOrEditDataRuls.recognizeObject" placeholder="全部">
+          <el-select v-model="addOrEditDataRuls.recognizeObject" :disabled="addOrEdit.flag == 3" placeholder="全部">
             <el-option v-for="item in recognizeObjectList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item prop="recognizeWay" class="addSelectClass" label="识别方式">
-          <el-select v-model="addOrEditDataRuls.recognizeWay" placeholder="全部">
+          <el-select v-model="addOrEditDataRuls.recognizeWay" :disabled="addOrEdit.flag == 3" placeholder="全部">
             <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -119,12 +119,13 @@
         <el-form-item class="rulesContClass" label="规则内容">
           <div style="display: flex; justify-content: space-between; align-items: center;margin-bottom: 15px;">
             <span style="color: rgb(188 188 188);font-size:15px;">(匹配以下任意一条)</span>
-            <span class="addTextBtn" @click="rulesContAddFn">添加</span>
+            <span class="addTextBtn" v-if="addOrEdit.flag !== 3" @click="rulesContAddFn">添加</span>
           </div>
           <div class="forDiv">
             <div v-for="(item, index) in ruleContent" :key="index" style="margin-bottom: 15px;">
-              <el-input v-model="item.name" />
-              <span @click="delAddSelect(index)" style="margin-left: 20px; color: red;">删除</span>
+              <el-input v-model="item.name" :disabled="addOrEdit.flag == 3" />
+              <span @click="delAddSelect(index)" v-if="addOrEdit.flag !== 3"
+                style="margin-left: 20px; color: red;">删除</span>
             </div>
           </div>
         </el-form-item>
@@ -140,8 +141,9 @@
 <script>
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getParentIdTree, getListitem, attachStatus, forceLogout, updataAttach, nameTesting, getFrameworks, addAttachDataItme } from "@/api/system/protectCategory";
+import { getParentIdTree, getListitem, enableDataItem, deleteDataItem, updateAttachDataItme, nameTesting, getFrameworks, addAttachDataItme } from "@/api/system/protectCategory";
 import { number } from "echarts";
+import r from "highlight.js/lib/languages/r";
 export default {
   name: "ProtectTableField",
   components: { Treeselect },
@@ -207,7 +209,12 @@ export default {
         levelId: [],//安全级别
       },
       addOrEditDataRuls: {
-      },
+        ruleName: '',
+        recognizeObject: '',
+        recognizeWay: '',
+        ruleValue: '',
+        ruleName: '',
+      }, // 新增得弹出框数据
       importDataLoading: false,
       filterName: undefined,
       defaultProps: {
@@ -258,7 +265,6 @@ export default {
       categoryList: [],
       yuanCategoryList: [],
       categoryListEdit: null,
-      addNodeName: "",
     };
   },
   watch: {
@@ -279,7 +285,7 @@ export default {
       this.addOrEdit.title = '新增匹配规则'
       this.addOrEdit.show = true
       this.addOrEditDataRuls = {}
-      this.addNodeName = ''
+      this.ruleContent = []
     },
     // 数字输入框input事件
     numberInputFn(val) {
@@ -333,13 +339,12 @@ export default {
           recognizeWay: this.addOrEditDataRuls.recognizeWay,
           ruleValue: this.addOrEditDataRuls.ruleValue,
           ruleContent: nameList.join(),
-          state: true,
         }
         if (valid) {
           this.importDataLoading = true
-          if (this.addOrEditDataRuls.id != null) {
+          if (this.addOrEditDataRuls.id) {
             params.id = this.addOrEditDataRuls.id
-            updataAttach(params).then((response) => {
+            updateAttachDataItme(params).then((response) => {
               this.$modal.msgSuccess("修改成功");
               this.getList();
               this.addOrEdit.show = false
@@ -374,19 +379,20 @@ export default {
     editFn(row) {
       this.addOrEdit.flag = 2
       this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
+      let ruleContentList = JSON.parse(JSON.stringify(row.ruleContent)).split()
+      this.ruleContent = ruleContentList.map(item => {
+        return { name: item }
+      })
       this.addOrEdit.show = true
       this.addOrEdit.title = '编辑'
-      this.addNodeName = row.owner
-      // this.yuanCategoryList.forEach(item => {
-      //   if (this.addOrEditDataRuls.categoryId == item.id) {
-      //     this.addNodeName = item.categoryName
-      //   }
-      // });
     },
     lookFn(row) {
       this.addOrEdit.flag = 3
       this.addOrEditDataRuls = row
-      this.addNodeName = row.owner
+      let ruleContentList = JSON.parse(JSON.stringify(row.ruleContent)).split()
+      this.ruleContent = ruleContentList.map(item => {
+        return { name: item }
+      })
       this.addOrEdit.show = true
       this.addOrEdit.title = '查看'
     },
@@ -405,35 +411,35 @@ export default {
             return item.id
           })
           let data = {
-            ids: ids.join(',')
+            ids: ids
           }
           if (flag == '启用') {
-            data.enable = true
-            attachStatus(data).then(res => {
+            data.state = '0'
+            enableDataItem(data).then(res => {
               if (res.code == 200) {
                 this.messsucc(res, flag)
                 this.getList()
               }
             })
           } else if (flag == '禁用') {
-            data.enable = false
-            attachStatus(data).then(res => {
+            data.state = '1'
+            enableDataItem(data).then(res => {
               if (res.code == 200) {
                 this.messsucc(res, flag)
                 this.getList()
               }
             })
           } else if (flag == '删除') {
-            for (let item of dataS) {
-              if (item.dataSource === '内置') {
-                this.$message({
-                  type: 'warning',
-                  message: '内置数据源不允许删除',
-                });
-                return
-              }
-            }
-            forceLogout(data).then(res => {
+            // for (let item of dataS) {
+            //   if (item.dataSource === '内置') {
+            //     this.$message({
+            //       type: 'warning',
+            //       message: '内置数据源不允许删除',
+            //     });
+            //     return
+            //   }
+            // }
+            deleteDataItem(data).then(res => {
               if (res.code == 200) {
                 this.messsucc(res, flag)
                 this.getList()

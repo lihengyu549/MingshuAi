@@ -232,3 +232,20 @@ export function updateAttachDataItme (data) {
     data:data,
   })
 }
+
+// 停用/启用
+export function enableDataItem(data) {
+  return request({
+    url: '/system/category/enable/attach/data/item',
+    method: 'post',
+    data: data,
+  })
+}
+// 删除
+export function deleteDataItem(data) {
+  return request({
+    url: '/system/category/delete/attach/data/item',
+    method: 'post',
+    data: data,
+  })
+}

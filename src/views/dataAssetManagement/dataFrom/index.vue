@@ -128,6 +128,9 @@
           <el-radio v-model="connectionType" label="0">SID</el-radio>
           <el-radio v-model="connectionType" label="1">Service Name</el-radio>
         </el-form-item>
+        <el-form-item v-show="form.databaseType != 'ORACLE'" label="实例名/库名" prop="exampleOrLibraryName" :rules="rules.exampleOrLibraryName()">
+          <el-input v-model="form.exampleOrLibraryName" placeholder="请输入实例名/库名" />
+        </el-form-item>
         <el-form-item label="扫描内容" prop="tabelCheckedName" :rules="rules.tabelCheckedName">
           <div @click="scanContentFn()"><el-input style="position: relative;" readonly >
           </el-input>
@@ -135,8 +138,10 @@
           </div>
         </el-form-item>
         <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
-          <el-input v-model="form.businessName" maxlength="50" @input="businessNameFn(form.businessName)"
+          <!-- @input="businessNameFn(form.businessName)" -->
+          <el-input v-model="form.businessName" maxlength="50"
             placeholder="请输入来源业务系统" />
+            <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
         </el-form-item>
         <!-- <p>代理数据库信息</p>
         <el-form-item label="代理端口" prop="proxyPort">
@@ -392,6 +397,13 @@ export default {
         targetUserPassword: [
           { required: true, message: '请输入密码', trigger: 'blur' }
         ],
+        exampleOrLibraryName: () => {
+          return [{
+            required: this.form.databaseType == '达梦' || this.form.databaseType == 'POSTGRES',
+            message: '请输入',
+            trigger: 'blur'
+          }]
+        },
         connectionValue: () => {
           return [{
             required: this.isServiesNameRequired,

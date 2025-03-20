@@ -122,25 +122,30 @@ export default {
   justify-content: flex-start;
   align-items: center;
   margin: 0;
-  padding: 15px 0;
-  background-color: #eff8fc;
+  font-size: 18px;
+  padding: 20px 15px;
+  background-color: #ebebebc2;
 }
 
 .blue-circle {
-  width: 30px;
-  height: 30px;
-  background-color: blue;
-  border-radius: 50%;
-  margin: 0 10px 0 20px;
+  // width: 30px;
+  // height: 30px;
+  // background-color: rgb(19, 175, 247);
+  // border-radius: 50%;
+  // margin: 0 10px 0 20px;
 }
 
 .contBox {
-  padding: 20px;
+  padding: 40px 20px;
 }
 
 .card-box {
   height: 820px;
   overflow-y: auto;
+  padding: 0;
+  ::v-deep .el-card__body{
+  padding: 0;
+}
 }
 .foot_btn{
   position: fixed;
