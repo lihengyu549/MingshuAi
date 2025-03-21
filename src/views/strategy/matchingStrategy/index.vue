@@ -108,7 +108,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="相似度" v-show="addOrEditDataRuls.recognizeObject == '3'" prop="ruleValue"
+        <el-form-item label="相似度" v-if="addOrEditDataRuls.recognizeObject == '3'" prop="ruleValue"
           class="ruleValueClass">
           <el-input v-model="addOrEditDataRuls.ruleValue" :disabled="addOrEdit.flag == 3" placeholder="请输入"
             @input="numberInputFn" />
@@ -116,7 +116,7 @@
           <span style="margin-left: 30px;font-size: 14px;"><i class="el-icon-warning"></i>
             设置与字段内容匹配的阈值</span>
         </el-form-item>
-        <el-form-item class="rulesContClass" label="规则内容">
+        <el-form-item class="rulesContClass" label="规则内容" prop="ruleContent">
           <div style="display: flex; justify-content: space-between; align-items: center;margin-bottom: 15px;">
             <span style="color: rgb(188 188 188);font-size:15px;">(匹配以下任意一条)</span>
             <span class="addTextBtn" v-if="addOrEdit.flag !== 3" @click="rulesContAddFn">添加</span>
@@ -184,7 +184,7 @@ export default {
           { pattern: /^(?:[1-9]|[1-9][0-9]|100)$/, message: "请输入1到100之间的正整数", trigger: "blur" }
         ],
         ruleContent: [
-          { validator: this.validateRuleContent, trigger: "change" }
+          { required: true,validator: this.validateRuleContent, trigger: "change" }
         ]
       },
       // 表单校验
@@ -320,7 +320,10 @@ export default {
     },
     // 自定义校验规则
     validateRuleContent(rule, value, callback) {
-      if (this.ruleContent.length === 0) {
+      let nameList = this.ruleContent.filter((item)=>{
+        return item.name
+      })
+      if (this.ruleContent.length === 0 || nameList.length === 0) {
         callback(new Error("至少需要一条规则内容"));
       } else {
         callback();
@@ -339,6 +342,7 @@ export default {
           recognizeWay: this.addOrEditDataRuls.recognizeWay,
           ruleValue: this.addOrEditDataRuls.ruleValue,
           ruleContent: nameList.join(),
+          state:0,
         }
         if (valid) {
           this.importDataLoading = true
@@ -379,7 +383,9 @@ export default {
     editFn(row) {
       this.addOrEdit.flag = 2
       this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
-      let ruleContentList = JSON.parse(JSON.stringify(row.ruleContent)).split()
+      let ruleContentList = JSON.parse(JSON.stringify(row.ruleContent)).split(',')
+      console.log(ruleContentList);
+      
       this.ruleContent = ruleContentList.map(item => {
         return { name: item }
       })
@@ -389,7 +395,7 @@ export default {
     lookFn(row) {
       this.addOrEdit.flag = 3
       this.addOrEditDataRuls = row
-      let ruleContentList = JSON.parse(JSON.stringify(row.ruleContent)).split()
+      let ruleContentList = JSON.parse(JSON.stringify(row.ruleContent)).split(',')
       this.ruleContent = ruleContentList.map(item => {
         return { name: item }
       })
@@ -667,7 +673,7 @@ export default {
 
 .forDiv {
   overflow-y: auto;
-  height: 300px;
+  max-height: 300px;
 }
 
 .rulesContClass /deep/ .el-input {
