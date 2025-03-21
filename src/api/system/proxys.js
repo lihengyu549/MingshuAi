@@ -193,3 +193,12 @@ export function getListTables (data) {
     loading: true,
   })
 }
+// 数据源新增数据库--贺贺
+export function saveDatabaseAndTables (data) {
+  return request({
+    url: '/system/proxy/database/saveDatabaseAndTables',
+    method: 'post',
+    data: data,
+    loading: true
+  })
+}

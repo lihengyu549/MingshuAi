@@ -248,7 +248,7 @@ import {
 
 import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys,
-  importExcel, publish, createProxys, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI
+  importExcel, publish, saveDatabaseAndTables, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI
 } from "@/api/system/proxys";
 import {
   forceLogout, nameTesting, dataSacn, getFrameworks, checkSourceName, getDatabaseAndTablesById, updateDatabaseAndTables
@@ -794,7 +794,7 @@ export default {
             //     data.databaseType = this.databaseTypeList[i].value
             //   }
             // }
-            createProxys(data).then(response => {
+            saveDatabaseAndTables(data).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -1037,6 +1037,7 @@ export default {
           let obj = {
             [item.label]: []
           }
+          targetDatabaseArr.push(item.label)
           params = Object.assign(params, obj)
         } else {
           this.treeCheckedData.push(item.value)

@@ -155,16 +155,6 @@ export function deleteCategoryTree (id) {
   })
 }
 
-// //行业分类树列表
-// export function treeListI (data) {
-//   return request({
-//     url: '/category/list/all',
-//     method: 'get',
-//     params: data
-
-//   })
-// }
-
 // 行业列表插入
 export function insertCategoryTreeI (data) {
   return request({
