@@ -647,8 +647,8 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      // this.$refs.tree.setCurrentKey(null);
       this.treeID = this.categoryList[0].id
+      this.$refs.tree.setCurrentKey(this.treeID);
       this.resetForm("queryParams");
       this.handleQuery();
     },

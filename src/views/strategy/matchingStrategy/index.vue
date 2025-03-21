@@ -118,7 +118,7 @@
         </el-form-item>
         <el-form-item class="rulesContClass" label="规则内容" prop="ruleContent">
           <div style="display: flex; justify-content: space-between; align-items: center;margin-bottom: 15px;">
-            <span style="color: rgb(188 188 188);font-size:15px;">(匹配以下任意一条)</span>
+            <span style="color: rgb(188 188 188);font-size:15px;font-style: italic;">(匹配以下任意一条)</span>
             <span class="addTextBtn" v-if="addOrEdit.flag !== 3" @click="rulesContAddFn">添加</span>
           </div>
           <div class="forDiv">
@@ -131,7 +131,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">确
+        <el-button type="primary" @click="addSubmitForm">确
           定</el-button>
         <el-button @click="addCancel">取 消</el-button>
       </div>
@@ -331,10 +331,13 @@ export default {
     },
     /** 新增确定方法 */
     async addSubmitForm() {
+      if(this.addOrEdit.flag === 3) {
+        this.addOrEdit.show = false
+        return
+      }
       this.$refs["addOrEdit"].validate(async (valid) => {
-        let nameList = this.ruleContent.map(item => {
-          return item.name
-        })
+        let nameList = this.ruleContent.filter(item => item.name!=='').map(item => item.name)
+        
         let params = {
           categoryDataId: this.treeID,
           ruleName: this.addOrEditDataRuls.ruleName,
@@ -372,7 +375,6 @@ export default {
           return false
         }
       });
-
     },
 
     // 新增取消
@@ -384,8 +386,6 @@ export default {
       this.addOrEdit.flag = 2
       this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
       let ruleContentList = JSON.parse(JSON.stringify(row.ruleContent)).split(',')
-      console.log(ruleContentList);
-      
       this.ruleContent = ruleContentList.map(item => {
         return { name: item }
       })
@@ -574,16 +574,10 @@ export default {
     resetQuery() {
       // this.$refs.tree.setCurrentKey(null);
       this.treeID = this.categoryList[0].id
+      this.isChildrenNode = this.categoryList[0].nodeLayerIndex
+      this.$refs.tree.setCurrentKey(this.treeID);
       this.resetForm("queryParams");
       this.handleQuery();
-    },
-    async rulsNameIsRight(id, name) {
-      let params = {
-        nodeId: id,
-        name,
-      }
-      let res = await nameTesting(params)
-      this.isName = res.data
     },
   },
 };
