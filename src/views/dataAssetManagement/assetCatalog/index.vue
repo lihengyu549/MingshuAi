@@ -14,65 +14,67 @@
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" v-show="showSearch"
+        <el-form :model="queryParams" ref="queryParams" size="small" :inline="true"
           label-width="90px">
-          <el-form-item label="规则名称" prop="ruleName">
+          <!-- <el-form-item label="规则名称" prop="ruleName">
             <el-input v-model="queryParams.ruleName" @input="inputSearch" placeholder="请输入规则名称" clearable
               @keyup.enter.native="handleQuery" />
-          </el-form-item>
-          <el-form-item label="识别对象" prop="recognizeObject">
-            <el-input v-model="queryParams.ruleName" @input="inputSearch" placeholder="请输入规则名称" clearable
-              @keyup.enter.native="handleQuery" />
-          </el-form-item>
-          <el-form-item label="识别方式" prop="recognizeWay">
+          </el-form-item> -->
+
+          <el-form-item label="表名" prop="recognizeWay">
             <el-select v-model="queryParams.recognizeWay" @change="selectProjectIdChange" placeholder="全部">
               <el-option v-for="item in dataQualityList" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
+          <el-form-item label="数据质量" prop="recognizeObject">
+            <el-input v-model="queryParams.ruleName" @input="inputSearch" placeholder="请输入规则名称" clearable
+              @keyup.enter.native="handleQuery" />
+          </el-form-item>
           <el-form-item>
-            <!-- <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button> -->
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
           </el-form-item>
-          <div style="margin: 20px 0 20px 25px;">
-          </div>
         </el-form>
-        <div class="mian_box">
-          <div v-for="(item, index) in dataAll" :key="index">
+        <div class="mian_box" v-loading="loading">
+          <div v-for="(item, index) in dataAll" :key="index" class="mian_box_item">
             <el-card class="box-card">
               <div class="mian_box_head">
-                <div><span style="margin-right: 10px;">{{ index + 1 }} </span><span>{{ item.titleName }}</span></div>
+                <div><span style="margin-right: 10px;">{{ index + 1 }} </span><span>{{ item.tableName }}</span><span style="font-size: 14px;">（字段总数{{ item.fieldCount }}）</span></div>
                 <div></div>
-                <div>
-                  <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
-                  <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
-                  <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
-
+                <div style="display: flex; align-items: center;">
+                  <div class="btnItem" @click="aiDataSetFn"><img class="btnImg" src="../../../assets/images/ai.png"
+                      alt=""><span>数据填充</span></div>
+                  <div class="btnItem" @click="qualityEvaluationFn"><img class="btnImg"
+                      src="../../../assets/images/cz-zlpg.png" alt=""><span>质量评估</span></div>
+                  <div class="btnItem" @click="fieldInformationFn"><img class="btnImg"
+                      src="../../../assets/images/chaxun.png" alt=""><span>字段信息</span></div>
                 </div>
               </div>
               <div class="mian_box_center">
-                <div>数据质量:{{ item.aaa }}</div>
-                <div>分值:{{ item.bbb }}</div>
-                <div>数据量级:{{ item.ccc }}</div>
-                <div>原生表注释:{{ item.ddd }}</div>
-                <div>合成表注释:{{ item.eee }}</div>
-                <div>原生字段注释占比:{{ item.fff }}</div>
-                <div>空值字段比例:{{ item.ggg }}</div>
-                <div>样本重复率过高比例:{{ item.hhh }}</div>
-                <div>有效字段数:{{ item.iii }}</div>
-                <div>脏数据字段数:{{ item.jjj }}</div>
-                <div>数据来源:{{ item.kkk }}</div>
+                <div>数据质量评分:{{ item.score }}</div>
+                <div>数据量级:{{ item.dataMagnitude }}</div>
+                <div>原生表注释:{{ item.oldTableRemark }}</div>
+                <div>合成表注释:{{ item.craftTableRemark }}</div>
+                <div>原生字段注释占比:{{ item.oldFieldRemark }}</div>
+                <div>空值字段比例:{{ item.nullValueField }}</div>
+                <div>样本长度过短比例:{{ item.onlyOneValueField }}</div>
+                <div>样本重复率过高比例:{{ item.repeatValueField }}</div>
+                <div>有效字段数:{{ item.effectiveCount }}</div>
+                <div>脏数据字段数:{{ item.dirtyData }}</div>
+                <div>数据来源:{{ item.dataType }}</div>
               </div>
             </el-card>
           </div>
         </div>
       </el-col>
+      <pagination class="paginationClass" v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+        :limit.sync="queryParams.pageSize" @pagination="getList" />
     </el-row>
   </div>
 </template>
 <script>
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getParentIdTree, getListitem, enableDataItem, deleteDataItem, updateAttachDataItme, nameTesting, getFrameworks, addAttachDataItme } from "@/api/system/protectCategory";
+import { getAllProxys,getTableListByProxysId } from "@/api/system/protectCategory";
 export default {
   name: "assetCatalog",
   components: {},
@@ -80,6 +82,8 @@ export default {
     return {
       filterText: '',// 过滤条件tree
       Loading: false,// 全局loading
+      total: 10,
+      loading: false,
       dataQualityList: [
         {
           value: '1',
@@ -94,23 +98,10 @@ export default {
           label: '低'
         },
       ],
-      dataAll: [{
-        titleName: 'Username Table（字段总数 200）',
-        aaa:'高',
-        bbb:'85',
-        ccc:'1000行',
-        ddd:'保险业务单（可编辑）',
-        eee:'保险系统中客户个人信息相关内容',
-        fff:'70%',
-        ggg:'10%',
-        hhh:'20%',
-        iii:'180',
-        jjj:'20',
-        kkk:'MYSQL',
-      }],
-      showSearch: true,
+      dataAll: [
+       
+      ],
       categoryList: '',
-      categoryName: '',
       isChildrenNode: true,
       debounceTimeout: null,//防抖动
       treeLoading: false,
@@ -136,7 +127,7 @@ export default {
     }
   },
   created() {
-    this.getProtectCategory('3018')
+    this.getProtectCategory()
   },
   mounted() {
 
@@ -162,26 +153,18 @@ export default {
     messsucc(res, flag) {
       this.$message.success(`${res.msg},${flag}${res.data}个`)
     },
-    // // 文件上传前钩子
-    // importFileBeforeUpload(val) {
-    //   this.importData.importFile = val.name
-    //   this.importData.fileList.push(val)
-
-    //   // 暂时禁止上传，等接口
-    //   return false
-    // },
-
-    // jumpApi(url, id) {
-    //   const routeData = this.$router.resolve({
-    //     path: "/systemInfo/api",
-    //     query: { id: id, url: url },
-    //   });
-    //   window.open(routeData.href, '_blank')
-    // },
+    // ai数据填充
+    aiDataSetFn() { },
+    // 质量评估
+    qualityEvaluationFn() { },
+    // 字段信息
+    fieldInformationFn() { },
+    // 树节点过滤方法
     filterNode(value, data) {
       if (!value) return true;
       return data.categoryName.indexOf(value) !== -1;
     },
+    // 左侧树点击事件
     handleNodeClick(data) {
       this.treeID = data.id;
       this.isChildrenNode = data.nodeLayerIndex
@@ -198,45 +181,33 @@ export default {
     selectProjectIdChange(val) {
       this.handleQuery()
     },
+    // 左侧树数据
     getProtectCategory(key) {
       this.treeLoading = true
-      getParentIdTree(key).then((resp) => {
-        this.categoryList = resp.data
-        this.yuanCategoryList = resp.data
+      getAllProxys(key).then((resp) => {
         if (resp.data.length == 0) {
           this.Loading = false
         } else {
-          for (let index in resp.data) {
-            if (resp.data[index].parentId === 0) {
-              this.categoryList.splice(index, 1)
-              break
-            }
-          }
-          this.treeID = this.categoryList[0].id;
+          this.categoryList = resp.data
+          this.treeID = resp.data[0].id
           this.$nextTick(function () {
             this.$refs.tree.setCurrentKey(this.treeID);
-            this.$refs.tree.setCurrentKey(this.treeID);
           });
-          let tempList = JSON.parse(JSON.stringify(this.categoryList))
-          for (let item of tempList) {
-            item.label = item.categoryName
-          }
-          this.categoryList = this.handleTree(tempList, "id")
-          this.categoryListEdit = this.handleTree(tempList, "id")
         }
         this.Loading = false
         this.treeLoading = false
         this.getList()
       });
     },
+    // 列表数据
     getList() {
       this.loading = true;
       let params = {
         ...this.queryParams,
-        dataId: this.treeID,
+        proxysId: this.treeID,
       }
-      getListitem(params).then((response) => {
-        this.protectTableFieldList = response.data.rows;
+      getTableListByProxysId(params).then((response) => {
+        this.dataAll = response.data.rows;
         this.total = response.data.total;
         this.loading = false;
       });
@@ -259,24 +230,36 @@ export default {
 };
 </script>
 <style>
-.mian_box ::-webkit-scrollbar {
+.mian_box::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-.mian_box ::-webkit-scrollbar-thumb {
+.mian_box::-webkit-scrollbar-thumb {
   background-color: #0003;
   border-radius: 10px;
   transition: all .2s ease-in-out;
 }
 
-.mian_box ::-webkit-scrollbar-track {
+.mian_box::-webkit-scrollbar-track {
   border-radius: 10px;
 }
 </style>
 <style scoped>
+.mian_box_item {
+  margin-top: 15px;
+  margin-right: 10px;
+  margin-left: 10px;
+}
+
 .addMsg /deep/ .el-input--medium {
   width: 237px;
+}
+
+.paginationClass {
+  position: fixed;
+  bottom: 15px;
+  left: 70%;
 }
 
 .success {
@@ -293,28 +276,53 @@ export default {
 
 .mian_box {
   width: 100%;
-  border: 10px solid #efefef;
+  border: 7px solid #f7f7f7;
+  height: 700px;
+  overflow: auto;
+  margin-bottom: 50px;
 }
 
 .mian_box_head {
-  padding: 10px;
+  padding: 10px 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background-color: #f1fafe;
 }
-.mian_box_center{
+
+.mian_box_center {
   display: flex;
   justify-content: flex-start;
   align-items: center;
   flex-wrap: wrap;
+  padding: 20px;
 }
+
 .mian_box_center div {
   width: 25%;
   margin: 10px 0;
-  font-size: 12px;
+  font-size: 14px;
 }
-.el-card__body{
+
+.box-card /deep/ .el-card__body {
   padding: 0;
+}
+
+.btnImg {
+  width: 25px;
+  height: 25px;
+  display: block;
+}
+
+.btnItem {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-right: 15px;
+  font-size: 14px;
+}
+
+.btnItem:hover {
+  cursor: pointer;
 }
 </style>

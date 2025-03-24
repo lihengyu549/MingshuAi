@@ -239,3 +239,21 @@ export function deleteDataItem(data) {
     data: data,
   })
 }
+
+//------------------数据资产目录接口
+// 获取左侧资产目录树结构
+export function getAllProxys(params) {
+  return request({
+    url: '/system/proxy/database/proxys/getAllProxys',
+    method: 'get',
+    params: params,
+  })
+}
+// 资产目录列表接口
+export function getTableListByProxysId(params) {
+  return request({
+    url: '/system/protectTableField/getTableListByProxysId',
+    method: 'get',
+    params: params,
+  })
+}

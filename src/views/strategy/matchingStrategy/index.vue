@@ -538,7 +538,6 @@ export default {
           this.treeID = this.categoryList[0].id;
           this.$nextTick(function () {
             this.$refs.tree.setCurrentKey(this.treeID);
-            this.$refs.tree.setCurrentKey(this.treeID);
           });
           let tempList = JSON.parse(JSON.stringify(this.categoryList))
           for (let item of tempList) {
