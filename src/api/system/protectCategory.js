@@ -257,3 +257,11 @@ export function getTableListByProxysId(params) {
     params: params,
   })
 }
+// 查看字段信息接口
+export function getAllFieldListByTableIdAndDatabaseId(params) {
+  return request({
+    url: '/system/protectTableField/getAllFieldListByTableIdAndDatabaseId',
+    method: 'get',
+    params: params,
+  })
+}

@@ -67,7 +67,7 @@
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
           <div style="display: flex; align-items: center;justify-content: center;">
-            <img style="display: block; width: 20px;margin-right: 10px;" :src="imgSrc[scope.row.scanState]" alt="">
+            <img style="display: block; width: 20px;margin-right: 10px;" :src="imgSrc[scope.row.scanState?scope.row.scanState:'NONE']" alt="">
             <span> {{ stateMsg(scope.row.scanState) }}</span>
           </div>
         </template>
@@ -534,7 +534,7 @@ export default {
           msg = item.label
         }
       }
-      return msg
+      return msg || '待扫描'
     },
     businessNameFn(val) {
       this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
@@ -1014,6 +1014,7 @@ export default {
             connectionType: this.connectionType,
             connectionValue: this.form.connectionValue,
             databaseType: this.findDatabaseValueByName(this.form.databaseType),
+            exampleOrLibraryName:this.form.exampleOrLibraryName
           }
           let res = await getListTables(data)
           if (res.data.option.length == 0) {

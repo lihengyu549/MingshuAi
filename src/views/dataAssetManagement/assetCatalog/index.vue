@@ -3,7 +3,7 @@
     <el-row :gutter="20">
       <el-col :span="4" :xs="24">
         <div class="head-container" style="margin-bottom: 15px;">
-          <el-input v-model="filterText" placeholder="请输出库名搜索"> <i slot="prefix"
+          <el-input v-model="filterText" placeholder="请输入库名搜索"> <i slot="prefix"
               class="el-input__icon el-icon-search"></i></el-input>
         </div>
         <div class="head-container" v-loading="treeLoading">
@@ -14,8 +14,7 @@
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" ref="queryParams" size="small" :inline="true"
-          label-width="90px">
+        <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" label-width="90px">
           <!-- <el-form-item label="规则名称" prop="ruleName">
             <el-input v-model="queryParams.ruleName" @input="inputSearch" placeholder="请输入规则名称" clearable
               @keyup.enter.native="handleQuery" />
@@ -35,18 +34,19 @@
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
           </el-form-item>
         </el-form>
-        <div class="mian_box" v-loading="loading">
-          <div v-for="(item, index) in dataAll" :key="index" class="mian_box_item">
+        <div class="mian_box">
+          <div v-for="(item, index) in dataAll" v-loading="loading" :key="index" class="mian_box_item">
             <el-card class="box-card">
               <div class="mian_box_head">
-                <div><span style="margin-right: 10px;">{{ index + 1 }} </span><span>{{ item.tableName }}</span><span style="font-size: 14px;">（字段总数{{ item.fieldCount }}）</span></div>
+                <div><span style="margin-right: 10px;">{{ index + 1 }} </span><span>{{ item.tableName }}</span><span
+                    style="font-size: 14px;">（字段总数{{ item.fieldCount }}）</span></div>
                 <div></div>
                 <div style="display: flex; align-items: center;">
                   <div class="btnItem" @click="aiDataSetFn"><img class="btnImg" src="../../../assets/images/ai.png"
                       alt=""><span>数据填充</span></div>
                   <div class="btnItem" @click="qualityEvaluationFn"><img class="btnImg"
                       src="../../../assets/images/cz-zlpg.png" alt=""><span>质量评估</span></div>
-                  <div class="btnItem" @click="fieldInformationFn"><img class="btnImg"
+                  <div class="btnItem" @click="fieldInformationFn(item)"><img class="btnImg"
                       src="../../../assets/images/chaxun.png" alt=""><span>字段信息</span></div>
                 </div>
               </div>
@@ -70,16 +70,56 @@
       <pagination class="paginationClass" v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
         :limit.sync="queryParams.pageSize" @pagination="getList" />
     </el-row>
+    <el-drawer :title="drawerTitle" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl" size="55%">
+      <el-table :data="drawerData" ref="tableRef">
+        <el-table-column label="字段名称" align="center" prop="aaa" width="150" show-overflow-tooltip />
+        <el-table-column label="原生字段注释（可编辑）" align="center" prop="bbb">
+          <template slot-scope="scope">
+            <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row,scope.$index)">{{ scope.row.bbb }}</span>
+            <el-input id="editInput" :autofocus="true" v-else v-model="scope.row.zzz"
+              @blur="drawerEditBlurFn(scope.row,scope.$index)" size="small" />
+          </template>
+        </el-table-column>
+        <el-table-column label="合成字段注释" align="center" prop="ccc" width="150" />
+        <el-table-column label="样本是否为空" align="center" prop="ddd" width="100" />
+        <el-table-column label="样本重复率" align="center" prop="eee" width="100" />
+        <el-table-column label="是否为脏数据" align="center" prop="fff" width="100" />
+
+        <el-table-column label="样本重复率" align="center" prop="ggg" width="100">
+          <template slot-scope="scope">
+            <span>{{ scope.row.ggg }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" width="100" class-name="small-padding fixed-width">
+          <template slot-scope="scope">
+            <el-tooltip placement="bottom" effect="light">
+              <div slot="content">
+                <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
+                  <el-table-column type="index" label="序号" width="50" />
+                  <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
+                  </el-table-column>
+                </el-table>
+              </div>
+              <el-button size="mini" type="text">查看</el-button>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-drawer>
   </div>
 </template>
 <script>
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getAllProxys,getTableListByProxysId } from "@/api/system/protectCategory";
+import { getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId } from "@/api/system/protectCategory";
 export default {
   name: "assetCatalog",
   components: {},
   data() {
     return {
+      drawerShow: false,
+      drawerTitle: '',
+      drawerData: [],
+      drawerEdit: false,
       filterText: '',// 过滤条件tree
       Loading: false,// 全局loading
       total: 10,
@@ -99,13 +139,14 @@ export default {
         },
       ],
       dataAll: [
-       
+
       ],
       categoryList: '',
       isChildrenNode: true,
       debounceTimeout: null,//防抖动
       treeLoading: false,
-      treeID: '',
+      treeID: '', //tree 父节点id
+      databaseName: '',// tree 子节点label
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -157,8 +198,63 @@ export default {
     aiDataSetFn() { },
     // 质量评估
     qualityEvaluationFn() { },
+    drawerEditFn(row,index) {
+      row.drawerEdit = true
+      row.zzz = row.bbb
+      this.$nextTick(() => {
+        document.getElementById('editInput').focus();
+      })
+    },
+    drawerEditBlurFn(row,index) {
+      this.$confirm('是否保存编辑数据?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          row.bbb = row.zzz
+          this.$message({
+            type: 'success',
+            message: '修改成功!'
+          });
+      this.drawerData[index].drawerEdit = false
+    }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+      this.drawerData[index].drawerEdit = false
+    });
+    },
     // 字段信息
-    fieldInformationFn() { },
+    async fieldInformationFn(row) {
+      this.drawerTitle = '表名称：' + row.tableName
+      let params = {
+        tableId: row.tableId,
+        databaseId: row.databaseId,
+      }
+      this.drawerData = [
+        {
+          aaa: 1,
+          bbb: 2,
+          ccc: 3,
+          ddd: 4,
+          eee: 5,
+          fff: 6,
+          ggg: 7,
+          drawerEdit: false,
+          zzz: '',
+
+        }
+      ]
+      this.drawerShow = true
+      return
+      getAllFieldListByTableIdAndDatabaseId(params).then(res => {
+        if (res.code == 200) {
+
+          this.drawerShow = true
+        }
+      })
+    },
     // 树节点过滤方法
     filterNode(value, data) {
       if (!value) return true;
@@ -166,7 +262,12 @@ export default {
     },
     // 左侧树点击事件
     handleNodeClick(data) {
-      this.treeID = data.id;
+      if (data.parentId) {
+        this.databaseName = data.label
+      } else {
+        this.treeID = data.id;
+        this.databaseName = ''
+      }
       this.isChildrenNode = data.nodeLayerIndex
       this.handleQuery();
     },
@@ -184,6 +285,7 @@ export default {
     // 左侧树数据
     getProtectCategory(key) {
       this.treeLoading = true
+      this.Loading = true
       getAllProxys(key).then((resp) => {
         if (resp.data.length == 0) {
           this.Loading = false
@@ -194,7 +296,6 @@ export default {
             this.$refs.tree.setCurrentKey(this.treeID);
           });
         }
-        this.Loading = false
         this.treeLoading = false
         this.getList()
       });
@@ -205,11 +306,13 @@ export default {
       let params = {
         ...this.queryParams,
         proxysId: this.treeID,
+        databaseName: this.databaseName,
       }
       getTableListByProxysId(params).then((response) => {
         this.dataAll = response.data.rows;
         this.total = response.data.total;
         this.loading = false;
+        this.Loading = false
       });
     },
     /** 搜索按钮操作 */
