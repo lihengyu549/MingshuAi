@@ -265,3 +265,11 @@ export function getAllFieldListByTableIdAndDatabaseId(params) {
     params: params,
   })
 }
+// 校验当前子类下的规则名是否重复
+export function nameRules(params) {
+  return request({
+    url: '/system/category/verify/attach/data/item',
+    method: 'get',
+    params: params,
+  })
+}

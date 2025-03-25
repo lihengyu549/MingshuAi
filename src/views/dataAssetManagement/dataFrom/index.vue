@@ -128,8 +128,8 @@
           <el-radio v-model="connectionType" label="0">SID</el-radio>
           <el-radio v-model="connectionType" label="1">Service Name</el-radio>
         </el-form-item>
-        <el-form-item v-show="form.databaseType != 'ORACLE'" label="实例名/库名" prop="exampleOrLibraryName" :rules="rules.exampleOrLibraryName()">
-          <el-input v-model="form.exampleOrLibraryName" placeholder="请输入实例名/库名" />
+        <el-form-item v-show="form.databaseType != 'ORACLE'" label="实例名/库名" prop="examplesName" :rules="rules.examplesName()">
+          <el-input v-model="form.examplesName" placeholder="请输入实例名/库名" />
         </el-form-item>
         <el-form-item label="扫描内容" prop="tabelCheckedName" :rules="rules.tabelCheckedName">
           <div @click="scanContentFn()"><el-input style="position: relative;" readonly >
@@ -397,7 +397,7 @@ export default {
         targetUserPassword: [
           { required: true, message: '请输入密码', trigger: 'blur' }
         ],
-        exampleOrLibraryName: () => {
+        examplesName: () => {
           return [{
             required: this.form.databaseType == '达梦' || this.form.databaseType == 'POSTGRES',
             message: '请输入',
@@ -1014,7 +1014,7 @@ export default {
             connectionType: this.connectionType,
             connectionValue: this.form.connectionValue,
             databaseType: this.findDatabaseValueByName(this.form.databaseType),
-            exampleOrLibraryName:this.form.exampleOrLibraryName
+            examplesName:this.form.examplesName
           }
           let res = await getListTables(data)
           if (res.data.option.length == 0) {

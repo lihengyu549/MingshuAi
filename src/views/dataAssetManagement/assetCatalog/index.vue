@@ -73,19 +73,18 @@
     <el-drawer :title="drawerTitle" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl" size="55%">
       <el-table :data="drawerData" ref="tableRef">
         <el-table-column label="字段名称" align="center" prop="aaa" width="150" show-overflow-tooltip />
-        <el-table-column label="原生字段注释（可编辑）" align="center" prop="bbb">
+        <el-table-column label="原生字段注释（可编辑）" align="center" prop="bbb" show-overflow-tooltip>
           <template slot-scope="scope">
             <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row,scope.$index)">{{ scope.row.bbb }}</span>
             <el-input id="editInput" :autofocus="true" v-else v-model="scope.row.zzz"
               @blur="drawerEditBlurFn(scope.row,scope.$index)" size="small" />
           </template>
         </el-table-column>
-        <el-table-column label="合成字段注释" align="center" prop="ccc" width="150" />
-        <el-table-column label="样本是否为空" align="center" prop="ddd" width="100" />
-        <el-table-column label="样本重复率" align="center" prop="eee" width="100" />
-        <el-table-column label="是否为脏数据" align="center" prop="fff" width="100" />
-
-        <el-table-column label="样本重复率" align="center" prop="ggg" width="100">
+        <el-table-column label="合成字段注释" align="center" prop="ccc" width="150"  show-overflow-tooltip/>
+        <el-table-column label="样本是否为空" align="center" prop="ddd" width="100" show-overflow-tooltip/>
+        <el-table-column label="样本重复率" align="center" prop="eee" width="100" show-overflow-tooltip/>
+        <el-table-column label="是否为脏数据" align="center" prop="fff" width="100" show-overflow-tooltip/>
+        <el-table-column label="样本重复率" align="center" prop="ggg" width="100" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.ggg }}</span>
           </template>

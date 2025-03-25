@@ -41,10 +41,16 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd">新增任务</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd">新增数据库</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-close" size="medium" @click="deleteFn">删除任务</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleEcelFn">新增Excel文件</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button type="primary" icon="el-icon-thumb" size="medium" @click="implementFn">执行</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button type="primary" icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -69,8 +75,6 @@
       <el-table-column label="更新时间" align="center" prop="updateTime" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button type="text" size="mini" @click="implementFn">执行</el-button>
-          <el-button type="text" size="mini" @click="implementFn">编辑</el-button>
           <el-button size="mini" type="text" @click="resultLookFn(scope.row)">结果查看</el-button>
           <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
             @click="resultReleaseFn(scope.row)">结果发布</el-button>
@@ -83,38 +87,23 @@
     <el-dialog class="addMsg" :title="title" :visible.sync="open" width="580px" append-to-body
       :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
-        <el-form-item label="任务名称" prop="sourceName" :rules="rules.sourceName">
-          <el-input v-model="form.sourceName" @blur="getNameTestingFn(form.sourceName)" maxlength="50"
-            placeholder="请输入任务名称" />
-        </el-form-item>
-        <el-form-item label="数据源名称" prop="projectName" :rules="rules.projectName">
-          <el-select v-model="form.projectName" clearable @change="projectChangeEdit($event)">
-            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
+        <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
+          <el-select v-model="form.databaseType" placeholder="请选择数据库类型" @change="databaseTypeChange($event)">
+            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="分类分级框架" :disabled="true" prop="projectName" :rules="rules.projectName">
-          <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
+        <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
+          <el-input v-model="form.sourceName" 
+            @blur="getNameTestingFn(form.sourceName)" maxlength="50" placeholder="请输入数据源名称" />
         </el-form-item>
-        <el-form-item label="ai分析引擎" prop="targetIp" :rules="rules.targetIp">
-          <el-radio-group v-model="form.radio">
-            <el-radio label="1">快速响应</el-radio>
-            <el-radio label="2">深度思考</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="置信度" prop="projectName" :rules="rules.projectName">
-          <el-select v-model="form.projectName" clearable @change="projectChangeEdit($event)">
-            <el-option v-for="item in aaalist" :key="item.id" :label="item.name" :value="item.value">
+        <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
+          <el-select v-model="form.projectName" placeholder="请输入分类分级框架" clearable @change="projectChangeEdit($event)">
+            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="人工确认" prop="projectName" :rules="rules.projectName">
-          <el-select v-model="form.projectName" clearable @change="projectChangeEdit($event)">
-            <el-option v-for="item in bbblist" :key="item.id" :label="item.name" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-<!--         
+
         <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
           <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
         </el-form-item>
@@ -128,8 +117,7 @@
         <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
           <el-input v-model="form.targetUserPassword" maxlegth="100" placeholder="请输入数据库密码" />
         </el-form-item>
-        <el-form-item v-show="isServiesNameRequired" label="服务名" prop="connectionValue"
-          :rules="rules.connectionValue()">
+        <el-form-item v-show="isServiesNameRequired" label="服务名" prop="connectionValue" :rules="rules.connectionValue()">
           <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput(form.connectionValue)"
             placeholder="请输入" />
         </el-form-item>
@@ -138,6 +126,8 @@
           <el-radio v-model="connectionType" label="1">Service Name</el-radio>
         </el-form-item>
         <el-form-item label="表名" prop="targetDatabase" :rules="rules.targetDatabase">
+          <!-- 
+          <el-input v-if="show" v-model="form.targetDatabase" placeholder="请输入数据库名称" /> -->
           <el-select ref="selectRef" allow-create @change="targetDatabaseChange" filterable multiple clearable
             v-model="form.targetDatabase" placeholder="请选择数据库名称">
             <el-option v-if="targetDataList.length" key="all" label="全选" value="all"></el-option>
@@ -153,13 +143,15 @@
           <div class="error" v-if="showSucType == 2">连接失败</div>
         </div>
         <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
-          <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
-          <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
-        </el-form-item> -->
+          <!-- @input="businessNameFn(form.businessName)" -->
+          <el-input v-model="form.businessName" maxlength="50" 
+            placeholder="请输入来源业务系统" />
+            <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="connectTest('form')">取消</el-button>
+        <el-button @click="connectTest('form')">测试</el-button>
       </div>
     </el-dialog>
     <el-dialog class="deleteCla" title="系统提示" :visible.sync="deleteVisible" width="450px" append-to-body
@@ -184,7 +176,8 @@
         <el-form-item label="数据源名称" prop="sourceName">
           <!-- @input="importNameTestingFn(importData.sourceName)" -->
           <el-input v-model="importData.sourceName" maxlength="50"
-            @blur="getimortantNameTestingFn(importData.sourceName)" placeholder="请输入数据源名称"></el-input>
+            @blur="getimortantNameTestingFn(importData.sourceName)" 
+            placeholder="请输入数据源名称"></el-input>
         </el-form-item>
         <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
           <el-select v-model="importData.categoryId" class="serachInput" placeholder="全部">
@@ -194,7 +187,7 @@
         </el-form-item>
         <el-form-item label="来源业务系统" prop="businessName">
           <el-input v-model="importData.businessName" maxlength="50" placeholder="请输入数据源名称"></el-input>
-          <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
+            <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
         </el-form-item>
         <el-form-item label="导入文件" prop="importFile">
           <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
@@ -256,16 +249,6 @@ export default {
       addUserId: 0,
       mainLoading: false,
       targetDataList: [],
-      aaalist:[
-        { name: "低", id: 0, value: "0" },
-        { name: "中", id: 1, value: "1" },
-        { name: "高", id: 2, value: "2" },
-      ],
-      bbblist:[
-        { name: "全部", id: 0, value: "0" },
-        { name: "未确认", id: 1, value: "1" },
-        { name: "已确认", id: 2, value: "2" },
-      ],
       dataYTpeList: [
         {
           value: 'DATABASE',
@@ -276,13 +259,13 @@ export default {
         }
       ],
       databaseTypeList: [
-        { name: "MYSQL", id: 0, value: "MYSQL" },
-        { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
-        { name: "ORACLE", id: 2, value: "ORACLE" },
-        //  { name: "TIDB", id: 2, value: "TIDB" }, 
-        { name: "POSTGRES", id: 3, value: "POSTGRES" },
-        { name: "达梦", id: 4, value: "DM" },
-        //  { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }
+      { name: "MYSQL", id: 0, value: "MYSQL" },
+       { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, 
+       { name: "ORACLE", id: 2, value: "ORACLE" }, 
+      //  { name: "TIDB", id: 2, value: "TIDB" }, 
+       { name: "POSTGRES", id: 3, value: "POSTGRES" }, 
+       { name: "达梦", id: 4, value: "DM" }, 
+      //  { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }
       ],
       publishStatus: [
         {
@@ -357,12 +340,12 @@ export default {
       // 表单参数
       form: {
         // projectName: null,
-        aaa: '1',
+        aaa:'1',
         projectId: null,
         sourceName: '',
-        databaseType: '',
-      },
-      connectionType: '1',
+        databaseType:'',
+    },
+      connectionType:'1',
       addForm: {},
       // 表单校验
       rules: {
@@ -390,9 +373,9 @@ export default {
           { required: true, message: '请输入密码', trigger: 'blur' }
         ],
         connectionValue: () => {
-          return [{
-            required: this.isServiesNameRequired,
-            message: '请输入',
+          return [{ 
+            required:this.isServiesNameRequired,
+            message: '请输入', 
             trigger: 'blur'
           }]
         },
@@ -427,7 +410,7 @@ export default {
         importShow: false,
         businessName: '',
       },
-      isServiesNameRequired: false,
+      isServiesNameRequired:false,
       debounceTimeout: null,
       // 表单校验
       importDataRules: {
@@ -460,10 +443,10 @@ export default {
     this.getList()
   },
   methods: {
-    databaseTypeChange(val) {
-      if (val == 'ORACLE') {
+    databaseTypeChange(val){
+      if(val =='ORACLE'){
         this.isServiesNameRequired = true
-      } else {
+      }else{
         this.isServiesNameRequired = false
       }
     },

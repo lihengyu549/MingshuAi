@@ -52,15 +52,16 @@
           <!-- <el-table-column width="55" align="center" /> -->
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
-          <el-table-column label="规则名称" align="center" prop="ruleName" />
-          <el-table-column label="识别对象" align="center" prop="recognizeObject">
+          <el-table-column label="规则名称" align="center" prop="ruleName" show-overflow-tooltip/>
+          <el-table-column label="所属框架" align="center" prop="attachData" show-overflow-tooltip/>
+          <el-table-column label="识别对象" align="center" prop="recognizeObject" show-overflow-tooltip>
             <template slot-scope="scope">
               <span>
                 {{ recognizeObjectMsg(scope.row.recognizeObject) }}
               </span>
             </template>
           </el-table-column>
-          <el-table-column label="识别方式" align="center" prop="recognizeWay">
+          <el-table-column label="识别方式" align="center" prop="recognizeWay" show-overflow-tooltip>
             <template slot-scope="scope">
               <span>
                 {{ recognizeWayMsg(scope.row.recognizeWay) }}
@@ -93,7 +94,7 @@
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" style="padding-right: 60px;">
         <el-form-item label="规则名称" prop="ruleName">
-          <el-input v-model="addOrEditDataRuls.ruleName" :disabled="addOrEdit.flag == 3" maxlength="50"
+          <el-input v-model="addOrEditDataRuls.ruleName" @blur="getNameTestingFn(addOrEditDataRuls.ruleName)" :disabled="addOrEdit.flag == 3" maxlength="50"
             placeholder="请输入规则名称"></el-input>
         </el-form-item>
         <el-form-item label="识别对象" class="addSelectClass" prop="recognizeObject">
@@ -141,7 +142,7 @@
 <script>
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getParentIdTree, getListitem, enableDataItem, deleteDataItem, updateAttachDataItme, nameTesting, getFrameworks, addAttachDataItme } from "@/api/system/protectCategory";
+import { getParentIdTree, getListitem, enableDataItem, deleteDataItem, updateAttachDataItme, nameTesting, getFrameworks, addAttachDataItme,nameRules } from "@/api/system/protectCategory";
 import { number } from "echarts";
 import r from "highlight.js/lib/languages/r";
 export default {
@@ -478,22 +479,6 @@ export default {
         }
       });
     },
-    // // 文件上传前钩子
-    // importFileBeforeUpload(val) {
-    //   this.importData.importFile = val.name
-    //   this.importData.fileList.push(val)
-
-    //   // 暂时禁止上传，等接口
-    //   return false
-    // },
-
-    // jumpApi(url, id) {
-    //   const routeData = this.$router.resolve({
-    //     path: "/systemInfo/api",
-    //     query: { id: id, url: url },
-    //   });
-    //   window.open(routeData.href, '_blank')
-    // },
     filterNode(value, data) {
       if (!value) return true;
       return data.categoryName.indexOf(value) !== -1;
@@ -568,6 +553,38 @@ export default {
       this.queryParams.pageNum = 1;
       this.getList();
 
+    },
+    // 校验名称是否重复
+    getNameTestingFn(val, from) {
+      this.importDataLoading = true
+      let params = {
+        ruleName: val,
+        dataId: this.addOrEditDataRuls.categoryDataId || this.treeID,
+      }
+      if (val) {
+        nameRules(params).then((res) => {
+          this.importDataLoading = false
+          if(res.data) {
+          this.addOrEditDataRuls.ruleName = ''
+          this.$message({
+              message: '名称重复',
+              type: 'error'
+            })
+          }else {
+            this.importDataLoading = false
+          }
+          return false
+        })
+        .catch((err) => {
+          this.addOrEditDataRuls.ruleName = ''
+          this.importDataLoading = false
+          return false
+        })
+      } else {
+        this.addOrEditDataRuls.ruleName = ''
+        this.importDataLoading = false
+        return false
+      }
     },
     /** 重置按钮操作 */
     resetQuery() {
