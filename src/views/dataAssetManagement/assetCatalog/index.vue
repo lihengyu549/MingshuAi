@@ -20,16 +20,16 @@
               @keyup.enter.native="handleQuery" />
           </el-form-item> -->
 
-          <el-form-item label="表名" prop="recognizeWay">
-            <el-select v-model="queryParams.recognizeWay" @change="selectProjectIdChange" placeholder="全部">
-              <el-option v-for="item in dataQualityList" :key="item.value" :label="item.label" :value="item.value">
+          <el-form-item label="表名" prop="tableName">
+            <el-select v-model="queryParams.tableName" @change="selectProjectIdChange" placeholder="全部">
+              <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.label">
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="数据质量" prop="recognizeObject">
+          <!-- <el-form-item label="数据质量" prop="recognizeObject">
             <el-input v-model="queryParams.ruleName" @input="inputSearch" placeholder="请输入规则名称" clearable
               @keyup.enter.native="handleQuery" />
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item>
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
           </el-form-item>
@@ -55,10 +55,10 @@
                 <div>数据量级:{{ item.dataMagnitude }}</div>
                 <div>原生表注释:{{ item.oldTableRemark }}</div>
                 <div>合成表注释:{{ item.craftTableRemark }}</div>
-                <div>原生字段注释占比:{{ item.oldFieldRemark }}</div>
-                <div>空值字段比例:{{ item.nullValueField }}</div>
-                <div>样本长度过短比例:{{ item.onlyOneValueField }}</div>
-                <div>样本重复率过高比例:{{ item.repeatValueField }}</div>
+                <div>原生字段注释占比:{{ item.oldFieldRemark?item.oldFieldRemark + '%' : '' }}</div>
+                <div>空值字段比例:{{ item.nullValueField?item.nullValueField + '%' : '' }}</div>
+                <div>样本长度过短比例:{{ item.onlyOneValueField ?item.onlyOneValueField + '%' : '' }}</div>
+                <div>样本重复率过高比例:{{ item.repeatValueField ?item.repeatValueField + '%' : '' }}</div>
                 <div>有效字段数:{{ item.effectiveCount }}</div>
                 <div>脏数据字段数:{{ item.dirtyData }}</div>
                 <div>数据来源:{{ item.dataType }}</div>
@@ -70,26 +70,33 @@
       <pagination class="paginationClass" v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
         :limit.sync="queryParams.pageSize" @pagination="getList" />
     </el-row>
-    <el-drawer :title="drawerTitle" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl" size="55%">
-      <el-table :data="drawerData" ref="tableRef">
-        <el-table-column label="字段名称" align="center" prop="aaa" width="150" show-overflow-tooltip />
-        <el-table-column label="原生字段注释（可编辑）" align="center" prop="bbb" show-overflow-tooltip>
+    <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl" size="55%">
+      <el-table :data="drawerData" ref="tableRef" border class="tableBox">
+        <el-table-column label="字段名称" align="center" prop="fieldName" width="150" show-overflow-tooltip />
+        <el-table-column label="原生字段注释" align="center" prop="oldFieldRemark" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row,scope.$index)">{{ scope.row.bbb }}</span>
+            <span>{{ scope.row.oldFieldRemark }}</span>
+
+            <!-- <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row,scope.$index)">{{ scope.row.bbb }}</span>
             <el-input id="editInput" :autofocus="true" v-else v-model="scope.row.zzz"
-              @blur="drawerEditBlurFn(scope.row,scope.$index)" size="small" />
+              @blur="drawerEditBlurFn(scope.row,scope.$index)" size="small" /> -->
           </template>
         </el-table-column>
-        <el-table-column label="合成字段注释" align="center" prop="ccc" width="150"  show-overflow-tooltip/>
-        <el-table-column label="样本是否为空" align="center" prop="ddd" width="100" show-overflow-tooltip/>
-        <el-table-column label="样本重复率" align="center" prop="eee" width="100" show-overflow-tooltip/>
-        <el-table-column label="是否为脏数据" align="center" prop="fff" width="100" show-overflow-tooltip/>
-        <el-table-column label="样本重复率" align="center" prop="ggg" width="100" show-overflow-tooltip>
+        <el-table-column label="合成字段注释" align="center" prop="aiFieldRemark" width="150"  show-overflow-tooltip/>
+        <el-table-column label="样本是否为空" align="center" prop="dataIsNull" width="100" show-overflow-tooltip/>
+        <el-table-column label="样本重复率" align="center" prop="dataIsRepeat" width="100" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span>{{ scope.row.dataIsRepeat ?scope.row.dataIsRepeat+'%':''}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="样本长度过短" align="center" prop="sampleLengthShort" width="100" show-overflow-tooltip/>
+        <el-table-column label="是否为脏数据" align="center" prop="dirtyData" width="100" show-overflow-tooltip/>
+        <!-- <el-table-column label="样本重复率" align="center" prop="dataIsRepeat" width="100" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.ggg }}</span>
           </template>
-        </el-table-column>
-        <el-table-column label="操作" align="center" width="100" class-name="small-padding fixed-width">
+        </el-table-column> -->
+        <el-table-column label="样本" align="center" width="100" class-name="small-padding fixed-width">
           <template slot-scope="scope">
             <el-tooltip placement="bottom" effect="light">
               <div slot="content">
@@ -109,7 +116,7 @@
 </template>
 <script>
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId } from "@/api/system/protectCategory";
+import { getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId,getSelectTableNames } from "@/api/system/protectCategory";
 export default {
   name: "assetCatalog",
   components: {},
@@ -123,20 +130,7 @@ export default {
       Loading: false,// 全局loading
       total: 10,
       loading: false,
-      dataQualityList: [
-        {
-          value: '1',
-          label: '高'
-        },
-        {
-          value: '2',
-          label: '中'
-        },
-        {
-          value: '3',
-          label: '低'
-        },
-      ],
+      tableNameList: [],
       dataAll: [
 
       ],
@@ -170,7 +164,6 @@ export default {
     this.getProtectCategory()
   },
   mounted() {
-
   },
   methods: {
     // 数字输入框input事件
@@ -179,15 +172,6 @@ export default {
       let numberVal = parseInt(val)
       if (numberVal > 100) {
         this.addOrEditDataRuls.ruleValue = '100'
-      }
-    },
-    // 数据质量文字展示
-    recognizeWayMsg(val) {
-      for (let item of this.dataQualityList) {
-        if (val == item.value) {
-          return item.label
-
-        }
       }
     },
     messsucc(res, flag) {
@@ -231,25 +215,12 @@ export default {
         tableId: row.tableId,
         databaseId: row.databaseId,
       }
-      this.drawerData = [
-        {
-          aaa: 1,
-          bbb: 2,
-          ccc: 3,
-          ddd: 4,
-          eee: 5,
-          fff: 6,
-          ggg: 7,
-          drawerEdit: false,
-          zzz: '',
-
-        }
-      ]
-      this.drawerShow = true
-      return
       getAllFieldListByTableIdAndDatabaseId(params).then(res => {
         if (res.code == 200) {
-
+          this.drawerData = res.data
+          this.drawerData.forEach(ele => {
+          ele.sampleList = JSON.parse(ele.data).map((item => ({ value: item })))
+        })
           this.drawerShow = true
         }
       })
@@ -263,12 +234,14 @@ export default {
     handleNodeClick(data) {
       if (data.parentId) {
         this.databaseName = data.label
+        this.treeID = data.parentId;
       } else {
         this.treeID = data.id;
         this.databaseName = ''
       }
       this.isChildrenNode = data.nodeLayerIndex
       this.handleQuery();
+      this.getSelectTableNamesFn()
     },
 
     // 定时器，防抖使用
@@ -296,6 +269,7 @@ export default {
           });
         }
         this.treeLoading = false
+        this.getSelectTableNamesFn()
         this.getList()
       });
     },
@@ -310,9 +284,21 @@ export default {
       getTableListByProxysId(params).then((response) => {
         this.dataAll = response.data.rows;
         this.total = response.data.total;
-        this.loading = false;
         this.Loading = false
+        this.loading = false
       });
+    },
+    // 字段信息
+    async getSelectTableNamesFn() {
+      let params = {
+        proxysId: this.treeID,
+        databaseName: this.databaseName,
+      }
+      getSelectTableNames(params).then(res => {
+        if (res.code == 200) {
+          this.tableNameList = res.data
+        }
+      })
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -348,6 +334,27 @@ export default {
 }
 </style>
 <style scoped>
+.tableBox{
+  max-height: 800px;
+  overflow-y: auto;
+}
+.tableBox::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tableBox::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.tableBox::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+.el-drawer__wrapper /deep/.el-drawer__body{
+  padding: 0 20px;
+}
 .mian_box_item {
   margin-top: 15px;
   margin-right: 10px;

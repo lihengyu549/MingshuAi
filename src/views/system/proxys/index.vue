@@ -18,7 +18,7 @@
       </el-form-item>
 
       <el-form-item label="分类分级框架" prop="projectId">
-        <el-select clearable v-model="queryParams.projectId" @change="inputSearch" placeholder="请选择数据库类型">
+        <el-select clearable v-model="queryParams.projectId" @change="inputSearch" placeholder="请选择分类分级框架">
           <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
           </el-option>
         </el-select>
@@ -83,79 +83,37 @@
     <el-dialog class="addMsg" :title="title" :visible.sync="open" width="580px" append-to-body
       :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
-        <el-form-item label="任务名称" prop="sourceName" :rules="rules.sourceName">
-          <el-input v-model="form.sourceName" @blur="getNameTestingFn(form.sourceName)" maxlength="50"
+        <el-form-item label="任务名称" prop="tasksName" :rules="rules.tasksName">
+          <el-input v-model="form.tasksName" @blur="getNameTestingFn(form.tasksName)" maxlength="50"
             placeholder="请输入任务名称" />
         </el-form-item>
-        <el-form-item label="数据源名称" prop="projectName" :rules="rules.projectName">
-          <el-select v-model="form.projectName" clearable @change="projectChangeEdit($event)">
-            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
+        <el-form-item label="数据源名称" prop="id" :rules="rules.id">
+          <el-select v-model="form.id" clearable @change="projectChangeEdit($event)">
+            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.sourceName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="分类分级框架" :disabled="true" prop="projectName" :rules="rules.projectName">
-          <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
+        <el-form-item label="分类分级框架">
+          <el-input v-model="form.projectName" :disabled="true" @input="targetIpRulesFn"/>
         </el-form-item>
-        <el-form-item label="ai分析引擎" prop="targetIp" :rules="rules.targetIp">
-          <el-radio-group v-model="form.radio">
+        <el-form-item label="ai分析引擎" prop="aiAnalyticsEngine">
+          <el-radio-group v-model="form.aiAnalyticsEngine">
             <el-radio label="1">快速响应</el-radio>
             <el-radio label="2">深度思考</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="置信度" prop="projectName" :rules="rules.projectName">
-          <el-select v-model="form.projectName" clearable @change="projectChangeEdit($event)">
-            <el-option v-for="item in aaalist" :key="item.id" :label="item.name" :value="item.value">
+        <el-form-item label="置信度" prop="confidenceLevel" :rules="rules.confidenceLevel">
+          <el-select v-model="form.confidenceLevel" clearable>
+            <el-option v-for="item in confidenceLevelList" :key="item.id" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="人工确认" prop="projectName" :rules="rules.projectName">
-          <el-select v-model="form.projectName" clearable @change="projectChangeEdit($event)">
-            <el-option v-for="item in bbblist" :key="item.id" :label="item.name" :value="item.value">
+        <el-form-item label="人工确认" prop="confirm" :rules="rules.confirm">
+          <el-select v-model="form.confirm" clearable>
+            <el-option v-for="item in confirmList" :key="item.id" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-<!--         
-        <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
-          <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
-        </el-form-item>
-
-        <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
-          <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
-        </el-form-item>
-        <el-form-item label="用户" prop="targetUserName" :rules="rules.targetUserName">
-          <el-input v-model="form.targetUserName" placeholder="请输入数据库用户名称" />
-        </el-form-item>
-        <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
-          <el-input v-model="form.targetUserPassword" maxlegth="100" placeholder="请输入数据库密码" />
-        </el-form-item>
-        <el-form-item v-show="isServiesNameRequired" label="服务名" prop="connectionValue"
-          :rules="rules.connectionValue()">
-          <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput(form.connectionValue)"
-            placeholder="请输入" />
-        </el-form-item>
-        <el-form-item v-show="isServiesNameRequired" label="连接方式">
-          <el-radio v-model="connectionType" label="0">SID</el-radio>
-          <el-radio v-model="connectionType" label="1">Service Name</el-radio>
-        </el-form-item>
-        <el-form-item label="表名" prop="targetDatabase" :rules="rules.targetDatabase">
-          <el-select ref="selectRef" allow-create @change="targetDatabaseChange" filterable multiple clearable
-            v-model="form.targetDatabase" placeholder="请选择数据库名称">
-            <el-option v-if="targetDataList.length" key="all" label="全选" value="all"></el-option>
-            <el-option v-for="item in targetDataList" :key="item.value" :label="item.name" :value="item.value">
-            </el-option>
-          </el-select>
-          <div class="getDiv">
-            <el-button type="primary" @click="getDatabaseName">获 取</el-button>
-          </div>
-        </el-form-item>
-        <div class="impShow" v-show="showSucType > 0">
-          <div class="success" v-if="showSucType == 1">连接成功</div>
-          <div class="error" v-if="showSucType == 2">连接失败</div>
-        </div>
-        <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
-          <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
-          <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
-        </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -227,8 +185,14 @@ import {
 } from "@/api/system/proxyUser";
 
 import {
-  listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys,
-  importExcel, publish, createProxys, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, databaseListI
+  listProxys, getProxys, connectTestI, delProxys, updateProxys,
+  importExcel, publish, createProxys,  databaseMaskI, strategyAll, databaseMask, databaseListI,
+  getScanCompleteData,
+  addScanCompleteDataTasks,
+  deleteScanCompleteDataTasks,
+  editScanCompleteDataTasks,
+  dataMark,
+  getTasksListByName,
 } from "@/api/system/proxys";
 import { listAllProject, } from "@/api/system/project";
 import {
@@ -256,12 +220,12 @@ export default {
       addUserId: 0,
       mainLoading: false,
       targetDataList: [],
-      aaalist:[
+      confidenceLevelList:[
         { name: "低", id: 0, value: "0" },
         { name: "中", id: 1, value: "1" },
         { name: "高", id: 2, value: "2" },
       ],
-      bbblist:[
+      confirmList:[
         { name: "全部", id: 0, value: "0" },
         { name: "未确认", id: 1, value: "1" },
         { name: "已确认", id: 2, value: "2" },
@@ -275,15 +239,7 @@ export default {
           label: 'Excel表'
         }
       ],
-      databaseTypeList: [
-        { name: "MYSQL", id: 0, value: "MYSQL" },
-        { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
-        { name: "ORACLE", id: 2, value: "ORACLE" },
-        //  { name: "TIDB", id: 2, value: "TIDB" }, 
-        { name: "POSTGRES", id: 3, value: "POSTGRES" },
-        { name: "达梦", id: 4, value: "DM" },
-        //  { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }
-      ],
+      databaseTypeList: [],
       publishStatus: [
         {
           value: 0,
@@ -341,24 +297,13 @@ export default {
         publishStatus: '',
         maskComplete: '',
         projectId: '',
-        // proxyPort: null,
-        // proxyUserName: null,
-        // proxyUserPassword: null,
-        // proxyIp: null,
-        // targetIp: null,
-        // targetPort: null,
-        // targetDatabase: "",
-        // targetUserName: null,
-        // targetUserPassword: null,
-        // protocolPort: null,
-        // projectId: null,
-        // proxyStatus: null
       },
       // 表单参数
       form: {
         // projectName: null,
         aaa: '1',
         projectId: null,
+        aiAnalyticsEngine:"1",
         sourceName: '',
         databaseType: '',
       },
@@ -366,58 +311,19 @@ export default {
       addForm: {},
       // 表单校验
       rules: {
-        userPassword: [
-          { required: true, message: "用户密码不能为空", trigger: "blur" },
+        tasksName: [
+          { required: true, message: "任务名称不能为空", trigger: "blur" },
         ],
-        userName: [
-          { required: true, message: "用户名称不能为空", trigger: "blur" },
+        id: [
+          { required: true, message: "数据源名称不能为空", trigger: "blur" },
         ],
-        sourceName: [{
-          required: true, message: "数据源名称不能为空", trigger: "blur"
+        confidenceLevel: [{
+          required: true, message: "置信度不能为空", trigger: "blur"
         }],
-        businessName: [{
-          required: true, message: "来源业务系统不能为空", trigger: "blur"
+        
+        confirm: [{
+          required: true, message: "人工确认状态不能为空", trigger: "blur"
         }],
-        databaseType: [{ required: true, message: '请选择数据库类型', trigger: 'blur' }],
-        projectName: [{ required: true, message: '请选择选分类分级框架', trigger: 'blur' }],
-        targetUserName: [
-          { required: true, message: "请输入数据库用户名称", trigger: "change" },
-        ],
-        targetDatabase: [
-          { required: true, message: "请选择数据库名称", trigger: "blur" },
-        ],
-        targetUserPassword: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
-        ],
-        connectionValue: () => {
-          return [{
-            required: this.isServiesNameRequired,
-            message: '请输入',
-            trigger: 'blur'
-          }]
-        },
-        targetIp: [
-          { required: true, message: "请输入数据库地址", trigger: "change" },
-          {
-            pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-            message: "请输入有效的IP地址"
-          },
-        ],
-        targetPort: [
-          { required: true, message: "请输入端口号", trigger: "change" },
-          {
-            pattern:
-              /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
-            message:
-              "请输入0~65535之间的5个数字",
-          },
-
-          {
-            min: 1,
-            max: 5,
-            message: "长度在 1 ~ 5 个字符",
-          },
-        ],
       },
       importDataLoading: false,
       importData: {
@@ -458,8 +364,14 @@ export default {
     // this.getProjectListEdit()
     this.gettreeOptionsList()
     this.getList()
+    this.getScanCompleteDataFn()
   },
   methods: {
+    getScanCompleteDataFn() {
+      getScanCompleteData().then((res) => {
+        this.databaseTypeList = res.data        
+      })
+    },
     databaseTypeChange(val) {
       if (val == 'ORACLE') {
         this.isServiesNameRequired = true
@@ -828,9 +740,11 @@ export default {
     },
 
     projectChangeEdit(e) {
-      this.projectNameEdit = e
-      // this.form.projectName = 
-      this.form.projectId = e
+      this.databaseTypeList.forEach((item)=>{
+        if(item.id == e) {
+          this.form.projectName = item.projectName
+        }
+      })
     },
     /** 查询数据库代理列表 */
     getList() {

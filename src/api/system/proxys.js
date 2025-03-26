@@ -202,3 +202,55 @@ export function saveDatabaseAndTables (data) {
     loading: true
   })
 }
+// 添加数据源到任务中的下拉数据接口--贺贺
+export function getScanCompleteData(params) {
+  return request({
+    url: '/system/proxy/getScanCompleteData',
+    method: 'get',
+    params: params,
+  })
+}
+
+// 创建任务保存接口--贺贺
+export function addScanCompleteDataTasks(params) {
+  return request({
+    url: '/system/proxy/addScanCompleteDataTasks',
+    method: 'post',
+    data: params,
+  })
+}
+// 删除任务接口--贺贺
+export function deleteScanCompleteDataTasks(params) {
+  return request({
+    url: '/system/proxy/deleteScanCompleteDataTasks',
+    method: 'post',
+    data: params,
+  })
+}
+// 修改任务信息接口--贺贺
+export function editScanCompleteDataTasks(params) {
+  return request({
+    url: '/system/proxy/editScanCompleteDataTasks',
+    method: 'post',
+    data: params,
+  })
+}
+
+// 任务开始执行接口--贺贺
+export function dataMark(params) {
+  return request({
+    url: '/system/proxy/database/dataMark',
+    method: 'post',
+    data: params,
+  })
+}
+
+// 分类分级任务列表接口（新）--贺贺
+export function getTasksListByName(params) {
+  return request({
+    url: '/system/proxy/getTasksListByName',
+    method: 'get',
+    params: params,
+  })
+}
+

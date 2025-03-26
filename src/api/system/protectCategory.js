@@ -273,3 +273,11 @@ export function nameRules(params) {
     params: params,
   })
 }
+// 获取指定数据源下拉所有表名
+export function getSelectTableNames(params) {
+  return request({
+    url: '/system/protectTableField/getSelectTableNames',
+    method: 'get',
+    params: params,
+  })
+}
