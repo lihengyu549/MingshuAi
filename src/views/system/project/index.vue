@@ -39,7 +39,6 @@
             </el-select>
           </el-form-item>
           <el-form-item>
-            <!-- <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button> -->
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
           </el-form-item>
           <div style="margin: 20px 0 20px 25px;">
@@ -128,7 +127,11 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="false" class="addSelectClass" label="AI自学习内容">
+        <el-form-item label="子类描述" prop="aaa">
+          <el-input v-model="addOrEditDataRuls.aaa" type="textarea" :autosize="{ minRows: 3, maxRows: 10}" :disabled="addOrEdit.flag == 3"
+            maxlength="500" placeholder="请输入子类描述"></el-input>
+        </el-form-item>
+        <el-form-item v-if="true" class="addSelectClass" label="AI自学习内容">
           <el-tag v-for="(tag, index) in tags" :key="tag.name" class="mx-1" closable @close="handleClose(tag, index)"
             :type="tag.type" style="margin: 0 10px;">
             {{ tag.name }}

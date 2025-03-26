@@ -281,3 +281,19 @@ export function getSelectTableNames(params) {
     params: params,
   })
 }
+// AI填充字段注释接口
+export function callAIPaddingComments(params) {
+  return request({
+    url: `/system/protectTableField/callAIPaddingComments?tableId=${params.tableId}&databaseId=${params.databaseId}`,
+    method: 'post',
+    data: params,
+  })
+}
+// AI填充字段注释接口
+export function updateDataQualityAssessment(params) {
+  return request({
+    url: `/system/protectTableField/updateDataQualityAssessment?tableId=${params.tableId}&databaseId=${params.databaseId}`,
+    method: 'post',
+    data: params,
+  })
+}

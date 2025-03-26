@@ -220,11 +220,11 @@ export function addScanCompleteDataTasks(params) {
   })
 }
 // 删除任务接口--贺贺
-export function deleteScanCompleteDataTasks(params) {
+export function deleteScanCompleteDataTasks(data) {
   return request({
-    url: '/system/proxy/deleteScanCompleteDataTasks',
+    url: `/system/proxy/deleteScanCompleteDataTasks?ids=${data}`,
     method: 'post',
-    data: params,
+    data: data,
   })
 }
 // 修改任务信息接口--贺贺
@@ -239,7 +239,7 @@ export function editScanCompleteDataTasks(params) {
 // 任务开始执行接口--贺贺
 export function dataMark(params) {
   return request({
-    url: '/system/proxy/database/dataMark',
+    url: `/system/proxy/database/dataMark?proxyIds=${params}`,
     method: 'post',
     data: params,
   })
@@ -254,3 +254,11 @@ export function getTasksListByName(params) {
   })
 }
 
+// 校验任务名称重复接口--贺贺
+export function verifyTasksName(params) {
+  return request({
+    url: '/system/proxy/verifyTasksName',
+    method: 'get',
+    params: params,
+  })
+}

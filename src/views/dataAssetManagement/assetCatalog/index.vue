@@ -42,9 +42,9 @@
                     style="font-size: 14px;">（字段总数{{ item.fieldCount }}）</span></div>
                 <div></div>
                 <div style="display: flex; align-items: center;">
-                  <div class="btnItem" @click="aiDataSetFn"><img class="btnImg" src="../../../assets/images/ai.png"
+                  <div class="btnItem" @click="aiDataSetFn(item)"><img class="btnImg" src="../../../assets/images/ai.png"
                       alt=""><span>数据填充</span></div>
-                  <div class="btnItem" @click="qualityEvaluationFn"><img class="btnImg"
+                  <div class="btnItem" @click="qualityEvaluationFn(item)"><img class="btnImg"
                       src="../../../assets/images/cz-zlpg.png" alt=""><span>质量评估</span></div>
                   <div class="btnItem" @click="fieldInformationFn(item)"><img class="btnImg"
                       src="../../../assets/images/chaxun.png" alt=""><span>字段信息</span></div>
@@ -116,7 +116,9 @@
 </template>
 <script>
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId,getSelectTableNames } from "@/api/system/protectCategory";
+import { getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId,
+  getSelectTableNames,callAIPaddingComments,updateDataQualityAssessment 
+ } from "@/api/system/protectCategory";
 export default {
   name: "assetCatalog",
   components: {},
@@ -178,9 +180,35 @@ export default {
       this.$message.success(`${res.msg},${flag}${res.data}个`)
     },
     // ai数据填充
-    aiDataSetFn() { },
+    aiDataSetFn(row) { 
+      this.loading = true
+      let params = {
+        tableId: row.tableId,
+        databaseId: row.databaseId,
+      }
+      callAIPaddingComments(params).then(res => {
+        if(res.code == 200) {
+          this.getList()
+          this.loading = false
+          this.$message.success(`填充成功`)
+        }
+      })
+    },
     // 质量评估
-    qualityEvaluationFn() { },
+    qualityEvaluationFn(row) { 
+      this.loading = true
+      let params = {
+        tableId: row.tableId,
+        databaseId: row.databaseId,
+      }
+      updateDataQualityAssessment(params).then(res => {
+        if(res.code == 200) {
+          this.getList()
+          this.loading = false
+          this.$message.success(`评估完成`)
+        }
+      })
+    },
     drawerEditFn(row,index) {
       row.drawerEdit = true
       row.zzz = row.bbb

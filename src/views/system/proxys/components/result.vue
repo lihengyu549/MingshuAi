@@ -116,6 +116,20 @@
             </el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="推理过程" prop="aaa">
+          <el-input v-model="resultForm.aaa" type="textarea" :autosize="{ minRows: 3, maxRows: 10}" :disabled="addOrEdit.flag == 3"
+            maxlength="500" placeholder="请输入推理过程"></el-input>
+        </el-form-item>
+        <el-form-item label="审核建议" prop="aaa">
+          <el-input v-model="resultForm.bbbb" type="textarea" :autosize="{ minRows: 3, maxRows: 10}" :disabled="addOrEdit.flag == 3"
+            maxlength="500" placeholder="请输入审核建议"></el-input>
+        </el-form-item>
+        <el-form-item label="置信度" prop="confidenceLevel">
+          <el-select v-model="resultForm.confidenceLevel" clearable>
+            <el-option v-for="item in confidenceLevelList" :key="item.id" :label="item.name" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
         <span>
@@ -160,6 +174,11 @@ export default {
   data() {
     return {
       updataLoading: false,
+      confidenceLevelList: [
+        { name: "低", id: 0, value: "0" },
+        { name: "中", id: 1, value: "1" },
+        { name: "高", id: 2, value: "2" },
+      ],
       addOptions: [
         {
           value: 1,
