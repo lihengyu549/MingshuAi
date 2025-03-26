@@ -42,8 +42,8 @@
                     style="font-size: 14px;">（字段总数{{ item.fieldCount }}）</span></div>
                 <div></div>
                 <div style="display: flex; align-items: center;">
-                  <div class="btnItem" @click="aiDataSetFn(item)"><img class="btnImg" src="../../../assets/images/ai.png"
-                      alt=""><span>数据填充</span></div>
+                  <div class="btnItem" @click="aiDataSetFn(item)"><img class="btnImg"
+                      src="../../../assets/images/ai.png" alt=""><span>数据填充</span></div>
                   <div class="btnItem" @click="qualityEvaluationFn(item)"><img class="btnImg"
                       src="../../../assets/images/cz-zlpg.png" alt=""><span>质量评估</span></div>
                   <div class="btnItem" @click="fieldInformationFn(item)"><img class="btnImg"
@@ -55,10 +55,10 @@
                 <div>数据量级:{{ item.dataMagnitude }}</div>
                 <div>原生表注释:{{ item.oldTableRemark }}</div>
                 <div>合成表注释:{{ item.craftTableRemark }}</div>
-                <div>原生字段注释占比:{{ item.oldFieldRemark?item.oldFieldRemark + '%' : '' }}</div>
-                <div>空值字段比例:{{ item.nullValueField?item.nullValueField + '%' : '' }}</div>
-                <div>样本长度过短比例:{{ item.onlyOneValueField ?item.onlyOneValueField + '%' : '' }}</div>
-                <div>样本重复率过高比例:{{ item.repeatValueField ?item.repeatValueField + '%' : '' }}</div>
+                <div>原生字段注释占比:{{ item.oldFieldRemark ? item.oldFieldRemark + '%' : '' }}</div>
+                <div>空值字段比例:{{ item.nullValueField ? item.nullValueField + '%' : '' }}</div>
+                <div>样本长度过短比例:{{ item.onlyOneValueField ? item.onlyOneValueField + '%' : '' }}</div>
+                <div>样本重复率过高比例:{{ item.repeatValueField ? item.repeatValueField + '%' : '' }}</div>
                 <div>有效字段数:{{ item.effectiveCount }}</div>
                 <div>脏数据字段数:{{ item.dirtyData }}</div>
                 <div>数据来源:{{ item.dataType }}</div>
@@ -70,33 +70,36 @@
       <pagination class="paginationClass" v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
         :limit.sync="queryParams.pageSize" @pagination="getList" />
     </el-row>
-    <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl" size="55%">
+    <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow"
+      :destroy-on-close="true" direction="rtl" size="55%">
       <el-table :data="drawerData" ref="tableRef" border class="tableBox">
         <el-table-column label="字段名称" align="center" prop="fieldName" width="150" show-overflow-tooltip />
-        <el-table-column label="原生字段注释" align="center" prop="oldFieldRemark" show-overflow-tooltip>
+        <el-table-column label="原生字段注释" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.oldFieldRemark }}</span>
-
-            <!-- <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row,scope.$index)">{{ scope.row.bbb }}</span>
-            <el-input id="editInput" :autofocus="true" v-else v-model="scope.row.zzz"
-              @blur="drawerEditBlurFn(scope.row,scope.$index)" size="small" /> -->
           </template>
         </el-table-column>
-        <el-table-column label="合成字段注释" align="center" prop="aiFieldRemark" width="150"  show-overflow-tooltip/>
-        <el-table-column label="样本是否为空" align="center" prop="dataIsNull" width="100" show-overflow-tooltip/>
+        <el-table-column label="合成字段注释" align="center" prop="aiFieldRemark" width="150" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span v-show="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, scope.$index)">{{ scope.row.aiFieldRemark }}</span>
+            <el-input v-show="scope.row.drawerEdit" id="editInput" :key="scope.$index" :autofocus="true" v-model="scope.row.aiFieldRemarkEdit"
+              @blur="drawerEditBlurFn(scope.row, scope.$index)" size="small" />
+          </template>
+        </el-table-column>
+        <el-table-column label="样本是否为空" align="center" prop="dataIsNull" width="100" show-overflow-tooltip />
         <el-table-column label="样本重复率" align="center" prop="dataIsRepeat" width="100" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span>{{ scope.row.dataIsRepeat ?scope.row.dataIsRepeat+'%':''}}</span>
+            <span>{{ scope.row.dataIsRepeat ? scope.row.dataIsRepeat + '%' : '' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="样本长度过短" align="center" prop="sampleLengthShort" width="100" show-overflow-tooltip/>
-        <el-table-column label="是否为脏数据" align="center" prop="dirtyData" width="100" show-overflow-tooltip/>
+        <el-table-column label="样本长度过短" align="center" prop="sampleLengthShort" width="100" show-overflow-tooltip />
+        <el-table-column label="是否为脏数据" align="center" prop="dirtyData" width="100" show-overflow-tooltip />
         <!-- <el-table-column label="样本重复率" align="center" prop="dataIsRepeat" width="100" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.ggg }}</span>
           </template>
         </el-table-column> -->
-        <el-table-column label="样本" align="center" width="100" class-name="small-padding fixed-width">
+        <el-table-column label="样本" align="center" width="80" class-name="small-padding fixed-width">
           <template slot-scope="scope">
             <el-tooltip placement="bottom" effect="light">
               <div slot="content">
@@ -116,9 +119,10 @@
 </template>
 <script>
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId,
-  getSelectTableNames,callAIPaddingComments,updateDataQualityAssessment 
- } from "@/api/system/protectCategory";
+import {
+  getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId,
+  getSelectTableNames, callAIPaddingComments, updateDataQualityAssessment
+} from "@/api/system/protectCategory";
 export default {
   name: "assetCatalog",
   components: {},
@@ -127,7 +131,6 @@ export default {
       drawerShow: false,
       drawerTitle: '',
       drawerData: [],
-      drawerEdit: false,
       filterText: '',// 过滤条件tree
       Loading: false,// 全局loading
       total: 10,
@@ -168,6 +171,10 @@ export default {
   mounted() {
   },
   methods: {
+    drawerEdit(flag) {
+      return flag
+    },
+
     // 数字输入框input事件
     numberInputFn(val) {
       this.addOrEditDataRuls.ruleValue = val.replace(/[^0-9]/g, '');
@@ -180,14 +187,14 @@ export default {
       this.$message.success(`${res.msg},${flag}${res.data}个`)
     },
     // ai数据填充
-    aiDataSetFn(row) { 
+    aiDataSetFn(row) {
       this.loading = true
       let params = {
         tableId: row.tableId,
         databaseId: row.databaseId,
       }
       callAIPaddingComments(params).then(res => {
-        if(res.code == 200) {
+        if (res.code == 200) {
           this.getList()
           this.loading = false
           this.$message.success(`填充成功`)
@@ -195,46 +202,48 @@ export default {
       })
     },
     // 质量评估
-    qualityEvaluationFn(row) { 
+    qualityEvaluationFn(row) {
       this.loading = true
       let params = {
         tableId: row.tableId,
         databaseId: row.databaseId,
       }
       updateDataQualityAssessment(params).then(res => {
-        if(res.code == 200) {
+        if (res.code == 200) {
           this.getList()
           this.loading = false
           this.$message.success(`评估完成`)
         }
       })
     },
-    drawerEditFn(row,index) {
-      row.drawerEdit = true
-      row.zzz = row.bbb
+    drawerEditFn(row, index) {
+      this.drawerData[index].drawerEdit = true
+      row.aiFieldRemarkEdit = row.aiFieldRemark
+      console.log(document.getElementById('editInput'));
       this.$nextTick(() => {
-        document.getElementById('editInput').focus();
+      this.drawerData[index].drawerEdit = true
+      document.getElementById('editInput').focus();
       })
     },
-    drawerEditBlurFn(row,index) {
+    drawerEditBlurFn(row, index) {
       this.$confirm('是否保存编辑数据?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          row.bbb = row.zzz
-          this.$message({
-            type: 'success',
-            message: '修改成功!'
-          });
-      this.drawerData[index].drawerEdit = false
-    }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          });          
-      this.drawerData[index].drawerEdit = false
-    });
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        row.aiFieldRemark = row.aiFieldRemarkEdit
+        this.$message({
+          type: 'success',
+          message: '修改成功!'
+        });
+        this.drawerData[index].drawerEdit = false
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+        this.drawerData[index].drawerEdit = false
+      });
     },
     // 字段信息
     async fieldInformationFn(row) {
@@ -247,8 +256,8 @@ export default {
         if (res.code == 200) {
           this.drawerData = res.data
           this.drawerData.forEach(ele => {
-          ele.sampleList = JSON.parse(ele.data).map((item => ({ value: item })))
-        })
+            ele.sampleList = JSON.parse(ele.data).map((item => ({ value: item })))
+          })
           this.drawerShow = true
         }
       })
@@ -362,10 +371,11 @@ export default {
 }
 </style>
 <style scoped>
-.tableBox{
+.tableBox {
   max-height: 800px;
   overflow-y: auto;
 }
+
 .tableBox::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -380,9 +390,11 @@ export default {
 .tableBox::-webkit-scrollbar-track {
   border-radius: 10px;
 }
-.el-drawer__wrapper /deep/.el-drawer__body{
+
+.el-drawer__wrapper /deep/.el-drawer__body {
   padding: 0 20px;
 }
+
 .mian_box_item {
   margin-top: 15px;
   margin-right: 10px;
