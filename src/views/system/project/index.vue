@@ -131,18 +131,19 @@
           <el-input v-model="addOrEditDataRuls.aaa" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             :disabled="addOrEdit.flag == 3" maxlength="500" placeholder="请输入子类描述"></el-input>
         </el-form-item>
-        <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="AI自学习内容">
-          <div class="tagsClass">
-            <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag" class="mx-1" closable
-              @close="handleClose(tag, index)" style="margin: 0 10px;">
-              {{ tag }}
-            </el-tag>
-            <el-input class="input-new-tag" v-if="inputVisible" maxlength="10" v-model="inputValue" ref="saveTagInput" size="small"
-              @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
-            </el-input>
-            <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 新增</el-button>
-          </div>
-        </el-form-item>
+        <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="特征标签">
+            <div class="tagsClass" :style="tagsShow?heightSmall:heightBig">
+              <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag+index" class="mx-1" :closable="addOrEdit.flag !== 3"
+                @close="handleClose(tag, index)" style="margin: 0 10px;">
+                {{ tag }}
+              </el-tag>
+              <el-input class="input-new-tag" v-if="inputVisible && countIs40" maxlength="10" v-model="inputValue" ref="saveTagInput"
+                size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
+              </el-input>
+              <el-button v-if="!inputVisible && countIs40 && addOrEdit.flag != 3" class="button-new-tag" size="small" @click="showInput">+ 新增</el-button>
+            </div>
+              <el-button class="button-new-tag" size="small" v-show="tags.length>10" @click="tagsShow = !tagsShow">{{ tagsShow?'展开':'收起' }}</el-button>
+            </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">确
@@ -162,6 +163,14 @@ export default {
   dicts: ['sys_risk_level'],
   data() {
     return {
+      heightSmall:{
+        height: '75px',
+        overflowY: 'auto'
+      },
+      heightBig:{
+        height: '300px',
+        overflowY: 'auto'
+      },
       importData: {
         importFile: '', // 导入魔板文件名
         fileList: [],//导入模板的文件数据
@@ -169,6 +178,8 @@ export default {
         importShow: false,
       },
       inputVisible: false,
+      countIs40:true,// 数量是否小于40
+      tagsShow:false,
       inputValue: '',
       categoryName: '',
       debounceTimeout: null,//防抖动
@@ -179,8 +190,7 @@ export default {
         flag: 1,// 1新增 2编辑 3查看
       },
       treeLoading: false,
-      tags: ['标签一','标签一','标签一','标签一','标签一','标签一','标签一',
-      '标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一'
+      tags: ['标签一', '标签一', '标签一', '标签一', '标签一', '标签一'
       ],
       // 表单校验
       addOrEditRules: {
@@ -302,6 +312,14 @@ export default {
   watch: {
     filterName(val) {
       this.$refs.tree.filter(val);
+    },
+    tags(val){
+      if(val.length>=40) {
+        this.countIs40 = false
+        this.$modal.msgWarning("学习内容最多定义40个标签");
+      }else {
+        this.countIs40 = true
+      }
     }
   },
   created() {
@@ -793,8 +811,6 @@ export default {
   justify-content: space-between;
 }
 
-.tagsClass {}
-
 .button-new-tag {
   margin-left: 10px;
   height: 32px;
@@ -807,6 +823,23 @@ export default {
   width: 90px;
   margin-left: 10px;
   vertical-align: bottom;
+}
+.tagsClass{
+  transition: all .5s ease-in-out;
+}
+.tagsClass::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tagsClass::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.tagsClass::-webkit-scrollbar-track {
+  border-radius: 10px;
 }
 
 /* ::v-deep

@@ -59,13 +59,10 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
     <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
-      <!-- <el-table-column type="selection" width="55" align="center" /> -->
-      <!-- <el-table-column label="id" align="center" prop="id" /> -->
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip />
-      <el-table-column label="字段注释" align="center" prop="fieldRemark" show-overflow-tooltip />
-      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
-      <!-- <el-table-column label="数据源" align="center" prop="databaseId" show-overflow-tooltip /> -->
+      <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip fixed/>
+      <el-table-column label="字段注释" align="center" prop="fieldRemark" show-overflow-tooltip fixed/>
+      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip fixed/>
       <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
       <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
       <el-table-column label="分类" align="center" min-width="250" prop="categoryName" show-overflow-tooltip />

@@ -132,11 +132,6 @@
 
 <script>
 import {
-  usersAddI
-} from "@/api/system/proxyUser";
-
-import {
-  listProxys, getProxys, connectTestI, delProxys, updateProxys,
   importExcel, publish, createProxys, databaseMaskI, strategyAll, databaseMask, databaseListI,
   getScanCompleteData,
   addScanCompleteDataTasks,
@@ -146,7 +141,6 @@ import {
   getTasksListByName,
   verifyTasksName,
 } from "@/api/system/proxys";
-import { listAllProject, } from "@/api/system/project";
 import {
   treeListI, categoryImport, getAttachData, attachStatus,
   forceLogout, updataAttach, nameTesting, addData, getFrameworks,
@@ -322,7 +316,14 @@ export default {
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
     implementFn(row) {
-      if (row.includes !== 'NONE') {
+      if(row.maskComplete== 'RUNNING'){
+        this.$message({
+          message: '当前任务执行中，请等待执行完成后再执行',
+          type: 'warning'
+        })
+        return
+      } 
+      if (row.maskComplete !== 'NONE') {
         this.$confirm(`重新执行任务前，⚠️ 请注意任务细节，否则可能将会覆盖改数据源上一次执行的所有结果`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -374,8 +375,9 @@ export default {
       });
     },
     reset() {
-      this.resetForm("form");
+      this.form = {}      
       this.form.aiAnalyticsEngine = '1'
+      this.form.projectName = ''
     },
     /** 搜索按钮操作 */
     handleQuery() {
