@@ -72,7 +72,7 @@
     </el-row>
     <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow"
       :destroy-on-close="true" direction="rtl" size="55%">
-      <el-table :data="drawerData" ref="tableRef" border class="tableBox">
+      <el-table :data="drawerData" ref="tableRef" :key="tableKey" border class="tableBox">
         <el-table-column label="字段名称" align="center" prop="fieldName" width="150" show-overflow-tooltip />
         <el-table-column label="原生字段注释" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
           <template slot-scope="scope">
@@ -81,8 +81,9 @@
         </el-table-column>
         <el-table-column label="合成字段注释" align="center" prop="aiFieldRemark" width="150" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span v-show="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, scope.$index)">{{ scope.row.aiFieldRemark }}</span>
-            <el-input v-show="scope.row.drawerEdit" id="editInput" :key="scope.$index" :autofocus="true" v-model="scope.row.aiFieldRemarkEdit"
+            <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, scope.$index)">{{
+              scope.row.aiFieldRemark }}</span>
+            <el-input v-else id="editInput" v-model="editMsg"
               @blur="drawerEditBlurFn(scope.row, scope.$index)" size="small" />
           </template>
         </el-table-column>
@@ -158,6 +159,8 @@ export default {
         children: "children",
         label: "label"
       },
+      tableKey: 0,
+      editMsg:'',
     };
   },
   watch: {
@@ -171,9 +174,6 @@ export default {
   mounted() {
   },
   methods: {
-    drawerEdit(flag) {
-      return flag
-    },
 
     // 数字输入框input事件
     numberInputFn(val) {
@@ -217,12 +217,11 @@ export default {
       })
     },
     drawerEditFn(row, index) {
-      this.drawerData[index].drawerEdit = true
-      row.aiFieldRemarkEdit = row.aiFieldRemark
-      console.log(document.getElementById('editInput'));
+      this.tableKey += 1
+      row.drawerEdit = true
+      this.editMsg = row.aiFieldRemark
       this.$nextTick(() => {
-      this.drawerData[index].drawerEdit = true
-      document.getElementById('editInput').focus();
+        document.getElementById('editInput').focus();
       })
     },
     drawerEditBlurFn(row, index) {
@@ -231,18 +230,20 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        row.aiFieldRemark = row.aiFieldRemarkEdit
+        row.aiFieldRemark = this.editMsg
         this.$message({
           type: 'success',
           message: '修改成功!'
         });
-        this.drawerData[index].drawerEdit = false
+        row.drawerEdit = false
+        this.tableKey = 0
       }).catch(() => {
         this.$message({
           type: 'info',
-          message: '已取消删除'
+          message: '已取消'
         });
-        this.drawerData[index].drawerEdit = false
+        row.drawerEdit = false
+        this.tableKey += 1
       });
     },
     // 字段信息
@@ -256,7 +257,11 @@ export default {
         if (res.code == 200) {
           this.drawerData = res.data
           this.drawerData.forEach(ele => {
-            ele.sampleList = JSON.parse(ele.data).map((item => ({ value: item })))
+            if (ele.data) {
+              ele.sampleList = JSON.parse(ele.data).map((item => ({ value: item })))
+            }
+            ele.drawerEdit = false
+            ele.aiFieldRemarkEdit = ''
           })
           this.drawerShow = true
         }

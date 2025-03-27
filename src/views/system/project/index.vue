@@ -12,8 +12,8 @@
         </div>
         <div class="head-container" v-loading="treeLoading">
           <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
-            :current-node-key="treeID" :expand-on-click-node="false"
-            :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current @node-click="handleNodeClick" />
+            :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
+            node-key="id" highlight-current @node-click="handleNodeClick" />
         </div>
       </el-col>
       <!--用户数据-->
@@ -128,14 +128,20 @@
           </el-select>
         </el-form-item>
         <el-form-item label="子类描述" prop="aaa">
-          <el-input v-model="addOrEditDataRuls.aaa" type="textarea" :autosize="{ minRows: 3, maxRows: 10}" :disabled="addOrEdit.flag == 3"
-            maxlength="500" placeholder="请输入子类描述"></el-input>
+          <el-input v-model="addOrEditDataRuls.aaa" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
+            :disabled="addOrEdit.flag == 3" maxlength="500" placeholder="请输入子类描述"></el-input>
         </el-form-item>
-        <el-form-item v-if="true" class="addSelectClass" label="AI自学习内容">
-          <el-tag v-for="(tag, index) in tags" :key="tag.name" class="mx-1" closable @close="handleClose(tag, index)"
-            :type="tag.type" style="margin: 0 10px;">
-            {{ tag.name }}
-          </el-tag>
+        <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="AI自学习内容">
+          <div class="tagsClass">
+            <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag" class="mx-1" closable
+              @close="handleClose(tag, index)" style="margin: 0 10px;">
+              {{ tag }}
+            </el-tag>
+            <el-input class="input-new-tag" v-if="inputVisible" maxlength="10" v-model="inputValue" ref="saveTagInput" size="small"
+              @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
+            </el-input>
+            <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 新增</el-button>
+          </div>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -162,6 +168,8 @@ export default {
         categoryName: '',//框架名称
         importShow: false,
       },
+      inputVisible: false,
+      inputValue: '',
       categoryName: '',
       debounceTimeout: null,//防抖动
       treeOptions: [],
@@ -171,12 +179,8 @@ export default {
         flag: 1,// 1新增 2编辑 3查看
       },
       treeLoading: false,
-      tags: [
-        { name: '标签一', type: 'info' },
-        { name: '标签二', type: 'info' },
-        { name: '标签三', type: 'info' },
-        { name: '标签四', type: 'info' },
-        { name: '标签五', type: 'info' }
+      tags: ['标签一','标签一','标签一','标签一','标签一','标签一','标签一',
+      '标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一','标签一'
       ],
       // 表单校验
       addOrEditRules: {
@@ -308,6 +312,21 @@ export default {
 
   },
   methods: {
+    showInput() {
+      this.inputVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+
+    handleInputConfirm() {
+      let inputValue = this.inputValue;
+      if (inputValue) {
+        this.tags.push(inputValue);
+      }
+      this.inputVisible = false;
+      this.inputValue = '';
+    },
     addFn() {
       this.addOrEdit.flag = 1
       this.addOrEdit.title = '新增'
@@ -608,10 +627,10 @@ export default {
             }
           }
           this.treeID = this.categoryList[0].id;
-    this.$nextTick(function () {
-      this.$refs.tree.setCurrentKey(this.treeID);
-      this.$refs.tree.setCurrentKey(this.treeID);
-    });
+          this.$nextTick(function () {
+            this.$refs.tree.setCurrentKey(this.treeID);
+            this.$refs.tree.setCurrentKey(this.treeID);
+          });
           let tempList = JSON.parse(JSON.stringify(this.categoryList))
           for (let item of tempList) {
             item.label = item.categoryName
@@ -767,6 +786,27 @@ export default {
 
 .tableBox {
   height: calc(100% - 158px - 52px);
+}
+
+.AiStudesCont /deep/ .el-form-item__content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.tagsClass {}
+
+.button-new-tag {
+  margin-left: 10px;
+  height: 32px;
+  line-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.input-new-tag {
+  width: 90px;
+  margin-left: 10px;
+  vertical-align: bottom;
 }
 
 /* ::v-deep
