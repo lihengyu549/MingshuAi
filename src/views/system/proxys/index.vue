@@ -53,7 +53,8 @@
       <el-table-column label="任务名称" align="center" prop="tasksName" />
       <el-table-column label="数据源" align="center" prop="sourceName" />
       <el-table-column label="来源业务系统" align="center" prop="businessName" />
-      <el-table-column label="AI分析引擎" align="center" prop="businessName">
+      <el-table-column label="来源业务系统" align="center" prop="projectName" />
+      <el-table-column label="AI分析引擎" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.aiAnalyticsEngine == 1 ? '快速响应' : '深度思考' }}</span>
         </template>
@@ -696,7 +697,8 @@ input[aria-hidden=true] {
   width: calc(100%);
 }
 
-.dialogClass /deep/ .el-drawer__body {
+.dialogClass /deep/ .el-drawer__header {
+  margin-bottom: 15px;
   /* overflow: hidden!important; */
 }
 </style>

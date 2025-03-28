@@ -262,3 +262,12 @@ export function verifyTasksName(params) {
     params: params,
   })
 }
+
+//结果查看分页
+export function selectResultsById (data) {
+  return request({
+    url: `/system/protectTableField/selectResultsById?pageNum=${data.pageNum}&pageSize=${data.pageSize}`,
+    method: 'post',
+    data:data,
+  })
+}
