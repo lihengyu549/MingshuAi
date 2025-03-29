@@ -58,16 +58,16 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-aim" size="medium" @click="handleAdda">确认勾选项</el-button>
+        <el-button type="primary" icon="el-icon-aim" size="medium" @click="handleAdd">确认勾选项</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="primary" icon="el-icon-more" size="medium" @click="handleEcelFn">确认过滤项</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-refresh-left" size="medium" @click="handleEcelFn">取消勾选项</el-button>
+        <el-button type="primary" icon="el-icon-refresh-left" size="medium" @click="handleAddFnClose">取消勾选项</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-magic-stick" size="medium" @click="handleEcelFn">取消过滤项</el-button>
+        <el-button type="primary" icon="el-icon-magic-stick" size="medium" @click="handleEcelFnClose">取消过滤项</el-button>
       </el-col>
       <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
         <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
@@ -169,7 +169,8 @@ import {
 import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
   startI, stopI, databaseMaskI, strategyPushI, strategyAll,
-  databaseListI, confirmIds, selectResultsById, confirmList, updateFiledRule
+  databaseListI, confirmIds, selectResultsById, confirmList, updateFiledRule,
+  cancelConfirm,cancelConfirmData
 } from "@/api/system/proxys";
 import { listAllProject, } from "@/api/system/project";
 import {
@@ -559,7 +560,7 @@ export default {
       // })
     },
 
-    handleAdda() {
+    handleAdd() {
       this.loading = true
       let dataS = this.$refs.tableRef.selection
       if (dataS && dataS.length > 0) {
@@ -585,6 +586,36 @@ export default {
         });
       } else {
         this.$message({ message: '请选择至少一条数据', type: 'warning' })
+        this.loading = false
+      }
+    },
+    handleAddFnClose() {
+      this.loading = true
+      let dataS = this.$refs.tableRef.selection
+      if (dataS && dataS.length > 0) {
+        this.$confirm(`确定取消当前勾选项吗`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let ids = dataS.map(item => {
+            return item.id
+          })
+          let data = ids.join(',')
+          cancelConfirm(data).then(res => {
+            if (res.code == 200) {
+              this.$message({ message: res.msg, type: 'success' })
+              this.getList()
+              this.loading = false
+            }
+          })
+          // 接口
+        }).catch(() => {
+          this.loading = false
+        });
+      } else {
+        this.$message({ message: '请选择至少一条数据', type: 'warning' })
+        this.loading = false
       }
     },
     handleEcelFn() {
@@ -604,7 +635,23 @@ export default {
           this.loading = false
         })
     },
-
+    handleEcelFnClose() {
+      this.loading = true
+      let params = {
+        ...this.queryParams,
+        securityLevelIds: this.queryParams.securityLevel.join()
+      }
+      cancelConfirmData(params).then(res => {
+        if (res.code === 200) {
+          this.$message.success(res.msg)
+          this.getList()
+          this.loading = false
+        }
+      })
+        .catch(err => {
+          this.loading = false
+        })
+    },
     targetDatabaseChange(value) {
       if (value.includes('all')) {
         this.form.targetDatabase = this.targetDataList.map(item => item.value);
@@ -680,7 +727,15 @@ export default {
     updataResultFn() {
       this.updataLoading = true
       this.resultForm.reasoningProcess = this.resultForm.craftRemark
-      updateFiledRule(this.resultForm).then(res => {
+      let params = {
+        reasoningProcess:this.resultForm.craftRemark,
+        tableFieldId:this.resultForm.tableFieldId,
+        categoryId:this.resultForm.categoryId,
+        securityLevel:this.resultForm.securityLevel,
+        auditRecommendation:this.resultForm.auditRecommendation,
+        confidenceLevel:this.resultForm.confidenceLevel,
+      }
+      updateFiledRule(params).then(res => {
         if (res.code == 200) {
           this.$message({
             message: res.msg,

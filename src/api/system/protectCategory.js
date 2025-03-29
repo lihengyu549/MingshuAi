@@ -297,3 +297,11 @@ export function updateDataQualityAssessment(params) {
     data: params,
   })
 }
+// 修改字段信息接口
+export function updateFieldListByFieldId(params) {
+  return request({
+    url: `/system/protectTableField/updateFieldListByFieldId`,
+    method: 'post',
+    data: params,
+  })
+}

@@ -41,7 +41,7 @@ export function confirmList (data) {
   return request({
     url: '/system/protectTableField/confirmList',
     method: 'post',
-    data: stringify(data)
+    data: data
   })
 }
 // 确认勾选项
@@ -54,11 +54,8 @@ export function confirmIds (data) {
 // 修改
 export function updateFiledRule (data) {
   return request({
-    url: '/system/protectTableField/updateFiledRule',
-    method: 'put',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    url: '/system/protectTableField/updateResult',
+    method: 'post',
     data: data
   })
 }
@@ -263,11 +260,26 @@ export function verifyTasksName(params) {
   })
 }
 
-//结果查看分页
+//结果查看分页--贺贺
 export function selectResultsById (data) {
   return request({
     url: `/system/protectTableField/selectResultsById?pageNum=${data.pageNum}&pageSize=${data.pageSize}`,
     method: 'post',
     data:data,
+  })
+}
+//取消确认勾选项--贺贺
+export function cancelConfirm (ids) {
+  return request({
+    url: `/system/protectTableField/cancelConfirm/${ids}`,
+    method: 'post',
+  })
+}
+//取消确认过滤项--贺贺
+export function cancelConfirmData (data) {
+  return request({
+    url: '/system/protectTableField/cancelConfirm',
+    method: 'post',
+    data: data
   })
 }

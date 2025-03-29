@@ -71,7 +71,7 @@
         :limit.sync="queryParams.pageSize" @pagination="getList" />
     </el-row>
     <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow"
-      :destroy-on-close="true" direction="rtl" size="55%">
+      :destroy-on-close="true" direction="rtl" size="60%">
       <el-table :data="drawerData" ref="tableRef" :key="tableKey" border class="tableBox">
         <el-table-column label="字段名称" align="center" prop="fieldName" width="150" show-overflow-tooltip />
         <el-table-column label="原生字段注释" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
@@ -79,12 +79,12 @@
             <span>{{ scope.row.oldFieldRemark }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="合成字段注释" align="center" prop="aiFieldRemark" width="150" show-overflow-tooltip>
+        <el-table-column label="合成字段注释（可编辑）" align="center" prop="aiFieldRemark" width="200" show-overflow-tooltip>
           <template slot-scope="scope">
             <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, scope.$index)">{{
               scope.row.aiFieldRemark }}</span>
-            <el-input v-else id="editInput" v-model="editMsg"
-              @blur="drawerEditBlurFn(scope.row, scope.$index)" size="small" />
+            <el-input v-else id="editInput" v-model="editMsg" @blur="drawerEditBlurFn(scope.row, scope.$index)"
+              size="small" />
           </template>
         </el-table-column>
         <el-table-column label="样本是否为空" align="center" prop="dataIsNull" width="100" show-overflow-tooltip />
@@ -122,7 +122,7 @@
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import {
   getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId,
-  getSelectTableNames, callAIPaddingComments, updateDataQualityAssessment
+  getSelectTableNames, callAIPaddingComments, updateDataQualityAssessment, updateFieldListByFieldId
 } from "@/api/system/protectCategory";
 export default {
   name: "assetCatalog",
@@ -137,6 +137,7 @@ export default {
       total: 10,
       loading: false,
       tableNameList: [],
+      filedRowData:{},// 字段信息用来记录目录的rowdata
       dataAll: [
 
       ],
@@ -160,7 +161,7 @@ export default {
         label: "label"
       },
       tableKey: 0,
-      editMsg:'',
+      editMsg: '',
     };
   },
   watch: {
@@ -224,20 +225,47 @@ export default {
         document.getElementById('editInput').focus();
       })
     },
-    drawerEditBlurFn(row, index) {
+   async drawerEditBlurFn(row, index) {
+      row.aiFieldRemark = this.editMsg
+        let params = {
+          craftRemark: this.editMsg,
+          dirtyData: row.dirtyData,
+          fieldId: row.fieldId,
+        }
+        await updateFieldListByFieldId(params).then(res => {
+          this.$message({
+            type: 'success',
+            message: '修改成功!'
+          });
+          row.drawerEdit = false
+          this.tableKey += 1
+        })
+        this.fieldInformationFn(this.filedRowData)
+        return
       this.$confirm('是否保存编辑数据?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
+      }).then(async () => {
         row.aiFieldRemark = this.editMsg
-        this.$message({
-          type: 'success',
-          message: '修改成功!'
-        });
-        row.drawerEdit = false
-        this.tableKey = 0
-      }).catch(() => {
+        let params = {
+          craftRemark: this.editMsg,
+          dirtyData: row.dirtyData,
+          fieldId: row.fieldId,
+        }
+        await updateFieldListByFieldId(params).then(res => {
+          this.$message({
+            type: 'success',
+            message: '修改成功!'
+          });
+          row.drawerEdit = false
+          this.tableKey = 0
+        })
+        this.$nextTick(()=>{
+          row.drawerEdit = false
+          this.tableKey = 0
+        })
+        }).catch(() => {
         this.$message({
           type: 'info',
           message: '已取消'
@@ -248,6 +276,7 @@ export default {
     },
     // 字段信息
     async fieldInformationFn(row) {
+      this.filedRowData = row
       this.drawerTitle = '表名称：' + row.tableName
       let params = {
         tableId: row.tableId,
@@ -330,7 +359,6 @@ export default {
         this.loading = false
       });
     },
-    // 字段信息
     async getSelectTableNamesFn() {
       let params = {
         proxysId: this.treeID,
