@@ -485,7 +485,8 @@ export default {
     getNameTestingFn(val, from) {
       this.importDataLoading = true
       let params = {
-        sourceName: val
+        sourceName: val,
+        id:this.form.id|| ''
       }
       if (val) {
         checkSourceName(params).then((res) => {

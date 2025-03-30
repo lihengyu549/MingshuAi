@@ -275,7 +275,8 @@ export default {
     getNameTestingFn(val, from) {
       this.importDataLoading = true
       let params = {
-        tasksName: val
+        tasksName: val,
+        id:this.form.id || ''
       }
       if (val) {
         verifyTasksName(params).then((res) => {
@@ -420,7 +421,6 @@ export default {
               this.getList();
             });
           } else {
-            console.log(this.form)
             let data = JSON.parse(JSON.stringify(this.form))
             addScanCompleteDataTasks(data).then(response => {
               this.$modal.msgSuccess("新增成功");

@@ -127,12 +127,12 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="子类描述" prop="aaa">
-          <el-input v-model="addOrEditDataRuls.aaa" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
+        <el-form-item label="子类描述" prop="additional">
+          <el-input v-model="addOrEditDataRuls.additional" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             :disabled="addOrEdit.flag == 3" maxlength="500" placeholder="请输入子类描述"></el-input>
         </el-form-item>
         <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="特征标签">
-            <div class="tagsClass" :style="tagsShow?heightSmall:heightBig">
+            <div class="tagsClass" :style="tagsShow?heightSmall:heightBig" style="width: 100%;">
               <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag+index" class="mx-1" :closable="addOrEdit.flag !== 3"
                 @close="handleClose(tag, index)" style="margin: 0 10px;">
                 {{ tag }}
@@ -190,8 +190,7 @@ export default {
         flag: 1,// 1新增 2编辑 3查看
       },
       treeLoading: false,
-      tags: ['标签一', '标签一', '标签一', '标签一', '标签一', '标签一'
-      ],
+      tags: [],
       // 表单校验
       addOrEditRules: {
         categoryId: [
@@ -350,6 +349,7 @@ export default {
       this.addOrEdit.title = '新增'
       this.addOrEdit.show = true
       this.addOrEditDataRuls = {}
+      this.tags = []
       this.addNodeName = ''
     },
     clearAddFromData() {
@@ -365,11 +365,13 @@ export default {
           name: this.addOrEditDataRuls.attachData,
           nodeId: this.addOrEditDataRuls.categoryId,
           securityLevel: this.addOrEditDataRuls.minSecurityLevel,
-          additional: this.addNodeName
+          additional: this.addOrEditDataRuls.additional,
+          featureLabel: this.tags.join(),
+          addNodeName: this.addNodeName
         }
         if (valid) {
           this.importDataLoading = true
-          await this.rulsNameIsRight(this.addOrEditDataRuls.categoryId, params.name)
+          await this.rulsNameIsRight(this.addOrEditDataRuls.categoryId, params.name,this.addOrEditDataRuls.id)
           if (!this.isName) {
             this.$modal.msgError("框架名称重复,请更改");
             this.importDataLoading = false
@@ -447,6 +449,9 @@ export default {
     editFn(row) {
       this.addOrEdit.flag = 2
       this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
+      this.addOrEditDataRuls.additional = row.attachDescribe
+      this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
+      this.tags = row.featureLabel.split(',')
       this.addOrEdit.show = true
       this.addOrEdit.title = '编辑'
       this.addNodeName = row.owner
@@ -459,6 +464,8 @@ export default {
     lookFn(row) {
       this.addOrEdit.flag = 3
       this.addOrEditDataRuls = row
+      this.addOrEditDataRuls.additional = row.attachDescribe
+      this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
       this.addNodeName = row.owner
       this.addOrEdit.show = true
       this.addOrEdit.title = '查看'
@@ -692,10 +699,11 @@ export default {
       this.resetForm("queryParams");
       this.handleQuery();
     },
-    async rulsNameIsRight(id, name) {
+    async rulsNameIsRight(nodeId, name,id) {
       let params = {
-        nodeId: id,
+        nodeId,
         name,
+        id
       }
       let res = await nameTesting(params)
       this.isName = res.data

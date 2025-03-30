@@ -560,6 +560,7 @@ export default {
       let params = {
         ruleName: val,
         dataId: this.addOrEditDataRuls.categoryDataId || this.treeID,
+        id:this.addOrEditDataRuls.id
       }
       if (val) {
         nameRules(params).then((res) => {
