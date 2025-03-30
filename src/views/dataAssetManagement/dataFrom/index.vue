@@ -91,7 +91,7 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
         <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
           <el-select v-model="form.databaseType" placeholder="请选择数据库类型" @change="databaseTypeChange($event)">
-            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.name">
+            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -399,7 +399,7 @@ export default {
         ],
         examplesName: () => {
           return [{
-            required: this.form.databaseType == '达梦' || this.form.databaseType == 'POSTGRES',
+            required: this.form.databaseType == 'DM' || this.form.databaseType == 'POSTGRES',
             message: '请输入',
             trigger: 'blur'
           }]
@@ -705,38 +705,6 @@ export default {
       };
       this.resetForm("form");
     },
-    // 连接测试
-    connectTest(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          let data = JSON.parse(JSON.stringify(this.form))
-          delete data.projectName
-          data.targetDatabase = JSON.stringify(data.targetDatabase)
-          data.connectionType = this.connectionType
-          data.databaseType = this.findDatabaseValueByName(this.form.databaseType)
-          // for (let i = 0; i < this.databaseTypeList.length; i++) {
-          //   if (this.form.databaseType == this.databaseTypeList[i].name) {
-          //     data.databaseType = this.databaseTypeList[i].value
-          //   }
-          // }
-          connectTestI(data).then((res => {
-            if (res.code == 200) {
-              this.showSucType = 1
-            } else {
-              this.showSucType = 2
-            }
-
-          })).catch(() => {
-            this.showSucType = 2
-          })
-
-        } else {
-          // console.log('error submit!!');
-          return false;
-        }
-
-      })
-    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
@@ -770,7 +738,6 @@ export default {
         let data = JSON.parse(JSON.stringify(this.form))
         delete data.projectName
         data.targetDatabase = JSON.stringify(data.targetDatabase)
-        data.databaseType = this.findDatabaseValueByName(this.form.databaseType)
         data.connectionType = this.connectionType
         data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
         if (valid) {
@@ -1006,7 +973,7 @@ export default {
             targetUserPassword: this.form.targetUserPassword,
             connectionType: this.connectionType,
             connectionValue: this.form.connectionValue,
-            databaseType: this.findDatabaseValueByName(this.form.databaseType),
+            databaseType: this.form.databaseType,
             examplesName:this.form.examplesName
           }
           let res = await getListTables(data)

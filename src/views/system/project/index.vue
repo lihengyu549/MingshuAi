@@ -451,7 +451,7 @@ export default {
       this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
       this.addOrEditDataRuls.additional = row.attachDescribe
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
-      this.tags = row.featureLabel.split(',')
+      this.tags = row.featureLabel? row.featureLabel.split(','): []
       this.addOrEdit.show = true
       this.addOrEdit.title = '编辑'
       this.addNodeName = row.owner
@@ -466,6 +466,7 @@ export default {
       this.addOrEditDataRuls = row
       this.addOrEditDataRuls.additional = row.attachDescribe
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
+      this.tags = row.featureLabel? row.featureLabel.split(','): []
       this.addNodeName = row.owner
       this.addOrEdit.show = true
       this.addOrEdit.title = '查看'
