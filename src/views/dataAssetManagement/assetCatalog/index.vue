@@ -81,9 +81,9 @@
         </el-table-column>
         <el-table-column label="合成字段注释（可编辑）" align="center" prop="aiFieldRemark" width="200" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, scope.$index)">{{
+            <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row,'aiFieldRemark')">{{
               scope.row.aiFieldRemark }}</span>
-            <el-input v-else id="editInput" v-model="editMsg" @blur="drawerEditBlurFn(scope.row, scope.$index)"
+            <el-input v-else id="editInput" v-model="editMsg" @blur="drawerEditBlurFn(scope.row, 'aiFieldRemark')"
               size="small" />
           </template>
         </el-table-column>
@@ -94,7 +94,15 @@
           </template>
         </el-table-column>
         <el-table-column label="样本长度过短" align="center" prop="sampleLengthShort" width="100" show-overflow-tooltip />
-        <el-table-column label="是否为脏数据" align="center" prop="dirtyData" width="100" show-overflow-tooltip />
+        <el-table-column label="是否为脏数据" align="center" prop="dirtyData" width="100" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span v-if="!scope.row.drawerEditDirtyData" @click="drawerEditFn(scope.row,'dirtyData')">{{ scope.row.dirtyData }}</span>
+            <el-select v-else v-model="scope.row.dirtyDataEditMsg" placeholder="全部" @change="drawerEditBlurFn(scope.row, 'dirtyData')">
+              <el-option v-for="item in dirtyDataList" :key="item.value" :label="item.label" :value="item.label">
+              </el-option>
+            </el-select>
+          </template>
+        </el-table-column>
         <!-- <el-table-column label="样本重复率" align="center" prop="dataIsRepeat" width="100" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.ggg }}</span>
@@ -132,14 +140,25 @@ export default {
       drawerShow: false,
       drawerTitle: '',
       drawerData: [],
+      dirtyDataEditMsg:'',
       filterText: '',// 过滤条件tree
       Loading: false,// 全局loading
       total: 10,
       loading: false,
       tableNameList: [],
-      filedRowData:{},// 字段信息用来记录目录的rowdata
+      filedRowData: {},// 字段信息用来记录目录的rowdata
       dataAll: [
 
+      ],
+      dirtyDataList: [
+        {
+          label: '是',
+          value: 1,
+        },
+        {
+          label: '否',
+          value: 0,
+        }
       ],
       categoryList: '',
       isChildrenNode: true,
@@ -217,31 +236,37 @@ export default {
         }
       })
     },
-    drawerEditFn(row, index) {
+    drawerEditFn(row,flag) {
       this.tableKey += 1
-      row.drawerEdit = true
-      this.editMsg = row.aiFieldRemark
-      this.$nextTick(() => {
+      if(flag == 'aiFieldRemark') {
+        row.drawerEdit = true
+        this.editMsg = row.aiFieldRemark
+        this.$nextTick(() => {
         document.getElementById('editInput').focus();
       })
+      }else {
+        row.drawerEditDirtyData = true
+        row.dirtyDataEditMsg = row.dirtyData
+      }
     },
-   async drawerEditBlurFn(row, index) {
-      row.aiFieldRemark = this.editMsg
-        let params = {
-          craftRemark: this.editMsg,
-          dirtyData: row.dirtyData,
-          fieldId: row.fieldId,
-        }
-        await updateFieldListByFieldId(params).then(res => {
-          this.$message({
-            type: 'success',
-            message: '修改成功!'
-          });
-          row.drawerEdit = false
-          this.tableKey += 1
-        })
-        this.fieldInformationFn(this.filedRowData)
-        return
+    async drawerEditBlurFn(row) {
+      let params = {
+        craftRemark: this.editMsg || row.aiFieldRemark,
+        dirtyData: row.dirtyDataEditMsg || row.dirtyData,
+        fieldId: row.fieldId,
+      }
+      await updateFieldListByFieldId(params).then(res => {
+        this.$message({
+          type: 'success',
+          message: '修改成功!'
+        });
+        row.drawerEdit = false
+        row.dirtyDataEditMsg = ''
+        this.editMsg = ''
+        this.tableKey += 1
+      })
+      this.fieldInformationFn(this.filedRowData)
+      return
       this.$confirm('是否保存编辑数据?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -261,11 +286,11 @@ export default {
           row.drawerEdit = false
           this.tableKey = 0
         })
-        this.$nextTick(()=>{
+        this.$nextTick(() => {
           row.drawerEdit = false
           this.tableKey = 0
         })
-        }).catch(() => {
+      }).catch(() => {
         this.$message({
           type: 'info',
           message: '已取消'
@@ -290,7 +315,9 @@ export default {
               ele.sampleList = JSON.parse(ele.data).map((item => ({ value: item })))
             }
             ele.drawerEdit = false
+            ele.drawerEditDirtyData = false
             ele.aiFieldRemarkEdit = ''
+            ele.dirtyDataEditMsg = ''
           })
           this.drawerShow = true
         }

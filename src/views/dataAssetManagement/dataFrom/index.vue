@@ -440,6 +440,7 @@ export default {
         categoryId: '',//框架名称
         importShow: false,
         businessName: '',
+        sourceName:'',
       },
       isServiesNameRequired: false,
       debounceTimeout: null,
@@ -490,39 +491,30 @@ export default {
       }
       if (val) {
         checkSourceName(params).then((res) => {
-          return res.msg == '可以使用'
         })
           .catch((err) => {
             this.form.sourceName = ''
             this.importDataLoading = false
-            return false
           })
       } else {
         this.form.sourceName = ''
         this.importDataLoading = false
-        return false
       }
     },
 
     getimortantNameTestingFn(val, from) {
-      this.importDataLoading = true
       let params = {
         sourceName: val
       }
       if (val) {
         checkSourceName(params).then((res) => {
-          this.importDataLoading = false
-          return res.msg == '可以使用'
+          
         })
           .catch((err) => {
             this.importData.sourceName = ''
-            this.importDataLoading = false
-            return false
           })
       } else {
         this.importData.sourceName = ''
-        this.importDataLoading = false
-        return false
       }
     },
     nameTestingFn(val) {
