@@ -51,23 +51,23 @@
                 </div>
               </div>
               <div class="mian_box_center">
-                <div>数据质量评分:{{ item.score ? item.score : 'N/A' }}</div>
-                <div>数据量级:{{ item.dataMagnitude ? item.dataMagnitude : 'N/A' }}</div>
+                <div>数据质量评分：{{ item.score ? item.score : 'N/A' }}</div>
+                <div>数据量级：{{ item.dataMagnitude ? item.dataMagnitude : 'N/A' }}</div>
                 <el-tooltip :content="item.oldTableRemark" :ref="`tooltip-${index}`" 
                 :disabled="!overflowStatus[index]" effect="dark" placement="top">\
                   <!-- @mouseover="checkOverflow(item,index)" -->
-                  <div id="textContainer" :ref="`container-${index}`">原生表注释:<span >{{ item.oldTableRemark ? item.oldTableRemark
-                    : 'N/A' }}</span>{{ !overflowStatus[index] }}</div>
+                  <div id="textContainer" :ref="`container-${index}`">原生表注释：<span >{{ item.oldTableRemark ? item.oldTableRemark
+                    : 'N/A' }}</span></div>
                     
                 </el-tooltip>
-                <div>合成表注释:{{ item.craftTableRemark ? item.craftTableRemark : 'N/A' }}</div>
-                <div>原生字段注释占比:{{ item.oldFieldRemark ? item.oldFieldRemark + '%' : '0%' }}</div>
-                <div>空值字段比例:{{ item.nullValueField ? item.nullValueField + '%' : '0%' }}</div>
-                <div>样本长度过短比例:{{ item.onlyOneValueField ? item.onlyOneValueField + '%' : '0%' }}</div>
-                <div>样本重复率过高比例:{{ item.repeatValueField ? item.repeatValueField + '%' : '0%' }}</div>
-                <div>有效字段数:{{ item.effectiveCount ? item.effectiveCount : 'N/A' }}</div>
-                <div>脏数据字段数:{{ item.dirtyData ? item.dirtyData : 'N/A' }}</div>
-                <div>数据来源:{{ item.dataType ? item.dataType : 'N/A' }}</div>
+                <div>合成表注释：{{ item.craftTableRemark ? item.craftTableRemark : 'N/A' }}</div>
+                <div>原生字段注释占比：{{ item.oldFieldRemark ? item.oldFieldRemark + '%' : '0%' }}</div>
+                <div>空值字段比例：{{ item.nullValueField ? item.nullValueField + '%' : '0%' }}</div>
+                <div>样本长度过短比例：{{ item.onlyOneValueField ? item.onlyOneValueField + '%' : '0%' }}</div>
+                <div>样本重复率过高比例：{{ item.repeatValueField ? item.repeatValueField + '%' : '0%' }}</div>
+                <div>有效字段数：{{ item.effectiveCount ? item.effectiveCount : 'N/A' }}</div>
+                <div>脏数据字段数：{{ item.dirtyData ? item.dirtyData : 'N/A' }}</div>
+                <div>数据来源：{{ item.dataType ? item.dataType : 'N/A' }}</div>
               </div>
             </el-card>
           </div>
