@@ -7,17 +7,21 @@
         </h4>
         <div class="contBox" style="display: flex;justify-content: flex-start;align-items: center;">
           <div style="width: 20%; display: flex; justify-content: flex-start;align-items: center;">
-            <el-switch v-model="allData.DirtyData.DirtyData1.state" active-color="#009dff" inactive-color="#e0e0e0"></el-switch>
+            <el-switch v-model="allData.DirtyData.DirtyData1.state" active-color="#009dff"
+              inactive-color="#e0e0e0"></el-switch>
             <div style="margin-left: 15px;">{{ allData.DirtyData.DirtyData1.label }}</div>
           </div>
           <div style="width: 20%; display: flex; justify-content: flex-start;align-items: center;">
-            <el-switch v-model="allData.DirtyData.DirtyData2.state" active-color="#009dff" inactive-color="#e0e0e0"></el-switch>
+            <el-switch v-model="allData.DirtyData.DirtyData2.state" active-color="#009dff"
+              inactive-color="#e0e0e0"></el-switch>
             <div style="margin-left: 15px;">{{ allData.DirtyData.DirtyData2.label }}</div>
           </div>
           <div style="width: 20%; display: flex; justify-content: flex-start;align-items: center;">
-            <el-switch v-model="allData.DirtyData.DirtyData3.state" active-color="#009dff" inactive-color="#e0e0e0"></el-switch>
+            <el-switch v-model="allData.DirtyData.DirtyData3.state" active-color="#009dff"
+              inactive-color="#e0e0e0"></el-switch>
             <div style="margin:0 15px;">{{ allData.DirtyData.DirtyData3.label }}</div>
-            <el-input :disabled="!allData.DirtyData.DirtyData3.state" v-model="allData.DirtyData.DirtyData3.value" style="width: 20%;"></el-input>
+            <el-input :disabled="!allData.DirtyData.DirtyData3.state" v-model="allData.DirtyData.DirtyData3.value"
+              style="width: 20%;"></el-input>
           </div>
         </div>
       </div>
@@ -41,7 +45,8 @@
         </h4>
         <div class="contBox" style="display: flex;justify-content: flex-start;align-items: center;">
           <div>及格分</div>
-          <el-input v-model="allData.DataTableQualityScore.value" style="width: 5%; margin: 0 20px;"></el-input>
+          <el-input v-model="allData.DataTableQualityScore.value" style="width: 5%; margin: 0 20px;"
+            @input="numInputFn($event)" @blur="numBlurFn($event)"></el-input>
           <div> <i class="el-icon-warning"></i>输入范围在30 ~ 100之间，低于及格分的数据表不会进行打标</div>
         </div>
       </div>
@@ -54,7 +59,7 @@
 
 <script>
 import { treeselect as menuTreeselect, roleMenuTreeselect } from "@/api/system/menu";
-import { listByTacticsQueryUrl,updateByTactics } from "@/api/system/dict/data";
+import { listByTacticsQueryUrl, updateByTactics } from "@/api/system/dict/data";
 
 export default {
   name: "matchingStrategy",
@@ -65,26 +70,53 @@ export default {
       value2: true,
       value3: true,
       radio: 20,
-      allData: {},
-      cardLoading:true,
+      allData: {
+        DirtyData: {
+          DirtyData1: {},
+          DirtyData2: {},
+          DirtyData3: {},
+        },
+        SampleExtraction: {},
+        DataTableQualityScore: {},
+      },
+      cardLoading: false,
     };
   },
   created() {
     this.getlistData()
   },
   methods: {
+    numInputFn() {
+      let value = this.allData.DataTableQualityScore.value.replace(/[^0-9]/g, ''); // 移除非数字字符
+      this.allData.DataTableQualityScore.value = value; // 更新输入框的值
+    },
+    numBlurFn(){
+      if(this.allData.DataTableQualityScore.value < 30){
+        this.allData.DataTableQualityScore.value = 30
+        this.$message({
+          message: '输入范围在30 ~ 100之间',
+          type: 'warning'
+        });
+      }else if(this.allData.DataTableQualityScore.value > 100){
+        this.allData.DataTableQualityScore.value = 100
+        this.$message({
+          message: '输入范围在30 ~ 100之间',
+          type: 'warning'
+        });
+      }
+    },
     getlistData() {
       listByTacticsQueryUrl('sys_scan_tactics').then(res => {
-          this.cardLoading = true
-          if (res.code == 200) {
+        this.cardLoading = true
+        if (res.code == 200) {
           this.allData = res.data
           this.cardLoading = false
         }
       })
     },
-    submit(){
-      updateByTactics(this.allData).then(res=>{
-        if(res.code == 200){
+    submit() {
+      updateByTactics(this.allData).then(res => {
+        if (res.code == 200) {
           this.$message({
             message: '修改成功',
             type: 'success'
@@ -144,13 +176,15 @@ export default {
   overflow-y: auto;
   position: relative;
   padding: 0;
-  ::v-deep .el-card__body{
-  padding: 0;
+
+  ::v-deep .el-card__body {
+    padding: 0;
+  }
 }
-}
-.foot_btn{
+
+.foot_btn {
   position: absolute;
-    right: 37px;
-    bottom: 24px;
+  right: 37px;
+  bottom: 24px;
 }
 </style>

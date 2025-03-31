@@ -236,27 +236,7 @@ export default {
         securityLevel: '',
         id: '',
       },
-      tableData: [{
-        date: '安徽',
-        name: '阿吉',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '河南',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '山东',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '北京',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '北京',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }],
+      tableData: [],
       addOptions: [
         {
           value: 1,

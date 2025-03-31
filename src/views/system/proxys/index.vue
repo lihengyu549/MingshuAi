@@ -100,24 +100,24 @@
         <el-form-item label="分类分级框架">
           <el-input v-model="form.projectName" :disabled="true" />
         </el-form-item>
-        <el-form-item label="ai分析引擎" prop="aiAnalyticsEngine">
-          <el-radio-group v-model="form.aiAnalyticsEngine">
+        <el-form-item label="AI分析引擎" prop="aiAnalyticsEngine">
+          <el-radio-group v-model="aiAnalyticsEngine">
             <el-radio label="1">快速响应</el-radio>
             <el-radio label="2">深度思考</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="置信度" prop="confidenceLevel" :rules="rules.confidenceLevel">
           <el-select v-model="form.confidenceLevel" clearable>
-            <el-option v-for="item in confidenceLevelList" :key="item.id" :label="item.name" :value="item.value">
+            <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="人工确认" prop="confirm" :rules="rules.confirm">
+        <!-- <el-form-item label="人工确认" prop="confirm" :rules="rules.confirm">
           <el-select v-model="form.confirm" clearable>
             <el-option v-for="item in confirmList" :key="item.id" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -157,10 +157,10 @@ export default {
       drawerShow: false,
       drawerData: null,
       mainLoading: false,
+      aiAnalyticsEngine:'1',
       confidenceLevelList: [
-        { name: "低", id: 0, value: "0" },
-        { name: "中", id: 1, value: "1" },
-        { name: "高", id: 2, value: "2" },
+        { name: "全部",  value: "0" },
+        { name: "低", value: "1" },
       ],
       confirmList: [
         { name: "全部", id: 0, value: "0" },
@@ -233,7 +233,6 @@ export default {
       },
       // 表单参数
       form: {
-        aiAnalyticsEngine: "1",
         confidenceLevel: '',
         confirm: '',
         projectName: '',
@@ -378,7 +377,7 @@ export default {
     },
     reset() {
       this.form = {}      
-      this.form.aiAnalyticsEngine = '1'
+      this.aiAnalyticsEngine = "1"
       this.form.projectName = ''
     },
     /** 搜索按钮操作 */
@@ -401,6 +400,8 @@ export default {
     /** 新增按钮操作 */
     handleAdd() {
       this.reset();
+      this.getScanCompleteDataFn()
+      this.form.confidenceLevel = '0'
       this.open = true;
       this.title = "添加任务";
     },
@@ -422,6 +423,7 @@ export default {
             });
           } else {
             let data = JSON.parse(JSON.stringify(this.form))
+            data.aiAnalyticsEngine = this.aiAnalyticsEngine
             addScanCompleteDataTasks(data).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
@@ -492,10 +494,10 @@ export default {
       }
     },
     resultLookFn(row) {
-      if (row.state == 'RUNNING') {
-        this.$message({ message: '当前状态为运行中，无法查看', type: 'warning' })
-        return
-      }
+      // if (row.state == 'RUNNING') {
+      //   this.$message({ message: '当前状态为运行中，无法查看', type: 'warning' })
+      //   return
+      // }
       if (row.publishStatus == 0) {
         this.drawerData = row
         this.drawerShow = true

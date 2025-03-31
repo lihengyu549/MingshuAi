@@ -34,7 +34,7 @@
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
           </el-form-item>
         </el-form>
-        <div class="mian_box">
+        <div class="mian_box" id="main_box">
           <div v-for="(item, index) in dataAll" v-loading="loading" :key="index" class="mian_box_item">
             <el-card class="box-card">
               <div class="mian_box_head">
@@ -51,17 +51,23 @@
                 </div>
               </div>
               <div class="mian_box_center">
-                <div>数据质量评分:{{ item.score }}</div>
-                <div>数据量级:{{ item.dataMagnitude }}</div>
-                <div>原生表注释:{{ item.oldTableRemark }}</div>
-                <div>合成表注释:{{ item.craftTableRemark }}</div>
-                <div>原生字段注释占比:{{ item.oldFieldRemark ? item.oldFieldRemark + '%' : '' }}</div>
-                <div>空值字段比例:{{ item.nullValueField ? item.nullValueField + '%' : '' }}</div>
-                <div>样本长度过短比例:{{ item.onlyOneValueField ? item.onlyOneValueField + '%' : '' }}</div>
-                <div>样本重复率过高比例:{{ item.repeatValueField ? item.repeatValueField + '%' : '' }}</div>
-                <div>有效字段数:{{ item.effectiveCount }}</div>
-                <div>脏数据字段数:{{ item.dirtyData }}</div>
-                <div>数据来源:{{ item.dataType }}</div>
+                <div>数据质量评分:{{ item.score ? item.score : 'N/A' }}</div>
+                <div>数据量级:{{ item.dataMagnitude ? item.dataMagnitude : 'N/A' }}</div>
+                <el-tooltip :content="item.oldTableRemark" :ref="`tooltip-${index}`" 
+                :disabled="!overflowStatus[index]" effect="dark" placement="top">\
+                  <!-- @mouseover="checkOverflow(item,index)" -->
+                  <div id="textContainer" :ref="`container-${index}`">原生表注释:<span >{{ item.oldTableRemark ? item.oldTableRemark
+                    : 'N/A' }}</span>{{ !overflowStatus[index] }}</div>
+                    
+                </el-tooltip>
+                <div>合成表注释:{{ item.craftTableRemark ? item.craftTableRemark : 'N/A' }}</div>
+                <div>原生字段注释占比:{{ item.oldFieldRemark ? item.oldFieldRemark + '%' : '0%' }}</div>
+                <div>空值字段比例:{{ item.nullValueField ? item.nullValueField + '%' : '0%' }}</div>
+                <div>样本长度过短比例:{{ item.onlyOneValueField ? item.onlyOneValueField + '%' : '0%' }}</div>
+                <div>样本重复率过高比例:{{ item.repeatValueField ? item.repeatValueField + '%' : '0%' }}</div>
+                <div>有效字段数:{{ item.effectiveCount ? item.effectiveCount : 'N/A' }}</div>
+                <div>脏数据字段数:{{ item.dirtyData ? item.dirtyData : 'N/A' }}</div>
+                <div>数据来源:{{ item.dataType ? item.dataType : 'N/A' }}</div>
               </div>
             </el-card>
           </div>
@@ -81,7 +87,7 @@
         </el-table-column>
         <el-table-column label="合成字段注释（可编辑）" align="center" prop="aiFieldRemark" width="200" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row,'aiFieldRemark')">{{
+            <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, 'aiFieldRemark')">{{
               scope.row.aiFieldRemark }}</span>
             <el-input v-else id="editInput" v-model="editMsg" @blur="drawerEditBlurFn(scope.row, 'aiFieldRemark')"
               size="small" />
@@ -96,8 +102,10 @@
         <el-table-column label="样本长度过短" align="center" prop="sampleLengthShort" width="100" show-overflow-tooltip />
         <el-table-column label="是否为脏数据" align="center" prop="dirtyData" width="100" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span v-if="!scope.row.drawerEditDirtyData" @click="drawerEditFn(scope.row,'dirtyData')">{{ scope.row.dirtyData }}</span>
-            <el-select v-else v-model="scope.row.dirtyDataEditMsg" placeholder="全部" @change="drawerEditBlurFn(scope.row, 'dirtyData')">
+            <span v-if="!scope.row.drawerEditDirtyData" @click="drawerEditFn(scope.row, 'dirtyData')">{{
+              scope.row.dirtyData }}</span>
+            <el-select v-else v-model="scope.row.dirtyDataEditMsg" placeholder="全部"
+              @change="drawerEditBlurFn(scope.row, 'dirtyData')">
               <el-option v-for="item in dirtyDataList" :key="item.value" :label="item.label" :value="item.label">
               </el-option>
             </el-select>
@@ -132,6 +140,7 @@ import {
   getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId,
   getSelectTableNames, callAIPaddingComments, updateDataQualityAssessment, updateFieldListByFieldId
 } from "@/api/system/protectCategory";
+import { tree } from "d3";
 export default {
   name: "assetCatalog",
   components: {},
@@ -140,7 +149,8 @@ export default {
       drawerShow: false,
       drawerTitle: '',
       drawerData: [],
-      dirtyDataEditMsg:'',
+      overflowStatus: {}, // 用于存储每个盒子的溢出状态
+      dirtyDataEditMsg: '',
       filterText: '',// 过滤条件tree
       Loading: false,// 全局loading
       total: 10,
@@ -160,7 +170,7 @@ export default {
           value: 0,
         }
       ],
-      categoryList: '',
+      categoryList: [],
       isChildrenNode: true,
       debounceTimeout: null,//防抖动
       treeLoading: false,
@@ -194,7 +204,17 @@ export default {
   mounted() {
   },
   methods: {
-
+    checkOverflow(item,index) {
+      const container = this.$refs[`container-${index}`][0];
+      // const tooltip = this.$refs[`tooltip-${index}`][0];
+      const isOverflowing = container.scrollWidth > container.clientWidth;
+      // this.overflowStatus[index] = isOverflowing;
+      this.$set(this.overflowStatus, index, isOverflowing)
+      // tooltip.disabled = !isOverflowing; // 动态更新 tooltip 的 disabled 状态
+    },
+    isOverflow(index) {
+      return this.overflowStatus[index] || false; // 返回当前盒子的溢出状态
+    },
     // 数字输入框input事件
     numberInputFn(val) {
       this.addOrEditDataRuls.ruleValue = val.replace(/[^0-9]/g, '');
@@ -236,15 +256,15 @@ export default {
         }
       })
     },
-    drawerEditFn(row,flag) {
+    drawerEditFn(row, flag) {
       this.tableKey += 1
-      if(flag == 'aiFieldRemark') {
+      if (flag == 'aiFieldRemark') {
         row.drawerEdit = true
         this.editMsg = row.aiFieldRemark
         this.$nextTick(() => {
-        document.getElementById('editInput').focus();
-      })
-      }else {
+          document.getElementById('editInput').focus();
+        })
+      } else {
         row.drawerEditDirtyData = true
         row.dirtyDataEditMsg = row.dirtyData
       }
@@ -381,9 +401,19 @@ export default {
       }
       getTableListByProxysId(params).then((response) => {
         this.dataAll = response.data.rows;
+        this.dataAll.forEach(ele => {
+          ele.isShowTooltip = true
+        })
         this.total = response.data.total;
+        this.overflowStatus = {}
         this.Loading = false
         this.loading = false
+        document.getElementById('main_box').scrollTop = 0;
+        this.$nextTick(() => {
+          this.dataAll.forEach((ele, index) => {
+            this.checkOverflow(ele, index)
+          })
+        })
       });
     },
     async getSelectTableNamesFn() {
@@ -431,28 +461,23 @@ export default {
 }
 </style>
 <style scoped>
-.tableBox {
-  max-height: 800px;
-  overflow-y: auto;
-}
-
-.tableBox::-webkit-scrollbar {
+.el-drawer__wrapper /deep/ .el-drawer__body::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-.tableBox::-webkit-scrollbar-thumb {
+.el-drawer__wrapper /deep/ .el-drawer__body::-webkit-scrollbar-thumb {
   background-color: #0003;
   border-radius: 10px;
   transition: all .2s ease-in-out;
 }
 
-.tableBox::-webkit-scrollbar-track {
+.el-drawer__wrapper /deep/ .el-drawer__body::-webkit-scrollbar-track {
   border-radius: 10px;
 }
 
 .el-drawer__wrapper /deep/.el-drawer__body {
-  padding: 0 20px;
+  padding: 0 20px 10px 20px;
 }
 
 .mian_box_item {
@@ -508,9 +533,15 @@ export default {
 }
 
 .mian_box_center div {
-  width: 25%;
-  margin: 10px 0;
+  width: 23%;
+  margin: 10px 5px 10px 0;
   font-size: 14px;
+  white-space: nowrap;
+  /* 防止文字换行 */
+  overflow: hidden;
+  /* 隐藏超出部分 */
+  text-overflow: ellipsis;
+  /* 显示省略号 */
 }
 
 .box-card /deep/ .el-card__body {
