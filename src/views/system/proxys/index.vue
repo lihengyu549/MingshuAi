@@ -84,7 +84,7 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
-    <el-dialog class="addMsg" :title="title" :visible.sync="open" width="580px" append-to-body
+    <el-dialog class="addMsg" :title="title" v-loading="formLoading" :visible.sync="open" width="580px" append-to-body
       :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
         <el-form-item label="任务名称" prop="tasksName" :rules="rules.tasksName">
@@ -256,6 +256,7 @@ export default {
         }],
       },
       debounceTimeout: null,
+      formLoading:false,
     };
   },
 
@@ -266,10 +267,12 @@ export default {
   },
   methods: {
     // 获取新增任务中 数据源名称
-    getScanCompleteDataFn() {
-      getScanCompleteData().then((res) => {
+    getScanCompleteDataFn(id) {
+      this.formLoading = true
+      getScanCompleteData({editId:id || ''}).then((res) => {
         this.databaseTypeList = res.data
-      })
+        this.formLoading = false
+    })
     },
     getNameTestingFn(val, from) {
       this.importDataLoading = true
@@ -407,9 +410,10 @@ export default {
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
+      this.getScanCompleteDataFn(row.id)
       this.form = JSON.parse(JSON.stringify(row));
       this.open = true;
-      this.title = "修改任务";
+      this.title = "编辑任务";
     },
     /** 提交按钮 */
     submitForm() {
