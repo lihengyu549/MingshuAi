@@ -136,8 +136,8 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="推理过程" prop="craftRemark">
-          <el-input v-model="resultForm.craftRemark" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
+        <el-form-item label="推理过程" prop="reasoningProcess">
+          <el-input v-model="resultForm.reasoningProcess" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
              maxlength="500" placeholder="请输入推理过程"></el-input>
         </el-form-item>
         <el-form-item label="审核建议" prop="auditRecommendation">
@@ -706,9 +706,8 @@ export default {
     },
     updataResultFn() {
       this.updataLoading = true
-      this.resultForm.reasoningProcess = this.resultForm.craftRemark
       let params = {
-        reasoningProcess:this.resultForm.craftRemark,
+        reasoningProcess:this.resultForm.reasoningProcess,
         tableFieldId:this.resultForm.tableFieldId,
         categoryId:this.resultForm.categoryId,
         securityLevel:this.resultForm.securityLevel,

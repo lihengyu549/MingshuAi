@@ -96,7 +96,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
-          <el-input v-model="form.sourceName" @blur="getNameTestingFn(form.sourceName)" maxlength="50"
+          <el-input v-model="form.sourceName" maxlength="50"
             placeholder="请输入数据源名称" />
         </el-form-item>
         <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
@@ -156,45 +156,13 @@
         <el-button @click="open = false">取消</el-button>
       </div>
     </el-dialog>
-    <!-- 数据扫描 -->
-    <el-dialog class="marking" title="数据扫描" :visible.sync="markingVisible" width="450px" append-to-body
-      :close-on-click-modal="false">
-      <div style="text-align: center;">
-        <el-radio-group v-model="radio" @change="handleChange">
-          <el-radio label="1">追加</el-radio>
-          <el-radio label="0">覆盖</el-radio>
-        </el-radio-group>
-        <div style="display: flex; justify-content: center; margin-top: 10px; ">
-          <div style="margin-right: 5px;line-height: 36px; ">抽样数量:</div>
-          <el-input style="width: 60%;" type="number" v-model="samplingNum" placeholder="请输入抽样数量"
-            @input="handleInput"></el-input>
-        </div>
-        <div style="text-align: right;">
-          <el-button type="primary" @click="markingCli">确定</el-button>
-        </div>
-      </div>
-    </el-dialog>
-    <el-dialog class="deleteCla" title="系统提示" :visible.sync="deleteVisible" width="450px" append-to-body
-      :close-on-click-modal="false">
-      <div style="position: relative; ">
-        <div style="height: 66px;">
-          <i class="el-icon-warning" style="color: #ffba00; font-size: 30px;margin-right: 5px;"></i>
-          <span style="position: absolute; top: 5px; ">是否确认删除数据库代理编号为{{ serialNumber }}的数据项,<span
-              style="color: red;">并同时关联删除扫描记录</span></span>
-        </div>
-        <div style="text-align: right;">
-          <el-button @click="deleteVisible = false">取消</el-button>
-          <el-button type="primary" @click="deleteClick(serialNumber)">确定</el-button>
-        </div>
-      </div>
-    </el-dialog>
     <el-dialog :title="titleExcel" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"
       append-to-body :close-on-click-modal="true">
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px">
         <el-form-item label="数据源名称" prop="sourceName">
           <el-input v-model="importData.sourceName" maxlength="50"
-            @blur="getimortantNameTestingFn(importData.sourceName)" @input="importNameTestingFn(importData.sourceName)"
+            @blur="getimortantNameTestingFn(importData.sourceName)"
             placeholder="请输入数据源名称"></el-input>
         </el-form-item>
         <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
@@ -412,7 +380,7 @@ export default {
           }]
         },
         targetIp: [
-          { required: true, message: "请输入数据库地址", trigger: "change" },
+          { required: true, message: "请输入数据库地址", trigger: "blur" },
           {
             pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
             message: "请输入有效的IP地址"
@@ -483,23 +451,20 @@ export default {
         this.isServiesNameRequired = false
       }
     },
-    getNameTestingFn(val, from) {
+    getNameTestingFn() {
       this.importDataLoading = true
       let params = {
-        sourceName: val,
-        id:this.form.id|| ''
+        sourceName: this.form.sourceName,
+        id:this.form.id || ''
       }
-      if (val) {
-        checkSourceName(params).then((res) => {
-        })
-          .catch((err) => {
-            this.form.sourceName = ''
-            this.importDataLoading = false
-          })
-      } else {
-        this.form.sourceName = ''
+      checkSourceName(params).then((res) => {
         this.importDataLoading = false
-      }
+        return true
+      })
+      .catch((err) => {
+        this.importDataLoading = false
+        return false
+      })
     },
 
     getimortantNameTestingFn(val, from) {
@@ -735,6 +700,9 @@ export default {
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
+        if(!this.getNameTestingFn()){
+          return
+        }
         let data = JSON.parse(JSON.stringify(this.form))
         delete data.projectName
         data.targetDatabase = JSON.stringify(data.targetDatabase)

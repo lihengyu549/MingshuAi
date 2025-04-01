@@ -47,7 +47,7 @@
           <div>及格分</div>
           <el-input v-model="allData.DataTableQualityScore.value" style="width: 5%; margin: 0 20px;"
             @input="numInputFn($event)" @blur="numBlurFn($event)"></el-input>
-          <div> <i class="el-icon-warning"></i>输入范围在30 ~ 100之间，低于及格分的数据表不会进行打标</div>
+          <div> <i class="el-icon-warning"></i>输入范围在0 ~ 100之间，低于及格分的数据表不会进行打标</div>
         </div>
       </div>
       <div class="foot_btn">
@@ -91,16 +91,10 @@ export default {
       this.allData.DataTableQualityScore.value = value; // 更新输入框的值
     },
     numBlurFn(){
-      if(this.allData.DataTableQualityScore.value < 30){
-        this.allData.DataTableQualityScore.value = 30
-        this.$message({
-          message: '输入范围在30 ~ 100之间',
-          type: 'warning'
-        });
-      }else if(this.allData.DataTableQualityScore.value > 100){
+  if(this.allData.DataTableQualityScore.value > 100){
         this.allData.DataTableQualityScore.value = 100
         this.$message({
-          message: '输入范围在30 ~ 100之间',
+          message: '输入范围在0 ~ 100之间',
           type: 'warning'
         });
       }

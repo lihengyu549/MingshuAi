@@ -407,6 +407,8 @@ export default {
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
+      console.log(row);
+      
       this.form = JSON.parse(JSON.stringify(row));
       this.open = true;
       this.title = "修改任务";
