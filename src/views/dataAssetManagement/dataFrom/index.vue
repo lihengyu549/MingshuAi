@@ -67,7 +67,8 @@
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
           <div style="display: flex; align-items: center;justify-content: center;">
-            <img style="display: block; width: 20px;margin-right: 10px;" :src="imgSrc[scope.row.scanState?scope.row.scanState:'NONE']" alt="">
+            <img style="display: block; width: 20px;margin-right: 10px;"
+              :src="imgSrc[scope.row.scanState ? scope.row.scanState : 'NONE']" alt="">
             <span> {{ stateMsg(scope.row.scanState) }}</span>
           </div>
         </template>
@@ -96,8 +97,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
-          <el-input v-model="form.sourceName" maxlength="50"
-            placeholder="请输入数据源名称" />
+          <el-input v-model="form.sourceName" maxlength="50" placeholder="请输入数据源名称" />
         </el-form-item>
         <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
           <el-select v-model="form.projectName" placeholder="请输入分类分级框架" clearable @change="projectChangeEdit($event)">
@@ -128,20 +128,21 @@
           <el-radio v-model="connectionType" label="0">SID</el-radio>
           <el-radio v-model="connectionType" label="1">Service Name</el-radio>
         </el-form-item>
-        <el-form-item v-show="form.databaseType != 'ORACLE'" label="实例名/库名" prop="examplesName" :rules="rules.examplesName()">
+        <el-form-item v-show="form.databaseType != 'ORACLE'" label="实例名/库名" prop="examplesName"
+          :rules="rules.examplesName()">
           <el-input v-model="form.examplesName" placeholder="请输入实例名/库名" />
         </el-form-item>
         <el-form-item label="扫描内容" prop="tabelCheckedName" :rules="rules.tabelCheckedName">
-          <div @click="scanContentFn()"><el-input style="position: relative;" readonly >
-          </el-input>
-          <el-tag style="position: absolute;top: 4px;left: 6px;">{{form.tabelCheckedName?form.tabelCheckedName:'点击选择扫描内容'}}</el-tag>
+          <div @click="scanContentFn()"><el-input style="position: relative;" readonly>
+            </el-input>
+            <el-tag
+              style="position: absolute;top: 4px;left: 6px;">{{ form.tabelCheckedName ? form.tabelCheckedName : '点击选择扫描内容' }}</el-tag>
           </div>
         </el-form-item>
         <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
           <!-- @input="businessNameFn(form.businessName)" -->
-          <el-input v-model="form.businessName" maxlength="50"
-            placeholder="请输入来源业务系统" />
-            <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
+          <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
+          <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
         </el-form-item>
         <!-- <p>代理数据库信息</p>
         <el-form-item label="代理端口" prop="proxyPort">
@@ -162,8 +163,7 @@
         :inline="true" label-width="120px">
         <el-form-item label="数据源名称" prop="sourceName">
           <el-input v-model="importData.sourceName" maxlength="50"
-            @blur="getimortantNameTestingFn(importData.sourceName)"
-            placeholder="请输入数据源名称"></el-input>
+            @blur="getimortantNameTestingFn(importData.sourceName)" placeholder="请输入数据源名称"></el-input>
         </el-form-item>
         <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
           <el-select v-model="importData.categoryId" class="serachInput" placeholder="全部">
@@ -408,7 +408,7 @@ export default {
         categoryId: '',//框架名称
         importShow: false,
         businessName: '',
-        sourceName:'',
+        sourceName: '',
       },
       isServiesNameRequired: false,
       debounceTimeout: null,
@@ -455,7 +455,7 @@ export default {
       this.importDataLoading = true
       let params = {
         sourceName: this.form.sourceName,
-        id:this.form.id || ''
+        id: this.form.id || ''
       }
       checkSourceName(params).then((res) => {
         this.importDataLoading = false
@@ -473,7 +473,7 @@ export default {
       }
       if (val) {
         checkSourceName(params).then((res) => {
-          
+
         })
           .catch((err) => {
             this.importData.sourceName = ''
@@ -543,12 +543,12 @@ export default {
         if (valid) {
           this.importDataLoading = true
           if (this.importData.id) {
-            let data  = {
-              tabelCheckedName:this.importData.importFile,
-              businessName:this.importData.businessName,
-              sourceName:this.importData.sourceName,
-              frameworkNameId:this.importData.categoryId,
-              id:this.importData.id,
+            let data = {
+              tabelCheckedName: this.importData.importFile,
+              businessName: this.importData.businessName,
+              sourceName: this.importData.sourceName,
+              frameworkNameId: this.importData.categoryId,
+              id: this.importData.id,
             }
             updateDatabaseAndTables(data).then(res => {
 
@@ -700,35 +700,28 @@ export default {
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
-        if(!this.getNameTestingFn()){
-          return
-        }
-        let data = JSON.parse(JSON.stringify(this.form))
-        delete data.projectName
-        data.targetDatabase = JSON.stringify(data.targetDatabase)
-        data.connectionType = this.connectionType
-        data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
-        if (valid) {
-          if (this.form.id != null) {
-            data.id = this.form.id
-            updateDatabaseAndTables(data).then(response => {
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            });
-          } else {
-            // for (let i = 0; i < this.databaseTypeList.length; i++) {
-            //   if (this.form.databaseType == this.databaseTypeList[i].name) {
-            //     data.databaseType = this.databaseTypeList[i].value
-            //   }
-            // }
-            saveDatabaseAndTables(data).then(response => {
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            });
+          this.getNameTestingFn()
+          let data = JSON.parse(JSON.stringify(this.form))
+          delete data.projectName
+          data.targetDatabase = JSON.stringify(data.targetDatabase)
+          data.connectionType = this.connectionType
+          data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
+          if (valid) {
+            if (this.form.id != null) {
+              data.id = this.form.id
+              updateDatabaseAndTables(data).then(response => {
+                this.$modal.msgSuccess("修改成功");
+                this.open = false;
+                this.getList();
+              });
+            } else {
+              saveDatabaseAndTables(data).then(response => {
+                this.$modal.msgSuccess("新增成功");
+                this.open = false;
+                this.getList();
+              });
+            }
           }
-        }
       });
     },
     /** 删除按钮操作 */
@@ -905,10 +898,10 @@ export default {
         this.form.tabelCheckedName = row.scanContent
         let targetDatabaseCopy = row.targetDatabase
         let targetDatabaseArr
-        if(targetDatabaseCopy.length>1){
+        if (targetDatabaseCopy.length > 1) {
           targetDatabaseArr = targetDatabaseCopy.split(',')
-          targetDatabaseArr.splice(targetDatabaseArr.length-1,1)
-      }
+          targetDatabaseArr.splice(targetDatabaseArr.length - 1, 1)
+        }
         this.form.targetDatabase = targetDatabaseArr
         this.title = "编辑数据库";
         this.open = true
@@ -942,7 +935,7 @@ export default {
             connectionType: this.connectionType,
             connectionValue: this.form.connectionValue,
             databaseType: this.form.databaseType,
-            examplesName:this.form.examplesName
+            examplesName: this.form.examplesName
           }
           let res = await getListTables(data)
           if (res.data.option.length == 0) {
@@ -958,7 +951,7 @@ export default {
     scanContentSubmitFn() {
       let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
       let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
-      let allData = [ ...halfCheckedNodes,...checkedNodes,]
+      let allData = [...halfCheckedNodes, ...checkedNodes,]
       let targetDatabaseArr = []
       let params = {}
       for (let item of allData) {
@@ -1034,9 +1027,11 @@ input[aria-hidden=true] {
 .deleteCla /deep/ .el-dialog__body {
   padding-top: 0;
 }
-.scanContentBox /deep/ .el-dialog__body{
+
+.scanContentBox /deep/ .el-dialog__body {
   padding: 20px;
 }
+
 .addMsg /deep/ .el-input {
   width: 80%;
 }
