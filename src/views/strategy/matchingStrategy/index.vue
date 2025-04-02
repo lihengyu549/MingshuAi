@@ -94,8 +94,8 @@
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" style="padding-right: 60px;">
         <el-form-item label="规则名称" prop="ruleName">
-          <el-input v-model="addOrEditDataRuls.ruleName"
-            :disabled="addOrEdit.flag == 3" maxlength="50" placeholder="请输入规则名称"></el-input>
+          <el-input v-model="addOrEditDataRuls.ruleName" :disabled="addOrEdit.flag == 3" maxlength="50"
+            placeholder="请输入规则名称"></el-input>
         </el-form-item>
         <el-form-item label="识别对象" class="addSelectClass" prop="recognizeObject">
           <el-select v-model="addOrEditDataRuls.recognizeObject" :disabled="addOrEdit.flag == 3" placeholder="全部">
@@ -336,12 +336,8 @@ export default {
         this.addOrEdit.show = false
         return
       }
-      if (!await this.getNameTestingFn()) {
-        return
-      }
       this.$refs["addOrEdit"].validate(async (valid) => {
         let nameList = this.ruleContent.filter(item => item.name !== '').map(item => item.name)
-
         let params = {
           categoryDataId: this.treeID,
           ruleName: this.addOrEditDataRuls.ruleName,
@@ -352,6 +348,9 @@ export default {
           state: 0,
         }
         if (valid) {
+          if (await this.getNameTestingFn()) {
+            return
+          }
           this.importDataLoading = true
           if (this.addOrEditDataRuls.id) {
             params.id = this.addOrEditDataRuls.id
@@ -563,10 +562,10 @@ export default {
       let params = {
         ruleName: this.addOrEditDataRuls.ruleName,
         dataId: this.addOrEditDataRuls.categoryDataId || this.treeID,
-        id: this.addOrEditDataRuls.id
+        id: this.addOrEditDataRuls.id || ''
       }
       let res = await nameRules(params)
-      if(!res.data){
+      if (res.data) {
         this.$message.error('该规则名称已存在');
       }
       this.importDataLoading = false

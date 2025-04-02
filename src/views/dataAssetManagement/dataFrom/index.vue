@@ -527,14 +527,14 @@ export default {
     },
     async submitFormExcelFn() {
       this.$refs["importData"].validate(async valid => {
-        if (!await this.getimortantNameTestingFn()) {
-          return
-        }
         if (valid) {
+          if (!await this.getimortantNameTestingFn()) {
+            return
+          }
           this.importDataLoading = true
           const formData = new FormData();
           if (this.importData.id) {
-            formData.append('id', this.importData.id);
+            formData.append('id', this.importData.id || '');
             // updateDatabaseAndTables(data)
           }
           // 将文件数组添加到 FormData 对象中
@@ -681,15 +681,15 @@ export default {
     /** 提交按钮 */
     async submitForm() {
       this.$refs["form"].validate(async valid => {
-        if (!await this.getNameTestingFn()) {
-          return
-        }
         let data = JSON.parse(JSON.stringify(this.form))
         delete data.projectName
         data.targetDatabase = JSON.stringify(data.targetDatabase)
         data.connectionType = this.connectionType
         data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
         if (valid) {
+          if (!await this.getNameTestingFn()) {
+            return
+          }
           if (this.form.id != null) {
             data.id = this.form.id
             updateDatabaseAndTables(data).then(response => {

@@ -88,8 +88,7 @@
       :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
         <el-form-item label="任务名称" prop="tasksName" :rules="rules.tasksName">
-          <el-input v-model="form.tasksName" maxlength="50"
-            placeholder="请输入任务名称" />
+          <el-input v-model="form.tasksName" maxlength="50" placeholder="请输入任务名称" />
         </el-form-item>
         <el-form-item label="数据源名称" prop="id" :rules="rules.id">
           <el-select v-model="form.id" clearable @change="projectChangeEdit($event)">
@@ -157,9 +156,9 @@ export default {
       drawerShow: false,
       drawerData: null,
       mainLoading: false,
-      aiAnalyticsEngine:'1',
+      aiAnalyticsEngine: '1',
       confidenceLevelList: [
-        { name: "全部",  value: "0" },
+        { name: "全部", value: "0" },
         { name: "低", value: "1" },
       ],
       confirmList: [
@@ -256,7 +255,7 @@ export default {
         }],
       },
       debounceTimeout: null,
-      formLoading:false,
+      formLoading: false,
     };
   },
 
@@ -269,16 +268,16 @@ export default {
     // 获取新增任务中 数据源名称
     getScanCompleteDataFn(id) {
       this.formLoading = true
-      getScanCompleteData({editId:id || ''}).then((res) => {
+      getScanCompleteData({ editId: id || '' }).then((res) => {
         this.databaseTypeList = res.data
         this.formLoading = false
-    })
+      })
     },
     async getNameTestingFn() {
       this.importDataLoading = true
       let params = {
         tasksName: this.form.tasksName,
-        id:this.form.id || ''
+        id: this.form.id || ''
       }
       let res = await verifyTasksName(params)
       return res.code == 200
@@ -308,13 +307,13 @@ export default {
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
     implementFn(row) {
-      if(row.maskComplete== 'RUNNING'){
+      if (row.maskComplete == 'RUNNING') {
         this.$message({
           message: '当前任务执行中，请等待执行完成后再执行',
           type: 'warning'
         })
         return
-      } 
+      }
       if (row.maskComplete !== 'NONE') {
         this.$confirm(`重新执行任务前，⚠️ 请注意任务细节，否则可能将会覆盖改数据源上一次执行的所有结果`, '提示', {
           confirmButtonText: '确定',
@@ -367,7 +366,7 @@ export default {
       });
     },
     reset() {
-      this.form = {}      
+      this.form = {}
       this.aiAnalyticsEngine = "1"
       this.form.projectName = ''
     },
@@ -406,10 +405,10 @@ export default {
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(async valid => {
-        if (!await this.getNameTestingFn()) {
-          return
-        }
         if (valid) {
+          if (!await this.getNameTestingFn()) {
+            return
+          }
           if (this.form.isAddTasks === '1') {
             editScanCompleteDataTasks(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
