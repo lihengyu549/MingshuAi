@@ -88,7 +88,7 @@
       :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
         <el-form-item label="任务名称" prop="tasksName" :rules="rules.tasksName">
-          <el-input v-model="form.tasksName" @blur="getNameTestingFn(form.tasksName)" maxlength="50"
+          <el-input v-model="form.tasksName" maxlength="50"
             placeholder="请输入任务名称" />
         </el-form-item>
         <el-form-item label="数据源名称" prop="id" :rules="rules.id">
@@ -274,26 +274,14 @@ export default {
         this.formLoading = false
     })
     },
-    getNameTestingFn(val, from) {
+    async getNameTestingFn() {
       this.importDataLoading = true
       let params = {
-        tasksName: val,
+        tasksName: this.form.tasksName,
         id:this.form.id || ''
       }
-      if (val) {
-        verifyTasksName(params).then((res) => {
-          return res.msg == '可以使用'
-        })
-          .catch((err) => {
-            this.form.tasksName = ''
-            this.importDataLoading = false
-            return false
-          })
-      } else {
-        this.form.tasksName = ''
-        this.importDataLoading = false
-        return false
-      }
+      let res = await verifyTasksName(params)
+      return res.code == 200
     },
     gettreeOptionsList() {
       this.mainLoading = true
@@ -417,7 +405,10 @@ export default {
     },
     /** 提交按钮 */
     submitForm() {
-      this.$refs["form"].validate(valid => {
+      this.$refs["form"].validate(async valid => {
+        if (!await this.getNameTestingFn()) {
+          return
+        }
         if (valid) {
           if (this.form.isAddTasks === '1') {
             editScanCompleteDataTasks(this.form).then(response => {

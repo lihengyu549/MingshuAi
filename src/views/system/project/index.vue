@@ -132,18 +132,20 @@
             :disabled="addOrEdit.flag == 3" maxlength="500" placeholder="请输入子类描述"></el-input>
         </el-form-item>
         <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="特征标签">
-            <div class="tagsClass" :style="tagsShow?heightSmall:heightBig" style="width: 100%;">
-              <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag+index" class="mx-1" :closable="addOrEdit.flag !== 3"
-                @close="handleClose(tag, index)" style="margin: 0 10px;">
-                {{ tag }}
-              </el-tag>
-              <el-input class="input-new-tag" v-if="inputVisible && countIs40" maxlength="10" v-model="inputValue" ref="saveTagInput"
-                size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
-              </el-input>
-              <el-button v-if="!inputVisible && countIs40 && addOrEdit.flag != 3" class="button-new-tag" size="small" @click="showInput">+ 新增</el-button>
-            </div>
-              <el-button class="button-new-tag" size="small" v-show="tags.length>10" @click="tagsShow = !tagsShow">{{ tagsShow?'展开':'收起' }}</el-button>
-            </el-form-item>
+          <div class="tagsClass" :style="tagsShow ? heightSmall : heightBig" style="width: 100%;">
+            <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag + index" class="mx-1"
+              :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index)" style="margin: 0 10px;">
+              {{ tag }}
+            </el-tag>
+            <el-input class="input-new-tag" v-if="inputVisible && countIs40" maxlength="10" v-model="inputValue"
+              ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
+            </el-input>
+            <el-button v-if="!inputVisible && countIs40 && addOrEdit.flag != 3" class="button-new-tag" size="small"
+              @click="showInput">+ 新增</el-button>
+          </div>
+          <el-button class="button-new-tag" size="small" v-show="tags.length > 10" @click="tagsShow = !tagsShow">{{
+            tagsShow ? '展开' :'收起' }}</el-button>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">确
@@ -163,11 +165,11 @@ export default {
   dicts: ['sys_risk_level'],
   data() {
     return {
-      heightSmall:{
+      heightSmall: {
         height: '75px',
         overflowY: 'auto'
       },
-      heightBig:{
+      heightBig: {
         height: '300px',
         overflowY: 'auto'
       },
@@ -178,8 +180,8 @@ export default {
         importShow: false,
       },
       inputVisible: false,
-      countIs40:true,// 数量是否小于40
-      tagsShow:false,
+      countIs40: true,// 数量是否小于40
+      tagsShow: false,
       inputValue: '',
       categoryName: '',
       debounceTimeout: null,//防抖动
@@ -312,11 +314,11 @@ export default {
     filterName(val) {
       this.$refs.tree.filter(val);
     },
-    tags(val){
-      if(val.length>=40) {
+    tags(val) {
+      if (val.length >= 40) {
         this.countIs40 = false
         this.$modal.msgWarning("学习内容最多定义40个标签");
-      }else {
+      } else {
         this.countIs40 = true
       }
     }
@@ -339,7 +341,11 @@ export default {
     handleInputConfirm() {
       let inputValue = this.inputValue;
       if (inputValue) {
-        this.tags.push(inputValue);
+        if (this.tags.includes(inputValue)) {
+          this.$message({ message: '该标签已存在', type: 'warning' })
+        } else {
+          this.tags.push(inputValue);
+        }
       }
       this.inputVisible = false;
       this.inputValue = '';
@@ -371,7 +377,7 @@ export default {
         }
         if (valid) {
           this.importDataLoading = true
-          await this.rulsNameIsRight(this.addOrEditDataRuls.categoryId, params.name,this.addOrEditDataRuls.id)
+          await this.rulsNameIsRight(this.addOrEditDataRuls.categoryId, params.name, this.addOrEditDataRuls.id)
           if (!this.isName) {
             this.$modal.msgError("框架名称重复,请更改");
             this.importDataLoading = false
@@ -451,7 +457,7 @@ export default {
       this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
       this.addOrEditDataRuls.additional = row.attachDescribe
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
-      this.tags = row.featureLabel? row.featureLabel.split(','): []
+      this.tags = row.featureLabel ? row.featureLabel.split(',') : []
       this.addOrEdit.show = true
       this.addOrEdit.title = '编辑'
       this.addNodeName = row.owner
@@ -466,7 +472,7 @@ export default {
       this.addOrEditDataRuls = row
       this.addOrEditDataRuls.additional = row.attachDescribe
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
-      this.tags = row.featureLabel? row.featureLabel.split(','): []
+      this.tags = row.featureLabel ? row.featureLabel.split(',') : []
       this.addNodeName = row.owner
       this.addOrEdit.show = true
       this.addOrEdit.title = '查看'
@@ -654,8 +660,10 @@ export default {
           }
           this.treeID = this.categoryList[0].id;
           this.$nextTick(function () {
-            this.$refs.tree.setCurrentKey(this.treeID);
-            this.$refs.tree.setCurrentKey(this.treeID);
+            if(this.$refs.tree){
+              this.$refs.tree.setCurrentKey(this.treeID);
+              this.$refs.tree.setCurrentKey(this.treeID);
+            }
           });
           let tempList = JSON.parse(JSON.stringify(this.categoryList))
           for (let item of tempList) {
@@ -700,7 +708,7 @@ export default {
       this.resetForm("queryParams");
       this.handleQuery();
     },
-    async rulsNameIsRight(nodeId, name,id) {
+    async rulsNameIsRight(nodeId, name, id) {
       let params = {
         nodeId,
         name,
@@ -833,9 +841,11 @@ export default {
   margin-left: 10px;
   vertical-align: bottom;
 }
-.tagsClass{
+
+.tagsClass {
   transition: all .5s ease-in-out;
 }
+
 .tagsClass::-webkit-scrollbar {
   width: 6px;
   height: 6px;

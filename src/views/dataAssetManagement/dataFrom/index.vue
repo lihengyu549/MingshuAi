@@ -100,7 +100,8 @@
           <el-input v-model="form.sourceName" maxlength="50" placeholder="请输入数据源名称" />
         </el-form-item>
         <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
-          <el-select v-model="form.projectName" placeholder="请输入分类分级框架" clearable @change="projectChangeEdit($event)">
+          <el-select v-model="form.projectName" :disabled="editIsFlag" placeholder="请输入分类分级框架" clearable
+            @change="projectChangeEdit($event)">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
@@ -135,8 +136,8 @@
         <el-form-item label="扫描内容" prop="tabelCheckedName" :rules="rules.tabelCheckedName">
           <div @click="scanContentFn()"><el-input style="position: relative;" readonly>
             </el-input>
-            <el-tag
-              style="position: absolute;top: 4px;left: 6px;">{{ form.tabelCheckedName ? form.tabelCheckedName : '点击选择扫描内容' }}</el-tag>
+            <el-tag style="position: absolute;top: 4px;left: 6px;">{{ form.tabelCheckedName ? form.tabelCheckedName :
+              '点击选择扫描内容' }}</el-tag>
           </div>
         </el-form-item>
         <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
@@ -162,11 +163,10 @@
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px">
         <el-form-item label="数据源名称" prop="sourceName">
-          <el-input v-model="importData.sourceName" maxlength="50"
-            @blur="getimortantNameTestingFn(importData.sourceName)" placeholder="请输入数据源名称"></el-input>
+          <el-input v-model="importData.sourceName" maxlength="50" placeholder="请输入数据源名称"></el-input>
         </el-form-item>
         <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
-          <el-select v-model="importData.categoryId" class="serachInput" placeholder="全部">
+          <el-select v-model="importData.categoryId" :disabled="editIsFlag" class="serachInput" placeholder="全部">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
@@ -233,6 +233,7 @@ export default {
       scanContentShow: false, // 扫描配置弹框
       scanStateName: false,// 扫描中展示
       scanContentLoading: false,
+      editIsFlag: false,
       treeOptions: [],
       scanStateBtnDisabled: false,// 扫描按钮禁用条件
       treeCheckedData: [],//树节点已选中数据
@@ -451,36 +452,22 @@ export default {
         this.isServiesNameRequired = false
       }
     },
-    getNameTestingFn() {
-      this.importDataLoading = true
+    async getNameTestingFn() {
       let params = {
         sourceName: this.form.sourceName,
         id: this.form.id || ''
       }
-      checkSourceName(params).then((res) => {
-        this.importDataLoading = false
-        return true
-      })
-      .catch((err) => {
-        this.importDataLoading = false
-        return false
-      })
+      let res = await checkSourceName(params)
+      return res.code == 200
     },
 
-    getimortantNameTestingFn(val, from) {
+    async getimortantNameTestingFn() {
       let params = {
-        sourceName: val
+        sourceName: this.importData.sourceName,
+        id: this.importData.id || ''
       }
-      if (val) {
-        checkSourceName(params).then((res) => {
-
-        })
-          .catch((err) => {
-            this.importData.sourceName = ''
-          })
-      } else {
-        this.importData.sourceName = ''
-      }
+      let res = await checkSourceName(params)
+      return res.code == 200
     },
     nameTestingFn(val) {
       this.form.sourceName = val.replace(/[^a-zA-Z0-9]/g, "")
@@ -538,49 +525,42 @@ export default {
     messsucc(res, flag) {
       this.$message.success(`${res.msg},${flag}${res.data}个`)
     },
-    submitFormExcelFn() {
-      this.$refs["importData"].validate(async (valid) => {
+    async submitFormExcelFn() {
+      this.$refs["importData"].validate(async valid => {
+        if (!await this.getimortantNameTestingFn()) {
+          return
+        }
         if (valid) {
           this.importDataLoading = true
+          const formData = new FormData();
           if (this.importData.id) {
-            let data = {
-              tabelCheckedName: this.importData.importFile,
-              businessName: this.importData.businessName,
-              sourceName: this.importData.sourceName,
-              frameworkNameId: this.importData.categoryId,
-              id: this.importData.id,
-            }
-            updateDatabaseAndTables(data).then(res => {
-
-            })
-          } else {
-
-            const formData = new FormData();
-            // 将文件数组添加到 FormData 对象中
-            formData.append('file', this.importData.fileList[0].raw);
-            formData.append('frameworkNameId', this.importData.categoryId);
-            formData.append('sourceName', this.importData.sourceName);
-            formData.append('businessName', this.importData.businessName);
-            formData.append('tabelCheckedName', this.importData.importFile);
-            await importExcel(formData).then(res => {
-              this.messsucc(res, '导入条目数量共');
-              // this.getList();
-              this.importData.categoryName = ''
-              this.importData.importFile = ''
-              this.importData.sourceName = ''
-              this.importData.categoryId = ''
-              this.importData.fileList = []
-              this.importData.businessName = ''
-              this.resetQuery()
-              this.importData.importShow = false
-              this.importDataLoading = false
-            })
-              .catch((err) => {
-                this.importDataLoading = false
-                this.importData.importFile = ''
-                this.importData.fileList = []
-              })
+            formData.append('id', this.importData.id);
+            // updateDatabaseAndTables(data)
           }
+          // 将文件数组添加到 FormData 对象中
+          formData.append('file', this.importData.fileList[0].raw);
+          formData.append('frameworkNameId', this.importData.categoryId);
+          formData.append('sourceName', this.importData.sourceName);
+          formData.append('businessName', this.importData.businessName);
+          formData.append('tabelCheckedName', this.importData.importFile);
+          await importExcel(formData).then(res => {
+            this.messsucc(res, '导入条目数量共');
+            // this.getList();
+            this.importData.categoryName = ''
+            this.importData.importFile = ''
+            this.importData.sourceName = ''
+            this.importData.categoryId = ''
+            this.importData.fileList = []
+            this.importData.businessName = ''
+            this.resetQuery()
+            this.importData.importShow = false
+            this.importDataLoading = false
+          })
+            .catch((err) => {
+              this.importDataLoading = false
+              this.importData.importFile = ''
+              this.importData.fileList = []
+            })
           // await this.rulsNameIsRight(this.importData.categoryId, params.name)
 
         } else {
@@ -689,6 +669,7 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
+      this.editIsFlag = false
       this.showSucType = 0
       this.projectNameEdit = null
       this.targetDataList = []
@@ -698,30 +679,32 @@ export default {
       this.title = "添加数据库";
     },
     /** 提交按钮 */
-    submitForm() {
-      this.$refs["form"].validate(valid => {
-          this.getNameTestingFn()
-          let data = JSON.parse(JSON.stringify(this.form))
-          delete data.projectName
-          data.targetDatabase = JSON.stringify(data.targetDatabase)
-          data.connectionType = this.connectionType
-          data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
-          if (valid) {
-            if (this.form.id != null) {
-              data.id = this.form.id
-              updateDatabaseAndTables(data).then(response => {
-                this.$modal.msgSuccess("修改成功");
-                this.open = false;
-                this.getList();
-              });
-            } else {
-              saveDatabaseAndTables(data).then(response => {
-                this.$modal.msgSuccess("新增成功");
-                this.open = false;
-                this.getList();
-              });
-            }
+    async submitForm() {
+      this.$refs["form"].validate(async valid => {
+        if (!await this.getNameTestingFn()) {
+          return
+        }
+        let data = JSON.parse(JSON.stringify(this.form))
+        delete data.projectName
+        data.targetDatabase = JSON.stringify(data.targetDatabase)
+        data.connectionType = this.connectionType
+        data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
+        if (valid) {
+          if (this.form.id != null) {
+            data.id = this.form.id
+            updateDatabaseAndTables(data).then(response => {
+              this.$modal.msgSuccess("修改成功");
+              this.open = false;
+              this.getList();
+            });
+          } else {
+            saveDatabaseAndTables(data).then(response => {
+              this.$modal.msgSuccess("新增成功");
+              this.open = false;
+              this.getList();
+            });
           }
+        }
       });
     },
     /** 删除按钮操作 */
@@ -733,6 +716,7 @@ export default {
       }).catch(() => { })
     },
     handleEcelFn() {
+      this.editIsFlag = false
       this.importData.importShow = true
       this.importData.categoryId = ''
       this.importData.importFile = ''
@@ -767,47 +751,6 @@ export default {
       this.download('system/proxys/export', {
         ...this.queryParams
       }, `proxys_${new Date().getTime()}.xlsx`)
-    },
-
-    executeFn() {
-      let dataS = this.$refs.tableRef.selection
-      let isWancheng
-      let isZhixingzhong
-      if (dataS && dataS.length > 0) {
-        for (let val of dataS) {
-          if (val.status == '执行中') {
-            isZhixingzhong = true
-            return
-          } else if (val.status == '已完成') {
-            isWancheng = true
-          }
-        }
-        if (isZhixingzhong) {
-          this.$message({ message: '选中任务包含执行中任务，无法批量执行', type: 'warning' })
-        } else if (isWancheng) {
-          this.$confirm(`选中任务包含已完成任务，重新执行任务，将会覆盖数据源上一次执行的所有结果`, '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            forceLogout(data).then(res => {
-              if (res.code == 200) {
-                this.messsucc(res, flag)
-                this.getList()
-              }
-            })
-          })
-        } else {
-          forceLogout(data).then(res => {
-            if (res.code == 200) {
-              this.messsucc(res, flag)
-              this.getList()
-            }
-          })
-        }
-      } else {
-        this.$message({ message: '至少选择一条数据', type: 'warning' })
-      }
     },
     deleteFn() {
       let dataS = this.$refs.tableRef.selection
@@ -885,6 +828,7 @@ export default {
       }
     },
     scanContentEdit(row) {
+      this.editIsFlag = true
       if (row.databaseType == "Excel") {
         this.importData.importFile = row.importFile
         this.titleExcel = "编辑Excel";

@@ -52,8 +52,8 @@
           <!-- <el-table-column width="55" align="center" /> -->
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
-          <el-table-column label="规则名称" align="center" prop="ruleName" show-overflow-tooltip/>
-          <el-table-column label="所属框架" align="center" prop="attachData" show-overflow-tooltip/>
+          <el-table-column label="规则名称" align="center" prop="ruleName" show-overflow-tooltip />
+          <el-table-column label="所属框架" align="center" prop="attachData" show-overflow-tooltip />
           <el-table-column label="识别对象" align="center" prop="recognizeObject" show-overflow-tooltip>
             <template slot-scope="scope">
               <span>
@@ -94,8 +94,8 @@
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" style="padding-right: 60px;">
         <el-form-item label="规则名称" prop="ruleName">
-          <el-input v-model="addOrEditDataRuls.ruleName" @blur="getNameTestingFn(addOrEditDataRuls.ruleName)" :disabled="addOrEdit.flag == 3" maxlength="50"
-            placeholder="请输入规则名称"></el-input>
+          <el-input v-model="addOrEditDataRuls.ruleName"
+            :disabled="addOrEdit.flag == 3" maxlength="50" placeholder="请输入规则名称"></el-input>
         </el-form-item>
         <el-form-item label="识别对象" class="addSelectClass" prop="recognizeObject">
           <el-select v-model="addOrEditDataRuls.recognizeObject" :disabled="addOrEdit.flag == 3" placeholder="全部">
@@ -142,7 +142,7 @@
 <script>
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getParentIdTree, getListitem, enableDataItem, deleteDataItem, updateAttachDataItme, nameTesting, getFrameworks, addAttachDataItme,nameRules } from "@/api/system/protectCategory";
+import { getParentIdTree, getListitem, enableDataItem, deleteDataItem, updateAttachDataItme, nameTesting, getFrameworks, addAttachDataItme, nameRules } from "@/api/system/protectCategory";
 import { number } from "echarts";
 import r from "highlight.js/lib/languages/r";
 export default {
@@ -185,7 +185,7 @@ export default {
           { pattern: /^(?:[1-9]|[1-9][0-9]|100)$/, message: "请输入1到100之间的正整数", trigger: "blur" }
         ],
         ruleContent: [
-          { required: true,validator: this.validateRuleContent, trigger: "change" }
+          { required: true, validator: this.validateRuleContent, trigger: "change" }
         ]
       },
       // 表单校验
@@ -321,7 +321,7 @@ export default {
     },
     // 自定义校验规则
     validateRuleContent(rule, value, callback) {
-      let nameList = this.ruleContent.filter((item)=>{
+      let nameList = this.ruleContent.filter((item) => {
         return item.name
       })
       if (this.ruleContent.length === 0 || nameList.length === 0) {
@@ -332,13 +332,16 @@ export default {
     },
     /** 新增确定方法 */
     async addSubmitForm() {
-      if(this.addOrEdit.flag === 3) {
+      if (this.addOrEdit.flag === 3) {
         this.addOrEdit.show = false
         return
       }
+      if (!await this.getNameTestingFn()) {
+        return
+      }
       this.$refs["addOrEdit"].validate(async (valid) => {
-        let nameList = this.ruleContent.filter(item => item.name!=='').map(item => item.name)
-        
+        let nameList = this.ruleContent.filter(item => item.name !== '').map(item => item.name)
+
         let params = {
           categoryDataId: this.treeID,
           ruleName: this.addOrEditDataRuls.ruleName,
@@ -346,7 +349,7 @@ export default {
           recognizeWay: this.addOrEditDataRuls.recognizeWay,
           ruleValue: this.addOrEditDataRuls.ruleValue,
           ruleContent: nameList.join(),
-          state:0,
+          state: 0,
         }
         if (valid) {
           this.importDataLoading = true
@@ -555,37 +558,20 @@ export default {
 
     },
     // 校验名称是否重复
-    getNameTestingFn(val, from) {
+    async getNameTestingFn() {
       this.importDataLoading = true
       let params = {
-        ruleName: val,
+        ruleName: this.addOrEditDataRuls.ruleName,
         dataId: this.addOrEditDataRuls.categoryDataId || this.treeID,
-        id:this.addOrEditDataRuls.id
+        id: this.addOrEditDataRuls.id
       }
-      if (val) {
-        nameRules(params).then((res) => {
-          this.importDataLoading = false
-          if(res.data) {
-          this.addOrEditDataRuls.ruleName = ''
-          this.$message({
-              message: '名称重复',
-              type: 'error'
-            })
-          }else {
-            this.importDataLoading = false
-          }
-          return false
-        })
-        .catch((err) => {
-          this.addOrEditDataRuls.ruleName = ''
-          this.importDataLoading = false
-          return false
-        })
-      } else {
-        this.addOrEditDataRuls.ruleName = ''
-        this.importDataLoading = false
-        return false
+      let res = await nameRules(params)
+      if(!res.data){
+        this.$message.error('该规则名称已存在');
       }
+      this.importDataLoading = false
+      return res.data
+
     },
     /** 重置按钮操作 */
     resetQuery() {
