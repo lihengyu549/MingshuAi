@@ -198,7 +198,7 @@ export default {
       isIndeterminate: false,
       checkedColumn: [],
       checkAll: false,
-      classificationReasonsList:['策略匹配','AI推理'],
+      classificationReasonsList:['策略匹配','AI推理','脏数据识别'],
       confidenceLevelList: [
         { name: "低", id: 1, value: "1" },
         { name: "高", id: 2, value: "2" },

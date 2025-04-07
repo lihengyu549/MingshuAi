@@ -22,7 +22,7 @@
 
           <el-form-item label="表名" prop="tableName">
             <el-select v-model="queryParams.tableName" @change="selectProjectIdChange" placeholder="全部">
-              <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.label">
+              <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.tableId">
               </el-option>
             </el-select>
           </el-form-item>
@@ -346,7 +346,7 @@ export default {
     // 树节点过滤方法
     filterNode(value, data) {
       if (!value) return true;
-      return data.categoryName.indexOf(value) !== -1;
+      return data.label.indexOf(value) !== -1;
     },
     // 左侧树点击事件
     handleNodeClick(data) {
@@ -357,6 +357,7 @@ export default {
         this.treeID = data.id;
         this.databaseName = ''
       }
+      this.queryParams.tableName = ''
       this.isChildrenNode = data.nodeLayerIndex
       this.handleQuery();
       this.getSelectTableNamesFn()

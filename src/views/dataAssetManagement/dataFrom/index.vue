@@ -538,7 +538,9 @@ export default {
             // updateDatabaseAndTables(data)
           }
           // 将文件数组添加到 FormData 对象中
-          formData.append('file', this.importData.fileList[0].raw);
+          if(this.importData.fileList && this.importData.fileList.length){
+            formData.append('file', this.importData.fileList[0].raw);
+          }
           formData.append('frameworkNameId', this.importData.categoryId);
           formData.append('sourceName', this.importData.sourceName);
           formData.append('businessName', this.importData.businessName);
@@ -830,7 +832,7 @@ export default {
     scanContentEdit(row) {
       this.editIsFlag = true
       if (row.databaseType == "Excel") {
-        this.importData.importFile = row.importFile
+        this.importData.importFile = row.fileName
         this.titleExcel = "编辑Excel";
         this.importData.categoryId = row.projectId
         this.importData.id = row.id
