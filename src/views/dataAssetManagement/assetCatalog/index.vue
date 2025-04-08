@@ -32,6 +32,8 @@
           </el-form-item> -->
           <el-form-item>
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
+            <el-button icon="el-icon-s-opportunity" type="primary" size="small" @click="allFill">一键填充</el-button>
+            <el-button icon="el-icon-s-help" type="primary" size="small" @click="allAssess">一键评估</el-button>
           </el-form-item>
         </el-form>
         <div class="mian_box" id="main_box">
@@ -53,12 +55,13 @@
               <div class="mian_box_center">
                 <div>数据质量评分：{{ item.score ? item.score : 'N/A' }}</div>
                 <div>数据量级：{{ item.dataMagnitude ? item.dataMagnitude : 'N/A' }}</div>
-                <el-tooltip :content="item.oldTableRemark" :ref="`tooltip-${index}`" 
-                :disabled="!overflowStatus[index]" effect="dark" placement="top">\
+                <el-tooltip :content="item.oldTableRemark" :ref="`tooltip-${index}`" :disabled="!overflowStatus[index]"
+                  effect="dark" placement="top">\
                   <!-- @mouseover="checkOverflow(item,index)" -->
-                  <div id="textContainer" :ref="`container-${index}`">原生表注释：<span >{{ item.oldTableRemark ? item.oldTableRemark
+                  <div id="textContainer" :ref="`container-${index}`">原生表注释：<span>{{ item.oldTableRemark ?
+                    item.oldTableRemark
                     : 'N/A' }}</span></div>
-                    
+
                 </el-tooltip>
                 <div>合成表注释：{{ item.craftTableRemark ? item.craftTableRemark : 'N/A' }}</div>
                 <div>原生字段注释占比：{{ item.oldFieldRemark ? item.oldFieldRemark + '%' : '0%' }}</div>
@@ -138,7 +141,8 @@
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import {
   getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId,
-  getSelectTableNames, callAIPaddingComments, updateDataQualityAssessment, updateFieldListByFieldId
+  getSelectTableNames, callAIPaddingComments, updateDataQualityAssessment, updateFieldListByFieldId,
+  callAIPaddingCommentsByAll, updateDataQualityAssessmentByAll
 } from "@/api/system/protectCategory";
 import { tree } from "d3";
 export default {
@@ -204,7 +208,53 @@ export default {
   mounted() {
   },
   methods: {
-    checkOverflow(item,index) {
+    //一键填充
+    allFill() {
+      this.$confirm('确定执行一键填充操作？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        // 用户点击确定按钮，执行相关操作
+        .then(() => {
+          this.loading = true
+          let params = {
+            proxysId: this.treeID,
+            databaseName: this.databaseName,
+          }
+          callAIPaddingCommentsByAll(params).then(res => {
+            this.getList()
+            this.$message.success(`填充成功`)
+            this.loading = false
+          })
+        }).catch(() => {
+          // 用户点击了取消按钮，不做任何操作
+        });
+    },
+    //一键评估
+    allAssess() {
+      this.$confirm('确定执行一键评估操作？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        // 用户点击确定按钮，执行相关操作
+        .then(() => {
+          this.loading = true
+          let params = {
+            proxysId: this.treeID,
+            databaseName: this.databaseName,
+          }
+          updateDataQualityAssessmentByAll(params).then(res => {
+            this.getList()
+            this.$message.success(`评估成功`)
+            this.loading = false
+          })
+        }).catch(() => {
+          // 用户点击了取消按钮，不做任何操作
+        });
+    },
+    checkOverflow(item, index) {
       const container = this.$refs[`container-${index}`][0];
       // const tooltip = this.$refs[`tooltip-${index}`][0];
       const isOverflowing = container.scrollWidth > container.clientWidth;
@@ -350,6 +400,8 @@ export default {
     },
     // 左侧树点击事件
     handleNodeClick(data) {
+      console.log(data);
+
       if (data.parentId) {
         this.databaseName = data.label
         this.treeID = data.parentId;
