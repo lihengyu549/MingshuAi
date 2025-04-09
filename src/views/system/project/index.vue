@@ -48,7 +48,7 @@
             <el-button type="primary" icon="el-icon-warning" size="medium" @click="enabledFn('禁用')">禁用</el-button>
           </div>
         </el-form>
-        <el-table v-loading="loading" :data="protectTableFieldList" ref="tableRef" class="tableBox">
+        <el-table v-loading="loading" :data="protectTableFieldList" height="630px" ref="tableRef" class="tableBox">
           <!-- <el-table-column width="55" align="center" /> -->
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
@@ -820,9 +820,22 @@ export default {
 }
 
 .tableBox {
-  height: calc(100% - 158px - 52px);
+  overflow-y: auto;
+}
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
 .AiStudesCont /deep/ .el-form-item__content {
   display: flex;
   justify-content: space-between;

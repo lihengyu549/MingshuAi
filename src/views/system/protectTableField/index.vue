@@ -49,7 +49,7 @@
           </div>
         </el-form>
 
-        <el-table v-loading="loading" :data="protectTableFieldList" @selection-change="handleSelectionChange"
+        <el-table v-loading="loading" height="620px" :data="protectTableFieldList" @selection-change="handleSelectionChange"
           class="tableBox" ref="tableRef">
           <el-table-column type="selection" width="60" align="center" />
           <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip />
@@ -689,9 +689,22 @@ Authorization:Bearer ${this.Token}`
 }
 
 .tableBox {
-  height: calc(100% - 158px - 52px);
+  overflow-y: auto;
+}
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
 .apiDialogMain {
   padding: 20px;
 }
