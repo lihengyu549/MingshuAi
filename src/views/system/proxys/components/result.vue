@@ -80,7 +80,7 @@
       </el-popover>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
-    <el-table style="max-height: 600px;" v-loading="loading" :key="checkedColumn.length" :data="proxysList"
+    <el-table height="550px" class="tableBox" v-loading="loading" :key="checkedColumn.length" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="字段名" align="center" prop="fieldName" width="150" show-overflow-tooltip fixed />
@@ -891,7 +891,23 @@ export default {
 .addMsg /deep/ .el-input--medium {
   width: 237px;
 }
+.tableBox{
+  overflow-y: auto;
+}
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
 .addMsg /deep/ .el-dialog:not(.is-fullscreen) {
   margin-top: 10% !important;
 }
