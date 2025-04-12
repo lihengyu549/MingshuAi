@@ -701,8 +701,12 @@ export default {
         data.targetDatabase = JSON.stringify(data.targetDatabase)
         data.connectionType = this.connectionType
         data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
-                
-        if(Object.keys(data.tables).length == 0){
+        console.log(data);
+        
+        if(!this.editIsFlag && Object.keys(data.tables).length == 0){
+          this.$message({ message: '请选择扫描内容', type: 'warning' })
+          return
+        }else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase){
           this.$message({ message: '请选择扫描内容', type: 'warning' })
           return
         }
