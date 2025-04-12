@@ -40,7 +40,8 @@ export default {
   },
   data () {
     return {
-      title: '明数Ai分类分级平台',
+      title: 'Ai分类分级平台',
+      // title: '明数Ai分类分级平台',
       logo: logoImg
     }
   }

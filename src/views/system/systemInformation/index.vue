@@ -5,7 +5,7 @@
     <div style="margin-bottom: 20px;">
       <div class="title_txt">
         <p class="text" style=" ">产品名称</p>
-        <span style="color:#545454 ;">明数AI分类分级平台</span>
+        <span style="color:#545454 ;">AI分类分级平台</span>
       </div>
 
       <!-- <div class="title_txt">
@@ -115,11 +115,13 @@
     <div>
       <div class="title_txt">
         <p class="text">技术支持邮箱</p>
-        <span style="color:#545454 ; margin-right: 20px;">support@cnsec.cn</span>
+        <!-- <span style="color:#545454 ; margin-right: 20px;">support@cnsec.cn</span> -->
+        <span style="color:#545454 ; margin-right: 20px;">support@demo.com</span>
       </div>
       <div class="title_txt">
         <p class="text">技术支持电话</p>
-        <span style="color:#545454 ; margin-right: 20px;">400-706-1706</span>
+        <!-- <span style="color:#545454 ; margin-right: 20px;">400-706-1706</span> -->
+        <span style="color:#545454 ; margin-right: 20px;">400-000-0000</span>
       </div>
     </div>
     <!-- <div > -->
