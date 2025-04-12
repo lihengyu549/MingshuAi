@@ -133,7 +133,7 @@
           :rules="rules.examplesName()">
           <el-input v-model="form.examplesName" placeholder="请输入实例名/库名" />
         </el-form-item>
-        <el-form-item label="扫描内容" prop="tabelCheckedName" :rules="rules.tabelCheckedName">
+        <el-form-item label="扫描内容" prop="tabelCheckedName">
           <div @click="scanContentFn()"><el-input style="position: relative;" readonly>
             </el-input>
             <el-tag style="position: absolute;top: 4px;left: 6px;">{{ form.tabelCheckedName ? form.tabelCheckedName :
@@ -336,7 +336,11 @@ export default {
         projectId: null,
         sourceName: '',
         databaseType: '',
-        tables: [],
+        // targetPort:'3306',
+        // targetIp:'192.168.2.38',
+        // targetUserName:'root',
+        // targetUserPassword:'your_password',
+        tables: {},
       },
       connectionType: '1',
       titleExcel: '新增Excel文件',
@@ -380,6 +384,11 @@ export default {
             trigger: 'blur'
           }]
         },
+        tabelCheckedName :[{
+            required: true,
+            validator: this.tabelCheckedNameRules,
+            trigger: 'blur'
+          }],
         targetIp: [
           { required: true, message: "请输入数据库地址", trigger: "blur" },
           {
@@ -445,6 +454,10 @@ export default {
     this.getList()
   },
   methods: {
+    // 自定义校验规则
+    tabelCheckedNameRules(rule, value, callback) {
+        callback();
+    },
     databaseTypeChange(val) {
       if (val == 'ORACLE') {
         this.isServiesNameRequired = true
@@ -688,6 +701,11 @@ export default {
         data.targetDatabase = JSON.stringify(data.targetDatabase)
         data.connectionType = this.connectionType
         data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
+                
+        if(Object.keys(data.tables).length == 0){
+          this.$message({ message: '请选择扫描内容', type: 'warning' })
+          return
+        }
         if (valid) {
           if (!await this.getNameTestingFn()) {
             return
@@ -849,6 +867,7 @@ export default {
           targetDatabaseArr.splice(targetDatabaseArr.length - 1, 1)
         }
         this.form.targetDatabase = targetDatabaseArr
+        this.form.tables = row.tables || {}
         this.title = "编辑数据库";
         this.open = true
         this.scanContentLoading = true
