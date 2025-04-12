@@ -131,7 +131,7 @@
           <el-input v-model="addOrEditDataRuls.additional" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             :disabled="addOrEdit.flag == 3" maxlength="500" placeholder="请输入子类描述"></el-input>
         </el-form-item>
-        <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="特征标签">
+        <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="特征标签" prop="tags">
           <div class="tagsClass" :style="tagsShow ? heightSmall : heightBig" style="width: 100%;">
             <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag + index" class="mx-1"
               :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index)" style="margin: 0 10px;">
@@ -144,7 +144,7 @@
               @click="showInput">+ 新增</el-button>
           </div>
           <el-button class="button-new-tag" size="small" v-show="tags.length > 10" @click="tagsShow = !tagsShow">{{
-            tagsShow ? '展开' :'收起' }}</el-button>
+            tagsShow ? '展开' : '收起' }}</el-button>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -206,6 +206,9 @@ export default {
         attachData: [
           { required: true, message: "请输入子类名称", trigger: "blur" }
         ],
+        tags: [
+          { validator: this.tagsRlues, trigger: 'blur', required: true, }
+        ]
       },
       // 表单校验
       importDataRules: {
@@ -331,6 +334,14 @@ export default {
 
   },
   methods: {
+    // 自定义校验规则
+    tagsRlues(rule, value, callback) {
+      if (this.tags.length < 5) {
+        callback(new Error("特征标签需要至少填写5个！"));
+      } else {
+        callback();
+      }
+    },
     showInput() {
       this.inputVisible = true;
       this.$nextTick(_ => {
@@ -660,7 +671,7 @@ export default {
           }
           this.treeID = this.categoryList[0].id;
           this.$nextTick(function () {
-            if(this.$refs.tree){
+            if (this.$refs.tree) {
               this.$refs.tree.setCurrentKey(this.treeID);
               this.$refs.tree.setCurrentKey(this.treeID);
             }
@@ -822,6 +833,7 @@ export default {
 .tableBox {
   overflow-y: auto;
 }
+
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -836,6 +848,7 @@ export default {
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
   border-radius: 10px;
 }
+
 .AiStudesCont /deep/ .el-form-item__content {
   display: flex;
   justify-content: space-between;
