@@ -449,6 +449,7 @@ Authorization:Bearer ${this.Token}`
         this.dataCategoryList = resp.data
         if (resp.data.length == 0) {
           this.Loading = false
+          this.treeIds = []
           this.getList()
         } else {
           // for (let index in resp.data) {
