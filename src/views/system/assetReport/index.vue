@@ -788,7 +788,7 @@ ul li.odd {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  height: 300px;
+  min-height: 300px;
   margin-top: 20px;
   background-color: #e8f5fe;
   padding: 20px;

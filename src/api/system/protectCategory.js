@@ -305,3 +305,19 @@ export function updateFieldListByFieldId(params) {
     data: params,
   })
 }
+// 一键AI填充字段注释接口
+export function callAIPaddingCommentsByAll(params) {
+  return request({
+    url: `/system/protectTableField/callAIPaddingCommentsByAll`,
+    method: 'post',
+    data: params,
+  })
+}
+// 一键数据质量评估接口
+export function updateDataQualityAssessmentByAll(params) {
+  return request({
+    url: `/system/protectTableField/updateDataQualityAssessmentByAll`,
+    method: 'post',
+    data: params,
+  })
+}

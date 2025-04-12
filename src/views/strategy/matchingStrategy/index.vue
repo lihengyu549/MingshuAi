@@ -48,7 +48,7 @@
             <el-button type="primary" icon="el-icon-warning" size="medium" @click="enabledFn('禁用')">禁用</el-button>
           </div>
         </el-form>
-        <el-table v-loading="loading" :data="protectTableFieldList" ref="tableRef" class="tableBox">
+        <el-table v-loading="loading" :data="protectTableFieldList" ref="tableRef" height="630px" class="tableBox">
           <!-- <el-table-column width="55" align="center" /> -->
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
@@ -685,7 +685,7 @@ export default {
 }
 
 .tableBox {
-  height: calc(100% - 158px - 52px);
+  overflow-y: auto;
 }
 
 .addTextBtn {

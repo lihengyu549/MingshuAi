@@ -48,7 +48,7 @@
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
-    <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
+    <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="任务名称" align="center" prop="tasksName" />
       <el-table-column label="数据源" align="center" prop="sourceName" />
@@ -369,6 +369,7 @@ export default {
       this.form = {}
       this.aiAnalyticsEngine = "1"
       this.form.projectName = ''
+      this.$set(this.form, 'confidenceLevel', "0")
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -391,7 +392,6 @@ export default {
     handleAdd() {
       this.reset();
       this.getScanCompleteDataFn()
-      this.form.confidenceLevel = '0'
       this.open = true;
       this.title = "添加任务";
     },
@@ -582,6 +582,23 @@ input[aria-hidden=true] {
   color: #f56c6c;
 }
 
+.tableBox {
+  overflow-y: auto;
+}
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
 .marking /deep/ .el-dialog:not(.is-fullscreen) {
   margin-top: 25vh !important;
 }

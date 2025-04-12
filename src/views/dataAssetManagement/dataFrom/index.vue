@@ -50,7 +50,7 @@
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
-    <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
+    <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="数据源名称" align="center" prop="sourceName" />
 
@@ -538,7 +538,9 @@ export default {
             // updateDatabaseAndTables(data)
           }
           // 将文件数组添加到 FormData 对象中
-          formData.append('file', this.importData.fileList[0].raw);
+          if(this.importData.fileList && this.importData.fileList.length){
+            formData.append('file', this.importData.fileList[0].raw);
+          }
           formData.append('frameworkNameId', this.importData.categoryId);
           formData.append('sourceName', this.importData.sourceName);
           formData.append('businessName', this.importData.businessName);
@@ -830,7 +832,7 @@ export default {
     scanContentEdit(row) {
       this.editIsFlag = true
       if (row.databaseType == "Excel") {
-        this.importData.importFile = row.importFile
+        this.importData.importFile = row.fileName
         this.titleExcel = "编辑Excel";
         this.importData.categoryId = row.projectId
         this.importData.id = row.id
@@ -1035,5 +1037,19 @@ input[aria-hidden=true] {
 
 .addSelectClass /deep/ .el-select {
   width: calc(100%);
+}
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
+  border-radius: 10px;
 }
 </style>
