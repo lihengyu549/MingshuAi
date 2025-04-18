@@ -50,7 +50,11 @@
     </el-row>
     <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="任务名称" align="center" prop="tasksName" />
+      <el-table-column label="任务名称" align="center" prop="tasksName">
+        <template slot-scope="scope">
+          <span class="btnText" @click="handleEdit(scope.row)">{{ scope.row.tasksName }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="数据源" align="center" prop="sourceName" />
       <el-table-column label="来源业务系统" align="center" prop="businessName" />
       <el-table-column label="来源业务系统" align="center" prop="projectName" />
@@ -71,10 +75,18 @@
         </template>
       </el-table-column>
       <el-table-column label="更新时间" align="center" prop="updateTime" />
-      <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
+      <el-table-column label="任务操作" align="center" width="200" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button type="text" size="mini" @click="implementFn(scope.row)">执行</el-button>
-          <el-button type="text" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+          <div class="iconBtnBox">
+            <i class="el-icon-video-play" @click="implementFn(scope.row)"></i>
+            <i class="el-icon-edit" @click="handleUpdate(scope.row)" ></i>
+            <i class="el-icon-refresh-left"></i>
+            <i class="el-icon-switch-button"></i>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="结果操作" align="center" width="150" class-name="small-padding fixed-width">
+        <template slot-scope="scope">
           <el-button size="mini" type="text" @click="resultLookFn(scope.row)">结果查看</el-button>
           <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
             @click="resultReleaseFn(scope.row)">结果发布</el-button>
@@ -713,5 +725,19 @@ input[aria-hidden=true] {
 .dialogClass /deep/ .el-drawer__header {
   margin-bottom: 15px;
   /* overflow: hidden!important; */
+}
+.btnText{
+  color: #1890FF;
+}
+.btnText:hover{
+  cursor: pointer;
+}
+.iconBtnBox i{
+  font-size: 25px;
+  margin:0 5px;
+}
+.iconBtnBox i:hover{
+  cursor: pointer;
+  color: #1890FF;
 }
 </style>
