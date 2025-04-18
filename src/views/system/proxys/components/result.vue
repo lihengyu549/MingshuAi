@@ -785,6 +785,7 @@ export default {
     resultExdit(row) {
       this.resultForm = JSON.parse(JSON.stringify(row))
       this.resultForm.tableFieldId = row.id
+      this.resultForm.confidenceLevel = row.confidenceLevel == '高' ? '1':'2'
       this.resultFormNodeName = row.categoryName
       this.deleteVisible = true
     },
