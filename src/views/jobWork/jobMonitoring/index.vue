@@ -24,30 +24,53 @@
         <span>处理耗时：{{ routeData.updateTime }}</span>
       </div>
     </div>
+    <div style="height: 300px;">
+      <el-steps direction="vertical" :active="1">
+        <el-step v-for="item in directionData" :title="item.title" :process-status="item.status" finish-status :description="item.description"></el-step>
+      </el-steps>
+    </div>
   </div>
 </template>
 
 <script>
-import {
-  usersAddI
-} from "@/api/system/proxyUser";
-import router from "@/router";
 export default {
   name: "jobMonitoring",
   data() {
     return {
-      routeData: this.$route.query||{},
+      routeData: this.$route.query || {},
       percentage: 20,
+      directionData:[
+        {
+        title:'数据质量评估',
+        description:'描述',
+        status:'wait',
+        },
+        {
+        title:'关键字/正则精确匹配',
+        description:'描述',
+        status:'process',
+        },
+        {
+        title:'AI推理',
+        description:'描述',
+        status:'finish',
+        },
+        {
+        title:'AI审核',
+        description:'描述',
+        status:'error',
+        },
+    ]
     };
   },
 
   created() {
     console.log(this.$route);
-    
+
   },
   methods: {
     // 进度条完成提示
-    progressFormat(){
+    progressFormat() {
       return this.percentage === 100 ? '已完成' : `${this.percentage}%`;
     }
   },
@@ -57,7 +80,8 @@ export default {
 .app-container {
   padding: 20px 0;
 }
-.header{
+
+.header {
   height: 100px;
   width: 100%;
   background-color: #e6f6fe;
@@ -65,52 +89,62 @@ export default {
   justify-content: space-between;
   align-items: center;
 }
-.header_left_titleClass{
+
+.header_left_titleClass {
   width: 30%;
   font-size: 25px;
   padding: 0 25px;
   display: flex;
   align-items: center;
 }
+
 .header_left_titleClass img {
   width: 60px;
   height: 60px;
   display: block;
 }
-.header_center_titleClass{
+
+.header_center_titleClass {
   width: 30%;
   font-size: 25px;
 }
-.header_center_titleClass span{
+
+.header_center_titleClass span {
   margin-right: 25px;
 }
-.header_right_titleClass{
+
+.header_right_titleClass {
   display: flex;
   align-items: center;
   width: 30%;
   font-size: 25px;
 }
-.header_right_titleClass .el-progress{
+
+.header_right_titleClass .el-progress {
   width: 40%;
 }
-.timeBox{
+
+.timeBox {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   padding-right: 40px;
   margin-top: 30px;
 }
-.timeBox img{
+
+.timeBox img {
   width: 40px;
   height: 40px;
   margin-right: 20px;
 }
-.timeBox .timeBox_left{
+
+.timeBox .timeBox_left {
   font-size: 23px;
   display: flex;
   align-items: center;
 }
-.timeBox .timeBox_right{
+
+.timeBox .timeBox_right {
   font-size: 23px;
   margin-left: 30px;
   display: flex;

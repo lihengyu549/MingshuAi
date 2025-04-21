@@ -60,10 +60,13 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="数据源类型" align="center" prop="databaseType" />
+      <el-table-column label="数据源类型" align="center" prop="databaseType">
+        <template slot-scope="scope">
+            <span> {{ databaseTypeMsg(scope.row.databaseType) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="来源业务系统" align="center" prop="businessName" />
       <el-table-column label="分类分级框架" align="center" prop="projectName" />
-
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
           <div style="display: flex; align-items: center;justify-content: center;">
@@ -493,6 +496,15 @@ export default {
         }
       }
       return msg || '待扫描'
+    },
+    databaseTypeMsg(val) {
+      let msg = ''
+      for (let item of this.databaseTypeList) {
+        if (item.value == val) {
+          msg = item.name
+        }
+      }
+      return msg || '未知来源'
     },
     businessNameFn(val) {
       this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
