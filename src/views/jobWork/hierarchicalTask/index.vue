@@ -24,7 +24,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="执行状态" prop="maskComplete">
-        <el-select clearable v-model="queryParams.maskComplete" @change="inputSearch" placeholder="请选择扫描状态">
+        <el-select clearable v-model="queryParams.maskComplete" @change="inputSearch" placeholder="请选择执行状态">
           <el-option v-for="item in executeStatus" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
@@ -48,11 +48,12 @@
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
-    <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
+    <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList"
+      @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="任务名称" align="center" prop="tasksName">
         <template slot-scope="scope">
-          <span class="btnText" @click="handleEdit(scope.row)">{{ scope.row.tasksName }}</span>
+          <span class="btnText" @click="handleUpdate(scope.row)">{{ scope.row.tasksName }}</span>
         </template>
       </el-table-column>
       <el-table-column label="数据源" align="center" prop="sourceName" />
@@ -79,9 +80,10 @@
         <template slot-scope="scope">
           <div class="iconBtnBox">
             <i class="el-icon-video-play" @click="implementFn(scope.row)"></i>
-            <i class="el-icon-edit" @click="handleUpdate(scope.row)" ></i>
-            <i class="el-icon-refresh-left"></i>
-            <i class="el-icon-switch-button"></i>
+            <i class="el-icon-video-pause" @click="suspendWorkFn(scope.row)"></i>
+            <!-- <i class="el-icon-refresh-left" @click="recoverWorkFn(scope.row)"></i> -->
+            <i class="el-icon-switch-button" @click="terminationWorkFn(scope.row)"></i>
+            <i class="el-icon-view" @click="toJobMonitoring(scope.row)"></i>
           </div>
         </template>
       </el-table-column>
@@ -123,12 +125,6 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <!-- <el-form-item label="人工确认" prop="confirm" :rules="rules.confirm">
-          <el-select v-model="form.confirm" clearable>
-            <el-option v-for="item in confirmList" :key="item.id" :label="item.name" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -144,7 +140,7 @@
 
 <script>
 import {
-  importExcel, publish, createProxys, databaseMaskI, strategyAll, databaseMask, databaseListI,
+  publish,
   getScanCompleteData,
   addScanCompleteDataTasks,
   deleteScanCompleteDataTasks,
@@ -152,15 +148,15 @@ import {
   dataMark,
   getTasksListByName,
   verifyTasksName,
+  pauseTask,
+  recoveryTask,
+  terminateTask,
 } from "@/api/system/proxys";
-import {
-  treeListI, categoryImport, getAttachData, attachStatus,
-  forceLogout, updataAttach, nameTesting, addData, getFrameworks,
-} from "@/api/system/protectCategory"
+import { getFrameworks, } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
-import Vue from 'vue';
+import { path } from "d3";
 export default {
-  name: "Proxys",
+  name: "hierarchicalTask",
   components: { Result },
   data() {
     return {
@@ -201,16 +197,28 @@ export default {
         {
           value: 'COMPLETE',
           label: '执行完成'
-        }, {
+        },
+        {
           value: 'RUNNING',
           label: '执行中'
-        }, {
+        },
+        {
           value: 'NONE',
           label: '待执行'
-        }, {
+        },
+        {
+          value: 'PAUSED',
+          label: '暂停执行'
+        }
+        ,
+        {
+          value: 'KILLED',
+          label: '执行终止'
+        },
+        {
           value: 'ERR',
           label: '执行失败'
-        }
+        },
       ],
       // 遮罩层
       loading: true,
@@ -323,6 +331,36 @@ export default {
         this.$message({
           message: '当前任务执行中，请等待执行完成后再执行',
           type: 'warning'
+        })
+        return
+      }
+      if (row.maskComplete == 'PAUSED') {
+        this.$confirm(`当前任务已暂停，确定继续执行？`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          recoveryTask({ proxyId: row.id }).then(res => {
+            if (res.code == 200) {
+              this.$message({ message: res.msg, type: 'success' })
+              this.getList()
+            }
+          })
+        })
+        return
+      }
+      if (row.maskComplete == 'KILLED') {
+        this.$confirm(`当前任务已终止，确定重新执行？`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          dataMark(row.id).then(res => {
+            if (res.code == 200) {
+              this.$message.success(res.msg)
+              this.getList()
+            }
+          })
         })
         return
       }
@@ -538,6 +576,47 @@ export default {
       }
       return msg
     },
+    // 暂停任务
+    suspendWorkFn(row) {
+      if (row.maskComplete !== 'RUNNING') {
+        this.$message({ message: `当前状态为${this.stateMsg(row.maskComplete)}，无法执行暂停操作`, type: 'warning' })
+        return
+      } else {
+        pauseTask({ proxyId: row.id }).then(res => {
+          if (res.code == 200) {
+            this.$message({ message: res.msg, type: 'success' })
+            this.getList()
+          }
+        })
+      }
+    },
+    // 恢复任务
+    recoverWorkFn(row) {
+    },
+    // 终止任务
+    terminationWorkFn(row) {
+      if (row.maskComplete === 'PAUSED' || row.maskComplete === 'RUNNING') {
+        this.$confirm(`确定终止任务吗`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          terminateTask({ proxyId: row.id }).then(res => {
+            if (res.code == 200) {
+              this.$message({ message: res.msg, type: 'success' })
+              this.getList()
+            }
+          })
+        })
+      } else {
+        this.$message({ message: `当前状态为${this.stateMsg(row.maskComplete)}，无法执行终止操作`, type: 'warning' })
+        return
+      }
+    },
+    // 跳转任务监控
+    toJobMonitoring(row) {
+      this.$router.push({path: '/jobWork/jobMonitoring', query: row })
+    },
   }
 };
 </script>
@@ -597,6 +676,7 @@ input[aria-hidden=true] {
 .tableBox {
   overflow-y: auto;
 }
+
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -611,6 +691,7 @@ input[aria-hidden=true] {
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
   border-radius: 10px;
 }
+
 .marking /deep/ .el-dialog:not(.is-fullscreen) {
   margin-top: 25vh !important;
 }
@@ -726,17 +807,21 @@ input[aria-hidden=true] {
   margin-bottom: 15px;
   /* overflow: hidden!important; */
 }
-.btnText{
+
+.btnText {
   color: #1890FF;
 }
-.btnText:hover{
+
+.btnText:hover {
   cursor: pointer;
 }
-.iconBtnBox i{
+
+.iconBtnBox i {
   font-size: 25px;
-  margin:0 5px;
+  margin: 0 5px;
 }
-.iconBtnBox i:hover{
+
+.iconBtnBox i:hover {
   cursor: pointer;
   color: #1890FF;
 }

@@ -283,3 +283,27 @@ export function cancelConfirmData (data) {
     params: data
   })
 }
+//暂停数据任务接口--贺贺
+export function pauseTask (data) {
+  return request({
+    url: '/system/proxy/database/pauseTask',
+    method: 'post',
+    data: data
+  })
+}
+//恢复数据任务接口--贺贺
+export function recoveryTask (data) {
+  return request({
+    url: '/system/proxy/database/recoveryTask',
+    method: 'post',
+    data: data
+  })
+}
+//终止数据任务接口--贺贺
+export function terminateTask (data) {
+  return request({
+    url: '/system/proxy/database/terminateTask',
+    method: 'post',
+    data: data
+  })
+}
