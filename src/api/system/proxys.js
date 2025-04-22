@@ -307,3 +307,11 @@ export function terminateTask (data) {
     data: data
   })
 }
+//任务监控--贺贺
+export function getTaskMonitoring (params) {
+  return request({
+    url: '/system/proxy/database/getTaskMonitoring',
+    method: 'get',
+    params: params
+  })
+}
