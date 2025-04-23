@@ -1,13 +1,13 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" v-loading="Loading">
     <div class="header">
       <div class="header_left_titleClass">
         <img src="../../../assets/icons/jobWork/renwu.png"></img>
         <span>{{ allData.databaseName }}</span>
       </div>
       <div class="header_center_titleClass">
-        <span>行业模版：{{ routeData.categoryName }}</span>
-        <span>字段总数：{{ routeData.filedCount }}</span>
+        <span>行业模版：{{ allData.categoryName }}</span>
+        <span>字段总数：{{ allData.filedCount }}</span>
       </div>
       <div class="header_right_titleClass">
         <span>进度：</span>
@@ -43,6 +43,7 @@ export default {
       routeData: this.$route.query || {},
       allData:{},
       aaaa:0,
+      Loading:false,
       directionData:[
         {
         title:'数据质量评估',
@@ -73,10 +74,12 @@ export default {
   },
   methods: {
     getTaskMonitoringFn(){
+      this.Loading = true
       let timer = setInterval(() => {
         getTaskMonitoring({ proxyId: this.routeData.id }).then(res => {
           if(res.code == 200){
             this.allData = res.data
+            this.Loading = false
             if(this.allData.schedule == 100){
               clearInterval(timer)
             }
