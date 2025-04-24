@@ -36,10 +36,10 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="来源业务系统" prop="businessName">
+      <!-- <el-form-item label="来源业务系统" prop="businessName">
         <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入来源业务系统" clearable
           @keyup.enter.native="handleQuery" />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="归类原因" prop="classificationReasons">
         <el-select clearable v-model="queryParams.classificationReasons" @change="inputSearch" placeholder="请选择">
           <el-option v-for="item in classificationReasonsList" :key="item" :label="item" :value="item">

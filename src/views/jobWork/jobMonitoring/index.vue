@@ -11,7 +11,8 @@
       </div>
       <div class="header_right_titleClass">
         <span>进度：</span>
-        <el-progress :percentage="allData.schedule" color="#409eff" :stroke-width="26" :format="progressFormat"></el-progress>
+        <el-progress :percentage="allData.schedule" color="#409eff" :stroke-width="26"
+          :format="progressFormat"></el-progress>
       </div>
     </div>
     <div class="timeBox">
@@ -19,15 +20,19 @@
         <img src="../../../assets/icons/jobWork/kaishishijian.png" alt="">
         <span>开始时间：{{ allData.startTime }}</span>
       </div>
-      <div class="timeBox_right">
+      <div class="timeBox_center">
         <img src="../../../assets/icons/jobWork/yinghaoshi.png" alt="">
         <span>处理耗时：{{ allData.processingTime }}</span>
       </div>
+      <div class="timeBox_right">
+        <img src="../../../assets/icons/jobWork/state.png" alt="">
+        <span>任务状态：{{ stateMsg(allData.maskComplete) }}</span>
+      </div>
     </div>
     <div class="stepsBox">
-      <el-steps direction="vertical" :active="allData.schedule" finish-status="success">
-        <el-step class="step_text" icon="el-icon-loading" v-for="item in directionData" :title="item.title"
-          >
+      <el-steps direction="vertical" :active="allData.schedule" :process-status="processStatus" finish-status="success">
+        <el-step class="step_text" icon="el-icon-loading" v-for="item in directionData"
+          :title="item.title">
         </el-step>
       </el-steps>
     </div>
@@ -41,60 +46,121 @@ export default {
   data() {
     return {
       routeData: this.$route.query || {},
-      allData:{},
-      aaaa:0,
-      Loading:false,
-      directionData:[
+      allData: {},
+      timer: null,
+      Loading: false,
+      processStatus: 'finish',
+      executeStatus: [
         {
-        title:'数据质量评估',
-        description:'描述',
-        status:'scuccess',
+          value: 'COMPLETE',
+          label: '执行完成'
         },
         {
-        title:'关键字/正则精确匹配',
-        description:'描述',
-        status:'process',
+          value: 'RUNNING',
+          label: '执行中'
         },
         {
-        title:'AI推理',
-        description:'描述',
-        status:'finish',
+          value: 'NONE',
+          label: '待执行'
         },
         {
-        title:'AI审核',
-        description:'描述',
-        status:'error',
+          value: 'PAUSED',
+          label: '暂停执行'
+        }
+        ,
+        {
+          value: 'KILLED',
+          label: '执行终止'
         },
-    ]
+        {
+          value: 'ERR',
+          label: '执行失败'
+        },
+      ],
+      directionData: [
+        {
+          title: '数据质量评估',
+          description: '描述',
+          status: 'scuccess',
+        },
+        {
+          title: '关键字/正则精确匹配',
+          description: '描述',
+          status: 'process',
+        },
+        {
+          title: 'AI推理',
+          description: '描述',
+          status: 'finish',
+        },
+        {
+          title: 'AI审核',
+          description: '描述',
+          status: 'error',
+        },
+      ]
     };
   },
 
   created() {
-    this.getTaskMonitoringFn()
+    this.fristGetTaskMonitoringFn()
   },
   methods: {
-    getTaskMonitoringFn(){
+    fristGetTaskMonitoringFn() {
       this.Loading = true
-      let timer = setInterval(() => {
+      getTaskMonitoring({ proxyId: this.routeData.id }).then(res => {
+        if (res.code == 200) {
+          this.Loading = false
+          this.allData = res.data
+          if (this.allData.maskComplete == 'RUNNING') {
+            this.getTaskMonitoringFn()
+          }
+          if (this.allData.maskComplete == 'ERROR') {
+            this.processStatus = 'error'
+          } else {
+            // this.processStatus = ''
+          }
+        }
+      })
+    },
+    getTaskMonitoringFn() {
+      this.timer = setInterval(() => {
         getTaskMonitoring({ proxyId: this.routeData.id }).then(res => {
-          if(res.code == 200){
+          if (res.code == 200) {
             this.allData = res.data
-            this.Loading = false
-            if(this.allData.schedule == 100){
-              clearInterval(timer)
+            if (this.allData.schedule == 100 || this.allData.maskComplete != 'RUNNING') {
+              clearInterval(this.timer)
+            }
+
+            if (this.allData.maskComplete == 'ERROR') {
+              this.processStatus = 'error'
+              clearInterval(this.timer)
             }
           }
         })
-        .catch(err => {
-          clearInterval(timer)
-        });
-      }, 1000);
+          .catch(err => {
+            clearInterval(this.timer)
+          });
+      }, 1500);
     },
     // 进度条完成提示
     progressFormat() {
       return this.allData.schedule == 100 ? '已完成' : `${this.allData.schedule || 0}%`;
-    }
+    },
+        // 执行状态中文
+   stateMsg(val) {
+      let msg = ''
+      for (let item of this.executeStatus) {
+        if (item.value == val) {
+          msg = item.label
+        }
+      }
+      return msg
+    },
   },
+  beforeDestroy() {
+    clearInterval(this.timer)
+  }
 }
 </script>
 <style scoped lang="scss">
@@ -144,7 +210,8 @@ export default {
 .header_right_titleClass .el-progress {
   display: flex;
   width: 40%;
-  ::v-deep .el-progress__text{
+
+  ::v-deep .el-progress__text {
     width: 100px;
   }
 }
@@ -168,36 +235,46 @@ export default {
   display: flex;
   align-items: center;
 }
-
+.timeBox .timeBox_center {
+  font-size: 23px;
+  margin-left: 30px;
+  display: flex;
+  align-items: center;
+}
 .timeBox .timeBox_right {
   font-size: 23px;
   margin-left: 30px;
   display: flex;
   align-items: center;
 }
-.stepsBox{
+
+.stepsBox {
   height: 500px;
   width: 100%;
   padding-left: 100px;
   margin-top: 100px;
 }
-.stepsBox ::deep .el-step__title{
+
+.stepsBox ::deep .el-step__title {
   font-size: 25px;
 }
-.step_text{
-  ::v-deep .el-step__title{
-    font-size: 25px!important;
+
+.step_text {
+  ::v-deep .el-step__title {
+    font-size: 25px !important;
     height: 90%;
     border-bottom: 1px solid #dbdbdb;
   }
 }
-.step_text{
-  ::v-deep .el-step__main{
+
+.step_text {
+  ::v-deep .el-step__main {
     height: 100px;
   }
 }
-.step_text{
-  ::v-deep .el-step__icon-inner{
+
+.step_text {
+  ::v-deep .el-step__icon-inner {
     font-size: 30px;
   }
 }

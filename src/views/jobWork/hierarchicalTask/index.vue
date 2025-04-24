@@ -79,11 +79,19 @@
       <el-table-column label="任务操作" align="center" width="200" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <div class="iconBtnBox">
-            <i class="el-icon-video-play" @click="implementFn(scope.row)"></i>
+            <el-tooltip class="item" effect="dark" content="执行任务" placement="top-start">
+              <i class="el-icon-video-play" @click="implementFn(scope.row)"></i>
+            </el-tooltip>
+            <el-tooltip class="item" effect="dark" content="暂停任务" placement="top-start">
             <i class="el-icon-video-pause" @click="suspendWorkFn(scope.row)"></i>
-            <!-- <i class="el-icon-refresh-left" @click="recoverWorkFn(scope.row)"></i> -->
+            </el-tooltip>
+            <el-tooltip class="item" effect="dark" content="终止任务" placement="top-start">
             <i class="el-icon-switch-button" @click="terminationWorkFn(scope.row)"></i>
+            </el-tooltip>
+            <el-tooltip class="item" effect="dark" content="任务监控" placement="top-start">
             <i class="el-icon-view" @click="toJobMonitoring(scope.row)"></i>
+            </el-tooltip>
+            <!-- <i class="el-icon-refresh-left" @click="recoverWorkFn(scope.row)"></i> -->
           </div>
         </template>
       </el-table-column>
@@ -582,12 +590,19 @@ export default {
         this.$message({ message: `当前状态为${this.stateMsg(row.maskComplete)}，无法执行暂停操作`, type: 'warning' })
         return
       } else {
-        pauseTask({ proxyId: row.id }).then(res => {
-          if (res.code == 200) {
-            this.$message({ message: res.msg, type: 'success' })
-            this.getList()
-          }
+        this.$confirm(`确定暂停任务吗`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          pauseTask({ proxyId: row.id }).then(res => {
+            if (res.code == 200) {
+              this.$message({ message: res.msg, type: 'success' })
+              this.getList()
+            }
+          })
         })
+
       }
     },
     // 恢复任务
@@ -615,7 +630,11 @@ export default {
     },
     // 跳转任务监控
     toJobMonitoring(row) {
-      this.$router.push({path: '/jobWork/jobMonitoring', query: row })
+      if (row.maskComplete == 'NONE') {
+        this.$message({ message: `当前状态为${this.stateMsg(row.maskComplete)}，无法查看任务监控`, type: 'warning' })
+        return 
+      }
+      this.$router.push({ path: '/jobWork/jobMonitoring', query: row })
     },
   }
 };
