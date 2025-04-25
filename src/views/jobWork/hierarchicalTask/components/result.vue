@@ -2,6 +2,10 @@
   <div class="app-container" v-loading="loading">
     <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
       v-show="showSearch" label-width="auto">
+      <el-form-item label="字段名" prop="fieldName">
+        <el-input v-model="queryParams.fieldName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+          @keyup.enter.native="handleQuery" />
+      </el-form-item>
       <el-form-item label="分类" prop="categoryId">
         <el-select ref="addSelectRef" v-model="addNodeName">
           <el-option style="height: 100%; padding: 0" value="">
@@ -11,6 +15,13 @@
           </el-option>
         </el-select>
       </el-form-item>
+      <el-form-item label="分类状态" class="addSelectClass" prop="classificationStateIds">
+          <el-select v-model="queryParams.classificationStateIds" multiple @change="inputSearch" placeholder="请选择">
+            <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
       <el-form-item label="安全分级" prop="securityLevel">
         <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch" placeholder="请选择">
           <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
@@ -180,7 +191,7 @@ import {
 } from "@/api/system/protectCategory"
 
 export default {
-  dicts: ['sys_risk_level'],
+  dicts: ['sys_risk_level','sys_classification_state'],
   name: "ProxysResult",
   props: {
     treeOptions: {
@@ -347,6 +358,11 @@ export default {
         {
           label: "分类",
           prop: "categoryName",
+          width: "250"
+        },
+        {
+          label: "分类状态",
+          prop: "classificationStateName",
           width: "250"
         },
         {

@@ -95,11 +95,12 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="结果操作" align="center" width="150" class-name="small-padding fixed-width">
+      <el-table-column label="结果操作" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="resultLookFn(scope.row)">结果查看</el-button>
           <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
             @click="resultReleaseFn(scope.row)">结果发布</el-button>
+          <el-button size="mini" type="text" :disabled="scope.row.publishStatus != 1" @click="resultWithdraw(scope.row)">发布撤回</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -133,6 +134,19 @@
             </el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="确认状态" prop="confirm" :rules="rules.confirm">
+          <el-select v-model="form.confirm" placeholder="全部">
+            <el-option v-for="item in confirmList" :key="item.value" :label="item.name" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="分类状态" prop="classificationState">
+          <el-select v-model="form.classificationState" placeholder="全部">
+            <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -159,12 +173,14 @@ import {
   pauseTask,
   recoveryTask,
   terminateTask,
+  withdrawReleaseState,
 } from "@/api/system/proxys";
 import { getFrameworks, } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import { path } from "d3";
 export default {
   name: "hierarchicalTask",
+  dicts: ['sys_risk_level','sys_classification_state'],
   components: { Result },
   data() {
     return {
@@ -176,11 +192,12 @@ export default {
       confidenceLevelList: [
         { name: "全部", value: "0" },
         { name: "低", value: "1" },
+        { name: "高", value: "2" },
       ],
       confirmList: [
-        { name: "全部", id: 0, value: "0" },
-        { name: "未确认", id: 1, value: "1" },
-        { name: "已确认", id: 2, value: "2" },
+        { name: "全部", value: "0" },
+        { name: "未确认",value: "1" },
+        { name: "已确认", value: "2" },
       ],
       dataYTpeList: [
         {
@@ -257,6 +274,7 @@ export default {
         publishStatus: '',
         maskComplete: '',
         projectId: '',
+        
       },
       // 表单参数
       form: {
@@ -265,6 +283,8 @@ export default {
         projectName: '',
         tasksName: '',
         id: '',
+        confirm:"",
+        classificationState:''
       },
       // 表单校验
       rules: {
@@ -292,7 +312,26 @@ export default {
     this.getList()
     this.getScanCompleteDataFn()
   },
+  mounted() {
+    console.log(this.dict);
+    
+  },
   methods: {
+    // 发布撤回
+    resultWithdraw(row){
+      this.$confirm(`确定撤回已发布的结果？`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          withdrawReleaseState({ proxyId: row.id }).then(res => {
+            if (res.code == 200) {
+              this.$message.success(res.msg)
+              this.getList()
+            }
+          })
+        })
+    },
     // 获取新增任务中 数据源名称
     getScanCompleteDataFn(id) {
       this.formLoading = true
@@ -428,6 +467,7 @@ export default {
       this.aiAnalyticsEngine = "1"
       this.form.projectName = ''
       this.$set(this.form, 'confidenceLevel', "0")
+      this.$set(this.form, 'confirm', "0")
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -457,6 +497,9 @@ export default {
     handleUpdate(row) {
       this.getScanCompleteDataFn(row.id)
       this.form = JSON.parse(JSON.stringify(row));
+      if(row.classificationState == '0') {
+        this.form.classificationState = ''
+      }
       this.open = true;
       this.title = "编辑任务";
     },
@@ -634,7 +677,7 @@ export default {
         this.$message({ message: `当前状态为${this.stateMsg(row.maskComplete)}，无法查看任务监控`, type: 'warning' })
         return 
       }
-      this.$router.push({ path: '/jobWork/jobMonitoring', query: row })
+      this.$router.push({ path: '/jobMonitoring', query: row })
     },
   }
 };

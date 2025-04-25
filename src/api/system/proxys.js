@@ -315,3 +315,11 @@ export function getTaskMonitoring (params) {
     params: params
   })
 }
+//发布撤回接口--贺贺
+export function withdrawReleaseState (params) {
+  return request({
+    url: '/system/proxy/database/withdrawReleaseState',
+    method: 'get',
+    params: params
+  })
+}

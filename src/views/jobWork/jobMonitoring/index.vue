@@ -36,6 +36,9 @@
         </el-step>
       </el-steps>
     </div>
+    <div style="width: 100%;height: 60px; display: flex; justify-content: flex-end;align-items: center; padding-right: 100px;">
+      <el-button size="medium" style="font-size: 18px;" type="primary" round @click="goBack()">返  回</el-button>
+    </div>
   </div>
 </template>
 
@@ -157,6 +160,10 @@ export default {
       }
       return msg
     },
+    
+  goBack() {
+    this.$router.go(-1)
+  },
   },
   beforeDestroy() {
     clearInterval(this.timer)
