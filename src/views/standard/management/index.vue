@@ -47,14 +47,15 @@
             <span>行业类别：{{ item.industryCategory }}</span>
             <span></span>
           </div>
-          <div style="margin-top: 20px;text-align: center;">
-            <el-tag class="div_btn" :color="item.color" size="medium" v-for="item in currentList" :type="item.type"
-              round>{{ item.name }}</el-tag>
+          <div style="margin-top: 20px;text-align: center; display: flex; justify-content: center; align-items: center;">
+            <el-tag class="div_btn" size="medium" :color="getColorFn(item.standardTypeName)" round>{{ item.standardTypeName }}</el-tag>
+            <el-tag class="div_btn" size="medium" :color="item.current === '现行'?'#70b503':'#CFD8DC'" round>{{ item.current }}</el-tag>
+            <el-tag class="div_btn" size="medium" color="#d7d7d7" round>{{ item.dataSource }}</el-tag>
           </div>
           <div class="listBox_btn">
             <el-button type="text" size="medium" @click="editFn(item)">编辑</el-button>
             <el-button type="text" size="medium" @click="detailFn(item)">详情</el-button>
-            <el-button type="text" size="medium" @click="deleteFn(item)">删除</el-button>
+            <el-button type="text" size="medium" :disabled="item.dataSource === '内置'" @click="deleteFn(item)">删除</el-button>
           </div>
         </div>
       </div>
@@ -118,49 +119,15 @@ import {
 } from "@/api/system/proxys";
 import { getStandardByList, categoryImport, selectStandardNameVerification, updateStandardById, deleteStandardById } from "@/api/standard"
 import dict from "@/utils/dict";
+import {
+  listByDataType
+} from "@/api/dictData";
 export default {
   name: "management",
   dicts: ['sys_standard_type', 'sys_classification_state'],
   data() {
     return {
       currentList: [
-        {
-          name: '国标',
-          type: 'primary',
-          color: '#FFCDD2',
-        },
-        {
-          name: '行标',
-          type: 'success',
-          color: '#E1BEE7',
-        },
-        {
-          name: '企标',
-          type: 'warning',
-          color: '#B3E5FC',
-        },
-        {
-          name: '地标',
-          type: 'danger',
-          color: '#B2EBF2',
-        },
-        // {
-        //   name: '团标',
-        //   type: 'info',
-        //   color:'#FFE0B2',
-        // },
-
-        // {
-        //   name: '现行',
-        //   type: 'info',
-        //   color:'#DCEDC8',
-        // },
-
-        // {
-        //   name: '内置',
-        //   type: 'info',
-        //   color:'#CFD8DC',
-        // },
       ],
       // 总条数
       total: 0,
@@ -236,9 +203,8 @@ export default {
   },
 
   created() {
-    // this.gettreeOptionsList()
     this.getList()
-    // this.getScanCompleteDataFn()
+    this.getDictData()
   },
   mounted() {
   },
@@ -246,10 +212,11 @@ export default {
     
     // 自定义校验规则
     validateRuleContent(rule, value, callback) {
-      console.log(rule);
-      console.log(rule);
-      callback(new Error("至少需要一条规则内容"));
+      if(this.form.importFile){
         callback();
+      }else {
+        callback(new Error("至少需要一条规则内容"));
+      }
     },
     handleFileExceed(files, fileList) {
       this.$refs.uploadRef.clearFiles();
@@ -258,7 +225,7 @@ export default {
       });
     },
     handleFileChange(file, fileList) {
-      this.form.importFile = file.raw.name
+      this.form.importFile = file.name
       this.fileList = fileList;
     },
     // 标准导入
@@ -318,6 +285,11 @@ export default {
             this.getList()
           }
         })
+      })
+    },
+    getDictData(){
+      listByDataType({type:'sys_standard_type'}).then(res=>{
+        this.currentList = res.data;
       })
     },
     /** 重置按钮操作 */
@@ -404,6 +376,13 @@ export default {
       }
       return msg
     },
+    getColorFn(row) {
+      for(let item of this.currentList){
+        if(row == item.dictLabel ) {
+          return item.cssClass
+        }
+      }
+    }
   }
 };
 </script>
@@ -562,7 +541,7 @@ input[aria-hidden=true] {
   height: 30px;
   line-height: 30px;
   border-radius: 15px;
-  color: white;
+  color: rgb(0, 0, 0);
 }
 
 .listBox_btn {

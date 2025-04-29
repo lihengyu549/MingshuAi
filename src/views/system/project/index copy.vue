@@ -1,3 +1,5 @@
+<!-- // 原分类分级框架已隐藏 -->
+
 <template>
   <div class="app-container" v-loading="Loading">
     <el-row :gutter="20">
@@ -8,6 +10,7 @@
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
+          <el-button type="primary" size="mini" @click="importCli">框架导入</el-button>
         </div>
         <div class="head-container" v-loading="treeLoading">
           <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
@@ -37,28 +40,14 @@
               </el-option>
             </el-select>
           </el-form-item>
-          
-          <el-form-item label="建议防护措施 " prop="levelId">
-            <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple placeholder="全部">
-              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          
-          <el-form-item label="确认防护措施" prop="levelId">
-            <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple placeholder="全部">
-              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
           <el-form-item>
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
           </el-form-item>
           <div style="margin: 20px 0 20px 25px;">
             <el-button type="primary" icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
             <el-button type="primary" icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
+            <el-button type="primary" icon="el-icon-refresh" size="medium" @click="enabledFn('启用')">启用</el-button>
+            <el-button type="primary" icon="el-icon-warning" size="medium" @click="enabledFn('禁用')">禁用</el-button>
           </div>
         </el-form>
         <el-table v-loading="loading" :data="protectTableFieldList" height="630px" ref="tableRef" class="tableBox">
@@ -817,7 +806,7 @@ export default {
 }
 
 .serachInput {
-  width: 100%;
+  width: 60%;
   margin-right: 10px;
 
   input {

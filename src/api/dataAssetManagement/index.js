@@ -1,9 +1,9 @@
 import request from '@/utils/request'
 
 // 标准管理列表接口
-export function getStandardByList(data) {
+export function listDatabaseProxysScan(data) {
   return request({
-    url: '/system/category/getStandardByList',
+    url: '/system/proxyScan/listDatabaseProxysScan',
     method: 'get',
     params:data
   })

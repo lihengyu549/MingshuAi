@@ -347,12 +347,12 @@ export default {
         },
         {
           label: "表注释",
-          prop: "businessName",
+          prop: "tableRemark",
           width: "200"
         },
         {
           label: "合成表注释",
-          prop: "businessName",
+          prop: "tableCraftRemark",
           width: "200"
         },
         {

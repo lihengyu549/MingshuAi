@@ -30,7 +30,7 @@
       </div>
     </div>
     <div class="stepsBox">
-      <el-steps direction="vertical" :active="allData.schedule" :process-status="processStatus" finish-status="success">
+      <el-steps direction="vertical" :active="allData.taskStepState" :process-status="processStatus" finish-status="success">
         <el-step class="step_text" icon="el-icon-loading" v-for="item in directionData"
           :title="item.title">
         </el-step>

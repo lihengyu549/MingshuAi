@@ -1,288 +1,810 @@
 <template>
   <div class="app-container" v-loading="Loading">
-    <div class="header">
-      <div class="header_left_titleClass">
-        <img src="../../../assets/icons/jobWork/renwu.png"></img>
-        <span>{{ allData.databaseName }}</span>
+    <el-row :gutter="20">
+      <el-col :span="4" :xs="24">
+        <div class="head-container">
+          <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
+            placeholder="全部" style="margin-bottom: 20px">
+            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
+            </el-option>
+          </el-select>
+        </div>
+        <div class="head-container" v-loading="treeLoading">
+          <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
+            :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
+            node-key="id" highlight-current @node-click="handleNodeClick" />
+        </div>
+      </el-col>
+      <!--用户数据-->
+      <el-col :span="20" :xs="24">
+        <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
+          v-show="showSearch" label-width="auto">
+          <el-form-item label="子类名称" prop="name">
+            <el-input v-model="queryParams.name" @input="inputSearch" placeholder="请输入子类名称" clearable
+              @keyup.enter.native="handleQuery" />
+          </el-form-item>
+          <el-form-item label="来源" prop="dataSourceId">
+            <el-select v-model="queryParams.dataSourceId" clearable @change="dataSourceIdIdChange" placeholder="全部"
+              :loading="loading">
+              <el-option v-for="item in sourceList" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="安全分级" prop="levelId">
+            <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple placeholder="全部">
+              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="建议防护措施 " prop="protectMethodId">
+            <el-select v-model="queryParams.protectMethodId" @change="selectProjectIdChange" multiple placeholder="全部">
+              <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
+                :value="item.dictValue">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="确认防护措施" prop="confirmProtectMethod">
+            <el-select v-model="queryParams.confirmProtectMethod" @change="selectProjectIdChange" multiple
+              placeholder="全部">
+              <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
+                :value="item.dictLabel">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item class="searchBtn">
+            <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
+          </el-form-item>
+          <div style="margin: 20px 0 20px 25px;">
+            <el-button type="primary" icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
+            <el-button type="primary" icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
+          </div>
+        </el-form>
+        <el-table v-loading="loading" :data="protectTableFieldList" height="590px" ref="tableRef" class="tableBox">
+          <el-table-column type="selection" width="60" align="center">
+          </el-table-column>
+          <el-table-column label="子类名称" align="center" prop="attachData" />
+          <el-table-column label="安全分级" align="center" prop="securityLevelName" />
+          <el-table-column label="安全分级" align="center" prop="securityLevelName" />
+          <el-table-column label="来源" align="center" prop="dataSource">
+          </el-table-column>
+          <el-table-column label="状态" align="center" prop="state">
+            <template slot-scope="scope">
+              <span>
+                {{ scope.row.enable ? '启用' : '禁用' }}
+              </span>
+            </template>
+          </el-table-column>
+          <el-table-column label="更新时间" align="center" prop="updateTime" />
+          <el-table-column label="操作" align="center">
+            <template slot-scope="scope">
+              <el-button type="text" size="medium" :disabled="scope.row.dataSource === '内置'"
+                @click="editFn(scope.row)">编辑</el-button>
+              <el-button type="text" size="medium" @click="lookFn(scope.row)">查看</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+          :limit.sync="queryParams.pageSize" @pagination="getList" />
+      </el-col>
+    </el-row>
+    <!-- 新增编辑框 -->
+    <el-dialog :title="addOrEdit.title" v-loading="importDataLoading" :top="tagsShow?'15vh':'8vh'" :visible.sync="addOrEdit.show" width="700px"
+      append-to-body :close-on-click-modal="addOrEdit.flag == 3">
+      <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
+        label-width="120px" style="padding-right: 60px;">
+        <el-form-item label="子类名称" prop="attachData">
+          <el-input v-model="addOrEditDataRuls.attachData" :disabled="addOrEdit.flag == 3"
+            @input="sonNameTestingFn(addOrEditDataRuls.attachData)" maxlength="50" placeholder="请输入子类名称"></el-input>
+        </el-form-item>
+        <el-form-item class="addSelectClass" label="所属父类" prop="categoryId">
+          <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3">
+            <el-option style="height: 100%; padding: 0" value="">
+              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
+                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+                @node-click="addHandleNodeClick" />
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item class="addSelectClass" prop="minSecurityLevel" label="安全分级">
+          <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部" :disabled="addOrEdit.flag == 3">
+            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item class="addSelectClass" prop="minSecurityLevel" label="建议防护措施">
+          <el-select v-model="addOrEditDataRuls.minSecurityLevel" :disabled="true" placeholder="全部">
+            <el-option v-for="item in protectMethodIdList" :key="item.dictValue" :label="item.dictLabel"
+            :value="item.dictValue">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item class="addSelectClass" prop="dataOwner" label="数据持有者">
+          <el-select v-model="addOrEditDataRuls.dataOwner" placeholder="全部" :disabled="this.$store.state.user.name !== 'admin'">
+            <el-option v-for="item in userList" :key="item.id" :label="item.userName"
+              :value="item.userName">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item class="addSelectClass" prop="confirmProtectMethod" label="确认防护措施">
+          <el-select v-model="addOrEditDataRuls.confirmProtectMethod" multiple placeholder="全部" :disabled="addOrEdit.flag == 3">
+            <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
+            :value="item.dictLabel">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="子类描述" prop="additional">
+          <el-input v-model="addOrEditDataRuls.additional" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
+            :disabled="addOrEdit.flag == 3" maxlength="500" placeholder="请输入子类描述"></el-input>
+        </el-form-item>
+        <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="特征标签" prop="tags">
+          <div class="tagsClass" :style="tagsShow ? heightSmall : heightBig" style="width: 100%;">
+            <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag + index" class="mx-1"
+              :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index)" style="margin: 0 10px;">
+              {{ tag }}
+            </el-tag>
+            <el-input class="input-new-tag" v-if="inputVisible && countIs40" maxlength="10" v-model="inputValue"
+              ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
+            </el-input>
+            <el-button v-if="!inputVisible && countIs40 && addOrEdit.flag != 3" class="button-new-tag" size="small"
+              @click="showInput">+ 新增</el-button>
+          </div>
+          <el-button class="button-new-tag" size="small" v-show="tags.length > 10" @click="tagsShow = !tagsShow">{{
+            tagsShow ? '展开' : '收起' }}</el-button>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">确
+          定</el-button>
+        <el-button @click="addCancel">取 消</el-button>
       </div>
-      <div class="header_center_titleClass">
-        <span>行业模版：{{ allData.categoryName }}</span>
-        <span>字段总数：{{ allData.filedCount }}</span>
-      </div>
-      <div class="header_right_titleClass">
-        <span>进度：</span>
-        <el-progress :percentage="allData.schedule" color="#409eff" :stroke-width="26"
-          :format="progressFormat"></el-progress>
-      </div>
-    </div>
-    <div class="timeBox">
-      <div class="timeBox_left">
-        <img src="../../../assets/icons/jobWork/kaishishijian.png" alt="">
-        <span>开始时间：{{ allData.startTime }}</span>
-      </div>
-      <div class="timeBox_center">
-        <img src="../../../assets/icons/jobWork/yinghaoshi.png" alt="">
-        <span>处理耗时：{{ allData.processingTime }}</span>
-      </div>
-      <div class="timeBox_right">
-        <img src="../../../assets/icons/jobWork/state.png" alt="">
-        <span>任务状态：{{ stateMsg(allData.maskComplete) }}</span>
-      </div>
-    </div>
-    <div class="stepsBox">
-      <el-steps direction="vertical" :active="allData.schedule" :process-status="processStatus" finish-status="success">
-        <el-step class="step_text" icon="el-icon-loading" v-for="item in directionData"
-          :title="item.title">
-        </el-step>
-      </el-steps>
-    </div>
-    <div style="width: 100%;height: 60px; display: flex; justify-content: flex-end;align-items: center; padding-right: 100px;">
-      <el-button size="medium" style="font-size: 18px;" type="primary" round @click="goBack()">返  回</el-button>
-    </div>
+    </el-dialog>
   </div>
 </template>
-
 <script>
-import { getTaskMonitoring } from "@/api/system/proxys";
+import Treeselect from "@riophae/vue-treeselect";
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import {
+  listByDataType
+} from "@/api/dictData";
+import {
+  addAttachData,
+  editAttachData,
+  selectUserListAll,
+  deleteAttachData,
+} from "@/api/standard";
+import { treeListI, categoryImport, getAttachData, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory";
 export default {
-  name: "jobMonitoring",
+  name: "ProtectTableField",
+  components: { Treeselect },
+  dicts: ['sys_risk_level'],
   data() {
     return {
-      routeData: this.$route.query || {},
-      allData: {},
-      timer: null,
+      heightSmall: {
+        height: '75px',
+        overflowY: 'auto'
+      },
+      heightBig: {
+        height: '180px',
+        overflowY: 'auto'
+      },
+      inputVisible: false,
+      countIs40: true,// 数量是否小于40
+      tagsShow: false,
+      inputValue: '',
+      categoryName: '',
+      debounceTimeout: null,//防抖动
+      treeOptions: [],
+      protectMethodIdList: [],
+      confirmProtectMethodList: [],
+      addOrEdit: {
+        title: '新增',
+        show: false,
+        flag: 1,// 1新增 2编辑 3查看
+      },
+      treeLoading: false,
+      tags: [],
+      // 表单校验
+      addOrEditRules: {
+        categoryId: [
+          {
+            required: true, message: "请选择所属父级", trigger: "blur"
+          }
+        ],
+        minSecurityLevel: [
+          { required: true, message: "请选择安全分级", trigger: "blur" },
+        ],
+        
+        // confirmProtectMethod: [
+        //   { required: true, message: "请选确认防护措施", trigger: "blur" },
+        // ],
+        dataOwner: [
+          { required: true, message: "请选择数据持有者", trigger: "blur" },
+        ],
+        attachData: [
+          { required: true, message: "请输入子类名称", trigger: "blur" }
+        ],
+        tags: [
+          { validator: this.tagsRlues, trigger: 'blur', required: true, }
+        ]
+      },
+      treeID: '',
+      // 查询参数
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        categoryId: '',//左侧树id
+        name: '',//子类名称
+        dataSourceId: '',//来源
+        levelId: [],//安全级别
+      },
+      addOrEditDataRuls: {
+        attachData: '',
+        categoryId: '',
+        minSecurityLevel: null,
+      },
+      importDataLoading: false,
+      filterName: undefined,
+      defaultProps: {
+        children: "children",
+        label: "label"
+      },
+      isName: true,
       Loading: false,
-      processStatus: 'finish',
-      executeStatus: [
+      sourceList: [
         {
-          value: 'COMPLETE',
-          label: '执行完成'
+          value: 1,
+          label: '内置'
         },
         {
-          value: 'RUNNING',
-          label: '执行中'
-        },
-        {
-          value: 'NONE',
-          label: '待执行'
-        },
-        {
-          value: 'PAUSED',
-          label: '暂停执行'
-        }
-        ,
-        {
-          value: 'KILLED',
-          label: '执行终止'
-        },
-        {
-          value: 'ERR',
-          label: '执行失败'
+          value: 2,
+          label: '自定义'
         },
       ],
-      directionData: [
-        {
-          title: '数据质量评估',
-          description: '描述',
-          status: 'scuccess',
-        },
-        {
-          title: '关键字/正则精确匹配',
-          description: '描述',
-          status: 'process',
-        },
-        {
-          title: 'AI推理',
-          description: '描述',
-          status: 'finish',
-        },
-        {
-          title: 'AI审核',
-          description: '描述',
-          status: 'error',
-        },
-      ]
+      // 遮罩层
+      loading: false,
+      // 显示搜索条件
+      showSearch: true,
+      // 总条数
+      total: 0,
+      // 数据库字段名表格数据
+      protectTableFieldList: [],
+      // 弹出层标题
+      title: "",
+      // 是否显示弹出层
+      open: false,
+      categoryList: [],
+      yuanCategoryList: [],
+      userList:[],
+      categoryListEdit: null,
+      addNodeName: "",
     };
   },
-
-  created() {
-    this.fristGetTaskMonitoringFn()
-  },
-  methods: {
-    fristGetTaskMonitoringFn() {
-      this.Loading = true
-      getTaskMonitoring({ proxyId: this.routeData.id }).then(res => {
-        if (res.code == 200) {
-          this.Loading = false
-          this.allData = res.data
-          if (this.allData.maskComplete == 'RUNNING') {
-            this.getTaskMonitoringFn()
-          }
-          if (this.allData.maskComplete == 'ERROR') {
-            this.processStatus = 'error'
-          } else {
-            // this.processStatus = ''
-          }
+  watch: {
+    filterName(val) {
+      this.$refs.tree.filter(val);
+    },
+    tags: {
+      deep: true,
+      immediate: true,
+      handler(val) {
+        if (val.length >= 40) {
+          this.countIs40 = false
+          this.$modal.msgWarning("学习内容最多定义40个标签");
+        } else {
+          this.countIs40 = true
         }
-      })
-    },
-    getTaskMonitoringFn() {
-      this.timer = setInterval(() => {
-        getTaskMonitoring({ proxyId: this.routeData.id }).then(res => {
-          if (res.code == 200) {
-            this.allData = res.data
-            if (this.allData.schedule == 100 || this.allData.maskComplete != 'RUNNING') {
-              clearInterval(this.timer)
-            }
-
-            if (this.allData.maskComplete == 'ERROR') {
-              this.processStatus = 'error'
-              clearInterval(this.timer)
-            }
-          }
-        })
-          .catch(err => {
-            clearInterval(this.timer)
-          });
-      }, 1500);
-    },
-    // 进度条完成提示
-    progressFormat() {
-      return this.allData.schedule == 100 ? '已完成' : `${this.allData.schedule || 0}%`;
-    },
-        // 执行状态中文
-   stateMsg(val) {
-      let msg = ''
-      for (let item of this.executeStatus) {
-        if (item.value == val) {
-          msg = item.label
+        if (val.length >= 10) {
+          this.tagsShow = false
+        }else {
+          this.tagsShow = true
         }
       }
-      return msg
+    }
+  },
+  created() {
+    this.gettreeOptionsList()
+    this.getDictData()
+    this.getSelectUserListAll()
+  },
+  mounted() {
+  },
+  methods: {
+    //  字典数据
+    getDictData() {
+      listByDataType({ type: 'sys_protect_method' }).then(res => {
+        this.protectMethodIdList = res.data;// 此字典只给新增子类的建议防护措施用
+      })
+      listByDataType({ type: 'sys_confirm_protect_method' }).then(res => {
+        this.confirmProtectMethodList = res.data;
+      })
     },
     
-  goBack() {
-    this.$router.go(-1)
+    //  获取用户列表
+    getSelectUserListAll() {
+      selectUserListAll().then(res => {
+        this.userList = res.data;
+      })
+    },
+    // 自定义校验规则
+    tagsRlues(rule, value, callback) {
+      if (this.tags.length < 5) {
+        callback(new Error("特征标签需要至少填写5个！"));
+      } else {
+        callback();
+      }
+    },
+    showInput() {
+      this.inputVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+
+    handleInputConfirm() {
+      let inputValue = this.inputValue;
+      if (inputValue) {
+        if (this.tags.includes(inputValue)) {
+          this.$message({ message: '该标签已存在', type: 'warning' })
+        } else {
+          this.tags.push(inputValue);
+        }
+      }
+      this.inputVisible = false;
+      this.inputValue = '';
+    },
+    addFn() {
+      this.addOrEdit.flag = 1
+      this.addOrEdit.title = '新增'
+      this.addOrEdit.show = true
+      this.addOrEditDataRuls = {}
+      this.tagsShow = true
+      this.tags = []
+      this.addNodeName = ''
+    },
+    /** 新增确定方法 */
+    async addSubmitForm() {
+      this.$refs["addOrEdit"].validate(async (valid) => {
+        let params = {
+          attachData: this.addOrEditDataRuls.attachData,
+          categoryId: this.addOrEditDataRuls.categoryId,
+          minSecurityLevel: this.addOrEditDataRuls.minSecurityLevel,
+          attachDescribe: this.addOrEditDataRuls.additional,
+          featureLabel: this.tags.join(),
+          confirmProtectMethod: this.addOrEditDataRuls.confirmProtectMethod.join(),
+          dataOwner: this.addOrEditDataRuls.dataOwner,
+          protectMethod: this.addOrEditDataRuls.minSecurityLevel,
+          
+        }
+        if (valid) {
+          this.importDataLoading = true
+          await this.rulsNameIsRight(this.addOrEditDataRuls.categoryId, params.attachData, this.addOrEditDataRuls.id)
+          if (!this.isName) {
+            this.$modal.msgError("子类名称重复,请更改");
+            this.importDataLoading = false
+            return
+          }
+          if (this.addOrEditDataRuls.id != null) {
+            params.id = this.addOrEditDataRuls.id
+            editAttachData(params).then((response) => {
+              this.$modal.msgSuccess("修改成功");
+              this.getList();
+              this.addOrEdit.show = false
+              this.importDataLoading = false
+            })
+              .catch((err) => {
+                this.importDataLoading = false
+              })
+          } else {
+            addAttachData(params).then((response) => {
+              this.$modal.msgSuccess("新增成功");
+              this.getList();
+              this.addOrEdit.show = false
+              this.importDataLoading = false
+            })
+              .catch((err) => {
+                this.importDataLoading = false
+              })
+          }
+        } else {
+          return false
+        }
+      });
+
+    },
+
+    // 新增取消
+    addCancel() {
+      this.addOrEditDataRuls = {}
+      this.addOrEdit.show = false
+    },
+    // 递归函数，查找父节点的 label 并返回完整的路径
+    findParentLabelsById(tree, nodeId, path = []) {
+      if (!Array.isArray(tree)) {
+        return null;
+      }
+      for (const node of tree) {
+        if (node.children && node.children.length > 0) {
+          for (const child of node.children) {
+            if (child.id === nodeId) {
+              return [...path, node.label];
+            }
+          }
+          const found = this.findParentLabelsById(node.children, nodeId, [...path, node.label]);
+          if (found) {
+            return found;
+          }
+        }
+      }
+      return null; // 如果没有找到，返回 null
+    },
+
+    addHandleNodeClick(node) {
+      if (node.children && node.children.length > 0) {
+        node.disabled = true;
+      } else {
+        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+        if (parentLabels) {
+          this.addNodeName = parentLabels.join('-') + '-' + node.categoryName;
+        } else {
+          this.addNodeName = node.categoryName + '-';
+        }
+        this.addOrEditDataRuls.categoryId = node.id
+        this.$refs.addSelectRef.blur()
+      }
+    },
+    editFn(row) {
+      this.addOrEdit.flag = 2
+      this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
+      this.addOrEditDataRuls.additional = row.attachDescribe
+      this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
+      this.tags = row.featureLabel ? row.featureLabel.split(',') : []
+      this.addOrEdit.show = true
+      this.addOrEdit.title = '编辑'
+      this.addNodeName = row.owner
+      this.tagsShow = false
+    },
+    lookFn(row) {
+      this.addOrEdit.flag = 3
+      this.addOrEditDataRuls = row
+      this.addOrEditDataRuls.additional = row.attachDescribe
+      this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
+      this.tags = row.featureLabel ? row.featureLabel.split(',') : []
+      this.addNodeName = row.owner
+      this.addOrEdit.show = true
+      this.addOrEdit.title = '查看'
+      this.tagsShow = false
+    },
+    messsucc(res, flag) {
+      this.$message.success(`${res.msg},${flag}${res.data}个`)
+    },
+    enabledFn(flag) {
+      let dataS = this.$refs.tableRef.selection
+      if (dataS && dataS.length > 0) {
+        this.$confirm(`确定批量${flag}吗`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let ids = dataS.map(item => {
+            return item.id
+          })
+          let data = {
+            ids: ids.join(',')
+          }
+          if (flag == '启用') {
+            data.enable = true
+            attachStatus(data).then(res => {
+              if (res.code == 200) {
+                this.messsucc(res, flag)
+                this.getList()
+              }
+            })
+          } else if (flag == '禁用') {
+            data.enable = false
+            attachStatus(data).then(res => {
+              if (res.code == 200) {
+                this.messsucc(res, flag)
+                this.getList()
+              }
+            })
+          } else if (flag == '删除') {
+            for (let item of dataS) {
+              if (item.dataSource === '内置') {
+                this.$message({
+                  type: 'warning',
+                  message: '内置数据源不允许删除',
+                });
+                return
+              }
+            }
+            deleteAttachData(data).then(res => {
+              if (res.code == 200) {
+                this.messsucc(res, flag)
+                this.getList()
+              }
+            })
+          } else {
+            this.$message({ message: '未知异常', type: 'warning' })
+          }
+          // 接口
+        }).catch(() => {
+
+        });
+      } else {
+        this.$message({ message: '请选择至少一条数据', type: 'warning' })
+      }
+    },
+    // 左侧树下拉选change事件
+    treeOptionsSelectChange(val) {
+      this.queryParams.pageNum = 1
+      this.queryParams.pageSize = 10
+      this.getProtectCategory(val)
+    },
+    gettreeOptionsList() {
+      this.Loading = true
+      getFrameworks().then((response) => {
+        this.treeOptions = response.data
+        if (response.data.length > 0) {
+          this.queryParams.categoryId = response.data[0].id;
+          this.getProtectCategory(this.queryParams.categoryId);
+        }
+      });
+    },
+    sonNameTestingFn(val) {
+      this.addOrEditDataRuls.attachData = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
+    },
+    // tags 关闭方法
+    handleClose(tag, index) {
+      this.tags.splice(index, 1);
+    },
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.categoryName.indexOf(value) !== -1;
+    },
+    handleNodeClick(data) {
+      this.treeID = data.id;
+      this.handleQuery();
+    },
+
+    // 定时器，防抖使用
+    inputSearch(data) {
+      clearTimeout(this.debounceTimeout);
+      this.debounceTimeout = setTimeout(() => {
+        this.handleQuery()
+      }, 500); // 设置防抖的时间间隔为300毫秒
+    },
+    selectProjectIdChange(val) {
+      this.handleQuery()
+    },
+    dataSourceIdIdChange(val) {
+      this.sourceList.forEach((item) => {
+        if (val == item.value)
+          this.queryParams.dataSource = item.label
+      })
+      this.handleQuery()
+    },
+    getProtectCategory(key) {
+      this.treeLoading = true
+      let data = {
+        parentId: key
+      };
+      treeListI(data).then((resp) => {
+        this.categoryList = resp.data
+        this.yuanCategoryList = resp.data
+        if (resp.data.length == 0) {
+          this.Loading = false
+        } else {
+          for (let index in resp.data) {
+            if (resp.data[index].parentId === 0) {
+              this.categoryList.splice(index, 1)
+              break
+            }
+          }
+          this.treeID = this.categoryList[0].id;
+          this.$nextTick(function () {
+            if (this.$refs.tree) {
+              this.$refs.tree.setCurrentKey(this.treeID);
+              this.$refs.tree.setCurrentKey(this.treeID);
+            }
+          });
+          let tempList = JSON.parse(JSON.stringify(this.categoryList))
+          for (let item of tempList) {
+            item.label = item.categoryName
+          }
+          this.categoryList = this.handleTree(tempList, "id")
+          this.categoryListEdit = this.handleTree(tempList, "id")
+        }
+        this.Loading = false
+        this.treeLoading = false
+        this.getList()
+      });
+    },
+    getList() {
+      this.loading = true;
+      let params = {
+        ...this.queryParams,
+        nodeId: this.treeID,
+        levelId: this.queryParams.levelId.length ? this.queryParams.levelId.join() : '-1',
+        dataSourceId: this.queryParams.dataSourceId ? this.queryParams.dataSourceId : 0,
+      }
+      getAttachData(params).then((response) => {
+        this.protectTableFieldList = response.data.rows;
+        this.total = response.data.total;
+        this.loading = false;
+      });
+    },
+    // 表单重置
+    reset() {
+      this.resetForm("form");
+    },
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.queryParams.pageNum = 1;
+      this.getList();
+
+    },
+    /** 重置按钮操作 */
+    resetQuery() {
+      this.treeID = this.categoryList[0].id
+      this.$refs.tree.setCurrentKey(this.treeID);
+      this.resetForm("queryParams");
+      this.handleQuery();
+    },
+    async rulsNameIsRight(nodeId, name, id) {
+      let params = {
+        nodeId,
+        name,
+        id
+      }
+      let res = await nameTesting(params).then(res=>{
+        this.isName = res.data
+      })
+      .catch(err=>{
+        this.importDataLoading = true
+
+      })
+    },
   },
-  },
-  beforeDestroy() {
-    clearInterval(this.timer)
-  }
-}
+};
 </script>
-<style scoped lang="scss">
-.app-container {
-  padding: 20px 0;
+
+<style scoped>
+.el-popup-parent--hidden /deep/ .el-loading-mask {
+  background: "rgba(0, 0, 0, 0.7)" !important;
 }
 
-.header {
-  height: 100px;
+.addMsg /deep/ .el-input--medium {
+  width: 237px;
+}
+
+.success {
+  color: #67c23a;
+}
+
+.error {
+  color: #f56c6c;
+}
+
+.el-tree-node /deep/ .el-tree-node {
+  display: none;
+}
+
+.serachInput {
   width: 100%;
-  background-color: #e6f6fe;
+  margin-right: 10px;
+
+  input {
+    height: 28px !important;
+    line-height: 28px !important;
+  }
+}
+
+.importForm /deep/ .el-form-item--medium {
+  width: 70%;
+
+}
+
+.importForm /deep/ .el-form-item__content {
+  width: calc(100% - 145px);
+}
+
+.uploadClass {
+  width: 20% !important;
+}
+
+.addSelectClass /deep/ .el-select {
+  width: calc(100%);
+}
+
+.tableBox {
+  overflow-y: auto;
+}
+
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+.AiStudesCont /deep/ .el-form-item__content {
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
-.header_left_titleClass {
+.button-new-tag {
+  margin-left: 10px;
+  height: 32px;
+  line-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.input-new-tag {
+  width: 90px;
+  margin-left: 10px;
+  vertical-align: bottom;
+}
+
+.tagsClass {
+  transition: all .5s ease-in-out;
+}
+
+.tagsClass::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tagsClass::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.tagsClass::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+.searchBtn {
+  margin-left: auto;
+  height: 100%;
+}
+
+.searchBtn /deep/ .el-form-item__content {
+  margin-left: 263px
+}
+
+.yuanDataClass {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.yuanDataClass /deep/ .el-form-item {
   width: 30%;
-  font-size: 25px;
-  padding: 0 25px;
-  display: flex;
-  align-items: center;
 }
 
-.header_left_titleClass img {
-  width: 60px;
-  height: 60px;
-  display: block;
+.yuanDataClass /deep/ .el-form-item__label {
+  width: 25%;
 }
 
-.header_center_titleClass {
-  width: 30%;
-  font-size: 25px;
+.yuanDataClass /deep/ .el-form-item__content {
+  width: 75%;
 }
 
-.header_center_titleClass span {
-  margin-right: 25px;
-}
-
-.header_right_titleClass {
-  display: flex;
-  align-items: center;
-  width: 30%;
-  font-size: 25px;
-}
-
-.header_right_titleClass .el-progress {
-  display: flex;
-  width: 40%;
-
-  ::v-deep .el-progress__text {
-    width: 100px;
-  }
-}
-
-.timeBox {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding-right: 40px;
-  margin-top: 30px;
-}
-
-.timeBox img {
-  width: 40px;
-  height: 40px;
-  margin-right: 20px;
-}
-
-.timeBox .timeBox_left {
-  font-size: 23px;
-  display: flex;
-  align-items: center;
-}
-.timeBox .timeBox_center {
-  font-size: 23px;
-  margin-left: 30px;
-  display: flex;
-  align-items: center;
-}
-.timeBox .timeBox_right {
-  font-size: 23px;
-  margin-left: 30px;
-  display: flex;
-  align-items: center;
-}
-
-.stepsBox {
-  height: 500px;
+.yuanDataClass /deep/ .el-select {
   width: 100%;
-  padding-left: 100px;
-  margin-top: 100px;
-}
-
-.stepsBox ::deep .el-step__title {
-  font-size: 25px;
-}
-
-.step_text {
-  ::v-deep .el-step__title {
-    font-size: 25px !important;
-    height: 90%;
-    border-bottom: 1px solid #dbdbdb;
-  }
-}
-
-.step_text {
-  ::v-deep .el-step__main {
-    height: 100px;
-  }
-}
-
-.step_text {
-  ::v-deep .el-step__icon-inner {
-    font-size: 30px;
-  }
 }
 </style>

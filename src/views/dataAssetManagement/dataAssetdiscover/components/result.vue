@@ -2,10 +2,6 @@
   <div class="app-container" v-loading="loading">
     <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
       v-show="showSearch" label-width="auto">
-      <el-form-item label="字段名" prop="fieldName">
-        <el-input v-model="queryParams.fieldName" @input="inputSearch" placeholder="请输入数据源名称" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
       <el-form-item label="分类" prop="categoryId">
         <el-select ref="addSelectRef" v-model="addNodeName">
           <el-option style="height: 100%; padding: 0" value="">
@@ -15,13 +11,6 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="分类状态" class="addSelectClass" prop="classificationStateIds">
-          <el-select v-model="queryParams.classificationStateIds" multiple @change="inputSearch" placeholder="请选择">
-            <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
       <el-form-item label="安全分级" prop="securityLevel">
         <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch" placeholder="请选择">
           <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
@@ -40,28 +29,21 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="所属表" prop="tableName">
-        <el-select clearable v-model="queryParams.tableName" :disabled="!queryParams.databaseName" @change="inputSearch"
+      <el-form-item label="所属表" prop="tableId">
+        <el-select clearable v-model="queryParams.tableId" :disabled="!queryParams.databaseName" @change="inputSearch"
           placeholder="全部">
-          <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.tableName">
+          <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.id">
           </el-option>
         </el-select>
       </el-form-item>
-      <!-- <el-form-item label="来源业务系统" prop="businessName">
+      <el-form-item label="来源业务系统" prop="businessName">
         <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入来源业务系统" clearable
           @keyup.enter.native="handleQuery" />
-      </el-form-item> -->
-      <el-form-item label="归类原因" prop="classificationReasons">
-        <el-select clearable v-model="queryParams.classificationReasons" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in classificationReasonsList" :key="item" :label="item" :value="item">
-          </el-option>
-        </el-select>
       </el-form-item>
-       <el-form-item label="置信度" prop="confidenceLevel">
-        <el-select clearable v-model="queryParams.confidenceLevel" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
-          </el-option>
-        </el-select>
+
+      <el-form-item>
+      </el-form-item>
+      <el-form-item>
       </el-form-item>
       <el-form-item label=" " class="searchBtn">
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
@@ -69,39 +51,26 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-aim" size="medium" @click="handleAdd">确认勾选项</el-button>
+        <el-button type="primary" icon="el-icon-aim" size="medium" @click="handleAdda">确认勾选项</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="primary" icon="el-icon-more" size="medium" @click="handleEcelFn">确认过滤项</el-button>
       </el-col>
-      <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-refresh-left" size="medium" @click="handleAddFnClose">取消勾选项</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-magic-stick" size="medium" @click="handleEcelFnClose">取消过滤项</el-button>
-      </el-col>
-      <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
-        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
-        <el-checkbox-group v-model="checkedColumn" @change="handleCheckedCitiesChange" class="checkboxGroup"
-          style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
-          <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
-            item.label }}</el-checkbox>
-        </el-checkbox-group>
-        <el-button slot="reference">列设置</el-button>
-      </el-popover>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
-    <el-table height="550px" class="tableBox" v-loading="loading" :key="checkedColumn.length" :data="proxysList"
-      @selection-change="handleSelectionChange" ref="tableRef">
+    <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
+      <!-- <el-table-column type="selection" width="55" align="center" /> -->
+      <!-- <el-table-column label="id" align="center" prop="id" /> -->
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="字段名" align="center" prop="fieldName" width="150" show-overflow-tooltip fixed />
-      <el-table-column label="字段注释" align="center" prop="fieldRemark" width="150" show-overflow-tooltip fixed />
-      <el-table-column label="合成字段注释" align="center" prop="craftRemark" width="100" show-overflow-tooltip fixed />
-      <template>
-        <el-table-column v-for="item in checkedColumn" :label="item.label" align="center" :prop="item.prop"
-          :width="item.width" show-overflow-tooltip />
-      </template>
-      <el-table-column label="样本" align="center" prop="sampleData" fixed="right" show-overflow-tooltip>
+      <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip />
+      <el-table-column label="字段注释" align="center" prop="fieldRemark" show-overflow-tooltip />
+      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
+      <!-- <el-table-column label="数据源" align="center" prop="databaseId" show-overflow-tooltip /> -->
+      <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
+      <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
+      <el-table-column label="分类" align="center" min-width="250" prop="categoryName" show-overflow-tooltip />
+      <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
+      <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
         <template slot-scope="scope">
           <el-tooltip placement="bottom" effect="light">
             <div slot="content">
@@ -115,12 +84,12 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="确认状态" fixed="right" align="center" prop="confirm">
+      <el-table-column label="确认状态" align="center" prop="confirm">
         <template slot-scope="scope">
           <span>{{ scope.row.confirm == 0 ? '未确认' : '已确认' }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" fixed="right" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="resultExdit(scope.row)">结果修改</el-button>
         </template>
@@ -143,21 +112,7 @@
         <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
           <el-select v-model="resultForm.securityLevel" placeholder="请选择">
             <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-              :value="item.label">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="推理过程" prop="reasoningProcess">
-          <el-input v-model="resultForm.reasoningProcess" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
-             maxlength="500" placeholder="请输入推理过程"></el-input>
-        </el-form-item>
-        <el-form-item label="审核建议" prop="auditRecommendation">
-          <el-input v-model="resultForm.auditRecommendation" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
-            maxlength="500" placeholder="请输入审核建议"></el-input>
-        </el-form-item>
-        <el-form-item label="置信度" prop="confidenceLevel">
-          <el-select v-model="resultForm.confidenceLevel" clearable>
-            <el-option v-for="item in confidenceLevelList" :key="item.id" :label="item.name" :value="item.value">
+              :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -180,8 +135,7 @@ import {
 import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
   startI, stopI, databaseMaskI, strategyPushI, strategyAll,
-  databaseListI, confirmIds, selectResultsById, confirmList, updateFiledRule,
-  cancelConfirm,cancelConfirmData
+  databaseListI, confirmIds, protectTableFieldList, confirmList, updateFiledRule
 } from "@/api/system/proxys";
 import { listAllProject, } from "@/api/system/project";
 import {
@@ -191,7 +145,7 @@ import {
 } from "@/api/system/protectCategory"
 
 export default {
-  dicts: ['sys_risk_level','sys_classification_state'],
+  dicts: ['sys_risk_level'],
   name: "ProxysResult",
   props: {
     treeOptions: {
@@ -206,14 +160,6 @@ export default {
   data() {
     return {
       updataLoading: false,
-      isIndeterminate: false,
-      checkedColumn: [],
-      checkAll: false,
-      classificationReasonsList:['策略匹配','AI推理','脏数据识别'],
-      confidenceLevelList: [
-        { name: "低", id: 1, value: "1" },
-        { name: "高", id: 2, value: "2" },
-      ],
       addOptions: [
         {
           value: 1,
@@ -247,7 +193,27 @@ export default {
         securityLevel: '',
         id: '',
       },
-      tableData: [],
+      tableData: [{
+        date: '安徽',
+        name: '阿吉',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '河南',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '山东',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '北京',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '北京',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }],
       addOptions: [
         {
           value: 1,
@@ -328,64 +294,6 @@ export default {
       total: 0,
       // 数据库代理表格数据
       proxysList: [],
-      // 数据库代理表格数据
-      setList: [
-        {
-          label: "来源业务系统",
-          prop: "businessName",
-          width: "150"
-        },
-        {
-          label: "所属库",
-          prop: "databaseName",
-          width: "150"
-        },
-        {
-          label: "所属表",
-          prop: "tableName",
-          width: "150"
-        },
-        {
-          label: "表注释",
-          prop: "businessName",
-          width: "200"
-        },
-        {
-          label: "合成表注释",
-          prop: "businessName",
-          width: "200"
-        },
-        {
-          label: "分类",
-          prop: "categoryName",
-          width: "250"
-        },
-        {
-          label: "分类状态",
-          prop: "classificationStateName",
-          width: "250"
-        },
-        {
-          label: "归类原因",
-          prop: "classificationReasons",
-          width: "150"
-        },
-        {
-          label: "推理过程",
-          prop: "reasoningProcess",
-          width: "250"
-        },
-        {
-          label: "置信度",
-          prop: "confidenceLevel",
-          width: "100"
-        },
-        {
-          label: "安全分级",
-          prop: "securityLevelName",
-          width: "150"
-        }
-      ],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -398,6 +306,7 @@ export default {
         securityLevel: [],
         confirm: '',
         databaseId: this.drawerData.id,
+        tableId: '',
         businessName: '',
         databaseName: '',
         categoryId: '',
@@ -501,8 +410,6 @@ export default {
       this.surfaceList = cleanedDatabase.split(',')
     }
     this.getProtectCategory()
-    this.checkedColumn = this.setList
-    this.checkAll = true
     // this.queryParams.selectProjectName = "全部"
     // this.queryParams.projectId = 0
     this.getList();
@@ -511,15 +418,6 @@ export default {
     this.getListTableByProject()
   },
   methods: {
-    handleCheckAllChange(val) {
-      this.checkedColumn = val ? this.setList : [];
-      this.isIndeterminate = false;
-    },
-    handleCheckedCitiesChange(value) {
-      let checkedCount = value.length;
-      this.checkAll = checkedCount === this.setList.length;
-      this.isIndeterminate = checkedCount > 0 && checkedCount < this.setList.length;
-    },
     getListTableByProject() {
       let data = {
         databaseId: this.drawerData.id,
@@ -531,7 +429,6 @@ export default {
         }
       })
     },
-    addcountInit() { },
 
     nameTestingFn(val) {
       this.form.sourceName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
@@ -556,7 +453,7 @@ export default {
       // })
     },
 
-    handleAdd() {
+    handleAdda() {
       this.loading = true
       let dataS = this.$refs.tableRef.selection
       if (dataS && dataS.length > 0) {
@@ -582,36 +479,6 @@ export default {
         });
       } else {
         this.$message({ message: '请选择至少一条数据', type: 'warning' })
-        this.loading = false
-      }
-    },
-    handleAddFnClose() {
-      this.loading = true
-      let dataS = this.$refs.tableRef.selection
-      if (dataS && dataS.length > 0) {
-        this.$confirm(`确定取消当前勾选项吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          let ids = dataS.map(item => {
-            return item.id
-          })
-          let data = ids.join(',')
-          cancelConfirm(data).then(res => {
-            if (res.code == 200) {
-              this.$message({ message: res.msg, type: 'success' })
-              this.getList()
-              this.loading = false
-            }
-          })
-          // 接口
-        }).catch(() => {
-          this.loading = false
-        });
-      } else {
-        this.$message({ message: '请选择至少一条数据', type: 'warning' })
-        this.loading = false
       }
     },
     handleEcelFn() {
@@ -631,23 +498,7 @@ export default {
           this.loading = false
         })
     },
-    handleEcelFnClose() {
-      this.loading = true
-      let params = {
-        ...this.queryParams,
-        securityLevelIds: this.queryParams.securityLevel.join()
-      }
-      cancelConfirmData(params).then(res => {
-        if (res.code === 200) {
-          this.$message.success(res.msg)
-          this.getList()
-          this.loading = false
-        }
-      })
-        .catch(err => {
-          this.loading = false
-        })
-    },
+
     targetDatabaseChange(value) {
       if (value.includes('all')) {
         this.form.targetDatabase = this.targetDataList.map(item => item.value);
@@ -716,21 +567,13 @@ export default {
       this.isName = res.data
     },
     databaseNameFn() {
-      this.queryParams.tableName = ''
+      this.queryParams.tableId = ''
       this.inputSearch()
       this.getListTableByProject()
     },
     updataResultFn() {
       this.updataLoading = true
-      let params = {
-        reasoningProcess:this.resultForm.reasoningProcess,
-        tableFieldId:this.resultForm.tableFieldId,
-        categoryId:this.resultForm.categoryId,
-        securityLevel:this.resultForm.securityLevel,
-        auditRecommendation:this.resultForm.auditRecommendation,
-        confidenceLevel:this.resultForm.confidenceLevel,
-      }
-      updateFiledRule(params).then(res => {
+      updateFiledRule(this.resultForm).then(res => {
         if (res.code == 200) {
           this.$message({
             message: res.msg,
@@ -769,16 +612,15 @@ export default {
       let params = {
         ...this.queryParams,
         securityLevel: '',
-        securityLevelIds: this.queryParams.securityLevel,
+        securityLevelIds: this.queryParams.securityLevel.join(),
+        tableIds: this.queryParams.tableId
       }
-      selectResultsById(params).then(response => {
-        this.proxysList = response.data.rows;
+      protectTableFieldList(params).then(response => {
+        this.proxysList = response.rows;
         this.proxysList.forEach(ele => {
-          if (ele.sampleData) {
-            ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
-          }
+          ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
         })
-        this.total = response.data.total;
+        this.total = response.total;
         this.loading = false;
       });
     },
@@ -799,10 +641,7 @@ export default {
       this.multiple = !selection.length
     },
     resultExdit(row) {
-      this.resultForm = JSON.parse(JSON.stringify(row))
-      this.resultForm.tableFieldId = row.id
-      this.resultForm.confidenceLevel = row.confidenceLevel == '高' ? '2':'1'
-      this.resultFormNodeName = row.categoryName
+      this.resultForm.id = row.id
       this.deleteVisible = true
     },
 
@@ -864,6 +703,12 @@ export default {
         this.treeLoading = false
       });
     },
+
+    handleNodeClick(data) {
+      this.treeID = data.id;
+      this.handleQuery();
+    },
+
     // 递归函数，查找父节点的 label 并返回完整的路径
     findParentLabelsById(tree, nodeId, path = []) {
       if (!Array.isArray(tree)) {
@@ -888,43 +733,11 @@ export default {
   }
 };
 </script>
-<style>
-.checkboxGroup::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.checkboxGroup::-webkit-scrollbar-thumb {
-  background-color: #0003;
-  border-radius: 10px;
-  transition: all .2s ease-in-out;
-}
-
-.checkboxGroup::-webkit-scrollbar-track {
-  border-radius: 10px;
-}
-</style>
 <style scoped>
 .addMsg /deep/ .el-input--medium {
   width: 237px;
 }
-.tableBox{
-  overflow-y: auto;
-}
-.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
 
-.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-thumb {
-  background-color: #0003;
-  border-radius: 10px;
-  transition: all .2s ease-in-out;
-}
-
-.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
-  border-radius: 10px;
-}
 .addMsg /deep/ .el-dialog:not(.is-fullscreen) {
   margin-top: 10% !important;
 }
