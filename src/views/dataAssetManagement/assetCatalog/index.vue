@@ -7,7 +7,7 @@
               class="el-input__icon el-icon-search"></i></el-input>
         </div>
         <div class="head-container" v-loading="treeLoading">
-          <el-tree style="overflow-y: auto;height: 785px;" :data="categoryList" :props="defaultProps"
+          <el-tree class="treeBox" style="overflow-y: auto;height: 785px;" :data="categoryList" :props="defaultProps"
             :default-expanded-keys="[treeID]" :current-node-key="treeID" :expand-on-click-node="false"
             :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current @node-click="handleNodeClick" />
         </div>
@@ -617,5 +617,18 @@ export default {
 
 .btnItem:hover {
   cursor: pointer;
+}
+.treeBox::-webkit-scrollbar{
+  width: 6px;
+  height: 6px;
+}
+.treeBox::-webkit-scrollbar-thumb{
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+.treeBox::-webkit-scrollbar-track{
+  border-radius: 10px;
+
 }
 </style>

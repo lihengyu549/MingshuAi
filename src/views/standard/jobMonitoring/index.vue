@@ -53,29 +53,52 @@
               </el-option>
             </el-select>
           </el-form-item>
+          <el-form-item prop="dataOwner" label="数据持有者">
+            <el-select v-model="queryParams.dataOwner" @change="selectProjectIdChange" clearable placeholder="全部">
+              <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
+              </el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item class="searchBtn">
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
           </el-form-item>
-          <div style="margin: 20px 0 20px 25px;">
-            <el-button type="primary" icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
-            <el-button type="primary" icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
-          </div>
+          <!-- <div style="margin: 20px 0 20px 25px;">
+          </div> -->
         </el-form>
-        <el-table v-loading="loading" :data="protectTableFieldList" height="590px" ref="tableRef" class="tableBox">
+        <el-row :gutter="10" class="mb8">
+          <el-col :span="1.5">
+            <el-button type="primary" icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
+          </el-col>
+          <el-col :span="1.5">
+            <el-button type="primary" icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
+          </el-col>
+          <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+        </el-row>
+        <el-table v-loading="loading" :data="protectTableFieldList" height="570px" ref="tableRef" class="tableBox">
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
           <el-table-column label="子类名称" align="center" prop="attachData" />
           <el-table-column label="安全分级" align="center" prop="securityLevelName" />
-          <el-table-column label="安全分级" align="center" prop="securityLevelName" />
+          <el-table-column label="建议防护措施" align="center" prop="protectMethodName" width="200">
+            <template slot-scope="scope">
+              <el-tag class="tagsBox" v-for="item in scope.row.protectMethodNameList" :color="colorFn(item)" :key="item">{{ item }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="数据持有者" align="center" prop="dataOwner" />
+          <el-table-column label="确认防护措施" align="center" prop="confirmProtectMethod" width="200">
+            <template slot-scope="scope">
+              <el-tag class="tagsBox" v-for="item in scope.row.confirmProtectMethodList" :color="colorFn(item)" :key="item">{{ item }}</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column label="来源" align="center" prop="dataSource">
           </el-table-column>
-          <el-table-column label="状态" align="center" prop="state">
+          <!-- <el-table-column label="状态" align="center" prop="state">
             <template slot-scope="scope">
               <span>
                 {{ scope.row.enable ? '启用' : '禁用' }}
               </span>
             </template>
-          </el-table-column>
+          </el-table-column> -->
           <el-table-column label="更新时间" align="center" prop="updateTime" />
           <el-table-column label="操作" align="center">
             <template slot-scope="scope">
@@ -90,8 +113,8 @@
       </el-col>
     </el-row>
     <!-- 新增编辑框 -->
-    <el-dialog :title="addOrEdit.title" v-loading="importDataLoading" :top="tagsShow?'15vh':'8vh'" :visible.sync="addOrEdit.show" width="700px"
-      append-to-body :close-on-click-modal="addOrEdit.flag == 3">
+    <el-dialog :title="addOrEdit.title" v-loading="importDataLoading" :top="tagsShow ? '15vh' : '8vh'"
+      :visible.sync="addOrEdit.show" width="700px" append-to-body :close-on-click-modal="addOrEdit.flag == 3">
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" style="padding-right: 60px;">
         <el-form-item label="子类名称" prop="attachData">
@@ -117,21 +140,22 @@
         <el-form-item class="addSelectClass" prop="minSecurityLevel" label="建议防护措施">
           <el-select v-model="addOrEditDataRuls.minSecurityLevel" :disabled="true" placeholder="全部">
             <el-option v-for="item in protectMethodIdList" :key="item.dictValue" :label="item.dictLabel"
-            :value="item.dictValue">
+              :value="item.dictValue">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item class="addSelectClass" prop="dataOwner" label="数据持有者">
-          <el-select v-model="addOrEditDataRuls.dataOwner" placeholder="全部" :disabled="this.$store.state.user.name !== 'admin'">
-            <el-option v-for="item in userList" :key="item.id" :label="item.userName"
-              :value="item.userName">
+          <el-select v-model="addOrEditDataRuls.dataOwner" placeholder="全部"
+            :disabled="this.$store.state.user.name !== 'admin'">
+            <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item class="addSelectClass" prop="confirmProtectMethod" label="确认防护措施">
-          <el-select v-model="addOrEditDataRuls.confirmProtectMethod" multiple placeholder="全部" :disabled="addOrEdit.flag == 3">
+          <el-select v-model="addOrEditDataRuls.confirmProtectMethod" multiple placeholder="全部"
+            :disabled="addOrEdit.flag == 3">
             <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
-            :value="item.dictLabel">
+              :value="item.dictLabel">
             </el-option>
           </el-select>
         </el-form-item>
@@ -216,7 +240,7 @@ export default {
         minSecurityLevel: [
           { required: true, message: "请选择安全分级", trigger: "blur" },
         ],
-        
+
         // confirmProtectMethod: [
         //   { required: true, message: "请选确认防护措施", trigger: "blur" },
         // ],
@@ -277,7 +301,7 @@ export default {
       open: false,
       categoryList: [],
       yuanCategoryList: [],
-      userList:[],
+      userList: [],
       categoryListEdit: null,
       addNodeName: "",
     };
@@ -298,7 +322,7 @@ export default {
         }
         if (val.length >= 10) {
           this.tagsShow = false
-        }else {
+        } else {
           this.tagsShow = true
         }
       }
@@ -321,7 +345,20 @@ export default {
         this.confirmProtectMethodList = res.data;
       })
     },
-    
+    colorFn(item) {
+      switch (item) {
+        case '加密':
+          return '#70b503'
+        case 'DLP':
+          return '#0600ff'
+        case '脱敏':
+          return '#f59b22'
+        case '无保护':
+          return '#409eff'
+        case '空':
+          return '#909399'
+      }
+    },
     //  获取用户列表
     getSelectUserListAll() {
       selectUserListAll().then(res => {
@@ -376,7 +413,7 @@ export default {
           confirmProtectMethod: this.addOrEditDataRuls.confirmProtectMethod.join(),
           dataOwner: this.addOrEditDataRuls.dataOwner,
           protectMethod: this.addOrEditDataRuls.minSecurityLevel,
-          
+
         }
         if (valid) {
           this.importDataLoading = true
@@ -632,6 +669,14 @@ export default {
       }
       getAttachData(params).then((response) => {
         this.protectTableFieldList = response.data.rows;
+        this.protectTableFieldList.forEach((item) => {
+          if (item.protectMethodName) {
+            item.protectMethodNameList = item.protectMethodName.split(',');
+          }
+          if (item.confirmProtectMethod) {
+            item.confirmProtectMethodList = item.confirmProtectMethod.split(',');
+          }
+        })
         this.total = response.data.total;
         this.loading = false;
       });
@@ -659,13 +704,13 @@ export default {
         name,
         id
       }
-      let res = await nameTesting(params).then(res=>{
+      let res = await nameTesting(params).then(res => {
         this.isName = res.data
       })
-      .catch(err=>{
-        this.importDataLoading = true
+        .catch(err => {
+          this.importDataLoading = true
 
-      })
+        })
     },
   },
 };
@@ -782,7 +827,7 @@ export default {
 }
 
 .searchBtn /deep/ .el-form-item__content {
-  margin-left: 263px
+  margin-left: 225px
 }
 
 .yuanDataClass {
@@ -806,5 +851,10 @@ export default {
 
 .yuanDataClass /deep/ .el-select {
   width: 100%;
+}
+.tagsBox{
+  border: none;
+  color: white;
+  margin-left: 5px;
 }
 </style>

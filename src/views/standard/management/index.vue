@@ -48,9 +48,9 @@
             <span></span>
           </div>
           <div style="margin-top: 20px;text-align: center; display: flex; justify-content: center; align-items: center;">
-            <el-tag class="div_btn" size="medium" :color="getColorFn(item.standardTypeName)" round>{{ item.standardTypeName }}</el-tag>
-            <el-tag class="div_btn" size="medium" :color="item.current === '现行'?'#70b503':'#CFD8DC'" round>{{ item.current }}</el-tag>
-            <el-tag class="div_btn" size="medium" color="#d7d7d7" round>{{ item.dataSource }}</el-tag>
+            <el-tag class="div_btn" size="medium" style="border: none;" :color="getColorFn(item.standardTypeName)" round>{{ item.standardTypeName }}</el-tag>
+            <el-tag class="div_btn" size="medium" style="border: none;" :color="item.current === '现行'?'#70b503':'#CFD8DC'" round>{{ item.current }}</el-tag>
+            <el-tag class="div_btn" size="medium" style="border: none;" color="#d7d7d7" round>{{ item.dataSource }}</el-tag>
           </div>
           <div class="listBox_btn">
             <el-button type="text" size="medium" @click="editFn(item)">编辑</el-button>

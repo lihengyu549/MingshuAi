@@ -82,3 +82,30 @@ export function deleteAttachData(data) {
     params:data
   })
 }
+
+// ---------------数据源发现-----------------
+// 新增数据源扫描任务
+export function addDatabaseProxysScan(data) {
+  return request({
+    url: '/system/proxyScan/addDatabaseProxysScan',
+    method: 'post',
+    data:data
+  })
+} 
+
+// 删除数据源接口
+export function deleteDatabaseProxysScan(data) {
+  return request({
+    url: '/system/proxyScan/deleteDatabaseProxysScan',
+    method: 'post',
+    data:data
+  })
+} 
+// 立即执行扫描
+export function scanIpAndPort(data) {
+  return request({
+    url: '/system/proxyScan/scanIpAndPort',
+    method: 'post',
+    data:data
+  })
+} 

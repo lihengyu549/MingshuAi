@@ -323,3 +323,12 @@ export function withdrawReleaseState (params) {
     params: params
   })
 }
+
+//任务进度查询接口--贺贺
+export function taskProgressQuery (params) {
+  return request({
+    url: '/system/proxy/database/taskProgressQuery',
+    method: 'post',
+    data: params
+  })
+}

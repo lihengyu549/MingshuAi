@@ -24,14 +24,14 @@
         <el-button type="primary" icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleEcelFn">立即扫描</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="medium" @click="scanSMFn">立即扫描</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
-    <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
+    <el-table v-loading="loading" height="670px" class="tableBox" :data="proxysList"
+      @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="任务名称" align="center" prop="taskName" />
-
       <el-table-column label="IP段" align="center" prop="ipScope">
         <template slot-scope="scope">
           <span>{{ scope.row.ipScope }}</span>
@@ -52,78 +52,52 @@
       <el-table-column label="更新时间" align="center" prop="updateTime" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
-            @click="scanContentEdit(scope.row)">编辑</el-button>
+          <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'" @click="">编辑</el-button>
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)">结果查看</el-button>
         </template>
       </el-table-column>
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
-    <!-- 添加或修改数据库代理对话框 -->
-    <el-dialog class="addMsg" :title="title" :visible.sync="open" width="580px" append-to-body
-      :close-on-click-modal="false">
-      <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
-        <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
-          <el-select v-model="form.databaseType" placeholder="请选择数据库类型" @change="databaseTypeChange($event)">
-            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
+
+    <!-- 新增编辑框 -->
+    <el-dialog :title="addOrEdit.title" v-loading="addOrEditLoading" :visible.sync="addOrEdit.show" width="700px"
+      append-to-body :close-on-click-modal="false">
+      <el-form :model="addOrEditFormData" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEditForm"
+        label-width="80px" style="padding-right: 60px;">
+        <el-form-item label="任务名称" prop="taskName">
+          <el-input v-model="addOrEditFormData.taskName" maxlength="50" placeholder="请输入子类名称"></el-input>
+        </el-form-item>
+        <el-form-item label="IP段" prop="ipScope">
+          <el-input v-model="addOrEditFormData.ipScope" maxlength="50" placeholder="请输入子类名称"></el-input>
+          <div style="font-size: 12px; font-style: italic;">示例：192.168.1.1-200，多个IP以逗号隔开</div>
+        </el-form-item>
+        <el-form-item label="指定端口" prop="ports">
+          <el-input v-model="addOrEditFormData.ports" maxlength="50" placeholder="请输入子类名称"></el-input>
+          <div style="font-size: 12px; font-style: italic;">示例：0-65535，多个端口以逗号隔开</div>
+        </el-form-item>
+        <el-form-item class="weekTimeClass" prop="scheduleType" label="周期">
+          <el-select v-model="addOrEditFormData.scheduleType" @change="scheduleTypeChange">
+            <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
-        </el-form-item>
-        <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
-          <el-input v-model="form.sourceName" maxlength="50" placeholder="请输入数据源名称" />
-        </el-form-item>
-        <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
-          <el-select v-model="form.projectName" :disabled="editIsFlag" placeholder="请输入分类分级框架" clearable
-            @change="projectChangeEdit($event)">
-            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
+          <el-select v-show="addOrEditFormData.scheduleType == '2' || addOrEditFormData.scheduleType == '3'"
+            v-model="addOrEditFormData.scheduleInterval">
+            <el-option v-for="item in weekList" :key="item" :label="item" :value="item">
             </el-option>
           </el-select>
-        </el-form-item>
-
-        <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
-          <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
-        </el-form-item>
-
-        <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
-          <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
-        </el-form-item>
-        <el-form-item label="用户" prop="targetUserName" :rules="rules.targetUserName">
-          <el-input v-model="form.targetUserName" placeholder="请输入数据库用户名称" />
-        </el-form-item>
-        <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
-          <el-input v-model="form.targetUserPassword" show-password maxlegth="100" placeholder="请输入数据库密码" />
-        </el-form-item>
-        <el-form-item v-show="isServiesNameRequired" label="服务名" prop="connectionValue"
-          :rules="rules.connectionValue()">
-          <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput(form.connectionValue)"
-            placeholder="请输入" />
-        </el-form-item>
-        <el-form-item v-show="isServiesNameRequired" label="连接方式">
-          <el-radio v-model="connectionType" label="0">SID</el-radio>
-          <el-radio v-model="connectionType" label="1">Service Name</el-radio>
-        </el-form-item>
-        <el-form-item v-show="form.databaseType != 'ORACLE'" label="实例名/库名" prop="examplesName"
-          :rules="rules.examplesName()">
-          <el-input v-model="form.examplesName" placeholder="请输入实例名/库名" />
-        </el-form-item>
-        <el-form-item label="扫描内容" prop="tabelCheckedName">
-          <div @click="scanContentFn()"><el-input style="position: relative;" readonly>
-            </el-input>
-            <el-tag style="position: absolute;top: 4px;left: 6px;">{{ form.tabelCheckedName ? form.tabelCheckedName :
-              '点击选择扫描内容' }}</el-tag>
-          </div>
-        </el-form-item>
-        <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
-          <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
-          <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
+          <el-time-picker v-show="addOrEditFormData.scheduleType != '0' && addOrEditFormData.scheduleType != ''"
+            v-model="addOrEditFormData.scheduleTime" value-format = 'HH:mm' format="HH:mm" placeholder="任意时间点">
+          </el-time-picker>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="open = false">取消</el-button>
+        <el-button type="primary" @click="addSubmitForm">确
+          定</el-button>
+        <el-button @click="addCancel">取 消</el-button>
       </div>
     </el-dialog>
+
     <el-drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
       size="80%" :before-close="handleClose">
       <Result :treeOptions="treeOptions" :drawerData="drawerData" />
@@ -135,6 +109,9 @@
 
 import {
   listDatabaseProxysScan,
+  addDatabaseProxysScan,
+  deleteDatabaseProxysScan,
+  scanIpAndPort,
 } from "@/api/dataAssetManagement"
 import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys,
@@ -147,10 +124,35 @@ import Result from './components/result.vue'
 import Vue from 'vue';
 export default {
   name: "dataAssetdiscover",
-  components: { Result},
+  components: { Result },
   data() {
     return {
-      scanContentLoading: false,
+      addOrEdit: {
+        title: '',
+        flag: 1,
+        show: false,
+      },//新增编辑数据
+      addOrEditFormData: {
+        scheduleType: '',
+        scheduleInterval:'',
+        scheduleTime:'00:00',
+      },// 表单数据
+      weekTimeList: [
+        {
+          value: '0',
+          label: '手动'
+        }, {
+          value: '1',
+          label: '每天'
+        }, {
+          value: '2',
+          label: '每周'
+        }, {
+          value: '3',
+          label: '每月'
+        }
+      ],
+      weekList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日',],
       editIsFlag: false,
       treeOptions: [],
       scanStateBtnDisabled: false,// 扫描按钮禁用条件
@@ -174,50 +176,21 @@ export default {
         'NONE': require('@/assets/stateImg/stateWaiting.png'),
         'RUNNING': require('@/assets/stateImg/stateing.png'),
       },
-      targetDataList: [],
-      dataYTpeList: [
-        {
-          value: 'DATABASE',
-          label: '数据库'
-        }, {
-          value: 'FILE',
-          label: 'Excel表'
-        }
-      ],
-      databaseTypeList: [
-        { name: "MYSQL", id: 0, value: "MYSQL" },
-        { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
-        { name: "ORACLE", id: 2, value: "ORACLE" },
-        { name: "POSTGRES", id: 3, value: "POSTGRES" },
-        { name: "达梦", id: 4, value: "DM" }
-      ],
-      publishStatus: [
-        {
-          value: 0,
-          label: '未发布'
-        }, {
-          value: 1,
-          label: '已发布'
-        },
-      ],
       executeStatus: [
         {
           value: 'COMPLETE',
-          label: '执行完成'
+          label: '扫描完成'
         }, {
           value: 'RUNNING',
-          label: '执行中'
+          label: '扫描中'
         }, {
           value: 'NONE',
-          label: '待执行'
+          label: '待扫描'
         }, {
           value: 'ERR',
-          label: '执行失败'
+          label: '扫描失败'
         }
       ],
-      formProjectListEdit: [],
-      selectProjectListEdit: [{ name: "全部", id: 0 }],
-      projectNameEdit: "",
       // 遮罩层
       loading: true,
       // 选中数组
@@ -226,7 +199,6 @@ export default {
       single: true,
       // 非多个禁用
       multiple: true,
-      showSucType: 0,
       // 显示搜索条件
       showSearch: true,
       // 总条数
@@ -262,74 +234,7 @@ export default {
       },
       connectionType: '1',
       titleExcel: '新增Excel文件',
-      addForm: {},
-      // 表单校验
-      rules: {
-        userPassword: [
-          { required: true, message: "用户密码不能为空", trigger: "blur" },
-        ],
-        userName: [
-          { required: true, message: "用户名称不能为空", trigger: "blur" },
-        ],
-        sourceName: [{
-          required: true, message: "数据源名称不能为空", trigger: "blur"
-        }],
-        businessName: [{
-          required: true, message: "来源业务系统不能为空", trigger: "blur"
-        }],
-        databaseType: [{ required: true, message: '请选择数据库类型', trigger: 'blur' }],
-        projectName: [{ required: true, message: '请选择选分类分级框架', trigger: 'blur' }],
-        targetUserName: [
-          { required: true, message: "请输入数据库用户名称", trigger: "change" },
-        ],
-        targetDatabase: [
-          { required: true, message: "请选择数据库名称", trigger: "change" },
-        ],
-        targetUserPassword: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
-        ],
-        examplesName: () => {
-          return [{
-            required: this.form.databaseType == 'DM' || this.form.databaseType == 'POSTGRES',
-            message: '请输入',
-            trigger: 'blur'
-          }]
-        },
-        connectionValue: () => {
-          return [{
-            required: this.isServiesNameRequired,
-            message: '请输入',
-            trigger: 'blur'
-          }]
-        },
-        tabelCheckedName :[{
-            required: true,
-            validator: this.tabelCheckedNameRules,
-            trigger: 'blur'
-          }],
-        targetIp: [
-          { required: true, message: "请输入数据库地址", trigger: "blur" },
-          {
-            pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-            message: "请输入有效的IP地址"
-          },
-        ],
-        targetPort: [
-          { required: true, message: "请输入端口号", trigger: "blur" },
-          {
-            pattern:
-              /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
-            message:
-              "请输入0~65535之间的5个数字",
-          },
-          // {
-          //   min: 1,
-          //   max: 5,
-          //   message: "长度在 1 ~ 5 个字符",
-          // },
-        ],
-      },
-      importDataLoading: false,
+      addOrEditLoading: false,
       importData: {
         importFile: '', // 导入魔板文件名
         fileList: [],//导入模板的文件数据
@@ -341,24 +246,31 @@ export default {
       isServiesNameRequired: false,
       debounceTimeout: null,
       // 表单校验
-      importDataRules: {
-        sourceName: [
+      addOrEditRules: {
+        taskName: [
           {
-            required: true, message: "请输入数据源名称", trigger: "blur"
+            required: true, message: "请输入任务名称", trigger: "blur"
           }
         ],
-        businessName: [
+        ipScope: [
           {
-            required: true, message: "请输入来源业务系统", trigger: "blur"
+            required: true, message: "请输入IP段", trigger: "blur"
           }
         ],
-        categoryId: [
+        scheduleType: [
           {
-            required: true, message: "请选择所属分类", trigger: "blur"
+            required: true, message: "请选择周期", trigger: "blur"
           }
         ],
-        importFile: [
-          { required: true, message: "请选择导入文件", trigger: "blur" },
+        scheduleInterval: [
+          {
+            required: true,validator: this.validateScheduleInterval, message: "请选择", trigger: "blur"
+          }
+        ],
+        scheduleTime: [
+          {
+            required: true,validator: this.validateScheduleTime, message: "请选择时间", trigger: "blur"
+          }
         ],
       },
       tabelCheckedName: '',
@@ -367,31 +279,56 @@ export default {
   computed: {
   },
   created() {
-    // this.queryParams.projectId = 0
-    this.gettreeOptionsList()
     this.getList()
   },
   methods: {
-    // 自定义校验规则
-    tabelCheckedNameRules(rule, value, callback) {
-        callback();
-    },
-    databaseTypeChange(val) {
-      if (val == 'ORACLE') {
-        this.isServiesNameRequired = true
-      } else {
-        this.isServiesNameRequired = false
+    //  // 自定义校验规则
+    //  validateScheduleInterval(rule, value, callback) {
+    //   if(this.addOrEditFormData.scheduleType == '0' || this.addOrEditFormData.scheduleType == '1'){
+    //     callback();
+    //   }else {
+    //     callback(new Error("请选择"));
+    //   }
+    // },
+     // 自定义校验规则
+    //  validateScheduleTime(rule, value, callback) {
+    //   if(this.addOrEditFormData.scheduleType != '0'){
+    //     callback(new Error("请选择"));
+    //   }else {
+    //     callback();
+    //   }
+    // },
+    scheduleTypeChange(val) {
+      if (val == '3') {
+        // 获取当前月的天数
+        this.addOrEditFormData.scheduleInterval = '1'
+        const daysInMonth = this.getDaysInCurrentMonth();
+        // 将天数转换为数组
+        this.weekList = this.createDaysArray(daysInMonth);
+      } else if(val == '2') {
+        this.addOrEditFormData.scheduleInterval = '周一'
+        this.weekList = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      }else {
+        this.addOrEditFormData.scheduleInterval = ''
       }
     },
-    async getNameTestingFn() {
-      let params = {
-        sourceName: this.form.sourceName,
-        id: this.form.id || ''
-      }
-      let res = await checkSourceName(params)
-      return res.code == 200
-    },
+    addCancel() { },
+    addSubmitForm() {
+      this.$refs["addOrEditForm"].validate((valid) => {
+        if (valid) {
+          addDatabaseProxysScan(this.addOrEditFormData).then((response) => {
+            this.$message({
+              message: "添加成功",
+              duration: 3000,
+              type: 'success'
+            });
+            this.getList();
+            this.addOrEdit.show = false
+          });
+        }
+      });
 
+    },
     async getimortantNameTestingFn() {
       let params = {
         sourceName: this.importData.sourceName,
@@ -412,46 +349,8 @@ export default {
       }
       return msg || '待扫描'
     },
-    databaseTypeMsg(val) {
-      let msg = ''
-      for (let item of this.databaseTypeList) {
-        if (item.value == val) {
-          msg = item.name
-        }
-      }
-      return msg || '未知来源'
-    },
     businessNameFn(val) {
       this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-    },
-    serviesNameInput(val) {
-      this.form.connectionValue = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-    },
-    targetIpRulesFn() {
-
-    },
-    importNameTestingFn(val) {
-      this.importData.sourceName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-    },
-    gettreeOptionsList() {
-      this.mainLoading = true
-      getFrameworks().then((response) => {
-        this.treeOptions = response.data
-        this.mainLoading = false
-      });
-    },
-    findDatabaseValueByName(name) {
-      let value;
-      for (let i = 0; i < this.databaseTypeList.length; i++) {
-        if (name == this.databaseTypeList[i].name) {
-          value = this.databaseTypeList[i].value
-        }
-      }
-      return value
-    },
-
-    handleInput(e) {
-      this.samplingNum = e
     },
     async rulsNameIsRight(id, name) {
       let params = {
@@ -462,9 +361,6 @@ export default {
       this.isName = res.data
     },
 
-    messsucc(res, flag) {
-      this.$message.success(`${res.msg},${flag}${res.data}个`)
-    },
     handleClose() {
       this.drawerShow = false
     },
@@ -475,36 +371,19 @@ export default {
         this.handleQuery()
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
-    projectChangeEdit(e) {
-      this.projectNameEdit = e
-      this.form.projectId = e
-    },
     /** 查询数据库代理列表 */
     getList() {
       this.loading = true;
       listDatabaseProxysScan(this.queryParams).then(response => {
         this.proxysList = response.data.rows;
-        // for (let item of this.proxysList) {
-        //   item.showTag = 0
-        //   item.oldPassword = item.targetUserPassword
-        //   item.targetUserPassword = '******'
-        // }
-        this.total = response.total;
+        this.total = response.data.total;
         this.loading = false;
       });
     },
     reset() {
-      this.form = {
-        targetIp: null,
-        targetPort: null,
-        targetDatabase: [],
-        targetUserName: null,
-        targetUserPassword: null,
-        //  protocolPort: null,
-        projectId: null,
-        // proxyStatus: "0"
-      };
-      this.resetForm("form");
+      this.addOrEditFormData.scheduleTime = '00:00'
+      this.addOrEditFormData.scheduleInterval = ''
+      this.addOrEditFormData.scheduleInterval = ''
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -525,60 +404,10 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.editIsFlag = false
-      this.showSucType = 0
-      this.projectNameEdit = null
-      this.targetDataList = []
-      this.connectionType = '1'
       this.reset();
-      this.open = true;
-      this.title = "添加数据库";
-    },
-    /** 提交按钮 */
-    async submitForm() {
-      this.$refs["form"].validate(async valid => {
-        let data = JSON.parse(JSON.stringify(this.form))
-        delete data.projectName
-        data.targetDatabase = JSON.stringify(data.targetDatabase)
-        data.connectionType = this.connectionType
-        data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
-        console.log(data);
-        
-        if(!this.editIsFlag && Object.keys(data.tables).length == 0){
-          this.$message({ message: '请选择扫描内容', type: 'warning' })
-          return
-        }else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase){
-          this.$message({ message: '请选择扫描内容', type: 'warning' })
-          return
-        }
-        if (valid) {
-          if (!await this.getNameTestingFn()) {
-            return
-          }
-          if (this.form.id != null) {
-            data.id = this.form.id
-            updateDatabaseAndTables(data).then(response => {
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            });
-          } else {
-            saveDatabaseAndTables(data).then(response => {
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            });
-          }
-        }
-      });
-    },
-    /** 删除按钮操作 */
-    deleteClick(ids) {
-      delProxys(ids).then(() => {
-        this.getList();
-        this.$modal.msgSuccess("删除成功");
-        this.deleteVisible = false
-      }).catch(() => { })
+      this.addOrEdit.title = '新增任务'
+      this.addOrEdit.show = true
+      this.addOrEdit.flag = 1 // 1新增2编辑
     },
     handleEcelFn() {
       this.editIsFlag = false
@@ -590,36 +419,10 @@ export default {
       this.titleExcel = '新增Excel文件'
       this.importData.fileList = []
     },
-     deleteFn() {
+    // 删除
+    deleteFn() {
       let dataS = this.$refs.tableRef.selection
-      let flagList // 为1 代表选中数据中有执行中的，2为没有执行中，但是有执行完成的
       if (dataS && dataS.length > 0) {
-        flagList = dataS.map(item => {
-          return item.scanState
-        })
-        if (flagList.includes('RUNNING')) {
-          this.$message({ message: '选中任务包含执行中任务，无法批量删除', type: 'warning' })
-          return
-        }
-        if (flagList.includes('COMPLETE')) {
-          this.$confirm(`删除任务，将会删除数据源所关联的所有执行结果,确定删除吗`, '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            let ids = dataS.map(item => {
-              return item.id
-            })
-            let idsParams = ids.join(',')
-            delProxys(idsParams).then(res => {
-              if (res.code == 200) {
-                this.$message.success(res.msg)
-                this.getList()
-              }
-            })
-          })
-          return
-        }
         this.$confirm(`确定删除所选中的项吗`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -628,8 +431,9 @@ export default {
           let ids = dataS.map(item => {
             return item.id
           })
-          let idsParams = ids.join(',')
-          delProxys(idsParams).then(res => {
+          console.log(ids);
+          
+          deleteDatabaseProxysScan({ids}).then(res => {
             if (res.code == 200) {
               this.$message.success(res.msg)
               this.getList()
@@ -640,94 +444,53 @@ export default {
         this.$message({ message: '至少选择一条数据', type: 'warning' })
       }
     },
-    scanStateClickFn(row) {
-      if (row.scanState == 'COMPLETE') {
-        this.$confirm(`再次扫描将会覆盖之前的所有扫描结果，确定继续吗？`, '提示', {
+    // 扫描
+    scanSMFn() {
+      let dataS = this.$refs.tableRef.selection
+      if (dataS && dataS.length > 0) {
+        this.$confirm(`确定扫描所选中的项吗`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          dataSacn({ proxyIds: row.id }).then(async res => {
-            await this.getList()
+          let ids = dataS.map(item => {
+            return item.id
+          })
+          console.log(ids);
+          
+          scanIpAndPort({ids}).then(res => {
+            if (res.code == 200) {
+              this.$message.success(res.msg)
+              this.getList()
+            }
           })
         })
-          .catch(() => {
-            this.getList()
-          })
       } else {
-        dataSacn({ proxyIds: row.id }).then(async res => {
-          await this.getList()
-        })
-          .catch(() => {
-            this.getList()
-          })
+        this.$message({ message: '至少选择一条数据', type: 'warning' })
       }
     },
-    scanContentEdit(row) {
-      this.editIsFlag = true
-      if (row.databaseType == "Excel") {
-        this.importData.importFile = row.fileName
-        this.titleExcel = "编辑Excel";
-        this.importData.categoryId = row.projectId
-        this.importData.id = row.id
-        this.importData.sourceName = row.sourceName
-        this.importData.businessName = row.businessName
-        this.importData.importShow = true
-      } else {
-        this.form = JSON.parse(JSON.stringify(row))
-        this.form.tabelCheckedName = row.scanContent
-        let targetDatabaseCopy = row.targetDatabase
-        let targetDatabaseArr
-        if (targetDatabaseCopy.length > 1) {
-          targetDatabaseArr = targetDatabaseCopy.split(',')
-          targetDatabaseArr.splice(targetDatabaseArr.length - 1, 1)
-        }
-        this.form.targetDatabase = targetDatabaseArr
-        this.form.tables = row.tables || {}
-        this.title = "编辑数据库";
-        this.open = true
-        this.scanContentLoading = true
-        getDatabaseAndTablesById(row.id).then(res => {
-          this.scanContentLoading = false
-          if (res.data && res.data.options && res.data.options.length) {
-            this.treeCheckedData = res.data.options.map(item => {
-              return item.value
-            })
-          } else {
-            this.treeCheckedData = ['0']
-          }
-        })
-        // if (row.state == 'RUNNING') {
-        //   this.$message({ message: '当前状态为运行中，无法发布', type: 'warning' })
-        //   return
-        // }
-        // this.form = row
+    scanStateClickFn(row) {},
+    getDaysInCurrentMonth() {
+      const now = new Date(); // 获取当前日期
+      const year = now.getFullYear(); // 当前年份
+      const month = now.getMonth(); // 当前月份（0-11，0表示1月）
+
+      // 创建下个月的第一天的日期对象
+      const firstDayNextMonth = new Date(year, month + 1, 1);
+      // 减去一天，得到当前月的最后一天
+      const lastDayCurrentMonth = new Date(firstDayNextMonth - 1);
+
+      // 返回当前月的天数
+      return lastDayCurrentMonth.getDate();
+    },
+
+    createDaysArray(days) {
+      const daysArray = [];
+      for (let i = 1; i <= days; i++) {
+        daysArray.push(i);
       }
-    },
-    // 扫描内容点击事件
-    async scanContentFn() {
-      this.$refs["form"].validate(async valid => {
-        if (valid) {
-          let data = {
-            targetIp: this.form.targetIp,
-            targetPort: this.form.targetPort,
-            targetUserName: this.form.targetUserName,
-            targetUserPassword: this.form.targetUserPassword,
-            connectionType: this.connectionType,
-            connectionValue: this.form.connectionValue,
-            databaseType: this.form.databaseType,
-            examplesName: this.form.examplesName
-          }
-          let res = await getListTables(data)
-          if (res.data.option.length == 0) {
-            this.$message({ message: '暂无数据，请稍后再试', type: 'warning' })
-          } else {
-            this.scanContentTreeData = res.data.option
-            this.scanContentShow = true
-          }
-        }
-      })
-    },
+      return daysArray;
+    }
   }
 };
 </script>
@@ -836,9 +599,25 @@ input[aria-hidden=true] {
   width: 20% !important;
 }
 
-.addSelectClass /deep/ .el-select {
-  width: calc(100%);
+.weekTimeClass /deep/ .el-form-item__content {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: calc(100% - 80px);
+  /* width: calc(100%); */
 }
+
+.weekTimeClass /deep/ .el-select {
+  width: 30%;
+  margin-right: 10px;
+  /* width: calc(100%); */
+}
+
+.weekTimeClass /deep/ .el-date-editor {
+  width: 30%;
+  /* width: calc(100%); */
+}
+
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
   width: 6px;
   height: 6px;
