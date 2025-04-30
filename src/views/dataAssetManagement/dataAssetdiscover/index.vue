@@ -52,7 +52,7 @@
       <el-table-column label="更新时间" align="center" prop="updateTime" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'" @click="">编辑</el-button>
+          <el-button size="mini" type="text" @click="editFn(scope.row)">编辑</el-button>
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)">结果查看</el-button>
         </template>
       </el-table-column>
@@ -63,8 +63,8 @@
     <!-- 新增编辑框 -->
     <el-dialog :title="addOrEdit.title" v-loading="addOrEditLoading" :visible.sync="addOrEdit.show" width="700px"
       append-to-body :close-on-click-modal="false">
-      <el-form :model="addOrEditFormData" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEditForm"
-        label-width="80px" style="padding-right: 60px;">
+      <el-form :model="addOrEditFormData" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules"
+        ref="addOrEditForm" label-width="80px" style="padding-right: 60px;">
         <el-form-item label="任务名称" prop="taskName">
           <el-input v-model="addOrEditFormData.taskName" maxlength="50" placeholder="请输入子类名称"></el-input>
         </el-form-item>
@@ -87,7 +87,7 @@
             </el-option>
           </el-select>
           <el-time-picker v-show="addOrEditFormData.scheduleType != '0' && addOrEditFormData.scheduleType != ''"
-            v-model="addOrEditFormData.scheduleTime" value-format = 'HH:mm' format="HH:mm" placeholder="任意时间点">
+            v-model="addOrEditFormData.scheduleTime" value-format='HH:mm' format="HH:mm" placeholder="任意时间点">
           </el-time-picker>
         </el-form-item>
       </el-form>
@@ -97,10 +97,9 @@
         <el-button @click="addCancel">取 消</el-button>
       </div>
     </el-dialog>
-
     <el-drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
-      size="80%" :before-close="handleClose">
-      <Result :treeOptions="treeOptions" :drawerData="drawerData" />
+      size="60%" :before-close="handleClose">
+      <Result :drawerData="drawerData" />
     </el-drawer>
   </div>
 </template>
@@ -112,6 +111,7 @@ import {
   addDatabaseProxysScan,
   deleteDatabaseProxysScan,
   scanIpAndPort,
+  updateDatabaseProxysScan,
 } from "@/api/dataAssetManagement"
 import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys,
@@ -133,9 +133,12 @@ export default {
         show: false,
       },//新增编辑数据
       addOrEditFormData: {
+        taskName: '',
+        ipScope: '',
+        ports: '',
         scheduleType: '',
-        scheduleInterval:'',
-        scheduleTime:'00:00',
+        scheduleInterval: '',
+        scheduleTime: '00:00',
       },// 表单数据
       weekTimeList: [
         {
@@ -154,7 +157,6 @@ export default {
       ],
       weekList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日',],
       editIsFlag: false,
-      treeOptions: [],
       scanStateBtnDisabled: false,// 扫描按钮禁用条件
       treeCheckedData: [],//树节点已选中数据
       scanContentTreeData: [],//// 扫描配置树数据
@@ -264,12 +266,12 @@ export default {
         ],
         scheduleInterval: [
           {
-            required: true,validator: this.validateScheduleInterval, message: "请选择", trigger: "blur"
+            required: true, validator: this.validateScheduleInterval, message: "请选择", trigger: "blur"
           }
         ],
         scheduleTime: [
           {
-            required: true,validator: this.validateScheduleTime, message: "请选择时间", trigger: "blur"
+            required: true, validator: this.validateScheduleTime, message: "请选择时间", trigger: "blur"
           }
         ],
       },
@@ -290,7 +292,7 @@ export default {
     //     callback(new Error("请选择"));
     //   }
     // },
-     // 自定义校验规则
+    // 自定义校验规则
     //  validateScheduleTime(rule, value, callback) {
     //   if(this.addOrEditFormData.scheduleType != '0'){
     //     callback(new Error("请选择"));
@@ -305,26 +307,40 @@ export default {
         const daysInMonth = this.getDaysInCurrentMonth();
         // 将天数转换为数组
         this.weekList = this.createDaysArray(daysInMonth);
-      } else if(val == '2') {
+      } else if (val == '2') {
         this.addOrEditFormData.scheduleInterval = '周一'
         this.weekList = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-      }else {
+      } else {
         this.addOrEditFormData.scheduleInterval = ''
       }
     },
-    addCancel() { },
+    addCancel() {
+      this.reset()
+      this.addOrEdit.show = false
+    },
     addSubmitForm() {
       this.$refs["addOrEditForm"].validate((valid) => {
         if (valid) {
-          addDatabaseProxysScan(this.addOrEditFormData).then((response) => {
-            this.$message({
-              message: "添加成功",
-              duration: 3000,
-              type: 'success'
+          if (this.addOrEditFormData.id) {
+            updateDatabaseProxysScan(this.addOrEditFormData).then((response) => {
+              this.$message({
+                message: "添加成功",
+                duration: 3000,
+                type: 'success'
+              });
             });
-            this.getList();
-            this.addOrEdit.show = false
-          });
+          } else {
+            addDatabaseProxysScan(this.addOrEditFormData).then((response) => {
+              this.$message({
+                message: "添加成功",
+                duration: 3000,
+                type: 'success'
+              });
+            });
+          }
+
+          this.getList();
+          this.addOrEdit.show = false
         }
       });
 
@@ -383,7 +399,10 @@ export default {
     reset() {
       this.addOrEditFormData.scheduleTime = '00:00'
       this.addOrEditFormData.scheduleInterval = ''
-      this.addOrEditFormData.scheduleInterval = ''
+      this.addOrEditFormData.scheduleType = ''
+      this.addOrEditFormData.taskName = ''
+      this.addOrEditFormData.ipScope = ''
+      this.addOrEditFormData.ports = ''
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -409,15 +428,11 @@ export default {
       this.addOrEdit.show = true
       this.addOrEdit.flag = 1 // 1新增2编辑
     },
-    handleEcelFn() {
-      this.editIsFlag = false
-      this.importData.importShow = true
-      this.importData.categoryId = ''
-      this.importData.importFile = ''
-      this.importData.sourceName = ''
-      this.importData.businessName = ''
-      this.titleExcel = '新增Excel文件'
-      this.importData.fileList = []
+    editFn(row) {
+      this.addOrEdit.title = '编辑任务'
+      this.addOrEdit.flag = 2
+      this.addOrEdit.show = true
+      this.addOrEditFormData = JSON.parse(JSON.stringify(row))
     },
     // 删除
     deleteFn() {
@@ -432,8 +447,8 @@ export default {
             return item.id
           })
           console.log(ids);
-          
-          deleteDatabaseProxysScan({ids}).then(res => {
+
+          deleteDatabaseProxysScan({ ids }).then(res => {
             if (res.code == 200) {
               this.$message.success(res.msg)
               this.getList()
@@ -457,8 +472,8 @@ export default {
             return item.id
           })
           console.log(ids);
-          
-          scanIpAndPort({ids}).then(res => {
+
+          scanIpAndPort({ ids }).then(res => {
             if (res.code == 200) {
               this.$message.success(res.msg)
               this.getList()
@@ -469,7 +484,10 @@ export default {
         this.$message({ message: '至少选择一条数据', type: 'warning' })
       }
     },
-    scanStateClickFn(row) {},
+    scanStateClickFn(row) {
+      this.drawerShow = true
+      this.drawerData = row
+    },
     getDaysInCurrentMonth() {
       const now = new Date(); // 获取当前日期
       const year = now.getFullYear(); // 当前年份
@@ -631,5 +649,11 @@ input[aria-hidden=true] {
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
   border-radius: 10px;
+}
+
+.dialogClass /deep/ .el-drawer__header {
+  margin-bottom: 0px;
+  /* padding: 0px; */
+  /* display: none; */
 }
 </style>

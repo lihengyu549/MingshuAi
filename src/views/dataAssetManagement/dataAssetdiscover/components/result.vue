@@ -2,156 +2,130 @@
   <div class="app-container" v-loading="loading">
     <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
       v-show="showSearch" label-width="auto">
-      <el-form-item label="分类" prop="categoryId">
-        <el-select ref="addSelectRef" v-model="addNodeName">
-          <el-option style="height: 100%; padding: 0" value="">
-            <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
-              :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
-              @node-click="addHandleNodeClick" />
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="安全分级" prop="securityLevel">
-        <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="确认状态" prop="confirm">
-        <el-select clearable v-model="queryParams.confirm" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in confirmList" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="所属库" prop="databaseName">
-        <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn" placeholder="请选择">
-          <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="所属表" prop="tableId">
-        <el-select clearable v-model="queryParams.tableId" :disabled="!queryParams.databaseName" @change="inputSearch"
-          placeholder="全部">
-          <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.id">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="来源业务系统" prop="businessName">
-        <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入来源业务系统" clearable
+      <el-form-item label="主机" prop="ip">
+        <el-input v-model="queryParams.ip" @input="inputSearch" placeholder="请输入ip" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-
-      <el-form-item>
+      <el-form-item label="数据库类型" prop="databaseType">
+        <el-select v-model="queryParams.databaseType" placeholder="请选择数据库类型" @change="inputSearch" clearable>
+          <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
+          </el-option>
+        </el-select>
       </el-form-item>
-      <el-form-item>
-      </el-form-item>
-      <el-form-item label=" " class="searchBtn">
+      <el-form-item label="" class="searchBtn">
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-aim" size="medium" @click="handleAdda">确认勾选项</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-more" size="medium" @click="handleEcelFn">确认过滤项</el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
+    <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
-      <!-- <el-table-column type="selection" width="55" align="center" /> -->
-      <!-- <el-table-column label="id" align="center" prop="id" /> -->
-      <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip />
-      <el-table-column label="字段注释" align="center" prop="fieldRemark" show-overflow-tooltip />
-      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
-      <!-- <el-table-column label="数据源" align="center" prop="databaseId" show-overflow-tooltip /> -->
-      <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
-      <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
-      <el-table-column label="分类" align="center" min-width="250" prop="categoryName" show-overflow-tooltip />
-      <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
-      <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
+      <el-table-column label="主机" align="center" prop="ip" show-overflow-tooltip />
+      <el-table-column label="端口" align="center" prop="port" show-overflow-tooltip />
+      <el-table-column label="数据库类型" align="center" prop="databaseType" show-overflow-tooltip />
+      <el-table-column label="数据库版本" align="center" prop="databaseVersion" show-overflow-tooltip />
+      <el-table-column label="状态" align="center" min-width="250" prop="state">
         <template slot-scope="scope">
-          <el-tooltip placement="bottom" effect="light">
-            <div slot="content">
-              <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
-                <el-table-column type="index" label="序号" width="50" />
-                <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
-                </el-table-column>
-              </el-table>
-            </div>
-            <el-button size="mini" type="text">查看</el-button>
-          </el-tooltip>
-        </template>
-      </el-table-column>
-      <el-table-column label="确认状态" align="center" prop="confirm">
-        <template slot-scope="scope">
-          <span>{{ scope.row.confirm == 0 ? '未确认' : '已确认' }}</span>
+          <span>{{ scope.row.state ? '未添加' : '已添加' }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="resultExdit(scope.row)">结果修改</el-button>
+          <el-button size="mini" type="text" @click="resultExdit(scope.row)">导入数据源</el-button>
         </template>
       </el-table-column>
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
-    <el-dialog title="分类分级框架结果修改" v-loading="updataLoading" :visible.sync="deleteVisible" width="650px"
-      style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
-      <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
-        <el-form-item label="分类" class="addSelectClass">
-          <el-select ref="resultSelectRef" v-model="resultFormNodeName">
-            <el-option style="height: 100%; padding: 0" value="">
-              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
-                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
-                @node-click="resultHandleNodeClick" />
+    <!-- 添加或修改数据库代理对话框 -->
+    <el-dialog class="addMsg" :title="title" :visible.sync="open" width="580px" append-to-body
+      :close-on-click-modal="false">
+      <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
+        <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
+          <el-select v-model="form.databaseType" placeholder="请选择数据库类型" @change="databaseTypeChange($event)">
+            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
-          <el-select v-model="resultForm.securityLevel" placeholder="请选择">
-            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-              :value="item.value">
+        <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
+          <el-input v-model="form.sourceName" maxlength="50" placeholder="请输入数据源名称" />
+        </el-form-item>
+        <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
+          <el-select v-model="form.projectName" placeholder="请输入分类分级框架" clearable @change="projectChangeEdit($event)">
+            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
+        </el-form-item>
+
+        <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
+          <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
+        </el-form-item>
+
+        <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
+          <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
+        </el-form-item>
+        <el-form-item label="用户" prop="targetUserName" :rules="rules.targetUserName">
+          <el-input v-model="form.targetUserName" placeholder="请输入数据库用户名称" />
+        </el-form-item>
+        <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
+          <el-input v-model="form.targetUserPassword" show-password maxlegth="100" placeholder="请输入数据库密码" />
+        </el-form-item>
+        <el-form-item v-show="isServiesNameRequired" label="服务名" prop="connectionValue"
+          :rules="rules.connectionValue()">
+          <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput(form.connectionValue)"
+            placeholder="请输入" />
+        </el-form-item>
+        <el-form-item v-show="isServiesNameRequired" label="连接方式">
+          <el-radio v-model="connectionType" label="0">SID</el-radio>
+          <el-radio v-model="connectionType" label="1">Service Name</el-radio>
+        </el-form-item>
+        <el-form-item v-show="form.databaseType != 'ORACLE'" label="实例名/库名" prop="examplesName"
+          :rules="rules.examplesName()">
+          <el-input v-model="form.examplesName" placeholder="请输入实例名/库名" />
+        </el-form-item>
+        <el-form-item label="扫描内容" prop="tabelCheckedName">
+          <div @click="scanContentFn()"><el-input style="position: relative;" readonly>
+            </el-input>
+            <el-tag style="position: absolute;top: 4px;left: 6px;">{{ form.tabelCheckedName ? form.tabelCheckedName :
+              '点击选择扫描内容' }}</el-tag>
+          </div>
+        </el-form-item>
+        <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
+          <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
+          <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
         </el-form-item>
       </el-form>
-      <template #footer>
-        <span>
-          <el-button type="primary" @click="updataResultFn"> 确定 </el-button>
-          <el-button @click="updataResultCanelFn">取消</el-button>
-        </span>
-      </template>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="open = false">取消</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog title="扫描配置" class="scanContentBox" v-loading="scanContentLoading" :visible.sync="scanContentShow"
+      width="950px" append-to-body :close-on-click-modal="false">
+      <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData"
+        :scanContentTreeData="scanContentTreeData" ref="scanContentTreeRef" />
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="scanContentSubmitFn">确 定</el-button>
+        <el-button @click="scanContentShow = false">取 消</el-button>
+      </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
 import {
-  usersAddI
-} from "@/api/system/proxyUser";
-
+  getDatabaseProxysScanItemById,
+} from "@/api/dataAssetManagement"
 import {
-  listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
-  startI, stopI, databaseMaskI, strategyPushI, strategyAll,
-  databaseListI, confirmIds, protectTableFieldList, confirmList, updateFiledRule
+  saveDatabaseAndTables, getListTables, databaseListI
 } from "@/api/system/proxys";
-import { listAllProject, } from "@/api/system/project";
 import {
-  treeListI, categoryImport, getAttachData, attachStatus,
-  forceLogout, updataAttach, nameTesting, addData,
-  getFrameworks, listTableByProject
+  getFrameworks, updateDatabaseAndTables
 } from "@/api/system/protectCategory"
-
+import TableSelector from './TableSelector.vue'
 export default {
-  dicts: ['sys_risk_level'],
-  name: "ProxysResult",
+  name: "DataAssetdiscoverResult",
+  components: { TableSelector, },
+
   props: {
-    treeOptions: {
-      type: Array,
-      default: [],
-    },
     drawerData: {
       type: Object,
       default: {},
@@ -159,26 +133,91 @@ export default {
   },
   data() {
     return {
-      updataLoading: false,
-      addOptions: [
-        {
-          value: 1,
-          label: "1级"
-        }, {
-          value: 2,
-          label: "2级"
-        }, {
-          value: 3,
-          label: "3级"
-        }, {
-          value: 4,
-          label: "4级"
-        }, {
-          value: 5,
-          label: "5级"
+      connectionType: '1',
+      treeOptions: [],
+      scanContentShow: false, // 扫描配置弹框
+      scanContentLoading: false,
+      treeCheckedData: [],//树节点已选中数据
+      scanContentTreeData: [],//// 扫描配置树数据
+      // 表单参数
+      form: {
+        projectId: null,
+        sourceName: '',
+        databaseType: '',
+        // targetPort:'3306',
+        // targetIp:'192.168.2.38',
+        // targetUserName:'root',
+        // targetUserPassword:'your_password',
+        tables: {},
+      },
+      // 表单校验
+      rules: {
+        userPassword: [
+          { required: true, message: "用户密码不能为空", trigger: "blur" },
+        ],
+        userName: [
+          { required: true, message: "用户名称不能为空", trigger: "blur" },
+        ],
+        sourceName: [{
+          required: true, message: "数据源名称不能为空", trigger: "blur"
+        }],
+        businessName: [{
+          required: true, message: "来源业务系统不能为空", trigger: "blur"
+        }],
+        databaseType: [{ required: true, message: '请选择数据库类型', trigger: 'blur' }],
+        projectName: [{ required: true, message: '请选择选分类分级框架', trigger: 'blur' }],
+        targetUserName: [
+          { required: true, message: "请输入数据库用户名称", trigger: "change" },
+        ],
+        targetDatabase: [
+          { required: true, message: "请选择数据库名称", trigger: "change" },
+        ],
+        targetUserPassword: [
+          { required: true, message: '请输入密码', trigger: 'blur' }
+        ],
+        examplesName: () => {
+          return [{
+            required: this.form.databaseType == 'DM' || this.form.databaseType == 'POSTGRES',
+            message: '请输入',
+            trigger: 'blur'
+          }]
         },
-      ],
+        connectionValue: () => {
+          return [{
+            required: this.isServiesNameRequired,
+            message: '请输入',
+            trigger: 'blur'
+          }]
+        },
+        tabelCheckedName: [{
+          required: true,
+          validator: this.tabelCheckedNameRules,
+          trigger: 'blur'
+        }],
+        targetIp: [
+          { required: true, message: "请输入数据库地址", trigger: "blur" },
+          {
+            pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
+            message: "请输入有效的IP地址"
+          },
+        ],
+        targetPort: [
+          { required: true, message: "请输入端口号", trigger: "blur" },
+          {
+            pattern:
+              /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
+            message:
+              "请输入0~65535之间的5个数字",
+          },
+          // {
+          //   min: 1,
+          //   max: 5,
+          //   message: "长度在 1 ~ 5 个字符",
+          // },
+        ],
+      },
       resultFormNodeName: '',
+      isServiesNameRequired: false,
       treeID: '',
       categoryList: [],
       yuanCategoryList: [],
@@ -193,46 +232,6 @@ export default {
         securityLevel: '',
         id: '',
       },
-      tableData: [{
-        date: '安徽',
-        name: '阿吉',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '河南',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '山东',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '北京',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '北京',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }],
-      addOptions: [
-        {
-          value: 1,
-          label: "1级"
-        }, {
-          value: 2,
-          label: "2级"
-        }, {
-          value: 3,
-          label: "3级"
-        }, {
-          value: 4,
-          label: "4级"
-        }, {
-          value: 5,
-          label: "5级"
-        },
-      ],
-      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRES", id: 3, value: "POSTGRES" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       drawerShow: false,
       samplingNum: 10,
       checkList: true,
@@ -246,7 +245,13 @@ export default {
       addUserVisible: false,
       dataType: "",
       targetDataList: [],
-      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRES", id: 3, value: "POSTGRES" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
+      databaseTypeList: [
+        { name: "MYSQL", id: 0, value: "MYSQL" },
+        { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
+        { name: "ORACLE", id: 2, value: "ORACLE" },
+        { name: "POSTGRES", id: 3, value: "POSTGRES" },
+        { name: "达梦", id: 4, value: "DM" }
+      ],
       maskCompleteStatus: [{
         value: 'COMPLETE',
         label: '扫描完成'
@@ -328,54 +333,6 @@ export default {
         sourceName: ''
       },
       addForm: {},
-      // 表单校验
-      rules: {
-        userPassword: [
-          { required: true, message: "用户密码不能为空", trigger: "blur" },
-        ],
-        userName: [
-          { required: true, message: "用户名称不能为空", trigger: "blur" },
-        ],
-        sourceName: [{
-          required: true, message: "数据源名称不能为空", trigger: "blur"
-        }],
-        businessName: [{
-          required: true, message: "来源业务系统不能为空", trigger: "blur"
-        }],
-        databaseType: [{ required: true, message: '请选择数据库类型', trigger: 'blur' }],
-        projectName: [{ required: true, message: '请选择选分类分级框架', trigger: 'blur' }],
-        targetUserName: [
-          { required: true, message: "请输入数据库用户名称", trigger: "change" },
-        ],
-        targetDatabase: [
-          { required: true, message: "请选择数据库名称", trigger: "change" },
-        ],
-        targetUserPassword: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
-        ],
-        targetIp: [
-          { required: true, message: "请输入数据库地址", trigger: "change" },
-          {
-            pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-            message: "请输入有效的IP地址"
-          },
-        ],
-        targetPort: [
-          { required: true, message: "请输入端口号", trigger: "change" },
-          {
-            pattern:
-              /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
-            message:
-              "请输入0~65535之间的5个数字",
-          },
-
-          {
-            min: 1,
-            max: 5,
-            message: "长度在 1 ~ 5 个字符",
-          },
-        ],
-      },
       importDataLoading: false,
       importData: {
         importFile: '', // 导入魔板文件名
@@ -409,50 +366,140 @@ export default {
       const cleanedDatabase = this.drawerData.targetDatabase.replace(/,$/, '');
       this.surfaceList = cleanedDatabase.split(',')
     }
-    this.getProtectCategory()
-    // this.queryParams.selectProjectName = "全部"
-    // this.queryParams.projectId = 0
     this.getList();
+    this.gettreeOptionsList()
   },
   mounted() {
-    this.getListTableByProject()
   },
   methods: {
-    getListTableByProject() {
-      let data = {
-        databaseId: this.drawerData.id,
-        databaseName: this.queryParams.databaseName
+    // 自定义校验规则
+    tabelCheckedNameRules(rule, value, callback) {
+      callback();
+    },
+
+    gettreeOptionsList() {
+      this.mainLoading = true
+      getFrameworks().then((response) => {
+        this.treeOptions = response.data
+        this.mainLoading = false
+      });
+    },
+    databaseTypeChange(val) {
+      if (val == 'ORACLE') {
+        this.isServiesNameRequired = true
+      } else {
+        this.isServiesNameRequired = false
       }
-      listTableByProject(data).then(res => {
-        if (res.code == 200) {
-          this.tableList = res.data
+    },
+
+    /** 提交按钮 */
+    async submitForm() {
+      this.$refs["form"].validate(async valid => {
+        let data = JSON.parse(JSON.stringify(this.form))
+        delete data.projectName
+        data.targetDatabase = JSON.stringify(data.targetDatabase)
+        data.connectionType = this.connectionType
+        data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
+        if (Object.keys(data.tables).length == 0) {
+          this.$message({ message: '请选择扫描内容', type: 'warning' })
+          return
+        }
+        if (valid) {
+          if (!await this.getNameTestingFn()) {
+            return
+          }
+          if (this.form.id != null) {
+            data.id = this.form.id
+            updateDatabaseAndTables(data).then(response => {
+              this.$modal.msgSuccess("修改成功");
+              this.open = false;
+              this.getList();
+            });
+          } else {
+            saveDatabaseAndTables(data).then(response => {
+              this.$modal.msgSuccess("新增成功");
+              this.open = false;
+              this.getList();
+            });
+          }
+        }
+      });
+    },
+
+    // 扫描内容点击事件
+    async scanContentFn() {
+      this.$refs["form"].validate(async valid => {
+        if (valid) {
+          let data = {
+            targetIp: this.form.targetIp,
+            targetPort: this.form.targetPort,
+            targetUserName: this.form.targetUserName,
+            targetUserPassword: this.form.targetUserPassword,
+            connectionType: this.connectionType,
+            connectionValue: this.form.connectionValue,
+            databaseType: this.form.databaseType,
+            examplesName: this.form.examplesName
+          }
+          let res = await getListTables(data)
+          if (res.data.option.length == 0) {
+            this.$message({ message: '暂无数据，请稍后再试', type: 'warning' })
+          } else {
+            this.scanContentTreeData = res.data.option
+            this.scanContentShow = true
+          }
         }
       })
-    },
 
-    nameTestingFn(val) {
-      this.form.sourceName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-      // nameTesting().then(res=>{
-      //   console.log(res);
-      // })
     },
-
+    scanContentSubmitFn() {
+      let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
+      let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
+      let allData = [...halfCheckedNodes, ...checkedNodes,]
+      let targetDatabaseArr = []
+      let params = {}
+      for (let item of allData) {
+        if (item.children) {
+          let obj = {
+            [item.label]: []
+          }
+          targetDatabaseArr.push(item.label)
+          params = Object.assign(params, obj)
+        } else {
+          this.treeCheckedData.push(item.value)
+          params[item.databaseName].push({
+            schemaName: item.schemaName,
+            tableName: item.label,
+            dataCount: item.dataCount,
+            tableRemark: item.tableRemark,
+            databaseName: item.databaseName,
+            projectId: '',
+            agentServerId: '',
+            fieldCount: item.count,
+            fields: null,
+          })
+        }
+      }
+      this.form.targetDatabase = targetDatabaseArr
+      this.form.tables = params
+      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedItemsChild.length}张表 共${this.$refs.scanContentTreeRef.fieldCount}个字段`
+      this.scanContentShow = false
+    },
+    projectChangeEdit(e) {
+      this.projectNameEdit = e
+      this.form.projectId = e
+    },
     businessNameFn(val) {
       this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-      // nameTesting().then(res=>{
-      //   console.log(res);
-      // })
+    },
+    serviesNameInput(val) {
+      this.form.connectionValue = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
     },
     targetIpRulesFn() {
 
     },
     importNameTestingFn(val) {
       this.importData.sourceName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-      // nameTesting().then(res=>{
-      //   console.log(res);
-      // })
     },
-
     handleAdda() {
       this.loading = true
       let dataS = this.$refs.tableRef.selection
@@ -555,50 +602,6 @@ export default {
       })
 
     },
-    handleInput(e) {
-      this.samplingNum = e
-    },
-    async rulsNameIsRight(id, name) {
-      let params = {
-        nodeId: id,
-        name,
-      }
-      let res = await nameTesting(params)
-      this.isName = res.data
-    },
-    databaseNameFn() {
-      this.queryParams.tableId = ''
-      this.inputSearch()
-      this.getListTableByProject()
-    },
-    updataResultFn() {
-      this.updataLoading = true
-      updateFiledRule(this.resultForm).then(res => {
-        if (res.code == 200) {
-          this.$message({
-            message: res.msg,
-            type: 'success'
-          })
-        }
-        this.deleteVisible = false
-        this.resultFormNodeName = ''
-        this.resetForm('resultForm')
-        this.getList()
-        this.updataLoading = false
-      })
-        .catch(err => {
-          this.updataLoading = false
-        })
-    },
-    updataResultCanelFn() {
-      this.deleteVisible = false
-      this.resultFormNodeName = ''
-      this.resetForm('resultForm')
-    },
-    messsucc(res, flag) {
-      this.$message.success(`${res.msg},${flag}${res.data}个`)
-    },
-
     // 定时器，防抖使用
     inputSearch(data) {
       clearTimeout(this.debounceTimeout);
@@ -611,16 +614,11 @@ export default {
       this.loading = true;
       let params = {
         ...this.queryParams,
-        securityLevel: '',
-        securityLevelIds: this.queryParams.securityLevel.join(),
-        tableIds: this.queryParams.tableId
+        id: this.drawerData.id
       }
-      protectTableFieldList(params).then(response => {
-        this.proxysList = response.rows;
-        this.proxysList.forEach(ele => {
-          ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
-        })
-        this.total = response.total;
+      getDatabaseProxysScanItemById(params).then(response => {
+        this.proxysList = response.data.rows;
+        this.total = response.data.total;
         this.loading = false;
       });
     },
@@ -631,7 +629,6 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.addNodeName = ''
       this.resetForm("queryParams");
       this.handleQuery();
     },
@@ -640,96 +637,31 @@ export default {
       this.ids = selection.map(item => item.id)
       this.multiple = !selection.length
     },
-    resultExdit(row) {
-      this.resultForm.id = row.id
-      this.deleteVisible = true
-    },
-
-    addHandleNodeClick(node) {
-      if (node.children && node.children.length > 0) {
-        node.disabled = true;
-      } else {
-        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
-        if (parentLabels) {
-          this.addNodeName = parentLabels.join('-') + '-' + node.categoryName;
-        } else {
-          this.addNodeName = node.categoryName;
-        }
-        this.queryParams.categoryId = node.id
-        this.$refs.addSelectRef.blur()
-        this.getList()
-      }
-    },
-
-    resultHandleNodeClick(node) {
-      if (node.children && node.children.length > 0) {
-        node.disabled = true;
-      } else {
-        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
-        if (parentLabels) {
-          this.resultFormNodeName = parentLabels.join('-') + '-' + node.categoryName;
-        } else {
-          this.resultFormNodeName = node.categoryName;
-        }
-        this.resultForm.categoryId = node.id
-        this.$refs.resultSelectRef.blur()
-      }
-    },
-    filterNode(value, data) {
-      if (!value) return true;
-      return data.categoryName.indexOf(value) !== -1;
-    },
-
-    getProtectCategory(key) {
-      this.treeLoading = true
-      let data = {
-        parentId: this.drawerData.projectId,
-        needSub: 1,
+    reset() {
+      this.form = {
+        targetIp: null,
+        targetPort: null,
+        targetDatabase: [],
+        targetUserName: null,
+        targetUserPassword: null,
+        //  protocolPort: null,
+        projectId: null,
+        // proxyStatus: "0"
       };
-      treeListI(data).then((resp) => {
-        this.categoryList = resp.data
-        this.yuanCategoryList = resp.data
-        if (resp.data.length == 0) {
-          this.Loading = false
-        } else {
-          let tempList = JSON.parse(JSON.stringify(this.categoryList))
-          for (let item of tempList) {
-            item.label = item.categoryName
-          }
-          this.categoryList = this.handleTree(tempList, "id")
-          this.categoryListEdit = this.handleTree(tempList, "id")
-        }
-        this.Loading = false
-        this.treeLoading = false
-      });
+      this.resetForm("form");
     },
-
-    handleNodeClick(data) {
-      this.treeID = data.id;
-      this.handleQuery();
+    resultExdit(row) {
+      this.editIsFlag = false
+      this.showSucType = 0
+      this.projectNameEdit = null
+      this.targetDataList = []
+      this.connectionType = '1'
+      this.reset();
+      this.open = true;
+      this.title = "添加数据库";
+      // this.resultForm.id = row.id
+      // this.deleteVisible = true
     },
-
-    // 递归函数，查找父节点的 label 并返回完整的路径
-    findParentLabelsById(tree, nodeId, path = []) {
-      if (!Array.isArray(tree)) {
-        return null;
-      }
-      for (const node of tree) {
-        if (node.children && node.children.length > 0) {
-          for (const child of node.children) {
-            if (child.id === nodeId) {
-              return [...path, node.label];
-            }
-          }
-          const found = this.findParentLabelsById(node.children, nodeId, [...path, node.label]);
-          if (found) {
-            return found;
-          }
-        }
-      }
-      return null; // 如果没有找到，返回 null
-    },
-
   }
 };
 </script>
@@ -839,7 +771,7 @@ export default {
 }
 
 .yuanDataClass /deep/ .el-form-item {
-  width: 32%;
+  width: 35%;
 }
 
 .yuanDataClass /deep/ .el-form-item__label {
@@ -856,13 +788,14 @@ export default {
 
 .searchBtn {
   height: 100%;
+  width: 25% !important;
 }
 
 .searchBtn /deep/ .el-form-item__content {
   /* margin-left: 385px */
   /* width: 75%; */
-  display: flex;
-  justify-content: flex-end
+  /* display: flex;
+  justify-content: flex-end */
 }
 
 .importForm /deep/ .el-form-item--medium {
