@@ -104,6 +104,8 @@ export default {
       }
     }
   },
+  mounted () {
+  },
   methods: {
 
     toggleSideBar () {
@@ -137,7 +139,7 @@ export default {
 .navbar {
   position: fixed !important;
   z-index: 1000;
-  width: 92%;
+  width: 100%;
   height: 50px;
   overflow: hidden;
   position: relative;

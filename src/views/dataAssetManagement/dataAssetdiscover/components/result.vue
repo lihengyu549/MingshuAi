@@ -112,15 +112,9 @@
 
 <script>
 import {
-  getDatabaseProxysScanItemById,
-} from "@/api/dataAssetManagement"
-import {
-  saveDatabaseAndTables, getListTables, databaseListI
-} from "@/api/system/proxys";
-import {
-  getFrameworks, updateDatabaseAndTables
-} from "@/api/system/protectCategory"
-import TableSelector from './TableSelector.vue'
+  usersAddI
+} from "@/api/system/proxyUser";
+
 export default {
   name: "DataAssetdiscoverResult",
   components: { TableSelector, },
@@ -245,13 +239,6 @@ export default {
       addUserVisible: false,
       dataType: "",
       targetDataList: [],
-      databaseTypeList: [
-        { name: "MYSQL", id: 0, value: "MYSQL" },
-        { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
-        { name: "ORACLE", id: 2, value: "ORACLE" },
-        { name: "POSTGRES", id: 3, value: "POSTGRES" },
-        { name: "达梦", id: 4, value: "DM" }
-      ],
       maskCompleteStatus: [{
         value: 'COMPLETE',
         label: '扫描完成'
@@ -362,144 +349,15 @@ export default {
   },
 
   created() {
-    if (this.drawerData && this.drawerData.targetDatabase) {
-      const cleanedDatabase = this.drawerData.targetDatabase.replace(/,$/, '');
-      this.surfaceList = cleanedDatabase.split(',')
-    }
+    this.getProtectCategory()
+    // this.queryParams.selectProjectName = "全部"
+    // this.queryParams.projectId = 0
     this.getList();
     this.gettreeOptionsList()
   },
   mounted() {
   },
   methods: {
-    // 自定义校验规则
-    tabelCheckedNameRules(rule, value, callback) {
-      callback();
-    },
-
-    gettreeOptionsList() {
-      this.mainLoading = true
-      getFrameworks().then((response) => {
-        this.treeOptions = response.data
-        this.mainLoading = false
-      });
-    },
-    databaseTypeChange(val) {
-      if (val == 'ORACLE') {
-        this.isServiesNameRequired = true
-      } else {
-        this.isServiesNameRequired = false
-      }
-    },
-
-    /** 提交按钮 */
-    async submitForm() {
-      this.$refs["form"].validate(async valid => {
-        let data = JSON.parse(JSON.stringify(this.form))
-        delete data.projectName
-        data.targetDatabase = JSON.stringify(data.targetDatabase)
-        data.connectionType = this.connectionType
-        data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
-        if (Object.keys(data.tables).length == 0) {
-          this.$message({ message: '请选择扫描内容', type: 'warning' })
-          return
-        }
-        if (valid) {
-          if (!await this.getNameTestingFn()) {
-            return
-          }
-          if (this.form.id != null) {
-            data.id = this.form.id
-            updateDatabaseAndTables(data).then(response => {
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            });
-          } else {
-            saveDatabaseAndTables(data).then(response => {
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            });
-          }
-        }
-      });
-    },
-
-    // 扫描内容点击事件
-    async scanContentFn() {
-      this.$refs["form"].validate(async valid => {
-        if (valid) {
-          let data = {
-            targetIp: this.form.targetIp,
-            targetPort: this.form.targetPort,
-            targetUserName: this.form.targetUserName,
-            targetUserPassword: this.form.targetUserPassword,
-            connectionType: this.connectionType,
-            connectionValue: this.form.connectionValue,
-            databaseType: this.form.databaseType,
-            examplesName: this.form.examplesName
-          }
-          let res = await getListTables(data)
-          if (res.data.option.length == 0) {
-            this.$message({ message: '暂无数据，请稍后再试', type: 'warning' })
-          } else {
-            this.scanContentTreeData = res.data.option
-            this.scanContentShow = true
-          }
-        }
-      })
-
-    },
-    scanContentSubmitFn() {
-      let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
-      let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
-      let allData = [...halfCheckedNodes, ...checkedNodes,]
-      let targetDatabaseArr = []
-      let params = {}
-      for (let item of allData) {
-        if (item.children) {
-          let obj = {
-            [item.label]: []
-          }
-          targetDatabaseArr.push(item.label)
-          params = Object.assign(params, obj)
-        } else {
-          this.treeCheckedData.push(item.value)
-          params[item.databaseName].push({
-            schemaName: item.schemaName,
-            tableName: item.label,
-            dataCount: item.dataCount,
-            tableRemark: item.tableRemark,
-            databaseName: item.databaseName,
-            projectId: '',
-            agentServerId: '',
-            fieldCount: item.count,
-            fields: null,
-          })
-        }
-      }
-      this.form.targetDatabase = targetDatabaseArr
-      this.form.tables = params
-      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedItemsChild.length}张表 共${this.$refs.scanContentTreeRef.fieldCount}个字段`
-      this.scanContentShow = false
-    },
-    projectChangeEdit(e) {
-      this.projectNameEdit = e
-      this.form.projectId = e
-    },
-    businessNameFn(val) {
-      this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-    },
-    serviesNameInput(val) {
-      this.form.connectionValue = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-    },
-    targetIpRulesFn() {
-
-    },
-    importNameTestingFn(val) {
-      this.importData.sourceName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-    },
     handleAdda() {
       this.loading = true
       let dataS = this.$refs.tableRef.selection

@@ -31,17 +31,18 @@ module.exports = {
   // webpack-dev-server 相关配置
   devServer: {
     host: '0.0.0.0',
+    publicPath:'https://localhost:8080/',
     port: port,
     open: true,
     proxy: {
-      "/dev-api/prod-api": {
+      "/dev-api": {
         // target: `http://dast123123.zp.jilj.top:25378`,
         // target: `http://192.168.2.196/`,
-        // target: `http://192.168.2.174/`,
-        target: `http://117.134.9.113:8008/`,
+        target: `https://192.168.2.174/`,
+        // target: `http://117.134.9.113:8008/`,
         // target: `http://sihx.hlg.d2w.cc:30977/`,
         changeOrigin: true,
-        pathRewrite:{'^/dev-api/prod-api':''}
+        pathRewrite:{'^/dev-api':''}
       },
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       // [process.env.VUE_APP_BASE_API]: {

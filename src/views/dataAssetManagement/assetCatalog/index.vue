@@ -15,21 +15,12 @@
       <!--用户数据-->
       <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" label-width="90px">
-          <!-- <el-form-item label="规则名称" prop="ruleName">
-            <el-input v-model="queryParams.ruleName" @input="inputSearch" placeholder="请输入规则名称" clearable
-              @keyup.enter.native="handleQuery" />
-          </el-form-item> -->
-
           <el-form-item label="表名" prop="tableName">
             <el-select v-model="queryParams.tableName" @change="selectProjectIdChange" placeholder="全部">
               <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.tableId">
               </el-option>
             </el-select>
           </el-form-item>
-          <!-- <el-form-item label="数据质量" prop="recognizeObject">
-            <el-input v-model="queryParams.ruleName" @input="inputSearch" placeholder="请输入规则名称" clearable
-              @keyup.enter.native="handleQuery" />
-          </el-form-item> -->
           <el-form-item>
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
             <el-button icon="el-icon-s-opportunity" type="primary" size="small" @click="allFill">一键填充</el-button>
@@ -131,6 +122,17 @@
               </div>
               <el-button size="mini" type="text">查看</el-button>
             </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column label="是否包含特征" align="center" prop="dataIsNull" width="100" show-overflow-tooltip />
+        <el-table-column label="数据特征" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span>{{ scope.row.oldFieldRemark }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="是否添加为匹配策略" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span>{{ scope.row.oldFieldRemark }}</span>
           </template>
         </el-table-column>
       </el-table>

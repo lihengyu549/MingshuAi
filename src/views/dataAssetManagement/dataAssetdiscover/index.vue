@@ -52,7 +52,8 @@
       <el-table-column label="更新时间" align="center" prop="updateTime" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="editFn(scope.row)">编辑</el-button>
+          <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
+            @click="handleEcelFn(scope.row)">编辑</el-button>
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)">结果查看</el-button>
         </template>
       </el-table-column>
@@ -284,14 +285,6 @@ export default {
     this.getList()
   },
   methods: {
-    //  // 自定义校验规则
-    //  validateScheduleInterval(rule, value, callback) {
-    //   if(this.addOrEditFormData.scheduleType == '0' || this.addOrEditFormData.scheduleType == '1'){
-    //     callback();
-    //   }else {
-    //     callback(new Error("请选择"));
-    //   }
-    // },
     // 自定义校验规则
     //  validateScheduleTime(rule, value, callback) {
     //   if(this.addOrEditFormData.scheduleType != '0'){
@@ -315,8 +308,9 @@ export default {
       }
     },
     addCancel() {
-      this.reset()
       this.addOrEdit.show = false
+      this.addOrEditFormData = {}
+      this.reset()
     },
     addSubmitForm() {
       this.$refs["addOrEditForm"].validate((valid) => {
@@ -324,10 +318,12 @@ export default {
           if (this.addOrEditFormData.id) {
             updateDatabaseProxysScan(this.addOrEditFormData).then((response) => {
               this.$message({
-                message: "添加成功",
+                message: "编辑成功",
                 duration: 3000,
                 type: 'success'
               });
+              this.getList();
+              this.addOrEdit.show = false
             });
           } else {
             addDatabaseProxysScan(this.addOrEditFormData).then((response) => {
@@ -336,11 +332,10 @@ export default {
                 duration: 3000,
                 type: 'success'
               });
+              this.getList();
+              this.addOrEdit.show = false
             });
           }
-
-          this.getList();
-          this.addOrEdit.show = false
         }
       });
 
@@ -400,9 +395,6 @@ export default {
       this.addOrEditFormData.scheduleTime = '00:00'
       this.addOrEditFormData.scheduleInterval = ''
       this.addOrEditFormData.scheduleType = ''
-      this.addOrEditFormData.taskName = ''
-      this.addOrEditFormData.ipScope = ''
-      this.addOrEditFormData.ports = ''
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -428,10 +420,10 @@ export default {
       this.addOrEdit.show = true
       this.addOrEdit.flag = 1 // 1新增2编辑
     },
-    editFn(row) {
+    handleEcelFn(row) {
       this.addOrEdit.title = '编辑任务'
-      this.addOrEdit.flag = 2
       this.addOrEdit.show = true
+      this.addOrEdit.flag = 2 // 1新增2编辑
       this.addOrEditFormData = JSON.parse(JSON.stringify(row))
     },
     // 删除
@@ -484,9 +476,8 @@ export default {
         this.$message({ message: '至少选择一条数据', type: 'warning' })
       }
     },
-    scanStateClickFn(row) {
-      this.drawerShow = true
-      this.drawerData = row
+    scanStateClickFn(row) { 
+      
     },
     getDaysInCurrentMonth() {
       const now = new Date(); // 获取当前日期
