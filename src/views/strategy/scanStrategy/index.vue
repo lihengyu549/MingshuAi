@@ -50,6 +50,25 @@
           <div> <i class="el-icon-warning"></i>输入范围在0 ~ 100之间，低于及格分的数据表不会进行打标</div>
         </div>
       </div>
+
+      <div>
+        <h4 class="title">
+          <div class="blue-circle"></div><span>敏感数据定义</span>
+        </h4>
+        <div class="contBox" style="display: flex;justify-content: flex-start;align-items: center;">
+          <div>
+            <span>
+              安全分级大于等于
+              <el-select v-model="allData.levelList" placeholder="请选择">
+                <el-option v-for="item in sys_risk_levelList" :key="item" :label="item"
+                  :value="item">
+                </el-option>
+              </el-select>
+              的数据定义敏感数据
+            </span>
+          </div>
+        </div>
+      </div>
       <div class="foot_btn">
         <el-button type="primary" @click="submit">确 定</el-button>
       </div>
@@ -70,6 +89,7 @@ export default {
       value2: true,
       value3: true,
       radio: 20,
+      sys_risk_levelList:['1','2','3','4','5'],
       allData: {
         DirtyData: {
           DirtyData1: {},
@@ -90,8 +110,8 @@ export default {
       let value = this.allData.DataTableQualityScore.value.replace(/[^0-9]/g, ''); // 移除非数字字符
       this.allData.DataTableQualityScore.value = value; // 更新输入框的值
     },
-    numBlurFn(){
-  if(this.allData.DataTableQualityScore.value > 100){
+    numBlurFn() {
+      if (this.allData.DataTableQualityScore.value > 100) {
         this.allData.DataTableQualityScore.value = 100
         this.$message({
           message: '输入范围在0 ~ 100之间',

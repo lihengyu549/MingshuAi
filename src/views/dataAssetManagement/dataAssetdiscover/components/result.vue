@@ -2,43 +2,15 @@
   <div class="app-container" v-loading="loading">
     <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
       v-show="showSearch" label-width="auto">
-      <el-form-item label="分类" prop="categoryId">
-        <el-select ref="addSelectRef" v-model="addNodeName">
-          <el-option style="height: 100%; padding: 0" value="">
-            <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
-              :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
-              @node-click="addHandleNodeClick" />
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="安全分级" prop="securityLevel">
-        <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="确认状态" prop="confirm">
-        <el-select clearable v-model="queryParams.confirm" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in confirmList" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="所属库" prop="databaseName">
-        <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn" placeholder="请选择">
-          <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="所属表" prop="tableId">
-        <el-select clearable v-model="queryParams.tableId" :disabled="!queryParams.databaseName" @change="inputSearch"
-          placeholder="全部">
-          <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.id">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="来源业务系统" prop="businessName">
+      <el-form-item label="主机" prop="businessName">
         <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入来源业务系统" clearable
           @keyup.enter.native="handleQuery" />
+      </el-form-item>
+      <el-form-item label="数据库类型" prop="databaseTypeList">
+        <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch" placeholder="请选择">
+          <el-option v-for="item in dict.type.databaseTypeList" :key="item.value" :label="item.label" :value="item.value">
+          </el-option>
+        </el-select>
       </el-form-item>
 
       <el-form-item>
@@ -132,18 +104,6 @@ import {
   usersAddI
 } from "@/api/system/proxyUser";
 
-import {
-  listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
-  startI, stopI, databaseMaskI, strategyPushI, strategyAll,
-  databaseListI, confirmIds, protectTableFieldList, confirmList, updateFiledRule
-} from "@/api/system/proxys";
-import { listAllProject, } from "@/api/system/project";
-import {
-  treeListI, categoryImport, getAttachData, attachStatus,
-  forceLogout, updataAttach, nameTesting, addData,
-  getFrameworks, listTableByProject
-} from "@/api/system/protectCategory"
-
 export default {
   dicts: ['sys_risk_level'],
   name: "ProxysResult",
@@ -232,7 +192,9 @@ export default {
           label: "5级"
         },
       ],
-      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRES", id: 3, value: "POSTGRES" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
+      databaseTypeList: [{ name: "MYSQL", value: "MYSQL" },
+       { name: "SQL_SERVER", value: "SQL_SERVER" }, { name: "TIDB", value: "TIDB" },
+       { name: "POSTGRES", value: "POSTGRES" }, { name: "达梦", value: "DM" }],
       drawerShow: false,
       samplingNum: 10,
       checkList: true,
@@ -246,7 +208,6 @@ export default {
       addUserVisible: false,
       dataType: "",
       targetDataList: [],
-      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRES", id: 3, value: "POSTGRES" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       maskCompleteStatus: [{
         value: 'COMPLETE',
         label: '扫描完成'
@@ -405,10 +366,6 @@ export default {
   },
 
   created() {
-    if (this.drawerData && this.drawerData.targetDatabase) {
-      const cleanedDatabase = this.drawerData.targetDatabase.replace(/,$/, '');
-      this.surfaceList = cleanedDatabase.split(',')
-    }
     this.getProtectCategory()
     // this.queryParams.selectProjectName = "全部"
     // this.queryParams.projectId = 0
@@ -418,40 +375,6 @@ export default {
     this.getListTableByProject()
   },
   methods: {
-    getListTableByProject() {
-      let data = {
-        databaseId: this.drawerData.id,
-        databaseName: this.queryParams.databaseName
-      }
-      listTableByProject(data).then(res => {
-        if (res.code == 200) {
-          this.tableList = res.data
-        }
-      })
-    },
-
-    nameTestingFn(val) {
-      this.form.sourceName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-      // nameTesting().then(res=>{
-      //   console.log(res);
-      // })
-    },
-
-    businessNameFn(val) {
-      this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-      // nameTesting().then(res=>{
-      //   console.log(res);
-      // })
-    },
-    targetIpRulesFn() {
-
-    },
-    importNameTestingFn(val) {
-      this.importData.sourceName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-      // nameTesting().then(res=>{
-      //   console.log(res);
-      // })
-    },
 
     handleAdda() {
       this.loading = true

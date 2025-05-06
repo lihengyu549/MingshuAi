@@ -92,7 +92,14 @@ export function addDatabaseProxysScan(data) {
     data:data
   })
 } 
-
+// 修改数据源扫描任务
+export function updateDatabaseProxysScan(data) {
+  return request({
+    url: '/system/proxyScan/updateDatabaseProxysScan',
+    method: 'post',
+    data:data
+  })
+} 
 // 删除数据源接口
 export function deleteDatabaseProxysScan(data) {
   return request({
