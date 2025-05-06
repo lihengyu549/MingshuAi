@@ -116,16 +116,6 @@ export function scanIpAndPort(data) {
     data:data
   })
 } 
-
-// 修改数据源扫描任务
-export function updateDatabaseProxysScan(data) {
-  return request({
-    url: '/system/proxyScan/updateDatabaseProxysScan',
-    method: 'post',
-    data:data
-  })
-} 
-
 // 结果查看列表接口
 export function getDatabaseProxysScanItemById(data) {
   return request({

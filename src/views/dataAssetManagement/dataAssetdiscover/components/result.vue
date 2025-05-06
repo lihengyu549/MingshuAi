@@ -56,7 +56,7 @@
         </el-form-item>
 
         <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
-          <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
+          <el-input v-model="form.targetIp" placeholder="请输入主机IP地址" />
         </el-form-item>
 
         <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
@@ -111,9 +111,14 @@
 </template>
 
 <script>
+import TableSelector from './TableSelector.vue'
+import { getListTables, databaseListI } from "@/api/system/proxys";
 import {
-  usersAddI
-} from "@/api/system/proxyUser";
+  getFrameworks ,updateDatabaseAndTables
+} from "@/api/system/protectCategory"
+import {
+  getDatabaseProxysScanItemById
+} from "@/api/dataAssetManagement";
 
 export default {
   name: "DataAssetdiscoverResult",
@@ -329,6 +334,13 @@ export default {
       },
       tableList: [],
       debounceTimeout: null,
+      databaseTypeList: [
+        { name: "MYSQL", id: 0, value: "MYSQL" },
+        { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
+        { name: "ORACLE", id: 2, value: "ORACLE" },
+        { name: "POSTGRES", id: 3, value: "POSTGRES" },
+        { name: "达梦", id: 4, value: "DM" }
+      ],
       // 表单校验
       importDataRules: {
         sourceName: [
@@ -349,15 +361,90 @@ export default {
   },
 
   created() {
-    this.getProtectCategory()
     // this.queryParams.selectProjectName = "全部"
     // this.queryParams.projectId = 0
-    this.getList();
     this.gettreeOptionsList()
+    this.getList();
   },
   mounted() {
   },
   methods: {
+    // 自定义校验规则
+    tabelCheckedNameRules(rule, value, callback) {
+      callback();
+    },
+    // 扫描内容点击事件
+    async scanContentFn() {
+      this.$refs["form"].validate(async valid => {
+        if (valid) {
+          let data = {
+            targetIp: this.form.targetIp,
+            targetPort: this.form.targetPort,
+            targetUserName: this.form.targetUserName,
+            targetUserPassword: this.form.targetUserPassword,
+            connectionType: this.connectionType,
+            connectionValue: this.form.connectionValue,
+            databaseType: this.form.databaseType,
+            examplesName: this.form.examplesName
+          }
+          let res = await getListTables(data)
+          if (res.data.option.length == 0) {
+            this.$message({ message: '暂无数据，请稍后再试', type: 'warning' })
+          } else {
+            this.scanContentTreeData = res.data.option
+            this.scanContentShow = true
+          }
+        }
+      })
+
+    },
+    gettreeOptionsList() {
+      this.mainLoading = true
+      getFrameworks().then((response) => {
+        this.treeOptions = response.data
+        this.mainLoading = false
+      });
+    },
+    databaseTypeChange(val) {
+      if (val == 'ORACLE') {
+        this.isServiesNameRequired = true
+      } else {
+        this.isServiesNameRequired = false
+      }
+    },
+    scanContentSubmitFn() {
+      let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
+      let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
+      let allData = [...halfCheckedNodes, ...checkedNodes,]
+      let targetDatabaseArr = []
+      let params = {}
+      for (let item of allData) {
+        if (item.children) {
+          let obj = {
+            [item.label]: []
+          }
+          targetDatabaseArr.push(item.label)
+          params = Object.assign(params, obj)
+        } else {
+          this.treeCheckedData.push(item.value)
+          params[item.databaseName].push({
+            schemaName: item.schemaName,
+            tableName: item.label,
+            dataCount: item.dataCount,
+            tableRemark: item.tableRemark,
+            databaseName: item.databaseName,
+            projectId: '',
+            agentServerId: '',
+            fieldCount: item.count,
+            fields: null,
+          })
+        }
+      }
+      this.form.targetDatabase = targetDatabaseArr
+      this.form.tables = params
+      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedItemsChild.length}张表 共${this.$refs.scanContentTreeRef.fieldCount}个字段`
+      this.scanContentShow = false
+    },
     handleAdda() {
       this.loading = true
       let dataS = this.$refs.tableRef.selection
@@ -386,6 +473,45 @@ export default {
         this.$message({ message: '请选择至少一条数据', type: 'warning' })
       }
     },
+
+    /** 提交按钮 */
+    async submitForm() {
+      this.$refs["form"].validate(async valid => {
+        let data = JSON.parse(JSON.stringify(this.form))
+        delete data.projectName
+        data.targetDatabase = JSON.stringify(data.targetDatabase)
+        data.connectionType = this.connectionType
+        data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
+        console.log(data);
+
+        if (!this.editIsFlag && Object.keys(data.tables).length == 0) {
+          this.$message({ message: '请选择扫描内容', type: 'warning' })
+          return
+        } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
+          this.$message({ message: '请选择扫描内容', type: 'warning' })
+          return
+        }
+        if (valid) {
+          if (!await this.getNameTestingFn()) {
+            return
+          }
+          if (this.form.id != null) {
+            data.id = this.form.id
+            updateDatabaseAndTables(data).then(response => {
+              this.$modal.msgSuccess("修改成功");
+              this.open = false;
+              this.getList();
+            });
+          } else {
+            saveDatabaseAndTables(data).then(response => {
+              this.$modal.msgSuccess("新增成功");
+              this.open = false;
+              this.getList();
+            });
+          }
+        }
+      });
+    },
     handleEcelFn() {
       this.loading = true
       let params = {
@@ -404,6 +530,10 @@ export default {
         })
     },
 
+    projectChangeEdit(e) {
+      this.projectNameEdit = e
+      this.form.projectId = e
+    },
     targetDatabaseChange(value) {
       if (value.includes('all')) {
         this.form.targetDatabase = this.targetDataList.map(item => item.value);
@@ -429,16 +559,16 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           let data = {
-            targetIp: this.form.targetIp,
-            targetPort: this.form.targetPort,
-            targetUserName: this.form.targetUserName,
-            targetUserPassword: this.form.targetUserPassword,
-            databaseType: this.findDatabaseValueByName(this.form.databaseType)
-            // targetIp: "192.168.3.14",
-            // targetPort: "3306",
-            // targetUserName: "root",
-            // targetUserPassword: "Mysql123!@#",
-            // databaseType: "MYSQL"
+            // targetIp: this.form.targetIp,
+            // targetPort: this.form.targetPort,
+            // targetUserName: this.form.targetUserName,
+            // targetUserPassword: this.form.targetUserPassword,
+            databaseType: this.findDatabaseValueByName(this.form.databaseType),
+            targetIp: "192.168.3.14",
+            targetPort: "3306",
+            targetUserName: "root",
+            targetUserPassword: "Mysql123!@#",
+            databaseType: "MYSQL"
           }
           databaseListI(data).then((res => {
             if (res.code == 200) {
@@ -517,6 +647,7 @@ export default {
       this.reset();
       this.open = true;
       this.title = "添加数据库";
+      this.form = JSON.parse(JSON.stringify(row))
       // this.resultForm.id = row.id
       // this.deleteVisible = true
     },

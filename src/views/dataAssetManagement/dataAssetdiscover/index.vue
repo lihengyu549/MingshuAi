@@ -477,7 +477,8 @@ export default {
       }
     },
     scanStateClickFn(row) { 
-      
+      this.drawerData = JSON.parse(JSON.stringify(row))
+      this.drawerShow = true
     },
     getDaysInCurrentMonth() {
       const now = new Date(); // 获取当前日期
