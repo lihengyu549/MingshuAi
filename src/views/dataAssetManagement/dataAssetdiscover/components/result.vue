@@ -24,12 +24,16 @@
       <el-table-column label="数据库版本" align="center" prop="databaseVersion" show-overflow-tooltip />
       <el-table-column label="状态" align="center" min-width="250" prop="state">
         <template slot-scope="scope">
-          <span>{{ scope.row.state ? '未添加' : '已添加' }}</span>
+          <div style="display: flex; align-items: center;justify-content: center;">
+            <img style="display: block; width: 20px;margin-right: 10px;"
+              :src="imgSrc[scope.row.state ? scope.row.state : 'NONE']" alt="">
+            <span> {{scope.row.state ? '已完成' : '未完成' }}</span>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="resultExdit(scope.row)">导入数据源</el-button>
+          <el-button size="mini" type="text" :disabled="scope.row.state == '1'" @click="resultExdit(scope.row)">导入数据源</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -112,9 +116,9 @@
 
 <script>
 import TableSelector from './TableSelector.vue'
-import { getListTables, databaseListI } from "@/api/system/proxys";
+import { getListTables, databaseListI, saveDatabaseAndTables } from "@/api/system/proxys";
 import {
-  getFrameworks ,updateDatabaseAndTables
+  getFrameworks, updateDatabaseAndTables, checkSourceName
 } from "@/api/system/protectCategory"
 import {
   getDatabaseProxysScanItemById
@@ -132,6 +136,10 @@ export default {
   },
   data() {
     return {
+      imgSrc: {
+        '1': require('@/assets/stateImg/stateSuess.png'),
+        '0': require('@/assets/stateImg/stateWaiting.png'),
+      },
       connectionType: '1',
       treeOptions: [],
       scanContentShow: false, // 扫描配置弹框
@@ -243,7 +251,6 @@ export default {
       addUserId: 0,
       addUserVisible: false,
       dataType: "",
-      targetDataList: [],
       maskCompleteStatus: [{
         value: 'COMPLETE',
         label: '扫描完成'
@@ -277,14 +284,12 @@ export default {
       ],
       formProjectListEdit: [],
       selectProjectListEdit: [{ name: "全部", id: 0 }],
-      projectNameEdit: "",
       // 遮罩层
       loading: true,
       // 选中数组
       ids: [],
       // 非多个禁用
       multiple: true,
-      showSucType: 0,
       // 显示搜索条件
       showSearch: true,
       // 总条数
@@ -320,9 +325,11 @@ export default {
       ],
       // 表单参数
       form: {
-        // projectName: null,
+        projectName: '',
         projectId: null,
-        sourceName: ''
+        sourceName: '',
+        businessName: '',
+        examplesName: '',
       },
       addForm: {},
       importDataLoading: false,
@@ -361,8 +368,6 @@ export default {
   },
 
   created() {
-    // this.queryParams.selectProjectName = "全部"
-    // this.queryParams.projectId = 0
     this.gettreeOptionsList()
     this.getList();
   },
@@ -487,30 +492,26 @@ export default {
         if (!this.editIsFlag && Object.keys(data.tables).length == 0) {
           this.$message({ message: '请选择扫描内容', type: 'warning' })
           return
-        } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
-          this.$message({ message: '请选择扫描内容', type: 'warning' })
-          return
         }
         if (valid) {
           if (!await this.getNameTestingFn()) {
             return
           }
-          if (this.form.id != null) {
-            data.id = this.form.id
-            updateDatabaseAndTables(data).then(response => {
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            });
-          } else {
-            saveDatabaseAndTables(data).then(response => {
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            });
-          }
+          saveDatabaseAndTables(data).then(response => {
+            this.$modal.msgSuccess("新增成功");
+            this.open = false;
+            this.getList();
+          });
         }
       });
+    },
+    async getNameTestingFn() {
+      let params = {
+        sourceName: this.form.sourceName,
+        id: this.form.id || ''
+      }
+      let res = await checkSourceName(params)
+      return res.code == 200
     },
     handleEcelFn() {
       this.loading = true
@@ -531,16 +532,8 @@ export default {
     },
 
     projectChangeEdit(e) {
-      this.projectNameEdit = e
       this.form.projectId = e
-    },
-    targetDatabaseChange(value) {
-      if (value.includes('all')) {
-        this.form.targetDatabase = this.targetDataList.map(item => item.value);
-      } else {
-        // 移除全选选项
-        this.form.targetDatabase = value.filter(val => val !== 'all');
-      }
+      this.form.projectName = e
     },
     findDatabaseValueByName(name) {
       let value;
@@ -550,45 +543,6 @@ export default {
         }
       }
       return value
-    },
-    // 获取数据库名称
-    getDatabaseName() {
-      this.targetDataList = []
-      this.showSucType = 0
-      this.form.targetDatabase = false
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          let data = {
-            // targetIp: this.form.targetIp,
-            // targetPort: this.form.targetPort,
-            // targetUserName: this.form.targetUserName,
-            // targetUserPassword: this.form.targetUserPassword,
-            databaseType: this.findDatabaseValueByName(this.form.databaseType),
-            targetIp: "192.168.3.14",
-            targetPort: "3306",
-            targetUserName: "root",
-            targetUserPassword: "Mysql123!@#",
-            databaseType: "MYSQL"
-          }
-          databaseListI(data).then((res => {
-            if (res.code == 200) {
-              this.targetDataList = []
-              let list = res.data
-              for (let i = 0; i < list.length; i++) {
-                this.targetDataList.push({ id: i, value: list[i], label: list[i] })
-              }
-              this.targetDataList.unshift({ id: -1, value: -1, label: '全部' })
-              this.$message({
-                message: res.msg,
-                type: 'success'
-              });
-              this.$refs.selectRef.toggleMenu()
-            }
-          }))
-          this.form.targetDatabase = ''
-        }
-      })
-
     },
     // 定时器，防抖使用
     inputSearch(data) {
@@ -639,17 +593,17 @@ export default {
       this.resetForm("form");
     },
     resultExdit(row) {
-      this.editIsFlag = false
-      this.showSucType = 0
-      this.projectNameEdit = null
-      this.targetDataList = []
-      this.connectionType = '1'
-      this.reset();
-      this.open = true;
       this.title = "添加数据库";
-      this.form = JSON.parse(JSON.stringify(row))
-      // this.resultForm.id = row.id
-      // this.deleteVisible = true
+      this.form.databaseType = row.databaseType || ''
+      this.form.sourceName = row.sourceName || ''
+      this.form.projectName = row.projectName || ''
+      this.form.targetIp = row.ip || ''
+      this.form.targetPort = row.port || ''
+      this.form.connectionValue = row.connectionValue || ''
+      this.form.connectionType = row.connectionType || ''
+      this.form.examplesName = row.examplesName || ''
+      this.form.businessName = row.businessName || ''
+      this.open = true;
     },
   }
 };

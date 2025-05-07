@@ -59,7 +59,7 @@
           <div>
             <span>
               安全分级大于等于
-              <el-select v-model="allData.levelList" placeholder="请选择">
+              <el-select v-model="allData.SensitiveData.value" placeholder="请选择">
                 <el-option v-for="item in sys_risk_levelList" :key="item" :label="item"
                   :value="item">
                 </el-option>
@@ -96,6 +96,7 @@ export default {
           DirtyData2: {},
           DirtyData3: {},
         },
+        SensitiveData:{},
         SampleExtraction: {},
         DataTableQualityScore: {},
       },

@@ -11,8 +11,8 @@
           </el-select>
         </div>
         <div class="head-container" v-loading="treeLoading">
-          <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox
-            :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree" node-key="id" @check="treeCheck"
+          <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox :expand-on-click-node="false"
+            :filter-node-method="filterNode" ref="tree" node-key="id" @check="treeCheck"
             :highlightCurrent="isHighlight" />
         </div>
       </el-col>
@@ -49,8 +49,8 @@
           </div>
         </el-form>
 
-        <el-table v-loading="loading" height="620px" :data="protectTableFieldList" @selection-change="handleSelectionChange"
-          class="tableBox" ref="tableRef">
+        <el-table v-loading="loading" height="620px" :data="protectTableFieldList"
+          @selection-change="handleSelectionChange" class="tableBox" ref="tableRef">
           <el-table-column type="selection" width="60" align="center" />
           <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip />
           <el-table-column label="字段注释" align="center" prop="fieldRemark" show-overflow-tooltip />
@@ -207,7 +207,7 @@ export default {
       textarea: ``,
       copyable: { copyText: '复制', copiedText: '复制成功' },
       routeDataShow: false,
-      treeIds:[]
+      treeIds: []
     };
   },
   watch: {
@@ -334,7 +334,7 @@ Authorization:Bearer ${this.Token}`
         } else {
           this.projectId = response.data[0].id
         }
-       this.getProtectCategory(this.projectId)
+        this.getProtectCategory(this.projectId)
         this.httpDemo()
         this.getProtectCategoryQuery(this.projectId)
       });
@@ -351,8 +351,8 @@ Authorization:Bearer ${this.Token}`
         this.treeID = treeList.map(item => item.id).join()
         this.treeIds = treeList.map(item => item.id)
         this.handleQuery();
-      }else{
-        this.protectTableFieldList =[]
+      } else {
+        this.protectTableFieldList = []
         this.queryParams.pageNum = 1
         this.queryParams.pageSize = 10
         this.total = 0
@@ -478,7 +478,7 @@ Authorization:Bearer ${this.Token}`
           this.dataCategoryList = this.handleTree(tempList, "id")
           this.categoryListEdit = this.handleTree(tempList, "id")
         }
-      this.Loading = false
+        this.Loading = false
         this.treeLoading = false
       });
     },
@@ -499,8 +499,8 @@ Authorization:Bearer ${this.Token}`
         if (response.code == 200 && response.rows) {
           this.protectTableFieldList = response.rows || [];
           this.protectTableFieldList.forEach(ele => {
-          ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
-        })
+            ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
+          })
           this.total = response.total;
         }
         this.loading = false;
@@ -528,7 +528,7 @@ Authorization:Bearer ${this.Token}`
       try {
         this.loading = true;
         const params = {
-          tableIds: this.treeID,
+          tableIds: this.treeIds,
           projectId: this.projectId,
           securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel : null,
           // securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : null,
@@ -556,6 +556,7 @@ Authorization:Bearer ${this.Token}`
         window.URL.revokeObjectURL(url);
         this.loading = false;
         this.$message.success('导出成功');
+
       } catch (error) {
         this.loading = false;
         this.$message.error('导出失败，请稍后再试');
@@ -638,14 +639,17 @@ Authorization:Bearer ${this.Token}`
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-thumb {
   background-color: #0003;
   border-radius: 10px;
   transition: all .2s ease-in-out;
 }
+
 ::-webkit-scrollbar-track {
   border-radius: 10px;
 }
+
 .addMsg /deep/ .el-input--medium {
   width: 237px;
 }
@@ -692,6 +696,7 @@ Authorization:Bearer ${this.Token}`
 .tableBox {
   overflow-y: auto;
 }
+
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -706,6 +711,7 @@ Authorization:Bearer ${this.Token}`
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
   border-radius: 10px;
 }
+
 .apiDialogMain {
   padding: 20px;
 }
@@ -715,6 +721,7 @@ Authorization:Bearer ${this.Token}`
   overflow-y: scroll;
 
 }
+
 .tableCla {
   height: 266px !important;
 }

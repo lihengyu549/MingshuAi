@@ -10,7 +10,7 @@
             <p>{{ 'Setp' + item.id }}</p>
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <h3>{{ item.title }}</h3>
-              <el-button type="text">{{ item.btnText }}</el-button>
+              <el-button type="text" @click="routerPush(item)">{{ item.btnText }}</el-button>
             </div>
             <span style="font-size: 12px; color: #aaaaaa;">{{ item.msg }}</span>
           </div>
@@ -25,22 +25,22 @@
         </div>
         <div class="main_body">
           <div class="main_body_head">
-            <div class="yuan1 yuan">国标</div>
-            <div class="yuan2 yuan">行标</div>
+            <div v-for="item in yuanList" class="yuan" :style="item.bgcColor">{{ item.text }}</div>
+            <!-- <div class="yuan2 yuan">行标</div>
             <div class="yuan3 yuan">团标</div>
             <div class="yuan4 yuan">地标</div>
-            <div class="yuan5 yuan">企标</div>
+            <div class="yuan5 yuan">企标</div> -->
           </div>
           <div class="main_body_body">
             <el-table :data="tableData" :stripe="false" style="width: 100%">
-              <el-table-column prop="aaa1" label="标准类型" width="80" align="center" />
-              <el-table-column prop="aaa2" label="标准编号" width="100" align="center" />
-              <el-table-column prop="aaa3" label="标准名称" align="center" />
-              <el-table-column prop="aaa4" label="实施时间" width="120" align="center" />
+              <el-table-column prop="current" label="标准类型" width="80" align="center" show-overflow-tooltip/>
+              <el-table-column prop="standardId" label="标准编号" width="100" align="center" show-overflow-tooltip/>
+              <el-table-column prop="categoryName" label="标准名称" align="center" />
+              <el-table-column prop="implementTime" label="实施时间" width="120" align="center" show-overflow-tooltip/>
 
-              <el-table-column prop="aaa5" label="来源" width="80" align="center" />
+              <el-table-column prop="dataSource" label="来源" width="80" align="center" show-overflow-tooltip/>
 
-              <el-table-column prop="aaa6" label="行业类别" width="100" align="center" />
+              <el-table-column prop="industryCategory" label="行业类别" width="100" align="center" show-overflow-tooltip/>
 
             </el-table>
 
@@ -54,33 +54,33 @@
         </div>
         <div class="main_body">
           <div class="main_body_head">
-            <img src="../assets/indexImg/mysql-3.png" class="yuanimg" alt="">
-            <img src="../assets/indexImg/pgsql.png" class="yuanimg" alt="">
+            <img v-for="item in yuanImgList" :src="item.src" class="yuanimg" alt="">
+            <!-- <img src="../assets/indexImg/pgsql.png" class="yuanimg" alt="">
             <img src="../assets/indexImg/Oracle.png" class="yuanimg" alt="">
             <img src="../assets/indexImg/damengshujuku2.png" class="yuanimg" alt="">
             <img src="../assets/indexImg/ziyuan.png" class="yuanimg" alt="">
-            <img src="../assets/indexImg/excel.png" class="yuanimg" alt="">
+            <img src="../assets/indexImg/excel.png" class="yuanimg" alt=""> -->
           </div>
           <div class="main_body_body">
             <el-table :data="tableRightData" :stripe="false" style="width: 100%">
-              <el-table-column prop="aaa1" label="数据库类型" width="100" align="center" />
-              <el-table-column prop="aaa3" label="主机" align="center" />
-              <el-table-column prop="aaa2" label="端口" width="100" align="center" />
-              <el-table-column prop="aaa4" label="数据库数量" width="120" align="center" />
-              <el-table-column prop="aaa5" label="表数量" width="80" align="center" />
-              <el-table-column prop="aaa6" label="字段数量" width="100" align="center" />
+              <el-table-column prop="databaseType" label="数据库类型" width="100" align="center" show-overflow-tooltip/>
+              <el-table-column prop="targetIp" label="主机" align="center" show-overflow-tooltip/>
+              <el-table-column prop="targetPort" label="端口" width="100" align="center" show-overflow-tooltip/>
+              <el-table-column prop="databaseNum" label="数据库数量" width="120" align="center" show-overflow-tooltip/>
+              <el-table-column prop="tableNum" label="表数量" width="80" align="center" show-overflow-tooltip/>
+              <el-table-column prop="fieldCount" label="字段数量" width="100" align="center" show-overflow-tooltip/>
             </el-table>
           </div>
         </div>
       </div>
-      
+
     </div>
   </div>
 </template>
 
 <script>
 import MyIndexlist from "@/components/IndexList/index";
-import { getServer, getStatisticsI } from "@/api/monitor/server";
+import { getReferenceStandard, getDatabaseStatistics } from "@/api/monitor/server";
 
 export default {
   name: "Server",
@@ -90,88 +90,61 @@ export default {
   data() {
     return {
       tableData: [
+      ],
+      yuanImgList:[
         {
-          aaa1: '国标',
-          aaa2: 'GB/T xxxx',
-          aaa3: '《数据安全分类分级》',
-          aaa4: '2024年1月1日',
-          aaa5: 'xx',
-          aaa6: '通用',
-          aaa7: '',
-          aaa8: '',
+          src:require('@/assets/indexImg/mysql-3.png'),
+          value:'MYSQL',
+        },
+        
+        {
+          src:require('@/assets/indexImg/pgsql.png'),
+          value:'POSTGRES'
+        },
+        
+        {
+          src:require('@/assets/indexImg/Oracle.png'),
+          value:'ORACLE'
+        },
+        
+        {
+          src:require('@/assets/indexImg/damengshujuku2.png'),
+          value:'DM'
+        },
+        
+        {
+          src:require('@/assets/indexImg/ziyuan.png'),
+          value:'SQL_SERVER'
+        },
+        
+        {
+          src:require('@/assets/indexImg/excel.png'),
+          value:'Excel'
+        },
+      ],
+      yuanList:[
+        {
+          text:'国标',
+          bgcColor:'backgroundColor: #fbf4f5;'
         },
         {
-          aaa1: '国标',
-          aaa2: 'GB/T xxxx',
-          aaa3: '《数据安全分类分级》',
-          aaa4: '2024年1月1日',
-          aaa5: 'xx',
-          aaa6: '通用',
-          aaa7: '',
-          aaa8: '',
+          text:'行标',
+          bgcColor:'backgroundColor: #e1bee7;'
         },
         {
-          aaa1: '国标',
-          aaa2: 'GB/T xxxx',
-          aaa3: '《数据安全分类分级》',
-          aaa4: '2024年1月1日',
-          aaa5: 'xx',
-          aaa6: '通用',
-          aaa7: '',
-          aaa8: '',
+          text:'团标',
+          bgcColor:'backgroundColor:#ffe0b2;'
         },
         {
-          aaa1: '国标',
-          aaa2: 'GB/T xxxx',
-          aaa3: '《数据安全分类分级》',
-          aaa4: '2024年1月1日',
-          aaa5: 'xx',
-          aaa6: '通用',
-          aaa7: '',
-          aaa8: '',
+          text:'地标',
+          bgcColor:'backgroundColor:#b2ebf2;'
+        },
+        {
+          text:'企标',
+          bgcColor:'backgroundColor:#b3e5fc;'
         },
       ],
       tableRightData: [
-        {
-          aaa1: '国标',
-          aaa2: 'GB/T xxxx',
-          aaa3: '《数据安全分类分级》',
-          aaa4: '2024年1月1日',
-          aaa5: 'xx',
-          aaa6: '通用',
-          aaa7: '',
-          aaa8: '',
-        },
-        {
-          aaa1: '国标',
-          aaa2: 'GB/T xxxx',
-          aaa3: '《数据安全分类分级》',
-          aaa4: '2024年1月1日',
-          aaa5: 'xx',
-          aaa6: '通用',
-          aaa7: '',
-          aaa8: '',
-        },
-        {
-          aaa1: '国标',
-          aaa2: 'GB/T xxxx',
-          aaa3: '《数据安全分类分级》',
-          aaa4: '2024年1月1日',
-          aaa5: 'xx',
-          aaa6: '通用',
-          aaa7: '',
-          aaa8: '',
-        },
-        {
-          aaa1: '国标',
-          aaa2: 'GB/T xxxx',
-          aaa3: '《数据安全分类分级》',
-          aaa4: '2024年1月1日',
-          aaa5: 'xx',
-          aaa6: '通用',
-          aaa7: '',
-          aaa8: '',
-        },
       ],
       loading: false,
       serverNum: "",
@@ -181,27 +154,31 @@ export default {
           title: '标准制订',
           msg: '参考国标/行标制订企业标准',
           btnText: '去制订',
+          path: '/standard/management',
         },
 
         {
           id: 2,
-          title: '标准制订',
-          msg: '参考国标/行标制订企业标准',
-          btnText: '去制订',
+          title: '数据源发现',
+          msg: '手动/自动发现网络中不同类型数据库',
+          btnText: '去发现',
+          path: '/dataAssetManagement/dataAssetdiscover',
         },
 
         {
           id: 3,
-          title: '标准制订',
-          msg: '参考国标/行标制订企业标准',
-          btnText: '去制订',
+          title: 'AI推理&审核',
+          msg: 'Qwen3/Deepseek双模可选进行AI打标',
+          btnText: '分类分级',
+          path: '/hierarchicalTask',
         },
 
         {
           id: 4,
-          title: '标准制订',
-          msg: '参考国标/行标制订企业标准',
-          btnText: '去制订',
+          title: 'API对接',
+          msg: '赋能AI分类分级能力/推送AI分析结果',
+          btnText: '快速接入',
+          path: '/',
         },
 
       ],
@@ -221,45 +198,30 @@ export default {
 
   created() {
     this.loading = true;
-    // this.openLoading();
-    this.getStatistics();
-    this.getList();
+    this.init()
   },
 
   methods: {
-    projecBtn() {
-      return
-      this.$router.push({ path: '/systemInfo/monitor' });
+    async init() {
+      await this.getStatistics();
+      await this.getList();
+      this.loading = false;
     },
-    projecBtn() {
-      return
-      this.$router.push({ path: '/systemInfo/project' });
-    },
-    apiBtn() {
-      return
-      this.$router.push({ path: '/systemInfo/api' });
+    routerPush(item) {
+      this.$router.push({ path: item.path });
     },
     goData() {
       this.$router.push({ path: '/data' });
     },
     getStatistics() {
-      getStatisticsI().then((res) => {
-        this.indexData = res.data
-        this.apiNum = res.data.apiNum;
-        this.projectNum = res.data.projectNum;
-        this.serverNum = res.data.serverNum;
-        let publishedFieldNum = parseFloat(res.data.publishedFieldNum) || 0
-        let fieldNum = parseFloat(res.data.fieldNum) || 0
-        this.fieldSort = ((publishedFieldNum / fieldNum * 100) || 0).toFixed(2)
+      getReferenceStandard().then((res) => {
+        this.tableData = res.data.list
       });
     },
     /** 查询服务器信息 */
     getList() {
-      //  this.$modal.closeLoading();
-      this.loading = true;
-      getServer().then((response) => {
-        this.server = response.data;
-        this.loading = false;
+      getDatabaseStatistics().then((response) => {
+        this.tableRightData = response.data.list;
       });
     },
     // 打开加载层
@@ -271,11 +233,12 @@ export default {
 </script>
 <style scoped>
 /* @import url(); 引入公共css类 */
-.content{
+.content {
   background-color: #fafafc;
 }
+
 .headerview {
-  height: 400px;
+  height: 380px;
   margin-top: 10px;
   padding: 25px 50px 0px 50px;
 }
@@ -290,9 +253,12 @@ export default {
   margin-left: 30px;
   background-color: #fff;
   padding: 20px 30px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), /* 底部阴影 */
-              0 2px 4px rgba(0, 0, 0, 0.08); /* 浮动效果的阴影 */
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* 添加过渡效果 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1),
+    /* 底部阴影 */
+    0 2px 4px rgba(0, 0, 0, 0.08);
+  /* 浮动效果的阴影 */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* 添加过渡效果 */
 }
 
 .main_right {
@@ -300,9 +266,12 @@ export default {
   background-color: #fff;
   margin-left: 30px;
   padding: 20px 30px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), /* 底部阴影 */
-              0 2px 4px rgba(0, 0, 0, 0.08); /* 浮动效果的阴影 */
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* 添加过渡效果 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1),
+    /* 底部阴影 */
+    0 2px 4px rgba(0, 0, 0, 0.08);
+  /* 浮动效果的阴影 */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* 添加过渡效果 */
 }
 
 .main_head {
@@ -334,10 +303,14 @@ export default {
   line-height: 60px;
   text-align: center;
   margin-right: 20px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), /* 右下方向的阴影 */
-  -2px -2px 5px rgba(255, 255, 255, 0.7); /* 左上方向的阴影 */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3),
+    /* 右下方向的阴影 */
+    -2px -2px 5px rgba(255, 255, 255, 0.7);
+  /* 左上方向的阴影 */
 }
-
+.yuan:hover{
+  cursor: pointer;
+}
 .yuan1 {
   background-color: #fbf4f5;
 }
@@ -400,10 +373,14 @@ export default {
   line-height: 60px;
   text-align: center;
   margin-right: 20px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), /* 右下方向的阴影 */
-  -2px -2px 5px rgba(255, 255, 255, 0.7); /* 左上方向的阴影 */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3),
+    /* 右下方向的阴影 */
+    -2px -2px 5px rgba(255, 255, 255, 0.7);
+  /* 左上方向的阴影 */
 }
-
+.yuanimg:hover{
+  cursor: pointer;
+}
 /* c3动画更改背景位置 */
 @keyframes sun {
   100% {

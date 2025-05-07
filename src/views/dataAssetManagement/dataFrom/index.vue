@@ -259,7 +259,6 @@ export default {
         'NONE': require('@/assets/stateImg/stateWaiting.png'),
         'RUNNING': require('@/assets/stateImg/stateing.png'),
       },
-      targetDataList: [],
       dataYTpeList: [
         {
           value: 'DATABASE',
@@ -701,7 +700,6 @@ export default {
       this.editIsFlag = false
       this.showSucType = 0
       this.projectNameEdit = null
-      this.targetDataList = []
       this.connectionType = '1'
       this.reset();
       this.open = true;

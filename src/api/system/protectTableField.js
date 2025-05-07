@@ -29,8 +29,8 @@ export function listByPublished (data) {
 export function exportReport (data) {
   return request({
     url: `/system/protectTableField/exportReport`,
-    method: 'get',
-    params: data,
+    method: 'post',
+    data: data,
     responseType: 'blob' //响应数据格式配置
   })
 }

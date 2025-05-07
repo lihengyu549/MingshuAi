@@ -11,8 +11,8 @@
       </div>
       <div class="header_right_titleClass">
         <span>进度：</span>
-        <el-progress :percentage="allData.schedule" color="#409eff" :stroke-width="26"
-          :format="progressFormat"></el-progress>
+        <el-progress :percentage="allData.schedule" :color="allData.maskComplete == 'ERR' ? 'red' : '#409eff'"
+          :stroke-width="26" :format="progressFormat"></el-progress>
       </div>
     </div>
     <div class="timeBox">
@@ -31,7 +31,7 @@
     </div>
     <div class="stepsBox">
       <el-steps direction="vertical" :active="allData.taskStepState" :process-status="processStatus"
-        finish-status="success">
+        :finish-status="allData.maskComplete == 'ERR'?'error':'success'">
         <el-step class="step_text" icon="el-icon-loading" v-for="(item, index) in directionData" :title="item.title">
           <template slot="description">
             <el-popover id="popover" popper-class="popoverClass" placement="left" :title="item.titlepop" width="200"
@@ -141,13 +141,13 @@ export default {
         switch (item.status) {
           case 1:
             return item.content = `高质量数据表：${this.allData.heightTableNum}个\n高质量数据表占比：${this.allData.heightTableScale}%`
-            
+
           case 2:
             return item.content = `关键字/正则命中数量：${this.allData.ruleHitNum}个\n关键字/正则命中占比：${this.allData.ruleHitScale}%`
-            
+
           case 3:
             return item.content = `推理成功数量：${this.allData.successNum}个\n无法分类数量：${this.allData.falseNum}个\n无法分类占比：${this.allData.falseScale}%`
-            
+
           case 1:
             return item.content = `置信度高数量：${this.allData.trustNum}个\n置信度高占比：${this.allData.trustScale}%`
           default:
@@ -198,11 +198,7 @@ export default {
           this.allData = res.data
           if (this.allData.maskComplete == 'RUNNING') {
             this.getTaskMonitoringFn()
-          }
-          if (this.allData.maskComplete == 'ERROR') {
-            this.processStatus = 'error'
-          } else {
-            // this.processStatus = ''
+            return
           }
         }
       })
@@ -229,7 +225,11 @@ export default {
     },
     // 进度条完成提示
     progressFormat() {
-      return this.allData.schedule == 100 ? '已完成' : `${this.allData.schedule || 0}%`;
+      if (this.allData.maskComplete == 'ERR') {
+        return '失败'
+      } else {
+        return this.allData.schedule == 100 ? '已完成' : `${this.allData.schedule || 0}%`;
+      }
     },
     // 执行状态中文
     stateMsg(val) {

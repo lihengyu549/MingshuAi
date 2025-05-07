@@ -112,7 +112,8 @@ export default {
     return {
       pushList: [{ name: "关键字字典", value: 0 },{name: "正则表达式", value: 1}],
       // 遮罩层
-      loading: true,
+      loading: false,
+      mainLoading:false,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -233,6 +234,7 @@ export default {
     },
        /** 查询数据库代理列表 */
     getList() {
+      return
       this.loading = true;
       listProxys(this.queryParams).then(response => {
         this.proxysList = response.rows;

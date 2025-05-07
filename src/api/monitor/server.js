@@ -16,3 +16,19 @@ export function getStatisticsI() {
     method: 'get'
   })
 }
+// 获取参考标准接口
+export function getReferenceStandard() {
+  return request({
+    url: '/system/server/info/getReferenceStandard',
+    method: 'get'
+  })
+}
+
+// 获取数据库统计接口
+
+export function getDatabaseStatistics() {
+  return request({
+    url: '/system/server/info/getDatabaseStatistics',
+    method: 'get'
+  })
+}

@@ -38,7 +38,11 @@
         </template>
       </el-table-column>
       <el-table-column label="指定端口" align="center" prop="ports" />
-      <el-table-column label="周期" align="center" prop="scheduleType" />
+      <el-table-column label="周期" align="center" prop="scheduleType">
+        <template slot-scope="scope">
+          <span>{{ scope.row.scheduleType == '0' ? '手动' : scope.row.scheduleType == '1' ? '每天' : scope.row.scheduleType == '2' ? '每周' : scope.row.scheduleType == '3' ? '每月' : '' }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="服务数" align="center" prop="servicesNum" />
       <el-table-column label="状态" align="center" prop="taskState">
         <template slot-scope="scope">
