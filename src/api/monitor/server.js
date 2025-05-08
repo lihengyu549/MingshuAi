@@ -17,18 +17,20 @@ export function getStatisticsI() {
   })
 }
 // 获取参考标准接口
-export function getReferenceStandard() {
+export function getReferenceStandard(params) {
   return request({
     url: '/system/server/info/getReferenceStandard',
-    method: 'get'
+    method: 'get',
+    params: params,
   })
 }
 
 // 获取数据库统计接口
 
-export function getDatabaseStatistics() {
+export function getDatabaseStatistics(params) {
   return request({
     url: '/system/server/info/getDatabaseStatistics',
-    method: 'get'
+    method: 'get',
+    params: params,
   })
 }

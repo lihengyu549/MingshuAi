@@ -5,6 +5,7 @@ const { sideTheme, showSettings, topNav, tagsView, fixedHeader, sidebarLogo, dyn
 const storageSetting = JSON.parse(localStorage.getItem('layout-setting')) || ''
 const state = {
   title: '',
+  bgcColor: 'rgb(0, 84, 217)',
   theme: storageSetting.theme || '#409EFF',
   sideTheme: storageSetting.sideTheme || sideTheme,
   showSettings: showSettings,
@@ -19,7 +20,7 @@ const mutations = {
     if (state.hasOwnProperty(key)) {
       state[key] = value
     }
-  }
+  },
 }
 
 const actions = {
@@ -30,6 +31,10 @@ const actions = {
   // 设置网页标题
   setTitle({ commit }, title) {
     state.title = title
+  },
+  // 设置主题颜色
+  setBgcColor({ commit }, color) {
+    state.bgcColor = color
   }
 }
 

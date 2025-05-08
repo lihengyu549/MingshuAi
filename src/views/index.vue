@@ -25,7 +25,8 @@
         </div>
         <div class="main_body">
           <div class="main_body_head">
-            <div v-for="item in yuanList" class="yuan" :style="item.bgcColor">{{ item.text }}</div>
+            <div v-for="item in yuanList" class="yuan" @click="yuanClick(item)" :style="item.bgcColor">{{ item.text }}
+            </div>
             <!-- <div class="yuan2 yuan">行标</div>
             <div class="yuan3 yuan">团标</div>
             <div class="yuan4 yuan">地标</div>
@@ -33,14 +34,14 @@
           </div>
           <div class="main_body_body">
             <el-table :data="tableData" :stripe="false" style="width: 100%">
-              <el-table-column prop="current" label="标准类型" width="80" align="center" show-overflow-tooltip/>
-              <el-table-column prop="standardId" label="标准编号" width="100" align="center" show-overflow-tooltip/>
+              <el-table-column prop="current" label="标准类型" width="80" align="center" show-overflow-tooltip />
+              <el-table-column prop="standardId" label="标准编号" width="100" align="center" show-overflow-tooltip />
               <el-table-column prop="categoryName" label="标准名称" align="center" />
-              <el-table-column prop="implementTime" label="实施时间" width="120" align="center" show-overflow-tooltip/>
+              <el-table-column prop="implementTime" label="实施时间" width="120" align="center" show-overflow-tooltip />
 
-              <el-table-column prop="dataSource" label="来源" width="80" align="center" show-overflow-tooltip/>
+              <el-table-column prop="dataSource" label="来源" width="80" align="center" show-overflow-tooltip />
 
-              <el-table-column prop="industryCategory" label="行业类别" width="100" align="center" show-overflow-tooltip/>
+              <el-table-column prop="industryCategory" label="行业类别" width="100" align="center" show-overflow-tooltip />
 
             </el-table>
 
@@ -54,7 +55,7 @@
         </div>
         <div class="main_body">
           <div class="main_body_head">
-            <img v-for="item in yuanImgList" :src="item.src" class="yuanimg" alt="">
+            <img v-for="item in yuanImgList" @click="yuanImgClick(item)" :src="item.src" class="yuanimg" alt="">
             <!-- <img src="../assets/indexImg/pgsql.png" class="yuanimg" alt="">
             <img src="../assets/indexImg/Oracle.png" class="yuanimg" alt="">
             <img src="../assets/indexImg/damengshujuku2.png" class="yuanimg" alt="">
@@ -63,12 +64,12 @@
           </div>
           <div class="main_body_body">
             <el-table :data="tableRightData" :stripe="false" style="width: 100%">
-              <el-table-column prop="databaseType" label="数据库类型" width="100" align="center" show-overflow-tooltip/>
-              <el-table-column prop="targetIp" label="主机" align="center" show-overflow-tooltip/>
-              <el-table-column prop="targetPort" label="端口" width="100" align="center" show-overflow-tooltip/>
-              <el-table-column prop="databaseNum" label="数据库数量" width="120" align="center" show-overflow-tooltip/>
-              <el-table-column prop="tableNum" label="表数量" width="80" align="center" show-overflow-tooltip/>
-              <el-table-column prop="fieldCount" label="字段数量" width="100" align="center" show-overflow-tooltip/>
+              <el-table-column prop="databaseType" label="数据库类型" width="100" align="center" show-overflow-tooltip />
+              <el-table-column prop="targetIp" label="主机" align="center" show-overflow-tooltip />
+              <el-table-column prop="targetPort" label="端口" width="100" align="center" show-overflow-tooltip />
+              <el-table-column prop="databaseNum" label="数据库数量" width="120" align="center" show-overflow-tooltip />
+              <el-table-column prop="tableNum" label="表数量" width="80" align="center" show-overflow-tooltip />
+              <el-table-column prop="fieldCount" label="字段数量" width="100" align="center" show-overflow-tooltip />
             </el-table>
           </div>
         </div>
@@ -91,57 +92,62 @@ export default {
     return {
       tableData: [
       ],
-      yuanImgList:[
+      yuanImgList: [
         {
-          src:require('@/assets/indexImg/mysql-3.png'),
-          value:'MYSQL',
+          src: require('@/assets/indexImg/mysql-3.png'),
+          value: 'MYSQL',
         },
-        
+
         {
-          src:require('@/assets/indexImg/pgsql.png'),
-          value:'POSTGRES'
+          src: require('@/assets/indexImg/pgsql.png'),
+          value: 'POSTGRES'
         },
-        
+
         {
-          src:require('@/assets/indexImg/Oracle.png'),
-          value:'ORACLE'
+          src: require('@/assets/indexImg/Oracle.png'),
+          value: 'ORACLE'
         },
-        
+
         {
-          src:require('@/assets/indexImg/damengshujuku2.png'),
-          value:'DM'
+          src: require('@/assets/indexImg/damengshujuku2.png'),
+          value: 'DM'
         },
-        
+
         {
-          src:require('@/assets/indexImg/ziyuan.png'),
-          value:'SQL_SERVER'
+          src: require('@/assets/indexImg/ziyuan.png'),
+          value: 'SQL_SERVER'
         },
-        
+
         {
-          src:require('@/assets/indexImg/excel.png'),
-          value:'Excel'
+          src: require('@/assets/indexImg/excel.png'),
+          value: 'Excel'
         },
       ],
-      yuanList:[
+      yuanList: [
         {
-          text:'国标',
-          bgcColor:'backgroundColor: #fbf4f5;'
+          text: '国标',
+          bgcColor: 'backgroundColor: #fbf4f5;',
+          value: '0'
         },
         {
-          text:'行标',
-          bgcColor:'backgroundColor: #e1bee7;'
+          text: '行标',
+          bgcColor: 'backgroundColor: #e1bee7;',
+          value: '1'
         },
         {
-          text:'团标',
-          bgcColor:'backgroundColor:#ffe0b2;'
+          text: '团标',
+          bgcColor: 'backgroundColor:#ffe0b2;',
+          value: '2'
         },
         {
-          text:'地标',
-          bgcColor:'backgroundColor:#b2ebf2;'
+          text: '地标',
+          bgcColor: 'backgroundColor:#b2ebf2;',
+          value: '3'
         },
         {
-          text:'企标',
-          bgcColor:'backgroundColor:#b3e5fc;'
+          text: '企标',
+          bgcColor: 'backgroundColor:#b3e5fc;',
+          value: '4'
         },
       ],
       tableRightData: [
@@ -207,20 +213,26 @@ export default {
       await this.getList();
       this.loading = false;
     },
+    yuanClick(row) {
+      this.getStatistics(row.value)
+    },
+    yuanImgClick(row) {
+      this.getList(row.value)
+    },
     routerPush(item) {
       this.$router.push({ path: item.path });
     },
     goData() {
       this.$router.push({ path: '/data' });
     },
-    getStatistics() {
-      getReferenceStandard().then((res) => {
+    getStatistics(type) {
+      getReferenceStandard({ standardType: type ?? '' }).then((res) => {
         this.tableData = res.data.list
       });
     },
     /** 查询服务器信息 */
-    getList() {
-      getDatabaseStatistics().then((response) => {
+    getList(type) {
+      getDatabaseStatistics({ databaseType: type || '' }).then((response) => {
         this.tableRightData = response.data.list;
       });
     },
@@ -308,9 +320,11 @@ export default {
     -2px -2px 5px rgba(255, 255, 255, 0.7);
   /* 左上方向的阴影 */
 }
-.yuan:hover{
+
+.yuan:hover {
   cursor: pointer;
 }
+
 .yuan1 {
   background-color: #fbf4f5;
 }
@@ -378,9 +392,11 @@ export default {
     -2px -2px 5px rgba(255, 255, 255, 0.7);
   /* 左上方向的阴影 */
 }
-.yuanimg:hover{
+
+.yuanimg:hover {
   cursor: pointer;
 }
+
 /* c3动画更改背景位置 */
 @keyframes sun {
   100% {

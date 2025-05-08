@@ -6,7 +6,7 @@
     <breadcrumb id="breadcrumb-container" class="breadcrumb-container" v-if="!topNav" />
     <top-nav id="topmenu-container" class="topmenu-container" v-if="topNav" />
 
-    <div class="right-menu">
+    <div class="right-menu" :style="right">
       <template v-if="device !== 'mobile'">
         <!-- <search id="header-search" class="right-menu-item" /> -->
 
@@ -71,6 +71,11 @@ import RuoYiGit from '@/components/RuoYi/Git'
 import RuoYiDoc from '@/components/RuoYi/Doc'
 
 export default {
+  data() {
+    return {
+      right: 'right: 11%;'
+    }
+  },
   components: {
     Breadcrumb,
     TopNav,
@@ -101,14 +106,21 @@ export default {
     topNav: {
       get () {
         return this.$store.state.settings.topNav
-      }
+      },
     }
   },
   mounted () {
   },
-  methods: {
+  watch () { 
 
+  },
+  methods: {
     toggleSideBar () {
+      if(this.$store.state.app.sidebar.opened){
+          this.right = 'right: 4%;'
+        }else {
+          this.right = 'right: 11%;'
+        }
       this.$store.dispatch('app/toggleSideBar')
     },
     async logout () {
@@ -176,7 +188,7 @@ export default {
 
   .right-menu {
     position: absolute;
-    right: 2%;
+    right: 11%;
     // background-color: #cf1313;
     height: 100%;
     line-height: 50px;

@@ -153,7 +153,7 @@ export default {
       // 查询参数
       queryParams: {
         pageNum: 1,
-        pageSize: 10,
+        pageSize: 6,
         sourceType: '',
         sourceName: '',
         businessName: '',
@@ -488,13 +488,15 @@ input[aria-hidden=true] {
 }
 
 .listBox {
-  max-height: 600px;
+  max-height: 700px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   overflow-y: auto;
-  padding: 10px;
+  background-color: #fefefe;
+  padding: 40px 20px;
+  margin-top: 20px;
 }
 
 .listBox::-webkit-scrollbar {
