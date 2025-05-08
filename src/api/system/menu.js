@@ -58,3 +58,29 @@ export function delMenu(menuId) {
     method: 'delete'
   })
 }
+
+// 修改界面设计接口
+export function updateInterfaceDesign(data) {
+  return request({
+    url: '/system/interfaceDesign/updateInterfaceDesign',
+    method: 'post',
+    data: data
+  })
+}
+
+// 图片上传
+export function uploadUserAppLogo(data) {
+  return request({
+    url: '/system/interfaceDesign/upload',
+    method: 'post',
+    data: data
+  })
+}
+
+// 获取界面设计信息接口
+export function getInterfaceDesignById(roleId) {
+  return request({
+    url: '/system/interfaceDesign/getInterfaceDesignById',
+    method: 'get'
+  })
+}

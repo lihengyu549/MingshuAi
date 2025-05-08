@@ -56,8 +56,7 @@
 </template>
 
 <script>
-import { treeselect as menuTreeselect, roleMenuTreeselect } from "@/api/system/menu";
-import { listByTacticsQueryUrl, updateByTactics } from "@/api/system/dict/data";
+import { updateInterfaceDesign, uploadUserAppLogo } from "@/api/system/menu";
 import store from '@/store'
 export default {
   name: "sysDesign",
@@ -105,18 +104,7 @@ export default {
     },
     submit() {
       store.dispatch('settings/setBgcColor', 'red')
-      console.log();
-      
-      return
-      updateByTactics(this.allData).then(res => {
-        if (res.code == 200) {
-          this.$message({
-            message: '修改成功',
-            type: 'success'
-          });
-          this.getlistData()
-        }
-      })
+
     },
 
     /** 提交按钮 */
@@ -143,6 +131,7 @@ export default {
           formData.append('implementTime', this.form.implementTime);
           formData.append('source', this.form.source);
           formData.append('industryCategory', this.form.industryCategory);
+          return
           await categoryImport(formData).then(res => {
             this.messsucc(res, '导入条目数量共');
             // this.getList();
