@@ -116,12 +116,12 @@
       <div class="title_txt">
         <p class="text">技术支持邮箱</p>
         <!-- <span style="color:#545454 ; margin-right: 20px;">support@cnsec.cn</span> -->
-        <span style="color:#545454 ; margin-right: 20px;">support@demo.com</span>
+        <span style="color:#545454 ; margin-right: 20px;">{{ $store.state.user.projectData.email || 'support@demo.com' }}</span>
       </div>
       <div class="title_txt">
         <p class="text">技术支持电话</p>
         <!-- <span style="color:#545454 ; margin-right: 20px;">400-706-1706</span> -->
-        <span style="color:#545454 ; margin-right: 20px;">400-000-0000</span>
+        <span style="color:#545454 ; margin-right: 20px;">{{ $store.state.user.projectData.phone || '400-000-0000' }}</span>
       </div>
     </div>
     <!-- <div > -->
@@ -224,6 +224,7 @@ export default {
   //生命周期 - 创建完成（可以访问当前this实例）
   created () {
     this.licenseVerify()
+    
   },
   //生命周期 - 挂载完成（可以访问DOM元素）
   mounted () { },

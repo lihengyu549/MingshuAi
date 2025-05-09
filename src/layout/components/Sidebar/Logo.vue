@@ -1,15 +1,15 @@
 <template>
   <div class="sidebar-logo-container" :class="{ 'collapse': collapse }"
-    :style="{ backgroundColor: $store.state.settings.bgcColor }">
+    :style="{ backgroundColor: $store.state.user.projectData.themeColor || $store.state.settings.bgcColor }">
     <transition name="sidebarLogoFade">
       <router-link v-if="collapse" key="collapse" class="sidebar-logo-link" to="/">
-        <img v-if="logo" src="https://img02.mockplus.cn/image/2021-08-27/fe611fb0-070d-11ec-adb2-d16e0e2a3f04.png" class="sidebar-logo" />
+        <img v-if="logo" :src="$store.state.user.projectData.img" class="sidebar-logo" />
         <h1 v-else class="sidebar-title"
           :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }">{{
             title }} </h1>
       </router-link>
       <router-link v-else key="expand" class="sidebar-logo-link" to="/">
-        <img v-if="logo" src="https://img02.mockplus.cn/image/2021-08-27/fe611fb0-070d-11ec-adb2-d16e0e2a3f04.png" class="sidebar-logo" />
+        <img v-if="logo" :src="$store.state.user.projectData.img" class="sidebar-logo" />
         <h1 class="sidebar-title"
           :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }">{{
             title }} </h1>
@@ -37,6 +37,8 @@ export default {
     sideTheme () {
       return this.$store.state.settings.sideTheme
     }
+  },
+  mounted () {
   },
   data () {
     return {

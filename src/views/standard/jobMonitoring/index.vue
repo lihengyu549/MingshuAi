@@ -498,6 +498,7 @@ export default {
       this.addOrEditDataRuls.additional = row.attachDescribe
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
       this.tags = row.featureLabel ? row.featureLabel.split(',') : []
+      this.addOrEditDataRuls.confirmProtectMethod = row.confirmProtectMethod ? row.confirmProtectMethod.split(',') : []
       this.addOrEdit.show = true
       this.addOrEdit.title = '编辑'
       this.addNodeName = row.owner

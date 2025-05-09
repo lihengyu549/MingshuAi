@@ -60,7 +60,7 @@
         </div>
       </div>
     </div>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :pageSizes="[6]" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
     <el-dialog class="addMsg" :title="title" v-loading="formLoading" :visible.sync="open" width="580px" append-to-body
@@ -269,6 +269,7 @@ export default {
       this.open = true
       this.title='编辑'
       this.form = JSON.parse(JSON.stringify(row))
+      this.form.importFile = row.fileName
     },
     detailFn(row) {
       this.$router.push({ path: '', query: { id: row.id } })

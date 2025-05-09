@@ -1,11 +1,11 @@
 <template>
-    <div :class="{'has-logo':showLogo}" :style="{ backgroundColor: $store.state.settings.bgcColor }">
+    <div :class="{'has-logo':showLogo}" :style="{ backgroundColor: $store.state.user.projectData.themeColor || $store.state.settings.bgcColor }">
         <logo v-if="showLogo" :collapse="isCollapse" />
         <el-scrollbar :class="settings.sideTheme" wrap-class="scrollbar-wrapper">
             <el-menu
                 :default-active="activeMenu"
                 :collapse="isCollapse"
-                :background-color="$store.state.settings.bgcColor"
+                :background-color="$store.state.user.projectData.themeColor || $store.state.settings.bgcColor"
                 :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"
                 :unique-opened="true"
                 :active-text-color="settings.theme"

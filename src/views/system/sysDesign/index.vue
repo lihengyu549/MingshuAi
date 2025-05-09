@@ -11,9 +11,9 @@
               <el-input v-model="formData.appTitle" placeholder="请输入产品标题" clearable />
             </el-form-item>
             <el-form-item label="产品LOGO" prop="appFacvion">
-              <el-upload class="upload-demo" action="" :on-remove="handleRemove" :file-list="fileList"
+              <el-upload class="upload-demo" action="" :on-remove="handleRemove" :file-list="fileList" ref="uploadRef"
                 list-type="picture" :multiple="false" :limit="1" :on-change="handleFileChange"
-                :on-exceed="handleFileExceed" :auto-upload="false" :http-request="submitForm">
+                :on-exceed="handleFileExceed" :auto-upload="false" :http-request="submit">
                 <el-button size="small" type="primary">点击上传</el-button>
               </el-upload>
             </el-form-item>
@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import { updateInterfaceDesign, uploadUserAppLogo } from "@/api/system/menu";
+import { updateInterfaceDesign } from "@/api/system/menu";
 import store from '@/store'
 export default {
   name: "sysDesign",
@@ -97,56 +97,35 @@ export default {
     };
   },
   created() {
+    if(this.$store.state.user.projectData.id) {
+      this.formData.appTitle = this.$store.state.user.projectData.projectName
+      this.fileList = [{name:this.$store.state.user.projectData.imgName || '项目图标',url:this.$store.state.user.projectData.img}]
+      this.colorForm.color = this.$store.state.user.projectData.themeColor
+      this.technologyData.email = this.$store.state.user.projectData.email
+      this.technologyData.phone = this.$store.state.user.projectData.phone
+    }
+
   },
   methods: {
     handleRemove(file, fileList) {
-      console.log(file, fileList);
     },
     submit() {
+      console.log(this.colorForm.color);
+      
       store.dispatch('settings/setBgcColor', 'red')
-
-    },
-
-    /** 提交按钮 */
-    async submitForm() {
-      this.$refs["addForm"].validate(async (valid) => {
-        if (valid) {
-          if (!await this.getNameTestingFn()) {
-            return
-          }
-          this.formLoading = true
-          const formData = new FormData();
-          if (this.form.id) {
-            formData.append('id', this.form.id || '');
-          }
-          // 将文件数组添加到 FormData 对象中
-          if (this.fileList && this.fileList.length) {
-            formData.append('file', this.fileList[0].raw);
-          }
-          formData.append('file', this.fileList[0].raw);
-          formData.append('categoryName', this.form.categoryName);
-          formData.append('inner', this.form.inner || '');
-          formData.append('standardId', this.form.standardId);
-          formData.append('standardType', this.form.standardType);
-          formData.append('implementTime', this.form.implementTime);
-          formData.append('source', this.form.source);
-          formData.append('industryCategory', this.form.industryCategory);
-          return
-          await categoryImport(formData).then(res => {
-            this.messsucc(res, '导入条目数量共');
-            // this.getList();
-            this.fileList = []
-            this.reset()
-            this.open = false
-            this.gettreeOptionsList()
-            this.formLoading = false
-          })
-            .catch((err) => {
-              this.formLoading = false
-            })
-
+      const formData = new FormData();
+      formData.append('file', this.fileList.length?this.fileList[0].raw : null);
+      formData.append('file', this.fileList.length?this.fileList[0].name : '项目图标');
+      formData.append('id', 1);
+      formData.append('projectName', this.formData.appTitle);
+      formData.append('themeColor', this.colorForm.color);
+      formData.append('email', this.technologyData.emil);
+      formData.append('phone', this.technologyData.phone);
+      updateInterfaceDesign(formData).then(res=>{
+        if(res.code === 200){
+          this.$modal.msgSuccess(res.msg);
         }
-      });
+      })
     },
 
     handleFileExceed(files, fileList) {
@@ -156,12 +135,13 @@ export default {
       });
     },
     handleFileChange(file, fileList) {
-      this.form.importFile = file.name
       this.fileList = fileList;
     },
     changeColor(val){
       if(val == null) {
-        this.colorForm.color = 'rgb(0, 84, 217);'
+        this.$message.warning('颜色不可以为透明')
+        this.colorForm.color = 'rgb(0, 84, 217)'
+        return
       }      
     }
   }

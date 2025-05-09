@@ -64,6 +64,9 @@ export function updateInterfaceDesign(data) {
   return request({
     url: '/system/interfaceDesign/updateInterfaceDesign',
     method: 'post',
+    headers: {
+      "Content-Type":"multipart/form-data; ",
+    },
     data: data
   })
 }

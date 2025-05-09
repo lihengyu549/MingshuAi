@@ -7,7 +7,8 @@ const user = {
     name: '',
     avatar: '',
     roles: [],
-    permissions: []
+    permissions: [],
+    projectData:{}
   },
 
   mutations: {
@@ -28,7 +29,12 @@ const user = {
     },
     SET_PERMISSIONS: (state, permissions) => {
       state.permissions = permissions
-    }
+    },
+    SET_PROJECT: (state, data) => {
+      console.log(data);
+      
+      state.projectData = data
+    },
   },
 
   actions: {
