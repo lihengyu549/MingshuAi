@@ -280,7 +280,7 @@ export default {
       addUserVisible: false,
       dataType: "",
       targetDataList: [],
-      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRES", id: 3, value: "POSTGRES" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
+      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "PostgreSQL", id: 3, value: "PostgreSQL" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       formProjectListEdit: [],
       selectProjectListEdit: [{ name: "全部", id: 0 }, { name: "Excel文件", id: 1 },{ name: "数据库", id: 2 }], // 数据源类型
       scanStatusList: [{ name: "全部", id: 0 }, { name: "扫描中", id: 1 },{ name: "扫描成功", id: 2 },{ name: "扫描失败", id: 3 },{ name: "待扫描", id: 4 }], // 扫描类型

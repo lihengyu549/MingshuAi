@@ -40,28 +40,40 @@
           <div>实施时间：{{ item.implementTime }}</div>
         </div>
         <div class="listBox_body">
-          <div style="text-align: center;margin-bottom: 15px; padding: 10px 0;">{{ item.categoryName }}</div>
+          <el-tooltip class="item" effect="dark" :content="item.categoryName" placement="top-start">
+            <div class="listBox_itemTitle">{{ item.categoryName }}</div>
+          </el-tooltip>
           <div style="font-size: 14px; display: flex; justify-content: space-between;align-items: center;">
             <span></span>
-            <span>来源：{{ item.source }}</span>
-            <span>行业类别：{{ item.industryCategory }}</span>
+            <el-tooltip class="item" effect="dark" :content="item.source" placement="top-start">
+              <span class="listBox_msg">来源：{{ item.source }}</span>
+            </el-tooltip>
+            <el-tooltip class="item" effect="dark" :content="item.industryCategory" placement="top-start">
+              <span class="listBox_msg">行业类别：{{ item.industryCategory }}</span>
+            </el-tooltip>
             <span></span>
           </div>
-          <div style="margin-top: 20px;text-align: center; display: flex; justify-content: center; align-items: center;">
-            <el-tag class="div_btn" size="medium" style="border: none;" :color="getColorFn(item.standardTypeName)" round>{{ item.standardTypeName }}</el-tag>
-            <el-tag class="div_btn" size="medium" style="border: none;" :color="item.current === '现行'?'#70b503':'#CFD8DC'" round>{{ item.current }}</el-tag>
-            <el-tag class="div_btn" size="medium" style="border: none;" color="#d7d7d7" round>{{ item.dataSource }}</el-tag>
+          <div
+            style="margin-top: 20px;text-align: center; display: flex; justify-content: center; align-items: center;">
+
+            <el-tag class="div_btn" size="medium" style="border: none;" color="#e53416" round>{{ item.standardTypeName
+            }}</el-tag>
+            <el-tag class="div_btn" size="medium" style="border: none;" color="#1890ff" round>{{ item.current
+            }}</el-tag>
+            <el-tag class="div_btn" size="medium" style="border: none;" color="#a9a9a9" round>{{ item.dataSource
+            }}</el-tag>
           </div>
           <div class="listBox_btn">
             <el-button type="text" size="medium" @click="editFn(item)">编辑</el-button>
             <el-button type="text" size="medium" @click="detailFn(item)">详情</el-button>
-            <el-button type="text" size="medium" :disabled="item.dataSource === '内置'" @click="deleteFn(item)">删除</el-button>
+            <el-button type="text" size="medium" :disabled="item.dataSource === '内置'"
+              @click="deleteFn(item)">删除</el-button>
           </div>
         </div>
       </div>
     </div>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :pageSizes="[6]" :limit.sync="queryParams.pageSize"
-      @pagination="getList" />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :pageSizes="[6]"
+      :limit.sync="queryParams.pageSize" @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
     <el-dialog class="addMsg" :title="title" v-loading="formLoading" :visible.sync="open" width="580px" append-to-body
       :close-on-click-modal="false">
@@ -94,8 +106,8 @@
           <el-input v-model="form.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
         </el-form-item>
         <el-form-item class="uploadClass">
-          <el-upload ref="uploadRef" class="upload-demoupload-demo" :limit="1" :file-list="fileList" :auto-upload="false"
-            :http-request="submitForm" action="" accept=".xls,.xlsx" :show-file-list="false"
+          <el-upload ref="uploadRef" class="upload-demoupload-demo" :limit="1" :file-list="fileList"
+            :auto-upload="false" :http-request="submitForm" action="" accept=".xls,.xlsx" :show-file-list="false"
             :on-change="handleFileChange" :on-exceed="handleFileExceed">
             <el-button size="mini" type="primary">选择文件</el-button>
           </el-upload>
@@ -194,7 +206,7 @@ export default {
           required: true, message: "行业类别不能为空", trigger: "blur"
         }],
         importFile: [{
-          required: true,validator: this.validateRuleContent, message: "请上传导入标准文件", trigger: "blur"
+          required: true, validator: this.validateRuleContent, message: "请上传导入标准文件", trigger: "blur"
         }],
       },
       debounceTimeout: null,
@@ -209,12 +221,12 @@ export default {
   mounted() {
   },
   methods: {
-    
+
     // 自定义校验规则
     validateRuleContent(rule, value, callback) {
-      if(this.form.importFile){
+      if (this.form.importFile) {
         callback();
-      }else {
+      } else {
         callback(new Error("至少需要一条规则内容"));
       }
     },
@@ -232,7 +244,7 @@ export default {
     managementImport() {
       this.reset()
       this.open = true
-      this.title='新增'
+      this.title = '新增'
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -267,12 +279,12 @@ export default {
     },
     editFn(row) {
       this.open = true
-      this.title='编辑'
+      this.title = '编辑'
       this.form = JSON.parse(JSON.stringify(row))
       this.form.importFile = row.fileName
     },
     detailFn(row) {
-      this.$router.push({ path: '', query: { id: row.id } })
+      this.$router.push({ path: '/standard/jobMonitorings', query: { id: row.id } })
     },
     deleteFn(row) {
       this.$confirm(`删除任务，将会删除数据源所关联的所有执行结果,确定删除吗`, '提示', {
@@ -288,8 +300,8 @@ export default {
         })
       })
     },
-    getDictData(){
-      listByDataType({type:'sys_standard_type'}).then(res=>{
+    getDictData() {
+      listByDataType({ type: 'sys_standard_type' }).then(res => {
         this.currentList = res.data;
       })
     },
@@ -378,8 +390,8 @@ export default {
       return msg
     },
     getColorFn(row) {
-      for(let item of this.currentList){
-        if(row == item.dictLabel ) {
+      for (let item of this.currentList) {
+        if (row == item.dictLabel) {
           return item.cssClass
         }
       }
@@ -491,7 +503,7 @@ input[aria-hidden=true] {
 .listBox {
   max-height: 700px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   flex-wrap: wrap;
   overflow-y: auto;
@@ -525,6 +537,14 @@ input[aria-hidden=true] {
   border-radius: 10px;
 }
 
+.listBox_item:nth-child(2) {
+  margin: 0 60px;
+}
+
+.listBox_item:nth-child(5) {
+  margin: 0 60px;
+}
+
 .listBox_title {
   background-color: #f1fafe;
   padding: 15px;
@@ -544,11 +564,35 @@ input[aria-hidden=true] {
   height: 30px;
   line-height: 30px;
   border-radius: 15px;
-  color: rgb(0, 0, 0);
+  color: rgb(255, 255, 255);
 }
 
 .listBox_btn {
   text-align: right;
   margin-top: 10px;
+}
+
+.listBox_itemTitle {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 15px;
+  padding: 10px 0;
+  white-space: nowrap;
+  /* 文字不换行 */
+  overflow: hidden;
+  /* 隐藏超出部分 */
+  text-overflow: ellipsis;
+  /* 超出部分显示为省略号 */
+}
+
+.listBox_msg {
+
+  width: 100%;
+  white-space: nowrap;
+  /* 文字不换行 */
+  overflow: hidden;
+  /* 隐藏超出部分 */
+  text-overflow: ellipsis;
+  /* 超出部分显示为省略号 */
 }
 </style>

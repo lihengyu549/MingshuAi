@@ -82,3 +82,28 @@ export function deleteAttachData(data) {
     params:data
   })
 }
+// 左侧树新增接口
+export function addCategory(data) {
+  return request({
+    url: '/system/category/addCategory',
+    method: 'post',
+    data:data
+  })
+} 
+// 左侧树修改接口
+export function updateCategory(data) {
+  return request({
+    url: '/system/category/updateCategory',
+    method: 'post',
+    data:data
+  })
+} 
+
+// 左侧树删除接口
+export function deleteCategory(data) {
+  return request({
+    url: '/system/category/deleteCategory',
+    method: 'post',
+    data:data
+  })
+} 

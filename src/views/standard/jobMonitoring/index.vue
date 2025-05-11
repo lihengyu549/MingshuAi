@@ -10,9 +10,25 @@
           </el-select>
         </div>
         <div class="head-container" v-loading="treeLoading">
-          <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
+          <el-tree :indent="8" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
             :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
-            node-key="id" highlight-current @node-click="handleNodeClick" />
+            node-key="id" highlight-current @node-click="handleNodeClick">
+            <span class="custom-tree-node" slot-scope="{ node, data }">
+              <span v-if="!data.addEdit">{{ node.label }}</span>
+              <el-input id="addNode" class="addNode" v-else v-model="nodeLabel"
+                @blur="addEditNodeFn(node, data)"></el-input>
+              <span>
+                <el-button type="text" size="mini" @click.stop="() => append(data)">
+                  增加
+                </el-button>
+                <el-button type="text" size="mini" @click.stop="() => editNode(data)">
+                  编辑
+                </el-button>
+                <el-button type="text" size="mini" @click.stop="() => remove(node, data)">
+                  删除
+                </el-button>
+              </span>
+            </span></el-tree>
         </div>
       </el-col>
       <!--用户数据-->
@@ -81,13 +97,15 @@
           <el-table-column label="安全分级" align="center" prop="securityLevelName" />
           <el-table-column label="建议防护措施" align="center" prop="protectMethodName" width="200">
             <template slot-scope="scope">
-              <el-tag class="tagsBox" v-for="item in scope.row.protectMethodNameList" :color="colorFn(item)" :key="item">{{ item }}</el-tag>
+              <el-tag class="tagsBox" v-for="item in scope.row.protectMethodNameList" :color="colorFn(item)"
+                :key="item">{{ item }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="数据持有者" align="center" prop="dataOwner" />
           <el-table-column label="确认防护措施" align="center" prop="confirmProtectMethod" width="200">
             <template slot-scope="scope">
-              <el-tag class="tagsBox" v-for="item in scope.row.confirmProtectMethodList" :color="colorFn(item)" :key="item">{{ item }}</el-tag>
+              <el-tag class="tagsBox" v-for="item in scope.row.confirmProtectMethodList" :color="colorFn(item)"
+                :key="item">{{ item }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="来源" align="center" prop="dataSource">
@@ -198,6 +216,9 @@ import {
   editAttachData,
   selectUserListAll,
   deleteAttachData,
+  addCategory,
+  updateCategory,
+  deleteCategory,
 } from "@/api/standard";
 import { treeListI, categoryImport, getAttachData, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory";
 export default {
@@ -215,6 +236,7 @@ export default {
         overflowY: 'auto'
       },
       inputVisible: false,
+      nodeLabel: '',
       countIs40: true,// 数量是否小于40
       tagsShow: false,
       inputValue: '',
@@ -492,6 +514,65 @@ export default {
         this.$refs.addSelectRef.blur()
       }
     },
+    append(data) {
+      const newChild = { id: '', label: '', children: [], addEdit: true, parentId: data.id };
+      if (!data.children) {
+        this.$set(data, 'children', []);
+      }
+      data.children.push(newChild);
+      this.$nextTick(() => {
+        let addNodeInput = document.getElementById('addNode')
+        addNodeInput.focus()
+      })
+    },
+    remove(node, data) {
+      this.$confirm(`确定删除当前及其下数据吗`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteCategory({ id: data.id }).then(res => {
+          this.$modal.msgSuccess("删除成功");
+        })
+      })
+      // const parent = node.parent;
+      // const children = parent.data.children || parent.data;
+      // const index = children.findIndex(d => d.id === data.id);
+      // children.splice(index, 1);
+    },
+    editNode(data) {
+      this.nodeLabel = ''
+      this.$set(data, 'addEdit', true);
+      this.nodeLabel = data.label
+      this.$nextTick(() => {
+        let addNodeInput = document.getElementById('addNode')
+        addNodeInput.focus()
+      })
+    },
+    addEditNodeFn(node, data) {
+      this.Loading = true
+      let params = {
+        categoryName: this.nodeLabel,
+        parentId: data.parentId,
+        id: data.id || null
+      }
+      if (data.id) {
+        updateCategory(params).then(res => {
+          this.getProtectCategory(this.queryParams.categoryId)
+        })
+        .catch(err=>{
+          this.getProtectCategory(this.queryParams.categoryId)
+        })
+      } else {
+        addCategory(params).then(res => {
+          this.getProtectCategory(this.queryParams.categoryId)
+        }).catch(err=>{
+          this.getProtectCategory(this.queryParams.categoryId)
+        })
+      }
+      this.nodeLabel = ''
+      this.Loading = false
+    },
     editFn(row) {
       this.addOrEdit.flag = 2
       this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
@@ -603,8 +684,12 @@ export default {
       return data.categoryName.indexOf(value) !== -1;
     },
     handleNodeClick(data) {
-      this.treeID = data.id;
-      this.handleQuery();
+      if (data.addEdit) {
+        return
+      } else {
+        this.treeID = data.id;
+        this.handleQuery();
+      }
     },
 
     // 定时器，防抖使用
@@ -666,6 +751,8 @@ export default {
         ...this.queryParams,
         nodeId: this.treeID,
         levelId: this.queryParams.levelId.length ? this.queryParams.levelId.join() : '-1',
+        protectMethodId: this.queryParams.protectMethodId.length ? this.queryParams.protectMethodId.join() : '',
+        confirmProtectMethod: this.queryParams.confirmProtectMethod.length ? this.queryParams.confirmProtectMethod.join() : '',
         dataSourceId: this.queryParams.dataSourceId ? this.queryParams.dataSourceId : 0,
       }
       getAttachData(params).then((response) => {
@@ -853,9 +940,23 @@ export default {
 .yuanDataClass /deep/ .el-select {
   width: 100%;
 }
-.tagsBox{
+
+.tagsBox {
   border: none;
   color: white;
   margin-left: 5px;
+}
+
+.custom-tree-node {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.addNode {
+  input {
+    height: 23px;
+    line-height: 23px;
+  }
 }
 </style>

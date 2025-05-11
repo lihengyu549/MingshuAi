@@ -3,7 +3,7 @@
     <div class="headerview">
       <div><img src="../assets/indexImg/jiqiren-2.png" alt="" style="width: 50px;height: 50px;"></div>
       <div style="margin-top: 10px;">Hi，欢迎来到明数AI分类分级平台！</div>
-      <p>可持续化运营，只需4步！</p>
+      <p style="margin: 16px 0;">可持续化运营，只需4步！</p>
       <div class="card_box">
         <el-card class="box-card" v-for="item in cardList" :key="item.id">
           <div class="text item">
@@ -51,7 +51,7 @@
       <div class="main_right">
         <div class="main_head">
           <div class="line"></div>
-          <div>数据库统计 TOP3</div>
+          <div>数据库统计 TOP5</div>
         </div>
         <div class="main_body">
           <div class="main_body_head">
@@ -100,7 +100,7 @@ export default {
 
         {
           src: require('@/assets/indexImg/pgsql.png'),
-          value: 'POSTGRES'
+          value: 'PostgreSQL'
         },
 
         {
