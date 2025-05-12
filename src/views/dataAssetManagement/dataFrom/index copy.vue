@@ -388,7 +388,7 @@ export default {
         { name: "MYSQL", id: 0, value: "MYSQL" },
         { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
         { name: "ORACLE", id: 2, value: "ORACLE" },
-        { name: "PostgreSQL", id: 3, value: "PostgreSQL" },
+        { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" },
         { name: "达梦", id: 4, value: "DM" }
       ],
       publishStatus: [

@@ -100,7 +100,7 @@ export default {
 
         {
           src: require('@/assets/indexImg/pgsql.png'),
-          value: 'PostgreSQL'
+          value: 'POSTGRESQL'
         },
 
         {

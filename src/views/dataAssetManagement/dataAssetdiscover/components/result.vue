@@ -27,13 +27,14 @@
           <div style="display: flex; align-items: center;justify-content: center;">
             <img style="display: block; width: 20px;margin-right: 10px;"
               :src="imgSrc[scope.row.state ? scope.row.state : 'NONE']" alt="">
-            <span> {{scope.row.state ? '已完成' : '未完成' }}</span>
+            <span> {{ scope.row.state == 1 ? '已完成' : '未完成' }}</span>
           </div>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" :disabled="scope.row.state == '1'" @click="resultExdit(scope.row)">导入数据源</el-button>
+          <el-button size="mini" type="text" :disabled="scope.row.state == '1'"
+            @click="resultExdit(scope.row)">导入数据源</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -42,7 +43,7 @@
     <!-- 添加或修改数据库代理对话框 -->
     <el-dialog class="addMsg" :title="title" :visible.sync="open" width="580px" append-to-body
       :close-on-click-modal="false">
-      <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
+      <el-form v-if="open" ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
         <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
           <el-select v-model="form.databaseType" placeholder="请选择数据库类型" @change="databaseTypeChange($event)">
             <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
@@ -72,12 +73,12 @@
         <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
           <el-input v-model="form.targetUserPassword" show-password maxlegth="100" placeholder="请输入数据库密码" />
         </el-form-item>
-        <el-form-item v-show="isServiesNameRequired" label="服务名" prop="connectionValue"
+        <el-form-item v-show="form.databaseType == 'ORACLE'" label="服务名" prop="connectionValue"
           :rules="rules.connectionValue()">
           <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput(form.connectionValue)"
             placeholder="请输入" />
         </el-form-item>
-        <el-form-item v-show="isServiesNameRequired" label="连接方式">
+        <el-form-item v-show="form.databaseType == 'ORACLE'" label="连接方式">
           <el-radio v-model="connectionType" label="0">SID</el-radio>
           <el-radio v-model="connectionType" label="1">Service Name</el-radio>
         </el-form-item>
@@ -99,7 +100,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="open = false">取消</el-button>
+        <el-button @click="cancleFn">取消</el-button>
       </div>
     </el-dialog>
     <el-dialog title="扫描配置" class="scanContentBox" v-loading="scanContentLoading" :visible.sync="scanContentShow"
@@ -184,7 +185,7 @@ export default {
         ],
         examplesName: () => {
           return [{
-            required: this.form.databaseType == 'DM' || this.form.databaseType == 'PostgreSQL',
+            required: this.form.databaseType == 'DM' || this.form.databaseType == 'POSTGRESQL',
             message: '请输入',
             trigger: 'blur'
           }]
@@ -330,7 +331,8 @@ export default {
         sourceName: '',
         businessName: '',
         examplesName: '',
-        databaseType:'',
+        databaseType: '',
+        connectionValue:'',
       },
       addForm: {},
       importDataLoading: false,
@@ -346,7 +348,7 @@ export default {
         { name: "MYSQL", id: 0, value: "MYSQL" },
         { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
         { name: "ORACLE", id: 2, value: "ORACLE" },
-        { name: "PostgreSQL", id: 3, value: "PostgreSQL" },
+        { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" },
         { name: "达梦", id: 4, value: "DM" }
       ],
       // 表单校验
@@ -403,6 +405,9 @@ export default {
         }
       })
 
+    },
+    serviesNameInput(val) {
+      this.form.connectionValue = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
     },
     gettreeOptionsList() {
       this.mainLoading = true
@@ -488,8 +493,6 @@ export default {
         data.targetDatabase = JSON.stringify(data.targetDatabase)
         data.connectionType = this.connectionType
         data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
-        console.log(data);
-
         if (!this.editIsFlag && Object.keys(data.tables).length == 0) {
           this.$message({ message: '请选择扫描内容', type: 'warning' })
           return
@@ -505,6 +508,10 @@ export default {
           });
         }
       });
+    },
+    cancleFn() {
+      this.reset()
+      this.open = false
     },
     async getNameTestingFn() {
       let params = {
@@ -589,11 +596,16 @@ export default {
         targetUserPassword: null,
         //  protocolPort: null,
         projectId: null,
+        targetDatabase:[],
+        tables: {},
+        tabelCheckedName:'',
         // proxyStatus: "0"
       };
+      this.isServiesNameRequired = false
       this.resetForm("form");
     },
     resultExdit(row) {
+      this.reset()
       this.title = "添加数据库";
       this.form.databaseType = row.databaseType || ''
       this.form.sourceName = row.sourceName || ''

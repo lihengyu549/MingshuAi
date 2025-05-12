@@ -298,6 +298,8 @@ export default {
     //   }
     // },
     scheduleTypeChange(val) {
+      console.log(val);
+      
       if (val == '3') {
         // 获取当前月的天数
         this.addOrEditFormData.scheduleInterval = '1'
@@ -313,7 +315,6 @@ export default {
     },
     addCancel() {
       this.addOrEdit.show = false
-      this.addOrEditFormData = {}
       this.reset()
     },
     addSubmitForm() {
@@ -399,6 +400,9 @@ export default {
       this.addOrEditFormData.scheduleTime = '00:00'
       this.addOrEditFormData.scheduleInterval = ''
       this.addOrEditFormData.scheduleType = ''
+      this.addOrEditFormData.taskName = ''
+      this.addOrEditFormData.ipScope = ''
+      this.addOrEditFormData.ports = ''
     },
     /** 搜索按钮操作 */
     handleQuery() {

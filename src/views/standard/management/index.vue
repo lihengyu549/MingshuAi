@@ -36,7 +36,7 @@
     <div class="listBox">
       <div class="listBox_item" v-for="item in proxysList">
         <div class="listBox_title">
-          <div style="font-weight: 700; font-size: 18px;">{{ item.standardId }}</div>
+          <div style="font-size: 18px;">{{ item.standardId }}</div>
           <div>实施时间：{{ item.implementTime }}</div>
         </div>
         <div class="listBox_body">
@@ -53,12 +53,13 @@
             </el-tooltip>
             <span></span>
           </div>
-          <div
-            style="margin-top: 20px;text-align: center; display: flex; justify-content: center; align-items: center;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div
+            style="margin-top: 30px;text-align: center; display: flex; justify-content: center; align-items: center;">
 
-            <el-tag class="div_btn" size="medium" style="border: none;" color="#e53416" round>{{ item.standardTypeName
+            <el-tag class="div_btn" size="medium" style="border: none;" color="#4c70ac" round>{{ item.standardTypeName
             }}</el-tag>
-            <el-tag class="div_btn" size="medium" style="border: none;" color="#1890ff" round>{{ item.current
+            <el-tag class="div_btn" size="medium" style="border: none;" color="#dce2ee" round>{{ item.current
             }}</el-tag>
             <el-tag class="div_btn" size="medium" style="border: none;" color="#a9a9a9" round>{{ item.dataSource
             }}</el-tag>
@@ -68,6 +69,7 @@
             <el-button type="text" size="medium" @click="detailFn(item)">详情</el-button>
             <el-button type="text" size="medium" :disabled="item.dataSource === '内置'"
               @click="deleteFn(item)">删除</el-button>
+          </div>
           </div>
         </div>
       </div>
@@ -328,7 +330,6 @@ export default {
           if (this.fileList && this.fileList.length) {
             formData.append('file', this.fileList[0].raw);
           }
-          formData.append('file', this.fileList[0].raw);
           formData.append('categoryName', this.form.categoryName);
           formData.append('inner', this.form.inner || '');
           formData.append('standardId', this.form.standardId);
@@ -569,12 +570,11 @@ input[aria-hidden=true] {
 
 .listBox_btn {
   text-align: right;
-  margin-top: 10px;
+  margin-top: 30px;
 }
 
 .listBox_itemTitle {
   width: 100%;
-  text-align: center;
   margin-bottom: 15px;
   padding: 10px 0;
   white-space: nowrap;

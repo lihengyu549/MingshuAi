@@ -123,12 +123,12 @@
         <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
           <el-input v-model="form.targetUserPassword" show-password maxlegth="100" placeholder="请输入数据库密码" />
         </el-form-item>
-        <el-form-item v-show="isServiesNameRequired" label="服务名" prop="connectionValue"
+        <el-form-item v-show="form.databaseType == 'ORACLE'" label="服务名" prop="connectionValue"
           :rules="rules.connectionValue()">
-          <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput(form.connectionValue)"
+          <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput()"
             placeholder="请输入" />
         </el-form-item>
-        <el-form-item v-show="isServiesNameRequired" label="连接方式">
+        <el-form-item v-show="form.databaseType == 'ORACLE'" label="连接方式">
           <el-radio v-model="connectionType" label="0">SID</el-radio>
           <el-radio v-model="connectionType" label="1">Service Name</el-radio>
         </el-form-item>
@@ -158,7 +158,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="open = false">取消</el-button>
+        <el-button @click="scanContentCanlce">取消</el-button>
       </div>
     </el-dialog>
     <el-dialog :title="titleExcel" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"
@@ -272,7 +272,7 @@ export default {
         { name: "MYSQL", id: 0, value: "MYSQL" },
         { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
         { name: "ORACLE", id: 2, value: "ORACLE" },
-        { name: "PostgreSQL", id: 3, value: "PostgreSQL" },
+        { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" },
         { name: "达梦", id: 4, value: "DM" }
       ],
       publishStatus: [
@@ -374,7 +374,7 @@ export default {
         ],
         examplesName: () => {
           return [{
-            required: this.form.databaseType == 'DM' || this.form.databaseType == 'PostgreSQL',
+            required: this.form.databaseType == 'DM' || this.form.databaseType == 'POSTGRESQL',
             message: '请输入',
             trigger: 'blur'
           }]
@@ -466,6 +466,10 @@ export default {
       } else {
         this.isServiesNameRequired = false
       }
+    },
+    scanContentCanlce(){
+      this.open = false
+      this.reset()
     },
     async getNameTestingFn() {
       let params = {
@@ -672,10 +676,12 @@ export default {
         targetDatabase: [],
         targetUserName: null,
         targetUserPassword: null,
+        databaseType:'',
         //  protocolPort: null,
         projectId: null,
         // proxyStatus: "0"
       };
+      this.isServiesNameRequired = false
       this.resetForm("form");
     },
     /** 搜索按钮操作 */

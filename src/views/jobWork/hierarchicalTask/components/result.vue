@@ -9,19 +9,19 @@
       <el-form-item label="分类" prop="categoryId">
         <el-select ref="addSelectRef" v-model="addNodeName">
           <el-option style="height: 100%; padding: 0" value="">
-            <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
+            <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
               :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
-              @node-click="addHandleNodeClick" />
+              @check="addHandleNodeCheck" />
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="分类状态" class="addSelectClass" prop="classificationStateIds">
-          <el-select v-model="queryParams.classificationStateIds" multiple @change="inputSearch" placeholder="请选择">
-            <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
+        <el-select v-model="queryParams.classificationStateIds" multiple @change="inputSearch" placeholder="请选择">
+          <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="安全分级" prop="securityLevel">
         <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch" placeholder="请选择">
           <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
@@ -57,7 +57,7 @@
           </el-option>
         </el-select>
       </el-form-item>
-       <el-form-item label="置信度" prop="confidenceLevel">
+      <el-form-item label="置信度" prop="confidenceLevel">
         <el-select clearable v-model="queryParams.confidenceLevel" @change="inputSearch" placeholder="请选择">
           <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
           </el-option>
@@ -149,7 +149,7 @@
         </el-form-item>
         <el-form-item label="推理过程" prop="reasoningProcess">
           <el-input v-model="resultForm.reasoningProcess" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
-             maxlength="500" placeholder="请输入推理过程"></el-input>
+            maxlength="500" placeholder="请输入推理过程"></el-input>
         </el-form-item>
         <el-form-item label="审核建议" prop="auditRecommendation">
           <el-input v-model="resultForm.auditRecommendation" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
@@ -181,7 +181,7 @@ import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
   startI, stopI, databaseMaskI, strategyPushI, strategyAll,
   databaseListI, confirmIds, selectResultsById, confirmList, updateFiledRule,
-  cancelConfirm,cancelConfirmData
+  cancelConfirm, cancelConfirmData
 } from "@/api/system/proxys";
 import { listAllProject, } from "@/api/system/project";
 import {
@@ -191,7 +191,7 @@ import {
 } from "@/api/system/protectCategory"
 
 export default {
-  dicts: ['sys_risk_level','sys_classification_state'],
+  dicts: ['sys_risk_level', 'sys_classification_state'],
   name: "ProxysResult",
   props: {
     treeOptions: {
@@ -209,7 +209,7 @@ export default {
       isIndeterminate: false,
       checkedColumn: [],
       checkAll: false,
-      classificationReasonsList:['策略匹配','AI推理','脏数据识别'],
+      classificationReasonsList: ['策略匹配', 'AI推理', '脏数据识别'],
       confidenceLevelList: [
         { name: "低", id: 1, value: "1" },
         { name: "高", id: 2, value: "2" },
@@ -266,7 +266,7 @@ export default {
           label: "5级"
         },
       ],
-      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "PostgreSQL", id: 3, value: "PostgreSQL" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
+      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       drawerShow: false,
       samplingNum: 10,
       checkList: true,
@@ -280,7 +280,7 @@ export default {
       addUserVisible: false,
       dataType: "",
       targetDataList: [],
-      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "PostgreSQL", id: 3, value: "PostgreSQL" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
+      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       maskCompleteStatus: [{
         value: 'COMPLETE',
         label: '扫描完成'
@@ -728,12 +728,12 @@ export default {
     updataResultFn() {
       this.updataLoading = true
       let params = {
-        reasoningProcess:this.resultForm.reasoningProcess,
-        tableFieldId:this.resultForm.tableFieldId,
-        categoryId:this.resultForm.categoryId,
-        securityLevel:this.resultForm.securityLevel,
-        auditRecommendation:this.resultForm.auditRecommendation,
-        confidenceLevel:this.resultForm.confidenceLevel,
+        reasoningProcess: this.resultForm.reasoningProcess,
+        tableFieldId: this.resultForm.tableFieldId,
+        categoryId: this.resultForm.categoryId,
+        securityLevel: this.resultForm.securityLevel,
+        auditRecommendation: this.resultForm.auditRecommendation,
+        confidenceLevel: this.resultForm.confidenceLevel,
       }
       updateFiledRule(params).then(res => {
         if (res.code == 200) {
@@ -806,11 +806,20 @@ export default {
     resultExdit(row) {
       this.resultForm = JSON.parse(JSON.stringify(row))
       this.resultForm.tableFieldId = row.id
-      this.resultForm.confidenceLevel = row.confidenceLevel == '高' ? '2':'1'
+      this.resultForm.confidenceLevel = row.confidenceLevel == '高' ? '2' : '1'
       this.resultFormNodeName = row.categoryName
       this.deleteVisible = true
     },
-
+    addHandleNodeCheck(node) {
+      const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+      if (parentLabels) {
+        this.addNodeName = parentLabels.join('-') + '-' + node.categoryName;
+      } else {
+        this.addNodeName = node.categoryName;
+      }
+      this.queryParams.categoryId = node.id
+      this.getList()
+    },
     addHandleNodeClick(node) {
       if (node.children && node.children.length > 0) {
         node.disabled = true;
@@ -913,9 +922,11 @@ export default {
 .addMsg /deep/ .el-input--medium {
   width: 237px;
 }
-.tableBox{
+
+.tableBox {
   overflow-y: auto;
 }
+
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -930,6 +941,7 @@ export default {
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
   border-radius: 10px;
 }
+
 .addMsg /deep/ .el-dialog:not(.is-fullscreen) {
   margin-top: 10% !important;
 }

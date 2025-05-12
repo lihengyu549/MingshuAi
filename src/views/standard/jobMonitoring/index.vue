@@ -54,13 +54,13 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="建议防护措施 " prop="protectMethodId">
+          <!-- <el-form-item label="建议防护措施 " prop="protectMethodId">
             <el-select v-model="queryParams.protectMethodId" @change="selectProjectIdChange" multiple placeholder="全部">
               <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
                 :value="item.dictValue">
               </el-option>
             </el-select>
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item label="确认防护措施" prop="confirmProtectMethod">
             <el-select v-model="queryParams.confirmProtectMethod" @change="selectProjectIdChange" multiple
               placeholder="全部">
@@ -533,6 +533,7 @@ export default {
       }).then(() => {
         deleteCategory({ id: data.id }).then(res => {
           this.$modal.msgSuccess("删除成功");
+          this.getProtectCategory(this.queryParams.categoryId)
         })
       })
       // const parent = node.parent;
@@ -751,7 +752,7 @@ export default {
         ...this.queryParams,
         nodeId: this.treeID,
         levelId: this.queryParams.levelId.length ? this.queryParams.levelId.join() : '-1',
-        protectMethodId: this.queryParams.protectMethodId.length ? this.queryParams.protectMethodId.join() : '',
+        // protectMethodId: this.queryParams.protectMethodId.length ? this.queryParams.protectMethodId.join() : '',
         confirmProtectMethod: this.queryParams.confirmProtectMethod.length ? this.queryParams.confirmProtectMethod.join() : '',
         dataSourceId: this.queryParams.dataSourceId ? this.queryParams.dataSourceId : 0,
       }

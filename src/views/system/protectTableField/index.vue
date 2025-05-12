@@ -22,9 +22,9 @@
           <el-form-item label="分类" class="addSelectClass">
             <el-select ref="resultSelectRef" v-model="resultFormNodeName" @change="handleQuery">
               <el-option style="height: 100%; padding: 0" value="">
-                <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
+                <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
                   :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
-                  @node-click="resultHandleNodeClick" />
+                  @check="resultHandleNodeClick" />
               </el-option>
             </el-select>
           </el-form-item>
@@ -112,12 +112,11 @@ import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import { getDatabaseList, protectTableFieldList, exportReport, getDatabaseSource, listByPublished } from "@/api/system/protectTableField";
 import { getFrameworks, treeListI, } from "@/api/system/protectCategory";
 import Cookies from "js-cookie";
-import VueJsonViewer from 'vue-json-viewer';
 import 'vue-json-viewer/style.css'
 import router from "@/router";
 export default {
   name: "ProtectTableField",
-  components: { Treeselect, VueJsonViewer },
+  components: { Treeselect },
 
   dicts: ['sys_risk_level'],
   data() {
@@ -493,7 +492,8 @@ Authorization:Bearer ${this.Token}`
         businessName: this.queryParams.businessName,
         pageNum: this.queryParams.pageNum,
         pageSize: this.queryParams.pageSize,
-        categoryId: this.queryParams.categoryId
+        // categoryId: this.queryParams.categoryId
+        categoryIds: this.queryParams.categoryId
       }
       listByPublished(params).then((response) => {
         if (response.code == 200 && response.rows) {
@@ -585,20 +585,40 @@ Authorization:Bearer ${this.Token}`
         this.treeLoading = false
       });
     },
+    // 单选click事件
+    // resultHandleNodeClick(node) {
+    //   if (node.children && node.children.length > 0) {
+    //     node.disabled = true;
+    //   } else {
+    //     const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+    //     if (parentLabels) {
+    //       this.resultFormNodeName = parentLabels.join('-') + '-' + node.categoryName;
+    //     } else {
+    //       this.resultFormNodeName = node.categoryName;
+    //     }
+    //     this.queryParams.categoryId = node.id
+    //     this.$refs.resultSelectRef.blur()
+    //     this.handleQuery()
+    //   }
+    // },
+
+    // 多选事件
     resultHandleNodeClick(node) {
-      if (node.children && node.children.length > 0) {
-        node.disabled = true;
+      const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+      if (parentLabels) {
+        this.resultFormNodeName = parentLabels.join('-') + '-' + node.categoryName;
       } else {
-        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
-        if (parentLabels) {
-          this.resultFormNodeName = parentLabels.join('-') + '-' + node.categoryName;
-        } else {
-          this.resultFormNodeName = node.categoryName;
-        }
-        this.queryParams.categoryId = node.id
-        this.$refs.resultSelectRef.blur()
-        this.handleQuery()
+        this.resultFormNodeName = node.categoryName;
       }
+      let data = this.$refs.treeSelect.getCheckedNodes()
+      let childrenData = data.filter((item)=>{
+        return !item.children
+      })
+      this.queryParams.categoryId = childrenData.map((item)=>{
+        return item.id
+      }).join()
+      // this.$refs.resultSelectRef.blur()
+      this.handleQuery()
     },
 
     filterNode(value, data) {
