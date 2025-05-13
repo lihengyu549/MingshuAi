@@ -555,7 +555,8 @@ export default {
       let params = {
         categoryName: this.nodeLabel,
         parentId: data.parentId,
-        id: data.id || null
+        id: data.id || null,
+        topId: this.queryParams.categoryId,
       }
       if (data.id) {
         updateCategory(params).then(res => {

@@ -147,17 +147,6 @@ export default {
       scanContentLoading: false,
       treeCheckedData: [],//树节点已选中数据
       scanContentTreeData: [],//// 扫描配置树数据
-      // 表单参数
-      form: {
-        projectId: null,
-        sourceName: '',
-        databaseType: '',
-        // targetPort:'3306',
-        // targetIp:'192.168.2.38',
-        // targetUserName:'root',
-        // targetUserPassword:'your_password',
-        tables: {},
-      },
       // 表单校验
       rules: {
         userPassword: [
@@ -588,24 +577,23 @@ export default {
       this.multiple = !selection.length
     },
     reset() {
-      this.form = {
-        targetIp: null,
-        targetPort: null,
-        targetDatabase: [],
-        targetUserName: null,
-        targetUserPassword: null,
-        //  protocolPort: null,
-        projectId: null,
-        targetDatabase:[],
-        tables: {},
-        tabelCheckedName:'',
-        // proxyStatus: "0"
-      };
+      // this.form = {
+      //   targetIp: null,
+      //   targetPort: null,
+      //   targetDatabase: [],
+      //   targetUserName: null,
+      //   targetUserPassword: null,
+      //   //  protocolPort: null,
+      //   projectId: null,
+      //   targetDatabase:[],
+      //   tables: {},
+      //   tabelCheckedName:'',
+      //   // proxyStatus: "0"
+      // };
       this.isServiesNameRequired = false
       this.resetForm("form");
     },
     resultExdit(row) {
-      this.reset()
       this.title = "添加数据库";
       this.form.databaseType = row.databaseType || ''
       this.form.sourceName = row.sourceName || ''

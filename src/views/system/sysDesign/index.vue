@@ -13,7 +13,7 @@
             <el-form-item label="产品LOGO" prop="appFacvion">
               <el-upload class="upload-demo" action="" :on-remove="handleRemove" :file-list="fileList" ref="uploadRef"
                 list-type="picture" :multiple="false" :limit="1" :on-change="handleFileChange"
-                :on-exceed="handleFileExceed" :auto-upload="false" :http-request="submit">
+                :on-exceed="handleFileExceed" accept=".jpg,.jpeg,.png,.JPG,.JPEG,.PNG,.ico" :auto-upload="false" :http-request="submit">
                 <el-button size="small" type="primary">点击上传</el-button>
               </el-upload>
             </el-form-item>
