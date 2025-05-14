@@ -402,7 +402,16 @@ export default {
         series: {
           type: 'bar',
           encode: { x: 'name', y: 'score' },
-          datasetIndex: 1
+          datasetIndex: 1,
+
+          // label: {
+          //   show: true,
+          //   position: 'top',
+          //   textStyle: {
+          //     color: 'black',
+          //     fontSize: 16
+          //   }
+          // },
         }
       };
 
@@ -606,7 +615,7 @@ export default {
 
 .writeBgc {
   background-color: #fff;
-  width: 55%;
+  width: 65%;
   margin: 0 auto;
 }
 
@@ -845,7 +854,8 @@ ul li.odd {
 h4 {
   font-size: 16px !important;
 }
-.sort-name-count{
+
+.sort-name-count {
   width: calc(100% - 25px);
   display: inline-block;
 }

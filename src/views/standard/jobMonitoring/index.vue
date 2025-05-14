@@ -18,13 +18,13 @@
               <el-input id="addNode" class="addNode" v-else v-model="nodeLabel"
                 @blur="addEditNodeFn(node, data)"></el-input>
               <span>
-                <el-button type="text" size="mini" @click.stop="() => append(data)">
+                <el-button type="text" v-show="!data.addEdit" size="mini" @click.stop="() => append(data, node)">
                   增加
                 </el-button>
-                <el-button type="text" size="mini" @click.stop="() => editNode(data)">
+                <el-button type="text" v-show="!data.addEdit" size="mini" @click.stop="() => editNode(data)">
                   编辑
                 </el-button>
-                <el-button type="text" size="mini" @click.stop="() => remove(node, data)">
+                <el-button type="text" v-show="!data.addEdit" size="mini" @click.stop="() => remove(node, data)">
                   删除
                 </el-button>
               </span>
@@ -514,16 +514,27 @@ export default {
         this.$refs.addSelectRef.blur()
       }
     },
-    append(data) {
-      const newChild = { id: '', label: '', children: [], addEdit: true, parentId: data.id };
-      if (!data.children) {
-        this.$set(data, 'children', []);
+    append(data, parentNode) {
+      if (!parentNode.expanded) {
+        this.$message({
+          type: 'warning',
+          message: '当前节点未展开，请展开后再添加子节点',
+        });
+        // parentNode.expanded = true
+      } else {
+        const newChild = { id: '', label: '', children: [], addEdit: true, parentId: data.id };
+        if (!data.children) {
+          this.$set(data, 'children', []);
+        }
+        data.children.push(newChild);
+        this.$nextTick(() => {
+          let addNodeInput = document.getElementById('addNode')
+          if (addNodeInput) {
+
+            addNodeInput.focus()
+          }
+        })
       }
-      data.children.push(newChild);
-      this.$nextTick(() => {
-        let addNodeInput = document.getElementById('addNode')
-        addNodeInput.focus()
-      })
     },
     remove(node, data) {
       this.$confirm(`确定删除当前及其下数据吗`, '提示', {
@@ -551,6 +562,14 @@ export default {
       })
     },
     addEditNodeFn(node, data) {
+      if (!this.nodeLabel && data.addEdit) {
+        this.$message({
+          type: 'warning',
+          message: '请逐条添加，不可一次添加多条',
+        });
+        this.getProtectCategory(this.queryParams.categoryId)
+        return
+      }
       this.Loading = true
       let params = {
         categoryName: this.nodeLabel,
@@ -562,13 +581,13 @@ export default {
         updateCategory(params).then(res => {
           this.getProtectCategory(this.queryParams.categoryId)
         })
-        .catch(err=>{
-          this.getProtectCategory(this.queryParams.categoryId)
-        })
+          .catch(err => {
+            this.getProtectCategory(this.queryParams.categoryId)
+          })
       } else {
         addCategory(params).then(res => {
           this.getProtectCategory(this.queryParams.categoryId)
-        }).catch(err=>{
+        }).catch(err => {
           this.getProtectCategory(this.queryParams.categoryId)
         })
       }

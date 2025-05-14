@@ -68,10 +68,10 @@
           <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
         </el-form-item>
         <el-form-item label="用户" prop="targetUserName" :rules="rules.targetUserName">
-          <el-input v-model="form.targetUserName" placeholder="请输入数据库用户名称" />
+          <el-input v-model="form.targetUserName" autocomplete="new-password" placeholder="请输入数据库用户名称" />
         </el-form-item>
         <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
-          <el-input v-model="form.targetUserPassword" show-password maxlegth="100" placeholder="请输入数据库密码" />
+          <el-input v-model="form.targetUserPassword" autocomplete="new-password" show-password maxlegth="100" placeholder="请输入数据库密码" />
         </el-form-item>
         <el-form-item v-show="form.databaseType == 'ORACLE'" label="服务名" prop="connectionValue"
           :rules="rules.connectionValue()">
@@ -322,6 +322,10 @@ export default {
         examplesName: '',
         databaseType: '',
         connectionValue:'',
+        targetIp:'',
+        targetPort:'',
+        targetUserName:'',
+        targetUserPassword:'',
       },
       addForm: {},
       importDataLoading: false,
@@ -594,6 +598,7 @@ export default {
       this.resetForm("form");
     },
     resultExdit(row) {
+      this.resetForm("form");
       this.title = "添加数据库";
       this.form.databaseType = row.databaseType || ''
       this.form.sourceName = row.sourceName || ''
@@ -604,6 +609,10 @@ export default {
       this.form.connectionType = row.connectionType || ''
       this.form.examplesName = row.examplesName || ''
       this.form.businessName = row.businessName || ''
+      this.form.tabelCheckedName = row.tabelCheckedName || ''
+      this.form.targetUserName = row.targetUserName || ''
+      this.form.targetUserPassword = row.targetUserPassword || ''
+      this.treeCheckedData = []
       this.open = true;
     },
   }

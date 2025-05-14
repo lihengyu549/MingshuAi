@@ -501,6 +501,9 @@ export default {
       return msg || '待扫描'
     },
     databaseTypeMsg(val) {
+    if(val === 'Excel'){
+      return 'Excel'
+    }
       let msg = ''
       for (let item of this.databaseTypeList) {
         if (item.value == val) {
