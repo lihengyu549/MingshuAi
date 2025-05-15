@@ -34,7 +34,11 @@
           </div>
           <div class="main_body_body">
             <el-table :data="tableData" :stripe="false" style="width: 100%">
-              <el-table-column prop="current" label="标准类型" width="80" align="center" show-overflow-tooltip />
+              <el-table-column prop="standardType" label="标准类型" width="80" align="center" show-overflow-tooltip>
+                <template slot-scope="scope">
+                  <span> {{ currentMsgFn(scope.row.standardType) }}</span>
+                </template>
+              </el-table-column>
               <el-table-column prop="standardId" label="标准编号" width="100" align="center" show-overflow-tooltip />
               <el-table-column prop="categoryName" label="标准名称" align="center" />
               <el-table-column prop="implementTime" label="实施时间" width="120" align="center" show-overflow-tooltip />
@@ -135,13 +139,13 @@ export default {
           value: '1'
         },
         {
-          text: '团标',
-          bgcColor: 'backgroundColor:#ffe0b2;',
+          text: '地标',
+          bgcColor: 'backgroundColor:#b2ebf2;',
           value: '2'
         },
         {
-          text: '地标',
-          bgcColor: 'backgroundColor:#b2ebf2;',
+          text: '团标',
+          bgcColor: 'backgroundColor:#ffe0b2;',
           value: '3'
         },
         {
@@ -235,6 +239,15 @@ export default {
       getDatabaseStatistics({ databaseType: type || '' }).then((response) => {
         this.tableRightData = response.data.list;
       });
+    },
+    currentMsgFn(type) {
+      let msg = ''
+      for (let item of this.yuanList) {
+        if (item.value == type) {
+          msg = item.text
+        }
+      }
+      return msg || '未知来源'
     },
     // 打开加载层
     openLoading() {

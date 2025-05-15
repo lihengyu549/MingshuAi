@@ -534,16 +534,18 @@ input[aria-hidden=true] {
   background-color: #fff;
   /* 添加立体阴影 */
   box-shadow: 5px 5px 10px 1px rgba(141, 141, 141, 0.5);
-  margin-bottom: 20px;
   border-radius: 10px;
+  margin-bottom: 20px;
 }
 
 .listBox_item:nth-child(2) {
   margin: 0 60px;
+  margin-bottom: 20px;
 }
 
 .listBox_item:nth-child(5) {
   margin: 0 60px;
+  margin-bottom: 20px;
 }
 
 .listBox_title {
