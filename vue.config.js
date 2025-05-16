@@ -9,7 +9,7 @@ const CompressionPlugin = require('compression-webpack-plugin')
 
 const name = process.env.VUE_APP_TITLE || 'AI分类分级平台' // 网页标题
 
-const port = process.env.port || process.env.npm_config_port || 8080 // 端口
+const port = process.env.port || process.env.npm_config_port || 8088 // 端口
 
 // vue.config.js 配置说明
 //官方vue.config.js 参考文档 https://cli.vuejs.org/zh/config/#css-loaderoptions
@@ -31,15 +31,15 @@ module.exports = {
   // webpack-dev-server 相关配置
   devServer: {
     host: '0.0.0.0',
-    publicPath:'https://localhost:8080/',
+    // publicPath:'https://localhost:8080/',
     port: port,
     open: true,
     proxy: {
       "/dev-api": {
         // target: `http://dast123123.zp.jilj.top:25378`,
         // target: `http://192.168.2.196/`,
-        target: `https://192.168.2.174/`,
-        // target: `http://117.134.9.113:8008/`,
+        // target: `https://192.168.2.174/`,
+        target: `http://117.134.9.113:8008/`,
         // target: `http://sihx.hlg.d2w.cc:30977/`,
         changeOrigin: true,
         pathRewrite:{'^/dev-api':''}

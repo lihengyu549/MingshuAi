@@ -141,7 +141,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
-          <el-select v-model="resultForm.securityLevel" placeholder="请选择">
+          <el-select v-model="resultForm.securityLevel" disabled placeholder="请选择">
             <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
               :value="item.label">
             </el-option>
