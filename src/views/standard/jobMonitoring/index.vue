@@ -14,17 +14,20 @@
             :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
             node-key="id" highlight-current @node-click="handleNodeClick">
             <span class="custom-tree-node" slot-scope="{ node, data }">
-              <span v-if="!data.addEdit">{{ node.label }}</span>
+              <span class="node-label" v-if="!data.addEdit" :title="node.label">{{ node.label }}</span>
               <el-input id="addNode" class="addNode" v-else v-model="nodeLabel"
                 @blur="addEditNodeFn(node, data)"></el-input>
               <span>
-                <el-button type="text" v-show="!data.addEdit" size="mini" @click.stop="() => append(data, node)">
+                <el-button type="text" v-show="!data.addEdit && data.nodeLayerIndex !== 3" size="mini"
+                  @click.stop="() => append(data, node)">
                   增加
                 </el-button>
-                <el-button type="text" v-show="!data.addEdit" size="mini" @click.stop="() => editNode(data)">
+                <el-button type="text" v-show="!data.addEdit && data.nodeLayerIndex !== 0" size="mini"
+                  @click.stop="() => editNode(data)">
                   编辑
                 </el-button>
-                <el-button type="text" v-show="!data.addEdit" size="mini" @click.stop="() => remove(node, data)">
+                <el-button type="text" v-show="!data.addEdit && data.nodeLayerIndex !== 0" size="mini"
+                  @click.stop="() => remove(node, data)">
                   删除
                 </el-button>
               </span>
@@ -90,7 +93,7 @@
           </el-col>
           <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
         </el-row>
-        <el-table v-loading="loading" :data="protectTableFieldList" height="570px" ref="tableRef" class="tableBox">
+        <el-table v-loading="loading" :data="protectTableFieldList" height="650px" ref="tableRef" class="tableBox">
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
           <el-table-column label="子类名称" align="center" prop="attachData" />
@@ -290,6 +293,7 @@ export default {
         attachData: '',
         categoryId: '',
         minSecurityLevel: null,
+        dataOwner: '',
       },
       importDataLoading: false,
       filterName: undefined,
@@ -419,6 +423,7 @@ export default {
       this.addOrEdit.title = '新增'
       this.addOrEdit.show = true
       this.addOrEditDataRuls = {}
+      this.addOrEditDataRuls.dataOwner = this.$store.state.user.name
       this.tagsShow = true
       this.tags = []
       this.addNodeName = ''
@@ -733,7 +738,8 @@ export default {
     getProtectCategory(key) {
       this.treeLoading = true
       let data = {
-        parentId: key
+        parentId: key,
+        ifAddParent: 1,
       };
       treeListI(data).then((resp) => {
         this.categoryList = resp.data
@@ -741,12 +747,12 @@ export default {
         if (resp.data.length == 0) {
           this.Loading = false
         } else {
-          for (let index in resp.data) {
-            if (resp.data[index].parentId === 0) {
-              this.categoryList.splice(index, 1)
-              break
-            }
-          }
+          // for (let index in resp.data) {
+          //   if (resp.data[index].parentId === 0) {
+          //     this.categoryList.splice(index, 1)
+          //     break
+          //   }
+          // }
           this.treeID = this.categoryList[0].id;
           this.$nextTick(function () {
             if (this.$refs.tree) {
@@ -979,5 +985,12 @@ export default {
     height: 23px;
     line-height: 23px;
   }
+}
+.node-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px; /* 根据需要调整宽度 */
+  line-height: 28px;
 }
 </style>

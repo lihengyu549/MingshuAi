@@ -128,7 +128,7 @@
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
-    <el-dialog title="分类分级框架结果修改" v-loading="updataLoading" :visible.sync="deleteVisible" width="650px"
+    <el-dialog title="结果修改" v-loading="updataLoading" :visible.sync="deleteVisible" width="650px"
       style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
       <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
         <el-form-item label="分类" class="addSelectClass">
@@ -143,7 +143,7 @@
         <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
           <el-select v-model="resultForm.securityLevel" disabled placeholder="请选择">
             <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-              :value="item.label">
+              :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -181,7 +181,7 @@ import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
   startI, stopI, databaseMaskI, strategyPushI, strategyAll,
   databaseListI, confirmIds, selectResultsById, confirmList, updateFiledRule,
-  cancelConfirm, cancelConfirmData
+  cancelConfirm, cancelConfirmData,getCategoryAttachData
 } from "@/api/system/proxys";
 import { listAllProject, } from "@/api/system/project";
 import {
@@ -581,6 +581,9 @@ export default {
               this.loading = false
             }
           })
+          .catch(() => {
+            this.loading = false
+          });
           // 接口
         }).catch(() => {
           this.loading = false
@@ -610,6 +613,9 @@ export default {
               this.loading = false
             }
           })
+          .catch(() => {
+            this.loading = false
+          });
           // 接口
         }).catch(() => {
           this.loading = false
@@ -848,6 +854,11 @@ export default {
         }
         this.resultForm.categoryId = node.id
         this.$refs.resultSelectRef.blur()
+        getCategoryAttachData({id:node.id}).then(res=>{
+          // console.log(res);
+          this.resultForm.securityLevel = res.data.minSecurityLevel + ''
+          
+        })
       }
     },
     filterNode(value, data) {

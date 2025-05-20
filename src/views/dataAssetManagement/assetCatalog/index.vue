@@ -72,7 +72,7 @@
     </el-row>
     <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow"
       :destroy-on-close="true" direction="rtl" size="60%">
-      <el-table :data="drawerData" ref="tableRef" :key="tableKey" border class="tableBox">
+      <el-table :data="drawerData" ref="tableRef" height="850px" :key="tableKey" border class="tableBox">
         <el-table-column label="字段名称" align="center" prop="fieldName" width="150" show-overflow-tooltip />
         <el-table-column label="原生字段注释" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
           <template slot-scope="scope">
@@ -94,7 +94,7 @@
           </template>
         </el-table-column>
         <el-table-column label="样本长度过短" align="center" prop="sampleLengthShort" width="100" show-overflow-tooltip />
-        <el-table-column label="是否为脏数据" align="center" prop="dirtyData" width="100" show-overflow-tooltip>
+        <el-table-column label="是否为脏数据（可编辑）" align="center" prop="dirtyData" width="200" show-overflow-tooltip>
           <template slot-scope="scope">
             <span v-if="!scope.row.drawerEditDirtyData" @click="drawerEditFn(scope.row, 'dirtyData')">{{
               scope.row.dirtyData }}</span>
@@ -197,6 +197,8 @@ export default {
       },
       tableKey: 0,
       editMsg: '',
+      scrollTop:'',
+      scrollLeft:'',
     };
   },
   watch: {
@@ -229,6 +231,9 @@ export default {
             this.$message.success(`填充成功`)
             this.loading = false
           })
+          .catch(() => {
+            this.loading = false
+          });
         }).catch(() => {
           // 用户点击了取消按钮，不做任何操作
         });
@@ -252,6 +257,9 @@ export default {
             this.$message.success(`评估成功`)
             this.loading = false
           })
+          .catch(() => {
+            this.loading = false
+          });
         }).catch(() => {
           // 用户点击了取消按钮，不做任何操作
         });
@@ -291,6 +299,8 @@ export default {
           this.loading = false
           this.$message.success(`填充成功`)
         }
+      }).catch(err => {
+        this.loading = false
       })
     },
     // 质量评估
@@ -307,8 +317,14 @@ export default {
           this.$message.success(`评估完成`)
         }
       })
+      .catch(err => {
+        this.loading = false
+      })
     },
     drawerEditFn(row, flag) {
+      const tableBody = this.$refs.tableRef.$el.querySelector('.el-table__body-wrapper');
+      let scrollTop = tableBody.scrollTop;
+      let scrollLeft = tableBody.scrollLeft;
       this.tableKey += 1
       if (flag == 'aiFieldRemark') {
         row.drawerEdit = true
@@ -320,6 +336,8 @@ export default {
         row.drawerEditDirtyData = true
         row.dirtyDataEditMsg = row.dirtyData
       }
+        tableBody.scrollTop = scrollTop;
+        tableBody.scrollLeft = scrollLeft;
     },
     async drawerEditBlurFn(row) {
       let params = {

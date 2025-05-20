@@ -332,3 +332,11 @@ export function taskProgressQuery (params) {
     data: params
   })
 }
+//发布撤回接口--贺贺
+export function getCategoryAttachData (params) {
+  return request({
+    url: '/system/category/getCategoryAttachData',
+    method: 'get',
+    params: params
+  })
+}

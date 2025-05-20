@@ -18,14 +18,14 @@
           @keyup.enter.native="handleQuery" />
       </el-form-item>
 
-      <el-form-item label="分类分级框架" prop="projectId">
-        <el-select clearable v-model="queryParams.projectId" @change="inputSearch" placeholder="请选择数据库类型">
+      <el-form-item label="分类分级标准" prop="projectId">
+        <el-select clearable v-model="queryParams.projectId" @change="inputSearch" placeholder="请选择分类分级标准">
           <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="主机信息" prop="targetIpPort">
-        <el-input v-model="queryParams.targetIpPort" @input="inputSearch" placeholder="请输入数据源名称" clearable
+        <el-input v-model="queryParams.targetIpPort" @input="inputSearch" placeholder="请输入主机信息" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="扫描状态" prop="scanState">
@@ -66,7 +66,7 @@
         </template>
       </el-table-column>
       <el-table-column label="来源业务系统" align="center" prop="businessName" />
-      <el-table-column label="分类分级框架" align="center" prop="projectName" />
+      <el-table-column label="分类分级标准" align="center" prop="projectName" />
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
           <div style="display: flex; align-items: center;justify-content: center;">
