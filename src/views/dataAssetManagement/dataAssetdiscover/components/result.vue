@@ -20,7 +20,11 @@
     <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column label="主机" align="center" prop="ip" show-overflow-tooltip />
       <el-table-column label="端口" align="center" prop="port" show-overflow-tooltip />
-      <el-table-column label="数据库类型" align="center" prop="databaseType" show-overflow-tooltip />
+      <el-table-column label="数据库类型" align="center" prop="databaseType" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span>{{ findDatabaseValueByValue(scope.row.databaseType) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="数据库版本" align="center" prop="databaseVersion" show-overflow-tooltip />
       <el-table-column label="状态" align="center" min-width="250" prop="state">
         <template slot-scope="scope">
@@ -71,7 +75,8 @@
           <el-input v-model="form.targetUserName" autocomplete="new-password" placeholder="请输入数据库用户名称" />
         </el-form-item>
         <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
-          <el-input v-model="form.targetUserPassword" autocomplete="new-password" show-password maxlegth="100" placeholder="请输入数据库密码" />
+          <el-input v-model="form.targetUserPassword" autocomplete="new-password" show-password maxlegth="100"
+            placeholder="请输入数据库密码" />
         </el-form-item>
         <el-form-item v-show="form.databaseType == 'ORACLE'" label="服务名" prop="connectionValue"
           :rules="rules.connectionValue()">
@@ -321,11 +326,11 @@ export default {
         businessName: '',
         examplesName: '',
         databaseType: '',
-        connectionValue:'',
-        targetIp:'',
-        targetPort:'',
-        targetUserName:'',
-        targetUserPassword:'',
+        connectionValue: '',
+        targetIp: '',
+        targetPort: '',
+        targetUserName: '',
+        targetUserPassword: '',
       },
       addForm: {},
       importDataLoading: false,
@@ -536,14 +541,14 @@ export default {
       this.form.projectId = e
       this.form.projectName = e
     },
-    findDatabaseValueByName(name) {
-      let value;
+    findDatabaseValueByValue(value) {
+      let name;
       for (let i = 0; i < this.databaseTypeList.length; i++) {
-        if (name == this.databaseTypeList[i].name) {
-          value = this.databaseTypeList[i].value
+        if (value == this.databaseTypeList[i].value) {
+          name = this.databaseTypeList[i].name
         }
       }
-      return value
+      return name
     },
     // 定时器，防抖使用
     inputSearch(data) {

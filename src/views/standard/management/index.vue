@@ -312,7 +312,7 @@ export default {
       this.treeID = this.categoryList[0].id
       this.$refs.tree.setCurrentKey(this.treeID);
       this.resetForm("queryParams");
-      this.handleQuery();
+      this.handleQuery(); 
     },
     /** 提交按钮 */
     async submitForm() {
@@ -340,7 +340,7 @@ export default {
           formData.append('source', this.form.source);
           formData.append('industryCategory', this.form.industryCategory);
           await categoryImport(formData).then(res => {
-            this.messsucc(res, '导入条目数量共');
+            this.$message.success('操作成功');
             // this.getList();
             this.fileList = []
             this.reset()
