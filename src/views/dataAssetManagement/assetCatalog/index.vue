@@ -72,7 +72,8 @@
     </el-row>
     <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow"
       :destroy-on-close="true" direction="rtl" size="60%">
-      <el-table :data="drawerData" ref="tableRef" height="850px" :key="tableKey" border class="tableBox">
+      <!-- :key="tableKey" -->
+      <el-table :data="drawerData" ref="tableRef" height="850px" border class="tableBox">
         <el-table-column label="字段名称" align="center" prop="fieldName" width="150" show-overflow-tooltip />
         <el-table-column label="原生字段注释" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
           <template slot-scope="scope">
@@ -81,10 +82,12 @@
         </el-table-column>
         <el-table-column label="合成字段注释（可编辑）" align="center" prop="aiFieldRemark" width="200" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, 'aiFieldRemark')">{{
+            <div class="tableInputEdit">
+                  <span v-show="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, 'aiFieldRemark',scope.$index)">{{
               scope.row.aiFieldRemark }}</span>
-            <el-input v-else id="editInput" v-model="editMsg" @blur="drawerEditBlurFn(scope.row, 'aiFieldRemark')"
+            <el-input v-show="scope.row.drawerEdit" id="editInput" v-model="editMsg" @blur="drawerEditBlurFn(scope.row,scope.$index)"
               size="small" />
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="样本是否为空" align="center" prop="dataIsNull" width="100" show-overflow-tooltip />
@@ -96,13 +99,15 @@
         <el-table-column label="样本长度过短" align="center" prop="sampleLengthShort" width="100" show-overflow-tooltip />
         <el-table-column label="是否为脏数据（可编辑）" align="center" prop="dirtyData" width="200" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span v-if="!scope.row.drawerEditDirtyData" @click="drawerEditFn(scope.row, 'dirtyData')">{{
-              scope.row.dirtyData }}</span>
-            <el-select v-else v-model="scope.row.dirtyDataEditMsg" placeholder="全部"
-              @change="drawerEditBlurFn(scope.row, 'dirtyData')">
-              <el-option v-for="item in dirtyDataList" :key="item.value" :label="item.label" :value="item.label">
-              </el-option>
-            </el-select>
+            <div class="tableEdit">
+              <span v-show="!scope.row.drawerEditDirtyData" @click="drawerEditFn(scope.row, 'dirtyData',scope.$index)">{{
+                scope.row.dirtyData }}</span>
+              <el-select v-show="scope.row.drawerEditDirtyData" v-model="scope.row.dirtyDataEditMsg" placeholder="全部"
+                @change="drawerEditBlurFn(scope.row,scope.$index)">
+                <el-option v-for="item in dirtyDataList" :key="item.value" :label="item.label" :value="item.label">
+                </el-option>
+              </el-select>
+            </div>
           </template>
         </el-table-column>
         <!-- <el-table-column label="样本重复率" align="center" prop="dataIsRepeat" width="100" show-overflow-tooltip>
@@ -197,8 +202,8 @@ export default {
       },
       tableKey: 0,
       editMsg: '',
-      scrollTop:'',
-      scrollLeft:'',
+      scrollTop: '',
+      scrollLeft: '',
     };
   },
   watch: {
@@ -231,9 +236,9 @@ export default {
             this.$message.success(`填充成功`)
             this.loading = false
           })
-          .catch(() => {
-            this.loading = false
-          });
+            .catch(() => {
+              this.loading = false
+            });
         }).catch(() => {
           // 用户点击了取消按钮，不做任何操作
         });
@@ -257,9 +262,9 @@ export default {
             this.$message.success(`评估成功`)
             this.loading = false
           })
-          .catch(() => {
-            this.loading = false
-          });
+            .catch(() => {
+              this.loading = false
+            });
         }).catch(() => {
           // 用户点击了取消按钮，不做任何操作
         });
@@ -317,29 +322,64 @@ export default {
           this.$message.success(`评估完成`)
         }
       })
-      .catch(err => {
-        this.loading = false
-      })
+        .catch(err => {
+          this.loading = false
+        })
     },
-    drawerEditFn(row, flag) {
-      const tableBody = this.$refs.tableRef.$el.querySelector('.el-table__body-wrapper');
-      let scrollTop = tableBody.scrollTop;
-      let scrollLeft = tableBody.scrollLeft;
-      this.tableKey += 1
+    drawerEditFn(row, flag,index) {
+      let editFlag = false
+      this.drawerData.forEach(item => { 
+        if(item.drawerEdit || item.drawerEditDirtyData){
+          this.$message.warning('请逐条修改，不可一次修改多条')
+          editFlag = true
+        }
+      })
+      if(editFlag)return
+      // const tableBody = this.$refs.tableRef.$el.querySelector('.el-table__body-wrapper');
+      // let scrollTop = tableBody.scrollTop;
+      // let scrollLeft = tableBody.scrollLeft;
+      // this.tableKey += 1
+      // 数据更新后恢复滚动位置
+      // this.$nextTick(() => {
+      //   setTimeout(() => {
+      //     const tableBody = this.$refs.tableRef.$el.querySelector('.el-table__body-wrapper');
+      //     // tableBody.scrollTop = scrollTop;
+      //     // tableBody.scrollLeft = scrollLeft;
+      //     tableBody.scrollTo({
+      //       top: scrollTop,
+      //       left: scrollLeft,
+      //       behavior: 'smooth'
+      //     });
+      //   }, 0);
+      // });
       if (flag == 'aiFieldRemark') {
         row.drawerEdit = true
         this.editMsg = row.aiFieldRemark
+        let editNode = document.querySelectorAll('.tableInputEdit')[index]
+        editNode.childNodes[0].style.display = 'none'
+        editNode.childNodes[1].style.display = 'block'
+        // editNode.childNodes[1].children[0].children[0].value =  row.dirtyData
         this.$nextTick(() => {
-          document.getElementById('editInput').focus();
+          // document.getElementById('tableInputEdit').focus();
+          console.log(editNode.childNodes[1].childNodes[1].focus());
+          
+          
         })
       } else {
         row.drawerEditDirtyData = true
-        row.dirtyDataEditMsg = row.dirtyData
-      }
-        tableBody.scrollTop = scrollTop;
-        tableBody.scrollLeft = scrollLeft;
+        let editNode = document.querySelectorAll('.tableEdit')[index]
+        editNode.childNodes[0].style.display = 'none'
+        editNode.childNodes[1].style.display = 'block'
+        editNode.childNodes[1].children[0].children[0].value =  row.dirtyData
+        }
     },
-    async drawerEditBlurFn(row) {
+    async drawerEditBlurFn(row,index) {
+      if(row.drawerEditDirtyData){
+        let editNode = document.querySelectorAll('.tableEdit')[index]
+        editNode.childNodes[0].style.display = 'block'
+        editNode.childNodes[1].style.display = 'none'
+        // editNode.childNodes[1].children[0].value =  row.dirtyData
+      }
       let params = {
         craftRemark: this.editMsg || row.aiFieldRemark,
         dirtyData: row.dirtyDataEditMsg || row.dirtyData,
@@ -352,8 +392,8 @@ export default {
         });
         row.drawerEdit = false
         row.dirtyDataEditMsg = ''
+        row.drawerEditDirtyData = false
         this.editMsg = ''
-        this.tableKey += 1
       })
       this.fieldInformationFn(this.filedRowData)
       return
@@ -400,6 +440,7 @@ export default {
       getAllFieldListByTableIdAndDatabaseId(params).then(res => {
         if (res.code == 200) {
           this.drawerData = res.data
+          window.aaaatabel = () => this.drawerData
           this.drawerData.forEach(ele => {
             if (ele.data) {
               ele.sampleList = JSON.parse(ele.data).map((item => ({ value: item })))
@@ -638,16 +679,19 @@ export default {
 .btnItem:hover {
   cursor: pointer;
 }
-.treeBox::-webkit-scrollbar{
+
+.treeBox::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-.treeBox::-webkit-scrollbar-thumb{
+
+.treeBox::-webkit-scrollbar-thumb {
   background-color: #0003;
   border-radius: 10px;
   transition: all .2s ease-in-out;
 }
-.treeBox::-webkit-scrollbar-track{
+
+.treeBox::-webkit-scrollbar-track {
   border-radius: 10px;
 
 }

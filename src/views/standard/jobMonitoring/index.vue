@@ -355,7 +355,10 @@ export default {
     }
   },
   created() {
-    this.gettreeOptionsList()
+    if(this.$route.query && this.$route.query.id){
+      this.queryParams.categoryId = this.$route.query.id * 1
+    }
+    this.gettreeOptionsList(this.$route.query.id)
     this.getDictData()
     this.getSelectUserListAll()
   },
@@ -644,7 +647,7 @@ export default {
             attachStatus(data).then(res => {
               if (res.code == 200) {
                 this.messsucc(res, flag)
-                this.getList()
+                 this.handleQuery();
               }
             })
           } else if (flag == '禁用') {
@@ -652,7 +655,7 @@ export default {
             attachStatus(data).then(res => {
               if (res.code == 200) {
                 this.messsucc(res, flag)
-                this.getList()
+                 this.handleQuery();
               }
             })
           } else if (flag == '删除') {
@@ -668,7 +671,7 @@ export default {
             deleteAttachData(data).then(res => {
               if (res.code == 200) {
                 this.messsucc(res, flag)
-                this.getList()
+                 this.handleQuery();
               }
             })
           } else {
@@ -688,12 +691,14 @@ export default {
       this.queryParams.pageSize = 10
       this.getProtectCategory(val)
     },
-    gettreeOptionsList() {
+    gettreeOptionsList(id) {
       this.Loading = true
       getFrameworks().then((response) => {
         this.treeOptions = response.data
         if (response.data.length > 0) {
-          this.queryParams.categoryId = response.data[0].id;
+          if(!id) {
+            this.queryParams.categoryId = response.data[0].id;
+          }
           this.getProtectCategory(this.queryParams.categoryId);
         }
       });

@@ -286,7 +286,7 @@ export default {
       this.form.importFile = row.fileName
     },
     detailFn(row) {
-      this.$router.push({ path: '/standard/jobMonitorings', query: { id: row.id } })
+      this.$router.push({ path: '/standard/jobMonitorings', query: { id: row.id, } })
     },
     deleteFn(row) {
       this.$confirm(`删除任务，将会删除数据源所关联的所有执行结果,确定删除吗`, '提示', {
@@ -334,7 +334,9 @@ export default {
           formData.append('inner', this.form.inner || '');
           formData.append('standardId', this.form.standardId);
           formData.append('standardType', this.form.standardType);
-          formData.append('implementTime', this.form.implementTime);
+          if(this.form.implementTime){
+            formData.append('implementTime', this.form.implementTime);
+          }
           formData.append('source', this.form.source);
           formData.append('industryCategory', this.form.industryCategory);
           await categoryImport(formData).then(res => {
@@ -343,7 +345,7 @@ export default {
             this.fileList = []
             this.reset()
             this.open = false
-            this.gettreeOptionsList()
+            this.handleQuery()
             this.formLoading = false
           })
             .catch((err) => {
