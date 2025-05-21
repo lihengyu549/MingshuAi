@@ -14,26 +14,21 @@
         </div>
       </div>
       <div class="pdf-cell" ref="pdfDownload" v-loading="echarsLoding">
-
         <div class="hede_bgc">
           <div class="hede_bgc-text">数据资产概览 分类分级报告</div>
         </div>
-        <div class="box1 page-break" ref="pdfDownload">
+        <div class="box1 page-break">
           <div class="head">
             <div>数据资产概况</div>
             <div>01</div>
           </div>
-          <el-table v-loading="tableBoxloading" :data="tableData" class="tableBox" ref="tableRef">
+          <el-table v-loading="tableBoxloading" :data="tableData" id="table" class="tableBox" ref="tableRef">
             <el-table-column label="数据源（个）" align="center" prop="datasourceCount" show-overflow-tooltip />
             <el-table-column label="数据库（个）" align="center" prop="databaseCount" show-overflow-tooltip />
             <el-table-column label="数据表（张）" align="center" prop="dataTableCount" show-overflow-tooltip />
             <el-table-column label="字段（个）" align="center" prop="dataFieldCount" show-overflow-tooltip />
             <el-table-column label="未梳理字段（个）" align="center" prop="notConfirmFieldCount" show-overflow-tooltip />
-            <el-table-column label="梳理率（%）" align="center" prop="confirmProportion" show-overflow-tooltip>
-              <!-- <template slot-scope="scope">
-              <span>{{ (scope.confirmProportion) }}%</span>
-            </template> -->
-            </el-table-column>
+            <el-table-column label="梳理率（%）" align="center" prop="confirmProportion" show-overflow-tooltip />
           </el-table>
           <div style="display: flex;justify-content: space-between;align-items: center;padding:10px;">
             <div id="echartsOne" class="echartsOneClass"></div>
@@ -162,16 +157,19 @@ export default {
   },
   methods: {
     handleExport() {
+      const table = document.getElementById('table');
+      table.style.width = '100%';
       const element = this.$refs.pdfDownload;
       html2pdf()
         .from(element)
         .set({
-          margin: 1,
+          // margin: 0,
+          margin: [10, 10, 10, 10],
           filename: '分类分级分析报告.pdf',
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2 },
-          jsPDF: { unit: 'mm', format: 'b4', orientation: 'portrait' },
-          pagebreak: { mode: 'avoid-all' }
+          jsPDF: { unit: 'mm', format: [280,350], orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all'] }
         })
         .save();
       // downloadPDF(this.$refs.pdfDownload)
@@ -615,7 +613,7 @@ export default {
 
 .writeBgc {
   background-color: #fff;
-  width: 65%;
+  width: 55%;
   margin: 0 auto;
 }
 
@@ -858,5 +856,10 @@ h4 {
 .sort-name-count {
   width: calc(100% - 25px);
   display: inline-block;
+}
+.tableBox{
+  width: 100%;
+  /* display: flex; */
+  table-layout: fixed; /* 确保表格宽度均匀分配 */
 }
 </style>

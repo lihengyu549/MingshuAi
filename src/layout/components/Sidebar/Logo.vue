@@ -42,7 +42,7 @@ export default {
   },
   data () {
     return {
-      title: 'Ai分类分级平台',
+      title:  this.$store.state.user.projectData.projectName,
       // title: '明数Ai分类分级平台',
       logo: logoImg
     }

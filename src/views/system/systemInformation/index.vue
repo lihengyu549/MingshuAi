@@ -5,7 +5,7 @@
     <div style="margin-bottom: 20px;">
       <div class="title_txt">
         <p class="text" style=" ">产品名称</p>
-        <span style="color:#545454 ;">AI分类分级平台</span>
+        <span style="color:#545454 ;">{{  $store.state.user.projectData.projectName }}</span>
       </div>
 
       <!-- <div class="title_txt">

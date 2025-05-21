@@ -39,8 +39,8 @@
         </h4>
         <div class="contBox">
           <el-form :model="technologyData" ref="technologyData" class="formDataClass" size="small" label-width="auto">
-            <el-form-item label="邮箱地址" prop="emil">
-              <el-input v-model="technologyData.emil" placeholder="请输入邮箱地址" clearable />
+            <el-form-item label="邮箱地址" prop="email">
+              <el-input v-model="technologyData.email" placeholder="请输入邮箱地址" clearable />
             </el-form-item>
             <el-form-item label="联系电话" prop="phone">
               <el-input v-model="technologyData.phone" placeholder="请输入联系电话" clearable />
@@ -71,7 +71,7 @@ export default {
         color: ''
       },
       technologyData:{
-        emil:'',
+        email:'',
         phone:'',
       },
       fileList: [
@@ -119,7 +119,7 @@ export default {
       formData.append('id', 1);
       formData.append('projectName', this.formData.appTitle);
       formData.append('themeColor', this.colorForm.color);
-      formData.append('email', this.technologyData.emil);
+      formData.append('email', this.technologyData.email);
       formData.append('phone', this.technologyData.phone);
       updateInterfaceDesign(formData).then(res=>{
         if(res.code === 200){

@@ -7,7 +7,7 @@
       class="login-form"
     >
     <img class="imgCla" :src="$store.state.user.projectData.img" alt="">
-      <h3 class="title">AI分类分级平台</h3>
+      <h3 class="title">{{ $store.state.user.projectData.projectName }}</h3>
       <!-- <h3 class="title">明数AI分类分级平台</h3> -->
       <el-form-item prop="username">
         <el-input
