@@ -53,7 +53,7 @@
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
           <el-table-column label="规则名称" align="center" prop="ruleName" show-overflow-tooltip />
-          <el-table-column label="所属框架" align="center" prop="attachData" show-overflow-tooltip />
+          <el-table-column label="所属标准" align="center" prop="attachData" show-overflow-tooltip />
           <el-table-column label="识别对象" align="center" prop="recognizeObject" show-overflow-tooltip>
             <template slot-scope="scope">
               <span>

@@ -3,7 +3,7 @@
     <el-row :gutter="20">
       <el-col :span="4" :xs="24" style="height: calc(100vh - 75px); overflow-y: auto;">
         <div class="head-container">
-          <span style="display: inline-block;background-color: #eee; font-size: 14px; padding: 5px 10px;">所属框架</span>
+          <span style="display: inline-block;background-color: #eee; font-size: 14px; padding: 5px 10px;">所属标准</span>
           <el-select v-model="projectId" class="serachInput" @change="treeOptionsSelectChange" placeholder="全部"
             style="margin-bottom: 20px">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">

@@ -119,7 +119,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="分类分级框架">
+        <el-form-item label="分类分级标准">
           <el-input v-model="form.projectName" :disabled="true" />
         </el-form-item>
         <el-form-item label="AI分析引擎" prop="aiAnalyticsEngine">
