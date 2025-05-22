@@ -135,8 +135,6 @@ export default {
     handleMouseOver(item) {
       if (item.status > this.allData.taskStepState) {
         item.content = '未开始'
-      } else if (item.status == this.allData.taskStepState) {
-        item.content = '进行中'
       } else {
         switch (item.status) {
           case 1:

@@ -294,6 +294,7 @@ export default {
         categoryId: '',
         minSecurityLevel: null,
         dataOwner: '',
+        additional:'',
       },
       importDataLoading: false,
       filterName: undefined,
