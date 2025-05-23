@@ -4,9 +4,9 @@
       <el-button size="medium" type="primary" @click="addApiKeys()">创建API Key</el-button>
     </div>
     <el-table v-loading="loading" max-height="700px" class="tableBox" :data="tableList" ref="tableRef">
-      <el-table-column label="API Key" width="300" align="center" prop="secretKey">
+      <el-table-column label="API Key" width="300" align="center" prop="proxyToken">
         <template slot-scope="scope">
-          <span>{{ scope.row.secretKey }}</span>
+          <span>{{ scope.row.proxyToken }}</span>
         </template>
       </el-table-column>
       <el-table-column label="授信地址" width="230" align="center" prop="ip" />
@@ -82,6 +82,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
       },
+      userList:[],
       formLoading: false,
       ApiForm: {
         accountNumber:'',
@@ -112,8 +113,8 @@ export default {
       getApiV1List(this.queryParams).then(response => {
         this.tableList = response.data.rows;
         for (let item of this.tableList) {
-          item.oldKeys = item.secretKey
-          item.secretKey = this.maskMiddleSix(item.oldKeys)
+          item.oldKeys = item.proxyToken
+          item.proxyToken = this.maskMiddleSix(item.oldKeys)
           item.passTextShow = true
         }
         this.total = response.data.total;
@@ -136,7 +137,10 @@ export default {
       // if (str.length !== 18) {
       //   return '未知key，请联系后台人员';
       // }
-      return str.slice(0, 6) + '******' + str.slice(12);
+      if(!str || !str.length ){
+        return ''
+      }
+      return str.slice(0, 13) + '******' + str.slice(19);
     },
     submitForm() {
       this.$refs["ApiForm"].validate(async (valid) => {
@@ -180,7 +184,7 @@ export default {
     },
     // 查看
     resultLookFn(row) {
-      row.secretKey = row.oldKeys
+      row.proxyToken = row.oldKeys
       row.passTextShow = false
     },
     // 复制
@@ -214,6 +218,7 @@ export default {
           this.loading = false;
           if (res.code == 200) {
             this.$message.success('更新成功')
+            this.getList()
           }
         }))
           .catch(() => {

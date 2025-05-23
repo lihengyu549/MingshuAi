@@ -28,6 +28,7 @@ export default {
     getInterfaceDesignByIdFn(){
       getInterfaceDesignById().then(res => {
         let facvionEl = document.getElementById('facicon')
+        res.data.img = window.location.origin + res.data.img
         facvionEl.href = res.data.img
         document.title = res.data.projectName
         this.$store.commit('SET_PROJECT', res.data);

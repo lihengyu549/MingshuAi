@@ -110,8 +110,6 @@ export default {
     handleRemove(file, fileList) {
     },
     submit() {
-      console.log(this.colorForm.color);
-      
       store.dispatch('settings/setBgcColor', 'red')
       const formData = new FormData();
       formData.append('file', this.fileList.length?this.fileList[0].raw : null);

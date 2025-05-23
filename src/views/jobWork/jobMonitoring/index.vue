@@ -31,7 +31,7 @@
     </div>
     <div class="stepsBox">
       <el-steps direction="vertical" :active="allData.taskStepState" :process-status="processStatus"
-        :finish-status="allData.maskComplete == 'ERR'?'error':'success'">
+        :finish-status="allData.maskComplete == 'ERR' ? 'error' : 'success'">
         <el-step class="step_text" icon="el-icon-loading" v-for="(item, index) in directionData" :title="item.title">
           <template slot="description">
             <el-popover id="popover" popper-class="popoverClass" placement="left" :title="item.titlepop" width="200"
@@ -96,28 +96,28 @@ export default {
           title: '数据质量评估',
           titlepop: '数据质量评估',
           description: '描述',
-          status: 2,
+          status: 1,
           content: '',
         },
         {
           title: '关键字/正则精确匹配',
           titlepop: '策略精确匹配',
           description: '描述',
-          status: 3,
+          status: 2,
           content: '',
         },
         {
           title: 'AI推理',
           titlepop: 'AI推理',
           description: '描述',
-          status:4,
+          status: 3,
           content: '',
         },
         {
           title: 'AI审核',
           titlepop: 'AI审核',
           description: '描述',
-          status: 5,
+          status: 4,
           content: '',
         },
       ],
@@ -133,20 +133,25 @@ export default {
   },
   methods: {
     handleMouseOver(item) {
-      if (item.status > this.allData.taskStepState) {
+      if(this.allData.maskComplete == 'ERR') {
+        item.content = '执行失败,请重新执行'
+        return
+      }
+      if (item.status == this.allData.taskStepState + 1) {
+        item.content = '进行中'
+      } else if (item.status > this.allData.taskStepState) {
         item.content = '未开始'
-      } else {
+      } else if (item.status <= this.allData.taskStepState) {
         switch (item.status) {
           case 1:
             return item.content = `高质量数据表：${this.allData.heightTableNum}个\n高质量数据表占比：${this.allData.heightTableScale}%`
-
           case 2:
             return item.content = `关键字/正则命中数量：${this.allData.ruleHitNum}个\n关键字/正则命中占比：${this.allData.ruleHitScale}%`
 
           case 3:
             return item.content = `推理成功数量：${this.allData.successNum}个\n无法分类数量：${this.allData.falseNum}个\n无法分类占比：${this.allData.falseScale}%`
 
-          case 1:
+          case 4:
             return item.content = `置信度高数量：${this.allData.trustNum}个\n置信度高占比：${this.allData.trustScale}%`
           default:
             break;
