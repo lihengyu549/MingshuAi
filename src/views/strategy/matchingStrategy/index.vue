@@ -478,6 +478,8 @@ export default {
         if (response.data.length > 0) {
           this.queryParams.categoryId = response.data[0].id;
           this.getProtectCategory(this.queryParams.categoryId);
+        }else {
+          this.Loading = false
         }
       });
     },

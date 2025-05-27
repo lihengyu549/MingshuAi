@@ -39,6 +39,15 @@
             <el-input v-model="queryParams.businessName" clearable @input="inputSearch" placeholder="请输入来源业务系统"
               @keyup.enter.native="handleQuery" />
           </el-form-item>
+          <el-form-item label="分类" class="addSelectClass">
+            <el-select ref="resultSelectRef" v-model="resultFormNodeName" @change="handleQuery">
+              <el-option style="height: 100%; padding: 0" value="">
+                <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
+                  :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+                  @check="resultHandleNodeClick" />
+              </el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item>
             <!-- <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button> -->
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
@@ -59,6 +68,7 @@
           <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
           <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
           <el-table-column label="分类" align="center" prop="categoryName" min-width="250" show-overflow-tooltip />
+          <el-table-column label="个人信息识别" align="center" prop="pii_detection" show-overflow-tooltip />
           <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
           <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
             <template slot-scope="scope">
@@ -603,20 +613,22 @@ Authorization:Bearer ${this.Token}`
     // },
 
     // 多选事件
-    resultHandleNodeClick(node) {
+    resultHandleNodeClick(node, checkData) {
       const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
       if (parentLabels) {
         this.resultFormNodeName = parentLabels.join('-') + '-' + node.categoryName;
       } else {
         this.resultFormNodeName = node.categoryName;
       }
-      let data = this.$refs.treeSelect.getCheckedNodes()
-      let childrenData = data.filter((item)=>{
-        return !item.children
-      })
-      this.queryParams.categoryId = childrenData.map((item)=>{
-        return item.id
-      }).join()
+      // let data = this.$refs.treeSelect.getCheckedNodes()
+      // let childrenData = data.filter((item) => {
+      //   return !item.children
+      // })
+      // this.queryParams.categoryId = childrenData.map((item) => {
+      //   return item.id
+      // }).join()
+      let lastNodeData = checkData.checkedNodes.filter(item => !item.children)
+      this.queryParams.categoryId = lastNodeData.map(item => item.id).join()
       // this.$refs.resultSelectRef.blur()
       this.handleQuery()
     },

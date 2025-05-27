@@ -83,13 +83,13 @@
               <i class="el-icon-video-play" @click="implementFn(scope.row)"></i>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="暂停任务" placement="top-start">
-            <i class="el-icon-video-pause" @click="suspendWorkFn(scope.row)"></i>
+              <i class="el-icon-video-pause" @click="suspendWorkFn(scope.row)"></i>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="终止任务" placement="top-start">
-            <i class="el-icon-switch-button" @click="terminationWorkFn(scope.row)"></i>
+              <i class="el-icon-switch-button" @click="terminationWorkFn(scope.row)"></i>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="任务监控" placement="top-start">
-            <i class="el-icon-view" @click="toJobMonitoring(scope.row)"></i>
+              <i class="el-icon-view" @click="toJobMonitoring(scope.row)"></i>
             </el-tooltip>
             <!-- <i class="el-icon-refresh-left" @click="recoverWorkFn(scope.row)"></i> -->
           </div>
@@ -100,7 +100,8 @@
           <el-button size="mini" type="text" @click="resultLookFn(scope.row)">结果查看</el-button>
           <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
             @click="resultReleaseFn(scope.row)">结果发布</el-button>
-          <el-button size="mini" type="text" :disabled="scope.row.publishStatus != 1" @click="resultWithdraw(scope.row)">发布撤回</el-button>
+          <el-button size="mini" type="text" :disabled="scope.row.publishStatus != 1"
+            @click="resultWithdraw(scope.row)">发布撤回</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -126,6 +127,16 @@
           <el-radio-group v-model="aiAnalyticsEngine">
             <el-radio label="1">快速响应</el-radio>
             <el-radio label="2">深度思考</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="个人信息识别" prop="piiDetectionFlag">
+          <el-switch v-model="form.piiDetectionFlag">
+          </el-switch>
+        </el-form-item>
+        <el-form-item label="分类逻辑" prop="classificationLogic">
+          <el-radio-group v-model="form.classificationLogic">
+            <el-radio label="1">基于表</el-radio>
+            <el-radio label="2">基于字段</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="置信度" prop="confidenceLevel" :rules="rules.confidenceLevel">
@@ -180,7 +191,7 @@ import Result from './components/result.vue'
 import { path } from "d3";
 export default {
   name: "hierarchicalTask",
-  dicts: ['sys_risk_level','sys_classification_state'],
+  dicts: ['sys_risk_level', 'sys_classification_state'],
   components: { Result },
   data() {
     return {
@@ -196,7 +207,7 @@ export default {
       ],
       confirmList: [
         { name: "全部", value: "0" },
-        { name: "未确认",value: "1" },
+        { name: "未确认", value: "1" },
         { name: "已确认", value: "2" },
       ],
       dataYTpeList: [
@@ -274,7 +285,7 @@ export default {
         publishStatus: '',
         maskComplete: '',
         projectId: '',
-        
+
       },
       // 表单参数
       form: {
@@ -283,8 +294,10 @@ export default {
         projectName: '',
         tasksName: '',
         id: '',
-        confirm:"",
-        classificationState:''
+        confirm: "",
+        classificationState: '',
+        piiDetectionFlag:false,
+        classificationLogic:'2',
       },
       // 表单校验
       rules: {
@@ -297,7 +310,9 @@ export default {
         confidenceLevel: [{
           required: true, message: "置信度不能为空", trigger: "blur"
         }],
-
+        classificationLogic: [{
+          required: true, message: "", trigger: "blur"
+        }],
         confirm: [{
           required: true, message: "人工确认状态不能为空", trigger: "blur"
         }],
@@ -314,23 +329,23 @@ export default {
   },
   mounted() {
     console.log(this.dict);
-    
+
   },
   methods: {
     // 发布撤回
-    resultWithdraw(row){
+    resultWithdraw(row) {
       this.$confirm(`确定撤回已发布的结果？`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          withdrawReleaseState({ proxyId: row.id }).then(res => {
-            if (res.code == 200) {
-              this.$message.success(res.msg)
-              this.getList()
-            }
-          })
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        withdrawReleaseState({ proxyId: row.id }).then(res => {
+          if (res.code == 200) {
+            this.$message.success(res.msg)
+            this.getList()
+          }
         })
+      })
     },
     // 获取新增任务中 数据源名称
     getScanCompleteDataFn(id) {
@@ -467,6 +482,7 @@ export default {
       this.aiAnalyticsEngine = "1"
       this.form.projectName = ''
       this.$set(this.form, 'confidenceLevel', "0")
+      this.$set(this.form, 'classificationLogic', "2")
       this.$set(this.form, 'confirm', "0")
     },
     /** 搜索按钮操作 */
@@ -497,7 +513,7 @@ export default {
     handleUpdate(row) {
       this.getScanCompleteDataFn(row.id)
       this.form = JSON.parse(JSON.stringify(row));
-      if(row.classificationState == '0') {
+      if (row.classificationState == '0') {
         this.form.classificationState = ''
       }
       this.open = true;
@@ -519,6 +535,7 @@ export default {
           } else {
             let data = JSON.parse(JSON.stringify(this.form))
             data.aiAnalyticsEngine = this.aiAnalyticsEngine
+            data.piiDetectionFlag = this.form.piiDetectionFlag + ''
             addScanCompleteDataTasks(data).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
@@ -675,7 +692,7 @@ export default {
     toJobMonitoring(row) {
       if (row.maskComplete == 'NONE') {
         this.$message({ message: `当前状态为${this.stateMsg(row.maskComplete)}，无法查看任务监控`, type: 'warning' })
-        return 
+        return
       }
       this.$router.push({ path: '/jobMonitoring', query: row })
     },

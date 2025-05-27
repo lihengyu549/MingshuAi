@@ -290,11 +290,11 @@ export default {
         levelId: [],//安全级别
       },
       addOrEditDataRuls: {
+        additional:'',
         attachData: '',
         categoryId: '',
         minSecurityLevel: null,
         dataOwner: '',
-        additional:'',
       },
       importDataLoading: false,
       filterName: undefined,
@@ -606,7 +606,6 @@ export default {
     editFn(row) {
       this.addOrEdit.flag = 2
       this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
-      this.addOrEditDataRuls.additional = row.attachDescribe
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
       this.tags = row.featureLabel ? row.featureLabel.split(',') : []
       this.addOrEditDataRuls.confirmProtectMethod = row.confirmProtectMethod ? row.confirmProtectMethod.split(',') : []
@@ -614,6 +613,7 @@ export default {
       this.addOrEdit.title = '编辑'
       this.addNodeName = row.owner
       this.tagsShow = false
+      this.$set(this.addOrEditDataRuls, 'additional', row.attachDescribe)
     },
     lookFn(row) {
       this.addOrEdit.flag = 3
@@ -701,6 +701,9 @@ export default {
             this.queryParams.categoryId = response.data[0].id;
           }
           this.getProtectCategory(this.queryParams.categoryId);
+        }else {
+          this.Loading = false
+          
         }
       });
     },

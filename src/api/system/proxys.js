@@ -332,7 +332,7 @@ export function taskProgressQuery (params) {
     data: params
   })
 }
-//发布撤回接口--贺贺
+//查询分类分级等级--贺贺
 export function getCategoryAttachData (params) {
   return request({
     url: '/system/category/getCategoryAttachData',

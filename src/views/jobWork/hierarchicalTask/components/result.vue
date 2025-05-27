@@ -63,6 +63,15 @@
           </el-option>
         </el-select>
       </el-form-item>
+      <el-form-item label="个人信息识别" prop="piiDetection">
+        <el-select ref="addSelectRef" v-model="piiNodeName">
+          <el-option style="height: 100%; padding: 0" value="">
+            <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
+              :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+              @check="piiHandleNodeCheck" />
+          </el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label=" " class="searchBtn">
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
       </el-form-item>
@@ -161,6 +170,19 @@
             </el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="个人信息识别" class="addSelectClass" prop="piiDetection">
+          <el-select ref="piiSelectRef" v-model="piiNodeName">
+            <el-option style="height: 100%; padding: 0" value="">
+              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
+                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+                @node-click="piiHandleNodeClick" />
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="识别方式" prop="detectionProcess">
+          <el-input v-model="resultForm.detectionProcess" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
+            maxlength="500" placeholder="请输入识别方式"></el-input>
+        </el-form-item>
       </el-form>
       <template #footer>
         <span>
@@ -181,7 +203,7 @@ import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
   startI, stopI, databaseMaskI, strategyPushI, strategyAll,
   databaseListI, confirmIds, selectResultsById, confirmList, updateFiledRule,
-  cancelConfirm, cancelConfirmData,getCategoryAttachData
+  cancelConfirm, cancelConfirmData, getCategoryAttachData
 } from "@/api/system/proxys";
 import { listAllProject, } from "@/api/system/project";
 import {
@@ -237,6 +259,7 @@ export default {
       categoryList: [],
       yuanCategoryList: [],
       addNodeName: '',
+      piiNodeName: '',
       categoryListEdit: [],
       defaultProps: {
         children: "children",
@@ -246,6 +269,8 @@ export default {
         categoryId: '',
         securityLevel: '',
         id: '',
+        piiDetection: '',
+        classificationLogic: '',
       },
       tableData: [],
       addOptions: [
@@ -376,6 +401,16 @@ export default {
           width: "250"
         },
         {
+          label: "个人信息识别",
+          prop: "piiDetectionName",
+          width: "250"
+        },
+        {
+          label: "识别过程",
+          prop: "detectionProcess",
+          width: "250"
+        },
+        {
           label: "置信度",
           prop: "confidenceLevel",
           width: "100"
@@ -406,6 +441,7 @@ export default {
         businessName: '',
         databaseName: '',
         categoryId: '',
+        piiDetection: '',
       },
       confirmList: [
         {
@@ -581,9 +617,9 @@ export default {
               this.loading = false
             }
           })
-          .catch(() => {
-            this.loading = false
-          });
+            .catch(() => {
+              this.loading = false
+            });
           // 接口
         }).catch(() => {
           this.loading = false
@@ -613,9 +649,9 @@ export default {
               this.loading = false
             }
           })
-          .catch(() => {
-            this.loading = false
-          });
+            .catch(() => {
+              this.loading = false
+            });
           // 接口
         }).catch(() => {
           this.loading = false
@@ -740,6 +776,8 @@ export default {
         securityLevel: this.resultForm.securityLevel,
         auditRecommendation: this.resultForm.auditRecommendation,
         confidenceLevel: this.resultForm.confidenceLevel,
+        piiDetection: this.resultForm.piiDetection,
+        detectionProcess: this.resultForm.detectionProcess,
       }
       updateFiledRule(params).then(res => {
         if (res.code == 200) {
@@ -801,6 +839,7 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.addNodeName = ''
+      this.piiNodeName = ''
       this.resetForm("queryParams");
       this.handleQuery();
     },
@@ -810,20 +849,35 @@ export default {
       this.multiple = !selection.length
     },
     resultExdit(row) {
+      this.addNodeName = ''
+      this.piiNodeName = ''
       this.resultForm = JSON.parse(JSON.stringify(row))
       this.resultForm.tableFieldId = row.id
+      this.piiNodeName = row.piiDetectionName
       this.resultForm.confidenceLevel = row.confidenceLevel == '高' ? '2' : '1'
       this.resultFormNodeName = row.categoryName
       this.deleteVisible = true
     },
-    addHandleNodeCheck(node) {
+    addHandleNodeCheck(node,checkData) {
       const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
       if (parentLabels) {
         this.addNodeName = parentLabels.join('-') + '-' + node.categoryName;
       } else {
         this.addNodeName = node.categoryName;
       }
-      this.queryParams.categoryId = node.id
+      let lastNodeData = checkData.checkedNodes.filter(item => !item.children)
+      this.queryParams.categoryIds = lastNodeData.map(item => item.id).join()
+      this.getList()
+    },
+    piiHandleNodeCheck(node,checkData) {
+      const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+      if (parentLabels) {
+        this.piiNodeName = parentLabels.join('-') + '-' + node.categoryName;
+      } else {
+        this.piiNodeName = node.categoryName;
+      }
+      let lastNodeData = checkData.checkedNodes.filter(item => !item.children)
+      this.queryParams.piiDetection = lastNodeData.map(item => item.id).join()
       this.getList()
     },
     addHandleNodeClick(node) {
@@ -854,10 +908,27 @@ export default {
         }
         this.resultForm.categoryId = node.id
         this.$refs.resultSelectRef.blur()
-        getCategoryAttachData({id:node.id}).then(res=>{
-          // console.log(res);
+        getCategoryAttachData({ categoryId: node.id, piiId: this.resultForm.piiDetection }).then(res => {
           this.resultForm.securityLevel = res.data.minSecurityLevel + ''
-          
+
+        })
+      }
+    },
+    piiHandleNodeClick(node) {
+      if (node.children && node.children.length > 0) {
+        node.disabled = true;
+      } else {
+        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+        if (parentLabels) {
+          this.piiNodeName = parentLabels.join('-') + '-' + node.categoryName;
+        } else {
+          this.piiNodeName = node.categoryName;
+        }
+        this.resultForm.piiDetection = node.id
+        this.$refs.piiSelectRef.blur()
+        getCategoryAttachData({ piiId: node.id, categoryId: this.resultForm.categoryId }).then(res => {
+          this.resultForm.securityLevel = res.data.minSecurityLevel + ''
+
         })
       }
     },
@@ -865,7 +936,6 @@ export default {
       if (!value) return true;
       return data.categoryName.indexOf(value) !== -1;
     },
-
     getProtectCategory(key) {
       this.treeLoading = true
       let data = {
