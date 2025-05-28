@@ -39,12 +39,12 @@
             <el-input v-model="queryParams.businessName" clearable @input="inputSearch" placeholder="请输入来源业务系统"
               @keyup.enter.native="handleQuery" />
           </el-form-item>
-          <el-form-item label="分类" class="addSelectClass">
-            <el-select ref="resultSelectRef" v-model="resultFormNodeName" @change="handleQuery">
+          <el-form-item label="个人信息识别" class="addSelectClass">
+            <el-select ref="resultSelectRef" v-model="piiNodeName">
               <el-option style="height: 100%; padding: 0" value="">
-                <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
+                <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
                   :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
-                  @check="resultHandleNodeClick" />
+                  @check="piiHandleNodeCheck" />
               </el-option>
             </el-select>
           </el-form-item>
@@ -153,6 +153,7 @@ export default {
         name: '',//子类名称
         securityLevel: [],//安全级别
         businessName: '',
+        piiDetection: '',//个人信息识别
       },
       projectId: '',
       apiDialogLoading: false,
@@ -211,7 +212,9 @@ export default {
       dataCategoryList: [],
       categoryListEdit: null,
       categoryList: [],
+      piiList: [],
       resultFormNodeName: '',
+      piiNodeName: '',
       Token: '',
       textarea: ``,
       copyable: { copyText: '复制', copiedText: '复制成功' },
@@ -332,6 +335,7 @@ Authorization:Bearer ${this.Token}`
       this.httpDemo()
       this.getProtectCategory(val)
       this.getProtectCategoryQuery(val)
+      this.getPiiList(val)
     },
     gettreeOptionsList() {
       this.Loading = true
@@ -346,6 +350,7 @@ Authorization:Bearer ${this.Token}`
         this.getProtectCategory(this.projectId)
         this.httpDemo()
         this.getProtectCategoryQuery(this.projectId)
+        this.getPiiList(this.projectId)
       });
     },
     filterNode(value, data) {
@@ -503,7 +508,8 @@ Authorization:Bearer ${this.Token}`
         pageNum: this.queryParams.pageNum,
         pageSize: this.queryParams.pageSize,
         // categoryId: this.queryParams.categoryId
-        categoryIds: this.queryParams.categoryId
+        categoryIds: this.queryParams.categoryId,
+        piiDetection: this.queryParams.piiDetection
       }
       listByPublished(params).then((response) => {
         if (response.code == 200 && response.rows) {
@@ -524,13 +530,14 @@ Authorization:Bearer ${this.Token}`
     handleQuery() {
       this.queryParams.pageNum = 1;
       this.getList();
-
     },
     /** 重置按钮操作 */
     resetQuery() {
       // this.$refs.tree.setCurrentKey(null);
-      this.resultFormNodeName = '',
-        this.queryParams.categoryId = ''
+      this.resultFormNodeName = ''
+      this.piiNodeName = ''
+      this.queryParams.categoryId = ''
+      this.queryParams.piiDetection = ''
       this.resetForm("queryParams");
       this.handleQuery();
     },
@@ -572,11 +579,35 @@ Authorization:Bearer ${this.Token}`
         this.$message.error('导出失败，请稍后再试');
       }
     },
+    getPiiList(key) {
+      let data = {
+        parentId: key,
+        needSub: 1,
+        ifAddUnclassified:2,
+      };
+      treeListI(data).then((resp) => {
+        this.piiList = resp.data
+        this.yuanCategoryList = resp.data
+        if (resp.data.length == 0) {
+          this.Loading = false
+        } else {
+          let tempList = JSON.parse(JSON.stringify(this.piiList))
+          for (let item of tempList) {
+            item.label = item.categoryName
+          }
+          this.piiList = this.handleTree(tempList, "id",)
+          this.categoryListEdit = this.handleTree(tempList, "id")
+        }
+        this.Loading = false
+        this.treeLoading = false
+      });
+    },
     getProtectCategoryQuery(key) {
       this.treeLoading = true
       let data = {
         parentId: key,
         needSub: 1,
+        ifAddUnclassified:1,
       };
       treeListI(data).then((resp) => {
         this.categoryList = resp.data
@@ -632,7 +663,21 @@ Authorization:Bearer ${this.Token}`
       // this.$refs.resultSelectRef.blur()
       this.handleQuery()
     },
+    piiHandleNodeCheck(node, checkData) {
+      const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+      if (parentLabels) {
+        this.piiNodeName = parentLabels.join('-') + '-' + node.categoryName;
+      } else {
+        this.piiNodeName = node.categoryName;
+      }
 
+      if (checkData.checkedKeys.length == 0) {
+        this.piiNodeName = ''
+      }
+      let lastNodeData = checkData.checkedNodes.filter(item => !item.children)
+      this.queryParams.piiDetection = lastNodeData.map(item => item.id).join()
+      this.handleQuery()
+    },
     filterNode(value, data) {
       if (!value) return true;
       return data.categoryName.indexOf(value) !== -1;

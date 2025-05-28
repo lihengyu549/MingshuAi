@@ -66,7 +66,7 @@
       <el-form-item label="个人信息识别" prop="piiDetection">
         <el-select ref="addSelectRef" v-model="piiNodeName">
           <el-option style="height: 100%; padding: 0" value="">
-            <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
+            <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
               :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
               @check="piiHandleNodeCheck" />
           </el-option>
@@ -515,6 +515,7 @@ export default {
         categoryId: '',//框架名称
         importShow: false,
       },
+      piiList:[],
       tableList: [],
       debounceTimeout: null,
       // 表单校验
@@ -542,6 +543,7 @@ export default {
       this.surfaceList = cleanedDatabase.split(',')
     }
     this.getProtectCategory()
+    this.getPiiList()
     this.checkedColumn = this.setList
     this.checkAll = true
     // this.queryParams.selectProjectName = "全部"
@@ -858,23 +860,30 @@ export default {
       this.resultFormNodeName = row.categoryName
       this.deleteVisible = true
     },
-    addHandleNodeCheck(node,checkData) {
+    addHandleNodeCheck(node, checkData) {
       const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
       if (parentLabels) {
         this.addNodeName = parentLabels.join('-') + '-' + node.categoryName;
       } else {
         this.addNodeName = node.categoryName;
       }
+      if (checkData.checkedKeys.length == 0) {
+        this.addNodeName = ''
+      }
       let lastNodeData = checkData.checkedNodes.filter(item => !item.children)
       this.queryParams.categoryIds = lastNodeData.map(item => item.id).join()
       this.getList()
     },
-    piiHandleNodeCheck(node,checkData) {
-      const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+    piiHandleNodeCheck(node, checkData) {
+      const parentLabels = this.findParentLabelsById(this.piiList, node.id);
       if (parentLabels) {
         this.piiNodeName = parentLabels.join('-') + '-' + node.categoryName;
       } else {
         this.piiNodeName = node.categoryName;
+      }
+      
+      if (checkData.checkedKeys.length == 0) {
+        this.piiNodeName = ''
       }
       let lastNodeData = checkData.checkedNodes.filter(item => !item.children)
       this.queryParams.piiDetection = lastNodeData.map(item => item.id).join()
@@ -936,11 +945,36 @@ export default {
       if (!value) return true;
       return data.categoryName.indexOf(value) !== -1;
     },
+    getPiiList(key) {
+      this.treeLoading = true
+      let data = {
+        parentId: this.drawerData.projectId,
+        needSub: 1,
+        ifAddUnclassified:2
+      };
+      treeListI(data).then((resp) => {
+        this.piiList = resp.data
+        this.yuanCategoryList = resp.data
+        if (resp.data.length == 0) {
+          this.Loading = false
+        } else {
+          let tempList = JSON.parse(JSON.stringify(this.piiList))
+          for (let item of tempList) {
+            item.label = item.categoryName
+          }
+          this.piiList = this.handleTree(tempList, "id")
+          this.categoryListEdit = this.handleTree(tempList, "id")
+        }
+        this.Loading = false
+        this.treeLoading = false
+      });
+    },
     getProtectCategory(key) {
       this.treeLoading = true
       let data = {
         parentId: this.drawerData.projectId,
         needSub: 1,
+        ifAddUnclassified:1,
       };
       treeListI(data).then((resp) => {
         this.categoryList = resp.data
