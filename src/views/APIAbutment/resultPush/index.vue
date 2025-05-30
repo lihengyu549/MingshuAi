@@ -12,7 +12,7 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item >
+      <el-form-item>
       </el-form-item>
       <el-form-item class="searchBtn" label-width="0">
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
@@ -27,33 +27,15 @@
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
-    <el-table v-loading="loading" height="670px" class="tableBox" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
+    <el-table v-loading="loading" height="670px" class="tableBox" :data="proxysList"
+      @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="数据源名称" align="center" prop="sourceName" />
-
-      <el-table-column label="主机信息" align="center" prop="targetIpPort">
-        <template slot-scope="scope">
-          <span>{{ scope.row.targetIpPort }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="数据源类型" align="center" prop="databaseType">
-        <template slot-scope="scope">
-            <span> {{ databaseTypeMsg(scope.row.databaseType) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="来源业务系统" align="center" prop="businessName" />
-      <el-table-column label="分类分级框架" align="center" prop="projectName" />
-      <el-table-column label="扫描状态" align="center" prop="scanState">
-        <template slot-scope="scope">
-          <div style="display: flex; align-items: center;justify-content: center;">
-            <img style="display: block; width: 20px;margin-right: 10px;"
-              :src="imgSrc[scope.row.scanState ? scope.row.scanState : 'NONE']" alt="">
-            <span> {{ stateMsg(scope.row.scanState) }}</span>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="耗时(毫秒)" align="center" prop="scanTime" />
+      <el-table-column label="任务名称" align="center" prop="taskName" />
+      <el-table-column label="对接厂商" align="center" prop="providerName" />
+      <el-table-column label="推送类型" align="center" prop="pushTypeName" />
+      <el-table-column label="发布数据源名称" align="center" prop="sourceName" />
+      <el-table-column label="分类分级标准" align="center" prop="standardName" />
+      <el-table-column label="推送状态" align="center" prop="pushStatusName" />
       <el-table-column label="更新时间" align="center" prop="updateTime" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -64,56 +46,70 @@
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
-    <!-- <el-dialog :title="titleExcel" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"
-      append-to-body :close-on-click-modal="true">
-      <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
-        :inline="true" label-width="120px">
-        <el-form-item label="数据源名称" prop="sourceName">
-          <el-input v-model="importData.sourceName" maxlength="50" placeholder="请输入数据源名称"></el-input>
+    <el-dialog :title="title" class="addMsg" v-loading="dialogLoading" :visible.sync="dialogDataShow" width="580px" append-to-body
+      :close-on-click-modal="true">
+      <el-form class="dialogForm" :rules="dialogDataRules" :model="dialogData" size="medium" ref="dialogData"
+        :inline="true" label-width="110px">
+        <el-form-item label="任务名称" prop="taskName">
+          <el-input v-model="dialogData.taskName" maxlength="50" placeholder="请输入任务名称"></el-input>
         </el-form-item>
-        <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
-          <el-select v-model="importData.categoryId" :disabled="editIsFlag" class="serachInput" placeholder="全部">
-            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
+        <el-form-item label="推送类型" prop="pushType">
+          <el-select clearable v-model="queryParams.pushType" @change="inputSearch" placeholder="请选择">
+            <el-option v-for="item in pushList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="来源业务系统" prop="businessName">
-          <el-input v-model="importData.businessName" maxlength="50" placeholder="请输入数据源名称"></el-input>
+        <el-form-item label="对接厂商" prop="provider">
+          <el-select clearable v-model="queryParams.provider" @change="inputSearch" placeholder="请选择">
+            <el-option v-for="item in pushList" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
         </el-form-item>
-        <el-form-item label="导入文件" prop="importFile">
-          <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
+        <el-form-item label="主机" prop="host">
+          <el-input v-model="dialogData.host" maxlength="50" placeholder="请输入主机"></el-input>
         </el-form-item>
-        <el-form-item class="uploadClass">
-          <el-upload ref="uploadRef" class="upload-demo" :limit="1" :file-list="importData.fileList" :auto-upload="false"
-            :http-request="submitFormExcelFn" action="" accept=".xls,.xlsx,csv" :show-file-list="false"
-            :on-change="handleFileChange" :on-exceed="handleFileExceed">
-            <el-button size="mini" type="primary">选择文件</el-button>
-          </el-upload>
+
+        <el-form-item label="端口" prop="port">
+          <el-input v-model="dialogData.port" maxlength="50" placeholder="请输入端口"></el-input>
+        </el-form-item>
+        <el-form-item label="账号" prop="userName">
+          <el-input v-model="dialogData.userName" maxlength="50" placeholder="请输入账号"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop="passWord">
+          <el-input v-model="dialogData.passWord" maxlength="50" placeholder="请输入密码"></el-input>
+        </el-form-item>
+        <el-form-item label="分类分级标准" prop="standardId">
+          <el-select clearable v-model="queryParams.standardId" @change="inputSearch" placeholder="请选择">
+            <el-option v-for="item in pushList" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="推送内容" prop="businessName">
+          <el-input v-model="dialogData.businessName" maxlength="50" placeholder="请选择推送内容"></el-input>
         </el-form-item>
       </el-form>
-      <el-button style="margin-left: 100px;" size="small" type="text" @click="downloadFile" id="btnDownload"
-        icon="el-icon-download">样例下载</el-button>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitFormExcelFn">确 定</el-button>
+        <el-button type="primary" @click="submitFormFn">确 定</el-button>
         <el-button @click="importcancel">取 消</el-button>
       </div>
-    </el-dialog> -->
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import {
-  listDatabaseProxysScan
+  getResultPushList
 } from "@/api/APIAbutment";
 export default {
   name: "resultPush",
-  components: { },
+  components: {},
   data() {
     return {
-      pushList: [{ name: "关键字字典", value: 0 },{name: "正则表达式", value: 1}],
+      pushList: [{ label: "关键字字典", value: 0 }, { label: "正则表达式", value: 1 }],
       // 遮罩层
       loading: false,
-      mainLoading:false,
+      mainLoading: false,
+      dialogLoading: false,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -129,7 +125,7 @@ export default {
       // 弹出层标题
       title: "",
       // 是否显示弹出层
-      open: false,
+      dialogDataShow: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -153,26 +149,53 @@ export default {
         // targetUserPassword:'your_password',
         tables: {},
       },
+      dialogData:{
+        taskName:'',//任务名称
+        pushType:'',//推送类型（字典表维护）
+        provider:'',//对接厂商（字典表维护）
+        pushVersion:'',//对接版本（字段表维护）
+        host:'',//主机
+        port:'',//端口
+        userName:'',//账号
+        passWord:'',//密码
+        standardId:'',//行业标准ID
+        pushBodyList:'',//推送内容
+      },
       debounceTimeout: null,
       // 表单校验
-      importDataRules: {
-        sourceName: [
+      dialogDataRules: {
+        taskName: [
           {
-            required: true, message: "请输入数据源名称", trigger: "blur"
+            required: true, message: "请输入任务名称", trigger: "blur"
           }
+        ],
+        pushType: [
+          {
+            required: true, message: "请选择推送类型", trigger: "blur"
+          }
+        ],
+        provider: [
+          {
+            required: true, message: "请选择对接厂商", trigger: "blur"
+          }
+        ],
+        host: [
+          { required: true, message: "请输入主机", trigger: "blur" },
+        ],
+        port: [
+          { required: true, message: "请输入端口", trigger: "blur" },
+        ],
+        userName: [
+          { required: true, message: "请输入账号", trigger: "blur" },
+        ],
+        passWord: [
+          { required: true, message: "请输入密码", trigger: "blur" },
+        ],
+        standardId: [
+          { required: true, message: "请选择分类分级标准", trigger: "blur" },
         ],
         businessName: [
-          {
-            required: true, message: "请输入来源业务系统", trigger: "blur"
-          }
-        ],
-        categoryId: [
-          {
-            required: true, message: "请选择所属分类", trigger: "blur"
-          }
-        ],
-        importFile: [
-          { required: true, message: "请选择导入文件", trigger: "blur" },
+          { required: true, message: "请选择推送内容", trigger: "blur" },
         ],
       },
     };
@@ -180,12 +203,18 @@ export default {
   computed: {
   },
   created() {
-    this.getList()
+  },
+  mounted() {
+    this.getList();
   },
   methods: {
+    importcancel(){
+      this.dialogDataShow = false
+      this.resetForm('dialogData')
+    },
     // 自定义校验规则
     tabelCheckedNameRules(rule, value, callback) {
-        callback();
+      callback();
     },
     async getNameTestingFn() {
       let params = {
@@ -195,35 +224,8 @@ export default {
       let res = await checkSourceName(params)
       return res.code == 200
     },
-
-    async getimortantNameTestingFn() {
-      let params = {
-        sourceName: this.importData.sourceName,
-        id: this.importData.id || ''
-      }
-      let res = await checkSourceName(params)
-      return res.code == 200
-    },
     nameTestingFn(val) {
       this.form.sourceName = val.replace(/[^a-zA-Z0-9]/g, "")
-    },
-    stateMsg(val) {
-      let msg = ''
-      for (let item of this.executeStatus) {
-        if (item.value == val) {
-          msg = item.label
-        }
-      }
-      return msg || '待扫描'
-    },
-    databaseTypeMsg(val) {
-      let msg = ''
-      for (let item of this.databaseTypeList) {
-        if (item.value == val) {
-          msg = item.name
-        }
-      }
-      return msg || '未知来源'
     },
     // 定时器，防抖使用
     inputSearch(data) {
@@ -232,18 +234,13 @@ export default {
         this.handleQuery()
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
-       /** 查询数据库代理列表 */
+    /** 查询数据库代理列表 */
     getList() {
-      return
       this.loading = true;
-      listProxys(this.queryParams).then(response => {
-        this.proxysList = response.rows;
-        // for (let item of this.proxysList) {
-        //   item.showTag = 0
-        //   item.oldPassword = item.targetUserPassword
-        //   item.targetUserPassword = '******'
-        // }
-        this.total = response.total;
+      getResultPushList(this.queryParams).then(res => {
+        // console.log();
+        this.proxysList = res.data.rows;
+        this.total = res.data.total;
         this.loading = false;
       });
     },
@@ -258,7 +255,7 @@ export default {
         projectId: null,
         // proxyStatus: "0"
       };
-      this.resetForm("form");
+      this.resetForm("dialogData");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -279,25 +276,23 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.editIsFlag = false
-      this.targetDataList = []
-      this.reset();
-      this.open = true;
+      this.resetForm('dialogData');
+      this.dialogDataShow = true;
       this.title = "添加数据库";
     },
     /** 提交按钮 */
-    async submitForm() {
-      this.$refs["form"].validate(async valid => {
+    async submitFormFn() {
+      this.$refs["dialogData"].validate(async valid => {
         let data = JSON.parse(JSON.stringify(this.form))
         delete data.projectName
         data.targetDatabase = JSON.stringify(data.targetDatabase)
         data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
         console.log(data);
-        
-        if(!this.editIsFlag && Object.keys(data.tables).length == 0){
+
+        if (!this.editIsFlag && Object.keys(data.tables).length == 0) {
           this.$message({ message: '请选择扫描内容', type: 'warning' })
           return
-        }else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase){
+        } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
           this.$message({ message: '请选择扫描内容', type: 'warning' })
           return
         }
@@ -324,13 +319,13 @@ export default {
     },
     handleEcelFn() {
       this.editIsFlag = false
-      this.importData.importShow = true
-      this.importData.categoryId = ''
-      this.importData.importFile = ''
-      this.importData.sourceName = ''
-      this.importData.businessName = ''
-      this.titleExcel = '新增Excel文件'
-      this.importData.fileList = []
+      this.dialogDataShow = true
+      this.dialogData.categoryId = ''
+      this.dialogData.importFile = ''
+      this.dialogData.sourceName = ''
+      this.dialogData.businessName = ''
+      this.title = '新增Excel文件'
+      this.dialogData.fileList = []
     },
     deleteFn() {
       let dataS = this.$refs.tableRef.selection
@@ -397,30 +392,26 @@ input[aria-hidden=true] {
   align-items: center;
   flex-wrap: wrap;
 }
-/* 
-.yuanDataClass /deep/ .el-form-item {
-  width: 30%;
+.dialogForm .el-form-item{
+  width: 80%;
 }
-
-.yuanDataClass /deep/ .el-form-item__label {
-  width: 25%;
+.dialogForm .el-form-item /deep/ .el-form-item__label-wrap{
 }
-
-.yuanDataClass /deep/ .el-form-item__content {
-  width: 75%;
+.dialogForm .el-form-item /deep/ .el-form-item__content{
+  width: 70%;
 }
-
-.yuanDataClass /deep/ .el-select {
+.dialogForm .el-form-item  /deep/ .el-select{
   width: 100%;
-} */
-
+}
 .searchBtn {
   /* margin-left: auto; */
   height: 100%;
 }
-.tableBox{
+
+.tableBox {
   height: calc(100% - 36px - 50px -51px);
 }
+
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
   width: 6px;
   height: 6px;

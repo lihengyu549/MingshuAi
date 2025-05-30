@@ -188,7 +188,7 @@ export default {
           title: 'API对接',
           msg: '赋能AI分类分级能力/推送AI分析结果',
           btnText: '快速接入',
-          path: '/',
+          path: '/APIAbutment/capacity',
         },
 
       ],

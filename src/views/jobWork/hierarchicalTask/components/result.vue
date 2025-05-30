@@ -173,7 +173,7 @@
         <el-form-item label="个人信息识别" class="addSelectClass" prop="piiDetection">
           <el-select ref="piiSelectRef" v-model="piiNodeName">
             <el-option style="height: 100%; padding: 0" value="">
-              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
+              <el-tree :data="piiList" :props="defaultProps" :expand-on-click-node="true"
                 :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
                 @node-click="piiHandleNodeClick" />
             </el-option>
@@ -948,7 +948,7 @@ export default {
     getPiiList(key) {
       this.treeLoading = true
       let data = {
-        parentId: this.drawerData.projectId,
+        parentId: 1,
         needSub: 1,
         ifAddUnclassified:2
       };

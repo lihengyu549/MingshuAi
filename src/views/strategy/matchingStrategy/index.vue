@@ -467,8 +467,7 @@ export default {
     },
     // 左侧树下拉选change事件
     treeOptionsSelectChange(val) {
-      this.queryParams.pageNum = 1
-      this.queryParams.pageSize = 10
+      this.resetQuery()
       this.getProtectCategory(val)
     },
     gettreeOptionsList() {

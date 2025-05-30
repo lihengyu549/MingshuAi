@@ -51,3 +51,11 @@ export function generateToken(data) {
     params:data
   })
 }
+// 结果推送列表接口
+export function getResultPushList(data) {
+  return request({
+    url: '/system/result/push/getResultPushList',
+    method: 'get',
+    params:data
+  })
+}

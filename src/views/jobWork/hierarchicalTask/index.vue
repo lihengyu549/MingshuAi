@@ -328,8 +328,6 @@ export default {
     this.getScanCompleteDataFn()
   },
   mounted() {
-    console.log(this.dict);
-
   },
   methods: {
     // 发布撤回
@@ -481,6 +479,7 @@ export default {
       this.form = {}
       this.aiAnalyticsEngine = "1"
       this.form.projectName = ''
+      this.$set(this.form, 'piiDetectionFlag', false)
       this.$set(this.form, 'confidenceLevel', "0")
       this.$set(this.form, 'classificationLogic', "2")
       this.$set(this.form, 'confirm', "0")
@@ -727,6 +726,17 @@ input[aria-hidden=true] {
   text-align: left;
 }
 
+.addMsg /deep/ .el-input {
+  width: 80%;
+}
+
+.addMsg /deep/ .el-select {
+  width: 80%;
+}
+
+.addMsg .el-select /deep/ .el-input {
+  width: 100%;
+}
 .spanClass {
   position: absolute;
   left: -58px;

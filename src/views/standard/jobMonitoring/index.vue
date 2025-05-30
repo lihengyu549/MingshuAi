@@ -287,7 +287,8 @@ export default {
         categoryId: '',//左侧树id
         name: '',//子类名称
         dataSourceId: '',//来源
-        levelId: [],//安全级别
+        levelId: [],//安全级别，
+        dataSource:'',
       },
       addOrEditDataRuls: {
         additional:'',
@@ -688,8 +689,7 @@ export default {
     },
     // 左侧树下拉选change事件
     treeOptionsSelectChange(val) {
-      this.queryParams.pageNum = 1
-      this.queryParams.pageSize = 10
+      this.resetQuery()
       this.getProtectCategory(val)
     },
     gettreeOptionsList(id) {
@@ -820,6 +820,7 @@ export default {
       this.treeID = this.categoryList[0].id
       this.$refs.tree.setCurrentKey(this.treeID);
       this.resetForm("queryParams");
+      this.queryParams.dataSource = ''
       this.handleQuery();
     },
     async rulsNameIsRight(nodeId, name, id) {

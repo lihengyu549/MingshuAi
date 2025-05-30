@@ -77,7 +77,7 @@
     <!--  底部  -->
     <div class="el-login-footer">
       <!-- <span>Copyright @超圣科技2024</span> -->
-      <span>Copyright @演示系统2024</span>
+      <!-- <span>Copyright @演示系统2024</span> -->
     </div>
   </div>
 </template>

@@ -71,15 +71,15 @@
       <el-form :model="addOrEditFormData" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules"
         ref="addOrEditForm" label-width="80px" style="padding-right: 60px;">
         <el-form-item label="任务名称" prop="taskName">
-          <el-input v-model="addOrEditFormData.taskName" maxlength="50" placeholder="请输入子类名称"></el-input>
+          <el-input v-model="addOrEditFormData.taskName" maxlength="50" placeholder="请输入任务名称"></el-input>
         </el-form-item>
         <el-form-item label="IP段" prop="ipScope">
-          <el-input v-model="addOrEditFormData.ipScope" maxlength="50" placeholder="请输入子类名称"></el-input>
-          <div style="font-size: 12px; font-style: italic;">示例：192.168.1.1-200，多个IP以逗号隔开</div>
+          <el-input v-model="addOrEditFormData.ipScope" maxlength="50" placeholder="请输入单个IP或IP段"></el-input>
+          <div style="font-size: 12px; font-style: italic;">IP段示例：192.168.1.1-200，多个IP以逗号隔开</div>
         </el-form-item>
         <el-form-item label="指定端口" prop="ports">
-          <el-input v-model="addOrEditFormData.ports" maxlength="50" placeholder="请输入子类名称"></el-input>
-          <div style="font-size: 12px; font-style: italic;">示例：0-65535，多个端口以逗号隔开</div>
+          <el-input v-model="addOrEditFormData.ports" maxlength="50" placeholder="请输入端口或端口范围"></el-input>
+          <div style="font-size: 12px; font-style: italic;">端口范围示例：0-65535，多个端口以逗号隔开</div>
         </el-form-item>
         <el-form-item class="weekTimeClass" prop="scheduleType" label="周期">
           <el-select v-model="addOrEditFormData.scheduleType" @change="scheduleTypeChange">
@@ -262,6 +262,11 @@ export default {
         ipScope: [
           {
             required: true, message: "请输入IP段", trigger: "blur"
+          }
+        ],
+        ports:[
+          {
+            required: true, message: "请输入指定端口", trigger: "blur"
           }
         ],
         scheduleType: [

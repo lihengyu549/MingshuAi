@@ -331,6 +331,7 @@ Authorization:Bearer ${this.Token}`
     treeOptionsSelectChange(val) {
       this.queryParams.pageNum = 1
       this.queryParams.pageSize = 10
+      this.resetQuery()
       this.routeDataShow = false
       this.httpDemo()
       this.getProtectCategory(val)
@@ -581,7 +582,7 @@ Authorization:Bearer ${this.Token}`
     },
     getPiiList(key) {
       let data = {
-        parentId: key,
+        parentId: 1,
         needSub: 1,
         ifAddUnclassified:2,
       };

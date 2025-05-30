@@ -2,7 +2,7 @@
 
 <template>
   <div class="app-container" v-loading="mainLoading">
-    <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small" :inline="true"
+    <el-form :model="queryParams" ref="queryParams" v-show="showSearch" class="yuanDataClass" size="small" :inline="true"
       label-width="auto">
       <el-form-item label="标准编号" prop="standardId">
         <el-input v-model="queryParams.standardId" @input="inputSearch" placeholder="请输入标准编号" clearable
@@ -309,8 +309,6 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.treeID = this.categoryList[0].id
-      this.$refs.tree.setCurrentKey(this.treeID);
       this.resetForm("queryParams");
       this.handleQuery(); 
     },
