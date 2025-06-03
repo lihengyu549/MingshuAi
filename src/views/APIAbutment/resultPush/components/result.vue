@@ -1,0 +1,169 @@
+<template>
+  <div v-loading="loading">
+    <div class="mainBox">
+      <div class="leftBox">
+        <div class="leftBox_header">可选</div>
+        <div class="leftBox_body">
+          <el-tree :props="defaultProps" ref="resultTree" :data="treeData" show-checkbox @check="handleCheckChange"
+            node-key="id">
+          </el-tree>
+        </div>
+      </div>
+      <div class="rightBox">
+        <div class="rightBox_header">
+          <span>已选<span style="font-weight: normal; color:#818181;">（{{ lastChildList.length }}个子类）</span></span>
+          <span class="reset" @click="emptyFn">清空</span>
+        </div>
+        <div class="rightBox_body">
+          <div class="childList" v-for="(item, index) in this.lastChildList" :key="item.id">
+            <span>{{ item.categoryName }}</span>
+            <i class="el-icon-error" @click="deleteChildFn(item, index)"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+
+export default {
+  name: "resultPushResult",
+  props: {
+    treeData: {
+      type: Array,
+      default: [],
+    },
+    checkList: {
+      type: Array,
+      default: [],
+    }
+  },
+  data() {
+    return {
+      loading: false,
+      defaultProps: {
+        label: 'categoryName',
+        children: 'children'
+      },
+      lastChildList: [],
+    }
+  },
+
+  created() {
+  },
+  mounted() {
+    if (this.checkList && this.checkList.length) {
+      this.$refs.resultTree.setCheckedKeys(this.checkList, true)
+      this.lastChildList = this.$refs.resultTree.getCheckedNodes().filter(item => !item.children || item.children.length == 0)
+    }
+  },
+  methods: {
+    handleCheckChange(arrData, treeData) {
+      this.lastChildList = treeData.checkedNodes.filter(item => !item.children || item.children.length == 0)
+    },
+    deleteChildFn(row, index) {
+      this.$refs.resultTree.setChecked(row.id, false)
+      this.lastChildList.splice(index, 1)
+    },
+    emptyFn(){
+      this.lastChildList = []
+      this.$refs.resultTree.setCheckedKeys(this.treeData, false)
+    }
+  }
+};
+</script>
+<style scoped lang="scss">
+.mainBox {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .leftBox {
+    flex: 1;
+    margin-right: 20px;
+
+    .leftBox_header {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .leftBox_body {
+      border: 1px solid #ccc;
+      height: 500px;
+      overflow-y: auto;
+    }
+  }
+
+  .rightBox {
+    width: 35%;
+
+    .rightBox_header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 10px;
+
+      .reset {
+        color: #0600ff;
+      }
+    }
+
+    .rightBox_body {
+      height: 500px;
+      border: 1px solid #c4c4c4;
+      overflow-y: auto;
+      padding: 10px;
+    }
+  }
+}
+
+.rightBox_body :v-deep .el-table__body-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.rightBox_body :v-deep .el-table__body-wrapper::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.rightBox_body :v-deep .el-table__body-wrapper::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+.leftBox_body :v-deep .el-table__body-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.leftBox_body :v-deep .el-table__body-wrapper::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.leftBox_body :v-deep .el-table__body-wrapper::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+.childList {
+  border: 1px solid #ccc;
+  padding: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .el-icon-error {
+    font-size: 18px;
+  }
+}
+
+.childList+.childList {
+  margin-top: 10px;
+}
+</style>

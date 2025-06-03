@@ -2,13 +2,13 @@
   <div class="app-container" v-loading="mainLoading">
     <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small" :inline="true"
       label-width="auto">
-      <el-form-item label="目标名称" prop="sourceName">
-        <el-input v-model="queryParams.sourceName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+      <el-form-item label="目标名称" prop="taskName">
+        <el-input v-model="queryParams.taskName" @input="inputSearch" placeholder="请输入数据源名称" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="推送类型" prop="sourceType">
-        <el-select clearable v-model="queryParams.sourceType" @change="inputSearch" placeholder="请选择数据库类型">
-          <el-option v-for="item in pushList" :key="item.value" :label="item.label" :value="item.value">
+      <el-form-item label="推送类型" prop="pushType">
+        <el-select clearable v-model="queryParams.pushType" @change="inputSearch" placeholder="请选择数据库类型">
+          <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel" :value="item.dictValue">
           </el-option>
         </el-select>
       </el-form-item>
@@ -27,17 +27,17 @@
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
-    <el-table v-loading="loading" height="670px" class="tableBox" :data="proxysList"
+    <el-table v-loading="loading" height="700px" class="tableBox" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="任务名称" align="center" prop="taskName" />
-      <el-table-column label="对接厂商" align="center" prop="providerName" />
-      <el-table-column label="推送类型" align="center" prop="pushTypeName" />
-      <el-table-column label="发布数据源名称" align="center" prop="sourceName" />
-      <el-table-column label="分类分级标准" align="center" prop="standardName" />
-      <el-table-column label="推送状态" align="center" prop="pushStatusName" />
-      <el-table-column label="更新时间" align="center" prop="updateTime" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="任务名称" align="center" prop="taskName" width="150" show-overflow-tooltip/>
+      <el-table-column label="对接厂商" align="center" prop="providerName" width="150" show-overflow-tooltip/>
+      <el-table-column label="推送类型" align="center" prop="pushTypeName" width="150" show-overflow-tooltip/>
+      <el-table-column label="发布数据源名称" align="center" prop="sourceName" width="250" show-overflow-tooltip/>
+      <el-table-column label="分类分级标准" align="center" prop="standardName" show-overflow-tooltip/>
+      <el-table-column label="推送状态" align="center" prop="pushStatusName" width="150" show-overflow-tooltip/>
+      <el-table-column label="更新时间" align="center" prop="updateTime" width="250" show-overflow-tooltip/>
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="150">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="handleEcelFn(scope.row)">编辑</el-button>
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)">推送</el-button>
@@ -46,22 +46,23 @@
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
-    <el-dialog :title="title" class="addMsg" v-loading="dialogLoading" :visible.sync="dialogDataShow" width="580px" append-to-body
-      :close-on-click-modal="true">
+    <el-dialog :title="title" class="addMsg" v-loading="dialogLoading" :visible.sync="dialogDataShow" width="580px"
+      append-to-body :close-on-click-modal="true">
       <el-form class="dialogForm" :rules="dialogDataRules" :model="dialogData" size="medium" ref="dialogData"
         :inline="true" label-width="110px">
         <el-form-item label="任务名称" prop="taskName">
           <el-input v-model="dialogData.taskName" maxlength="50" placeholder="请输入任务名称"></el-input>
         </el-form-item>
         <el-form-item label="推送类型" prop="pushType">
-          <el-select clearable v-model="queryParams.pushType" @change="inputSearch" placeholder="请选择">
-            <el-option v-for="item in pushList" :key="item.value" :label="item.label" :value="item.value">
+          <el-select clearable v-model="dialogData.pushType" placeholder="请选择">
+            <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel" :value="item.dictValue">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="对接厂商" prop="provider">
-          <el-select clearable v-model="queryParams.provider" @change="inputSearch" placeholder="请选择">
-            <el-option v-for="item in pushList" :key="item.value" :label="item.label" :value="item.value">
+          <el-select clearable v-model="dialogData.provider" placeholder="请选择">
+            <el-option v-for="item in providerList" :key="item.dictValue" :label="item.dictLabel"
+              :value="item.dictValue">
             </el-option>
           </el-select>
         </el-form-item>
@@ -76,16 +77,20 @@
           <el-input v-model="dialogData.userName" maxlength="50" placeholder="请输入账号"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="passWord">
-          <el-input v-model="dialogData.passWord" maxlength="50" placeholder="请输入密码"></el-input>
+          <el-input v-model="dialogData.passWord" show-password maxlength="50" placeholder="请输入密码"></el-input>
         </el-form-item>
         <el-form-item label="分类分级标准" prop="standardId">
-          <el-select clearable v-model="queryParams.standardId" @change="inputSearch" placeholder="请选择">
-            <el-option v-for="item in pushList" :key="item.value" :label="item.label" :value="item.value">
+          <el-select clearable v-model="dialogData.standardId" placeholder="请选择">
+            <el-option v-for="item in standardList" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="推送内容" prop="businessName">
-          <el-input v-model="dialogData.businessName" maxlength="50" placeholder="请选择推送内容"></el-input>
+        <el-form-item label="推送内容" prop="pushBodyList">
+          <el-input readonly maxlength="50" placeholder="请选择推送内容">
+          </el-input>
+          <el-tag type="info" style="position: absolute; top: 3px;left: 2px; background-color: #e5e5e5;"
+            @click="pushBodyClickFn">已选{{ dialogData.pushBodyList && dialogData.pushBodyList.length
+              ? dialogData.pushBodyList.length : 0 }}个子类</el-tag>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -93,21 +98,46 @@
         <el-button @click="importcancel">取 消</el-button>
       </div>
     </el-dialog>
+    <el-dialog title="推送内容" :visible.sync="contentShow" width="850px">
+      <Result v-if="contentShow" ref="ResultSon" :treeData="categoryList" :checkList="dialogData.pushBodyList" />
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="pushBodySumbit">确 定</el-button>
+        <el-button @click="pushBodycancel">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import {
-  getResultPushList
+  getResultPushList,
+  getStandardList,
+  addResultPush,
+  updateResultPush,
+  pushResult,
+  deleteResultPush,
 } from "@/api/APIAbutment";
+import { treeListI } from "@/api/system/protectCategory";
+import Result from './components/result.vue'
+import {
+  listByDataType
+} from "@/api/dictData";
+import d from "highlight.js/lib/languages/d";
 export default {
   name: "resultPush",
-  components: {},
+  components: { Result },
   data() {
     return {
-      pushList: [{ label: "关键字字典", value: 0 }, { label: "正则表达式", value: 1 }],
+      pushList: [
+        { label: "关键字字典", value: "1" },
+        { label: "正则表达式", value: "2" }],
+
+      pushList: [
+        { label: "关键字字典", value: "1" },
+        { label: "正则表达式", value: "2" }],
       // 遮罩层
       loading: false,
+      contentShow: false,
       mainLoading: false,
       dialogLoading: false,
       // 选中数组
@@ -130,36 +160,25 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        sourceType: '',
-        sourceName: '',
-        businessName: '',
+        pushType: '',
+        taskName: '',
         proxyId: '',
         publishStatus: '',
         maskComplete: '',
-        projectId: '',
       },
-      // 表单参数
-      form: {
-        projectId: null,
-        sourceName: '',
-        databaseType: '',
-        // targetPort:'3306',
-        // targetIp:'192.168.2.38',
-        // targetUserName:'root',
-        // targetUserPassword:'your_password',
-        tables: {},
-      },
-      dialogData:{
-        taskName:'',//任务名称
-        pushType:'',//推送类型（字典表维护）
-        provider:'',//对接厂商（字典表维护）
-        pushVersion:'',//对接版本（字段表维护）
-        host:'',//主机
-        port:'',//端口
-        userName:'',//账号
-        passWord:'',//密码
-        standardId:'',//行业标准ID
-        pushBodyList:'',//推送内容
+      dialogData: {
+        taskName: '',//任务名称
+        pushType: '',//推送类型（字典表维护）
+        provider: '',//对接厂商（字典表维护）
+        pushVersion: '',//对接版本（字段表维护）
+        host: '',//主机
+        port: '',//端口
+        id: '',
+        userName: '',//账号
+        passWord: '',//密码
+        standardId: '',//行业标准ID
+        pushBodyList: [],//推送内容
+        pushVersion: '',
       },
       debounceTimeout: null,
       // 表单校验
@@ -194,38 +213,57 @@ export default {
         standardId: [
           { required: true, message: "请选择分类分级标准", trigger: "blur" },
         ],
-        businessName: [
+        pushBodyList: [
           { required: true, message: "请选择推送内容", trigger: "blur" },
         ],
       },
+      providerList: [],
+      standardList: [],
+      categoryList: [],
     };
   },
   computed: {
   },
   created() {
+    // 分类分级标准列表
+    this.getStandardListFn()
+    // 字典数据
+    this.getDictDataFn()
   },
   mounted() {
     this.getList();
   },
   methods: {
-    importcancel(){
+    getProtectCategory() {
+      this.treeLoading = true
+      let data = {
+        parentId: this.dialogData.standardId,
+      };
+      treeListI(data).then((resp) => {
+        this.categoryList = this.handleTree(resp.data, "id")
+        // this.categoryList = resp.data
+      });
+    },
+    getDictDataFn() {
+      listByDataType({ type: 'sys_provider_type' }).then(res => {
+        this.providerList = res.data;// 此字典只给新增子类的建议防护措施用
+      })
+       listByDataType({ type: 'sys_push_type' }).then(res => {
+        this.pushList = res.data;// 此字典只给新增子类的建议防护措施用
+      })
+    },
+    getStandardListFn() {
+      getStandardList().then(res => {
+        this.standardList = res.data.map(item => {
+          return { ...item, categoryName: item.categoryName, id: item.id + '' }
+        })
+      })
+    },
+    importcancel() {
       this.dialogDataShow = false
-      this.resetForm('dialogData')
     },
-    // 自定义校验规则
-    tabelCheckedNameRules(rule, value, callback) {
-      callback();
-    },
-    async getNameTestingFn() {
-      let params = {
-        sourceName: this.form.sourceName,
-        id: this.form.id || ''
-      }
-      let res = await checkSourceName(params)
-      return res.code == 200
-    },
-    nameTestingFn(val) {
-      this.form.sourceName = val.replace(/[^a-zA-Z0-9]/g, "")
+    pushBodycancel() {
+      this.contentShow = false
     },
     // 定时器，防抖使用
     inputSearch(data) {
@@ -238,24 +276,10 @@ export default {
     getList() {
       this.loading = true;
       getResultPushList(this.queryParams).then(res => {
-        // console.log();
         this.proxysList = res.data.rows;
         this.total = res.data.total;
         this.loading = false;
       });
-    },
-    reset() {
-      this.form = {
-        targetIp: null,
-        targetPort: null,
-        targetDatabase: [],
-        targetUserName: null,
-        targetUserPassword: null,
-        //  protocolPort: null,
-        projectId: null,
-        // proxyStatus: "0"
-      };
-      this.resetForm("dialogData");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -264,7 +288,6 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.queryParams.projectId = null
       this.resetForm("queryForm");
       this.handleQuery();
     },
@@ -276,87 +299,53 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.resetForm('dialogData');
+      this.resetAddData()
       this.dialogDataShow = true;
       this.title = "添加数据库";
+    },
+    pushBodySumbit() {
+      this.dialogData.pushBodyList = this.$refs.ResultSon.lastChildList.map(item => {
+        return item.id
+      })
+      console.log(this.dialogData.pushBodyList);
+
+      this.contentShow = false
     },
     /** 提交按钮 */
     async submitFormFn() {
       this.$refs["dialogData"].validate(async valid => {
-        let data = JSON.parse(JSON.stringify(this.form))
-        delete data.projectName
-        data.targetDatabase = JSON.stringify(data.targetDatabase)
-        data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
-        console.log(data);
-
-        if (!this.editIsFlag && Object.keys(data.tables).length == 0) {
-          this.$message({ message: '请选择扫描内容', type: 'warning' })
-          return
-        } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
-          this.$message({ message: '请选择扫描内容', type: 'warning' })
-          return
-        }
         if (valid) {
-          if (!await this.getNameTestingFn()) {
-            return
+          let data = {
+            ...this.dialogData,
+            pushBody: this.dialogData.pushBodyList.join()
           }
-          if (this.form.id != null) {
-            data.id = this.form.id
-            updateDatabaseAndTables(data).then(response => {
+          delete data.pushBodyList
+          if (this.dialogData.id) {
+            updateResultPush(data).then(response => {
               this.$modal.msgSuccess("修改成功");
-              this.open = false;
+              this.dialogDataShow = false;
               this.getList();
             });
           } else {
-            saveDatabaseAndTables(data).then(response => {
+            addResultPush(data).then(response => {
               this.$modal.msgSuccess("新增成功");
-              this.open = false;
+              this.dialogDataShow = false;
               this.getList();
             });
           }
         }
       });
     },
-    handleEcelFn() {
+    handleEcelFn(row) {
       this.editIsFlag = false
       this.dialogDataShow = true
-      this.dialogData.categoryId = ''
-      this.dialogData.importFile = ''
-      this.dialogData.sourceName = ''
-      this.dialogData.businessName = ''
+      this.dialogData = JSON.parse(JSON.stringify(row))
+      this.dialogData.pushBodyList = row.pushBody.split(',')
       this.title = '新增Excel文件'
-      this.dialogData.fileList = []
     },
     deleteFn() {
       let dataS = this.$refs.tableRef.selection
-      let flagList // 为1 代表选中数据中有执行中的，2为没有执行中，但是有执行完成的
       if (dataS && dataS.length > 0) {
-        flagList = dataS.map(item => {
-          return item.scanState
-        })
-        if (flagList.includes('RUNNING')) {
-          this.$message({ message: '选中任务包含执行中任务，无法批量删除', type: 'warning' })
-          return
-        }
-        if (flagList.includes('COMPLETE')) {
-          this.$confirm(`删除任务，将会删除数据源所关联的所有执行结果,确定删除吗`, '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            let ids = dataS.map(item => {
-              return item.id
-            })
-            let idsParams = ids.join(',')
-            delProxys(idsParams).then(res => {
-              if (res.code == 200) {
-                this.$message.success(res.msg)
-                this.getList()
-              }
-            })
-          })
-          return
-        }
         this.$confirm(`确定删除所选中的项吗`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -365,8 +354,8 @@ export default {
           let ids = dataS.map(item => {
             return item.id
           })
-          let idsParams = ids.join(',')
-          delProxys(idsParams).then(res => {
+          let idsParams = ids
+          deleteResultPush({ids,}).then(res => {
             if (res.code == 200) {
               this.$message.success(res.msg)
               this.getList()
@@ -377,6 +366,46 @@ export default {
         this.$message({ message: '至少选择一条数据', type: 'warning' })
       }
     },
+    resetAddData() {
+      this.dialogData = {
+        taskName: '',//任务名称
+        pushType: '',//推送类型（字典表维护）
+        provider: '',//对接厂商（字典表维护）
+        pushVersion: '',//对接版本（字段表维护）
+        host: '',//主机
+        port: '',//端口
+        id: '',
+        userName: '',//账号
+        passWord: '',//密码
+        standardId: '',//行业标准ID
+        pushBodyList: '',//推送内容
+        pushVersion: '',
+      }
+    },
+    scanStateClickFn(row) {
+      this.$confirm(`确定推送吗`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        // 接口
+        pushResult({id:row.id}).then(res=> { 
+          if (res.code == 200) {
+            this.$message.success('推送成功')
+            this.getList()
+          }
+})
+      }).catch(() => {
+      });
+    },
+    async pushBodyClickFn() {
+      if (!this.dialogData.standardId) {
+        this.$message({ message: '请选择分类分级标准后点击', type: 'warning' })
+        return
+      }
+      await this.getProtectCategory()
+      this.contentShow = true
+    }
   }
 };
 </script>
@@ -392,17 +421,21 @@ input[aria-hidden=true] {
   align-items: center;
   flex-wrap: wrap;
 }
-.dialogForm .el-form-item{
+
+.dialogForm .el-form-item {
   width: 80%;
 }
-.dialogForm .el-form-item /deep/ .el-form-item__label-wrap{
-}
-.dialogForm .el-form-item /deep/ .el-form-item__content{
+
+.dialogForm .el-form-item /deep/ .el-form-item__label-wrap {}
+
+.dialogForm .el-form-item /deep/ .el-form-item__content {
   width: 70%;
 }
-.dialogForm .el-form-item  /deep/ .el-select{
+
+.dialogForm .el-form-item /deep/ .el-select {
   width: 100%;
 }
+
 .searchBtn {
   /* margin-left: auto; */
   height: 100%;

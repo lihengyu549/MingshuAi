@@ -59,3 +59,48 @@ export function getResultPushList(data) {
     params:data
   })
 }
+// 标准下拉框接口
+export function getStandardList(data) {
+  return request({
+    url: '/system/result/push/getStandardList',
+    method: 'get',
+    params:data
+  })
+}
+
+// 新增结果推送接口
+export function addResultPush(data) {
+  return request({
+    url: '/system/result/push/addResultPush',
+    method: 'post',
+    data:data
+  })
+}
+
+// 修改结果推送接口
+export function updateResultPush(data) {
+  return request({
+    url: '/system/result/push/updateResultPush',
+    method: 'post',
+    data:data
+  })
+}
+
+// 删除结果推送接口
+export function deleteResultPush(data) {
+  return request({
+    url: '/system/result/push/deleteResultPush',
+    method: 'post',
+    data:data
+  })
+}
+
+// 推送接口
+export function pushResult(data) {
+  return request({
+    url: '/system/result/push/pushResult',
+    method: 'post',
+    data:data
+  })
+}
+
