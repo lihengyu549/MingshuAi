@@ -51,7 +51,7 @@
       <el-form class="dialogForm" :rules="dialogDataRules" :model="dialogData" size="medium" ref="dialogData"
         :inline="true" label-width="110px">
         <el-form-item label="任务名称" prop="taskName">
-          <el-input v-model="dialogData.taskName" maxlength="50" placeholder="请输入任务名称"></el-input>
+          <el-input v-model="dialogData.taskName"   placeholder="请输入任务名称"></el-input>
         </el-form-item>
         <el-form-item label="推送类型" prop="pushType">
           <el-select clearable v-model="dialogData.pushType" placeholder="请选择">
@@ -67,17 +67,17 @@
           </el-select>
         </el-form-item>
         <el-form-item label="主机" prop="host">
-          <el-input v-model="dialogData.host" maxlength="50" placeholder="请输入主机"></el-input>
+          <el-input v-model="dialogData.host"   placeholder="请输入主机"></el-input>
         </el-form-item>
 
         <el-form-item label="端口" prop="port">
-          <el-input v-model="dialogData.port" maxlength="50" placeholder="请输入端口"></el-input>
+          <el-input v-model="dialogData.port"   placeholder="请输入端口"></el-input>
         </el-form-item>
         <el-form-item label="账号" prop="userName">
-          <el-input v-model="dialogData.userName" maxlength="50" placeholder="请输入账号"></el-input>
+          <el-input v-model="dialogData.userName"  placeholder="请输入账号"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="passWord">
-          <el-input v-model="dialogData.passWord" show-password maxlength="50" placeholder="请输入密码"></el-input>
+          <el-input v-model="dialogData.passWord" show-password  placeholder="请输入密码"></el-input>
         </el-form-item>
         <el-form-item label="分类分级标准" prop="standardId">
           <el-select clearable v-model="dialogData.standardId" placeholder="请选择">
@@ -86,7 +86,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="推送内容" prop="pushBodyList">
-          <el-input readonly maxlength="50" placeholder="请选择推送内容">
+          <el-input readonly   placeholder="请选择推送内容">
           </el-input>
           <el-tag type="info" style="position: absolute; top: 3px;left: 2px; background-color: #e5e5e5;"
             @click="pushBodyClickFn">已选{{ dialogData.pushBodyList && dialogData.pushBodyList.length
@@ -238,6 +238,7 @@ export default {
       this.treeLoading = true
       let data = {
         parentId: this.dialogData.standardId,
+        needSub: 1
       };
       treeListI(data).then((resp) => {
         this.categoryList = this.handleTree(resp.data, "id")
@@ -301,14 +302,12 @@ export default {
     handleAdd() {
       this.resetAddData()
       this.dialogDataShow = true;
-      this.title = "添加数据库";
+      this.title = "数据库";
     },
     pushBodySumbit() {
       this.dialogData.pushBodyList = this.$refs.ResultSon.lastChildList.map(item => {
         return item.id
       })
-      console.log(this.dialogData.pushBodyList);
-
       this.contentShow = false
     },
     /** 提交按钮 */
@@ -341,7 +340,7 @@ export default {
       this.dialogDataShow = true
       this.dialogData = JSON.parse(JSON.stringify(row))
       this.dialogData.pushBodyList = row.pushBody.split(',')
-      this.title = '新增Excel文件'
+      this.title = '编辑'
     },
     deleteFn() {
       let dataS = this.$refs.tableRef.selection
