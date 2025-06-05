@@ -512,6 +512,7 @@ export default {
     handleUpdate(row) {
       this.getScanCompleteDataFn(row.id)
       this.form = JSON.parse(JSON.stringify(row));
+      this.form.piiDetectionFlag = row.piiDetectionFlag == "true" ? true : false
       if (row.classificationState == '0') {
         this.form.classificationState = ''
       }
@@ -526,6 +527,8 @@ export default {
             return
           }
           if (this.form.isAddTasks === '1') {
+            this.form.piiDetectionFlag = this.form.piiDetectionFlag + ''
+            this.aiAnalyticsEngine = this.aiAnalyticsEngine
             editScanCompleteDataTasks(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
