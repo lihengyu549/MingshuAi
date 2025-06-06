@@ -956,6 +956,7 @@ export default {
           params[item.databaseName].push({
             schemaName: item.schemaName,
             tableName: item.label,
+            dataSize: item.dataSize,
             dataCount: item.dataCount,
             tableRemark: item.tableRemark,
             databaseName: item.databaseName,

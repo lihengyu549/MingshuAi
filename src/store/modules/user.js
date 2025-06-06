@@ -31,8 +31,6 @@ const user = {
       state.permissions = permissions
     },
     SET_PROJECT: (state, data) => {
-      console.log(data);
-      
       state.projectData = data
     },
   },
