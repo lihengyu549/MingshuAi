@@ -22,7 +22,7 @@
         <div id="radarEcharts" class="leftEchartsBox"></div>
       </div>
       <div class="main_boxFlex">
-        <div style="padding: 40px 15px;background-color: #fff;">
+        <div style="padding: 35px 15px;background-color: #fff; border-radius: 8px;">
           <div class="fieldConditions">
             <div></div>
             <div class="titleBox">字段注释覆盖情况</div>
@@ -33,20 +33,90 @@
             </div>
           </div>
         </div>
-        <div style="padding: 20px; background-color: #fff;margin-top: 20px;">
+        <div style="padding:40px; background-color: #fff;margin-top: 20px;position: relative; border-radius: 8px;">
           <div class="data-stats-container">
-            <div class="data-stat-item" v-for="item in stats" :key="item.label">
-              <div class="stat-label">{{ item.label }}</div>
-              <div class="stat-value">{{ item.value }}</div>
+            <div class="data-stat-item">
+              <img src="../assets/newDataImg/shujuzongliang-2.png" alt="">
+              <div>
+                <div class="stat-label">数据总量</div>
+                <div class="stat-value">100MB</div>
+              </div>
+            </div>
+            <div class="data-stat-item">
+              <div>
+                <div class="stat-label">个人信息条数</div>
+                <div class="stat-value">5000</div>
+              </div>
+              <img src="../assets/newDataImg/gerenxinxi.png" alt="">
+            </div>
+            <div class="data-stat-item">
+              <img src="../assets/newDataImg/shujuyuan.png" alt="">
+              <div>
+                <div class="stat-label">数据源数量</div>
+                <div class="stat-value">100</div>
+              </div>
+            </div>
+            <div class="data-stat-item">
+              <div>
+                <div class="stat-label">未成年信息条数</div>
+                <div class="stat-value">4500</div>
+              </div>
+              <img src="../assets/newDataImg/shilingertong.png" alt="">
+            </div>
+            <div class="data-stat-item">
+              <img src="../assets/newDataImg/teshukunjingertong.png" alt="">
+              <div>
+                <div class="stat-label">一般个人信息字段数</div>
+                <div class="stat-value">300</div>
+              </div>
+            </div>
+            <div class="data-stat-item">
+              <div>
+                <div class="stat-label">数据表数量</div>
+                <div class="stat-value">1000</div>
+              </div>
+              <img src="../assets/newDataImg/shujubiao-2.png" alt="">
+            </div>
+
+            <div class="data-stat-item">
+              <img src="../assets/newDataImg/ertongsiwangrenshu.png" alt="">
+              <div>
+                <div class="stat-label">敏感个人信息字段数</div>
+                <div class="stat-value">200</div>
+              </div>
+            </div>
+
+            <div class="data-stat-item">
+              <div>
+                <div class="stat-label">数据库数量</div>
+                <div class="stat-value">222</div>
+              </div>
+              <img src="../assets/newDataImg/shujuzongliang.png" alt="">
             </div>
           </div>
+          <div class="centerCircle">
+            <div>累计分析字段数量</div> <span>12030218531</span>
+          </div>
         </div>
-        <div></div>
+        <div style="padding:20px; background-color: #fff;margin-top: 20px;position: relative; border-radius: 8px;">
+          <div style="margin-bottom: 15px;">分类分级任务</div>
+          <el-table :data="tracesList" height="200">
+            <el-table-column prop="apiStartTime" label="任务名称"></el-table-column>
+            <el-table-column prop="apiPath" label="来源业务系统"></el-table-column>
+            <el-table-column prop="httpMethod" label="分类分级标准"></el-table-column>
+            <el-table-column prop="apiDuration" label="任务字段数量" />
+            <el-table-column prop="" label="执行状态">
+              <template slot-scope="scope">
+                <a style="color: #409eff;" @click="TracesClk(scope.row)">详情</a>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
       </div>
       <div class="main_box">
         <div id="sensitiveData" class="leftEchartsBox"></div>
-        <div id="funnelEcharts" class="leftEchartsBox"></div>
-        <div id="radarEchartsFn" class="leftEchartsBox"></div>
+        <div id="dataDistribution" class="leftEchartsBox"></div>
+        <div id="dataClassification" class="leftEchartsBox"></div>
       </div>
     </div>
   </div>
@@ -54,37 +124,33 @@
 <script>
 import { parseTime } from "@/utils/ruoyi";
 import {
-  apiStatisticI,
-  protectStatisticI,
-  levelStatisticI,
-  getTopAttitudeI,
-  geoCoordMap,
-  features,
-  getMapDataI,
-} from "../api/system/statisticlData";
+  getDataBigScreen
+} from "../api/data";
 import * as echarts from "echarts";
 import "echarts-wordcloud";
 import "../assets/styles/bootstrap.css";
 import DataPupop from "./dataPupop";
+import { get } from "sortablejs";
 export default {
   components: {
     DataPupop
   },
   data() {
     return {
-      stats: [
-        { label: '数据总量', value: '100MB' },
-        { label: '个人信息条数', value: '5000' },
-        { label: '数据源数量', value: '100' },
-        { label: '累计分析字段数量', value: '87,654,321' },
-        { label: '未成年信息条数', value: '4500' },
-        { label: '一般个人信息字段数', value: '300' },
-        { label: '数据表数量', value: '1000' },
-        { label: '敏感个人信息字段数', value: '200' }
-      ]
+      tracesList: [],
+      dataGrowthTrend: [],// 数据增长趋势
+      cleanDataNum: [],// 脏数据清洗
+      classifyReasonNum: [],// 归类原因
+      fieldRemarkCoverage: [],// 字段注释覆盖情况
+      cumulativeFieldNum: [],// 累计字段数量
+      classifyTaskNum: [],// 分类分级任务
+      sensitiveDataProportion: [],// 敏感数据占比
+      dataClassificationDistribution: [],// 数据分级分布
+      allData:{},
     };
   },
   created() {
+    this.getDataFn()
   },
   mounted() {
     this.initEcharts()
@@ -95,6 +161,14 @@ export default {
     },
   },
   methods: {
+    getDataFn() {
+      getDataBigScreen().then(res => {
+        this.allData = res.data
+      })
+    },
+    dataGrowthTrendFn(data) {
+
+    },
     goHome() {
       this.$router.push({ path: "/index" });
     },
@@ -103,98 +177,75 @@ export default {
       this.funnelEchartsFn()
       this.radarEchartsFn()
       this.sensitiveDataEchartsFn()
+      this.dataDistributionEchartsFn()
+      this.dataClassificationEchartsFn()
     },
     dataAddEchartsFn() {
-      var lineGraphDom = document.getElementById('lineGraph');
-      var lineGraphChart = echarts.init(lineGraphDom);
-      var lineGraphOption;
-      const categories = (function () {
-        return [1, 2, 3, 4, 5, 6];
-      })();
-      const categories2 = (function () {
-        return [1, 2, 3, 4, 5, 6];
-      })();
-      const data = (function () {
-        return [1, 3, 4, 5, 6];
-      })();
-      const data2 = (function () {
-        return [1, 2];
-      })();
-      lineGraphOption = {
-        title: {
-          text: '数据增长趋势（最近6个月）'
-        },
-        legend: {
-          bottom: '4%'
-        },
+      var chartDom = document.getElementById('lineGraph');
+      var myChart = echarts.init(chartDom);
+      var option;
+
+      option = {
         tooltip: {
-          trigger: 'axissss',
+          trigger: 'axis',
           axisPointer: {
             type: 'cross',
-            label: {
-              backgroundColor: '#283b56'
+            crossStyle: {
+              color: '#999'
             }
           }
         },
-        toolbox: {
-          show: false,
-          feature: {
-            dataView: { readOnly: false },
-            restore: {},
-            saveAsImage: {}
-          }
-        },
-        dataZoom: {
-          show: false,
-          start: 0,
-          end: 100
+        legend: {
+          bottom: '5%',
+          data: ['新增字段数', '数据总量（MB）']
         },
         xAxis: [
           {
             type: 'category',
-            boundaryGap: true,
-            data: categories
-          },
-          {
-            type: 'category',
-            boundaryGap: true,
-            data: categories2
+            data:allData.dataGrowthTrend.monthNames,
+            axisPointer: {
+              type: 'shadow'
+            }
           }
         ],
         yAxis: [
           {
             type: 'value',
-            scale: true,
-            name: '',
-            max: 30,
             min: 0,
-            boundaryGap: [0.2, 0.2]
+            interval: 10
           },
           {
             type: 'value',
-            scale: true,
-            name: '',
-            max: 1200,
             min: 0,
-            boundaryGap: [0.2, 0.2]
+            interval: 30
           }
         ],
         series: [
           {
             name: '新增字段数',
             type: 'bar',
-            xAxisIndex: 1,
-            yAxisIndex: 1,
-            data: data
+            tooltip: {
+              valueFormatter: function (value) {
+                return value;
+              }
+            },
+            data: allData.dataGrowthTrend.dataNum
           },
           {
             name: '数据总量（MB）',
             type: 'line',
-            data: data2
+            yAxisIndex: 1,
+            tooltip: {
+              valueFormatter: function (value) {
+                return value;
+              }
+            },
+            data: allData.dataGrowthTrend.dataSize
           }
         ]
       };
-      lineGraphOption && lineGraphChart.setOption(lineGraphOption);
+
+      option && myChart.setOption(option);
     },
     funnelEchartsFn() {
       var chartDom = document.getElementById('funnelEcharts');
@@ -308,10 +359,10 @@ export default {
 
       option = {
         title: {
-           text: '敏感数据占比',
-           textStyle:{
-            fontSize:'14'
-           }
+          text: '敏感数据占比',
+          textStyle: {
+            fontSize: '14'
+          }
         },
         tooltip: {
           trigger: 'item'
@@ -325,7 +376,7 @@ export default {
             name: 'Access From',
             type: 'pie',
             radius: ['50%', '70%'],
-            width:'100%',
+            width: '100%',
             data: [
               { value: 1048, name: '敏感数据' },
               { value: 735, name: '非敏感数据' }
@@ -344,6 +395,86 @@ export default {
             }
           }
         ]
+      };
+
+      option && myChart.setOption(option);
+    },
+    dataDistributionEchartsFn() {
+      var chartDom = document.getElementById('dataDistribution');
+      var myChart = echarts.init(chartDom);
+      var option;
+
+      option = {
+        legend: {
+          top: 'bottom'
+        },
+        toolbox: {
+          show: false,
+          feature: {
+            mark: { show: true },
+            dataView: { show: true, readOnly: false },
+            restore: { show: true },
+            saveAsImage: { show: true }
+          }
+        },
+        series: [
+          {
+            name: 'Nightingale Chart',
+            type: 'pie',
+            radius: [10, 50],
+            center: ['50%', '50%'],
+            roseType: 'area',
+            itemStyle: {
+              borderRadius: 8
+            },
+            data: [
+              { value: 40, name: 'rose 1' },
+              { value: 38, name: 'rose 2' },
+              { value: 32, name: 'rose 3' },
+              { value: 30, name: 'rose 4' },
+              { value: 30, name: 'rose 4' },
+            ]
+          }
+        ]
+      };
+
+      option && myChart.setOption(option);
+    },
+    dataClassificationEchartsFn() {
+      var chartDom = document.getElementById('dataClassification');
+      var myChart = echarts.init(chartDom);
+      var option;
+
+      const data = [];
+      for (let i = 0; i < 5; ++i) {
+        data.push(Math.round(Math.random() * 200));
+      }
+      option = {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          }
+        },
+        xAxis: {
+          max: 'dataMax'
+        },
+        yAxis: {
+          type: 'category',
+          data: ['A', 'B', 'C'],
+          inverse: true,
+          max: 2 // only the largest 3 bars will be displayed
+        },
+        series: [
+          {
+            realtimeSort: true,
+            type: 'bar',
+            data: ['10', '12', '22'],
+          }
+        ],
+        legend: {
+          show: true
+        }
       };
 
       option && myChart.setOption(option);
@@ -404,15 +535,16 @@ export default {
     width: 20%;
 
     .leftEchartsBox {
-      width: 90%;
+      width: 100%;
       height: 250px;
       background-color: #fff;
       margin-bottom: 15px;
+      border-radius: 8px;
     }
   }
 
   .main_boxFlex {
-    width: 40%;
+    width: 45%;
   }
 }
 
@@ -422,7 +554,7 @@ export default {
   font-weight: 600;
 
   .titleBox {
-    width: 55%;
+    width: 50%;
   }
 
   .titleOneText {
@@ -446,28 +578,92 @@ export default {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-  padding: 20px;
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  // display: flex;
+  // justify-content: space-evenly;
+  // align-items: center;
+  // flex-wrap: wrap;
 }
 
 .data-stat-item {
-  background-color: white;
-  padding: 16px;
+  // padding: 16px;
   border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #def3fd;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  padding: 10px;
+  width: 100%;
+
+  img {
+    width: 45px;
+    height: 45px;
+    display: block;
+  }
+}
+
+.data-stat-item:nth-child(odd) {
+  justify-content: flex-start;
+  text-align: left;
+  margin-left: auto;
+
+  img {
+    margin-right: 15px;
+  }
+}
+
+.data-stat-item:nth-child(even) {
+  justify-content: flex-end;
+  text-align: right;
+
+  img {
+    margin-left: 15px;
+  }
+}
+
+.data-stat-item:nth-child(1) {
+  width: 90%;
+}
+
+.data-stat-item:nth-child(2) {
+  width: 90%;
+}
+
+.data-stat-item:nth-child(7) {
+  width: 90%;
+}
+
+.data-stat-item:nth-child(8) {
+  width: 90%;
 }
 
 .stat-label {
   font-size: 14px;
   color: #666;
-  margin-bottom: 8px;
 }
 
 .stat-value {
   font-size: 20px;
   font-weight: bold;
   color: #333;
+}
+
+.centerCircle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 330px;
+  height: 330px;
+  border-radius: 50%;
+  font-size: 24px;
+  text-align: center;
+  line-height: 200px;
+  font-weight: 700;
+  background: linear-gradient(to bottom, #e1f1f8, #ffffff, #e1f1f8);
+  border: 30px solid #fff;
+
+  div {
+    height: 50px;
+  }
 }
 </style>

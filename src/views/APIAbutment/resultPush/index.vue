@@ -302,7 +302,7 @@ export default {
     handleAdd() {
       this.resetAddData()
       this.dialogDataShow = true;
-      this.title = "数据库";
+      this.title = "新增";
     },
     pushBodySumbit() {
       this.dialogData.pushBodyList = this.$refs.ResultSon.lastChildList.map(item => {

@@ -12,7 +12,6 @@
                 <el-table-column label="字段（个）" align="center" prop="dataFieldCount" show-overflow-tooltip />
                 <el-table-column label="数据总量（MB）" align="center" prop="dataFieldCount" show-overflow-tooltip />
             </el-table>
-
             <div class="ul_box">
                 <div style="display: flex; justify-content: space-between;">
                     <div style="margin-right: 20px;">
