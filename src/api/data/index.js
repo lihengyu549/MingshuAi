@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-// 标准管理列表接口
+// 数据大屏接口
 export function getDataBigScreen(data) {
   return request({
     url: '/system/server/info/getDataBigScreen',
@@ -8,22 +8,19 @@ export function getDataBigScreen(data) {
     params:data
   })
 }
-// 导入分类分级标准数据
-export function categoryImport(data) {
+// 数据大屏接口——数据分类分布
+export function getDataClassDistribution(data) {
   return request({
-    url: '/system/category/import',
-    method: 'post',
-    headers: {
-      "Content-Type":"multipart/form-data; ",
-    },
-    data:data
+    url: '/system/server/info/getDataClassDistribution',
+    method: 'get',
+    params:data
   })
 }
-// 修改分类分级标准接口
-export function updateStandardById(data) {
+// 数据大屏接口-数据分类分布-下拉框
+export function getFieldMaxStandard(data) {
   return request({
-    url: '/system/category/updateStandardById',
-    method: 'post',
-    data:data
+    url: '/system/server/info/getFieldMaxStandard',
+    method: 'get',
+    params:data
   })
 }

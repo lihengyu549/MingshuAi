@@ -1,7 +1,10 @@
 <template>
   <div class="content" v-loading="loading" element-loading-background="rgba(255, 255, 255, 0.98)">
     <div class="headerview">
-      <div><img src="../assets/indexImg/jiqiren-2.png" alt="" style="width: 50px;height: 50px;"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <img src="../assets/indexImg/jiqiren-2.png" alt="" style="width: 50px;height: 50px;">
+         <el-button type="primary" @click="goData">切换大屏</el-button>
+      </div>
       <div style="margin-top: 10px;">Hi，欢迎来到{{ $store.state.user.projectData.projectName}}！</div>
       <p style="margin: 16px 0;">可持续化运营，只需4步！</p>
       <div class="card_box">
@@ -212,6 +215,9 @@ export default {
   },
 
   methods: {
+    goData() {
+      this.$router.push({ path: '/data' });
+    },
     async init() {
       await this.getStatistics();
       await this.getList();

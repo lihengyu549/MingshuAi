@@ -1,9 +1,9 @@
 <template>
-  <div id="body-content">
+  <div id="body-content" v-loading="isShow">
     <div class="body_head">
       <div class="head_left">
         <div style="margin-right: 20px;">
-          <img src="../assets/logo/logo.png" alt="">
+          <img src="../assets/newDataImg/login.png" alt="">
         </div>
         <div class="head_right">
           <div style="font-weight: 700;font-size: 20px;margin-bottom: 10px;">数据安全分类分级看板</div>
@@ -17,9 +17,26 @@
     </div>
     <div class="body_main">
       <div class="main_box">
-        <div id="lineGraph" class="leftEchartsBox"></div>
-        <div id="funnelEcharts" class="leftEchartsBox"></div>
-        <div id="radarEcharts" class="leftEchartsBox"></div>
+        <div class="main_body">
+          <div class="titleBox_echarts">
+            <div class="title">数据增长趋势（最近6个月）</div>
+          </div>
+          <div id="lineGraph" class="leftEchartsBox"></div>
+        </div>
+
+        <div class="main_body">
+          <div class="titleBox_echarts">
+            <div class="title">脏数据清洗</div>
+          </div>
+          <div id="funnelEcharts" class="leftEchartsBox"></div>
+        </div>
+
+        <div class="main_body">
+          <div class="titleBox_echarts">
+            <div class="title">归类原因</div>
+          </div>
+          <div id="radarEcharts" class="leftEchartsBox"></div>
+        </div>
       </div>
       <div class="main_boxFlex">
         <div style="padding: 35px 15px;background-color: #fff; border-radius: 8px;">
@@ -28,95 +45,141 @@
             <div class="titleBox">字段注释覆盖情况</div>
             <div></div>
             <div style="display: flex;">
-              <div class="titleOneText">原生注释占比:32%</div>
-              <div class="titleTwoText">AI数据填充数量:32</div>
+              <div class="titleOneText">{{ allData.fieldRemarkCoverage &&
+                allData.fieldRemarkCoverage.oldAnnotationProportion ?
+                allData.fieldRemarkCoverage.oldAnnotationProportion : '' }}
+              </div>
+              <div class="titleTwoText">
+                {{ allData.fieldRemarkCoverage && allData.fieldRemarkCoverage.AIAnnotationNum ?
+                  allData.fieldRemarkCoverage.AIAnnotationNum : '' }}
+              </div>
             </div>
           </div>
         </div>
         <div style="padding:40px; background-color: #fff;margin-top: 20px;position: relative; border-radius: 8px;">
+          <!-- // 后期可优化为数组方式，图标上下各加一个标签，通过下标取余展示其一 -->
           <div class="data-stats-container">
             <div class="data-stat-item">
               <img src="../assets/newDataImg/shujuzongliang-2.png" alt="">
-              <div>
-                <div class="stat-label">数据总量</div>
-                <div class="stat-value">100MB</div>
+              <div class="data-stat-item_box">
+                <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.aname ?
+                  allData.cumulativeFieldNum.aname:''}}</div>
+                <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.avalue ?
+                  allData.cumulativeFieldNum.avalue:'' }}</div>
               </div>
             </div>
             <div class="data-stat-item">
-              <div>
-                <div class="stat-label">个人信息条数</div>
-                <div class="stat-value">5000</div>
+              <div class="data-stat-item_box">
+                <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.bname ?
+                  allData.cumulativeFieldNum.bname:'' }}</div>
+                <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.bvalue ?
+                  allData.cumulativeFieldNum.bvalue:''}}</div>
               </div>
               <img src="../assets/newDataImg/gerenxinxi.png" alt="">
             </div>
             <div class="data-stat-item">
               <img src="../assets/newDataImg/shujuyuan.png" alt="">
-              <div>
-                <div class="stat-label">数据源数量</div>
-                <div class="stat-value">100</div>
+              <div class="data-stat-item_box">
+                <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.cname ?
+                  allData.cumulativeFieldNum.cname:'' }}</div>
+                <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.cvalue ?
+                  allData.cumulativeFieldNum.cvalue:'' }}</div>
               </div>
             </div>
             <div class="data-stat-item">
-              <div>
-                <div class="stat-label">未成年信息条数</div>
-                <div class="stat-value">4500</div>
+              <div class="data-stat-item_box">
+                <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.dname ?
+                  allData.cumulativeFieldNum.dname:'' }}</div>
+                <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.dvalue ?
+                  allData.cumulativeFieldNum.dvalue:'' }}</div>
               </div>
               <img src="../assets/newDataImg/shilingertong.png" alt="">
             </div>
             <div class="data-stat-item">
-              <img src="../assets/newDataImg/teshukunjingertong.png" alt="">
-              <div>
-                <div class="stat-label">一般个人信息字段数</div>
-                <div class="stat-value">300</div>
-              </div>
-            </div>
-            <div class="data-stat-item">
-              <div>
-                <div class="stat-label">数据表数量</div>
-                <div class="stat-value">1000</div>
-              </div>
-              <img src="../assets/newDataImg/shujubiao-2.png" alt="">
-            </div>
-
-            <div class="data-stat-item">
-              <img src="../assets/newDataImg/ertongsiwangrenshu.png" alt="">
-              <div>
-                <div class="stat-label">敏感个人信息字段数</div>
-                <div class="stat-value">200</div>
-              </div>
-            </div>
-
-            <div class="data-stat-item">
-              <div>
-                <div class="stat-label">数据库数量</div>
-                <div class="stat-value">222</div>
-              </div>
               <img src="../assets/newDataImg/shujuzongliang.png" alt="">
+              <div class="data-stat-item_box">
+                <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.ename ?
+                  allData.cumulativeFieldNum.ename:'' }}</div>
+                <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.evalue ?
+                  allData.cumulativeFieldNum.evalue:'' }}</div>
+              </div>
+            </div>
+            <div class="data-stat-item">
+              <div class="data-stat-item_box">
+                <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.fname ?
+                  allData.cumulativeFieldNum.fname:'' }}</div>
+                <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.fvalue ?
+                  allData.cumulativeFieldNum.fvalue:'' }}</div>
+              </div>
+              <img src="../assets/newDataImg/teshukunjingertong.png" alt="">
+            </div>
+            <div class="data-stat-item">
+              <img src="../assets/newDataImg/shujubiao-2.png" alt="">
+              <div class="data-stat-item_box">
+                <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.gname ?
+                  allData.cumulativeFieldNum.gname:'' }}</div>
+                <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.gvalue ?
+                  allData.cumulativeFieldNum.gvalue:'' }}</div>
+              </div>
+            </div>
+            <div class="data-stat-item">
+              <div class="data-stat-item_box">
+                <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.hname ?
+                  allData.cumulativeFieldNum.hname:'' }}</div>
+                <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.hvalue ?
+                  allData.cumulativeFieldNum.hvalue:'' }}</div>
+              </div>
+              <img src="../assets/newDataImg/ertongsiwangrenshu.png" alt="">
             </div>
           </div>
           <div class="centerCircle">
-            <div>累计分析字段数量</div> <span>12030218531</span>
+            <div>{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.iname ? allData.cumulativeFieldNum.iname : ''
+              }}</div>
+            <span>{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.ivalue ?
+              allData.cumulativeFieldNum.ivalue:'' }}</span>
           </div>
         </div>
         <div style="padding:20px; background-color: #fff;margin-top: 20px;position: relative; border-radius: 8px;">
-          <div style="margin-bottom: 15px;">分类分级任务</div>
-          <el-table :data="tracesList" height="200">
-            <el-table-column prop="apiStartTime" label="任务名称"></el-table-column>
-            <el-table-column prop="apiPath" label="来源业务系统"></el-table-column>
-            <el-table-column prop="httpMethod" label="分类分级标准"></el-table-column>
-            <el-table-column prop="apiDuration" label="任务字段数量" />
-            <el-table-column prop="" label="执行状态">
+          <div class="title" style="margin-bottom: 15px; ">分类分级任务</div>
+          <el-table :data="allData.classifyTaskNum" height="230">
+            <el-table-column align="center" show-overflow-tooltip prop="tasksName" label="任务名称"></el-table-column>
+            <el-table-column align="center" show-overflow-tooltip prop="sourceName" label="来源业务系统"></el-table-column>
+            <el-table-column align="center" show-overflow-tooltip prop="projectName" label="分类分级标准"></el-table-column>
+            <el-table-column align="center" show-overflow-tooltip prop="fieldCount" label="任务字段数量" />
+            <el-table-column align="center" show-overflow-tooltip prop="maskComplete" label="执行状态">
               <template slot-scope="scope">
-                <a style="color: #409eff;" @click="TracesClk(scope.row)">详情</a>
+                <el-tag :color="scope.row.tagColor" style="color: #fff;border: none;">{{ scope.row.maskCompleteName }}</el-tag>
               </template>
             </el-table-column>
           </el-table>
         </div>
       </div>
       <div class="main_box">
-        <div id="sensitiveData" class="leftEchartsBox"></div>
-        <div id="dataDistribution" class="leftEchartsBox"></div>
-        <div id="dataClassification" class="leftEchartsBox"></div>
+        <div class="main_body">
+          <div class="titleBox_echarts">
+            <div class="title">敏感数据占比</div>
+          </div>
+          <div id="sensitiveData" class="leftEchartsBox"></div>
+        </div>
+        <div class="main_body">
+          <div class="titleBox_echarts">
+            <div class="title">数据分级分布</div>
+          </div>
+          <div id="dataDistribution" class="leftEchartsBox"></div>
+
+        </div>
+        <div class="main_body">
+          <div class="titleBox_echarts">
+            <div class="title">数据分类分布</div>
+            <el-select clearable v-model="categoryId" @change="selectChange">
+              <el-option v-for="(item, index) of selectList" :key="item.id" :label="item.categoryName"
+                :value="item.id">{{
+                  item.categoryName
+                }}</el-option>
+            </el-select>
+          </div>
+          <div id="dataClassification" class="leftEchartsBox"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -124,36 +187,33 @@
 <script>
 import { parseTime } from "@/utils/ruoyi";
 import {
-  getDataBigScreen
+  getDataBigScreen,
+  getDataClassDistribution,
+  getFieldMaxStandard
 } from "../api/data";
 import * as echarts from "echarts";
 import "echarts-wordcloud";
 import "../assets/styles/bootstrap.css";
 import DataPupop from "./dataPupop";
-import { get } from "sortablejs";
+import { Avatar } from "element-ui";
 export default {
   components: {
     DataPupop
   },
   data() {
     return {
-      tracesList: [],
-      dataGrowthTrend: [],// 数据增长趋势
-      cleanDataNum: [],// 脏数据清洗
-      classifyReasonNum: [],// 归类原因
-      fieldRemarkCoverage: [],// 字段注释覆盖情况
-      cumulativeFieldNum: [],// 累计字段数量
-      classifyTaskNum: [],// 分类分级任务
-      sensitiveDataProportion: [],// 敏感数据占比
-      dataClassificationDistribution: [],// 数据分级分布
-      allData:{},
+      allData: {},
+      isShow: true,
+      selectList: [],
+      categoryId: '',
+      selectData: {}
     };
   },
   created() {
+    this.getSelectList()
     this.getDataFn()
   },
   mounted() {
-    this.initEcharts()
   },
   watch: {
     $route() {
@@ -161,13 +221,33 @@ export default {
     },
   },
   methods: {
+    selectChange(value) {
+      this.getDataClassDistributionFn(value)
+      setTimeout(() => {
+        this.dataClassificationEchartsFn()
+      }, 500)
+    },
+    getDataClassDistributionFn(value) {
+      getDataClassDistribution({ categoryId: value }).then(res => {
+        this.selectData = res.data
+      })
+    },
     getDataFn() {
       getDataBigScreen().then(res => {
         this.allData = res.data
+        this.isShow = false
+        this.initEcharts()
       })
     },
-    dataGrowthTrendFn(data) {
-
+    getSelectList() {
+      getFieldMaxStandard().then(async res => {
+        this.selectList = res.data
+        this.categoryId = res.data[0].id
+        this.getDataClassDistributionFn(this.categoryId)
+        setTimeout(() => {
+          this.dataClassificationEchartsFn()
+        }, 500)
+      })
     },
     goHome() {
       this.$router.push({ path: "/index" });
@@ -178,13 +258,11 @@ export default {
       this.radarEchartsFn()
       this.sensitiveDataEchartsFn()
       this.dataDistributionEchartsFn()
-      this.dataClassificationEchartsFn()
     },
     dataAddEchartsFn() {
       var chartDom = document.getElementById('lineGraph');
       var myChart = echarts.init(chartDom);
       var option;
-
       option = {
         tooltip: {
           trigger: 'axis',
@@ -195,6 +273,9 @@ export default {
             }
           }
         },
+        grid: {
+          right: '50',
+        },
         legend: {
           bottom: '5%',
           data: ['新增字段数', '数据总量（MB）']
@@ -202,7 +283,7 @@ export default {
         xAxis: [
           {
             type: 'category',
-            data:allData.dataGrowthTrend.monthNames,
+            data: this.allData.dataGrowthTrend.monthNames,
             axisPointer: {
               type: 'shadow'
             }
@@ -212,12 +293,10 @@ export default {
           {
             type: 'value',
             min: 0,
-            interval: 10
           },
           {
             type: 'value',
             min: 0,
-            interval: 30
           }
         ],
         series: [
@@ -229,7 +308,7 @@ export default {
                 return value;
               }
             },
-            data: allData.dataGrowthTrend.dataNum
+            data: this.allData.dataGrowthTrend.dataNum
           },
           {
             name: '数据总量（MB）',
@@ -240,11 +319,10 @@ export default {
                 return value;
               }
             },
-            data: allData.dataGrowthTrend.dataSize
+            data: this.allData.dataGrowthTrend.dataSize
           }
         ]
       };
-
       option && myChart.setOption(option);
     },
     funnelEchartsFn() {
@@ -252,12 +330,9 @@ export default {
       var myChart = echarts.init(chartDom);
       var option;
       option = {
-        title: {
-          text: '脏数据清洗'
-        },
         tooltip: {
           trigger: 'item',
-          formatter: '{a} <br/>{b} : {c}%'
+          formatter: '{b}'
         },
         toolbox: {
           show: false,
@@ -269,12 +344,11 @@ export default {
         },
         series: [
           {
-            name: 'Funnel',
             type: 'funnel',
-            left: '5%',
+            left: '10%',
             top: 60,
             bottom: 60,
-            width: '80%',
+            width: '60%',
             min: 0,
             max: 100,
             minSize: '0%',
@@ -285,7 +359,7 @@ export default {
               position: 'right'
             },
             labelLine: {
-              length: 20,
+              length: 30,
               lineStyle: {
                 width: 1,
                 type: 'solid'
@@ -293,20 +367,14 @@ export default {
             },
             itemStyle: {
               borderColor: '#fff',
-              borderWidth: 20
+              borderWidth: 1
             },
             emphasis: {
               label: {
-                fontSize: 26
+                fontSize: 20
               }
             },
-            data: [
-              { value: 60, name: 'Visit' },
-              { value: 40, name: 'Inquiry' },
-              { value: 20, name: 'Order' },
-              { value: 80, name: 'Click' },
-              { value: 100, name: 'Show' }
-            ]
+            data: this.allData.cleanDataNum
           }
         ]
       };
@@ -316,25 +384,15 @@ export default {
       var chartDom = document.getElementById('radarEcharts');
       var myChart = echarts.init(chartDom);
       var option;
-
       option = {
-        title: {
-          text: '归类原因'
-        },
         legend: {
-          data: ['Allocated Budget', 'Actual Spending']
         },
         toolbox: {
           show: false,
         },
         radar: {
           // shape: 'circle',
-          indicator: [
-            { name: 'Sales', max: 6500 },
-            { name: 'Administration', max: 16000 },
-            { name: 'Information Technology', max: 30000 },
-            { name: 'Customer Support', max: 38000 },
-          ]
+          indicator: this.allData.classifyReasonNum.indicator
         },
         series: [
           {
@@ -342,7 +400,7 @@ export default {
             type: 'radar',
             data: [
               {
-                value: [4200, 3000, 20000, 35000, 50000, 18000],
+                value: this.allData.classifyReasonNum.total,
               }
             ]
           }
@@ -359,7 +417,6 @@ export default {
 
       option = {
         title: {
-          text: '敏感数据占比',
           textStyle: {
             fontSize: '14'
           }
@@ -373,14 +430,10 @@ export default {
         },
         series: [
           {
-            name: 'Access From',
             type: 'pie',
             radius: ['50%', '70%'],
             width: '100%',
-            data: [
-              { value: 1048, name: '敏感数据' },
-              { value: 735, name: '非敏感数据' }
-            ],
+            data: this.allData.sensitiveDataProportion,
             label: {
               alignTo: 'edge',
               minMargin: 5,
@@ -406,7 +459,7 @@ export default {
 
       option = {
         legend: {
-          top: 'bottom'
+          bottom: 'bottom'
         },
         toolbox: {
           show: false,
@@ -422,18 +475,12 @@ export default {
             name: 'Nightingale Chart',
             type: 'pie',
             radius: [10, 50],
-            center: ['50%', '50%'],
+            center: ['50%', '40%'],
             roseType: 'area',
             itemStyle: {
               borderRadius: 8
             },
-            data: [
-              { value: 40, name: 'rose 1' },
-              { value: 38, name: 'rose 2' },
-              { value: 32, name: 'rose 3' },
-              { value: 30, name: 'rose 4' },
-              { value: 30, name: 'rose 4' },
-            ]
+            data: this.allData.dataClassificationDistribution
           }
         ]
       };
@@ -444,12 +491,10 @@ export default {
       var chartDom = document.getElementById('dataClassification');
       var myChart = echarts.init(chartDom);
       var option;
-
-      const data = [];
-      for (let i = 0; i < 5; ++i) {
-        data.push(Math.round(Math.random() * 200));
-      }
       option = {
+        grid: {
+          left: '60',
+        },
         tooltip: {
           trigger: 'axis',
           axisPointer: {
@@ -461,22 +506,20 @@ export default {
         },
         yAxis: {
           type: 'category',
-          data: ['A', 'B', 'C'],
+          data: this.selectData.names,
           inverse: true,
-          max: 2 // only the largest 3 bars will be displayed
         },
         series: [
           {
             realtimeSort: true,
             type: 'bar',
-            data: ['10', '12', '22'],
+            data: this.selectData.counts,
           }
         ],
         legend: {
           show: true
         }
       };
-
       option && myChart.setOption(option);
     },
   },
@@ -532,19 +575,20 @@ export default {
   margin-top: 10px;
 
   .main_box {
-    width: 20%;
+    width: 23%;
 
     .leftEchartsBox {
       width: 100%;
-      height: 250px;
+      height: 215px;
       background-color: #fff;
       margin-bottom: 15px;
-      border-radius: 8px;
+      border-bottom-right-radius: 8px;
+      border-bottom-left-radius: 8px;
     }
   }
 
   .main_boxFlex {
-    width: 45%;
+    width: 50%;
   }
 }
 
@@ -636,6 +680,10 @@ export default {
   width: 90%;
 }
 
+.data-stat-item_box {
+  text-align: center;
+}
+
 .stat-label {
   font-size: 14px;
   color: #666;
@@ -665,5 +713,26 @@ export default {
   div {
     height: 50px;
   }
+}
+
+.main_body {
+
+  .titleBox_echarts {
+    background-color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e7f0f7;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+}
+
+
+.title {
+  border-left: 8px solid #01a7f0;
+  padding-left: 15px;
+  height: 20px;
 }
 </style>

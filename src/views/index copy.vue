@@ -3,7 +3,7 @@
 
     <!-- type="primary" -->
     <!-- style=" color: #fff; background-color: #409eff; border: 1px solid #409eff; border-radius: 5px; position: absolute; top: 16px;right: 1.5%;" -->
-    <button class="btn btn-primary btn-ghost btn-shine" v-if="false" @click="goData">
+    <button class="btn btn-primary btn-ghost btn-shine" @click="goData">
       切换大屏
     </button>
     <div class="headerDiv">
