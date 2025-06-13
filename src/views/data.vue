@@ -10,9 +10,12 @@
           <div>Data Security Classification and Grading Dashboard</div>
         </div>
       </div>
-      <div style="padding-right: 30px;">
+      <div style="display: flex;align-items: center;">
+      <div><el-button type="primary" @click="goHome">首页</el-button></div>
+      <div style="padding-right: 30px; margin-left: 30px;">
         <div style="font-weight: 700;font-size: 22px;">22:33:33</div>
         <div>2025-06-06</div>
+      </div>
       </div>
     </div>
     <div class="body_main">
@@ -63,17 +66,17 @@
               <img src="../assets/newDataImg/shujuzongliang-2.png" alt="">
               <div class="data-stat-item_box">
                 <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.aname ?
-                  allData.cumulativeFieldNum.aname:''}}</div>
+                  allData.cumulativeFieldNum.aname : '' }}</div>
                 <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.avalue ?
-                  allData.cumulativeFieldNum.avalue:'' }}</div>
+                  allData.cumulativeFieldNum.avalue : '' }}</div>
               </div>
             </div>
             <div class="data-stat-item">
               <div class="data-stat-item_box">
                 <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.bname ?
-                  allData.cumulativeFieldNum.bname:'' }}</div>
+                  allData.cumulativeFieldNum.bname : '' }}</div>
                 <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.bvalue ?
-                  allData.cumulativeFieldNum.bvalue:''}}</div>
+                  allData.cumulativeFieldNum.bvalue : '' }}</div>
               </div>
               <img src="../assets/newDataImg/gerenxinxi.png" alt="">
             </div>
@@ -81,17 +84,17 @@
               <img src="../assets/newDataImg/shujuyuan.png" alt="">
               <div class="data-stat-item_box">
                 <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.cname ?
-                  allData.cumulativeFieldNum.cname:'' }}</div>
+                  allData.cumulativeFieldNum.cname : '' }}</div>
                 <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.cvalue ?
-                  allData.cumulativeFieldNum.cvalue:'' }}</div>
+                  allData.cumulativeFieldNum.cvalue : '' }}</div>
               </div>
             </div>
             <div class="data-stat-item">
               <div class="data-stat-item_box">
                 <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.dname ?
-                  allData.cumulativeFieldNum.dname:'' }}</div>
+                  allData.cumulativeFieldNum.dname : '' }}</div>
                 <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.dvalue ?
-                  allData.cumulativeFieldNum.dvalue:'' }}</div>
+                  allData.cumulativeFieldNum.dvalue : '' }}</div>
               </div>
               <img src="../assets/newDataImg/shilingertong.png" alt="">
             </div>
@@ -99,17 +102,17 @@
               <img src="../assets/newDataImg/shujuzongliang.png" alt="">
               <div class="data-stat-item_box">
                 <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.ename ?
-                  allData.cumulativeFieldNum.ename:'' }}</div>
+                  allData.cumulativeFieldNum.ename : '' }}</div>
                 <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.evalue ?
-                  allData.cumulativeFieldNum.evalue:'' }}</div>
+                  allData.cumulativeFieldNum.evalue : '' }}</div>
               </div>
             </div>
             <div class="data-stat-item">
               <div class="data-stat-item_box">
                 <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.fname ?
-                  allData.cumulativeFieldNum.fname:'' }}</div>
+                  allData.cumulativeFieldNum.fname : '' }}</div>
                 <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.fvalue ?
-                  allData.cumulativeFieldNum.fvalue:'' }}</div>
+                  allData.cumulativeFieldNum.fvalue : '' }}</div>
               </div>
               <img src="../assets/newDataImg/teshukunjingertong.png" alt="">
             </div>
@@ -117,38 +120,40 @@
               <img src="../assets/newDataImg/shujubiao-2.png" alt="">
               <div class="data-stat-item_box">
                 <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.gname ?
-                  allData.cumulativeFieldNum.gname:'' }}</div>
+                  allData.cumulativeFieldNum.gname : '' }}</div>
                 <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.gvalue ?
-                  allData.cumulativeFieldNum.gvalue:'' }}</div>
+                  allData.cumulativeFieldNum.gvalue : '' }}</div>
               </div>
             </div>
             <div class="data-stat-item">
               <div class="data-stat-item_box">
                 <div class="stat-label">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.hname ?
-                  allData.cumulativeFieldNum.hname:'' }}</div>
+                  allData.cumulativeFieldNum.hname : '' }}</div>
                 <div class="stat-value">{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.hvalue ?
-                  allData.cumulativeFieldNum.hvalue:'' }}</div>
+                  allData.cumulativeFieldNum.hvalue : '' }}</div>
               </div>
               <img src="../assets/newDataImg/ertongsiwangrenshu.png" alt="">
             </div>
           </div>
           <div class="centerCircle">
-            <div>{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.iname ? allData.cumulativeFieldNum.iname : ''
+            <div>{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.iname ? allData.cumulativeFieldNum.iname :
+              ''
               }}</div>
             <span>{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.ivalue ?
-              allData.cumulativeFieldNum.ivalue:'' }}</span>
+              allData.cumulativeFieldNum.ivalue : '' }}</span>
           </div>
         </div>
         <div style="padding:20px; background-color: #fff;margin-top: 20px;position: relative; border-radius: 8px;">
           <div class="title" style="margin-bottom: 15px; ">分类分级任务</div>
-          <el-table :data="allData.classifyTaskNum" height="230">
+          <el-table :data="allData.classifyTaskNum" height="230" ref="tableRef">
             <el-table-column align="center" show-overflow-tooltip prop="tasksName" label="任务名称"></el-table-column>
             <el-table-column align="center" show-overflow-tooltip prop="sourceName" label="来源业务系统"></el-table-column>
             <el-table-column align="center" show-overflow-tooltip prop="projectName" label="分类分级标准"></el-table-column>
             <el-table-column align="center" show-overflow-tooltip prop="fieldCount" label="任务字段数量" />
             <el-table-column align="center" show-overflow-tooltip prop="maskComplete" label="执行状态">
               <template slot-scope="scope">
-                <el-tag :color="scope.row.tagColor" style="color: #fff;border: none;">{{ scope.row.maskCompleteName }}</el-tag>
+                <el-tag :color="scope.row.tagColor" style="color: #fff;border: none;">{{ scope.row.maskCompleteName
+                  }}</el-tag>
               </template>
             </el-table-column>
           </el-table>
@@ -214,6 +219,7 @@ export default {
     this.getDataFn()
   },
   mounted() {
+    this.startAutoScroll();
   },
   watch: {
     $route() {
@@ -221,6 +227,25 @@ export default {
     },
   },
   methods: {
+    goHome(){
+      this.$router.push({ path: "/index" });
+    },
+    startAutoScroll() {
+      let scrollInterval;
+      let scrollPosition = 0;
+      const tableBody = this.$refs.tableRef.$el.querySelector('.el-table__body-wrapper');
+
+      scrollInterval = setInterval(() => {
+        // 每次向下滚动 1px
+        scrollPosition += 1;
+        tableBody.scrollTop = scrollPosition;
+
+        // 如果滚动到底部，重置滚动位置
+        if (scrollPosition >= tableBody.scrollHeight - tableBody.clientHeight) {
+          scrollPosition = 0;
+        }
+      }, 20); // 每 20ms 滚动一次
+    },
     selectChange(value) {
       this.getDataClassDistributionFn(value)
       setTimeout(() => {
@@ -734,5 +759,9 @@ export default {
   border-left: 8px solid #01a7f0;
   padding-left: 15px;
   height: 20px;
+}
+.scroll-container {
+  overflow: hidden;
+  position: relative;
 }
 </style>
