@@ -55,6 +55,88 @@
                     </div>
                 </div>
             </div>
+            <div style="margin-top: 15px;">
+                <div class="main_body">
+                    <div class="titleBox_echarts">
+                        <div class="title">数据增长趋势（最近6个月）</div>
+                    </div>
+                    <div id="lineGraph" class="leftEchartsBox"></div>
+                </div>
+            </div>
+            <div style="margin-top: 15px;">
+                <div class="main_body">
+                    <div class="titleBox_echarts">
+                        <div class="title">数据库类型统计</div>
+                    </div>
+                    <div id="SJKEcharts" class="leftEchartsBox"></div>
+                </div>
+            </div>
+        </div>
+        <div class="box1 page-break">
+            <div class="head">
+                <div>分类分级统计</div>
+                <div>02</div>
+            </div>
+            <div>
+                <div class="fenleifenji">
+                    <div class="main_body_02">
+                        <div class="titleBox_echarts">
+                            <div class="title">脏数据清洗比例</div>
+                        </div>
+                        <div id="funnelEcharts" class="leftEchartsBox"></div>
+                    </div>
+                    <div class="main_body_02">
+                        <div class="titleBox_echarts">
+                            <div class="title">AI数据填充概况</div>
+                        </div>
+                        <el-card class="box-card">
+                            <div style="height: 80px; font-weight: 600;font-size: 18px;">字段注释覆盖情况</div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div>原生注释缺失占比></div>
+                                    <span style="font-weight: 600;">32%</span>
+                                </div>
+                                <div>
+                                    <div>AI填充注释数量></div>
+                                    <span style="font-weight: 600;">400个</span>
+                                </div>
+                            </div>
+                        </el-card>
+                    </div>
+                    <div class="main_body_02">
+                        <div class="titleBox_echarts">
+                            <div class="title">归类原因</div>
+                        </div>
+                        <div id="radarEcharts" class="leftEchartsBox"></div>
+                    </div>
+                    <div class="main_body_02">
+                        <div class="titleBox_echarts">
+                            <div class="title">置信度占比</div>
+                        </div>
+                        <div id="confidenceLevel" class="leftEchartsBox"></div>
+                    </div>
+                </div>
+                <div class="main_body">
+                    <div class="titleBox_echarts">
+                        <div class="title">数据分类分布(可下钻)</div>
+                    </div>
+                    <el-breadcrumb style="margin-top: 20px;margin-left: 20px;" separator-class="el-icon-arrow-right">
+                        <el-breadcrumb-item @click.native="goBack(index)" v-for="(item, index) in breadcrumbList">{{
+                            item.name }}</el-breadcrumb-item>
+                    </el-breadcrumb>
+                    <!-- <el-button type="text" id="back-btn">返回</el-button> -->
+                    <div id="dataClassification" class="leftEchartsBoxBig"></div>
+                </div>
+                <div class="main_body">
+                    <div class="titleBox_echarts">
+                        <div class="title">数据分级分布</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div id="dataDistribution" class="leftEchartsBox"></div>
+                        <div id="sensitiveData" class="leftEchartsBox"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -80,107 +162,445 @@ export default {
             datasourceTop: [{ id: 1, source_name: '1', item_count: 1 }],
             tableTop: [{ id: 1, sourceName: '1', tableCount: 1 }],
             fieldTop: [{ id: 1, sourceName: '1', fieldCount: 1 }],
+            breadcrumbList: [{ name: '首层' }],
+            arr: [
+                {
+                    categories: ['系统运维', '客户', '经营', '业务'],
+                    data: [40, 30, 20, 10]
+                },
+                {
+                    categories: ['客户A信息', '客户B信息', '客户C信息'],
+                    data: [15, 12, 8]
+                },
+                {
+                    categories: ['电话', '邮箱', '微信'],
+                    data: [7, 5, 3]
+                },
+            ],
+            currentLevel: 0
         }
     },
     created() {
     },
     mounted() {
-        // this.earchsInit()
+        this.earchsInit()
+        this.SJKEchartsEchartsFn()
+        this.funnelEchartsFn()
+        this.radarEchartsFn()
+        this.confidenceLevelEchartsFn()
+        this.dataClassificationEchartsFn()
+        this.dataDistributionEchartsFn()
+        this.sensitiveDataEchartsFn()
     },
     methods: {
         earchsInit() {
-            var chartDom = document.getElementById('main');
+            var chartDom = document.getElementById('lineGraph');
             var myChart = echarts.init(chartDom);
             var option;
-            const categories = (function () {
-                let now = new Date();
-                let res = [];
-                return [];
-            })();
-            const categories2 = (function () {
-                let res = [];
-                return [];
-            })();
-            const data = (function () {
-                let res = [];
-                return res;
-            })();
-            const data2 = (function () {
-                let res = [];
-                return res;
-            })();
             option = {
-                title: {
-                    text: 'Dynamic Data'
-                },
                 tooltip: {
                     trigger: 'axis',
                     axisPointer: {
                         type: 'cross',
-                        label: {
-                            backgroundColor: '#283b56'
+                        crossStyle: {
+                            color: '#999'
                         }
                     }
                 },
-                legend: {},
+                grid: {
+                    right: '50',
+                },
+                legend: {
+                    bottom: '5%',
+                    data: ['新增字段数', '数据总量（MB）']
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        data: ['一月', '二月'],
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    }
+                ],
+                yAxis: [
+                    {
+                        type: 'value',
+                        min: 0,
+                    },
+                    {
+                        type: 'value',
+                        min: 0,
+                    }
+                ],
+                series: [
+                    {
+                        name: '新增字段数',
+                        type: 'bar',
+                        tooltip: {
+                            valueFormatter: function (value) {
+                                return value;
+                            }
+                        },
+                        data: [1, 2, 3, 4, 5]
+                    },
+                    {
+                        name: '数据总量（MB）',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        tooltip: {
+                            valueFormatter: function (value) {
+                                return value;
+                            }
+                        },
+                        data: [1, 2, 3, 4, 5]
+                    }
+                ]
+            };
+            option && myChart.setOption(option);
+        },
+        SJKEchartsEchartsFn() {
+            var chartDom = document.getElementById('SJKEcharts');
+            var myChart = echarts.init(chartDom);
+            var option;
+
+            option = {
+                title: {
+                    textStyle: {
+                        fontSize: '14'
+                    }
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    orient: 'vertical',
+                    bottom: 'bottom'
+                },
+                series: [
+                    {
+                        type: 'pie',
+                        radius: ['50%', '70%'],
+                        width: '100%',
+                        data: [{
+                            name: 'Excel', value: 100
+                        }],
+                        label: {
+                            alignTo: 'edge',
+                            minMargin: 5,
+                            edgeDistance: 10,
+                            lineHeight: 15,
+                            rich: {
+                                time: {
+                                    fontSize: 10,
+                                    color: '#999'
+                                }
+                            }
+                        }
+                    }
+                ]
+            };
+
+            option && myChart.setOption(option);
+        },
+        funnelEchartsFn() {
+            var chartDom = document.getElementById('funnelEcharts');
+            var myChart = echarts.init(chartDom);
+            var option;
+            option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}'
+                },
                 toolbox: {
-                    show: true,
+                    show: false,
                     feature: {
                         dataView: { readOnly: false },
                         restore: {},
                         saveAsImage: {}
                     }
                 },
-                dataZoom: {
-                    show: false,
-                    start: 0,
-                    end: 100
-                },
-                xAxis: [
-                    {
-                        type: 'category',
-                        boundaryGap: true,
-                        data: categories
-                    },
-                    {
-                        type: 'category',
-                        boundaryGap: true,
-                        data: categories2
-                    }
-                ],
-                yAxis: [
-                    {
-                        type: 'value',
-                        scale: true,
-                        name: 'Price',
-                        max: 30,
-                        min: 0,
-                        boundaryGap: [0.2, 0.2]
-                    },
-                    {
-                        type: 'value',
-                        scale: true,
-                        name: 'Order',
-                        max: 1200,
-                        min: 0,
-                        boundaryGap: [0.2, 0.2]
-                    }
-                ],
                 series: [
                     {
-                        name: 'Dynamic Bar',
-                        type: 'bar',
-                        xAxisIndex: 1,
-                        yAxisIndex: 1,
-                        data: data
-                    },
-                    {
-                        name: 'Dynamic Line',
-                        type: 'line',
-                        data: data2
+                        type: 'funnel',
+                        left: '10%',
+                        top: 60,
+                        bottom: 60,
+                        width: '60%',
+                        min: 0,
+                        max: 100,
+                        minSize: '0%',
+                        maxSize: '100%',
+                        sort: 'descending',
+                        gap: 2,
+                        label: {
+                            position: 'right'
+                        },
+                        labelLine: {
+                            length: 30,
+                            lineStyle: {
+                                width: 1,
+                                type: 'solid'
+                            }
+                        },
+                        itemStyle: {
+                            borderColor: '#fff',
+                            borderWidth: 1
+                        },
+                        emphasis: {
+                            label: {
+                                fontSize: 20
+                            }
+                        },
+                        data: [
+                            {
+                                name: "字段总数100%",
+                                value: 100
+                            },
+
+                            {
+                                name: "样本值为空",
+                                value: 80
+                            },
+
+                            {
+                                name: "样本过于单一",
+                                value: 60
+                            },
+
+                            {
+                                name: "样本重复率过高",
+                                value: 40
+                            },
+
+                            {
+                                name: "有效字段90.27%",
+                                value: 20
+                            }
+                        ]
                     }
                 ]
             };
+            option && myChart.setOption(option);
+        },
+        radarEchartsFn() {
+            var chartDom = document.getElementById('radarEcharts');
+            var myChart = echarts.init(chartDom);
+            var option;
+            option = {
+                legend: {
+                },
+                toolbox: {
+                    show: false,
+                },
+                radar: {
+                    // shape: 'circle',
+                    indicator: [
+                        { name: '脏数据识别', max: 65 },
+                        { name: '表继承', max: 65 },
+                        { name: '策略匹配', max: 65 },
+                        { name: 'AI推理', max: 65 },
+                    ]
+                },
+                series: [
+                    {
+                        name: 'Budget vs spending',
+                        type: 'radar',
+                        data: [
+                            {
+                                value: [20, 30, 40, 22],
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            option && myChart.setOption(option);
+
+        },
+        confidenceLevelEchartsFn() {
+            var chartDom = document.getElementById('confidenceLevel');
+            var myChart = echarts.init(chartDom);
+            var option;
+            option = {
+                title: {
+                    textStyle: {
+                        fontSize: '14'
+                    }
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    orient: 'vertical',
+                    bottom: 'bottom'
+                },
+                series: [
+                    {
+                        type: 'pie',
+                        radius: ['50%', '70%'],
+                        width: '100%',
+                        data: [
+                            {
+                                name: '高', value: 100
+                            }, {
+                                name: '低', value: 80
+                            },
+                        ],
+                        label: {
+                            alignTo: 'edge',
+                            minMargin: 5,
+                            edgeDistance: 10,
+                            lineHeight: 15,
+
+                            rich: {
+                                time: {
+                                    fontSize: 10,
+                                    color: '#999'
+                                }
+                            }
+                        }
+                    }
+                ]
+            };
+
+            option && myChart.setOption(option);
+        },
+        // 渲染图表的通用函数
+        renderChart(categories, data) {
+            const myChart = echarts.init(document.getElementById('dataClassification'));
+            const option = {
+                xAxis: { type: 'value' },
+                yAxis: {
+                    type: 'category',
+                    data: categories
+                },
+                series: [
+                    {
+                        type: 'bar',
+                        data: data,
+                        label: { show: true, position: 'right' }, // 显示数值标签
+
+                        itemStyle: {
+                            color: '#009dff' // 所有柱子的颜色设置为红色
+                        }
+                    }
+                ]
+            };
+            myChart.setOption(option);
+        },
+        goBack(index) {
+            debugger
+            if (index == this.arr.length || this.currentLevel == index) {
+                return
+            } else if (index == 0) {
+                this.breadcrumbList = [{ name: '首层' }]
+            }
+            else {
+                this.breadcrumbList.splice(index + 1, 1)
+            }
+            this.currentLevel = index
+            this.renderChart(this.arr[index].categories, this.arr[index].data)
+        },
+        dataClassificationEchartsFn() {
+            // 初始化 ECharts 实例
+            const myChart = echarts.init(document.getElementById('dataClassification'));
+            const backBtn = document.getElementById('');
+            // 当前层级标记（1=一级，2=二级，3=三级）
+            // 初始渲染一级数据
+            this.renderChart(this.arr[0].categories, this.arr[0].data);
+            // 图表点击事件：实现下钻
+            myChart.on('click', (params) => {
+                if (this.currentLevel == this.arr.length - 1) {
+                    return
+                }
+                // 一级 → 二级（客户信息）
+                ++this.currentLevel;
+                this.breadcrumbList.push(params)
+                this.renderChart(this.arr[this.currentLevel].categories, this.arr[this.currentLevel].data);
+            });
+        },
+        dataDistributionEchartsFn() {
+            var chartDom = document.getElementById('dataDistribution');
+            var myChart = echarts.init(chartDom);
+            var option;
+
+            option = {
+                legend: {
+                    bottom: 'bottom'
+                },
+                toolbox: {
+                    show: false,
+                    feature: {
+                        mark: { show: true },
+                        dataView: { show: true, readOnly: false },
+                        restore: { show: true },
+                        saveAsImage: { show: true }
+                    }
+                },
+                series: [
+                    {
+                        name: 'Nightingale Chart',
+                        type: 'pie',
+                        radius: [10, 50],
+                        center: ['50%', '40%'],
+                        roseType: 'area',
+                        itemStyle: {
+                            borderRadius: 8
+                        },
+                        data: [
+                            { name: '一级', value: 19 },
+                            { name: '二级', value: 29 },
+                            { name: '三级', value: 39 },
+                            { name: '四级', value: 49 },
+                        ]
+                    }
+                ]
+            };
+
+            option && myChart.setOption(option);
+        },
+
+        sensitiveDataEchartsFn() {
+            var chartDom = document.getElementById('sensitiveData');
+            var myChart = echarts.init(chartDom);
+            var option;
+
+            option = {
+                title: {
+                    textStyle: {
+                        fontSize: '14'
+                    }
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    orient: 'vertical',
+                    bottom: 'bottom'
+                },
+                series: [
+                    {
+                        type: 'pie',
+                        radius: ['50%', '70%'],
+                        width: '100%',
+                        data: this.allData.sensitiveDataProportion,
+                        label: {
+                            alignTo: 'edge',
+                            minMargin: 5,
+                            edgeDistance: 10,
+                            lineHeight: 15,
+                            rich: {
+                                time: {
+                                    fontSize: 10,
+                                    color: '#999'
+                                }
+                            }
+                        }
+                    }
+                ]
+            };
+
             option && myChart.setOption(option);
         },
     }
@@ -308,5 +728,79 @@ export default {
         /* 如果文字会旋转,可以添加以下样式保持文字方向 */
         transform: rotate(0deg);
     }
+}
+
+.main_body_02 {
+    width: 45%;
+}
+
+.title {
+    border-left: 8px solid #01a7f0;
+    padding-left: 15px;
+    height: 20px;
+    font-weight: 600;
+}
+
+
+.titleBox_echarts {
+    background-color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e7f0f7;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.body_main {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 10px;
+
+    .main_box {
+        width: 23%;
+    }
+
+    .main_boxFlex {
+        width: 50%;
+    }
+}
+
+
+.leftEchartsBox {
+    width: 100%;
+    height: 215px;
+    background-color: #fff;
+    margin-bottom: 15px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.leftEchartsBoxBig {
+    width: 100%;
+    height: 320px;
+    background-color: #fff;
+    margin-bottom: 15px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.fenleifenji {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.box-card {
+    height: 215px;
+    padding: 10px 15px;
+}
+
+#back-btn {
+    display: none;
 }
 </style>
