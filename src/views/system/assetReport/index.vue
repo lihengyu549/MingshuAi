@@ -15,10 +15,12 @@
       </div>
       <el-tabs v-model="activeName" @tab-click="handleClick" :stretch="true">
         <el-tab-pane label="分类分级报告" name="分类分级报告">
-          <div class="hede_bgc">
-            <div class="hede_bgc-text">{{ activeName }}</div>
+          <div >
+            <div class="hede_bgc">
+              <div class="hede_bgc-text">{{ activeName }}</div>
+            </div>
+            <oneReport ref="pdfDownload" class="aaa"/>
           </div>
-          <oneReport />
         </el-tab-pane>
         <el-tab-pane label="数据特征报告" name="数据特征报告">
           <div class="hede_bgc">
@@ -66,22 +68,28 @@ export default {
   },
   methods: {
     handleExport() {
-      const table = document.getElementById('table');
-      table.style.width = '100%';
-      const element = this.$refs.pdfDownload;
-      html2pdf()
-        .from(element)
-        .set({
-          // margin: 0,
-          margin: [10, 10, 10, 10],
-          filename: '分类分级分析报告.pdf',
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: 'mm', format: [280, 350], orientation: 'portrait' },
-          pagebreak: { mode: ['avoid-all'] }
-        })
-        .save();
-      // downloadPDF(this.$refs.pdfDownload)
+      // const table = document.getElementById('table');
+      // table.style.width = '100%';
+      // const element = this.$refs.pdfDownload;
+      // console.log(element);
+
+      // html2pdf()
+      //   .from(element)
+      //   .set({
+      //     // margin: 0,
+      //     margin: [10, 10, 10, 10],
+      //     filename: '分类分级分析报告.pdf',
+      //     image: { type: 'jpeg', quality: 0.98 },
+      //     html2canvas: { scale: 2 },
+      //     jsPDF: { unit: 'mm', format: [280, 350], orientation: 'portrait' },
+      //     pagebreak: { mode: ['avoid-all'] }
+      //   })
+      //   .save();
+      let obj = {
+        title: 'aaa',
+        className: 'aaa'
+      }
+      downloadPDF(obj)
     },
     earchsInit() {
       var chartDom = document.getElementById('main');

@@ -11,7 +11,6 @@ import JsPDF from "jspdf";
  */
 
 export function downloadPDF(options) {
-
     var title = options.title || '导出报告';// 导出文件名，默认为“标题”
 
     // 这里获取调用这个方法传过来的参数对象里面的类名，也就是你需要导出为pdf元素的父盒子类名
@@ -22,7 +21,7 @@ export function downloadPDF(options) {
 
     // 这里的children取决于你传过来的父元素，根据实际需求来获取你需要的子元素
 
-    const children = ele[0].children[1].children[0].children;
+    const children = ele[0].children;
 
     // 定义一个空数组，来接收需要生成图片计算完高度的dom对象
 
@@ -45,7 +44,6 @@ export function downloadPDF(options) {
     function toCanvas() {
 
         if (children.length > 1 ) {
-
             html2Canvas(children[i], {
 
                 scale:scale,
@@ -57,8 +55,9 @@ export function downloadPDF(options) {
             }).then(res => { // 计算每个dom的高度，方便后面计算分页
 
                 res.imgWidth = 595.28 / scale / 0.7;
-
-                res.imgHeight = 592.28 / res.width * res.height / scale /0.7;
+                // 原 res.imgHeight = 592.28 / res.width * res.hight / scale /0.7;
+                // 不知名原因高度获取不对，导致无法导出分类分级报告第三部分，只能手动给一个很高的高度
+                res.imgHeight = 592.28 / res.width * 1800 / scale /0.7;
 
                 canvas.push(res);
 
@@ -67,7 +66,6 @@ export function downloadPDF(options) {
                 // 这里判断我是否已经全部将需要计算高度的节点计算完了，如果计算完高度就会添加到我定义的canvas数组里面，计算完了就执行分页并生成pdf，否则递归继续计算
 
                 if (canvas.length === children.length) {
-
                     paging();
 
                     toPdf();
