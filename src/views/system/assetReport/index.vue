@@ -19,7 +19,7 @@
             <div class="hede_bgc">
               <div class="hede_bgc-text">{{ activeName }}</div>
             </div>
-            <oneReport ref="pdfDownload" class="aaa"/>
+            <oneReport v-model="queryParams.categoryId" ref="pdfDownload" class="aaa"/>
           </div>
         </el-tab-pane>
         <el-tab-pane label="数据特征报告" name="数据特征报告">

@@ -5,7 +5,7 @@
                 <div>数据资产概况</div>
                 <div>01</div>
             </div>
-            <el-table :data="tableData" id="table" class="tableBox" ref="tableRef">
+            <el-table :data="allData.dataAssetStatistics" id="table" class="tableBox" ref="tableRef">
                 <el-table-column label="数据源（个）" align="center" prop="datasourceCount" show-overflow-tooltip />
                 <el-table-column label="数据库（个）" align="center" prop="databaseCount" show-overflow-tooltip />
                 <el-table-column label="数据表（张）" align="center" prop="dataTableCount" show-overflow-tooltip />
@@ -17,12 +17,12 @@
                     <div style="margin-right: 20px;">
                         <h4 style="color: #696969;margin: 10px 0;">字段数TOP5</h4>
                         <ul>
-                            <li v-for="(item, i) in datasourceTop" :key="i"
+                            <li v-for="(item, i) in allData.fieldTop" :key="i"
                                 :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
                                 <span :class="i >= 3 ? 'pentagon' : `pentagon${i + 1}`"> <span>{{ i + 1 }}</span></span>
                                 <span class="sort-name-count">
-                                    <span> {{ item.source_name }}</span>
-                                    <span style="float: right;"> {{ item.item_count }}</span>
+                                    <span> {{ item.sourceName }}</span>
+                                    <span style="float: right;"> {{ item.fieldCount }}</span>
                                 </span>
                             </li>
                         </ul>
@@ -30,7 +30,7 @@
                     <div style="margin-right: 20px;">
                         <h4 style="color: #696969;margin: 10px 0;">表数量TOP5</h4>
                         <ul>
-                            <li v-for="(item, i) in tableTop" :key="i"
+                            <li v-for="(item, i) in allData.tableTop" :key="i"
                                 :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
                                 <span :class="i >= 3 ? 'pentagon' : `pentagon${i + 1}`"> <span>{{ i + 1 }}</span></span>
                                 <span class="sort-name-count">
@@ -43,12 +43,12 @@
                     <div>
                         <h4 style="color: #696969;margin: 10px 0;">数据量TOP5</h4>
                         <ul>
-                            <li v-for="(item, i) in fieldTop" :key="i"
+                            <li v-for="(item, i) in allData.dataSizeTop" :key="i"
                                 :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
                                 <span :class="i >= 3 ? 'pentagon' : `pentagon${i + 1}`"> <span>{{ i + 1 }}</span></span>
                                 <span class="sort-name-count">
                                     <span> {{ item.sourceName }}</span>
-                                    <span style="float: right;"> {{ item.fieldCount }}</span>
+                                    <span style="float: right;"> {{ item.count }}</span>
                                 </span>
                             </li>
                         </ul>
@@ -60,7 +60,7 @@
                     <div class="titleBox_echarts">
                         <div class="title">数据增长趋势（最近6个月）</div>
                     </div>
-                    <div id="lineGraph" class="leftEchartsBox"></div>
+                    <div id="lineGraph" class="leftEchartsBoxBig"></div>
                 </div>
             </div>
             <div style="margin-top: 15px;">
@@ -68,7 +68,7 @@
                     <div class="titleBox_echarts">
                         <div class="title">数据库类型统计</div>
                     </div>
-                    <div id="SJKEcharts" class="leftEchartsBox"></div>
+                    <div id="SJKEcharts" class="leftEchartsBoxBig"></div>
                 </div>
             </div>
         </div>
@@ -94,11 +94,15 @@
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <div>
                                     <div>原生注释缺失占比></div>
-                                    <span style="font-weight: 600;">32%</span>
+                                    <span style="font-weight: 600;">{{ allData.fieldRemarkCoverage &&
+                                        allData.fieldRemarkCoverage.oldAnnotationProportion ?
+                                        allData.fieldRemarkCoverage.oldAnnotationProportion : '' }}</span>
                                 </div>
                                 <div>
                                     <div>AI填充注释数量></div>
-                                    <span style="font-weight: 600;">400个</span>
+                                    <span style="font-weight: 600;">{{ allData.fieldRemarkCoverage &&
+                                        allData.fieldRemarkCoverage.AIAnnotationNum ?
+                                        allData.fieldRemarkCoverage.AIAnnotationNum : '' }}</span>
                                 </div>
                             </div>
                         </el-card>
@@ -156,7 +160,7 @@
                         <template slot-scope="scope">
                             <el-tag :color="scope.row.tagColor" style="color: #fff;border: none;">{{
                                 scope.row.maskCompleteName
-                                }}</el-tag>
+                            }}</el-tag>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -184,11 +188,14 @@
 </template>
 
 <script>
-import { getFrameworks, dashboardList } from "@/api/system/protectCategory";
+import { listNew } from "@/api/data";
 import * as echarts from "echarts";
 import "echarts-wordcloud";
 export default {
     name: "oneReport",
+    props: {
+        value: Number,
+    },
     //   dicts: ['sys_normal_disable'],
     data() {
         return {
@@ -225,19 +232,33 @@ export default {
     created() {
     },
     mounted() {
-        this.earchsInit()
-        this.SJKEchartsEchartsFn()
-        this.funnelEchartsFn()
-        this.radarEchartsFn()
-        this.confidenceLevelEchartsFn()
-        this.dataClassificationEchartsFn()
-        this.dataDistributionEchartsFn()
-        this.sensitiveDataEchartsFn()
-        this.lineGraphGERENInit()
-        this.gerenxinxifenbuFn()
-        this.gerenxinxiziduanEchartsFn()
+        let timer = setInterval(() => {
+            if (this.value) {
+                this.getlistNewFn()
+                clearInterval(timer)
+            }
+        }, 1000)
     },
     methods: {
+        init() {
+            this.earchsInit()
+            this.SJKEchartsEchartsFn()
+            this.funnelEchartsFn()
+            this.radarEchartsFn()
+            this.confidenceLevelEchartsFn()
+            this.dataClassificationEchartsFn()
+            this.dataDistributionEchartsFn()
+            this.sensitiveDataEchartsFn()
+            this.lineGraphGERENInit()
+            this.gerenxinxifenbuFn()
+            this.gerenxinxiziduanEchartsFn()
+        },
+        getlistNewFn() {
+            listNew({ categoryId: this.value }).then(res => {
+                this.allData = res.data
+                this.init()
+            })
+        },
         earchsInit() {
             var chartDom = document.getElementById('lineGraph');
             var myChart = echarts.init(chartDom);
@@ -262,7 +283,7 @@ export default {
                 xAxis: [
                     {
                         type: 'category',
-                        data: ['一月', '二月'],
+                        data: this.allData.dataGrowthTrend.monthNames,
                         axisPointer: {
                             type: 'shadow'
                         }
@@ -287,7 +308,7 @@ export default {
                                 return value;
                             }
                         },
-                        data: [1, 2, 3, 4, 5]
+                        data: this.allData.dataGrowthTrend.dataSize
                     },
                     {
                         name: '数据总量（MB）',
@@ -298,7 +319,7 @@ export default {
                                 return value;
                             }
                         },
-                        data: [1, 2, 3, 4, 5]
+                        data: this.allData.dataGrowthTrend.dataNum
                     }
                 ]
             };
@@ -318,18 +339,19 @@ export default {
                 tooltip: {
                     trigger: 'item'
                 },
+                grid: {
+                    bottom: '510',
+                },
                 legend: {
-                    orient: 'vertical',
-                    bottom: 'bottom'
+                    bottom: 0,
+                    left: 'center',
                 },
                 series: [
                     {
                         type: 'pie',
                         radius: ['50%', '70%'],
                         width: '100%',
-                        data: [{
-                            name: 'Excel', value: 100
-                        }],
+                        data: this.allData.dataTypeTop,
                         label: {
                             alignTo: 'edge',
                             minMargin: 5,
@@ -397,32 +419,7 @@ export default {
                                 fontSize: 20
                             }
                         },
-                        data: [
-                            {
-                                name: "字段总数100%",
-                                value: 100
-                            },
-
-                            {
-                                name: "样本值为空",
-                                value: 80
-                            },
-
-                            {
-                                name: "样本过于单一",
-                                value: 60
-                            },
-
-                            {
-                                name: "样本重复率过高",
-                                value: 40
-                            },
-
-                            {
-                                name: "有效字段90.27%",
-                                value: 20
-                            }
-                        ]
+                        data: this.allData.dirtyDataPercent
                     }
                 ]
             };
@@ -433,29 +430,18 @@ export default {
             var myChart = echarts.init(chartDom);
             var option;
             option = {
-                legend: {
-                },
                 toolbox: {
                     show: false,
                 },
                 radar: {
                     // shape: 'circle',
-                    indicator: [
-                        { name: '脏数据识别', max: 65 },
-                        { name: '表继承', max: 65 },
-                        { name: '策略匹配', max: 65 },
-                        { name: 'AI推理', max: 65 },
-                    ]
+                    indicator: this.allData.classifyReasonPercent.indicator
                 },
                 series: [
                     {
                         name: 'Budget vs spending',
                         type: 'radar',
-                        data: [
-                            {
-                                value: [20, 30, 40, 22],
-                            }
-                        ]
+                        data: this.allData.classifyReasonPercent.total
                     }
                 ]
             };
@@ -485,13 +471,7 @@ export default {
                         type: 'pie',
                         radius: ['50%', '70%'],
                         width: '100%',
-                        data: [
-                            {
-                                name: '高', value: 100
-                            }, {
-                                name: '低', value: 80
-                            },
-                        ],
+                        data: this.allData.confidenceLevelPercent,
                         label: {
                             alignTo: 'edge',
                             minMargin: 5,
@@ -535,7 +515,6 @@ export default {
             myChart.setOption(option);
         },
         goBack(index) {
-            debugger
             if (index == this.arr.length || this.currentLevel == index) {
                 return
             } else if (index == 0) {

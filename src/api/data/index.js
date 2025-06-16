@@ -24,3 +24,12 @@ export function getFieldMaxStandard(data) {
     params:data
   })
 }
+
+// 分类分级报告查询接口
+export function listNew(data) {
+  return request({
+    url: '/system/dashboard/listNew',
+    method: 'get',
+    params:data
+  })
+}
