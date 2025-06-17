@@ -125,8 +125,9 @@
                         <div class="title">数据分类分布(可下钻)</div>
                     </div>
                     <el-breadcrumb style="margin-top: 20px;margin-left: 20px;" separator-class="el-icon-arrow-right">
-                        <el-breadcrumb-item @click.native="goBack(index)" v-for="(item, index) in breadcrumbList">{{
-                            item.name }}</el-breadcrumb-item>
+                        <el-breadcrumb-item @click.native="goBack(item, index)"
+                            v-for="(item, index) in breadcrumbList">{{
+                                item.name }}</el-breadcrumb-item>
                     </el-breadcrumb>
                     <!-- <el-button type="text" id="back-btn">返回</el-button> -->
                     <div id="dataClassification" class="leftEchartsBoxBig"></div>
@@ -160,7 +161,7 @@
                         <template slot-scope="scope">
                             <el-tag :color="scope.row.tagColor" style="color: #fff;border: none;">{{
                                 scope.row.maskCompleteName
-                            }}</el-tag>
+                                }}</el-tag>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -196,6 +197,13 @@ export default {
     props: {
         value: Number,
     },
+    watch: {
+        value: {
+            handler(val) {
+                this.getlistNewFn(val)
+            },
+        },
+    },
     //   dicts: ['sys_normal_disable'],
     data() {
         return {
@@ -211,7 +219,7 @@ export default {
             datasourceTop: [{ id: 1, source_name: '1', item_count: 1 }],
             tableTop: [{ id: 1, sourceName: '1', tableCount: 1 }],
             fieldTop: [{ id: 1, sourceName: '1', fieldCount: 1 }],
-            breadcrumbList: [{ name: '首层' }],
+            breadcrumbList: [{ name: '首层', id: 0 }],
             arr: [
                 {
                     categories: ['系统运维', '客户', '经营', '业务'],
@@ -226,18 +234,98 @@ export default {
                     data: [7, 5, 3]
                 },
             ],
+            obj: [
+                {
+                    value: 5,
+                    name: '一层1',
+                    id: 1,
+                    child: [
+                        {
+                            value: 10,
+                            name: '二层',
+                            id: 12,
+                            child: [
+                                {
+                                    value: 10,
+                                    name: 'asn层4',
+                                    id: 13,
+                                    child: [
+                                        {
+                                            value: 10,
+                                            name: '二层5',
+                                            id: 14,
+                                        }
+                                    ]
+                                },
+                                {
+                                    value: 10,
+                                    name: '二层5'
+                                },
+                                {
+                                    value: 10,
+                                    name: '二层6'
+                                }
+                            ]
+                        },
+                        {
+                            value: 10,
+                            name: '二层2'
+                        },
+                        {
+                            value: 10,
+                            name: '二层3'
+                        }
+                    ]
+                },
+                {
+                    value: 2,
+                    name: '一层2',
+                    child: [
+                        {
+                            value: 10,
+                            name: '二层4'
+                        },
+                        {
+                            value: 10,
+                            name: '二层5'
+                        },
+                        {
+                            value: 10,
+                            name: '二层6'
+                        }
+                    ]
+                },
+                {
+                    value: 4,
+                    name: '一层3',
+                    child: [
+                        {
+                            value: 10,
+                            name: '二层7'
+                        },
+                        {
+                            value: 10,
+                            name: '二层8'
+                        },
+                        {
+                            value: 10,
+                            name: '二层9'
+                        }
+                    ]
+                }
+            ],
             currentLevel: 0
         }
     },
     created() {
     },
     mounted() {
-        let timer = setInterval(() => {
-            if (this.value) {
-                this.getlistNewFn()
-                clearInterval(timer)
-            }
-        }, 1000)
+        // let timer = setInterval(() => {
+        //     if (this.value) {
+        //         this.getlistNewFn()
+        //         clearInterval(timer)
+        //     }
+        // }, 1000)
     },
     methods: {
         init() {
@@ -246,12 +334,64 @@ export default {
             this.funnelEchartsFn()
             this.radarEchartsFn()
             this.confidenceLevelEchartsFn()
-            this.dataClassificationEchartsFn()
+            // this.dataClassificationEchartsFn()
             this.dataDistributionEchartsFn()
             this.sensitiveDataEchartsFn()
             this.lineGraphGERENInit()
             this.gerenxinxifenbuFn()
             this.gerenxinxiziduanEchartsFn()
+            this.aaa()
+        },
+        aaa() {
+            // const myChart = echarts.init(document.getElementById('dataClassification'));
+            let _this = this
+            var chartDom = document.getElementById('dataClassification');
+            var myChart = echarts.init(chartDom);
+            var option;
+
+            option = {
+                xAxis: {},
+                yAxis: {
+                    data: ['一层12', '一层2', '一层3']
+                },
+                dataGroupId: '',
+                animationDurationUpdate: 500,
+                series: {
+                    type: 'bar',
+                    id: 'sales',
+                    data: this.obj,
+                }
+            };
+            myChart.on('click', function (event) {
+                if (event.data) {
+                    var subData = event.data.child;
+                    if (!event.data.child) {
+                        return;
+                    } else {
+                        _this.breadcrumbList.push(event.data)
+                    }
+                    myChart.setOption({
+                        yAxis: {
+                            data: subData.map(function (item) {
+                                return item.name;
+                            })
+                        },
+                        series: {
+                            type: 'bar',
+                            id: 'sales',
+                            dataGroupId: subData.dataGroupId,
+                            data: subData.map(function (item) {
+                                return item;
+                            }),
+                            universalTransition: {
+                                enabled: true,
+                                divideShape: 'clone'
+                            }
+                        }
+                    });
+                }
+            });
+            option && myChart.setOption(option);
         },
         getlistNewFn() {
             listNew({ categoryId: this.value }).then(res => {
@@ -492,18 +632,18 @@ export default {
             option && myChart.setOption(option);
         },
         // 渲染图表的通用函数
-        renderChart(categories, data) {
+        renderChart(params) {
             const myChart = echarts.init(document.getElementById('dataClassification'));
             const option = {
                 xAxis: { type: 'value' },
                 yAxis: {
                     type: 'category',
-                    data: categories
+                    data: params.child.map(item => item.name)
                 },
                 series: [
                     {
                         type: 'bar',
-                        data: data,
+                        data: params.child.map(item => item),
                         label: { show: true, position: 'right' }, // 显示数值标签
 
                         itemStyle: {
@@ -514,17 +654,39 @@ export default {
             };
             myChart.setOption(option);
         },
-        goBack(index) {
-            if (index == this.arr.length || this.currentLevel == index) {
+        findNodeWithId(nodes, id) {
+            // 遍历当前节点数组
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+                // 检查当前节点的id是否为目标id
+                if (node.id === id) {
+                    return node;
+                }
+                // 如果当前节点有子节点，递归遍历子节点
+                if (node.child && node.child.length > 0) {
+                    const result = this.findNodeWithId(node.child, id);
+                    if (result) { // 如果在子树中找到目标节点，返回结果
+                        return result;
+                    }
+                }
+            }
+
+            // 如果当前节点数组中没有找到目标节点，返回null
+            return null;
+        },
+        goBack(item, index) {
+            if (item.id == 0) {
+                this.breadcrumbList = [{ name: '首层', id: 0 }]
+                let params = { child: this.obj }
+                this.renderChart(params)
+            } else if (!item.child) {
                 return
-            } else if (index == 0) {
-                this.breadcrumbList = [{ name: '首层' }]
             }
             else {
                 this.breadcrumbList.splice(index + 1, 1)
+                let params = this.findNodeWithId(this.obj, item.id)
+                this.renderChart(params)
             }
-            this.currentLevel = index
-            this.renderChart(this.arr[index].categories, this.arr[index].data)
         },
         dataClassificationEchartsFn() {
             // 初始化 ECharts 实例
@@ -572,12 +734,7 @@ export default {
                         itemStyle: {
                             borderRadius: 8
                         },
-                        data: [
-                            { name: '一级', value: 19 },
-                            { name: '二级', value: 29 },
-                            { name: '三级', value: 39 },
-                            { name: '四级', value: 49 },
-                        ]
+                        data: this.allData.dataLevelDistribution
                     }
                 ]
             };
@@ -607,7 +764,7 @@ export default {
                         type: 'pie',
                         radius: ['50%', '70%'],
                         width: '100%',
-                        data: this.allData.sensitiveDataProportion,
+                        data: this.allData.sensitiveDataPercent,
                         label: {
                             alignTo: 'edge',
                             minMargin: 5,
@@ -655,12 +812,12 @@ export default {
                 },
                 legend: {
                     bottom: 'bottom',
-                    data: ['Evaporation', 'Precipitation', 'Temperature', 'aaa']
+                    data: ['aaa','nnn']
                 },
                 xAxis: [
                     {
                         type: 'category',
-                        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        data: this.allData.personalDataDistributionNewTrends.monthNames,
                         axisPointer: {
                             type: 'shadow'
                         }
@@ -670,31 +827,22 @@ export default {
                     {
                         type: 'value',
                         name: '',
-                        min: 0,
-                        max: 250,
-                        interval: 50,
                         axisLabel: {
-                            formatter: '{value} ml'
+                            formatter: '{value}'
                         }
                     },
                     {
                         type: 'value',
                         name: '',
-                        min: 0,
-                        max: 25,
-                        interval: 5,
                         axisLabel: {
-                            formatter: '{value} °C'
+                            formatter: '{value}'
                         }
                     },
                     {
                         type: 'value',
                         name: '',
-                        min: 0,
-                        max: 25,
-                        interval: 5,
                         axisLabel: {
-                            formatter: '{value} °C'
+                            formatter: '{value}'
                         }
                     }
                 ],
@@ -704,7 +852,7 @@ export default {
                         type: 'bar',
                         tooltip: {
                             valueFormatter: function (value) {
-                                return value + ' ml';
+                                return value;
                             }
                         },
                         data: [
@@ -716,7 +864,7 @@ export default {
                         type: 'bar',
                         tooltip: {
                             valueFormatter: function (value) {
-                                return value + ' ml';
+                                return value;
                             }
                         },
                         data: [
@@ -729,7 +877,7 @@ export default {
                         yAxisIndex: 1,
                         tooltip: {
                             valueFormatter: function (value) {
-                                return value + ' °C';
+                                return value;
                             }
                         },
                         data: [2.0, 2.2, 3.3, 4.5, 6.3, 10.2, 20.3, 23.4, 23.0, 16.5, 12.0, 6.2]
@@ -740,7 +888,7 @@ export default {
                         yAxisIndex: 1,
                         tooltip: {
                             valueFormatter: function (value) {
-                                return value + ' °C';
+                                return value;
                             }
                         },
                         data: [8.0, 2.8, 3.8]
@@ -799,26 +947,6 @@ export default {
                         },
                         margin: 20,
                         rich: {
-                            value: {
-                                lineHeight: 20,
-                                align: 'center'
-                            },
-                            AAA: {
-                                height: 20,
-                                align: 'center'
-                            },
-                            BBB: {
-                                height: 20,
-                                align: 'center'
-                            },
-                            CCC: {
-                                height: 20,
-                                align: 'center'
-                            },
-                            aaa: {
-                                height: 20,
-                                align: 'center'
-                            }
                         }
                     }
                 },
@@ -874,13 +1002,7 @@ export default {
                         type: 'pie',
                         radius: ['50%', '70%'],
                         width: '100%',
-                        data: [
-                            {
-                                name: '高', value: 100
-                            }, {
-                                name: '低', value: 80
-                            },
-                        ],
+                        data:this.allData.personalDataFieldPercent,
                         label: {
                             alignTo: 'edge',
                             minMargin: 5,
