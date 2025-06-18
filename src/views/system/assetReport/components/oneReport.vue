@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-loading="echarsLoding">
         <div class="box1 page-break">
             <div class="head">
                 <div>数据资产概况</div>
@@ -202,27 +202,12 @@ export default {
         return {
             echarsLoding: false,
             height:'',
-            tableData: [
-                {
-                    tasksName: "任务1",
-                    tasksNum: "1",
-                    tasksTime: "1",
-                    tasksStatus: "1",
-                    tasksResult: "1",
-                    tasksRemark: "1",
-                },
-            ],
             // 查询参数
             queryParams: {
                 categoryId: '',
             },
             activeName: 'first',
             allData: {},
-            treeOptions: [],
-            tableData: [{ id: 1, datasourceCount: 1, databaseCount: 1, dataTableCount: 1, dataFieldCount: 1, dataCount: 1 }],
-            datasourceTop: [{ id: 1, source_name: '1', item_count: 1 }],
-            tableTop: [{ id: 1, sourceName: '1', tableCount: 1 }],
-            fieldTop: [{ id: 1, sourceName: '1', fieldCount: 1 }],
             breadcrumbList: [{ name: '首层', id: 0 }],
             currentLevel: 0
         }
@@ -244,15 +229,14 @@ export default {
             this.funnelEchartsFn()
             this.radarEchartsFn()
             this.confidenceLevelEchartsFn()
-            // this.dataClassificationEchartsFn()
             this.dataDistributionEchartsFn()
             this.sensitiveDataEchartsFn()
             this.lineGraphGERENInit()
             this.gerenxinxifenbuFn()
             this.gerenxinxiziduanEchartsFn()
-            this.aaa()
+            this.dataClassificationEchartsFn()
         },
-        aaa() {
+        dataClassificationEchartsFn() {
             // const myChart = echarts.init(document.getElementById('dataClassification'));
             let _this = this
             var chartDom = document.getElementById('dataClassification');
@@ -304,6 +288,7 @@ export default {
             option && myChart.setOption(option);
         },
         getlistNewFn() {
+            this.echarsLoding = true
             listNew({ categoryId: this.value }).then(res => {
                 this.allData = res.data
                 if(this.allData.personalDataDistribution && this.allData.personalDataDistribution.databaseProxyNames && this.allData.personalDataDistribution.databaseProxyNames.length){
@@ -314,6 +299,7 @@ export default {
                 }
                 setTimeout(() => {
                     this.init()
+                    this.echarsLoding = false
                 }, 1000);
             })
         },
