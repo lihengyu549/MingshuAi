@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-loading="echarsLoding">
         <div class="box1 page-break">
             <div class="head">
                 <div>数据资产概况</div>
@@ -125,8 +125,9 @@
                         <div class="title">数据分类分布(可下钻)</div>
                     </div>
                     <el-breadcrumb style="margin-top: 20px;margin-left: 20px;" separator-class="el-icon-arrow-right">
-                        <el-breadcrumb-item @click.native="goBack(index)" v-for="(item, index) in breadcrumbList">{{
-                            item.name }}</el-breadcrumb-item>
+                        <el-breadcrumb-item @click.native="goBack(item, index)" class="breadcrumbItem"
+                            v-for="(item, index) in breadcrumbList">{{
+                                item.name }}</el-breadcrumb-item>
                     </el-breadcrumb>
                     <!-- <el-button type="text" id="back-btn">返回</el-button> -->
                     <div id="dataClassification" class="leftEchartsBoxBig"></div>
@@ -148,21 +149,14 @@
                 <div>03</div>
             </div>
             <div>
-                <el-table :data="allData.classifyTaskNum" height="230" ref="tableRef">
-                    <el-table-column align="center" show-overflow-tooltip prop="tasksName"
-                        label="任务名称"></el-table-column>
-                    <el-table-column align="center" show-overflow-tooltip prop="sourceName"
-                        label="来源业务系统"></el-table-column>
-                    <el-table-column align="center" show-overflow-tooltip prop="projectName"
-                        label="分类分级标准"></el-table-column>
-                    <el-table-column align="center" show-overflow-tooltip prop="fieldCount" label="任务字段数量" />
-                    <el-table-column align="center" show-overflow-tooltip prop="maskComplete" label="执行状态">
-                        <template slot-scope="scope">
-                            <el-tag :color="scope.row.tagColor" style="color: #fff;border: none;">{{
-                                scope.row.maskCompleteName
-                            }}</el-tag>
-                        </template>
-                    </el-table-column>
+                <el-table :data="allData.personalDataPercent" height="120" :border="false" ref="tableRef">
+                    <el-table-column align="center" show-overflow-tooltip prop="personalDataValue"
+                        label="个人信息条数"></el-table-column>
+                    <el-table-column align="center" show-overflow-tooltip prop="noPersonalDataValue"
+                        label="未成年人信息条数"></el-table-column>
+                    <el-table-column align="center" show-overflow-tooltip prop="ordinaryPersonalDataValue"
+                        label="一般个人信息字段"></el-table-column>
+                    <el-table-column align="center" show-overflow-tooltip prop="sensitivePersonalDataValue" label="敏感个人信息字段" />
                 </el-table>
                 <div class="main_body">
                     <div class="titleBox_echarts">
@@ -174,7 +168,7 @@
                     <div class="titleBox_echarts">
                         <div class="title">个人信息分布</div>
                     </div>
-                    <div id="gerenxinxifenbu" class="leftEchartsBoxBig"></div>
+                    <div id="gerenxinxifenbu" :style="height" class="leftEchartsBoxlang"></div>
                 </div>
                 <div class="main_body">
                     <div class="titleBox_echarts">
@@ -196,48 +190,37 @@ export default {
     props: {
         value: Number,
     },
+    watch: {
+        value: {
+            handler(val) {
+                this.getlistNewFn(val)
+            },
+        },
+    },
     //   dicts: ['sys_normal_disable'],
     data() {
         return {
             echarsLoding: false,
+            height:'',
             // 查询参数
             queryParams: {
                 categoryId: '',
             },
             activeName: 'first',
             allData: {},
-            treeOptions: [],
-            tableData: [{ id: 1, datasourceCount: 1, databaseCount: 1, dataTableCount: 1, dataFieldCount: 1, dataCount: 1 }],
-            datasourceTop: [{ id: 1, source_name: '1', item_count: 1 }],
-            tableTop: [{ id: 1, sourceName: '1', tableCount: 1 }],
-            fieldTop: [{ id: 1, sourceName: '1', fieldCount: 1 }],
-            breadcrumbList: [{ name: '首层' }],
-            arr: [
-                {
-                    categories: ['系统运维', '客户', '经营', '业务'],
-                    data: [40, 30, 20, 10]
-                },
-                {
-                    categories: ['客户A信息', '客户B信息', '客户C信息'],
-                    data: [15, 12, 8]
-                },
-                {
-                    categories: ['电话', '邮箱', '微信'],
-                    data: [7, 5, 3]
-                },
-            ],
+            breadcrumbList: [{ name: '首层', id: 0 }],
             currentLevel: 0
         }
     },
     created() {
     },
     mounted() {
-        let timer = setInterval(() => {
-            if (this.value) {
-                this.getlistNewFn()
-                clearInterval(timer)
-            }
-        }, 1000)
+        // let timer = setInterval(() => {
+        //     if (this.value) {
+        //         this.getlistNewFn()
+        //         clearInterval(timer)
+        //     }
+        // }, 1000)
     },
     methods: {
         init() {
@@ -246,17 +229,78 @@ export default {
             this.funnelEchartsFn()
             this.radarEchartsFn()
             this.confidenceLevelEchartsFn()
-            this.dataClassificationEchartsFn()
             this.dataDistributionEchartsFn()
             this.sensitiveDataEchartsFn()
             this.lineGraphGERENInit()
             this.gerenxinxifenbuFn()
             this.gerenxinxiziduanEchartsFn()
+            this.dataClassificationEchartsFn()
+        },
+        dataClassificationEchartsFn() {
+            // const myChart = echarts.init(document.getElementById('dataClassification'));
+            let _this = this
+            var chartDom = document.getElementById('dataClassification');
+            var myChart = echarts.init(chartDom);
+            var option;
+            let nameList = this.allData.dataClassDistribution.map(item => item.name)
+            option = {
+                xAxis: {},
+                yAxis: {
+                    data: nameList
+                },
+                dataGroupId: '',
+                animationDurationUpdate: 500,
+                series: {
+                    type: 'bar',
+                    id: 'sales',
+                    data: this.allData.dataClassDistribution,
+                }
+            };
+            myChart.on('click', function (event) {
+                if (event.data) {
+                    var subData = event.data.child;
+                    if (!event.data.child) {
+                        return;
+                    } else {
+                        _this.breadcrumbList.push(event.data)
+                    }
+                    myChart.setOption({
+                        yAxis: {
+                            data: subData.map(function (item) {
+                                return item.name;
+                            })
+                        },
+                        series: {
+                            type: 'bar',
+                            id: 'sales',
+                            dataGroupId: subData.dataGroupId,
+                            data: subData.map(function (item) {
+                                return item;
+                            }),
+                            universalTransition: {
+                                enabled: true,
+                                divideShape: 'clone'
+                            }
+                        }
+                    });
+                }
+            });
+            option && myChart.setOption(option);
         },
         getlistNewFn() {
+            this.echarsLoding = true
             listNew({ categoryId: this.value }).then(res => {
                 this.allData = res.data
-                this.init()
+                if(this.allData.personalDataDistribution && this.allData.personalDataDistribution.databaseProxyNames && this.allData.personalDataDistribution.databaseProxyNames.length){
+                     // 基本高度200
+                    let height = this.allData.personalDataDistribution.databaseProxyNames.length * 50 + 200
+                    // height:300px
+                    this.height = `height:${height}px`
+                }
+                setTimeout(() => {
+                    this.init()
+                    this.echarsLoding = false
+                }, 1000);
             })
         },
         earchsInit() {
@@ -492,18 +536,18 @@ export default {
             option && myChart.setOption(option);
         },
         // 渲染图表的通用函数
-        renderChart(categories, data) {
+        renderChart(params) {
             const myChart = echarts.init(document.getElementById('dataClassification'));
             const option = {
                 xAxis: { type: 'value' },
                 yAxis: {
                     type: 'category',
-                    data: categories
+                    data: params.child.map(item => item.name)
                 },
                 series: [
                     {
                         type: 'bar',
-                        data: data,
+                        data: params.child.map(item => item),
                         label: { show: true, position: 'right' }, // 显示数值标签
 
                         itemStyle: {
@@ -514,35 +558,39 @@ export default {
             };
             myChart.setOption(option);
         },
-        goBack(index) {
-            if (index == this.arr.length || this.currentLevel == index) {
+        findNodeWithId(nodes, id) {
+            // 遍历当前节点数组
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+                // 检查当前节点的id是否为目标id
+                if (node.id === id) {
+                    return node;
+                }
+                // 如果当前节点有子节点，递归遍历子节点
+                if (node.child && node.child.length > 0) {
+                    const result = this.findNodeWithId(node.child, id);
+                    if (result) { // 如果在子树中找到目标节点，返回结果
+                        return result;
+                    }
+                }
+            }
+
+            // 如果当前节点数组中没有找到目标节点，返回null
+            return null;
+        },
+        goBack(item, index) {
+            if (item.id == 0) {
+                this.breadcrumbList = [{ name: '首层', id: 0 }]
+                let params = { child: this.allData.dataClassDistribution }
+                this.renderChart(params)
+            } else if (!item.child) {
                 return
-            } else if (index == 0) {
-                this.breadcrumbList = [{ name: '首层' }]
             }
             else {
                 this.breadcrumbList.splice(index + 1, 1)
+                let params = this.findNodeWithId(this.allData.dataClassDistribution, item.id)
+                this.renderChart(params)
             }
-            this.currentLevel = index
-            this.renderChart(this.arr[index].categories, this.arr[index].data)
-        },
-        dataClassificationEchartsFn() {
-            // 初始化 ECharts 实例
-            const myChart = echarts.init(document.getElementById('dataClassification'));
-            const backBtn = document.getElementById('');
-            // 当前层级标记（1=一级，2=二级，3=三级）
-            // 初始渲染一级数据
-            this.renderChart(this.arr[0].categories, this.arr[0].data);
-            // 图表点击事件：实现下钻
-            myChart.on('click', (params) => {
-                if (this.currentLevel == this.arr.length - 1) {
-                    return
-                }
-                // 一级 → 二级（客户信息）
-                ++this.currentLevel;
-                this.breadcrumbList.push(params)
-                this.renderChart(this.arr[this.currentLevel].categories, this.arr[this.currentLevel].data);
-            });
         },
         dataDistributionEchartsFn() {
             var chartDom = document.getElementById('dataDistribution');
@@ -572,12 +620,7 @@ export default {
                         itemStyle: {
                             borderRadius: 8
                         },
-                        data: [
-                            { name: '一级', value: 19 },
-                            { name: '二级', value: 29 },
-                            { name: '三级', value: 39 },
-                            { name: '四级', value: 49 },
-                        ]
+                        data: this.allData.dataLevelDistribution
                     }
                 ]
             };
@@ -607,7 +650,7 @@ export default {
                         type: 'pie',
                         radius: ['50%', '70%'],
                         width: '100%',
-                        data: this.allData.sensitiveDataProportion,
+                        data: this.allData.sensitiveDataPercent,
                         label: {
                             alignTo: 'edge',
                             minMargin: 5,
@@ -655,12 +698,12 @@ export default {
                 },
                 legend: {
                     bottom: 'bottom',
-                    data: ['Evaporation', 'Precipitation', 'Temperature', 'aaa']
+                    data: this.allData.personalDataDistributionNewTrends.namelist
                 },
                 xAxis: [
                     {
                         type: 'category',
-                        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        data: this.allData.personalDataDistributionNewTrends.monthNames,
                         axisPointer: {
                             type: 'shadow'
                         }
@@ -670,80 +713,67 @@ export default {
                     {
                         type: 'value',
                         name: '',
-                        min: 0,
-                        max: 250,
-                        interval: 50,
                         axisLabel: {
-                            formatter: '{value} ml'
+                            formatter: '{value}'
                         }
                     },
                     {
                         type: 'value',
                         name: '',
-                        min: 0,
-                        max: 25,
-                        interval: 5,
                         axisLabel: {
-                            formatter: '{value} °C'
+                            formatter: '{value}'
                         }
                     },
                     {
                         type: 'value',
                         name: '',
-                        min: 0,
-                        max: 25,
-                        interval: 5,
                         axisLabel: {
-                            formatter: '{value} °C'
+                            formatter: '{value}'
                         }
                     }
                 ],
                 series: [
                     {
-                        name: 'Evaporation',
+                        name: this.allData.personalDataDistributionNewTrends.namelist[0],
                         type: 'bar',
                         tooltip: {
                             valueFormatter: function (value) {
-                                return value + ' ml';
+                                return value;
                             }
                         },
-                        data: [
-                            2.0, 4.9, 7.0, 23.2, 25.6, 76.7, 135.6, 162.2, 32.6, 20.0, 6.4, 3.3
-                        ]
+                        data: this.allData.personalDataDistributionNewTrends.opdCountList
                     },
                     {
-                        name: 'Precipitation',
+                        name: this.allData.personalDataDistributionNewTrends.namelist[1],
                         type: 'bar',
                         tooltip: {
                             valueFormatter: function (value) {
-                                return value + ' ml';
+                                return value;
                             }
                         },
-                        data: [
-                            2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 175.6, 182.2, 48.7, 18.8, 6.0, 2.3
-                        ]
+                        data: this.allData.personalDataDistributionNewTrends.spdCountList
                     },
                     {
-                        name: 'Temperature',
+                        name: this.allData.personalDataDistributionNewTrends.namelist[2],
                         type: 'line',
                         yAxisIndex: 1,
                         tooltip: {
                             valueFormatter: function (value) {
-                                return value + ' °C';
+                                return value;
                             }
                         },
-                        data: [2.0, 2.2, 3.3, 4.5, 6.3, 10.2, 20.3, 23.4, 23.0, 16.5, 12.0, 6.2]
+                        data: this.allData.personalDataDistributionNewTrends.piiDetectionCountList
                     },
                     {
-                        name: 'aaa',
+                        name:this.allData.personalDataDistributionNewTrends.namelist[3],
                         type: 'line',
                         yAxisIndex: 1,
                         tooltip: {
                             valueFormatter: function (value) {
-                                return value + ' °C';
+                                return value;
                             }
                         },
-                        data: [8.0, 2.8, 3.8]
+                        data: this.allData.personalDataDistributionNewTrends.nonageCountList
                     }
                 ]
             };
@@ -754,7 +784,6 @@ export default {
             var chartDom = document.getElementById('gerenxinxifenbu');
             var myChart = echarts.init(chartDom);
             var option;
-
             const seriesLabel = {
                 show: true
             };
@@ -770,11 +799,11 @@ export default {
                     }
                 },
                 legend: {
-                    data: ['AAA', 'BBB', 'CCC', 'aaa'],
+                    data: this.allData.personalDataDistribution.namelist,
                     bottom: 'bottom'
                 },
                 grid: {
-                    left: 100
+                    left: 200
                 },
                 toolbox: {
                     show: false,
@@ -792,60 +821,38 @@ export default {
                 yAxis: {
                     type: 'category',
                     inverse: true,
-                    data: ['AAA', 'BBB', 'CCC', 'aaa'],
+                    data: this.allData.personalDataDistribution.databaseProxyNames,
                     axisLabel: {
                         formatter: function (value) {
-                            return '{' + value + '| }\n{value|' + value + '}';
+                            return value;
                         },
                         margin: 20,
-                        rich: {
-                            value: {
-                                lineHeight: 20,
-                                align: 'center'
-                            },
-                            AAA: {
-                                height: 20,
-                                align: 'center'
-                            },
-                            BBB: {
-                                height: 20,
-                                align: 'center'
-                            },
-                            CCC: {
-                                height: 20,
-                                align: 'center'
-                            },
-                            aaa: {
-                                height: 20,
-                                align: 'center'
-                            }
-                        }
                     }
                 },
                 series: [
                     {
-                        name: 'aaa',
+                        name: this.allData.personalDataDistribution.namelist[0],
                         type: 'bar',
-                        data: [1165, 170, 30, 20],
-                        label: seriesLabel
+                        data: this.allData.personalDataDistribution.ordinaryPersonalData,
+                        label: seriesLabel,
                     },
                     {
-                        name: 'AAA',
+                        name: this.allData.personalDataDistribution.namelist[1],
                         type: 'bar',
                         label: seriesLabel,
-                        data: [150, 105, 110, 40]
+                        data: this.allData.personalDataDistribution.sensitivePersonalData
                     },
                     {
-                        name: 'BBB',
+                        name: this.allData.personalDataDistribution.namelist[2],
                         type: 'bar',
                         label: seriesLabel,
-                        data: [220, 82, 63, 60]
+                        data: this.allData.personalDataDistribution.piiPersonalData
                     },
                     {
-                        name: 'CCC',
+                        name: this.allData.personalDataDistribution.namelist[3],
                         type: 'bar',
                         label: seriesLabel,
-                        data: [220, 82, 63, 120]
+                        data: this.allData.personalDataDistribution.nonageCountList
                     }
                 ]
             };
@@ -874,13 +881,7 @@ export default {
                         type: 'pie',
                         radius: ['50%', '70%'],
                         width: '100%',
-                        data: [
-                            {
-                                name: '高', value: 100
-                            }, {
-                                name: '低', value: 80
-                            },
-                        ],
+                        data: this.allData.personalDataFieldPercent,
                         label: {
                             alignTo: 'edge',
                             minMargin: 5,
@@ -1083,7 +1084,13 @@ export default {
     border-bottom-right-radius: 8px;
     border-bottom-left-radius: 8px;
 }
-
+.leftEchartsBoxlang{
+    width: 100%;
+    background-color: #fff;
+    margin-bottom: 15px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
 .fenleifenji {
     margin-top: 15px;
     display: flex;
@@ -1099,5 +1106,8 @@ export default {
 
 #back-btn {
     display: none;
+}
+.breadcrumbItem:hover {
+    cursor: pointer;
 }
 </style>
