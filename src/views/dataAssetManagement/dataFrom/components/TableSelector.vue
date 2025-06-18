@@ -96,7 +96,7 @@ export default {
             selectedItems: [], // 右侧数据】
             selectedItemsChild: [],// 右侧数据的子节点数据
             selectedItemsParent: [],// 右側父節點
-            selectedItemsChildCount: [],// 右側傻逼阿季增加的无用数据展示
+            selectedItemsChildCount: [],// 右側增加的无用数据展示
         };
     },
     created() {
