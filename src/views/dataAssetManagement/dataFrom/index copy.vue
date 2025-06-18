@@ -291,13 +291,11 @@ import {
 } from "@/api/system/proxyUser";
 
 import {
-  listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys,
-  importExcel, publish, createProxys, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI
+  listProxys, getProxys, connectTestI, delProxys, updateProxys,
+  importExcel, publish, createProxys, databaseMaskI, strategyAll, databaseMask, getListTables, databaseListI
 } from "@/api/system/proxys";
-import { listAllProject, } from "@/api/system/project";
 import {
-  treeListI, categoryImport, getAttachData, attachStatus,
-  forceLogout, updataAttach, nameTesting, addData, getFrameworks, checkSourceName
+  forceLogout, nameTesting,getFrameworks, checkSourceName
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import Vue from 'vue';
@@ -1486,6 +1484,7 @@ export default {
         targetUserPassword: this.form.targetUserPassword,
         connectionType: this.connectionType,
         connectionValue: this.form.connectionValue,
+        sourceName: this.form.sourceName,
         databaseType: this.findDatabaseValueByName(this.form.databaseType)
       }
       let res = await getListTables(data)

@@ -925,7 +925,8 @@ export default {
             connectionType: this.connectionType,
             connectionValue: this.form.connectionValue,
             databaseType: this.form.databaseType,
-            examplesName: this.form.examplesName
+            examplesName: this.form.examplesName,
+            sourceName: this.form.sourceName,
           }
           let res = await getListTables(data)
           if (res.data.option.length == 0) {

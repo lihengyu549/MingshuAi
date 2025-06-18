@@ -119,11 +119,7 @@ import {
   updateDatabaseProxysScan,
 } from "@/api/dataAssetManagement"
 import {
-  listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys,
-  importExcel, publish, saveDatabaseAndTables, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI
-} from "@/api/system/proxys";
-import {
-  forceLogout, nameTesting, dataSacn, getFrameworks, checkSourceName, getDatabaseAndTablesById, updateDatabaseAndTables
+ nameTesting,checkSourceName,
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import Vue from 'vue';

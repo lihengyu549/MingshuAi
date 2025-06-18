@@ -122,9 +122,9 @@
 
 <script>
 import TableSelector from './TableSelector.vue'
-import { getListTables, databaseListI, saveDatabaseAndTables } from "@/api/system/proxys";
+import { getListTables, saveDatabaseAndTables } from "@/api/system/proxys";
 import {
-  getFrameworks, updateDatabaseAndTables, checkSourceName
+  getFrameworks, checkSourceName
 } from "@/api/system/protectCategory"
 import {
   getDatabaseProxysScanItemById
@@ -391,7 +391,8 @@ export default {
             connectionType: this.connectionType,
             connectionValue: this.form.connectionValue,
             databaseType: this.form.databaseType,
-            examplesName: this.form.examplesName
+            examplesName: this.form.examplesName,
+            sourceName: this.form.sourceName,
           }
           let res = await getListTables(data)
           if (res.data.option.length == 0) {
