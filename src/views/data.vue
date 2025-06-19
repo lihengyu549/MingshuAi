@@ -11,11 +11,11 @@
         </div>
       </div>
       <div style="display: flex;align-items: center;">
-      <div><el-button type="primary" @click="goHome">首页</el-button></div>
-      <div style="padding-right: 30px; margin-left: 30px;">
-        <div style="font-weight: 700;font-size: 22px;">22:33:33</div>
-        <div>2025-06-06</div>
-      </div>
+        <div><el-button type="primary" @click="goHome">首页</el-button></div>
+        <div style="padding-right: 30px; margin-left: 30px;">
+          <div style="font-weight: 700;font-size: 22px;">{{ formattedTime }} </div>
+          <div>{{ currentDate }}</div>
+        </div>
       </div>
     </div>
     <div class="body_main">
@@ -138,7 +138,7 @@
           <div class="centerCircle">
             <div>{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.iname ? allData.cumulativeFieldNum.iname :
               ''
-              }}</div>
+            }}</div>
             <span>{{ allData.cumulativeFieldNum && allData.cumulativeFieldNum.ivalue ?
               allData.cumulativeFieldNum.ivalue : '' }}</span>
           </div>
@@ -153,7 +153,7 @@
             <el-table-column align="center" show-overflow-tooltip prop="maskComplete" label="执行状态">
               <template slot-scope="scope">
                 <el-tag :color="scope.row.tagColor" style="color: #fff;border: none;">{{ scope.row.maskCompleteName
-                  }}</el-tag>
+                }}</el-tag>
               </template>
             </el-table-column>
           </el-table>
@@ -211,8 +211,21 @@ export default {
       isShow: true,
       selectList: [],
       categoryId: '',
-      selectData: {}
+      currentTime: new Date(), // 当前时间
+      selectData: {},
+      timer: null,//  定时器
+      currentDate: '',// 当前日期
+      tooltipDiv:null,
     };
+  },
+  computed: {
+    // 计算属性，格式化时间
+    formattedTime() {
+      const hours = this.currentTime.getHours().toString().padStart(2, '0');
+      const minutes = this.currentTime.getMinutes().toString().padStart(2, '0');
+      const seconds = this.currentTime.getSeconds().toString().padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    },
   },
   created() {
     this.getSelectList()
@@ -220,6 +233,14 @@ export default {
   },
   mounted() {
     this.startAutoScroll();
+    this.getCurrentDate()
+    // 每秒更新一次时间
+    this.timer = setInterval(() => {
+      this.currentTime = new Date();
+    }, 1000);
+  },
+  beforeDestroy() {
+    clearInterval(this.timer);
   },
   watch: {
     $route() {
@@ -227,7 +248,14 @@ export default {
     },
   },
   methods: {
-    goHome(){
+    getCurrentDate() {
+      const now = new Date(); // 获取当前日期和时间
+      const year = now.getFullYear(); // 获取年份
+      const month = (now.getMonth() + 1).toString().padStart(2, '0'); // 获取月份，+1 是因为 getMonth() 返回的月份是从 0 开始的
+      const day = now.getDate().toString().padStart(2, '0'); // 获取日期
+      this.currentDate = `${year}-${month}-${day}`; // 格式化为 YYYY-MM-DD
+    },
+    goHome() {
       this.$router.push({ path: "/index" });
     },
     startAutoScroll() {
@@ -518,13 +546,10 @@ export default {
       var option;
       option = {
         grid: {
-          left: '60',
+          left: '80',
         },
         tooltip: {
           trigger: 'axis',
-          axisPointer: {
-            type: 'shadow'
-          }
         },
         xAxis: {
           max: 'dataMax'
@@ -533,6 +558,15 @@ export default {
           type: 'category',
           data: this.selectData.names,
           inverse: true,
+          triggerEvent: true, // 允许触发事件
+          axisLabel: {
+            formatter: function (value) {
+              if (value.length > 4) { // 如果文字长度超过8个字符
+                return value.slice(0, 4) + '...'; // 截取前8个字符并添加省略号
+              }
+              return value;
+            }
+          }
         },
         series: [
           {
@@ -760,6 +794,7 @@ export default {
   padding-left: 15px;
   height: 20px;
 }
+
 .scroll-container {
   overflow: hidden;
   position: relative;
