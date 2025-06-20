@@ -528,7 +528,7 @@ export default {
           }
           if (this.form.isAddTasks === '1') {
             this.form.piiDetectionFlag = this.form.piiDetectionFlag + ''
-            this.aiAnalyticsEngine = this.aiAnalyticsEngine
+            this.form.aiAnalyticsEngine = this.aiAnalyticsEngine
             editScanCompleteDataTasks(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
