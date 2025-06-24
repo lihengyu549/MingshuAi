@@ -129,6 +129,10 @@ export default {
           src: require('@/assets/indexImg/excel.png'),
           value: 'Excel'
         },
+        {
+          src: require('@/assets/indexImg/greenPlum.png'),
+          value: 'GREENPLUM'
+        },
       ],
       yuanList: [
         {
