@@ -3,7 +3,7 @@
     <div class="body_head">
       <div class="head_left">
         <div style="margin-right: 20px;">
-          <img src="../assets/newDataImg/login.png" alt="">
+          <img :src="$store.state.user.projectData.img" alt="">
         </div>
         <div class="head_right">
           <div style="font-weight: 700;font-size: 20px;margin-bottom: 10px;">数据安全分类分级看板</div>
