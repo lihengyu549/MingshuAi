@@ -198,7 +198,6 @@ import {
 } from "../api/data";
 import * as echarts from "echarts";
 import "echarts-wordcloud";
-import "../assets/styles/bootstrap.css";
 import DataPupop from "./dataPupop";
 import { Avatar } from "element-ui";
 export default {

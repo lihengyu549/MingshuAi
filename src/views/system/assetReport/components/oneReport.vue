@@ -15,7 +15,7 @@
             <div class="ul_box">
                 <div style="display: flex; justify-content: space-between;">
                     <div style="margin-right: 20px;">
-                        <h4 style="color: #696969;margin: 10px 0;">字段数TOP5</h4>
+                        <h4 style="color: #696969;margin: 10px 0;text-align: left;font-weight: 500;">字段数TOP5</h4>
                         <ul>
                             <li v-for="(item, i) in allData.fieldTop" :key="i"
                                 :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
@@ -28,7 +28,7 @@
                         </ul>
                     </div>
                     <div style="margin-right: 20px;">
-                        <h4 style="color: #696969;margin: 10px 0;">表数量TOP5</h4>
+                        <h4 style="color: #696969;margin: 10px 0;text-align: left;">表数量TOP5</h4>
                         <ul>
                             <li v-for="(item, i) in allData.tableTop" :key="i"
                                 :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
@@ -41,7 +41,7 @@
                         </ul>
                     </div>
                     <div>
-                        <h4 style="color: #696969;margin: 10px 0;">数据量TOP5</h4>
+                        <h4 style="color: #696969;margin: 10px 0;text-align: left;">数据量TOP5</h4>
                         <ul>
                             <li v-for="(item, i) in allData.dataSizeTop" :key="i"
                                 :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
@@ -156,7 +156,8 @@
                         label="未成年人信息条数"></el-table-column>
                     <el-table-column align="center" show-overflow-tooltip prop="ordinaryPersonalDataValue"
                         label="一般个人信息字段"></el-table-column>
-                    <el-table-column align="center" show-overflow-tooltip prop="sensitivePersonalDataValue" label="敏感个人信息字段" />
+                    <el-table-column align="center" show-overflow-tooltip prop="sensitivePersonalDataValue"
+                        label="敏感个人信息字段" />
                 </el-table>
                 <div class="main_body">
                     <div class="titleBox_echarts">
@@ -201,7 +202,7 @@ export default {
     data() {
         return {
             echarsLoding: false,
-            height:'',
+            height: '',
             // 查询参数
             queryParams: {
                 categoryId: '',
@@ -209,7 +210,18 @@ export default {
             activeName: 'first',
             allData: {},
             breadcrumbList: [{ name: '首层', id: 0 }],
-            currentLevel: 0
+            currentLevel: 0,
+            lineGraphChart: null,
+            SJKEchartsChart: null,
+            funnelEchartsChart: null,
+            radarEchartsChart: null,
+            confidenceLevelChart: null,
+            dataDistributionChart: null,
+            sensitiveDataChart: null,
+            lineGraphGERENChart: null,
+            gerenxinxifenbuChart: null,
+            gerenxinxiziduanChart: null,
+            dataClassificationChart: null,
         }
     },
     created() {
@@ -237,10 +249,9 @@ export default {
             this.dataClassificationEchartsFn()
         },
         dataClassificationEchartsFn() {
-            // const myChart = echarts.init(document.getElementById('dataClassification'));
             let _this = this
             var chartDom = document.getElementById('dataClassification');
-            var myChart = echarts.init(chartDom);
+            this.dataClassificationChart = echarts.init(chartDom);
             var option;
             let nameList = this.allData.dataClassDistribution.map(item => item.name)
             option = {
@@ -256,7 +267,7 @@ export default {
                     data: this.allData.dataClassDistribution,
                 }
             };
-            myChart.on('click', function (event) {
+            _this.dataClassificationChart.on('click', function (event) {
                 if (event.data) {
                     var subData = event.data.child;
                     if (!event.data.child) {
@@ -264,7 +275,7 @@ export default {
                     } else {
                         _this.breadcrumbList.push(event.data)
                     }
-                    myChart.setOption({
+                    _this.dataClassificationChart.setOption({
                         yAxis: {
                             data: subData.map(function (item) {
                                 return item.name;
@@ -285,14 +296,16 @@ export default {
                     });
                 }
             });
-            option && myChart.setOption(option);
+            option && _this.dataClassificationChart.setOption(option);
         },
         getlistNewFn() {
+            // 销毁
+            this.destroyCharts()
             this.echarsLoding = true
             listNew({ categoryId: this.value }).then(res => {
                 this.allData = res.data
-                if(this.allData.personalDataDistribution && this.allData.personalDataDistribution.databaseProxyNames && this.allData.personalDataDistribution.databaseProxyNames.length){
-                     // 基本高度200
+                if (this.allData.personalDataDistribution && this.allData.personalDataDistribution.databaseProxyNames && this.allData.personalDataDistribution.databaseProxyNames.length) {
+                    // 基本高度200
                     let height = this.allData.personalDataDistribution.databaseProxyNames.length * 50 + 200
                     // height:300px
                     this.height = `height:${height}px`
@@ -305,7 +318,7 @@ export default {
         },
         earchsInit() {
             var chartDom = document.getElementById('lineGraph');
-            var myChart = echarts.init(chartDom);
+            this.lineGraphChart = echarts.init(chartDom);
             var option;
             option = {
                 tooltip: {
@@ -367,11 +380,11 @@ export default {
                     }
                 ]
             };
-            option && myChart.setOption(option);
+            option && this.lineGraphChart.setOption(option);
         },
         SJKEchartsEchartsFn() {
             var chartDom = document.getElementById('SJKEcharts');
-            var myChart = echarts.init(chartDom);
+            this.SJKEchartsChart = echarts.init(chartDom);
             var option;
 
             option = {
@@ -412,11 +425,11 @@ export default {
                 ]
             };
 
-            option && myChart.setOption(option);
+            option && this.SJKEchartsChart.setOption(option);
         },
         funnelEchartsFn() {
             var chartDom = document.getElementById('funnelEcharts');
-            var myChart = echarts.init(chartDom);
+            this.funnelEchartsChart = echarts.init(chartDom);
             var option;
             option = {
                 tooltip: {
@@ -467,11 +480,11 @@ export default {
                     }
                 ]
             };
-            option && myChart.setOption(option);
+            option && this.funnelEchartsChart.setOption(option);
         },
         radarEchartsFn() {
             var chartDom = document.getElementById('radarEcharts');
-            var myChart = echarts.init(chartDom);
+            this.radarEchartsChart = echarts.init(chartDom);
             var option;
             option = {
                 toolbox: {
@@ -483,19 +496,18 @@ export default {
                 },
                 series: [
                     {
-                        name: 'Budget vs spending',
                         type: 'radar',
                         data: this.allData.classifyReasonPercent.total
                     }
                 ]
             };
 
-            option && myChart.setOption(option);
+            option && this.radarEchartsChart.setOption(option);
 
         },
         confidenceLevelEchartsFn() {
             var chartDom = document.getElementById('confidenceLevel');
-            var myChart = echarts.init(chartDom);
+            this.confidenceLevelChart = echarts.init(chartDom);
             var option;
             option = {
                 title: {
@@ -533,11 +545,11 @@ export default {
                 ]
             };
 
-            option && myChart.setOption(option);
+            option && this.confidenceLevelChart.setOption(option);
         },
         // 渲染图表的通用函数
         renderChart(params) {
-            const myChart = echarts.init(document.getElementById('dataClassification'));
+            // const myChart = echarts.init(document.getElementById('dataClassification'));
             const option = {
                 xAxis: { type: 'value' },
                 yAxis: {
@@ -556,7 +568,7 @@ export default {
                     }
                 ]
             };
-            myChart.setOption(option);
+            this.dataClassificationChart.setOption(option);
         },
         findNodeWithId(nodes, id) {
             // 遍历当前节点数组
@@ -594,7 +606,7 @@ export default {
         },
         dataDistributionEchartsFn() {
             var chartDom = document.getElementById('dataDistribution');
-            var myChart = echarts.init(chartDom);
+            this.dataDistributionChart = echarts.init(chartDom);
             var option;
 
             option = {
@@ -625,11 +637,11 @@ export default {
                 ]
             };
 
-            option && myChart.setOption(option);
+            option && this.dataDistributionChart.setOption(option);
         },
         sensitiveDataEchartsFn() {
             var chartDom = document.getElementById('sensitiveData');
-            var myChart = echarts.init(chartDom);
+            this.sensitiveDataChart = echarts.init(chartDom);
             var option;
 
             option = {
@@ -667,11 +679,11 @@ export default {
                 ]
             };
 
-            option && myChart.setOption(option);
+            option && this.sensitiveDataChart.setOption(option);
         },
         lineGraphGERENInit() {
             var chartDom = document.getElementById('lineGraphGEREN');
-            var myChart = echarts.init(chartDom);
+            this.lineGraphGERENChart = echarts.init(chartDom);
             var option;
 
             option = {
@@ -765,7 +777,7 @@ export default {
                         data: this.allData.personalDataDistributionNewTrends.piiDetectionCountList
                     },
                     {
-                        name:this.allData.personalDataDistributionNewTrends.namelist[3],
+                        name: this.allData.personalDataDistributionNewTrends.namelist[3],
                         type: 'line',
                         yAxisIndex: 1,
                         tooltip: {
@@ -778,11 +790,11 @@ export default {
                 ]
             };
 
-            option && myChart.setOption(option);
+            option && this.lineGraphGERENChart.setOption(option);
         },
         gerenxinxifenbuFn() {
             var chartDom = document.getElementById('gerenxinxifenbu');
-            var myChart = echarts.init(chartDom);
+            this.gerenxinxifenbuChart = echarts.init(chartDom);
             var option;
             const seriesLabel = {
                 show: true
@@ -857,11 +869,11 @@ export default {
                 ]
             };
 
-            option && myChart.setOption(option);
+            option && this.gerenxinxifenbuChart.setOption(option);
         },
         gerenxinxiziduanEchartsFn() {
             var chartDom = document.getElementById('gerenxinxiziduan');
-            var myChart = echarts.init(chartDom);
+            this.gerenxinxiziduanChart = echarts.init(chartDom);
             var option;
             option = {
                 title: {
@@ -899,8 +911,43 @@ export default {
                 ]
             };
 
-            option && myChart.setOption(option);
+            option && this.gerenxinxiziduanChart.setOption(option);
         },
+        destroyCharts() {
+            if (this.lineGraphChart) {
+                this.lineGraphChart.dispose()
+            }
+            if (this.SJKEchartsChart) {
+                this.SJKEchartsChart.dispose()
+            }
+            if (this.funnelEchartsChart) {
+                this.funnelEchartsChart.dispose()
+            }
+            if (this.radarEchartsChart) {
+                this.radarEchartsChart.dispose()
+            }
+            if (this.confidenceLevelChart) {
+                this.confidenceLevelChart.dispose()
+            }
+            if (this.dataDistributionChart) {
+                this.dataDistributionChart.dispose()
+            }
+            if (this.sensitiveDataChart) {
+                this.sensitiveDataChart.dispose()
+            }
+            if (this.lineGraphGERENChart) {
+                this.lineGraphGERENChart.dispose()
+            }
+            if (this.gerenxinxifenbuChart) {
+                this.gerenxinxifenbuChart.dispose()
+            }
+            if (this.gerenxinxiziduanChart) {
+                this.gerenxinxiziduanChart.dispose()
+            }
+            if (this.dataClassificationChart) {
+                this.dataClassificationChart.dispose()
+            }
+        }
     }
 };
 </script>
@@ -912,16 +959,15 @@ export default {
     .head {
         display: flex;
         justify-content: space-between;
-        font-size: 20px;
-        color: #3871ff;
+        font-size: 26px;
+        color: #01a7f0;
         align-items: center;
-        font-weight: 600;
-        border-bottom: 1px solid #3871ff;
+        border-bottom: 3px solid #01a7f0;
         padding: 10px 0;
     }
 
     td {
-        color: #3871ff;
+        color: #01a7f0;
         font-weight: 600;
         font-size: 18px;
     }
@@ -929,6 +975,7 @@ export default {
     .ul_box {
         display: flex;
         justify-content: space-between;
+        margin-top: 10px;
     }
 
     .ul_box div {
@@ -1036,7 +1083,10 @@ export default {
     border-left: 8px solid #01a7f0;
     padding-left: 15px;
     height: 20px;
-    font-weight: 600;
+    font-weight: 700;
+    width: 100%;
+    text-align: left;
+    line-height: 20px;
 }
 
 
@@ -1049,6 +1099,7 @@ export default {
     border-bottom: 1px solid #e7f0f7;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
+    text-align: left;
 }
 
 .body_main {
@@ -1084,13 +1135,15 @@ export default {
     border-bottom-right-radius: 8px;
     border-bottom-left-radius: 8px;
 }
-.leftEchartsBoxlang{
+
+.leftEchartsBoxlang {
     width: 100%;
     background-color: #fff;
     margin-bottom: 15px;
     border-bottom-right-radius: 8px;
     border-bottom-left-radius: 8px;
 }
+
 .fenleifenji {
     margin-top: 15px;
     display: flex;
@@ -1107,6 +1160,7 @@ export default {
 #back-btn {
     display: none;
 }
+
 .breadcrumbItem:hover {
     cursor: pointer;
 }

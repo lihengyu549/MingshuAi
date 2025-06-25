@@ -4,7 +4,7 @@
       <div style="display: flex;justify-content: space-between;align-items: center;padding: 10px;">
         <div style="height: 36px;display: flex;">
           <span class="selectLabel">所属标准</span>
-          <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
+          <el-select v-model="queryParams.categoryId" class="serachInput"
             placeholder="全部">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
@@ -58,13 +58,13 @@ export default {
       activeName: '分类分级报告',
       allData: {},
       treeOptions: [],
+      xiaohuiFlag:true
     }
   },
   created() {
     this.gettreeOptionsList();
   },
   mounted() {
-    // this.earchsInit()
   },
   methods: {
     handleExport() {
@@ -86,105 +86,10 @@ export default {
       //   })
       //   .save();
       let obj = {
-        title: 'aaa',
+        title: '分类分级分析报告.pdf',
         className: 'aaa'
       }
       downloadPDF(obj)
-    },
-    earchsInit() {
-      var chartDom = document.getElementById('main');
-      var myChart = echarts.init(chartDom);
-      var option;
-      const categories = (function () {
-        let now = new Date();
-        let res = [];
-        return [];
-      })();
-      const categories2 = (function () {
-        let res = [];
-        return [];
-      })();
-      const data = (function () {
-        let res = [];
-        return res;
-      })();
-      const data2 = (function () {
-        let res = [];
-        return res;
-      })();
-      option = {
-        title: {
-          text: 'Dynamic Data'
-        },
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'cross',
-            label: {
-              backgroundColor: '#283b56'
-            }
-          }
-        },
-        legend: {},
-        toolbox: {
-          show: true,
-          feature: {
-            dataView: { readOnly: false },
-            restore: {},
-            saveAsImage: {}
-          }
-        },
-        dataZoom: {
-          show: false,
-          start: 0,
-          end: 100
-        },
-        xAxis: [
-          {
-            type: 'category',
-            boundaryGap: true,
-            data: categories
-          },
-          {
-            type: 'category',
-            boundaryGap: true,
-            data: categories2
-          }
-        ],
-        yAxis: [
-          {
-            type: 'value',
-            scale: true,
-            name: 'Price',
-            max: 30,
-            min: 0,
-            boundaryGap: [0.2, 0.2]
-          },
-          {
-            type: 'value',
-            scale: true,
-            name: 'Order',
-            max: 1200,
-            min: 0,
-            boundaryGap: [0.2, 0.2]
-          }
-        ],
-        series: [
-          {
-            name: 'Dynamic Bar',
-            type: 'bar',
-            xAxisIndex: 1,
-            yAxisIndex: 1,
-            data: data
-          },
-          {
-            name: 'Dynamic Line',
-            type: 'line',
-            data: data2
-          }
-        ]
-      };
-      option && myChart.setOption(option);
     },
     handleClick(tab, event) {
       console.log(tab, event);
@@ -197,11 +102,6 @@ export default {
           this.queryParams.categoryId = response.data[0].id;
         }
       });
-    },
-    dashboardList() { },
-    // 左侧树下拉选change事件
-    treeOptionsSelectChange(val) {
-      this.dashboardList()
     },
     resetList() {
       this.securityTotal = 0
