@@ -453,7 +453,7 @@ export default {
             type: 'radar',
             data: [
               {
-                value:[],
+                value:this.allData.classifyReasonNum.total,
               }
             ]
           }
