@@ -10,7 +10,7 @@
                 <el-table-column label="数据库（个）" align="center" prop="databaseCount" show-overflow-tooltip />
                 <el-table-column label="数据表（张）" align="center" prop="dataTableCount" show-overflow-tooltip />
                 <el-table-column label="字段（个）" align="center" prop="dataFieldCount" show-overflow-tooltip />
-                <el-table-column label="数据总量（MB）" align="center" prop="dataFieldCount" show-overflow-tooltip />
+                <el-table-column label="数据总量（MB）" align="center" prop="dataMB" show-overflow-tooltip />
             </el-table>
             <div class="ul_box">
                 <div style="display: flex; justify-content: space-between;">
@@ -365,7 +365,7 @@ export default {
                                 return value;
                             }
                         },
-                        data: this.allData.dataGrowthTrend.dataSize
+                        data: this.allData.dataGrowthTrend.dataNum
                     },
                     {
                         name: '数据总量（MB）',
@@ -376,7 +376,7 @@ export default {
                                 return value;
                             }
                         },
-                        data: this.allData.dataGrowthTrend.dataNum
+                        data: this.allData.dataGrowthTrend.dataSize
                     }
                 ]
             };
@@ -497,7 +497,9 @@ export default {
                 series: [
                     {
                         type: 'radar',
-                        data: this.allData.classifyReasonPercent.total
+                        data: [
+                          {  value: this.allData.classifyReasonPercent.total}
+                        ]
                     }
                 ]
             };
