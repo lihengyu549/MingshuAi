@@ -941,6 +941,7 @@ export default {
 
     },
     scanContentSubmitFn() {
+      debugger
       let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
       let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
       let allData = [...halfCheckedNodes, ...checkedNodes,]
@@ -952,21 +953,38 @@ export default {
             [item.label]: []
           }
           targetDatabaseArr.push(item.label)
+          
           params = Object.assign(params, obj)
         } else {
           this.treeCheckedData.push(item.value)
-          params[item.databaseName].push({
-            schemaName: item.schemaName,
-            tableName: item.label,
-            dataSize: item.dataSize,
-            dataCount: item.dataCount,
-            tableRemark: item.tableRemark,
-            databaseName: item.databaseName,
-            projectId: '',
-            agentServerId: '',
-            fieldCount: item.count,
-            fields: null,
-          })
+          if(Array.isArray(params[item.databaseName])){
+            params[item.databaseName].push({
+              schemaName: item.schemaName,
+              tableName: item.label,
+              dataSize: item.dataSize,
+              dataCount: item.dataCount,
+              tableRemark: item.tableRemark,
+              databaseName: item.databaseName,
+              projectId: '',
+              agentServerId: '',
+              fieldCount: item.count,
+              fields: null,
+            })
+          }else {
+            params[item.databaseName] = []
+            params[item.databaseName].push({
+              schemaName: item.schemaName,
+              tableName: item.label,
+              dataSize: item.dataSize,
+              dataCount: item.dataCount,
+              tableRemark: item.tableRemark,
+              databaseName: item.databaseName,
+              projectId: '',
+              agentServerId: '',
+              fieldCount: item.count,
+              fields: null,
+            })
+          }
         }
       }
       this.form.targetDatabase = targetDatabaseArr
