@@ -941,7 +941,6 @@ export default {
 
     },
     scanContentSubmitFn() {
-      debugger
       let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
       let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
       let allData = [...halfCheckedNodes, ...checkedNodes,]
