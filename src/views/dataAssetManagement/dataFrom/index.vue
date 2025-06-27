@@ -768,6 +768,7 @@ export default {
       this.importData.importFile = ''
       this.importData.sourceName = ''
       this.importData.businessName = ''
+      this.importData.id = ''
       this.titleExcel = '新增Excel文件'
       this.importData.fileList = []
     },
