@@ -14,7 +14,7 @@
       </div> -->
       <div class="title_txt">
         <p class="text">系统版本</p>
-        <span style="color:#545454 ;">V7.0</span>
+        <span style="color:#545454 ;">V1.0</span>
       </div>
     </div>
     <hr style="border: 1px solid #F5F5F5  ; ">

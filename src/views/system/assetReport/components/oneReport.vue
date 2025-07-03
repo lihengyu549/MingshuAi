@@ -565,7 +565,6 @@ export default {
                         label: { show: true, position: 'right' }, // 显示数值标签
 
                         itemStyle: {
-                            color: '#009dff' // 所有柱子的颜色设置为红色
                         }
                     }
                 ]
