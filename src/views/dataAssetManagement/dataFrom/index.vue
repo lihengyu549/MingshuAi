@@ -66,7 +66,7 @@
         </template>
       </el-table-column>
       <el-table-column label="来源业务系统" align="center" prop="businessName" />
-      <el-table-column label="分类分级标准" align="center" prop="projectName" />
+      <!-- <el-table-column label="分类分级标准" align="center" prop="projectName" /> -->
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
           <div style="display: flex; align-items: center;justify-content: center;">
@@ -102,13 +102,13 @@
         <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
           <el-input v-model="form.sourceName" maxlength="50" placeholder="请输入数据源名称" />
         </el-form-item>
-        <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
+        <!-- <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
           <el-select v-model="form.projectName" :disabled="editIsFlag" placeholder="请输入分类分级框架" clearable
             @change="projectChangeEdit($event)">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
           <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
@@ -168,7 +168,7 @@
         <el-form-item label="数据源名称" prop="sourceName">
           <el-input v-model="importData.sourceName" maxlength="50" placeholder="请输入数据源名称"></el-input>
         </el-form-item>
-        <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
+        <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">123131
           <el-select v-model="importData.categoryId" :disabled="editIsFlag" class="serachInput" placeholder="全部">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>

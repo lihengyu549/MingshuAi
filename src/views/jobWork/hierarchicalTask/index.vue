@@ -115,13 +115,20 @@
           <el-input v-model="form.tasksName" maxlength="50" placeholder="请输入任务名称" />
         </el-form-item>
         <el-form-item label="数据源名称" prop="id" :rules="rules.id">
-          <el-select v-model="form.id" clearable @change="projectChangeEdit($event)">
+          <el-select v-model="form.id" clearable>
             <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.sourceName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="分类分级标准">
+        <!-- <el-form-item label="分类分级标准">
           <el-input v-model="form.projectName" :disabled="true" />
+        </el-form-item> -->
+        <el-form-item label="分类分级标准" prop="projectName" :rules="rules.projectName">
+          <el-select v-model="form.projectName" :disabled="editIsFlag" placeholder="请选择分类分级标准" clearable
+            @change="projectChangeEdit($event)">
+            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="AI分析引擎" prop="aiAnalyticsEngine">
           <el-radio-group v-model="aiAnalyticsEngine">
@@ -199,6 +206,7 @@ export default {
       drawerShow: false,
       drawerData: null,
       mainLoading: false,
+      editIsFlag: false,
       aiAnalyticsEngine: '1',
       confidenceLevelList: [
         { name: "全部", value: "0" },
@@ -292,6 +300,7 @@ export default {
         confidenceLevel: '',
         confirm: '',
         projectName: '',
+        projectId:'',
         tasksName: '',
         id: '',
         confirm: "",
@@ -306,6 +315,9 @@ export default {
         ],
         id: [
           { required: true, message: "数据源名称不能为空", trigger: "blur" },
+        ],
+        projectName: [
+          { required: true, message: "分类分级标准不能为空", trigger: "blur" },
         ],
         confidenceLevel: [{
           required: true, message: "置信度不能为空", trigger: "blur"
@@ -455,11 +467,8 @@ export default {
     },
 
     projectChangeEdit(e) {
-      this.databaseTypeList.forEach((item) => {
-        if (item.id == e) {
-          this.form.projectName = item.projectName
-        }
-      })
+      this.form.projectId = e
+      this.$forceUpdate()
     },
     /** 查询数据库代理列表 */
     getList() {
@@ -507,6 +516,7 @@ export default {
       this.getScanCompleteDataFn()
       this.open = true;
       this.title = "添加任务";
+      this.editIsFlag = false
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -517,6 +527,7 @@ export default {
         this.form.classificationState = ''
       }
       this.open = true;
+      this.editIsFlag = true;
       this.title = "编辑任务";
     },
     /** 提交按钮 */

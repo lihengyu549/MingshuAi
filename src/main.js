@@ -78,6 +78,13 @@ process.env.VUE_APP_MOCK == "true" && require('../mock/index')
  * please remove it before going online! ! !
  */
 
+Vue.config.errorHandler = (err, vm, info) => {
+  if (err.message.includes('[ElementForm]unpected width')) {
+    return; // 忽略此错误    可能在弹窗关闭时触发了表单的销毁逻辑，但某些布局计算仍在进行。
+  }
+  console.error(err); // 其他错误正常输出
+};
+
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium' // set element-ui default size
 })
