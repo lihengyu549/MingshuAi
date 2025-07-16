@@ -50,7 +50,8 @@
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
-    <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
+    <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList"
+      @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="数据源名称" align="center" prop="sourceName" />
 
@@ -62,7 +63,7 @@
 
       <el-table-column label="数据源类型" align="center" prop="databaseType">
         <template slot-scope="scope">
-            <span> {{ databaseTypeMsg(scope.row.databaseType) }}</span>
+          <span> {{ databaseTypeMsg(scope.row.databaseType) }}</span>
         </template>
       </el-table-column>
       <el-table-column label="来源业务系统" align="center" prop="businessName" />
@@ -81,7 +82,7 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
-            :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel'">开始扫描</el-button>
+            :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">开始扫描</el-button>
           <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
             @click="scanContentEdit(scope.row)">编辑</el-button>
         </template>
@@ -130,8 +131,7 @@
         </el-form-item>
         <el-form-item v-show="form.databaseType == 'ORACLE'" label="服务名" prop="connectionValue"
           :rules="rules.connectionValue()">
-          <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput()"
-            placeholder="请输入" />
+          <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput()" placeholder="请输入" />
         </el-form-item>
         <el-form-item v-show="form.databaseType == 'ORACLE'" label="连接方式">
           <el-radio v-model="connectionType" label="0">SID</el-radio>
@@ -148,7 +148,7 @@
               '点击选择扫描内容' }}</el-tag>
           </div>
         </el-form-item>
-        
+
         <!-- <p>代理数据库信息</p>
         <el-form-item label="代理端口" prop="proxyPort">
           <el-input v-model="form.proxyPort" placeholder="请输入代理端口" />
@@ -182,9 +182,9 @@
           <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
         </el-form-item>
         <el-form-item class="uploadClass">
-          <el-upload ref="uploadRef" class="upload-demo" :limit="1" :file-list="importData.fileList" :auto-upload="false"
-            :http-request="submitFormExcelFn" action="" accept=".xls,.xlsx,csv" :show-file-list="false"
-            :on-change="handleFileChange" :on-exceed="handleFileExceed">
+          <el-upload ref="uploadRef" class="upload-demo" :limit="1" :file-list="importData.fileList"
+            :auto-upload="false" :http-request="submitFormExcelFn" action="" accept=".xls,.xlsx,csv"
+            :show-file-list="false" :on-change="handleFileChange" :on-exceed="handleFileExceed">
             <el-button size="mini" type="primary">选择文件</el-button>
           </el-upload>
         </el-form-item>
@@ -268,6 +268,10 @@ export default {
         }, {
           value: 'FILE',
           label: 'Excel表'
+        }
+        , {
+          value: 'API',
+          label: 'API'
         }
       ],
       databaseTypeList: [
@@ -389,11 +393,11 @@ export default {
             trigger: 'blur'
           }]
         },
-        tabelCheckedName :[{
-            required: true,
-            validator: this.tabelCheckedNameRules,
-            trigger: 'blur'
-          }],
+        tabelCheckedName: [{
+          required: true,
+          validator: this.tabelCheckedNameRules,
+          trigger: 'blur'
+        }],
         targetIp: [
           { required: true, message: "请输入数据库地址", trigger: "blur" },
           {
@@ -461,7 +465,7 @@ export default {
   methods: {
     // 自定义校验规则
     tabelCheckedNameRules(rule, value, callback) {
-        callback();
+      callback();
     },
     databaseTypeChange(e) {
       if (e == 'ORACLE') {
@@ -471,7 +475,7 @@ export default {
       }
       this.form.targetPort = this.databaseTypeList.find(item => item.name === e)?.defaultPort || ''
     },
-    scanContentCanlce(){
+    scanContentCanlce() {
       this.open = false
       this.reset()
     },
@@ -505,9 +509,12 @@ export default {
       return msg || '待扫描'
     },
     databaseTypeMsg(val) {
-    if(val === 'Excel'){
-      return 'Excel'
-    }
+      if (val === 'Excel') {
+        return 'Excel'
+      }
+      if (val === 'API') {
+        return 'API'
+      }
       let msg = ''
       for (let item of this.databaseTypeList) {
         if (item.value == val) {
@@ -573,7 +580,7 @@ export default {
             // updateDatabaseAndTables(data)
           }
           // 将文件数组添加到 FormData 对象中
-          if(this.importData.fileList && this.importData.fileList.length){
+          if (this.importData.fileList && this.importData.fileList.length) {
             formData.append('file', this.importData.fileList[0].raw);
           }
           formData.append('frameworkNameId', this.importData.categoryId);
@@ -683,7 +690,7 @@ export default {
         targetDatabase: [],
         targetUserName: null,
         targetUserPassword: null,
-        databaseType:'',
+        databaseType: '',
         //  protocolPort: null,
         projectId: null,
         // proxyStatus: "0"
@@ -727,11 +734,11 @@ export default {
         data.connectionType = this.connectionType
         data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
         console.log(data);
-        
-        if(!this.editIsFlag && Object.keys(data.tables).length == 0){
+
+        if (!this.editIsFlag && Object.keys(data.tables).length == 0) {
           this.$message({ message: '请选择扫描内容', type: 'warning' })
           return
-        }else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase){
+        } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
           this.$message({ message: '请选择扫描内容', type: 'warning' })
           return
         }
@@ -956,11 +963,11 @@ export default {
             [item.label]: []
           }
           targetDatabaseArr.push(item.label)
-          
+
           params = Object.assign(params, obj)
         } else {
           this.treeCheckedData.push(item.value)
-          if(Array.isArray(params[item.databaseName])){
+          if (Array.isArray(params[item.databaseName])) {
             params[item.databaseName].push({
               schemaName: item.schemaName,
               tableName: item.label,
@@ -973,7 +980,7 @@ export default {
               fieldCount: item.count,
               fields: null,
             })
-          }else {
+          } else {
             params[item.databaseName] = []
             params[item.databaseName].push({
               schemaName: item.schemaName,
@@ -1106,6 +1113,7 @@ input[aria-hidden=true] {
 .addSelectClass /deep/ .el-select {
   width: calc(100%);
 }
+
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
   width: 6px;
   height: 6px;
