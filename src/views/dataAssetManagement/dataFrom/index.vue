@@ -95,7 +95,7 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
         <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
           <el-select v-model="form.databaseType" placeholder="请选择数据库类型" @change="databaseTypeChange($event)">
-            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item">
+            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -229,6 +229,7 @@ import Result from './components/result.vue'
 import TableSelector from './components/TableSelector.vue'
 import Vue from 'vue';
 import { js } from "js-beautify";
+import { index } from "d3";
 export default {
   name: "Proxys",
   components: { Result, TableSelector, },
@@ -463,12 +464,12 @@ export default {
         callback();
     },
     databaseTypeChange(e) {
-      if (e.value == 'ORACLE') {
+      if (e == 'ORACLE') {
         this.isServiesNameRequired = true
       } else {
         this.isServiesNameRequired = false
       }
-      this.form.targetPort = e.defaultPort
+      this.form.targetPort = this.databaseTypeList.find(item => item.name === e)?.defaultPort || ''
     },
     scanContentCanlce(){
       this.open = false
