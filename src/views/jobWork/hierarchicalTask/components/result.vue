@@ -53,7 +53,7 @@
       </el-form-item> -->
       <el-form-item label="归类原因" prop="classificationReasons">
         <el-select clearable v-model="queryParams.classificationReasons" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in classificationReasonsList" :key="item" :label="item" :value="item">
+          <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
@@ -213,7 +213,7 @@ import {
 } from "@/api/system/protectCategory"
 
 export default {
-  dicts: ['sys_risk_level', 'sys_classification_state'],
+  dicts: ['sys_risk_level', 'sys_classification_state','sys_classification_reasons'],
   name: "ProxysResult",
   props: {
     treeOptions: {
@@ -231,7 +231,7 @@ export default {
       isIndeterminate: false,
       checkedColumn: [],
       checkAll: false,
-      classificationReasonsList: ['策略匹配', 'AI推理', '脏数据识别'],
+      // classificationReasonsList: ['策略匹配', 'AI推理', '脏数据识别'],
       confidenceLevelList: [
         { name: "低", id: 1, value: "1" },
         { name: "高", id: 2, value: "2" },
