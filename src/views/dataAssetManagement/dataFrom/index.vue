@@ -381,7 +381,7 @@ export default {
         ],
         examplesName: () => {
           return [{
-            required: this.form.databaseType == 'DM' || this.form.databaseType == 'POSTGRESQL',
+            required: this.form.databaseType == 'POSTGRESQL',
             message: '请输入',
             trigger: 'blur'
           }]
