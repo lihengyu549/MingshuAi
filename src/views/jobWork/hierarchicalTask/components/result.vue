@@ -1056,7 +1056,7 @@ export default {
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
+  height: 10px;
 }
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-thumb {
