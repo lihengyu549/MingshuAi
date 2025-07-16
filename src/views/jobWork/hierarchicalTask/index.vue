@@ -50,7 +50,7 @@
     </el-row>
     <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
-      <el-table-column type="selection" width="60" align="center" />
+      <el-table-column type="selection" width="60" align="center" :selectable="selectableFn" />
       <el-table-column label="任务名称" align="center" prop="tasksName">
         <template slot-scope="scope">
           <span class="btnText" @click="handleUpdate(scope.row)">{{ scope.row.tasksName }}</span>
@@ -342,6 +342,14 @@ export default {
   mounted() {
   },
   methods: {
+    //控制多选框是否可选
+    selectableFn(row, index){
+      if (row.publishStatus == 1) {
+        return false
+      } else {
+        return true
+      }
+    },
     // 发布撤回
     resultWithdraw(row) {
       this.$confirm(`确定撤回已发布的结果？`, '提示', {
