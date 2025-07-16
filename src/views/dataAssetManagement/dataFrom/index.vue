@@ -95,7 +95,7 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
         <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
           <el-select v-model="form.databaseType" placeholder="请选择数据库类型" @change="databaseTypeChange($event)">
-            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
+            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item">
             </el-option>
           </el-select>
         </el-form-item>
@@ -269,12 +269,12 @@ export default {
         }
       ],
       databaseTypeList: [
-        { name: "MYSQL", id: 0, value: "MYSQL" },
-        { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
-        { name: "ORACLE", id: 2, value: "ORACLE" },
-        { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" },
-        { name: "达梦", id: 4, value: "DM" },
-        { name: "GREENPLUM", id: 5, value: "GREENPLUM" },
+        { name: "MYSQL", id: 0, value: "MYSQL", defaultPort: '3306' },
+        { name: "SQL_SERVER", id: 1, value: "SQL_SERVER", defaultPort: '1433' },
+        { name: "ORACLE", id: 2, value: "ORACLE", defaultPort: '1521' },
+        { name: "POSTGRESQL", id: 3, value: "POSTGRESQL", defaultPort: '5432' },
+        { name: "达梦", id: 4, value: "DM", defaultPort: '5236' },
+        { name: "GREENPLUM", id: 5, value: "GREENPLUM", defaultPort: '5432' },
       ],
       publishStatus: [
         {
@@ -461,12 +461,13 @@ export default {
     tabelCheckedNameRules(rule, value, callback) {
         callback();
     },
-    databaseTypeChange(val) {
-      if (val == 'ORACLE') {
+    databaseTypeChange(e) {
+      if (e.value == 'ORACLE') {
         this.isServiesNameRequired = true
       } else {
         this.isServiesNameRequired = false
       }
+      this.form.targetPort = e.defaultPort
     },
     scanContentCanlce(){
       this.open = false

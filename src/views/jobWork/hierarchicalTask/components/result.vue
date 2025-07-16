@@ -679,7 +679,8 @@ export default {
       this.loading = true
       let params = {
         ...this.queryParams,
-        securityLevelIds: this.queryParams.securityLevel.join()
+        securityLevelIds: [...this.queryParams.securityLevel],
+        securityLevel: toString(this.queryParams.securityLevel)
       }
       confirmList(params).then(res => {
         if (res.code === 200) {
@@ -696,7 +697,8 @@ export default {
       this.loading = true
       let params = {
         ...this.queryParams,
-        securityLevelIds: this.queryParams.securityLevel.join()
+        securityLevelIds: [...this.queryParams.securityLevel],
+        securityLevel: toString(this.queryParams.securityLevel)
       }
       cancelConfirmData(params).then(res => {
         if (res.code === 200) {

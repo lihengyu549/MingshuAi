@@ -41,7 +41,7 @@ export function confirmList (data) {
   return request({
     url: '/system/protectTableField/confirmList',
     method: 'post',
-    params: data
+    data: data
   })
 }
 // 确认勾选项
@@ -280,7 +280,7 @@ export function cancelConfirmData (data) {
   return request({
     url: '/system/protectTableField/cancelConfirm',
     method: 'post',
-    params: data
+    data: data
   })
 }
 //暂停数据任务接口--贺贺
