@@ -168,7 +168,7 @@
         <el-form-item label="数据源名称" prop="sourceName">
           <el-input v-model="importData.sourceName" maxlength="50" placeholder="请输入数据源名称"></el-input>
         </el-form-item>
-        <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">123131
+        <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
           <el-select v-model="importData.categoryId" :disabled="editIsFlag" class="serachInput" placeholder="全部">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
