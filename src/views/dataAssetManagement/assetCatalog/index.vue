@@ -45,7 +45,7 @@
               </div>
               <div class="mian_box_center">
                 <div>数据质量评分：{{ item.score ? item.score : 'N/A' }}</div>
-                <div>数据大小{{ item.dataSize ? item.dataSize : 'N/A' }}</div>
+                <div>数据大小：{{ item.dataSize ? item.dataSize : 'N/A' }}</div>
                 <div>数据量级：{{ item.dataMagnitude ? item.dataMagnitude : 'N/A' }}</div>
                 <el-tooltip :content="item.oldTableRemark" :ref="`tooltip-${index}`" :disabled="!overflowStatus[index]"
                   effect="dark" placement="top">\
@@ -62,10 +62,10 @@
                 <div>样本重复率过高比例：{{ item.repeatValueField ? item.repeatValueField + '%' : '0%' }}</div>
                 <div>有效字段数：{{ item.effectiveCount ? item.effectiveCount : 'N/A' }}</div>
                 <div>脏数据字段数：{{ item.dirtyData ? item.dirtyData : 'N/A' }}</div>
-                <div>表分类{{ item.tableCategoryName ? item.tableCategoryName : 'N/A' }}</div>
-                <div>表分级{{ item.tableSecurityLevel ? item.tableSecurityLevel : 'N/A' }}</div>
-                <div>个人信息条数{{ item.personalInformation ? item.personalInformation : 'N/A' }}</div>
-                <div>未成年人信息条数{{ item.minorsInformation ? item.minorsInformation : 'N/A' }}</div>
+                <div>表分类：{{ item.tableCategoryName ? item.tableCategoryName : 'N/A' }}</div>
+                <div>表分级：{{ item.tableSecurityLevel ? item.tableSecurityLevel : 'N/A' }}</div>
+                <div>个人信息条数：{{ item.personalInformation ? item.personalInformation : 'N/A' }}</div>
+                <div>未成年人信息条数：{{ item.minorsInformation ? item.minorsInformation : 'N/A' }}</div>
                 <div>数据来源：{{ item.dataType ? item.dataType : 'N/A' }}</div>
               </div>
             </el-card>
