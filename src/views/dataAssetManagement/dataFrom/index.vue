@@ -109,6 +109,11 @@
             </el-option>
           </el-select>
         </el-form-item> -->
+        <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
+          <!-- @input="businessNameFn(form.businessName)" -->
+          <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
+          <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
+        </el-form-item>
 
         <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
           <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
@@ -143,11 +148,7 @@
               '点击选择扫描内容' }}</el-tag>
           </div>
         </el-form-item>
-        <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
-          <!-- @input="businessNameFn(form.businessName)" -->
-          <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
-          <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
-        </el-form-item>
+        
         <!-- <p>代理数据库信息</p>
         <el-form-item label="代理端口" prop="proxyPort">
           <el-input v-model="form.proxyPort" placeholder="请输入代理端口" />
