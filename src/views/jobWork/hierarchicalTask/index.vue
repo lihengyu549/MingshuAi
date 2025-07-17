@@ -172,7 +172,7 @@
       </div>
     </el-dialog>
     <el-drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
-      size="80%" :before-close="handleClose">
+      size="100%" :before-close="handleClose">
       <Result :treeOptions="treeOptions" :drawerData="drawerData" />
     </el-drawer>
   </div>

@@ -44,29 +44,29 @@
                 </div>
               </div>
               <div class="mian_box_center">
-                <div>数据质量评分：{{ item.score ? item.score : 'N/A' }}</div>
-                <div>数据大小：{{ item.dataSize ? item.dataSize : 'N/A' }}</div>
-                <div>数据量级：{{ item.dataMagnitude ? item.dataMagnitude : 'N/A' }}</div>
+                <div>数据质量评分：{{ item.score ? item.score : '--' }}</div>
+                <div>数据大小：{{ item.dataSize ? item.dataSize : '--' }}</div>
+                <div>数据量级：{{ item.dataMagnitude ? item.dataMagnitude + '行' : '--' }}</div>
                 <el-tooltip :content="item.oldTableRemark" :ref="`tooltip-${index}`" :disabled="!overflowStatus[index]"
                   effect="dark" placement="top">\
                   <!-- @mouseover="checkOverflow(item,index)" -->
                   <div id="textContainer" :ref="`container-${index}`">原生表注释：<span>{{ item.oldTableRemark ?
                     item.oldTableRemark
-                    : 'N/A' }}</span></div>
+                    : '--' }}</span></div>
 
                 </el-tooltip>
-                <div>合成表注释：{{ item.craftTableRemark ? item.craftTableRemark : 'N/A' }}</div>
+                <div>合成表注释：{{ item.craftTableRemark ? item.craftTableRemark : '--' }}</div>
                 <div>原生字段注释占比：{{ item.oldFieldRemark ? item.oldFieldRemark + '%' : '0%' }}</div>
                 <div>空值字段比例：{{ item.nullValueField ? item.nullValueField + '%' : '0%' }}</div>
                 <div>样本长度过短比例：{{ item.onlyOneValueField ? item.onlyOneValueField + '%' : '0%' }}</div>
                 <div>样本重复率过高比例：{{ item.repeatValueField ? item.repeatValueField + '%' : '0%' }}</div>
-                <div>有效字段数：{{ item.effectiveCount ? item.effectiveCount : 'N/A' }}</div>
-                <div>脏数据字段数：{{ item.dirtyData ? item.dirtyData : 'N/A' }}</div>
-                <div>表分类：{{ item.tableCategoryName ? item.tableCategoryName : 'N/A' }}</div>
-                <div>表分级：{{ item.tableSecurityLevel ? item.tableSecurityLevel : 'N/A' }}</div>
-                <div>个人信息条数：{{ item.personalInformation ? item.personalInformation : 'N/A' }}</div>
-                <div>未成年人信息条数：{{ item.minorsInformation ? item.minorsInformation : 'N/A' }}</div>
-                <div>数据来源：{{ item.dataType ? item.dataType : 'N/A' }}</div>
+                <div>有效字段数：{{ item.effectiveCount ? item.effectiveCount : '--' }}</div>
+                <div>脏数据字段数：{{ item.dirtyData ? item.dirtyData : '--' }}</div>
+                <div>表分类：{{ item.tableCategoryName ? item.tableCategoryName : '--' }}</div>
+                <div>表分级：{{ item.tableSecurityLevel ? item.tableSecurityLevel : '--' }}</div>
+                <div>个人信息条数：{{ item.personalInformation ? item.personalInformation : '--' }}</div>
+                <div>未成年人信息条数：{{ item.minorsInformation ? item.minorsInformation : '--' }}</div>
+                <div>数据来源：{{ item.dataType ? item.dataType : '--' }}</div>
               </div>
             </el-card>
           </div>
@@ -79,6 +79,7 @@
       :destroy-on-close="true" direction="rtl" size="60%">
       <el-table :data="drawerData" ref="tableRef" height="850px" :key="tableKey" border class="tableBox">
         <el-table-column label="字段名称" align="center" prop="fieldName" width="150" show-overflow-tooltip />
+        <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip />
         <el-table-column label="原生字段注释" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.oldFieldRemark }}</span>

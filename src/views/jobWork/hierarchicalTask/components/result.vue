@@ -53,7 +53,8 @@
       </el-form-item> -->
       <el-form-item label="归类原因" prop="classificationReasons">
         <el-select clearable v-model="queryParams.classificationReasons" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label" :value="item.value">
+          <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
+            :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
@@ -104,6 +105,7 @@
       @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="字段名" align="center" prop="fieldName" width="150" show-overflow-tooltip fixed />
+      <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip fixed />
       <el-table-column label="字段注释" align="center" prop="fieldRemark" width="150" show-overflow-tooltip fixed />
       <el-table-column label="合成字段注释" align="center" prop="craftRemark" width="100" show-overflow-tooltip fixed />
       <template>
@@ -141,7 +143,7 @@
       style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
       <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
         <el-form-item label="分类" class="addSelectClass">
-          <el-select ref="resultSelectRef" v-model="resultFormNodeName">
+          <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable @input.native="handleSearch">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
                 :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
@@ -213,7 +215,7 @@ import {
 } from "@/api/system/protectCategory"
 
 export default {
-  dicts: ['sys_risk_level', 'sys_classification_state','sys_classification_reasons'],
+  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_classification_reasons'],
   name: "ProxysResult",
   props: {
     treeOptions: {
@@ -292,12 +294,12 @@ export default {
         },
       ],
       databaseTypeList: [
-      { name: "MYSQL", id: 0, value: "MYSQL" },
-      { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, 
-      { name: "TIDB", id: 2, value: "TIDB" }, 
-      { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" }, 
-      { name: "达梦", id: 4, value: "DM" }, 
-      { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
+        { name: "MYSQL", id: 0, value: "MYSQL" },
+        { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
+        { name: "TIDB", id: 2, value: "TIDB" },
+        { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" },
+        { name: "达梦", id: 4, value: "DM" },
+        { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       drawerShow: false,
       samplingNum: 10,
       checkList: true,
@@ -312,12 +314,12 @@ export default {
       dataType: "",
       targetDataList: [],
       databaseTypeList: [
-      { name: "MYSQL", id: 0, value: "MYSQL" }, 
-      { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, 
-      { name: "TIDB", id: 2, value: "TIDB" }, 
-      { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" }, 
-      { name: "达梦", id: 4, value: "DM" }, 
-      { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
+        { name: "MYSQL", id: 0, value: "MYSQL" },
+        { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
+        { name: "TIDB", id: 2, value: "TIDB" },
+        { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" },
+        { name: "达梦", id: 4, value: "DM" },
+        { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       maskCompleteStatus: [{
         value: 'COMPLETE',
         label: '扫描完成'
@@ -527,7 +529,7 @@ export default {
         categoryId: '',//框架名称
         importShow: false,
       },
-      piiList:[],
+      piiList: [],
       tableList: [],
       debounceTimeout: null,
       // 表单校验
@@ -566,6 +568,10 @@ export default {
     this.getListTableByProject()
   },
   methods: {
+  handleSearch(val) {
+    console.log('123123123');
+    this.$refs.treeSelect.filter(val.data);
+  },
     handleCheckAllChange(val) {
       this.checkedColumn = val ? this.setList : [];
       this.isIndeterminate = false;
@@ -895,7 +901,7 @@ export default {
       } else {
         this.piiNodeName = node.categoryName;
       }
-      
+
       if (checkData.checkedKeys.length == 0) {
         this.piiNodeName = ''
       }
@@ -955,16 +961,21 @@ export default {
         })
       }
     },
-    filterNode(value, data) {
+    filterNode(value, data, node) {
       if (!value) return true;
-      return data.categoryName.indexOf(value) !== -1;
+      const isLeaf = !node.childNodes || node.childNodes.length === 0;
+      const containsText = data.categoryName.toLowerCase().includes(value.toLowerCase());
+      if (isLeaf) {
+        return containsText;
+      }
+      return node.childNodes.some(child => this.filterNode(value, child.data, child)) || containsText;
     },
     getPiiList(key) {
       this.treeLoading = true
       let data = {
         parentId: 1,
         needSub: 1,
-        ifAddUnclassified:2
+        ifAddUnclassified: 2
       };
       treeListI(data).then((resp) => {
         this.piiList = resp.data
@@ -988,7 +999,7 @@ export default {
       let data = {
         parentId: this.drawerData.projectId,
         needSub: 1,
-        ifAddUnclassified:1,
+        ifAddUnclassified: 1,
       };
       treeListI(data).then((resp) => {
         this.categoryList = resp.data
