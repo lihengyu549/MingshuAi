@@ -143,10 +143,10 @@
       style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
       <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
         <el-form-item label="分类" class="addSelectClass">
-          <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable @input.native="handleSearch">
+          <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable  :filter-method="handleSearch">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
-                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+                :filter-node-method="filterNode" ref="treeSelectSec" node-key="id" highlight-current
                 @node-click="resultHandleNodeClick" />
             </el-option>
           </el-select>
@@ -569,8 +569,7 @@ export default {
   },
   methods: {
   handleSearch(val) {
-    console.log('123123123');
-    this.$refs.treeSelect.filter(val.data);
+    this.$refs.treeSelectSec.filter(val);
   },
     handleCheckAllChange(val) {
       this.checkedColumn = val ? this.setList : [];
@@ -963,12 +962,7 @@ export default {
     },
     filterNode(value, data, node) {
       if (!value) return true;
-      const isLeaf = !node.childNodes || node.childNodes.length === 0;
-      const containsText = data.categoryName.toLowerCase().includes(value.toLowerCase());
-      if (isLeaf) {
-        return containsText;
-      }
-      return node.childNodes.some(child => this.filterNode(value, child.data, child)) || containsText;
+      return data.label.indexOf(value) !== -1
     },
     getPiiList(key) {
       this.treeLoading = true

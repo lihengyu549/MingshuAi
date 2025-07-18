@@ -4,7 +4,7 @@
       <el-col :span="4" :xs="24">
         <div class="head-container">
           <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
-            placeholder="全部" style="margin-bottom: 20px">
+            placeholder="全部" style="margin-bottom: 20px" filterable>
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
