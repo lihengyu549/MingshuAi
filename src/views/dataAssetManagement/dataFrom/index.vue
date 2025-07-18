@@ -999,7 +999,7 @@ export default {
       }
       this.form.targetDatabase = targetDatabaseArr
       this.form.tables = params
-      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedItemsChild.length}张表 共${this.$refs.scanContentTreeRef.fieldCount}个字段`
+      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedItemsChild.length}张表`  //共${this.$refs.scanContentTreeRef.fieldCount}个字段
       this.scanContentShow = false
     },
   }
