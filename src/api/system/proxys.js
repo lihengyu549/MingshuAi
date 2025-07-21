@@ -190,6 +190,24 @@ export function getListTables (data) {
     loading: true,
   })
 }
+// 获取数据库列表
+export function getDatabaseNameList (data) {
+  return request({
+    url: '/system/proxy/database/listDatabaseName',
+    method: 'post',
+    data: data,
+    loading: true,
+  })
+}
+// 获取数据库表名列表
+export function getDatabaseTableNameList (data) {
+  return request({
+    url: '/system/proxy/database/listTablesByDatabaseName',
+    method: 'post',
+    data: data,
+    loading: true,
+  })
+}
 // 数据源新增数据库--贺贺
 export function saveDatabaseAndTables (data) {
   return request({

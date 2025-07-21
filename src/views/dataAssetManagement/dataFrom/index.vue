@@ -204,7 +204,8 @@
     <el-dialog title="扫描配置" class="scanContentBox" v-loading="scanContentLoading" :visible.sync="scanContentShow"
       width="950px" append-to-body :close-on-click-modal="false">
       <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData"
-        :scanContentTreeData="scanContentTreeData" ref="scanContentTreeRef" />
+        :scanContentTreeData="scanContentTreeData" :databaseTableNameParama="databaseTableNameParama"
+        ref="scanContentTreeRef" />
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="scanContentSubmitFn">确 定</el-button>
         <el-button @click="scanContentShow = false">取 消</el-button>
@@ -220,7 +221,7 @@ import {
 
 import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys,
-  importExcel, publish, saveDatabaseAndTables, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI
+  importExcel, publish, saveDatabaseAndTables, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI, getDatabaseNameList, getDatabaseTableNameList
 } from "@/api/system/proxys";
 import {
   forceLogout, nameTesting, dataSacn, getFrameworks, checkSourceName, getDatabaseAndTablesById, updateDatabaseAndTables
@@ -229,12 +230,13 @@ import Result from './components/result.vue'
 import TableSelector from './components/TableSelector.vue'
 import Vue from 'vue';
 import { js } from "js-beautify";
-import { index } from "d3";
+import { index, timeThursdays } from "d3";
 export default {
   name: "Proxys",
   components: { Result, TableSelector, },
   data() {
     return {
+      databaseTableNameParama: {}, // 数据库表名传参
       scanContentShow: false, // 扫描配置弹框
       scanStateName: false,// 扫描中展示
       scanContentLoading: false,
@@ -929,7 +931,7 @@ export default {
     async scanContentFn() {
       this.$refs["form"].validate(async valid => {
         if (valid) {
-          let data = {
+          this.databaseTableNameParama = {
             targetIp: this.form.targetIp,
             targetPort: this.form.targetPort,
             targetUserName: this.form.targetUserName,
@@ -940,11 +942,11 @@ export default {
             examplesName: this.form.examplesName,
             sourceName: this.form.sourceName,
           }
-          let res = await getListTables(data)
-          if (res.data.option.length == 0) {
+          let res = await getDatabaseNameList(this.databaseTableNameParama)
+          if (res.data.length == 0) {
             this.$message({ message: '暂无数据，请稍后再试', type: 'warning' })
           } else {
-            this.scanContentTreeData = res.data.option
+            this.scanContentTreeData = res.data
             this.scanContentShow = true
           }
         }
@@ -952,54 +954,79 @@ export default {
 
     },
     scanContentSubmitFn() {
-      let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
-      let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
-      let allData = [...halfCheckedNodes, ...checkedNodes,]
-      let targetDatabaseArr = []
-      let params = {}
-      for (let item of allData) {
-        if (item.children) {
-          let obj = {
-            [item.label]: []
-          }
-          targetDatabaseArr.push(item.label)
+      // let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
+      // let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
+      let checkDatabaseName = this.$refs.scanContentTreeRef.checkList
+      let checkDatabaseTableName = this.$refs.scanContentTreeRef.checkListChild
+      const result = {};
 
-          params = Object.assign(params, obj)
-        } else {
-          this.treeCheckedData.push(item.value)
-          if (Array.isArray(params[item.databaseName])) {
-            params[item.databaseName].push({
-              schemaName: item.schemaName,
-              tableName: item.label,
-              dataSize: item.dataSize,
-              dataCount: item.dataCount,
-              tableRemark: item.tableRemark,
-              databaseName: item.databaseName,
-              projectId: '',
-              agentServerId: '',
-              fieldCount: item.count,
-              fields: null,
-            })
-          } else {
-            params[item.databaseName] = []
-            params[item.databaseName].push({
-              schemaName: item.schemaName,
-              tableName: item.label,
-              dataSize: item.dataSize,
-              dataCount: item.dataCount,
-              tableRemark: item.tableRemark,
-              databaseName: item.databaseName,
-              projectId: '',
-              agentServerId: '',
-              fieldCount: item.count,
-              fields: null,
-            })
-          }
+      // 处理表名列表（含库名）
+      checkDatabaseTableName.forEach(item => {
+        const dbName = item.databaseName; // 从表对象中获取库名
+        // const tableName = item.tableName;      // 获取表名
+
+        if (!result[dbName]) {
+          result[dbName] = [];
         }
-      }
-      this.form.targetDatabase = targetDatabaseArr
-      this.form.tables = params
-      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedItemsChild.length}张表`  //共${this.$refs.scanContentTreeRef.fieldCount}个字段
+        result[dbName].push(item);
+      });
+
+      // 合并数据库列表（确保所有库都有条目）
+      checkDatabaseName.forEach(db => {
+        const dbKey = db.label; // 从数据库对象获取库名
+        if (!result[dbKey]) {
+          result[dbKey] = [];
+        }
+      });
+
+
+
+      // let allData = [...halfCheckedNodes, ...checkedNodes,]
+      // let targetDatabaseArr = []
+      // let params = {}
+      // for (let item of allData) {
+      //   if (item.children) {
+      //     let obj = {
+      //       [item.label]: []
+      //     }
+      //     targetDatabaseArr.push(item.label)
+
+      //     params = Object.assign(params, obj)
+      //   } else {
+      //     this.treeCheckedData.push(item.value)
+      //     if (Array.isArray(params[item.databaseName])) {
+      //       params[item.databaseName].push({
+      //         schemaName: item.schemaName,
+      //         tableName: item.label,
+      //         dataSize: item.dataSize,
+      //         dataCount: item.dataCount,
+      //         tableRemark: item.tableRemark,
+      //         databaseName: item.databaseName,
+      //         projectId: '',
+      //         agentServerId: '',
+      //         fieldCount: item.count,
+      //         fields: null,
+      //       })
+      //     } else {
+      //       params[item.databaseName] = []
+      //       params[item.databaseName].push({
+      //         schemaName: item.schemaName,
+      //         tableName: item.label,
+      //         dataSize: item.dataSize,
+      //         dataCount: item.dataCount,
+      //         tableRemark: item.tableRemark,
+      //         databaseName: item.databaseName,
+      //         projectId: '',
+      //         agentServerId: '',
+      //         fieldCount: item.count,
+      //         fields: null,
+      //       })
+      //     }
+      //   }
+      // }
+      // this.form.targetDatabase = targetDatabaseArr
+      this.form.tables = result
+      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.checkListChild.length}张表`  //共${this.$refs.scanContentTreeRef.fieldCount}个字段
       this.scanContentShow = false
     },
   }

@@ -6,47 +6,54 @@
                 <div style="height: 20px;">可选</div>
                 <div class="canChoose_main">
                     <div class="canChoose_left">
-                        <el-tree ref="tree" :data="options" show-checkbox node-key="value" :default-expand-all="true"
-                            :default-checked-keys="treeCheckedData" :props="defaultProps" :expand-on-click-node="false"
-                            @node-click="leftTreeClickFn" filter :filter-node-method="filterNode"
-                            @check="leftTreeCheckFn">
-                            <div slot-scope="{ node }" class="tree-node">
-                                <el-tooltip :content="node.label" :disabled="isShowTooltip" :open-delay="300"
-                                    placement="top" effect="dark">
-                                    <span class="over-ellipsis" @mouseover="mouseOver($event)">
-                                        {{ node.label }}
-                                    </span>
-                                </el-tooltip>
-                            </div>
-                        </el-tree>
+                        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+                        <!-- @change="handleCheckAllChange" -->
+                        <el-checkbox-group v-model="checkList" @change="handleCheckedChangeGroup">
+                            <el-checkbox 
+                                v-for="item in scanContentTreeData" 
+                                :label="item" 
+                                :key="item.value"
+                                class="inline-checkbox"
+                                @change="handleCheckedChange(item)"
+                                >
+                                {{ item.label }}
+                            </el-checkbox>
+                        </el-checkbox-group>
                     </div>
                     <div class="canChoose_right">
                         <el-input style="margin-bottom: 10px;" placeholder="请输入表名" v-model="searchQuery"
                             @input="inputSearch" clearable>
                             <i slot="prefix" class="el-input__icon el-icon-search"></i>
                         </el-input>
-                        <div id="treeChildrenNode" style="margin-top: 20px;"></div>
+                        <el-checkbox-group v-model="checkListChild" style="overflow: scroll;height: 100%;">
+                            <el-checkbox 
+                                v-for="item in checkListChildAll" 
+                                :label="item" 
+                                :key="item.value"
+                                class="inline-checkbox"
+                                >
+                                {{ item.tableName }}
+                            </el-checkbox>
+                        </el-checkbox-group>
                     </div>
                 </div>
-
             </el-card>
         </div>
         <div class="dowmChoose">
             <!-- 右侧已选列表 -->
             <el-card class="right-panel">
                 <div slot="header" class="clearfix">
-                    <span>已选 <span class="right-panel-text">({{ selectedItemsChild.length }}张表 + {{ fieldCount
-                            }}个字段)</span></span>
+                    <span>已选 <span class="right-panel-text">({{ checkListChild.length }}张表)</span></span>
                     <el-button style="float: right; padding: 3px 0;color: blue;" type="text"
                         @click="clearSelection">清空</el-button>
                 </div>
                 <ul>
-                    <li v-for="item in selectedItemsParent" :key="item.value">
+                    <li v-for="item in checkList" :key="item.value">
                         {{ item.label }}
-                        <div>
+                        <!-- <div>
                             <span style="margin-right: 10px;">已选{{ item.checkedCount }}张表</span>
                             <el-button type="text" icon="el-icon-close" @click="removeItemByLabel(item)"></el-button>
-                        </div>
+                        </div> -->
                     </li>
                 </ul>
             </el-card>
@@ -55,148 +62,62 @@
 </template>
 
 <script>
-import { tree } from 'd3';
-
+import {
+  getDatabaseTableNameList
+} from "@/api/system/proxys";
 export default {
     name: "TableSelector",
     props: {
-        scanContentTreeData: {
+        scanContentTreeData: { //总库名
             type: Array,
-            default: [],
+            default:()=>({})
         },
-        treeCheckedData:{
+        treeCheckedData: { //已选表名
             type: Array,
-            default: [],
+            default: []
+        },
+        databaseTableNameParama:{ //数据库表名传参
+            type: Object,
+            default: {}
         }
     },
     data() {
         return {
-            defaultArr: [],
-            isShowTooltip: false,
-            middleCheckVisible: false, // 新增属性，控制中间全选复选框的显示与隐藏
-            checkAllMiddle: false, // 中间全选框
-            isIndeterminate: false, // 中间半选数据
-            checkedTables: [], // 中间绑定数据展示用
-            allCheckedTables: [],// 所有中间绑定的数据
-            filteredTables: [],// 中间数据
-            searchQuery: '',// 中间搜索绑定值
-            options: [
-                {
-                    value: '0',
-                    label: '全选',
-                    children: [
-                    ]
-                }
-            ],
-            defaultProps: {
-                children: 'children',
-                label: 'label'
-            },
-            indeterminateKeys: [], // 用于存储半选状态的节点
-            selectedItems: [], // 右侧数据】
+            checkAll: false,
+            checkList: [], //this.treeCheckedData, //已选数据库库名
+            databaseTableNameP: {...this.databaseTableNameParama,databaseName:""}, //数据库表名传参
+            databaseTableNameList: [],//数据库表名列表
+            isIndeterminate: false,
+            // 表明列表属性
+            checkListChild: [], //已选子列表表名
+            checkListChildAll: [], //子列表所有表名
+            searchQuery: '', //查询表名
+            serchListChildAll: [], //查询后子列表所有表名
+
             selectedItemsChild: [],// 右侧数据的子节点数据
             selectedItemsParent: [],// 右側父節點
             selectedItemsChildCount: [],// 右側增加的无用数据展示
         };
     },
     created() {
-        this.options[0].children.push(...this.scanContentTreeData);
     },
     mounted() {
-        this.init()
     },
     computed: {
-        fieldCount() {
-            return this.selectedItemsChild.reduce((total, item) => total + parseInt(item.count), 0);
-        },
     },
     watch: {
-
     },
     methods: {
-        init() {
-            this.$nextTick(() => {
-                let treeChildrenNode = document.getElementById('treeChildrenNode')
-                const { left, top } = treeChildrenNode.getBoundingClientRect()
-                let treeNode = document.querySelectorAll('.el-tree-node__children')
-                let padding = document.querySelectorAll('.el-tree-node__content')
-                padding.forEach((item, index) => {
-                    item.style.paddingLeft = 0
-                })
-                treeNode.forEach((item, index) => {
-                    if (index > 0) {
-                        item.style.left = left + 'px'
-                        item.style.top = top + 'px'
-                        item.style.position = 'fixed'
-                        item.style.visibility = 'hidden'
-                        item.style.width = '253px'
-                        item.style.maxHeight = '521px'
-
-                    }
-                })
-                let stateList = {
-                    checkedNodes: [],
-                    halfCheckedNodes: []
-                }
-                stateList.checkedNodes = this.$refs.tree.getCheckedNodes()
-                stateList.halfCheckedNodes = this.$refs.tree.getHalfCheckedNodes()
-                this.leftTreeCheckFn(null, stateList)
-            })
-        },
-        // 获取 value 不等于 0 的所有 children
-        getChildren(options) {
-            return options.reduce((acc, item) => {
-                if (item.value !== '0' && item.children) {
-                    acc.push(...item.children);
-                }
-                return acc;
-            }, []);
+        handleCheckAllChange(val){
+            this.checkList = val ? this.scanContentTreeData : [];
+            this.isIndeterminate = false;
         },
         // flag 为0 左侧数据  // flag为1：中间数据
-        getAllNodeValues() {
-            // 获取所有节点的value值
-            const allValues = [];
-            const options = this.options;
-            const traverse = (nodes) => {
-                nodes.forEach(node => {
-                    allValues.push(node.value);
-                });
-            };
-            traverse(options);
-            return allValues;
-        },
         // 树节点点击事件
-        leftTreeClickFn(data, parmas, node) {
-            if (data.value !== '0') {
-                let index
-                this.options[0].children.forEach((item, i) => {
-                    if (item.value === data.value) {
-                        index = i
-                    }
-                })
-                if (index !== undefined) {
-                    let showtrue = document.querySelector('.el-tree-node__children').childNodes
-                    showtrue.forEach((item, i) => {
-                        if (index == i) {
-                            item.querySelector('.el-tree-node__children').style.visibility = 'initial'
-                        } else {
-                            item.querySelector('.el-tree-node__children').style.visibility = 'hidden'
-                        }
-                    })
-                }
-                // let treeNode = document.querySelectorAll('.el-tree-node__children')
-                // treeNode.forEach((item, index)=>{
-                //     if(index > 0 ){
-                //         if(item.value!==)
-                //         item.style.visibility = 'hidden'
-                //     }
-                // })
-            }
-        },
         clearSelection() {
-            this.selectedItemsParent = []
-            this.selectedItemsChild = []
-            this.$refs.tree.setCheckedKeys([])
+            this.checkList = [];
+            this.checkListChild = [];
+            this.checkAll = false;
         },
         /**
      * 根据标签移除对应的子节点
@@ -240,15 +161,9 @@ export default {
             })
         },
         inputSearch(val) {
-            this.$refs.tree.filter(val);
-        },
-        filterNode(value, data) {
-            if (!value) return true;
-            if (data.children) {
-                return true
-            } else {
-                return data.label.indexOf(value) !== -1;
-            }
+            this.checkListChildAll = this.serchListChildAll.filter(item => {
+                return item.tableName.indexOf(val) !== -1;
+            })
         },
         /**
          * 获取特定节点下的被选中子节点
@@ -265,6 +180,16 @@ export default {
                 event.currentTarget.scrollWidth <= event.currentTarget.clientWidth;
             // console.log("222");
         },
+        handleCheckedChangeGroup(val){
+            let checkedCount = val.length;
+            this.checkAll = checkedCount === this.scanContentTreeData.length;
+            this.isIndeterminate = checkedCount > 0 && checkedCount < this.scanContentTreeData.length;
+        },
+        async handleCheckedChange(val){
+            this.databaseTableNameP.databaseName = val.label
+            let res = await getDatabaseTableNameList(this.databaseTableNameP)
+            this.serchListChildAll = this.checkListChildAll = res.data
+        }
     }
 };
 </script>
@@ -429,5 +354,9 @@ li {
     text-overflow: ellipsis;
     white-space: nowrap;
     -webkit-line-clamp: 1;
+}
+.inline-checkbox {
+    width: 100%;
+    margin: 3px 0;
 }
 </style>
