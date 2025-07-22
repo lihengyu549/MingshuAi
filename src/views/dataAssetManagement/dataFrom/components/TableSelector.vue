@@ -14,7 +14,8 @@
                                 :label="item" 
                                 :key="item.value"
                                 class="inline-checkbox"
-                                @change="handleCheckedChange(item)"
+                                @change="handleCheckedChange(item,$event)"
+                                :indeterminate="isIndeterminateChild(checkList)"
                                 >
                                 {{ item.label }}
                             </el-checkbox>
@@ -108,6 +109,14 @@ export default {
     watch: {
     },
     methods: {
+        isIndeterminateChild(val){
+            console.log('------',val);
+            if (this.checkListChild.length == this.checkListChildAll.length) {
+                return false
+            }else if (this.checkListChild.length != 0) {
+                return true
+            }
+        },
         handleCheckAllChange(val){
             this.checkList = val ? this.scanContentTreeData : [];
             this.isIndeterminate = false;
@@ -185,10 +194,15 @@ export default {
             this.checkAll = checkedCount === this.scanContentTreeData.length;
             this.isIndeterminate = checkedCount > 0 && checkedCount < this.scanContentTreeData.length;
         },
-        async handleCheckedChange(val){
+        async handleCheckedChange(val,e){
             this.databaseTableNameP.databaseName = val.label
             let res = await getDatabaseTableNameList(this.databaseTableNameP)
             this.serchListChildAll = this.checkListChildAll = res.data
+            if (e) {
+                this.checkListChild = this.serchListChildAll
+            }else{
+                this.checkListChild = []
+            }
         }
     }
 };

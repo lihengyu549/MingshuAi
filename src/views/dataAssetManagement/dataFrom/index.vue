@@ -905,7 +905,7 @@ export default {
           targetDatabaseArr = targetDatabaseCopy.split(',')
           targetDatabaseArr.splice(targetDatabaseArr.length - 1, 1)
         }
-        this.form.targetDatabase = targetDatabaseArr
+        // this.form.targetDatabase = targetDatabaseArr
         this.form.tables = row.tables || {}
         this.title = "编辑数据库";
         this.open = true
@@ -1024,7 +1024,12 @@ export default {
       //     }
       //   }
       // }
-      // this.form.targetDatabase = targetDatabaseArr
+      this.form.targetDatabase = []
+      checkDatabaseName.forEach((item)=>{
+        if (item.label) {
+          this.form.targetDatabase.push(item.label)
+        }
+      })
       this.form.tables = result
       this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.checkListChild.length}张表`  //共${this.$refs.scanContentTreeRef.fieldCount}个字段
       this.scanContentShow = false
