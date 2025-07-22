@@ -6,18 +6,13 @@
                 <div style="height: 20px;">可选</div>
                 <div class="canChoose_main">
                     <div class="canChoose_left">
-                        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
-                        <!-- @change="handleCheckAllChange" -->
+                        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll"
+                            @change="handleCheckAllChange">全选</el-checkbox>
                         <el-checkbox-group v-model="checkList" @change="handleCheckedChangeGroup">
-                            <el-checkbox 
-                                v-for="item in scanContentTreeData" 
-                                :label="item" 
-                                :key="item.value"
-                                class="inline-checkbox"
-                                @change="handleCheckedChange(item,$event)"
-                                :indeterminate="isIndeterminateChild(checkList)"
-                                >
-                                {{ item.label }}
+                            <el-checkbox v-for="item in returnArr" :label="item.name" :key="item.value"
+                                :checked="item.checked" class="inline-checkbox"
+                                @change="handleCheckedChange(item, $event)" :indeterminate="item.isBanxuan">
+                                {{ item.name }}
                             </el-checkbox>
                         </el-checkbox-group>
                     </div>
@@ -27,13 +22,10 @@
                             <i slot="prefix" class="el-input__icon el-icon-search"></i>
                         </el-input>
                         <el-checkbox-group v-model="checkListChild" style="overflow: scroll;height: 100%;">
-                            <el-checkbox 
-                                v-for="item in checkListChildAll" 
-                                :label="item" 
-                                :key="item.value"
-                                class="inline-checkbox"
-                                >
-                                {{ item.tableName }}
+                            <el-checkbox v-for="item in checkListChildAll"
+                                @change="handleCheckedChildChange(item, $event)" :checked="item.checked"
+                                :label="item.tableName" :key="item.value" class="inline-checkbox">
+                                {{ item.tableName }}--------{{ 'item.checked'+item.checked }}
                             </el-checkbox>
                         </el-checkbox-group>
                     </div>
@@ -64,20 +56,21 @@
 
 <script>
 import {
-  getDatabaseTableNameList
+    getDatabaseTableNameList
 } from "@/api/system/proxys";
+import { json } from "d3";
 export default {
     name: "TableSelector",
     props: {
         scanContentTreeData: { //总库名
             type: Array,
-            default:()=>({})
+            default: () => ({})
         },
         treeCheckedData: { //已选表名
             type: Array,
             default: []
         },
-        databaseTableNameParama:{ //数据库表名传参
+        databaseTableNameParama: { //数据库表名传参
             type: Object,
             default: {}
         }
@@ -86,7 +79,7 @@ export default {
         return {
             checkAll: false,
             checkList: [], //this.treeCheckedData, //已选数据库库名
-            databaseTableNameP: {...this.databaseTableNameParama,databaseName:""}, //数据库表名传参
+            databaseTableNameP: { ...this.databaseTableNameParama, databaseName: "" }, //数据库表名传参
             databaseTableNameList: [],//数据库表名列表
             isIndeterminate: false,
             // 表明列表属性
@@ -98,26 +91,48 @@ export default {
             selectedItemsChild: [],// 右侧数据的子节点数据
             selectedItemsParent: [],// 右側父節點
             selectedItemsChildCount: [],// 右側增加的无用数据展示
+            nowDatabase: '',
+
+            //汇总数据
+            // arr: [
+            //     {
+            //         name: remarkNull,//左侧label
+            //         checked:false,// 是否选中
+            //         isChildrenNode:true,//是否有子节点
+            //         isBanxuan:true,//是否半选
+            //         children:[
+            //             {
+            //                 name:remarkNull,
+            //                 checked:false,//是否选中
+            //             }
+            //         ]
+            //     }
+            // ],
+            returnArr: []
         };
     },
     created() {
     },
     mounted() {
+        this.returnArr = this.scanContentTreeData.map(item => {
+            return {
+                name: item.label,//左侧label
+                checked: false,// 是否选中
+                // isChildrenNode:true,//是否有子节点
+                isBanxuan: false,//是否半选
+                value: item.value,
+                children: [
+                ]
+            }
+        })
+        console.log('this.returnArr', this.returnArr);
     },
     computed: {
     },
     watch: {
     },
     methods: {
-        isIndeterminateChild(val){
-            console.log('------',val);
-            if (this.checkListChild.length == this.checkListChildAll.length) {
-                return false
-            }else if (this.checkListChild.length != 0) {
-                return true
-            }
-        },
-        handleCheckAllChange(val){
+        handleCheckAllChange(val) {
             this.checkList = val ? this.scanContentTreeData : [];
             this.isIndeterminate = false;
         },
@@ -189,20 +204,45 @@ export default {
                 event.currentTarget.scrollWidth <= event.currentTarget.clientWidth;
             // console.log("222");
         },
-        handleCheckedChangeGroup(val){
+        handleCheckedChangeGroup(val) {
             let checkedCount = val.length;
             this.checkAll = checkedCount === this.scanContentTreeData.length;
             this.isIndeterminate = checkedCount > 0 && checkedCount < this.scanContentTreeData.length;
         },
-        async handleCheckedChange(val,e){
-            this.databaseTableNameP.databaseName = val.label
-            let res = await getDatabaseTableNameList(this.databaseTableNameP)
-            this.serchListChildAll = this.checkListChildAll = res.data
+        async handleCheckedChange(val, e) {
             if (e) {
-                this.checkListChild = this.serchListChildAll
-            }else{
-                this.checkListChild = []
+                this.databaseTableNameP.databaseName = val.name
+                let res = await getDatabaseTableNameList(this.databaseTableNameP)
+                this.checkListChildAll = res.data.map((item) => {
+                    return {
+                        databaseName: item.databaseName,
+                        tableName: item.tableName,
+                        value: item.parentID,
+                        checked: e
+                    }
+                })
+                this.checkListChild = [...this.checkListChildAll];
+                this.serchListChildAll = [...this.checkListChildAll];
+                this.nowDatabase = val.name
+                
+                if (!this.returnArr.find(item => item.name == val.name).checked) {
+                    this.returnArr.find(item => item.name == val.name).checked = e
+                    this.returnArr.find(item => item.name == val.name).children = [...this.checkListChildAll]
+                }
+                // console.log('this.checkListChildAll',this.checkListChildAll);
+                // console.log('this.checkListChild',this.checkListChild);
+            } else {
+                // this.checkListChild = []
+                this.checkListChildAll.forEach(item => {
+                    item.checked = false
+                })
+                // console.log('this.checkListChild',this.checkListChild);
+                this.returnArr.find(item => item.name == val.name).checked = e
+                this.returnArr.find(item => item.name == val.name).children = []
             }
+        },
+        handleCheckedChildChange(item, e) {
+
         }
     }
 };
@@ -369,6 +409,7 @@ li {
     white-space: nowrap;
     -webkit-line-clamp: 1;
 }
+
 .inline-checkbox {
     width: 100%;
     margin: 3px 0;
