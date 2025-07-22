@@ -103,13 +103,13 @@
         <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
           <el-input v-model="form.sourceName" maxlength="50" placeholder="请输入数据源名称" />
         </el-form-item>
-        <!-- <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
+        <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
           <el-select v-model="form.projectName" :disabled="editIsFlag" placeholder="请输入分类分级框架" clearable
             @change="projectChangeEdit($event)">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
-        </el-form-item> -->
+        </el-form-item>
         <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
           <!-- @input="businessNameFn(form.businessName)" -->
           <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
@@ -887,7 +887,11 @@ export default {
       }
     },
     scanContentEdit(row) {
-      this.editIsFlag = true
+      if (row.isAddTasks == 1) {
+        this.editIsFlag = true
+      }else{
+        this.editIsFlag = false
+      }
       if (row.databaseType == "Excel") {
         this.importData.importFile = row.fileName
         this.titleExcel = "编辑Excel";
@@ -925,6 +929,7 @@ export default {
         //   return
         // }
         // this.form = row
+        
       }
     },
     // 扫描内容点击事件
