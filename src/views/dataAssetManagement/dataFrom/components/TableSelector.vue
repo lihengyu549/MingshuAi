@@ -272,7 +272,7 @@ export default {
                 this.checkList = []
                 this.returnArr.find(ele => ele.name == item.databaseName).isBanxuan = false
             } else {
-                if (e) {
+                if (e && !this.checkList.includes(item.databaseName)) {
                    this.checkList.push(item.databaseName) 
                 }else{
                     this.checkList.splice(this.checkList.findIndex(ele => ele == item.databaseName), 1)
