@@ -10,8 +10,8 @@
                             @change="handleCheckAllChange">全选</el-checkbox>
                         <el-checkbox-group v-model="checkList" @change="handleCheckedChangeGroup">
                             <el-checkbox v-for="item in returnArr" :label="item.name" :key="item.value"
-                                :checked="item.checked" class="inline-checkbox"
-                                @change="handleCheckedChange(item, $event)" :indeterminate="item.isBanxuan">
+                                class="inline-checkbox" @change="handleCheckedChange(item, $event)"
+                                :indeterminate="item.isBanxuan">
                                 {{ item.name }}
                             </el-checkbox>
                         </el-checkbox-group>
@@ -23,9 +23,9 @@
                         </el-input>
                         <el-checkbox-group v-model="checkListChild" style="overflow: scroll;height: 100%;">
                             <el-checkbox v-for="item in checkListChildAll"
-                                @change="handleCheckedChildChange(item, $event)" :checked="item.checked"
-                                :label="item.tableName" :key="item.value" class="inline-checkbox">
-                                {{ item.tableName }}--------{{ 'item.checked'+item.checked }}
+                                @change="handleCheckedChildChange(item, $event)" :label="item.tableName"
+                                :key="item.value" class="inline-checkbox">
+                                {{ item.tableName }}
                             </el-checkbox>
                         </el-checkbox-group>
                     </div>
@@ -36,13 +36,17 @@
             <!-- 右侧已选列表 -->
             <el-card class="right-panel">
                 <div slot="header" class="clearfix">
-                    <span>已选 <span class="right-panel-text">({{ checkListChild.length }}张表)</span></span>
+                    <span>
+                        已选 
+                        <span v-if="checkList.length ==  scanContentTreeData.length" class="right-panel-text">(所有数据源)</span>
+                        <span v-else class="right-panel-text">({{ tableNum }}张表)</span>
+                    </span>
                     <el-button style="float: right; padding: 3px 0;color: blue;" type="text"
                         @click="clearSelection">清空</el-button>
                 </div>
                 <ul>
                     <li v-for="item in checkList" :key="item.value">
-                        {{ item.label }}
+                        <span style="line-height: 20px;">{{ item }}</span>
                         <!-- <div>
                             <span style="margin-right: 10px;">已选{{ item.checkedCount }}张表</span>
                             <el-button type="text" icon="el-icon-close" @click="removeItemByLabel(item)"></el-button>
@@ -91,7 +95,6 @@ export default {
             selectedItemsChild: [],// 右侧数据的子节点数据
             selectedItemsParent: [],// 右側父節點
             selectedItemsChildCount: [],// 右側增加的无用数据展示
-            nowDatabase: '',
 
             //汇总数据
             // arr: [
@@ -125,15 +128,30 @@ export default {
                 ]
             }
         })
-        console.log('this.returnArr', this.returnArr);
     },
     computed: {
+        tableNum() {
+            const count = (items) => {
+                return items.reduce((total, item) => {
+                    const isLeafNode = !item.children || item.children.length === 0;
+                    const currentCount = isLeafNode && item.checked ? 1 : 0;
+                    const childrenCount = item.children ? count(item.children) : 0;
+                    return total + currentCount + childrenCount;
+                }, 0);
+            };
+            return count(this.returnArr);
+        }
     },
     watch: {
     },
     methods: {
         handleCheckAllChange(val) {
-            this.checkList = val ? this.scanContentTreeData : [];
+            this.checkList = val ? this.scanContentTreeData.map(item => {
+                return item.label
+            }) : [];
+            this.checkListChild = val ? this.checkListChildAll.map(item => {
+                return item.tableName
+            }) : [];
             this.isIndeterminate = false;
         },
         // flag 为0 左侧数据  // flag为1：中间数据
@@ -210,6 +228,7 @@ export default {
             this.isIndeterminate = checkedCount > 0 && checkedCount < this.scanContentTreeData.length;
         },
         async handleCheckedChange(val, e) {
+            this.returnArr.find(ele => ele.name == val.name).isBanxuan = false
             if (e) {
                 this.databaseTableNameP.databaseName = val.name
                 let res = await getDatabaseTableNameList(this.databaseTableNameP)
@@ -221,29 +240,48 @@ export default {
                         checked: e
                     }
                 })
-                this.checkListChild = [...this.checkListChildAll];
+                this.checkListChild = this.checkListChildAll.map(item => item.tableName)
                 this.serchListChildAll = [...this.checkListChildAll];
-                this.nowDatabase = val.name
-                
+
                 if (!this.returnArr.find(item => item.name == val.name).checked) {
                     this.returnArr.find(item => item.name == val.name).checked = e
                     this.returnArr.find(item => item.name == val.name).children = [...this.checkListChildAll]
                 }
-                // console.log('this.checkListChildAll',this.checkListChildAll);
-                // console.log('this.checkListChild',this.checkListChild);
-            } else {
-                // this.checkListChild = []
+            } else if (this.checkListChildAll[0].databaseName == val.name) {
+                this.checkListChild = []
                 this.checkListChildAll.forEach(item => {
                     item.checked = false
                 })
-                // console.log('this.checkListChild',this.checkListChild);
                 this.returnArr.find(item => item.name == val.name).checked = e
                 this.returnArr.find(item => item.name == val.name).children = []
             }
         },
         handleCheckedChildChange(item, e) {
+            // console.log('-----',this.checkListChildAll); this.checkList.splice(this.checkList.findIndex(ele => ele == item.databaseName), 1)
+            // console.log('-----',this.checkListChild);
+            if (this.checkListChildAll.length == 1) {
+                if (e) {
+                    this.checkList.push(item.databaseName)
+                } else {
+                    this.checkList.splice(this.checkList.findIndex(ele => ele == item.databaseName), 1)
+                }
+                this.returnArr.find(ele => ele.name == item.databaseName).isBanxuan = false
+            } else if (this.checkListChild.length != this.checkListChildAll.length && this.checkListChild.length != 0) {
+                this.returnArr.find(ele => ele.name == item.databaseName).isBanxuan = true
+            } else if (this.checkListChild.length == 0) {
+                this.checkList = []
+                this.returnArr.find(ele => ele.name == item.databaseName).isBanxuan = false
+            } else {
+                if (e) {
+                   this.checkList.push(item.databaseName) 
+                }else{
+                    this.checkList.splice(this.checkList.findIndex(ele => ele == item.databaseName), 1)
+                }
+                this.returnArr.find(ele => ele.name == item.databaseName).isBanxuan = false
+            }
+            this.returnArr.find(ele => ele.name == item.databaseName).children.find(ele => ele.tableName == item.tableName).checked = e
 
-        }
+        },
     }
 };
 </script>

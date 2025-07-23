@@ -959,84 +959,21 @@ export default {
 
     },
     scanContentSubmitFn() {
-      // let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
-      // let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
-      let checkDatabaseName = this.$refs.scanContentTreeRef.checkList
-      let checkDatabaseTableName = this.$refs.scanContentTreeRef.checkListChild
-      const result = {};
-
-      // 处理表名列表（含库名）
-      checkDatabaseTableName.forEach(item => {
-        const dbName = item.databaseName; // 从表对象中获取库名
-        // const tableName = item.tableName;      // 获取表名
-
-        if (!result[dbName]) {
-          result[dbName] = [];
-        }
-        result[dbName].push(item);
-      });
-
-      // 合并数据库列表（确保所有库都有条目）
-      checkDatabaseName.forEach(db => {
-        const dbKey = db.label; // 从数据库对象获取库名
-        if (!result[dbKey]) {
-          result[dbKey] = [];
+      let returnArr = this.$refs.scanContentTreeRef.returnArr
+      let result = {}
+      returnArr.forEach(element => {
+        if (element.checked) {
+          result[element.name] = [...element.children.filter(item => item.checked)]
         }
       });
-
-
-
-      // let allData = [...halfCheckedNodes, ...checkedNodes,]
-      // let targetDatabaseArr = []
-      // let params = {}
-      // for (let item of allData) {
-      //   if (item.children) {
-      //     let obj = {
-      //       [item.label]: []
-      //     }
-      //     targetDatabaseArr.push(item.label)
-
-      //     params = Object.assign(params, obj)
-      //   } else {
-      //     this.treeCheckedData.push(item.value)
-      //     if (Array.isArray(params[item.databaseName])) {
-      //       params[item.databaseName].push({
-      //         schemaName: item.schemaName,
-      //         tableName: item.label,
-      //         dataSize: item.dataSize,
-      //         dataCount: item.dataCount,
-      //         tableRemark: item.tableRemark,
-      //         databaseName: item.databaseName,
-      //         projectId: '',
-      //         agentServerId: '',
-      //         fieldCount: item.count,
-      //         fields: null,
-      //       })
-      //     } else {
-      //       params[item.databaseName] = []
-      //       params[item.databaseName].push({
-      //         schemaName: item.schemaName,
-      //         tableName: item.label,
-      //         dataSize: item.dataSize,
-      //         dataCount: item.dataCount,
-      //         tableRemark: item.tableRemark,
-      //         databaseName: item.databaseName,
-      //         projectId: '',
-      //         agentServerId: '',
-      //         fieldCount: item.count,
-      //         fields: null,
-      //       })
-      //     }
-      //   }
-      // }
       this.form.targetDatabase = []
-      checkDatabaseName.forEach((item)=>{
-        if (item.label) {
-          this.form.targetDatabase.push(item.label)
+      returnArr.forEach((item)=>{
+        if (item.checked) {
+          this.form.targetDatabase.push(item.name)
         }
       })
       this.form.tables = result
-      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.checkListChild.length}张表`  //共${this.$refs.scanContentTreeRef.fieldCount}个字段
+      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.tableNum}张表`  //共${this.$refs.scanContentTreeRef.fieldCount}个字段
       this.scanContentShow = false
     },
   }
