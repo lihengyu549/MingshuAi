@@ -185,7 +185,7 @@ export default {
         {
           id: 3,
           title: 'AI推理&审核',
-          msg: 'Qwen3/Deepseek双模可选进行AI打标',
+          msg: 'Qwen/Deepseek双模可选进行AI打标',
           btnText: '分类分级',
           path: '/hierarchicalTask',
         },
