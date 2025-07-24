@@ -37,8 +37,9 @@
             <el-card class="right-panel">
                 <div slot="header" class="clearfix">
                     <span>
-                        已选 
-                        <span v-if="checkList.length ==  scanContentTreeData.length" class="right-panel-text">(所有数据源)</span>
+                        已选
+                        <span v-if="checkList.length == scanContentTreeData.length"
+                            class="right-panel-text">(所有数据源)</span>
                         <span v-else class="right-panel-text">({{ tableNum }}张表)</span>
                     </span>
                     <el-button style="float: right; padding: 3px 0;color: blue;" type="text"
@@ -252,8 +253,10 @@ export default {
                 this.checkListChildAll.forEach(item => {
                     item.checked = false
                 })
-                this.returnArr.find(item => item.name == val.name).checked = e
-                this.returnArr.find(item => item.name == val.name).children = []
+                // this.returnArr.find(item => item.name == val.name).checked = e
+                this.$set(this.returnArr.find(item => item.name == val.name), 'checked', e);
+                // this.returnArr.find(item => item.name == val.name).children = []
+                this.$set(this.returnArr.find(item => item.name == val.name), 'children', []);
             }
         },
         handleCheckedChildChange(item, e) {
@@ -273,8 +276,8 @@ export default {
                 this.returnArr.find(ele => ele.name == item.databaseName).isBanxuan = false
             } else {
                 if (e && !this.checkList.includes(item.databaseName)) {
-                   this.checkList.push(item.databaseName) 
-                }else{
+                    this.checkList.push(item.databaseName)
+                } else {
                     this.checkList.splice(this.checkList.findIndex(ele => ele == item.databaseName), 1)
                 }
                 this.returnArr.find(ele => ele.name == item.databaseName).isBanxuan = false
