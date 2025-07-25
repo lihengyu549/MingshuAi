@@ -163,7 +163,7 @@
       </div>
     </el-dialog>
     <el-dialog :title="titleExcel" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"
-      append-to-body :close-on-click-modal="true">
+      append-to-body :close-on-click-modal="false">
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px">
         <el-form-item label="数据源名称" prop="sourceName">
