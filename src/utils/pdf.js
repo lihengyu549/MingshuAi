@@ -20,6 +20,7 @@ export function downloadPDF(options) {
     // 这里面我要解释一下，这里是要为做分页做准备，因为分页是根据每一个dom元素的高度来决定的，也不用细化到每一个dom元素，只是你不希望被截断的dom元素都需要单独的拿出来计算高度，而不能获取整个大页面的高度
 
     // 这里的children取决于你传过来的父元素，根据实际需求来获取你需要的子元素
+
     const children = ele[0].children;
 
     // 定义一个空数组，来接收需要生成图片计算完高度的dom对象
@@ -44,7 +45,7 @@ export function downloadPDF(options) {
 
         if (children.length > 1 ) {
             html2Canvas(children[i], {
-                useCORS: true,
+
                 scale:scale,
 
                 dpi: 500, // 导出pdf清晰度
@@ -102,8 +103,11 @@ export function downloadPDF(options) {
         for (let k = 0; k < canvas.length; k++) { // 涉及到k--的操作，使用for循环方便
 
             pageH += canvas[k].imgHeight;
+
             if (pageH > 841.89 && canvas[k].imgHeight < 841.89) { // 当某个页面装不下下一个dom时，则分页
+
                 imgArr[j][0].allH = allH - canvas[k].imgHeight;
+
                 allH = pageH = 0;
 
                 k--;
@@ -126,7 +130,7 @@ export function downloadPDF(options) {
 
                 imgArr[j].push(canvas[k]);
 
-                allH += canvas[k].imgHeight
+                allH += canvas[k].imgHeight;
 
             }
 
@@ -150,7 +154,8 @@ export function downloadPDF(options) {
 
         canvas.forEach((page, index) => {
 
-            let allH = page[0].imgHeight;
+            let allH = page[0].allH;
+
             let position = 20;// pdf页面偏移
 
             if (index !== 0 && allH <= 841.89) PDF.addPage();
@@ -161,20 +166,20 @@ export function downloadPDF(options) {
 
                     // 这里的width除以多少取决于你导出的页面在pdf页里面横向偏移的多少，你可以修改这个除数进行对页面的横向调整
 
-                    PDF.addImage(img.toDataURL('image/jpeg', 1.0), 'JPEG', img.imgWidth/5, position, img.imgWidth, img.imgHeight);
+                    PDF.addImage(img.toDataURL('image/jpeg', 1.0), 'JPEG', img.imgWidth/10, position, img.imgWidth, img.imgHeight);
 
                     position += img.imgHeight;
 
                     allH -= img.imgHeight;
 
                 } else { // 当某个dom高度大于页面宽度，则需另行处理
-                    while (allH > 0) {
 
+                    while (allH > 0) {
                         PDF.addImage(img.toDataURL('image/jpeg', 1.0), 'JPEG', img.imgWidth/5, position, img.imgWidth, img.imgHeight);
 
-                        allH -= img.topH || 841.89;
+                        allH -= img.topH || 650;
 
-                        position -= img.topH || 841.89;
+                        position -= img.topH || 650;
 
                         img.topH = 0;
 
