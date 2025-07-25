@@ -1,126 +1,129 @@
-<template>
-    <div class="model-config-page">
-        <!-- 页面标题区域 -->
-        <div class="page-header">
-            <h2 style="padding-top: 10px;">模型配置</h2>
-        </div>
-
-        <div class="model-config-container">
-            <!-- 左侧菜单区域 -->
-            <div class="left-sidebar">
-                <!-- 搜索框 -->
-                <div style="padding: 5%;">
-                    <el-input placeholder="搜索模型..." v-model="searchKeyword" clearable class="search-input">
-                        <i slot="prefix" class="el-input__icon el-icon-search"></i>
-                    </el-input>
-                </div>
-
-                <!-- 菜单列表 -->
-                <el-menu :default-active="activeModel" class="model-menu" background-color="#fff" text-color="#333"
-                    active-text-color="#409EFF" @select="handleMenuSelect">
-                    <el-menu-item v-for="model in filteredModels" :key="model.id" :index="model.id"
-                        :style="{ backgroundColor: activeModel === model.id ? '#eaf1ff' : '' }">
-                        <svg-icon
-                            :icon-class="model.name == 'Ollama' ? 'robDog' : model.name == '阿里云百炼' ? 'alybl' : 'deepseek'"
-                            style="margin-right: 10px;"></svg-icon>
-                        <span>{{ model.name }}</span>
-                        <!-- 左侧菜单开关 - 调整为内部显示ON/OFF -->
-                        <el-switch v-model="model.enabled" active-color="#13ce66" inactive-color="#e9ecef"
-                            active-text="ON" inactive-text="OFF" class="inner-text-switch" style="margin-left: auto;"
-                            @change="handleModelSwitch(model)"></el-switch>
-                    </el-menu-item>
-                </el-menu>
+    <template>
+        <div class="model-config-page">
+            <!-- 页面标题区域 -->
+            <div class="page-header">
+                <h2 style="padding-top: 10px;">模型配置</h2>
             </div>
 
-            <!-- 右侧内容区域 -->
-            <div class="right-content">
-                <div class="content-header">
-                    <i class="el-icon-menu"></i>
-                    <span>{{ currentModel.name || '请选择模型' }}</span>
-                    <!-- 右侧主开关 - 调整为内部显示ON/OFF -->
-                    <el-switch v-model="currentModel.enabled" active-color="#13ce66" inactive-color="#e9ecef"
-                        class="inner-text-switch" style="margin-left: auto;"
-                        @change="handleMainSwitchChange"></el-switch>
+            <div class="model-config-container">
+                <!-- 左侧菜单区域 -->
+                <div class="left-sidebar">
+                    <!-- 搜索框 -->
+                    <div style="padding: 5%;">
+                        <el-input placeholder="搜索模型..." v-model="searchKeyword" clearable class="search-input">
+                            <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                        </el-input>
+                    </div>
+
+                    <!-- 菜单列表 -->
+                    <el-menu :default-active="activeModel" class="model-menu" background-color="#fff" text-color="#333"
+                        active-text-color="#409EFF" @select="handleMenuSelect">
+                        <el-menu-item v-for="model in filteredModels" :key="model.name" :index="model.name"
+                            :style="{ backgroundColor: activeModel === model.id ? '#eaf1ff' : '' }">
+                            <svg-icon
+                                :icon-class="model.label == 'Ollama' ? 'robDog' : model.label == '阿里云百炼' ? 'alybl' : 'deepseek'"
+                                style="margin-right: 10px;"></svg-icon>
+                            <span>{{ model.label }}</span>
+                            <!-- 左侧菜单开关 - 调整为内部显示ON/OFF -->
+                            <el-switch v-model="model.enabled" active-color="#13ce66" inactive-color="#e9ecef"
+                                active-text="ON" inactive-text="OFF" class="inner-text-switch"
+                                style="margin-left: auto;" @change="handleModelSwitch(model)"></el-switch>
+                        </el-menu-item>
+                    </el-menu>
                 </div>
 
-                <!-- 表单内容 -->
-                <el-form label-width="100px" class="config-form" :disabled="!currentModel.enabled">
-                    <el-form-item label="接口地址">
-                        <el-input v-model="currentModel.apiUrl" placeholder="请输入接口地址" style="width: 100%;"></el-input>
-                    </el-form-item>
+                <!-- 右侧内容区域 -->
+                <div class="right-content">
+                    <div class="content-header">
+                        <i class="el-icon-menu"></i>
+                        <span>{{ currentModel.label || '请选择模型' }}</span>
+                        <!-- 右侧主开关 - 调整为内部显示ON/OFF -->
+                        <el-switch v-model="currentModel.enabled" active-color="#13ce66" inactive-color="#e9ecef"
+                            class="inner-text-switch" style="margin-left: auto;"
+                            @change="handleMainSwitchChange"></el-switch>
+                    </div>
 
-                    <el-form-item v-if="currentModel.id == 'aliyun' || currentModel.id == 'deepseek'" label="API密钥">
-                        <el-input v-model="currentModel.apiKey" placeholder="请输入API密钥" type="password"
-                            style="width: 100%;"></el-input>
-                    </el-form-item>
+                    <!-- 表单内容 -->
+                    <el-form label-width="100px" class="config-form" :disabled="!currentModel.enabled">
+                        <el-form-item label="接口地址">
+                            <el-input v-model="currentModel.apiUrl" placeholder="请输入接口地址"
+                                style="width: 100%;"></el-input>
+                        </el-form-item>
 
-                    <el-form-item label="模型名称">
-                        <el-select v-model="currentModel.selectedModel" placeholder="请选择模型" style="width: 70%;">
-                            <el-option v-for="item in currentModel.availableModels" :key="item.value"
-                                :label="item.label" :value="item.value"></el-option>
-                        </el-select>
-                        <el-button type="primary" style="margin-left: 10px;" @click="refreshModelList">
-                            刷新模型列表
-                        </el-button>
-                    </el-form-item>
+                        <el-form-item v-if="currentModel.id == 'aliyun' || currentModel.id == 'deepseek'" label="API密钥">
+                            <el-input v-model="currentModel.apiKey" placeholder="请输入API密钥" type="password"
+                                style="width: 100%;"></el-input>
+                        </el-form-item>
 
-                    <el-form-item v-if="currentModel.id == 'ollama'" label="模型特性">
-                        <el-switch v-model="currentModel.teX" active-color="#13ce66" class="model-switch"
-                            inactive-color="#e9ecef" active-text="深度思考" style="margin-left: auto;"></el-switch>
-                        <el-tooltip content="深度思考模式让模型在回答前进行推理分析，提供更详细的思考过程" placement="top"
-                            transition="el-fade-in-linear">
-                            <svg-icon icon-class="bulb" style="margin-left: 10px;"></svg-icon>
-                        </el-tooltip>
-                    </el-form-item>
+                        <el-form-item label="模型名称">
+                            <el-select v-model="currentModel.modelName" placeholder="请选择模型" style="width: 70%;">
+                                <el-option v-for="item in currentModel.availableModels" :key="item.value"
+                                    :label="item.label" :value="item.value"></el-option>
+                            </el-select>
+                            <el-button type="primary" style="margin-left: 10px;" @click="refreshModelList">
+                                刷新模型列表
+                            </el-button>
+                        </el-form-item>
 
-                    <el-form-item label="模型温度">
-                        <div class="slider-container">
-                            <el-slider v-model="currentModel.temperature" :max="1" :min="0" :step="0.1" show-tooltip
-                                style="flex: 1;" class="temperature"></el-slider>
-                            <span class="slider-value">{{ currentModel.temperature.toFixed(1) }}</span>
-                            <el-tooltip content="控制模型输出的随机性和创造性。较低的值（0.1-0.3）产生更确定性的回答，较高的值（0.7-1.0）产生更创造性的回答"
-                                placement="top" transition="el-fade-in-linear">
-                                <svg-icon icon-class="bulb" style="margin-left: 10px;"></svg-icon>
-                            </el-tooltip>
-                        </div>
-                    </el-form-item>
-
-                    <el-form-item label="请求超时">
-                        <div class="slider-container">
-                            <el-slider v-model="currentModel.timeout" :max="300" :min="30" :step="30" show-tooltip
-                                style="flex: 1;" class="timeout"></el-slider>
-                            <span class="slider-value">
-                                {{ formatTimeout(currentModel.timeout) }}
-                            </span>
-                            <el-tooltip content="设置API请求的最大等待时间。如果请求超过此时间仍未响应，将自动中断连接。建议根据网络环境和任务复杂度调整" placement="top"
+                        <el-form-item v-if="currentModel.id == 'ollama'" label="模型特性">
+                            <el-switch v-model="currentModel.thinkingMode" active-color="#13ce66" class="model-switch"
+                                inactive-color="#e9ecef" active-text="深度思考" style="margin-left: auto;"></el-switch>
+                            <el-tooltip content="深度思考模式让模型在回答前进行推理分析，提供更详细的思考过程" placement="top"
                                 transition="el-fade-in-linear">
                                 <svg-icon icon-class="bulb" style="margin-left: 10px;"></svg-icon>
                             </el-tooltip>
-                        </div>
-                        <div class="timeout-buttons">
-                            <el-button v-for="btn in timeoutOptions" :key="btn.value"
-                                :type="currentModel.timeout === btn.value ? 'danger' : 'default'" size="mini"
-                                @click="setTimeout(btn.value)">
-                                {{ btn.label }}
-                            </el-button>
-                        </div>
-                    </el-form-item>
+                        </el-form-item>
 
-                    <el-form-item>
-                        <el-button type="primary" @click="handleTest" :disabled="!currentModel.enabled">
-                            测试连接
-                        </el-button>
-                        <el-button type="success" style="margin-left: 10px;" @click="handleSave">
-                            保存配置
-                        </el-button>
-                    </el-form-item>
-                </el-form>
+                        <el-form-item label="模型温度">
+                            <div class="slider-container">
+                                <el-slider v-model="currentModel.temperature" :max="1" :min="0" :step="0.1" show-tooltip
+                                    style="flex: 1;" class="temperature"></el-slider>
+                                <!-- .toFixed(1) -->
+                                <span class="slider-value">{{ currentModel.temperature }}</span>
+                                <el-tooltip content="控制模型输出的随机性和创造性。较低的值（0.1-0.3）产生更确定性的回答，较高的值（0.7-1.0）产生更创造性的回答"
+                                    placement="top" transition="el-fade-in-linear">
+                                    <svg-icon icon-class="bulb" style="margin-left: 10px;"></svg-icon>
+                                </el-tooltip>
+                            </div>
+                        </el-form-item>
+
+                        <el-form-item label="请求超时">
+                            <div class="slider-container">
+                                <el-slider v-model="currentModel.timeout" :max="300" :min="30" :step="30" show-tooltip
+                                    style="flex: 1;" class="timeout"></el-slider>
+                                <span class="slider-value">
+                                    {{ formatTimeout(currentModel.timeout) }}
+                                </span>
+                                <el-tooltip content="设置API请求的最大等待时间。如果请求超过此时间仍未响应，将自动中断连接。建议根据网络环境和任务复杂度调整"
+                                    placement="top" transition="el-fade-in-linear">
+                                    <svg-icon icon-class="bulb" style="margin-left: 10px;"></svg-icon>
+                                </el-tooltip>
+                            </div>
+                            <div class="timeout-buttons">
+                                <el-button v-for="btn in timeoutOptions" :key="btn.value"
+                                    :type="currentModel.timeout === btn.value ? 'danger' : 'default'" size="mini"
+                                    @click="setTimeout(btn.value)">
+                                    {{ btn.label }}
+                                </el-button>
+                            </div>
+                        </el-form-item>
+
+                        <el-form-item>
+                            <el-button type="primary" @click="handleTest" :disabled="!currentModel.enabled">
+                                测试连接
+                            </el-button>
+                            <el-button type="success" style="margin-left: 10px;" @click="handleSave">
+                                保存配置
+                            </el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
             </div>
         </div>
-    </div>
-</template>
+    </template>
 
 <script>
+import { getAiConfigList, getAiConfigById } from "@/api/system/modelPage";
 export default {
     name: 'ModelConfig',
     data() {
@@ -128,43 +131,43 @@ export default {
             // 搜索关键词
             searchKeyword: '',
             // 当前激活的模型ID
-            activeModel: 'ollama',
+            activeModel: '',
             // 模型列表数据
             models: [
-                {
-                    id: 'ollama',
-                    name: 'Ollama',
-                    enabled: true,
-                    apiUrl: 'http://localhost:11434/api/',
-                    apiKey: '',
-                    selectedModel: '',
-                    availableModels: [],
-                    temperature: 0.7,
-                    timeout: 60,
-                    teX: false
-                },
-                {
-                    id: 'aliyun',
-                    name: '阿里云百炼',
-                    enabled: false,
-                    apiUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1/',
-                    apiKey: '',
-                    selectedModel: '',
-                    availableModels: [],
-                    temperature: 0.7,
-                    timeout: 120
-                },
-                {
-                    id: 'deepseek',
-                    name: 'Deepseek深度求索',
-                    enabled: false,
-                    apiUrl: 'https://api.deepseek.com/v1/',
-                    apiKey: '',
-                    selectedModel: '',
-                    availableModels: [],
-                    temperature: 0.7,
-                    timeout: 120
-                }
+                // {
+                //     id: 'ollama',
+                //     name: 'Ollama',
+                //     enabled: true,
+                //     apiUrl: 'http://localhost:11434/api/',
+                //     apiKey: '',
+                //     selectedModel: '',
+                //     availableModels: [],
+                //     temperature: 0.7,
+                //     timeout: 60,
+                //     teX: false
+                // },
+                // {
+                //     id: 'aliyun',
+                //     name: '阿里云百炼',
+                //     enabled: false,
+                //     apiUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1/',
+                //     apiKey: '',
+                //     selectedModel: '',
+                //     availableModels: [],
+                //     temperature: 0.7,
+                //     timeout: 120
+                // },
+                // {
+                //     id: 'deepseek',
+                //     name: 'Deepseek深度求索',
+                //     enabled: false,
+                //     apiUrl: 'https://api.deepseek.com/v1/',
+                //     apiKey: '',
+                //     selectedModel: '',
+                //     availableModels: [],
+                //     temperature: 0.7,
+                //     timeout: 120
+                // }
             ],
             // 超时选项
             timeoutOptions: [
@@ -188,13 +191,32 @@ export default {
         },
         // 当前选中的模型
         currentModel() {
-            return this.models.find(model => model.id === this.activeModel) || {};
+            return this.models.find(model => model.name === this.activeModel) || {};
         }
     },
     methods: {
         // 处理菜单选择
-        handleMenuSelect(modelId) {
-            this.activeModel = modelId;
+        async handleMenuSelect(val) {
+            let id = this.models.find(model => model.name === val).id
+            let src = await getAiConfigById(id)
+            console.log('src.data', src.data);
+            const models = this.models.find(item => item.name == val);
+            if (models) {
+                Object.assign(models, {
+                    id: src.data.id,
+                    label: src.data.label,
+                    name: src.data.provider,
+                    enabled: src.data.status == '1',
+                    apiUrl: src.data.aiAddress,
+                    apiKey: src.data.apiKey,
+                    thinkingMode: src.data.thinkingMode,
+                    modelName: src.data.modelName,
+                    availableModels: src.data.availableModels,
+                    temperature: src.data.temperature,
+                    timeout: src.data.timeOut
+                });
+            }
+            this.activeModel = val;
         },
         // 处理模型开关变化
         handleModelSwitch(model) {
@@ -287,13 +309,31 @@ export default {
             }, 1500);
         },
         // 保存配置
-        handleSave() {
+        handleSave() {//分钟转化为秒
             this.$message.success('配置保存成功');
         }
     },
+    async created() {
+        // 初始化当前模型的列表
+        let src = await getAiConfigList()
+        src.data.forEach(item => {
+            this.models.push({
+                id: item.id,
+                label: item.label,
+                name: item.provider,
+                enabled: item.status == '1' ? true : false,
+                apiUrl: item.aiAddress,
+                apiKey: item.apiKey,
+                thinkingMode: item.thinkingMode,
+                modelName: item.modelName,
+                availableModels: [],
+                temperature: item.temperature,
+                timeout: item.timeOut,
+            })
+        })
+        this.activeModel = src.data.find(item => item.status == '1').provider
+    },
     mounted() {
-        // 初始化时刷新当前模型的列表
-        this.refreshModelList();
     }
 };
 </script>
