@@ -223,9 +223,10 @@ export default {
             this.updateCheckList();
 
             // 重新计算全选按钮的状态
-            const checkedCount = this.returnArr.filter(database => database.checked).length;
-            this.checkAll = checkedCount === this.scanContentTreeData.length;
-            this.isIndeterminate = checkedCount > 0 && checkedCount < this.scanContentTreeData.length;
+            const allChecked = this.returnArr.every(database => database.checked);
+            const someChecked = this.returnArr.some(database => database.checked || database.isBanxuan);
+            this.checkAll = allChecked;
+            this.isIndeterminate = someChecked && !allChecked;
 
             this.$forceUpdate();
         },
