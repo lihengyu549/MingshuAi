@@ -42,8 +42,7 @@
                 <div slot="header" class="clearfix">
                     <span>
                         已选
-                        <span v-if="checkList.length == scanContentTreeData.length"
-                            class="right-panel-text">(所有数据源)</span>
+                        <span v-if="isAllTablesSelected" class="right-panel-text">(所有数据源)</span>
                         <span v-else class="right-panel-text">({{ tableNum }}张表)</span>
                     </span>
                     <el-button style="float: right; padding: 3px 0;color: blue;" type="text"
@@ -129,6 +128,11 @@ export default {
                 }, 0);
             };
             return count(this.returnArr);
+        },
+        isAllTablesSelected() {
+            return this.returnArr.every(database => {
+                return database.checked && database.children.every(table => table.checked);
+            });
         }
     },
     watch: {
@@ -217,6 +221,12 @@ export default {
                 database.isBanxuan = true;
             }
             this.updateCheckList();
+
+            // 重新计算全选按钮的状态
+            const checkedCount = this.returnArr.filter(database => database.checked).length;
+            this.checkAll = checkedCount === this.scanContentTreeData.length;
+            this.isIndeterminate = checkedCount > 0 && checkedCount < this.scanContentTreeData.length;
+
             this.$forceUpdate();
         },
         async fetchTableNames(databaseName) {
