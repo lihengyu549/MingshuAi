@@ -21,7 +21,8 @@
                             @input="inputSearch" clearable>
                             <i slot="prefix" class="el-input__icon el-icon-search"></i>
                         </el-input>
-                        <el-checkbox-group v-model="checkListChild" style="overflow: scroll;height: 100%;">
+                        <el-checkbox-group v-model="checkListChild"
+                            style="overflow: scroll;max-height: calc(100% - 70px)">
                             <el-checkbox v-for="item in checkListChildAll"
                                 @change="handleCheckedChildChange(item, $event)" :label="item.tableName"
                                 :key="item.value" class="inline-checkbox">
@@ -261,11 +262,16 @@ export default {
                     this.returnArr.find(item => item.name == val.name).checked = e
                     this.returnArr.find(item => item.name == val.name).children = [...this.checkListChildAll]
                 }
-            } else if (this.checkListChildAll[0].databaseName == val.name) {
+            } else if (this.checkListChildAll.length > 0 && this.checkListChildAll[0].databaseName == val.name) {
                 this.checkListChild = []
                 this.checkListChildAll.forEach(item => {
                     item.checked = false
                 })
+                // this.returnArr.find(item => item.name == val.name).checked = e
+                this.$set(this.returnArr.find(item => item.name == val.name), 'checked', e);
+                // this.returnArr.find(item => item.name == val.name).children = []
+                this.$set(this.returnArr.find(item => item.name == val.name), 'children', []);
+            } else {
                 // this.returnArr.find(item => item.name == val.name).checked = e
                 this.$set(this.returnArr.find(item => item.name == val.name), 'checked', e);
                 // this.returnArr.find(item => item.name == val.name).children = []
