@@ -73,7 +73,7 @@ export default {
     props: {
         scanContentTreeData: { //总库名
             type: Array,
-            default: () => ({})
+            default: () => []
         },
         treeCheckedData: { //已选表名
             type: Array,
@@ -87,7 +87,7 @@ export default {
     data() {
         return {
             checkAll: false,
-            checkList: [], //this.treeCheckedData, //已选数据库库名
+            checkList: [], //已选数据库库名
             databaseTableNameP: { ...this.databaseTableNameParama, databaseName: "" }, //数据库表名传参
             databaseTableNameList: [],//数据库表名列表
             isIndeterminate: false,
@@ -102,20 +102,6 @@ export default {
             selectedItemsChildCount: [],// 右側增加的无用数据展示
 
             //汇总数据
-            // arr: [
-            //     {
-            //         name: remarkNull,//左侧label
-            //         checked:false,// 是否选中
-            //         isChildrenNode:true,//是否有子节点
-            //         isBanxuan:true,//是否半选
-            //         children:[
-            //             {
-            //                 name:remarkNull,
-            //                 checked:false,//是否选中
-            //             }
-            //         ]
-            //     }
-            // ],
             returnArr: []
         };
     },
@@ -126,11 +112,9 @@ export default {
             return {
                 name: item.label,//左侧label
                 checked: false,// 是否选中
-                // isChildrenNode:true,//是否有子节点
                 isBanxuan: false,//是否半选
                 value: item.value,
-                children: [
-                ]
+                children: []
             }
         })
     },
@@ -151,23 +135,21 @@ export default {
     },
     methods: {
         handleCheckAllChange(val) {
-            this.checkList = val ? this.scanContentTreeData.map(item => {
-                return item.label
-            }) : [];
-            this.checkListChild = val ? this.checkListChildAll.map(item => {
-                return item.tableName
-            }) : [];
+            this.checkList = val ? this.scanContentTreeData.map(item => item.label) : [];
             this.isIndeterminate = false;
 
-            // 更新 returnArr 中每个数据库及其子表的 checked 状态
+            // 更新 returnArr 中每个数据库的 checked 状态
             this.returnArr.forEach(database => {
                 database.checked = val;
-                if (database.children) {
-                    database.children.forEach(table => {
-                        table.checked = val;
-                    });
+                database.isBanxuan = false;
+                if (!val) {
+                    database.children = [];
                 }
             });
+
+            // 清空中间列表
+            this.checkListChildAll = [];
+            this.serchListChildAll = [];
 
             // 强制更新计算属性
             this.$forceUpdate();
@@ -178,67 +160,19 @@ export default {
             this.checkList = [];
             this.checkListChild = [];
             this.checkAll = false;
-        },
-        /**
-         * 根据标签移除对应的子节点
-         * 通过标签找到父节点，然后移除该父节点下的所有子节点
-         * @param {string} value - 父节点
-         */
-        removeItemByLabel(value) {
-            this.$refs.tree.setChecked(value, false)
-            let ids = value.children.forEach(item => this.$refs.tree.setChecked(item.value, false))
-            stateList = {
-                checkedNodes: [],
-                halfCheckedNodes: []
-            }
-            let stateList = this.$refs.tree.getHalfCheckedNodes().concat(...this.$refs.tree.getCheckedNodes())
-            stateList.checkedNodes = this.$refs.tree.getCheckedNodes()
-            stateList.halfCheckedNodes = this.$refs.tree.getHalfCheckedNodes()
-            this.leftTreeCheckFn(null, stateList)
-        },
-        leftTreeCheckFn(data, stateList) {
-            let parentList = []
-            let sonList = []
-            sonList = stateList.checkedNodes
-            parentList = stateList.checkedNodes.concat(stateList.halfCheckedNodes);
-            if (data && data.value == '0' && parentList.length === 0) {
-                this.defaultArr = []
-            }
-
-            this.selectedItemsParent = parentList.filter(item => {
-                if (item.children && item.children.length && item.value !== '0') {
-                    return item
-                }
-            })
-            this.selectedItemsChild = sonList.filter(item => {
-                if (item.parentID) {
-                    return item
-                }
-            })
-            // 示例：获取特定父节点下的被选中子节点
-            this.selectedItemsParent.forEach((item) => {
-                item.checkedCount = this.getCheckedChildrenByParent(item.value, sonList).length;
-            })
+            this.returnArr.forEach(database => {
+                database.checked = false;
+                database.isBanxuan = false;
+                database.children = [];
+            });
+            this.checkListChildAll = [];
+            this.serchListChildAll = [];
+            this.$forceUpdate();
         },
         inputSearch(val) {
             this.checkListChildAll = this.serchListChildAll.filter(item => {
                 return item.tableName.indexOf(val) !== -1;
             })
-        },
-        /**
-         * 获取特定节点下的被选中子节点
-         * @param {string} parentId - 父节点的 value
-         * @param {Array} checkedNodes - 所有被选中的节点
-         * @returns {Array} - 特定节点下的被选中子节点
-         */
-        getCheckedChildrenByParent(parentId, checkedNodes) {
-            return checkedNodes.filter(node => node.parentID === parentId);
-        },
-        mouseOver(event) {
-            //在data里边记得要定义一个isShowTooltip默认为false
-            this.isShowTooltip =
-                event.currentTarget.scrollWidth <= event.currentTarget.clientWidth;
-            // console.log("222");
         },
         handleCheckedChangeGroup(val) {
             let checkedCount = val.length;
@@ -246,68 +180,68 @@ export default {
             this.isIndeterminate = checkedCount > 0 && checkedCount < this.scanContentTreeData.length;
         },
         async handleCheckedChange(val, e) {
-            this.returnArr.find(ele => ele.name == val.name).isBanxuan = false
+            const database = this.returnArr.find(ele => ele.name === val.name);
+            database.isBanxuan = false;
             if (e) {
-                this.databaseTableNameP.databaseName = val.name
-                let res = await getDatabaseTableNameList(this.databaseTableNameP)
-                this.checkListChildAll = res.data.map((item) => {
-                    return {
-                        databaseName: item.databaseName,
-                        tableName: item.tableName,
-                        value: item.parentID,
-                        checked: e
-                    }
-                })
-                this.checkListChild = this.checkListChildAll.map(item => item.tableName)
-                this.serchListChildAll = [...this.checkListChildAll];
+                // 清空中间列表
+                this.checkListChildAll = [];
+                this.serchListChildAll = [];
 
-                if (!this.returnArr.find(item => item.name == val.name).checked) {
-                    this.returnArr.find(item => item.name == val.name).checked = e
-                    this.returnArr.find(item => item.name == val.name).children = [...this.checkListChildAll]
-                }
-            } else if (this.checkListChildAll.length > 0 && this.checkListChildAll[0].databaseName == val.name) {
-                this.checkListChild = []
-                this.checkListChildAll.forEach(item => {
-                    item.checked = false
-                })
-                // this.returnArr.find(item => item.name == val.name).checked = e
-                this.$set(this.returnArr.find(item => item.name == val.name), 'checked', e);
-                // this.returnArr.find(item => item.name == val.name).children = []
-                this.$set(this.returnArr.find(item => item.name == val.name), 'children', []);
+                await this.fetchTableNames(val.name);
+                database.checked = true;
+                database.children.forEach(table => {
+                    table.checked = true;
+                });
+                this.checkListChild = this.checkListChildAll.filter(item => item.databaseName === val.name).map(item => item.tableName);
             } else {
-                // this.returnArr.find(item => item.name == val.name).checked = e
-                this.$set(this.returnArr.find(item => item.name == val.name), 'checked', e);
-                // this.returnArr.find(item => item.name == val.name).children = []
-                this.$set(this.returnArr.find(item => item.name == val.name), 'children', []);
+                database.checked = false;
+                database.children = [];
+                this.checkListChild = this.checkListChild.filter(item => item.databaseName !== val.name);
+                this.checkListChildAll = this.checkListChildAll.filter(item => item.databaseName !== val.name);
+                this.serchListChildAll = this.serchListChildAll.filter(item => item.databaseName !== val.name);
             }
-
-            this.$forceUpdate()
+            this.updateCheckList();
+            this.$forceUpdate();
         },
         handleCheckedChildChange(item, e) {
-            if (this.checkListChildAll.length == 1) {
-                if (e) {
-                    this.checkList.push(item.databaseName)
-                } else {
-                    this.checkList.splice(this.checkList.findIndex(ele => ele == item.databaseName), 1)
-                }
-                this.returnArr.find(ele => ele.name == item.databaseName).isBanxuan = false
-            } else if (this.checkListChild.length != this.checkListChildAll.length && this.checkListChild.length != 0) {
-                this.returnArr.find(ele => ele.name == item.databaseName).isBanxuan = true
-            } else if (this.checkListChild.length == 0) {
-                this.checkList = []
-                this.returnArr.find(ele => ele.name == item.databaseName).isBanxuan = false
+            const database = this.returnArr.find(ele => ele.name === item.databaseName);
+            const checkedChildren = database.children.filter(child => child.checked);
+            if (checkedChildren.length === 0) {
+                database.checked = false;
+                database.isBanxuan = false;
+            } else if (checkedChildren.length === database.children.length) {
+                database.checked = true;
+                database.isBanxuan = false;
             } else {
-                if (e && !this.checkList.includes(item.databaseName)) {
-                    this.checkList.push(item.databaseName)
-                } else {
-                    this.checkList.splice(this.checkList.findIndex(ele => ele == item.databaseName), 1)
-                }
-                this.returnArr.find(ele => ele.name == item.databaseName).isBanxuan = false
+                database.checked = false;
+                database.isBanxuan = true;
             }
-            this.returnArr.find(ele => ele.name == item.databaseName).children.find(ele => ele.tableName == item.tableName).checked = e
-
-            this.$forceUpdate()
+            this.updateCheckList();
+            this.$forceUpdate();
         },
+        async fetchTableNames(databaseName) {
+            this.databaseTableNameP.databaseName = databaseName;
+            let res = await getDatabaseTableNameList(this.databaseTableNameP);
+            const tables = res.data.map((item) => {
+                return {
+                    databaseName: item.databaseName,
+                    tableName: item.tableName,
+                    value: item.parentID,
+                    checked: false
+                }
+            });
+            const database = this.returnArr.find(ele => ele.name === databaseName);
+            database.children = tables;
+            // 只保留当前点击库的表列表
+            this.checkListChildAll = tables;
+            this.serchListChildAll = [...tables];
+        },
+        updateCheckList() {
+            this.checkList = this.returnArr.filter(database => {
+                return database.children.some(child => child.checked);
+            }).map(database => database.name);
+        }
+
     }
 };
 </script>
