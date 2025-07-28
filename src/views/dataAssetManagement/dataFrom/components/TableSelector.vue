@@ -21,14 +21,17 @@
                             @input="inputSearch" clearable>
                             <i slot="prefix" class="el-input__icon el-icon-search"></i>
                         </el-input>
-                        <el-checkbox-group v-model="checkListChild"
-                            style="overflow: scroll;max-height: calc(100% - 70px)">
-                            <el-checkbox v-for="item in checkListChildAll"
-                                @change="handleCheckedChildChange(item, $event)" :label="item.tableName"
-                                :key="item.value" class="inline-checkbox">
-                                {{ item.tableName }}
-                            </el-checkbox>
-                        </el-checkbox-group>
+                        <!-- 使用 RecycleScroller 替换原来的 el-checkbox-group -->
+                        <RecycleScroller :items="checkListChildAll" :item-size="30"
+                            style="max-height: calc(100% - 70px); overflow: auto;" key-field="value">
+                            <!-- 每个列表项的高度，根据实际情况调整 -->
+                            <template #default="{ item }">
+                                <el-checkbox v-model="item.checked" @change="handleCheckedChildChange(item, $event)"
+                                    :label="item.tableName" :key="item.value" class="inline-checkbox">
+                                    {{ item.tableName }}
+                                </el-checkbox>
+                            </template>
+                        </RecycleScroller>
                     </div>
                 </div>
             </el-card>
@@ -49,10 +52,6 @@
                 <ul>
                     <li v-for="item in checkList" :key="item.value">
                         <span style="line-height: 20px;">{{ item }}</span>
-                        <!-- <div>
-                            <span style="margin-right: 10px;">已选{{ item.checkedCount }}张表</span>
-                            <el-button type="text" icon="el-icon-close" @click="removeItemByLabel(item)"></el-button>
-                        </div> -->
                     </li>
                 </ul>
             </el-card>
@@ -61,12 +60,16 @@
 </template>
 
 <script>
+import { RecycleScroller } from 'vue-virtual-scroller';
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import {
     getDatabaseTableNameList
 } from "@/api/system/proxys";
-import { json } from "d3";
 export default {
     name: "TableSelector",
+    components: {
+        RecycleScroller
+    },
     props: {
         scanContentTreeData: { //总库名
             type: Array,
@@ -277,6 +280,8 @@ export default {
                 // this.returnArr.find(item => item.name == val.name).children = []
                 this.$set(this.returnArr.find(item => item.name == val.name), 'children', []);
             }
+
+            this.$forceUpdate()
         },
         handleCheckedChildChange(item, e) {
             if (this.checkListChildAll.length == 1) {
@@ -300,6 +305,8 @@ export default {
                 this.returnArr.find(ele => ele.name == item.databaseName).isBanxuan = false
             }
             this.returnArr.find(ele => ele.name == item.databaseName).children.find(ele => ele.tableName == item.tableName).checked = e
+
+            this.$forceUpdate()
         },
     }
 };
