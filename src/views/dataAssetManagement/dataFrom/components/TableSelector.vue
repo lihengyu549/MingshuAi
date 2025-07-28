@@ -154,6 +154,19 @@ export default {
                 return item.tableName
             }) : [];
             this.isIndeterminate = false;
+
+            // 更新 returnArr 中每个数据库及其子表的 checked 状态
+            this.returnArr.forEach(database => {
+                database.checked = val;
+                if (database.children) {
+                    database.children.forEach(table => {
+                        table.checked = val;
+                    });
+                }
+            });
+
+            // 强制更新计算属性
+            this.$forceUpdate();
         },
         // flag 为0 左侧数据  // flag为1：中间数据
         // 树节点点击事件
@@ -163,10 +176,10 @@ export default {
             this.checkAll = false;
         },
         /**
-     * 根据标签移除对应的子节点
-     * 通过标签找到父节点，然后移除该父节点下的所有子节点
-     * @param {string} value - 父节点
-     */
+         * 根据标签移除对应的子节点
+         * 通过标签找到父节点，然后移除该父节点下的所有子节点
+         * @param {string} value - 父节点
+         */
         removeItemByLabel(value) {
             this.$refs.tree.setChecked(value, false)
             let ids = value.children.forEach(item => this.$refs.tree.setChecked(item.value, false))
@@ -260,8 +273,6 @@ export default {
             }
         },
         handleCheckedChildChange(item, e) {
-            // console.log('-----',this.checkListChildAll); this.checkList.splice(this.checkList.findIndex(ele => ele == item.databaseName), 1)
-            // console.log('-----',this.checkListChild);
             if (this.checkListChildAll.length == 1) {
                 if (e) {
                     this.checkList.push(item.databaseName)
@@ -283,7 +294,6 @@ export default {
                 this.returnArr.find(ele => ele.name == item.databaseName).isBanxuan = false
             }
             this.returnArr.find(ele => ele.name == item.databaseName).children.find(ele => ele.tableName == item.tableName).checked = e
-
         },
     }
 };
