@@ -115,21 +115,21 @@
           <el-input v-model="form.tasksName" maxlength="50" placeholder="请输入任务名称" />
         </el-form-item>
         <el-form-item label="数据源名称" prop="id" :rules="rules.id">
-          <el-select v-model="form.id" clearable>
+          <el-select v-model="form.id" clearable @change="projectChangeEdit($event)">
             <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.sourceName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <!-- <el-form-item label="分类分级标准">
+        <el-form-item label="分类分级标准">
           <el-input v-model="form.projectName" :disabled="true" />
-        </el-form-item> -->
-        <el-form-item label="分类分级标准" prop="projectName" :rules="rules.projectName">
+        </el-form-item>
+        <!-- <el-form-item label="分类分级标准" prop="projectName" :rules="rules.projectName">
           <el-select v-model="form.projectName" :disabled="editIsFlag" placeholder="请选择分类分级标准" clearable
             @change="projectChangeEdit($event)">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="AI分析引擎" prop="aiAnalyticsEngine">
           <el-radio-group v-model="aiAnalyticsEngine">
             <el-radio label="1">快速响应</el-radio>
@@ -475,6 +475,7 @@ export default {
     },
 
     projectChangeEdit(e) {
+      this.form.projectName = this.databaseTypeList.find(item => item.id == e).projectName
       this.form.projectId = e
       this.$forceUpdate()
     },
