@@ -23,7 +23,7 @@
                         <svg-icon
                             :icon-class="model.label == 'Ollama' ? 'robDog' : model.label == '阿里云百炼' ? 'alybl' : 'deepseek'"
                             style="margin-right: 10px;"></svg-icon>
-                        <span>{{ model.label }}</span>{{ model.enabled }}
+                        <span>{{ model.label }}</span>
                         <!-- 左侧菜单开关 - 调整为内部显示ON/OFF -->
                         <el-switch v-model="model.enabled" active-color="#13ce66" inactive-color="#e9ecef"
                             active-text="ON" inactive-text="OFF" class="inner-text-switch" style="margin-left: auto;"
@@ -436,6 +436,7 @@ export default {
 /deep/.inner-text-switch .el-switch__label.el-switch__label--left {
     position: absolute;
     left: 8px;
+    top: -2px;
     width: 100%;
     height: 100%;
     font-size: 14px;
@@ -452,6 +453,7 @@ export default {
 /deep/.inner-text-switch .el-switch__label.el-switch__label--right {
     position: absolute;
     left: -18px;
+    top: -2px;
     width: 100%;
     height: 100%;
     font-size: 14px;
