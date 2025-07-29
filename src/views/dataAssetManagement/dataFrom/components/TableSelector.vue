@@ -317,9 +317,13 @@ export default {
             this.serchListChildAll = [...tables];
         },
         updateCheckList() {
-            console.log('this.returnArr', this.returnArr);
             this.checkList = this.returnArr.filter(database => {
-                return database.checked
+                if (database.checked) {
+                    return database.checked
+                }
+                if (database.isBanxuan) {
+                    return database.children.some(child => child.checked);
+                }
             }).map(database => database.name);
         },
     }
