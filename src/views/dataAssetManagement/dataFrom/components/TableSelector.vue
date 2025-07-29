@@ -42,8 +42,7 @@
                 <div slot="header" class="clearfix">
                     <span>
                         已选
-                        <span v-if="isAllTablesSelected" class="right-panel-text">(所有数据源)</span>
-                        <span v-else class="right-panel-text">({{ tableNum }}张表)</span>
+                        <span class="right-panel-text">{{ selectedDisplayText }}</span>
                     </span>
                     <el-button style="float: right; padding: 3px 0;color: blue;" type="text"
                         @click="clearSelection">清空</el-button>
@@ -133,30 +132,93 @@ export default {
             return this.returnArr.every(database => {
                 return database.checked && database.children.every(table => table.checked);
             });
+        },
+        // 新增：完全选中的数据源数量（所有表均选中）
+        fullSelectedDbs() {
+            return this.returnArr.filter(db => {
+                // 数据源有子表且全部表都被选中
+                return db.children.length > 0 &&
+                    db.checked &&
+                    db.children.every(table => table.checked);
+            }).length;
+        },
+
+        // 新增：部分选中的数据源（有表选中但未全选）
+        partialSelectedDbs() {
+            return this.returnArr.filter(db => {
+                const hasCheckedTables = db.children.some(table => table.checked); // 存在选中的表
+                const isFullSelected = db.children.length > 0 && db.children.every(table => table.checked); // 未全选
+                return hasCheckedTables && !isFullSelected;
+            });
+        },
+
+        // 新增：部分选中数据源的总表数
+        partialSelectedTables() {
+            return this.partialSelectedDbs.reduce((total, db) => {
+                const checkedCount = db.children.filter(table => table.checked).length;
+                return total + checkedCount;
+            }, 0);
+        },
+
+        // 新增：已选文本展示内容（核心逻辑）
+        selectedDisplayText() {
+            const fullCount = this.fullSelectedDbs; // 完全选中的数据源数量
+            const partialCount = this.partialSelectedDbs.length; // 部分选中的数据源数量
+            const partialTableCount = this.partialSelectedTables; // 部分选中的表总数
+
+            if (fullCount === 0 && partialCount === 0) {
+                return '(未选择数据)'; // 无任何选中时
+            } else if (partialCount === 0) {
+                return `(${fullCount}个数据源)`; // 仅完全选中时
+            } else if (fullCount === 0) {
+                return `(${partialCount}个数据源中的${partialTableCount}张表)`; // 仅部分选中时
+            } else {
+                return `(${fullCount}个数据源 + ${partialCount}个数据源中的${partialTableCount}张表)`; // 混合选中时
+            }
         }
     },
     watch: {
     },
     methods: {
         handleCheckAllChange(val) {
-            this.checkList = val ? this.scanContentTreeData.map(item => item.label) : [];
             this.isIndeterminate = false;
-
-            // 更新 returnArr 中每个数据库的 checked 状态
-            this.returnArr.forEach(database => {
-                database.checked = val;
-                database.isBanxuan = false;
-                if (!val) {
+            if (val) {
+                // 全选：加载所有数据源的表并选中所有表
+                this.checkList = this.scanContentTreeData.map(item => item.label);
+                // 批量加载所有数据源的表
+                const fetchPromises = this.scanContentTreeData.map(item => {
+                    return this.fetchTableNames(item.label).then(() => {
+                        // 加载完成后，选中当前数据源的所有表
+                        const database = this.returnArr.find(db => db.name === item.label);
+                        if (database && database.children) {
+                            database.children.forEach(table => {
+                                table.checked = true;
+                            });
+                        }
+                    });
+                });
+                // 等待所有表加载完成后更新状态
+                Promise.all(fetchPromises).then(() => {
+                    this.returnArr.forEach(database => {
+                        database.checked = true;
+                        database.isBanxuan = false;
+                    });
+                    this.updateCheckList();
+                    this.$forceUpdate();
+                });
+            } else {
+                // 取消全选：清空所有选中状态和表数据
+                this.checkList = [];
+                this.returnArr.forEach(database => {
+                    database.checked = false;
+                    database.isBanxuan = false;
                     database.children = [];
-                }
-            });
-
-            // 清空中间列表
-            this.checkListChildAll = [];
-            this.serchListChildAll = [];
-
-            // 强制更新计算属性
-            this.$forceUpdate();
+                });
+                this.checkListChildAll = [];
+                this.serchListChildAll = [];
+                this.updateCheckList();
+                this.$forceUpdate();
+            }
         },
         // flag 为0 左侧数据  // flag为1：中间数据
         // 树节点点击事件
@@ -231,6 +293,12 @@ export default {
             this.$forceUpdate();
         },
         async fetchTableNames(databaseName) {
+            // 若已加载过该数据源的表，直接返回避免重复请求
+            const database = this.returnArr.find(ele => ele.name === databaseName);
+            if (database && database.children && database.children.length > 0) {
+                return;
+            }
+            // 原有请求逻辑
             this.databaseTableNameP.databaseName = databaseName;
             let res = await getDatabaseTableNameList(this.databaseTableNameP);
             const tables = res.data.map((item) => {
@@ -238,22 +306,24 @@ export default {
                     databaseName: item.databaseName,
                     tableName: item.tableName,
                     value: item.parentID,
-                    checked: false
-                }
+                    checked: false // 初始不选中，全选时会手动设为true
+                };
             });
-            const database = this.returnArr.find(ele => ele.name === databaseName);
-            database.children = tables;
-            // 只保留当前点击库的表列表
+            const targetDb = this.returnArr.find(ele => ele.name === databaseName);
+            if (targetDb) {
+                targetDb.children = tables;
+            }
             this.checkListChildAll = tables;
             this.serchListChildAll = [...tables];
         },
         updateCheckList() {
+            console.log('this.returnArr', this.returnArr);
             this.checkList = this.returnArr.filter(database => {
-                return database.children.some(child => child.checked);
+                return database.checked
             }).map(database => database.name);
-        }
-
+        },
     }
+
 };
 </script>
 
