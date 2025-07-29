@@ -250,7 +250,7 @@ export default {
             database.isBanxuan = false;
             if (e) {
                 // 清空中间列表
-                this.checkListChildAll = [];
+                // this.checkListChildAll = [];
                 this.serchListChildAll = [];
 
                 await this.fetchTableNames(val.name);
