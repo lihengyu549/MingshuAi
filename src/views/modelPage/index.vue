@@ -436,7 +436,7 @@ export default {
 /deep/.inner-text-switch .el-switch__label.el-switch__label--left {
     position: absolute;
     left: 8px;
-    top: -2px;
+    top: -3px;
     width: 100%;
     height: 100%;
     font-size: 14px;
@@ -453,7 +453,7 @@ export default {
 /deep/.inner-text-switch .el-switch__label.el-switch__label--right {
     position: absolute;
     left: -18px;
-    top: -2px;
+    top: -3px;
     width: 100%;
     height: 100%;
     font-size: 14px;
