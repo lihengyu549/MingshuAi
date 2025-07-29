@@ -732,6 +732,13 @@ export default {
       this.$refs["form"].validate(async valid => {
         let data = JSON.parse(JSON.stringify(this.form))
         delete data.projectName
+        if (!Array.isArray(data.targetDatabase)) {
+          let str = data.targetDatabase
+          data.targetDatabase = str.trim() // 去除字符串首尾的空白字符
+            .replace(/^"|"$/g, '') // 移除首尾的引号
+            .split(',') // 按逗号分割字符串
+            .filter(Boolean); // 过滤掉空字符串
+        }
         data.targetDatabase = JSON.stringify(data.targetDatabase)
         data.connectionType = this.connectionType
         data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
@@ -889,7 +896,7 @@ export default {
     scanContentEdit(row) {
       if (row.isAddTasks == 1) {
         this.editIsFlag = true
-      }else{
+      } else {
         this.editIsFlag = false
       }
       if (row.databaseType == "Excel") {
@@ -929,7 +936,7 @@ export default {
         //   return
         // }
         // this.form = row
-        
+
       }
     },
     // 扫描内容点击事件
@@ -967,7 +974,10 @@ export default {
         }
       });
       this.form.targetDatabase = []
-      returnArr.forEach((item)=>{
+      // if(typeof this.form.targetDatabase == 'string'){
+      //   this.form.targetDatabase = this.form.targetDatabase.trim().replace(/^"|"$/g, '').split(',').filter(Boolean);
+      // }
+      returnArr.forEach((item) => {
         if (item.checked) {
           this.form.targetDatabase.push(item.name)
         }
