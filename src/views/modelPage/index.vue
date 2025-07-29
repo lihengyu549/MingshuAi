@@ -49,8 +49,7 @@
                             <el-input v-model="currentModel.apiUrl" placeholder="请输入接口地址"
                                 style="width: 100%;"></el-input>
                         </el-form-item>
-
-                        <el-form-item v-if="currentModel.id == 'aliyun' || currentModel.id == 'deepseek'" label="API密钥">
+                        <el-form-item v-if="currentModel.name == 'aliyun' || currentModel.name == 'deepseek'" label="API密钥">
                             <el-input v-model="currentModel.apiKey" placeholder="请输入API密钥" type="password"
                                 style="width: 100%;"></el-input>
                         </el-form-item>
@@ -65,7 +64,7 @@
                             </el-button>
                         </el-form-item>
 
-                        <el-form-item v-if="currentModel.id == 'ollama'" label="模型特性">
+                        <el-form-item v-if="currentModel.name == 'ollama'" label="模型特性">
                             <el-switch v-model="currentModel.thinkingMode" active-color="#13ce66" class="model-switch"
                                 inactive-color="#e9ecef" active-text="深度思考" style="margin-left: auto;"></el-switch>
                             <el-tooltip content="深度思考模式让模型在回答前进行推理分析，提供更详细的思考过程" placement="top"
