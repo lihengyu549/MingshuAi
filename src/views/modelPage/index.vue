@@ -1,9 +1,9 @@
 <template>
     <div class="model-config-page">
         <!-- 页面标题区域 -->
-        <div class="page-header">
+        <!-- <div class="page-header">
             <h2 style="padding-top: 10px;">模型配置</h2>
-        </div>
+        </div> -->
 
         <div class="model-config-container">
             <!-- 左侧菜单区域 -->
@@ -21,7 +21,7 @@
                     <el-menu-item v-for="model in filteredModels" :key="model.name" :index="model.name"
                         :style="{ backgroundColor: activeModel === model.id ? '#eaf1ff' : '' }">
                         <svg-icon
-                            :icon-class="model.label == 'Ollama' ? 'robDog' : model.label == '阿里云百炼' ? 'alybl' : 'deepseek'"
+                            :icon-class="model.label == 'Ollama' ? 'Ollama' : model.label == '阿里云百炼' ? 'alybl' : 'deepseek'"
                             style="margin-right: 10px;"></svg-icon>
                         <span>{{ model.label }}</span>
                         <!-- 左侧菜单开关 - 调整为内部显示ON/OFF -->
@@ -35,7 +35,9 @@
             <!-- 右侧内容区域 -->
             <div class="right-content">
                 <div class="content-header">
-                    <i class="el-icon-menu"></i>
+                    <svg-icon
+                        :icon-class="currentModel.label == 'Ollama' ? 'Ollama' : currentModel.label == '阿里云百炼' ? 'alybl' : 'deepseek'"
+                        style="margin-right: 10px;"></svg-icon>
                     <span>{{ currentModel.label || '请选择模型' }}</span>
                     <!-- 右侧主开关 - 调整为内部显示ON/OFF -->
                     <el-switch v-model="currentModel.enabled" active-color="#13ce66" inactive-color="#e9ecef"
@@ -68,7 +70,7 @@
                             inactive-color="#e9ecef" active-text="深度思考" style="margin-left: auto;"></el-switch>
                         <el-tooltip content="深度思考模式让模型在回答前进行推理分析，提供更详细的思考过程" placement="top"
                             transition="el-fade-in-linear">
-                            <svg-icon icon-class="bulb" style="margin-left: 10px;"></svg-icon>
+                            <svg-icon icon-class="dengpao" style="margin-left: 10px;"></svg-icon>
                         </el-tooltip>
                     </el-form-item>
 
@@ -80,7 +82,7 @@
                             <span class="slider-value">{{ currentModel.temperature }}</span>
                             <el-tooltip content="控制模型输出的随机性和创造性。较低的值（0.1-0.3）产生更确定性的回答，较高的值（0.7-1.0）产生更创造性的回答"
                                 placement="top" transition="el-fade-in-linear">
-                                <svg-icon icon-class="bulb" style="margin-left: 10px;"></svg-icon>
+                                <svg-icon icon-class="dengpao" style="margin-left: 10px;"></svg-icon>
                             </el-tooltip>
                         </div>
                     </el-form-item>
@@ -94,7 +96,7 @@
                             </span>
                             <el-tooltip content="设置API请求的最大等待时间。如果请求超过此时间仍未响应，将自动中断连接。建议根据网络环境和任务复杂度调整" placement="top"
                                 transition="el-fade-in-linear">
-                                <svg-icon icon-class="bulb" style="margin-left: 10px;"></svg-icon>
+                                <svg-icon icon-class="dengpao" style="margin-left: 10px;"></svg-icon>
                             </el-tooltip>
                         </div>
                         <div class="timeout-buttons">
@@ -105,16 +107,17 @@
                             </el-button>
                         </div>
                     </el-form-item>
-
-                    <el-form-item>
-                        <el-button type="primary" @click="handleTest" :disabled="!currentModel.enabled">
-                            测试连接
-                        </el-button>
-                        <el-button type="success" style="margin-left: 10px;" @click="handleSave">
-                            保存配置
-                        </el-button>
-                    </el-form-item>
                 </el-form>
+
+                <!-- 新增按钮容器 -->
+                <div class="button-container">
+                    <el-button type="primary" plain @click="handleTest" :disabled="!currentModel.enabled">
+                        测试连接
+                    </el-button>
+                    <el-button type="primary" style="margin-left: 10px;" @click="handleSave">
+                        保存配置
+                    </el-button>
+                </div>
             </div>
         </div>
     </div>
@@ -172,7 +175,7 @@ export default {
                     enabled: item.status == '1' ? true : false,
                     apiUrl: item.aiAddress,
                     apiKey: item.apiKey,
-                    thinkingMode: item.thinkingMode,
+                    thinkingMode: item.thinkingMode == 'true' ? true : false,
                     modelName: item.modelName,
                     availableModels: [],
                     temperature: item.temperature,
@@ -194,7 +197,7 @@ export default {
                     // enabled: src.data.status == '1' ? true : false,
                     apiUrl: src.data.aiAddress,
                     apiKey: src.data.apiKey,
-                    thinkingMode: src.data.thinkingMode,
+                    thinkingMode: src.data.thinkingMode == 'true' ? true : false,
                     modelName: src.data.modelName,
                     availableModels: src.data.availableModels,
                     temperature: src.data.temperature,
@@ -296,7 +299,7 @@ export default {
                     enabled: this.currentModel.enabled,
                     aiAddress: this.currentModel.apiUrl,
                     apiKey: this.currentModel.apiKey,
-                    thinkingMode: this.currentModel.thinkingMode,
+                    thinkingMode: this.currentModel.thinkingMode ? 'enabled' : 'disabled',
                     modelName: this.currentModel.modelName,
                     availableModels: this.currentModel.availableModels,
                     temperature: this.currentModel.temperature,
@@ -323,7 +326,17 @@ export default {
         },
         // 保存配置
         async handleSave() {//分钟转化为秒
-            await updateAiConfigById(this.currentModel)
+            let response = {
+                id: this.currentModel.id,
+                aiAddress: this.currentModel.apiUrl,
+                apiKey: this.currentModel.apiKey,
+                thinkingMode: this.currentModel.thinkingMode ? 'enabled' : 'disabled',
+                modelName: this.currentModel.modelName,
+                temperature: this.currentModel.temperature,
+                timeOut: this.currentModel.timeout
+            }
+            await updateAiConfigById(response)
+            this.init()
             this.$message.success('配置保存成功');
         }
     },
@@ -344,7 +357,7 @@ export default {
     box-sizing: border-box;
 }
 
-.page-header {
+/* .page-header {
     margin-bottom: 20px;
 }
 
@@ -354,7 +367,7 @@ export default {
     margin: 0;
     padding-bottom: 10px;
     border-bottom: 1px solid #e6e6e6;
-}
+} */
 
 .model-config-container {
     display: flex;
@@ -389,6 +402,8 @@ export default {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
+    position: relative;
+    /* 添加相对定位 */
 }
 
 .content-header {
@@ -517,5 +532,12 @@ export default {
 .model-menu .el-switch .el-switch__core,
 .el-switch .el-switch__label {
     width: 60px !important;
+}
+
+/* 新增按钮容器样式 */
+.button-container {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
 }
 </style>
