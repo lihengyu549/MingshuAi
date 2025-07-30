@@ -3,7 +3,7 @@
         <div class="canChoose">
             <!-- 右侧已选列表 -->
             <el-card class="left-panel">
-                <div style="height: 20px;">可选</div>
+                <div slot="header" class="clearfix">可选</div>
                 <div class="canChoose_main">
                     <div class="canChoose_left">
                         <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll"
@@ -23,7 +23,7 @@
                         </el-input>
                         <!-- 使用 RecycleScroller 替换原来的 el-checkbox-group -->
                         <RecycleScroller :items="checkListChildAll" :item-size="30"
-                            style="max-height: calc(100% - 70px); overflow: auto;" key-field="value">
+                            style="max-height: calc(100% - 100px); overflow: auto;" key-field="value">
                             <!-- 每个列表项的高度，根据实际情况调整 -->
                             <template #default="{ item }">
                                 <el-checkbox v-model="item.checked" @change="handleCheckedChildChange(item, $event)"
@@ -226,6 +226,7 @@ export default {
             this.checkList = [];
             this.checkListChild = [];
             this.checkAll = false;
+            this.isIndeterminate = false
             this.returnArr.forEach(database => {
                 database.checked = false;
                 database.isBanxuan = false;
