@@ -2,6 +2,7 @@
   <div class="app-container">
     <div class="header">
       <el-button size="medium" type="primary" @click="addApiKeys()">创建API Key</el-button>
+      <el-button size="medium" type="primary" style="float:right" @click="showApiDoc = true">查看接口文档</el-button>
     </div>
     <el-table v-loading="loading" max-height="700px" class="tableBox" :data="tableList" ref="tableRef">
       <el-table-column label="API Key" width="300" align="center" prop="proxyToken">
@@ -60,18 +61,23 @@
         <el-button @click="closeFn">取消</el-button>
       </div>
     </el-dialog>
-
+    <!-- 查看接口文档 -->
+    <viewApiDoc ref="viewApiDocRef" :visible.sync="showApiDoc" :api-data="parsedApiData" />
   </div>
 </template>
 
 <script>
-import { getApiV1List, addApiV1, deleteApiV1, generateToken,updateApiV1 } from "@/api/APIAbutment";
-
+import { getApiV1List, addApiV1, deleteApiV1, generateToken, updateApiV1 } from "@/api/APIAbutment";
+import viewApiDoc from '@/views/APIAbutment/capacity/viewApiDoc.vue';
+import axios from 'axios';
 import {
   selectUserListAll,
 } from "@/api/standard";
 export default {
   name: 'capacity',
+  components: {
+    viewApiDoc
+  },
   data() {
     return {
       tableList: [{ id: 1 }],
@@ -82,12 +88,12 @@ export default {
         pageNum: 1,
         pageSize: 10,
       },
-      userList:[],
+      userList: [],
       formLoading: false,
       ApiForm: {
-        accountNumber:'',
-        ip:'',
-        userData:'',
+        accountNumber: '',
+        ip: '',
+        userData: '',
       },
       apiRules: {
         accountNumber: [
@@ -99,14 +105,183 @@ export default {
         ip: [
           { required: true, message: "授信地址不能为空", trigger: "blur" },
         ],
-      }
+      },
+
+      showApiDoc: false,
+      parsedApiData: [] // 直接解析
     }
   },
   created() {
     this.getList()
     this.getSelectUserListAll()
   },
+  mounted() {
+    this.loadMdFile()
+  },
   methods: {
+    /**
+ * 解析API文档Markdown内容为viewApiDoc组件所需的数据格式
+ * @param {string} mdContent - API文档的Markdown文本内容
+ * @returns {Array} 符合组件要求的API数据数组
+ */
+    parseApiDocs(mdContent) {
+      const apiSections = [];
+      const sections = mdContent.split('---\n');
+
+      sections.forEach(section => {
+        if (!section.trim()) return;
+
+        const lines = section.split('\n').map(line => line.trimEnd()); // 移除行尾空格
+        const api = {};
+
+        // 1. 修复接口名称提取（核心问题：未取match结果的分组值）
+        const nameMatch = lines[0].match(/^##\s*\d+\.\s*(.*)$/);
+        if (nameMatch && nameMatch[1]) {
+          api.name = nameMatch[1].trim(); // 提取"用户登录"、"获取用户信息"等名称
+        }
+
+        // 2. 提取请求方法
+        const methodLine = lines.find(line => line.includes('**请求方法**:'));
+        if (methodLine) {
+          api.method = methodLine.includes(':**') ? methodLine.split(':**')[1].trim() : '';
+        }
+
+        // 3. 提取请求地址
+        const urlLine = lines.find(line => line.includes('**请求地址**:'));
+        if (urlLine) {
+          api.url = urlLine.includes(':**') ? urlLine.split(':**')[1].trim() : '';
+        }
+
+        // 4. 提取请求数据类型
+        const dataTypeLine = lines.find(line => line.includes('**请求数据类型**:'));
+        if (dataTypeLine) {
+          api.dataType = dataTypeLine.includes(':**') ? dataTypeLine.split(':**')[1].trim() : '';
+        }
+
+        // 5. 提取请求参数（Header和Body）
+        const params = { header: [], body: [] };
+        let currentParamType = null;
+        lines.forEach(line => {
+          if (line.includes('### Header参数')) {
+            currentParamType = 'header';
+          } else if (line.includes('### Body参数')) {
+            currentParamType = 'body';
+          } else if (currentParamType && line.startsWith('|') && line.endsWith('|')) {
+            // 匹配参数行（排除表头分隔线"|---|---|---|---|"）
+            if (!line.includes('|---')) {
+              const parts = line.split('|').map(p => p.trim()).filter(p => p);
+              if (parts.length === 4) {
+                params[currentParamType].push({
+                  name: parts[0],
+                  type: parts[1],
+                  required: parts[2] === '是',
+                  description: parts[3]
+                });
+              }
+            }
+          }
+        });
+        api.params = params;
+
+        // 6. 提取请求示例（限制解析范围：仅在请求示例到响应示例之间搜索）
+        const requestExampleLineIndex = lines.findIndex(line => line.includes('**请求示例**:'));
+        if (requestExampleLineIndex !== -1) {
+          // 确定请求示例的解析上限：优先取响应示例的位置，其次取响应结构的位置，最后取文档结尾
+          const responseExampleLineIndex = lines.findIndex(line => line.includes('**响应示例**:'));
+          const responseStructureLineIndex = lines.findIndex(line => line.includes('**响应数据结构**:'));
+          const upperBound = responseExampleLineIndex !== -1
+            ? responseExampleLineIndex
+            : (responseStructureLineIndex !== -1 ? responseStructureLineIndex : lines.length);
+
+          let startIdx = -1;
+          let endIdx = -1;
+          // 只在请求示例行到上限之间搜索```标记
+          for (let i = requestExampleLineIndex; i < upperBound; i++) {
+            if (lines[i].startsWith('```')) {
+              if (startIdx === -1) {
+                startIdx = i; // 记录开始标记位置
+              } else {
+                endIdx = i; // 记录结束标记位置（找到第二个```就停止）
+                break;
+              }
+            }
+          }
+          if (startIdx !== -1 && endIdx !== -1) {
+            api.requestExample = lines.slice(startIdx + 1, endIdx).join('\n').trim();
+          } else {
+            api.requestExample = '';
+          }
+        } else {
+          api.requestExample = '';
+        }
+
+        // 7. 提取响应示例（限制解析范围：仅在响应示例到响应结构之间搜索）
+        const responseExampleLineIndex = lines.findIndex(line => line.includes('**响应示例**:'));
+        if (responseExampleLineIndex !== -1) {
+          // 确定响应示例的解析上限：取响应结构的位置，其次取文档结尾
+          const responseStructureLineIndex = lines.findIndex(line => line.includes('**响应数据结构**:'));
+          const upperBound = responseStructureLineIndex !== -1 ? responseStructureLineIndex : lines.length;
+
+          let startIdx = -1;
+          let endIdx = -1;
+          // 只在响应示例行到上限之间搜索```标记
+          for (let i = responseExampleLineIndex; i < upperBound; i++) {
+            if (lines[i].startsWith('```')) {
+              if (startIdx === -1) {
+                startIdx = i; // 记录开始标记位置
+              } else {
+                endIdx = i; // 记录结束标记位置（找到第二个```就停止）
+                break;
+              }
+            }
+          }
+          if (startIdx !== -1 && endIdx !== -1) {
+            api.responseExample = lines.slice(startIdx + 1, endIdx).join('\n').trim();
+          } else {
+            api.responseExample = '';
+          }
+        } else {
+          api.responseExample = '';
+        }
+
+        // 8. 提取响应数据结构
+        const responseStructure = [];
+        const responseStructureLineIndex = lines.findIndex(line => line.includes('**响应数据结构**:'));
+        if (responseStructureLineIndex !== -1) {
+          for (let i = responseStructureLineIndex + 1; i < lines.length; i++) {
+            if (lines[i].startsWith('|') && lines[i].endsWith('|') && !lines[i].includes('|---')) {
+              const parts = lines[i].split('|').map(p => p.trim()).filter(p => p);
+              if (parts.length === 3) {
+                responseStructure.push({
+                  field: parts[0],
+                  type: parts[1],
+                  description: parts[2]
+                });
+              }
+            }
+          }
+        }
+        api.responseStructure = responseStructure;
+
+        apiSections.push(api);
+      });
+
+      return apiSections;
+    },
+    // 解析
+    async loadMdFile() {
+      try {
+        // 关键：请求路径为根目录下的 docs/api-docs.md
+        const response = await axios.get('/docs/api-docs.md');
+        const mdContent = response.data; // 获取 MD 原始文本
+        this.parsedApiData = this.parseApiDocs(mdContent); // 解析为组件所需数据
+        console.log('this.parsedApiData', this.parsedApiData);
+      } catch (error) {
+        console.error('MD文件加载失败：', error);
+        // 错误处理：如提示用户文件不存在
+        this.$message.error('API文档不存在，请检查文件是否正确部署');
+      }
+    },
     // 查询列表数据
     getList() {
       this.loading = true;
@@ -137,7 +312,7 @@ export default {
       // if (str.length !== 18) {
       //   return '未知key，请联系后台人员';
       // }
-      if(!str || !str.length ){
+      if (!str || !str.length) {
         return ''
       }
       return str.slice(0, 13) + '******' + str.slice(19);
@@ -179,7 +354,7 @@ export default {
       });
 
     },
-    closeFn() { 
+    closeFn() {
       this.dialogShow = false
     },
     // 查看
