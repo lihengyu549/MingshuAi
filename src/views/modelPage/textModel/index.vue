@@ -126,7 +126,7 @@
 <script>
 import { getAiConfigList, getAiConfigById, onOffAiConfig, updateAiConfigById, getAiModelList, testConnection } from "@/api/system/modelPage";
 export default {
-    name: 'ModelConfig',
+    name: 'TextModel',
     data() {
         return {
             // 搜索关键词
@@ -242,10 +242,11 @@ export default {
                 const response = await getAiModelList(id);
                 // 假设接口返回格式为 { data: [{name: "模型名称", value: "模型值"}, ...] }
                 if (response && response.data && Array.isArray(response.data)) {
+                    debugger
                     // 处理接口返回的模型列表
                     const modelList = response.data.map(item => ({
-                        label: item.name || item.modelName || item.label, // 根据实际字段调整
-                        value: item.value || item.modelId || item.id      // 根据实际字段调整
+                        label: item.name, // 根据实际字段调整
+                        value: item.name      // 根据实际字段调整
                     }));
 
                     // 更新当前模型的可用模型列表
