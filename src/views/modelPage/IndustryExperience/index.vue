@@ -204,6 +204,9 @@ export default {
 
     },
     created() {
+        
+    },
+    beforeMount(){
         this.init()
     }
 }
