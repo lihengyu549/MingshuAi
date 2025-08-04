@@ -295,8 +295,7 @@ export default {
 
                 const model = {
                     id: this.currentModel.id,
-                    provider: this.currentModel.label,
-                    name: this.currentModel.provider,
+                    provider: this.currentModel.name,
                     enabled: this.currentModel.enabled,
                     aiAddress: this.currentModel.apiUrl,
                     apiKey: this.currentModel.apiKey,
