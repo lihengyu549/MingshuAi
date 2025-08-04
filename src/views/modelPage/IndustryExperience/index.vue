@@ -206,7 +206,7 @@ export default {
     created() {
         
     },
-    beforeMount(){
+    mounted(){
         this.init()
     }
 }
