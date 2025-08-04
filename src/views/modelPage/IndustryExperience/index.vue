@@ -92,6 +92,7 @@ export default {
         // 初始化
         async init() {
             let response = await getCategoryList()
+            await getDicts('sys_industry_type');
             this.standardOptions = response.data
             this.selectedStandard = this.standardOptions[0].categoryName
             this.activeTab = this.dict.type.sys_industry_type[0].label
@@ -204,11 +205,8 @@ export default {
 
     },
     created() {
-        
-    },
-    mounted(){
         this.init()
-    }
+    },
 }
 </script>
 
