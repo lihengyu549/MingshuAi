@@ -5,7 +5,7 @@
             <div class="api-list-container">
                 <el-menu :default-active="activeApiIndex" class="api-menu" @select="handleApiSelect">
                     <el-menu-item v-for="(api, index) in apiData" :key="index" :index="index.toString()">
-                        <span class="api-method" :class="getMethodClass(api.method)">{{ api.method }}</span>
+                        <el-tag :type="api.method == 'POST' ? 'success' : api.method == 'GET' ? 'primary' : api.method == 'PUT' ? 'warning' : api.method == 'DELETE' ? 'danger' : 'info'" style="margin-right: 10px;">{{ api.method }}</el-tag>
                         <span class="api-name">{{ api.name }}</span>
                     </el-menu-item>
                 </el-menu>
@@ -18,8 +18,7 @@
                     <div class="api-basic-info">
                         <h2>{{ currentApi.name }}</h2>
                         <div class="api-request-info">
-                            <span class="method-tag" :class="getMethodClass(currentApi.method)">{{ currentApi.method
-                                }}</span>
+                            <el-tag :type="currentApi.method == 'POST' ? 'success' : currentApi.method == 'GET' ? 'primary' : currentApi.method == 'PUT' ? 'warning' : currentApi.method == 'DELETE' ? 'danger' : 'info'" style="margin-right: 10px;">{{ currentApi.method }}</el-tag>
                             <span class="request-url">{{ currentApi.url }}</span>
                             <span class="request-type" v-if="currentApi.dataType">数据类型: {{ currentApi.dataType }}</span>
                         </div>
@@ -253,14 +252,6 @@ export default {
     border-radius: 4px;
 }
 
-.method-tag {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 4px;
-    color: #fff;
-    font-size: 12px;
-    margin-right: 15px;
-}
 
 .request-url {
     color: #1890ff;

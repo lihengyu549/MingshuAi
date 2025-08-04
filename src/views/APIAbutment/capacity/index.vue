@@ -135,28 +135,32 @@ export default {
         const api = {};
 
         // 1. 修复接口名称提取（核心问题：未取match结果的分组值）
-        const nameMatch = lines[0].match(/^##\s*\d+\.\s*(.*)$/);
-        debugger
-        if (nameMatch) {
-          api.name = nameMatch[1].trim(); // 提取"用户登录"、"获取用户信息"等名称
+        // 替换原name提取逻辑
+        const nameLine = lines.find(line => line.match(/^##\s*\d+\.\s*.+$/));
+        if (nameLine) {
+          const nameMatch = nameLine.match(/^##\s*\d+\.\s*(.*)$/);
+          api.name = nameMatch ? nameMatch[1].trim() : '';
         }
 
-        // 2. 提取请求方法
+        // 2. 提取请求方法（method）
         const methodLine = lines.find(line => line.includes('**请求方法**:'));
         if (methodLine) {
-          api.method = methodLine.includes(':**') ? methodLine.split(':**')[1].trim() : '';
+          const methodMatch = methodLine.match(/\*\*请求方法\*\*:\s*(.*)/);
+          api.method = methodMatch ? methodMatch[1].trim() : '';
         }
 
-        // 3. 提取请求地址
+        // 3. 提取请求地址（url）
         const urlLine = lines.find(line => line.includes('**请求地址**:'));
         if (urlLine) {
-          api.url = urlLine.includes(':**') ? urlLine.split(':**')[1].trim() : '';
+          const urlMatch = urlLine.match(/\*\*请求地址\*\*:\s*(.*)/);
+          api.url = urlMatch ? urlMatch[1].trim() : '';
         }
 
-        // 4. 提取请求数据类型
+        // 4. 提取请求数据类型（dataType）
         const dataTypeLine = lines.find(line => line.includes('**请求数据类型**:'));
         if (dataTypeLine) {
-          api.dataType = dataTypeLine.includes(':**') ? dataTypeLine.split(':**')[1].trim() : '';
+          const dataTypeMatch = dataTypeLine.match(/\*\*请求数据类型\*\*:\s*(.*)/);
+          api.dataType = dataTypeMatch ? dataTypeMatch[1].trim() : '';
         }
 
         // 5. 提取请求参数（Header和Body）
