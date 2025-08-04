@@ -136,7 +136,8 @@ export default {
 
         // 1. 修复接口名称提取（核心问题：未取match结果的分组值）
         const nameMatch = lines[0].match(/^##\s*\d+\.\s*(.*)$/);
-        if (nameMatch && nameMatch[1]) {
+        debugger
+        if (nameMatch) {
           api.name = nameMatch[1].trim(); // 提取"用户登录"、"获取用户信息"等名称
         }
 
@@ -160,15 +161,25 @@ export default {
 
         // 5. 提取请求参数（Header和Body）
         const params = { header: [], body: [] };
-        let currentParamType = null;
+        let currentParamType = null; // 标记当前解析的参数类型（header/body）
+        let startParsingData = false; // 标记是否开始解析数据行（分隔线后）
+
         lines.forEach(line => {
+          // 切换参数类型（Header/Body）
           if (line.includes('### Header参数')) {
             currentParamType = 'header';
+            startParsingData = false; // 重置数据行标记
           } else if (line.includes('### Body参数')) {
             currentParamType = 'body';
-          } else if (currentParamType && line.startsWith('|') && line.endsWith('|')) {
-            // 匹配参数行（排除表头分隔线"|---|---|---|---|"）
-            if (!line.includes('|---')) {
+            startParsingData = false; // 重置数据行标记
+          }
+          // 解析表格行（仅处理当前参数类型下的表格）
+          else if (currentParamType && line.startsWith('|') && line.endsWith('|')) {
+            if (line.includes('|---')) {
+              // 分隔线行：之后的行是数据行
+              startParsingData = true;
+            } else if (startParsingData) {
+              // 数据行：分割并提取参数
               const parts = line.split('|').map(p => p.trim()).filter(p => p);
               if (parts.length === 4) {
                 params[currentParamType].push({
@@ -179,6 +190,11 @@ export default {
                 });
               }
             }
+            // 表头行（分隔线前的表格行）会被自动跳过（因startParsingData为false）
+          }
+          // 处理"无Body参数"的场景
+          else if (currentParamType === 'body' && line.trim() === '无') {
+            params.body = [];
           }
         });
         api.params = params;
@@ -247,16 +263,24 @@ export default {
         // 8. 提取响应数据结构
         const responseStructure = [];
         const responseStructureLineIndex = lines.findIndex(line => line.includes('**响应数据结构**:'));
+        let startResponseData = false; // 标记响应结构数据行开始
+
         if (responseStructureLineIndex !== -1) {
           for (let i = responseStructureLineIndex + 1; i < lines.length; i++) {
-            if (lines[i].startsWith('|') && lines[i].endsWith('|') && !lines[i].includes('|---')) {
-              const parts = lines[i].split('|').map(p => p.trim()).filter(p => p);
-              if (parts.length === 3) {
-                responseStructure.push({
-                  field: parts[0],
-                  type: parts[1],
-                  description: parts[2]
-                });
+            const line = lines[i];
+            if (line.startsWith('|') && line.endsWith('|')) {
+              if (line.includes('|---')) {
+                // 分隔线后为数据行
+                startResponseData = true;
+              } else if (startResponseData) {
+                const parts = line.split('|').map(p => p.trim()).filter(p => p);
+                if (parts.length === 3) {
+                  responseStructure.push({
+                    field: parts[0],
+                    type: parts[1],
+                    description: parts[2]
+                  });
+                }
               }
             }
           }
