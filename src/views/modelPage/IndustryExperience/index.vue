@@ -155,8 +155,10 @@ export default {
                 }
                 await deleteCategoryLowerDataById(id)
                 this.fetchListData(row.categoryId, row.dicType)
+                // 重置状态
                 this.selectedRow = null
                 this.formContent = ''
+                this.isEdit = false
                 this.$message.success('删除成功')
             }).catch(() => {
                 this.$message.info('已取消删除')
