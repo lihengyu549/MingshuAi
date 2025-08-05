@@ -58,6 +58,7 @@
                                     </el-table-column>
                                     <el-table-column prop="description" label="说明"></el-table-column>
                                 </el-table>
+                                
                                 <span class="body-data-type-tag" v-if="currentApi.dataType">请求数据类型: {{
                                     currentApi.dataType }}</span>
                             </template>
