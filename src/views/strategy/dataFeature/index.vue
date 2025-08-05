@@ -117,6 +117,8 @@
             <template v-else-if="form.featureType === '对照表'">
                 <el-form :model="form" label-width="100px" :disabled="isView" size="small" class="feature-form"
                     :rules="rules" label-position="top">
+                    <div class="basic-info-title">基本信息</div>
+                    <el-divider style="margin: 10px 0;"></el-divider>
                     <el-row>
                         <el-col :span="12">
                             <el-form-item label="编号:" prop="id">
