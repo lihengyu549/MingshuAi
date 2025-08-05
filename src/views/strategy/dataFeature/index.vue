@@ -66,7 +66,7 @@
 
         <!-- 抽屉：查看/编辑 -->
         <el-drawer title="数据特征" :visible.sync="drawerVisible" direction="rtl" size="35%"
-            :before-close="handleDrawerClose">
+            :before-close="handleDrawerClose" :wrapperClosable="false">
             <!-- 根据特征类型动态渲染不同表单 -->
             <template v-if="form.featureType === '正则'">
                 <el-form :model="form" label-width="100px" :disabled="isView" size="small" class="feature-form"
@@ -151,30 +151,54 @@
                         <el-input type="textarea" v-model="form.description" placeholder="请输入描述" rows="3" />
                     </el-form-item>
                     <el-form-item label="特征值:" prop="mappingList">
-                        <!-- 对照表特殊处理：支持动态增删行 -->
                         <div class="mapping-table-container">
-                            <div class="mapping-table-operations">
-                                <el-input v-model="tempFeatureKey" placeholder="请输入特征值"
-                                    style="width: 200px; margin-right: 10px;" :disabled="isView" />
-                                <el-input v-model="tempFeatureVal" placeholder="请输入对照含义"
-                                    style="width: 200px; margin-right: 10px;" :disabled="isView" />
-                                <el-button icon="el-icon-plus" type="primary" @click="addMappingRow" size="small"
-                                    :disabled="isView || !tempFeatureKey || !tempFeatureVal"></el-button>
+                            <!-- 新增：表格与右侧按钮组容器 -->
+                            <div class="table-with-actions">
+                                <!-- 对照表表格 -->
+                                <div class="table-container">
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <el-input v-model="tempFeatureKey" placeholder="请输入特征值" :disabled="isView"
+                                            style="width: 48%;" />
+                                        <el-input v-model="tempFeatureVal" placeholder="请输入对照含义" :disabled="isView"
+                                            style="width: 48%;" />
+                                    </div>
+                                    <el-table :data="form.mappingList" style="margin-top: 10px; width: 100%"
+                                        size="small" @selection-change="handleMappingSelectionChange">
+                                        <!-- 新增：复选框列 -->
+                                        <el-table-column type="selection" width="45" />
+                                        <el-table-column prop="key" label="特征值" width="180" />
+                                        <el-table-column prop="val" label="对照含义" min-width="180" />
+                                        <!-- 已删除原有操作列 -->
+                                    </el-table>
+                                    <!-- 对照表分页 -->
+                                    <div class="mapping-pagination" style="margin-top: 10px; text-align: right;">
+                                        <el-pagination @size-change="handleMappingSizeChange"
+                                            @current-change="handleMappingCurrentChange"
+                                            :current-page="mappingPagination.currentPage" :page-sizes="[5, 10, 20, 50]"
+                                            :page-size="mappingPagination.pageSize"
+                                            layout="total, sizes, prev, pager, next, jumper"
+                                            :total="mappingPagination.total" size="small" />
+                                    </div>
+                                </div>
+
+                                <!-- 右侧竖排按钮组 -->
+                                <div class="vertical-actions">
+                                    <el-button icon="el-icon-plus" type="primary" @click="addMappingRow" size="small"
+                                        :disabled="isView || !tempFeatureKey || !tempFeatureVal"
+                                        tooltip="新增"></el-button>
+                                    <el-button icon="el-icon-delete" type="danger" @click="deleteSelectedRows"
+                                        size="small" :disabled="isView || selectedMappingRows.length === 0"
+                                        tooltip="删除选中"></el-button>
+                                    <el-button icon="el-icon-upload" type="warning" @click="handleImport" size="small"
+                                        :disabled="isView" tooltip="导入"></el-button>
+                                    <el-button icon="el-icon-download" type="success" @click="handleExport" size="small"
+                                        :disabled="isView" tooltip="导出"></el-button>
+                                    <el-button icon="el-icon-delete" type="info" @click="clearAllRows" size="small"
+                                        :disabled="isView || form.mappingList.length === 0" tooltip="清空"></el-button>
+                                </div>
                             </div>
 
-                            <el-table :data="form.mappingList" border style="margin-top: 10px; width: 100%"
-                                size="small">
-                                <!-- deleteMappingRow -->
-                                <el-table-column prop="key" label="特征值" width="200" />
-                                <el-table-column prop="val" label="对照含义" min-width="200" />
-                                <el-table-column label="操作" width="80" v-if="!isView">
-                                    <template #default="scope">
-                                        <el-button icon="el-icon-delete" type="text"
-                                            @click="deleteMappingRow(scope.$index)" size="small" class="delete-btn" />
-                                    </template>
-                                </el-table-column>
-                            </el-table>
-
+                            <!-- 原有新增行输入框 -->
                             <div class="table-hint" v-if="form.mappingList.length === 0">
                                 <span>暂无数据，请点击"添加"按钮新增</span>
                             </div>
@@ -285,8 +309,24 @@ export default {
                 featureType: { required: true, message: '请输入类型', trigger: 'blur' },
                 description: { required: true, message: '请输入描述', trigger: 'blur' },
                 featureValue: { required: true, message: '请输入特征值', trigger: 'blur' },
-
-            }
+                mappingList: { required: true, message: '请输入特征值', trigger: 'blur' },
+            },
+            // 新增：存储选中的对照行
+            selectedMappingRows: [],
+            // 对照表分页配置
+            mappingPagination: {
+                currentPage: 1,
+                pageSize: 5,
+                total: 0
+            },
+        }
+    },
+    computed: {
+        // 计算当前页的对照表数据
+        currentMappingPageData() {
+            const start = (this.mappingPagination.currentPage - 1) * this.mappingPagination.pageSize
+            const end = start + this.mappingPagination.pageSize
+            return this.form.mappingList.slice(start, end)
         }
     },
     methods: {
@@ -374,7 +414,7 @@ export default {
                 })
                 this.form.featureValue = '' // 正则模式的特征值置空
             }
-
+            this.mappingPagination.total = this.form.mappingList.length;
             this.tempFeatureKey = ''
             this.tempFeatureVal = ''
         },
@@ -405,10 +445,12 @@ export default {
             } else {
                 this.$message.warning('特征值和对照含义不能为空')
             }
+            this.updateMappingTotal();
         },
         // 对照表：删除一行
         deleteMappingRow(index) {
             this.form.mappingList.splice(index, 1)
+            this.updateMappingTotal();
         },
         // 确认提交
         handleConfirm() {
@@ -480,6 +522,75 @@ export default {
         handleSizeChange(val) {
             this.pagination.pageSize = val
             this.pagination.currentPage = 1
+        },
+        // 新增：处理对照行选中事件
+        handleMappingSelectionChange(val) {
+            this.selectedMappingRows = val
+        },
+        // 新增：删除选中的对照行
+        deleteSelectedRows() {
+            this.$confirm(`确定要删除选中的${this.selectedMappingRows.length}条数据吗?`, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                const keysToDelete = this.selectedMappingRows.map(item => item.key)
+                this.form.mappingList = this.form.mappingList.filter(
+                    item => !keysToDelete.includes(item.key)
+                )
+                this.selectedMappingRows = []
+                this.updateMappingTotal();
+                this.$message.success('删除成功')
+            }).catch(() => {
+                this.$message.info('已取消删除')
+            })
+        },
+        // 新增：导入功能（示例实现）
+        handleImport() {
+            this.$message.info('导入功能待实现')
+            // 实际实现可调用文件上传组件，解析文件内容后添加到mappingList
+        },
+        // 新增：导出功能（示例实现）
+        handleExport() {
+            if (this.form.mappingList.length === 0) {
+                this.$message.warning('暂无数据可导出')
+                return
+            }
+            const exportData = this.form.mappingList.map(item => `${item.key}=${item.val}`).join('\n')
+            // 实际实现可使用文件下载库，将数据转为CSV/Excel格式
+            this.$message.success('导出成功')
+        },
+        // 新增：清空所有对照行
+        clearAllRows() {
+            this.$confirm('确定要清空所有数据吗?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.form.mappingList = []
+                this.selectedMappingRows = []
+                this.updateMappingTotal();
+                this.$message.success('清空成功')
+            }).catch(() => {
+                this.$message.info('已取消清空')
+            })
+        },
+        // 对照表分页-改变页码
+        handleMappingCurrentChange(val) {
+            this.mappingPagination.currentPage = val;
+        },
+        // 对照表分页-改变页大小
+        handleMappingSizeChange(val) {
+            this.mappingPagination.pageSize = val;
+            this.mappingPagination.currentPage = 1;
+        },
+        // 在添加、删除、清空等操作后更新总条数
+        updateMappingTotal() {
+            this.mappingPagination.total = this.form.mappingList.length;
+            // 如果当前页数据为空且不是第一页，自动跳转到上一页
+            if (this.form.mappingList.length === 0 && this.mappingPagination.currentPage > 1) {
+                this.mappingPagination.currentPage--;
+            }
         }
     }
 }
@@ -535,12 +646,6 @@ export default {
     width: 100%;
 }
 
-.mapping-table-operations {
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-}
-
 .table-hint {
     text-align: center;
     padding: 20px;
@@ -578,5 +683,37 @@ export default {
 
 .form-input {
     width: 95%;
+}
+
+/* 表格与按钮组容器 */
+.table-with-actions {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    justify-content: space-evenly;
+}
+
+/* 右侧竖排按钮组样式 */
+.vertical-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 按钮提示样式 */
+.vertical-actions .el-button {
+    position: relative;
+}
+
+.vertical-actions .el-button:hover::after {
+    content: attr(tooltip);
+    position: absolute;
+    right: 30px;
+    white-space: nowrap;
+    background: #333;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
 }
 </style>
