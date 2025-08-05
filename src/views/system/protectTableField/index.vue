@@ -556,6 +556,11 @@ Authorization:Bearer ${this.Token}`
           categoryId: this.queryParams.categoryId
         };
         const res = await exportReport(params);
+        if (res.type != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+          this.$message.error('导出失败')
+          this.getList()
+          return
+        }
         // 创建一个Blob对象
         const blob = new Blob([res], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         // 创建一个URL对象
