@@ -71,6 +71,8 @@
             <template v-if="form.featureType === '正则'">
                 <el-form :model="form" label-width="100px" :disabled="isView" size="small" class="feature-form"
                     label-position="top" :rules="rules">
+                    <div class="basic-info-title">基本信息</div>
+                    <el-divider style="margin: 10px 0;"></el-divider>
                     <el-row>
                         <el-col :span="12">
                             <el-form-item label="编号:" prop="id">
@@ -715,5 +717,24 @@ export default {
     padding: 2px 8px;
     border-radius: 4px;
     font-size: 12px;
+}
+.basic-info-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+.el-divider--horizontal{
+    margin: 10px 0;
+    height: 3px;
+}
+.el-divider--horizontal::before{
+    content: ""; /* 伪元素必须设置content属性 */
+    position: absolute; /* 设置定位使top/left生效 */
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 10%;
+    background-color: #009dff;
 }
 </style>
