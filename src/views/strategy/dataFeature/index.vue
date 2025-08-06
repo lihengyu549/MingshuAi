@@ -59,7 +59,7 @@
 
         <!-- 分页 -->
         <div class="pagination-container">
-            <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
+            <Pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
                 :current-page="pagination.currentPage" :page-sizes="[10, 20, 50, 100]" :page-size="pagination.pageSize"
                 layout="total, sizes, prev, pager, next, jumper" :total="pagination.total" size="small" />
         </div>
@@ -176,7 +176,7 @@
                                     </el-table>
                                     <!-- 对照表分页 -->
                                     <div class="mapping-pagination" style="margin-top: 10px; text-align: right;">
-                                        <el-pagination @size-change="handleMappingSizeChange"
+                                        <Pagination @size-change="handleMappingSizeChange"
                                             @current-change="handleMappingCurrentChange"
                                             :current-page="mappingPagination.currentPage" :page-sizes="[5, 10, 20, 50]"
                                             :page-size="mappingPagination.pageSize"
@@ -720,23 +720,33 @@ export default {
     border-radius: 4px;
     font-size: 12px;
 }
+
 .basic-info-title {
     font-size: 14px;
     font-weight: 600;
     color: #333;
     margin-bottom: 5px;
 }
-.el-divider--horizontal{
+
+.el-divider--horizontal {
     margin: 10px 0;
     height: 3px;
 }
-.el-divider--horizontal::before{
-    content: ""; /* 伪元素必须设置content属性 */
-    position: absolute; /* 设置定位使top/left生效 */
+
+.el-divider--horizontal::before {
+    content: "";
+    /* 伪元素必须设置content属性 */
+    position: absolute;
+    /* 设置定位使top/left生效 */
     top: 0;
     left: 0;
     height: 3px;
     width: 10%;
     background-color: #009dff;
+}
+
+.mapping-pagination .pagination-container {
+    position: relative;
+    right: -3%;
 }
 </style>

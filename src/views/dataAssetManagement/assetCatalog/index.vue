@@ -60,12 +60,10 @@
                 <div>数据大小：{{ item.dataSize ? item.dataSize : '--' }}</div>
                 <div>数据量级：{{ item.dataMagnitude ? item.dataMagnitude + '行' : '--' }}</div>
                 <el-tooltip :content="item.oldTableRemark" :ref="`tooltip-${index}`" :disabled="!overflowStatus[index]"
-                  effect="dark" placement="top">\
-                  <!-- @mouseover="checkOverflow(item,index)" -->
+                  effect="dark" placement="top">
                   <div id="textContainer" :ref="`container-${index}`">原生表注释：<span>{{ item.oldTableRemark ?
                     item.oldTableRemark
                     : '--' }}</span></div>
-
                 </el-tooltip>
                 <div>合成表注释：{{ item.craftTableRemark ? item.craftTableRemark : '--' }}</div>
                 <div>原生字段注释占比：{{ item.oldFieldRemark ? item.oldFieldRemark + '%' : '0%' }}</div>
@@ -95,8 +93,35 @@
         :limit.sync="queryParams.pageSize" @pagination="getList" />
     </el-row>
     <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow"
-      :destroy-on-close="true" direction="rtl" size="60%">
-      <el-table :data="drawerData" ref="tableRef" height="850px" :key="tableKey" border class="tableBox">
+      :destroy-on-close="true" direction="rtl" size="80%">
+      <!-- 新增筛选区域 -->
+      <el-form :model="drawerQueryParams" ref="drawerQueryForm" size="small" :inline="true" label-width="80px"
+        style="margin: 15px 0;">
+        <el-form-item label="字段名称">
+          <el-input v-model="drawerQueryParams.fieldName" placeholder="请输入字段名称搜索"
+            @keyup.enter.native="handleDrawerSearch" style="width: 180px;"></el-input>
+        </el-form-item>
+        <el-form-item label="脏数据">
+          <el-select v-model="drawerQueryParams.dirtyData" placeholder="全部" @change="handleDrawerSearch"
+            style="width: 120px;">
+            <el-option label="是" value="是"></el-option>
+            <el-option label="否" value="否"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="样本特征">
+          <el-select v-model="drawerQueryParams.sampleFeature" placeholder="全部" @change="handleDrawerSearch"
+            style="width: 120px;">
+            <el-option label="包含" value="包含"></el-option>
+            <el-option label="不包含" value="不包含"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button icon="el-icon-refresh" size="small" @click="resetDrawerSearch">重置</el-button>
+        </el-form-item>
+      </el-form>
+
+      <el-table :data="filteredDrawerData" ref="tableRef" height="calc(100% - 100px)" :key="tableKey" border
+        class="tableBox">
         <el-table-column label="字段名称" align="center" prop="fieldName" width="150" show-overflow-tooltip />
         <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip />
         <el-table-column label="原生字段注释" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
@@ -130,11 +155,6 @@
             </el-select>
           </template>
         </el-table-column>
-        <!-- <el-table-column label="样本重复率" align="center" prop="dataIsRepeat" width="100" show-overflow-tooltip>
-          <template slot-scope="scope">
-            <span>{{ scope.row.ggg }}</span>
-          </template>
-        </el-table-column> -->
         <el-table-column label="样本" align="center" width="80" class-name="small-padding fixed-width">
           <template slot-scope="scope">
             <el-tooltip placement="bottom" effect="light">
@@ -149,18 +169,16 @@
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column label="是否包含特征" align="center" prop="dataIsNull" width="100" show-overflow-tooltip />
-        <el-table-column label="数据特征" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
-          <template slot-scope="scope">
-            <span>{{ scope.row.oldFieldRemark }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="是否添加为匹配策略" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
-          <template slot-scope="scope">
-            <span>{{ scope.row.oldFieldRemark }}</span>
-          </template>
-        </el-table-column>
+        <el-table-column label="是否包含特征" align="center" prop="hasFeature" width="100" show-overflow-tooltip />
+        <el-table-column label="数据特征" align="center" min-width="200" prop="dataFeature" show-overflow-tooltip />
+        <el-table-column label="是否添加为匹配策略" align="center" min-width="200" prop="isMatchStrategy"
+          show-overflow-tooltip />
       </el-table>
+
+      <!-- 新增分页组件 -->
+      <pagination class="paginationClass" v-show="drawerTotal > 0" :total="drawerTotal"
+        :page.sync="drawerQueryParams.pageNum" :limit.sync="drawerQueryParams.pageSize"
+        @pagination="handleDrawerPagination" style="margin-top: 15px;" />
     </el-drawer>
   </div>
 </template>
@@ -189,7 +207,6 @@ export default {
       tableNameList: [],
       filedRowData: {},// 字段信息用来记录目录的rowdata
       dataAll: [
-
       ],
       dirtyDataList: [
         {
@@ -216,6 +233,16 @@ export default {
         dataSourceId: '',//来源
         levelId: [],//安全级别
       },
+      // 抽屉筛选参数
+      drawerQueryParams: {
+        fieldName: '',
+        dirtyData: '',
+        sampleFeature: '',
+        pageNum: 1,
+        pageSize: 10
+      },
+      filteredDrawerData: [],
+      drawerTotal: 0,
       defaultProps: {
         children: "children",
         label: "label"
@@ -291,11 +318,8 @@ export default {
     },
     checkOverflow(item, index) {
       const container = this.$refs[`container-${index}`][0];
-      // const tooltip = this.$refs[`tooltip-${index}`][0];
       const isOverflowing = container.scrollWidth > container.clientWidth;
-      // this.overflowStatus[index] = isOverflowing;
       this.$set(this.overflowStatus, index, isOverflowing)
-      // tooltip.disabled = !isOverflowing; // 动态更新 tooltip 的 disabled 状态
     },
     isOverflow(index) {
       return this.overflowStatus[index] || false; // 返回当前盒子的溢出状态
@@ -355,8 +379,6 @@ export default {
       this.$nextTick(() => {
         setTimeout(() => {
           const tableBody = this.$refs.tableRef.$el.querySelector('.el-table__body-wrapper');
-          // tableBody.scrollTop = scrollTop;
-          // tableBody.scrollLeft = scrollLeft;
           tableBody.scrollTo({
             top: scrollTop,
             left: scrollLeft,
@@ -364,7 +386,6 @@ export default {
           });
         }, 0);
       });
-
       if (flag == 'aiFieldRemark') {
         row.drawerEdit = true
         this.editMsg = row.aiFieldRemark
@@ -394,37 +415,37 @@ export default {
       })
       this.fieldInformationFn(this.filedRowData)
       return
-      this.$confirm('是否保存编辑数据?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(async () => {
-        row.aiFieldRemark = this.editMsg
-        let params = {
-          craftRemark: this.editMsg,
-          dirtyData: row.dirtyData,
-          fieldId: row.fieldId,
-        }
-        await updateFieldListByFieldId(params).then(res => {
-          this.$message({
-            type: 'success',
-            message: '修改成功!'
-          });
-          row.drawerEdit = false
-          this.tableKey = 0
-        })
-        this.$nextTick(() => {
-          row.drawerEdit = false
-          this.tableKey = 0
-        })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消'
-        });
-        row.drawerEdit = false
-        this.tableKey += 1
-      });
+      // this.$confirm('是否保存编辑数据?', '提示', {
+      //   confirmButtonText: '确定',
+      //   cancelButtonText: '取消',
+      //   type: 'warning'
+      // }).then(async () => {
+      //   row.aiFieldRemark = this.editMsg
+      //   let params = {
+      //     craftRemark: this.editMsg,
+      //     dirtyData: row.dirtyData,
+      //     fieldId: row.fieldId,
+      //   }
+      //   await updateFieldListByFieldId(params).then(res => {
+      //     this.$message({
+      //       type: 'success',
+      //       message: '修改成功!'
+      //     });
+      //     row.drawerEdit = false
+      //     this.tableKey = 0
+      //   })
+      //   this.$nextTick(() => {
+      //     row.drawerEdit = false
+      //     this.tableKey = 0
+      //   })
+      // }).catch(() => {
+      //   this.$message({
+      //     type: 'info',
+      //     message: '已取消'
+      //   });
+      //   row.drawerEdit = false
+      //   this.tableKey += 1
+      // });
     },
     // 字段信息
     async fieldInformationFn(row) {
@@ -436,19 +457,75 @@ export default {
       }
       getAllFieldListByTableIdAndDatabaseId(params).then(res => {
         if (res.code == 200) {
-          this.drawerData = res.data
-          this.drawerData.forEach(ele => {
+          // 处理原始数据，补充必要字段
+          this.drawerData = res.data.map(ele => {
             if (ele.data) {
-              ele.sampleList = JSON.parse(ele.data).map((item => ({ value: item })))
+              ele.sampleList = JSON.parse(ele.data).map(item => ({ value: item }))
             }
             ele.drawerEdit = false
             ele.drawerEditDirtyData = false
             ele.aiFieldRemarkEdit = ''
             ele.dirtyDataEditMsg = ''
+            // 确保状态字段有默认值
+            ele.dirtyData = ele.dirtyData || '否'
+            ele.hasFeature = ele.hasFeature || '不包含'
+            return ele
           })
           this.drawerShow = true
+          // 初始化筛选
+          this.handleDrawerSearch()
         }
       })
+    },
+    // 抽屉筛选处理
+    handleDrawerSearch() {
+      // 重置页码
+      this.drawerQueryParams.pageNum = 1
+      // 执行筛选
+      let filtered = this.drawerData.filter(item => {
+        // 字段名称筛选
+        const matchField = !this.drawerQueryParams.fieldName ||
+          (item.fieldName && item.fieldName.includes(this.drawerQueryParams.fieldName))
+
+        // 脏数据筛选
+        const matchDirty = !this.drawerQueryParams.dirtyData ||
+          item.dirtyData === this.drawerQueryParams.dirtyData
+
+        // 样本特征筛选
+        const matchFeature = !this.drawerQueryParams.sampleFeature ||
+          item.hasFeature === this.drawerQueryParams.sampleFeature
+
+        return matchField && matchDirty && matchFeature
+      })
+
+      // 计算总条数和分页数据
+      this.drawerTotal = filtered.length
+      this.filteredDrawerData = this.getPagedData(filtered)
+    },
+    // 分页处理
+    getPagedData(data) {
+      const start = (this.drawerQueryParams.pageNum - 1) * this.drawerQueryParams.pageSize
+      const end = start + this.drawerQueryParams.pageSize
+      return data.slice(start, end)
+    },
+    // 分页切换
+    handleDrawerPagination() {
+      this.filteredDrawerData = this.getPagedData(
+        this.drawerData.filter(item => {
+          const matchField = !this.drawerQueryParams.fieldName ||
+            (item.fieldName && item.fieldName.includes(this.drawerQueryParams.fieldName))
+          const matchDirty = !this.drawerQueryParams.dirtyData ||
+            item.dirtyData === this.drawerQueryParams.dirtyData
+          const matchFeature = !this.drawerQueryParams.sampleFeature ||
+            item.hasFeature === this.drawerQueryParams.sampleFeature
+          return matchField && matchDirty && matchFeature
+        })
+      )
+    },
+    // 重置筛选条件
+    resetDrawerSearch() {
+      this.$refs.drawerQueryForm.resetFields()
+      this.handleDrawerSearch()
     },
     // 树节点过滤方法
     filterNode(value, data) {
@@ -458,7 +535,6 @@ export default {
     // 左侧树点击事件
     handleNodeClick(data) {
       console.log(data);
-
       if (data.parentId) {
         this.databaseName = data.label
         this.treeID = data.parentId;
@@ -471,7 +547,6 @@ export default {
       this.handleQuery();
       this.getSelectTableNamesFn()
     },
-
     // 定时器，防抖使用
     inputSearch(data) {
       clearTimeout(this.debounceTimeout);
@@ -541,7 +616,6 @@ export default {
     handleQuery() {
       this.queryParams.pageNum = 1;
       this.getList();
-
     },
     /** 重置按钮操作 */
     resetQuery() {
@@ -602,7 +676,7 @@ export default {
 
 .paginationClass {
   position: fixed;
-  bottom: 15px;
+  bottom: 5%;
   left: 70%;
 }
 
@@ -647,11 +721,8 @@ export default {
   margin: 10px 5px 10px 0;
   font-size: 14px;
   white-space: nowrap;
-  /* 防止文字换行 */
   overflow: hidden;
-  /* 隐藏超出部分 */
   text-overflow: ellipsis;
-  /* 显示省略号 */
 }
 
 .box-card /deep/ .el-card__body {
@@ -689,7 +760,6 @@ export default {
 
 .treeBox::-webkit-scrollbar-track {
   border-radius: 10px;
-
 }
 
 .status-tag {
