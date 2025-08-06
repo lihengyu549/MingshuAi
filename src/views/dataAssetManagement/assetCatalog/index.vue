@@ -14,18 +14,30 @@
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" label-width="90px">
+        <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" label-width="100px">
           <el-form-item label="表名" prop="tableName">
             <el-select v-model="queryParams.tableName" @change="selectProjectIdChange" placeholder="全部">
               <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.tableId">
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item>
+          <el-form-item label="注释填充" prop="">
+            <el-select @change="selectProjectIdChange" placeholder="全部">
+              <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.tableId">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="样本特征提取" prop="">
+            <el-select @change="selectProjectIdChange" placeholder="全部">
+              <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.tableId">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <!-- <el-form-item>
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
             <el-button icon="el-icon-s-opportunity" type="primary" size="small" @click="allFill">一键填充</el-button>
             <el-button icon="el-icon-s-help" type="primary" size="small" @click="allAssess">一键评估</el-button>
-          </el-form-item>
+          </el-form-item> -->
         </el-form>
         <div class="mian_box" id="main_box">
           <div v-for="(item, index) in dataAll" v-loading="loading" :key="index" class="mian_box_item">
@@ -67,6 +79,13 @@
                 <div>个人信息条数：{{ item.personalInformation ? item.personalInformation : '--' }}</div>
                 <div>未成年人信息条数：{{ item.minorsInformation ? item.minorsInformation : '--' }}</div>
                 <div>数据来源：{{ item.dataType ? item.dataType : '--' }}</div>
+                <div>注释填充：<el-tag type="info" class="status-tag">
+                    <i class="el-icon-time"></i> 未开始
+                  </el-tag></div>
+                <div>样本特征提取：<el-tag type="danger" class="status-tag">
+                    <i class="el-icon-warning-outline"></i> 失败
+                  </el-tag>
+                </div>
               </div>
             </el-card>
           </div>
@@ -671,5 +690,12 @@ export default {
 .treeBox::-webkit-scrollbar-track {
   border-radius: 10px;
 
+}
+
+.status-tag {
+  border-radius: 50px;
+  font-size: 10px;
+  height: 20px;
+  line-height: 20px;
 }
 </style>
