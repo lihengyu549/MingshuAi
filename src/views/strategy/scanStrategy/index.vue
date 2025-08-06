@@ -39,7 +39,7 @@
           </el-radio-group>
         </div>
       </div>
-      <div>
+      <!-- <div>
         <h4 class="title">
           <div class="blue-circle"></div><span>数据表质量评分</span>
         </h4>
@@ -49,7 +49,7 @@
             @input="numInputFn($event)" @blur="numBlurFn($event)"></el-input>
           <div> <i class="el-icon-warning"></i>输入范围在0 ~ 100之间，低于及格分的数据表不会进行打标</div>
         </div>
-      </div>
+      </div> -->
 
       <div>
         <h4 class="title">
