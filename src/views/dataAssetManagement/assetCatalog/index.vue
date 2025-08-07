@@ -21,16 +21,20 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="注释填充" prop="">
-            <el-select @change="selectProjectIdChange" placeholder="全部">
-              <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.tableId">
-              </el-option>
+          <el-form-item label="注释填充" prop="fillStatus">
+            <el-select v-model="queryParams.fillStatus" @change="selectProjectIdChange" placeholder="全部">
+              <el-option label="未开始" value="1"></el-option>
+              <el-option label="成功" value="2"></el-option>
+              <el-option label="失败" value="3"></el-option>
+              <el-option label="执行中" value="4"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="样本特征提取" prop="">
-            <el-select @change="selectProjectIdChange" placeholder="全部">
-              <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.tableId">
-              </el-option>
+          <el-form-item label="样本特征提取" prop="fillStatus">
+            <el-select v-model="queryParams.extractStatus" @change="selectProjectIdChange" placeholder="全部">
+              <el-option label="未开始" value="1"></el-option>
+              <el-option label="成功" value="2"></el-option>
+              <el-option label="失败" value="3"></el-option>
+              <el-option label="执行中" value="4"></el-option>
             </el-select>
           </el-form-item>
           <!-- <el-form-item>
@@ -170,8 +174,8 @@
           </template>
         </el-table-column>
         <el-table-column label="是否包含特征" align="center" prop="hasFeature" width="100" show-overflow-tooltip />
-        <el-table-column label="数据特征" align="center" min-width="200" prop="dataFeature" show-overflow-tooltip />
-        <el-table-column label="是否添加为匹配策略" align="center" min-width="200" prop="isMatchStrategy"
+        <el-table-column label="数据特征" align="center" min-width="150" prop="dataFeature" show-overflow-tooltip />
+        <el-table-column label="是否添加为匹配策略" align="center" min-width="150" prop="isMatchStrategy"
           show-overflow-tooltip />
       </el-table>
 
@@ -543,6 +547,8 @@ export default {
         this.databaseName = ''
       }
       this.queryParams.tableName = ''
+      this.queryParams.fillStatus = ''
+      this.queryParams.extractStatus = ''
       this.isChildrenNode = data.nodeLayerIndex
       this.handleQuery();
       this.getSelectTableNamesFn()
@@ -555,6 +561,8 @@ export default {
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
     selectProjectIdChange(val) {
+      console.log('val',val);
+      console.log('queryParams',this.queryParams);
       this.handleQuery()
     },
     // 左侧树数据

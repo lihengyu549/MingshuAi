@@ -7,15 +7,16 @@
             </el-form-item>
             <el-form-item label="特征类型:">
                 <el-select v-model="searchForm.featureType" placeholder="请选择特征类型" clearable style="width: 180px;">
-                    <el-option label="正则" value="正则"></el-option>
-                    <el-option label="对照表" value="对照表"></el-option>
+                    <el-option v-for="item in dict.type.sys_feature_type" :key="item.value" :label="item.label"
+                        :value="item.value">
+                    </el-option>
                 </el-select>
             </el-form-item>
             <el-form-item label="来源:">
                 <el-select v-model="searchForm.source" placeholder="请选择来源" clearable style="width: 180px;">
-                    <el-option label="样本特征发现" value="样本特征发现"></el-option>
-                    <el-option label="自定义" value="自定义"></el-option>
-                    <el-option label="内置" value="内置"></el-option>
+                    <el-option v-for="item in dict.type.sys_source" :key="item.value" :label="item.label"
+                        :value="item.value">
+                    </el-option>
                 </el-select>
             </el-form-item>
             <el-form-item>
@@ -42,26 +43,24 @@
         <el-table v-loading="loading" :data="tableData" style="width: 100%;" @selection-change="handleSelectionChange"
             size="small">
             <el-table-column type="selection" width="45" />
-            <el-table-column prop="featureCode" label="特征编号" width="120" />
+            <el-table-column prop="id" label="特征编号" width="120" />
             <el-table-column prop="featureName" label="特征名称" width="160" />
-            <el-table-column prop="featureType" label="特征类型" width="100" />
+            <el-table-column prop="featureTypeName" label="特征类型" width="100" />
             <!-- <el-table-column prop="featureValue" label="特征值" min-width="180" /> -->
-            <el-table-column prop="source" label="来源" width="120" />
-            <el-table-column prop="description" label="描述" min-width="200" />
+            <el-table-column prop="featureSourceName" label="来源" width="120" />
+            <el-table-column prop="featureDescribe" label="描述" min-width="200" />
             <el-table-column prop="updateTime" label="更新时间" width="160" />
             <el-table-column label="操作" width="120" fixed="right">
-                <template #default="scope">
-                    <el-button type="text" size="small" @click="handleView(scope.row)" class="view-btn">查看</el-button>
-                    <el-button type="text" size="small" @click="handleEdit(scope.row)" class="edit-btn">编辑</el-button>
-                </template>
+                <el-button type="text" size="small" @click="handleView()" class="view-btn">查看</el-button>
+                <el-button type="text" size="small" @click="handleEdit()" class="edit-btn">编辑</el-button>
             </el-table-column>
         </el-table>
 
         <!-- 分页 -->
         <div class="pagination-container">
-            <Pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
-                :current-page="pagination.currentPage" :page-sizes="[10, 20, 50, 100]" :page-size="pagination.pageSize"
-                layout="total, sizes, prev, pager, next, jumper" :total="pagination.total" size="small" />
+            <Pagination v-show="pagination.total > 0" @size-change="handleSizeChange"
+                @current-change="handleCurrentChange" :page.sync="pagination.currentPage"
+                :limit.sync="pagination.pageSize" :total="pagination.total" size="small" />
         </div>
 
         <!-- 抽屉：查看/编辑 -->
@@ -87,20 +86,20 @@
                     </el-row>
                     <el-row>
                         <el-col :span="12">
-                            <el-form-item label="来源:" prop="source">
-                                <el-select v-model="form.source" placeholder="请选择来源" class="form-input">
-                                    <el-option label="样本特征发现" value="样本特征发现"></el-option>
-                                    <el-option label="自定义" value="自定义"></el-option>
-                                    <el-option label="内置" value="内置"></el-option>
-                                </el-select>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
                             <el-form-item label="类型:" prop="featureType">
                                 <el-select v-model="form.featureType" placeholder="请选择类型" @change="handleTypeChange"
                                     class="form-input">
                                     <el-option label="正则" value="正则"></el-option>
                                     <el-option label="对照表" value="对照表"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="来源:" prop="source">
+                                <el-select v-model="form.source" placeholder="请选择来源" class="form-input">
+                                    <el-option label="样本特征发现" value="样本特征发现"></el-option>
+                                    <el-option label="自定义" value="自定义"></el-option>
+                                    <el-option label="内置" value="内置"></el-option>
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -133,20 +132,20 @@
                     </el-row>
                     <el-row>
                         <el-col :span="12">
-                            <el-form-item label="来源:" prop="source">
-                                <el-select v-model="form.source" placeholder="请选择来源" class="form-input">
-                                    <el-option label="样本特征发现" value="样本特征发现"></el-option>
-                                    <el-option label="自定义" value="自定义"></el-option>
-                                    <el-option label="内置" value="内置"></el-option>
-                                </el-select>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
                             <el-form-item label="类型:" prop="featureType">
                                 <el-select v-model="form.featureType" placeholder="请选择类型" @change="handleTypeChange"
                                     class="form-input">
                                     <el-option label="正则" value="正则"></el-option>
                                     <el-option label="对照表" value="对照表"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="来源:" prop="source">
+                                <el-select v-model="form.source" placeholder="请选择来源" class="form-input">
+                                    <el-option label="样本特征发现" value="样本特征发现"></el-option>
+                                    <el-option label="自定义" value="自定义"></el-option>
+                                    <el-option label="内置" value="内置"></el-option>
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -176,12 +175,12 @@
                                     </el-table>
                                     <!-- 对照表分页 -->
                                     <div class="mapping-pagination" style="margin-top: 10px; text-align: right;">
-                                        <Pagination @size-change="handleMappingSizeChange"
+                                        <Pagination v-show="mappingPagination.total > 0"
+                                            @size-change="handleMappingSizeChange"
                                             @current-change="handleMappingCurrentChange"
-                                            :current-page="mappingPagination.currentPage" :page-sizes="[5, 10, 20, 50]"
-                                            :page-size="mappingPagination.pageSize"
-                                            layout="total, sizes, prev, pager, next, jumper"
-                                            :total="mappingPagination.total" size="small" />
+                                            :page.sync="mappingPagination.currentPage"
+                                            :limit.sync="mappingPagination.pageSize" :total="mappingPagination.total"
+                                            size="small" />
                                     </div>
                                 </div>
 
@@ -222,8 +221,10 @@
 </template>
 
 <script>
+import { getPageListFeature, addFeature } from '@/api/system/systemPolicy'
 export default {
     name: 'DataFeature',
+    dicts: ['sys_feature_type', 'sys_source'],
     data() {
         return {
             // 遮罩层
@@ -236,57 +237,12 @@ export default {
             },
             // 表格数据
             tableData: [
-                {
-                    featureCode: 'F001',
-                    featureName: '二代身份证',
-                    featureType: '正则',
-                    featureValue: '\\d{18}',
-                    source: '内置',
-                    description: '用于识别二代身份证号',
-                    updateTime: '2025-04-11 09:58:25'
-                },
-                {
-                    featureCode: 'F002',
-                    featureName: '基金行业拼音对照表',
-                    featureType: '对照表',
-                    featureValue: 'sz=市值,qrqzshl=七日最大转化率',
-                    source: '自定义',
-                    description: '解释拼音缩写的具体含义',
-                    updateTime: '2025-04-11 10:23:15'
-                },
-                {
-                    featureCode: 'F003',
-                    featureName: '合同编号',
-                    featureType: '正则',
-                    featureValue: 'HT-\\d{3}',
-                    source: '样本特征发现',
-                    description: 'xxxx数据源xxxx库xxxx表xxxx字段样本特征提取',
-                    updateTime: '2025-04-11 14:12:05'
-                },
-                {
-                    featureCode: 'F004',
-                    featureName: '基金编号',
-                    featureType: '正则',
-                    featureValue: 'FQ-基金-[a-z]{1,3}',
-                    source: '样本特征发现',
-                    description: 'xxxx数据源xxxx库xxxx表xxxx字段样本特征提取',
-                    updateTime: '2025-04-12 09:30:45'
-                },
-                {
-                    featureCode: 'F005',
-                    featureName: '性别对照表',
-                    featureType: '对照表',
-                    featureValue: '1=男,2=女,0=未知',
-                    source: '内置',
-                    description: '性别代码与性别名称的对照',
-                    updateTime: '2025-04-10 16:45:30'
-                }
             ],
             // 分页
             pagination: {
                 currentPage: 1,
                 pageSize: 10,
-                total: 5
+                total: 0
             },
             // 选中的行
             selectedRows: [],
@@ -334,6 +290,22 @@ export default {
         }
     },
     methods: {
+        // 初始化
+        async init() {
+            let params = {
+                pageNum: this.pagination.currentPage,
+                pageSize: this.pagination.pageSize,
+                featureName: this.searchForm.featureName,
+                featureType: this.searchForm.featureType,
+                source: this.searchForm.source
+            }
+            const res = await getPageListFeature(params)
+            this.tableData = res.data.records
+            this.pagination.currentPage = res.data.pages
+            this.pagination.pageSize = res.data.size
+            this.pagination.total = res.data.total
+            console.log('数据特征列表', res.data);
+        },
         // 搜索
         handleSearch() {
             console.log('搜索条件：', this.searchForm)
@@ -387,24 +359,25 @@ export default {
             this.selectedRows = val
         },
         // 查看
-        handleView(row) {
+        handleView() {
             this.isView = true
-            this.setFormData(row)
+            this.setFormData()
             this.drawerVisible = true
         },
         // 编辑
-        handleEdit(row) {
+        handleEdit() {
             this.isView = false
-            this.setFormData(row)
+            this.setFormData()
             this.drawerVisible = true
         },
         // 填充表单数据
-        setFormData(row) {
-            this.form.id = row.featureCode
+        setFormData() {
+            this.form.id = row.id
             this.form.name = row.featureName
-            this.form.source = row.source
-            this.form.featureType = row.featureType
-            this.form.description = row.description
+            this.form.source = row.featureSourceName
+            this.form.featureType = row.featureTypeName
+            this.form.description = row.featureDescribe
+            this.form.featureValue = row.featureValue
 
             if (row.featureType === '正则') {
                 this.form.featureValue = row.featureValue
@@ -596,7 +569,11 @@ export default {
                 this.mappingPagination.currentPage--;
             }
         }
-    }
+    },
+    mounted() {
+        this.init() // 初始化
+    },
+
 }
 </script>
 
