@@ -21,27 +21,27 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="注释填充" prop="fillStatus">
-            <el-select v-model="queryParams.fillStatus" @change="selectProjectIdChange" placeholder="全部">
+          <el-form-item label="注释填充" prop="paddingStatus">
+            <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange" placeholder="全部">
               <el-option label="未开始" value="1"></el-option>
               <el-option label="成功" value="2"></el-option>
               <el-option label="失败" value="3"></el-option>
               <el-option label="执行中" value="4"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="样本特征提取" prop="fillStatus">
-            <el-select v-model="queryParams.extractStatus" @change="selectProjectIdChange" placeholder="全部">
+          <el-form-item label="样本特征提取" prop="featureExtractionStatus">
+            <el-select v-model="queryParams.featureExtractionStatus" @change="selectProjectIdChange" placeholder="全部">
               <el-option label="未开始" value="1"></el-option>
               <el-option label="成功" value="2"></el-option>
               <el-option label="失败" value="3"></el-option>
               <el-option label="执行中" value="4"></el-option>
             </el-select>
           </el-form-item>
-          <!-- <el-form-item>
+          <el-form-item>
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
-            <el-button icon="el-icon-s-opportunity" type="primary" size="small" @click="allFill">一键填充</el-button>
-            <el-button icon="el-icon-s-help" type="primary" size="small" @click="allAssess">一键评估</el-button>
-          </el-form-item> -->
+            <!-- <el-button icon="el-icon-s-opportunity" type="primary" size="small" @click="allFill">一键填充</el-button>
+            <el-button icon="el-icon-s-help" type="primary" size="small" @click="allAssess">一键评估</el-button> -->
+          </el-form-item>
         </el-form>
         <div class="mian_box" id="main_box">
           <div v-for="(item, index) in dataAll" v-loading="loading" :key="index" class="mian_box_item">
@@ -81,11 +81,19 @@
                 <div>个人信息条数：{{ item.personalInformation ? item.personalInformation : '--' }}</div>
                 <div>未成年人信息条数：{{ item.minorsInformation ? item.minorsInformation : '--' }}</div>
                 <div>数据来源：{{ item.dataType ? item.dataType : '--' }}</div>
-                <div>注释填充：<el-tag type="info" class="status-tag">
-                    <i class="el-icon-time"></i> 未开始
+                <div>注释填充：<el-tag
+                    :type="item.paddingStatus == '未开始' ? 'info' : item.paddingStatus == '成功' ? 'success' : item.paddingStatus == '失败' ? 'danger' : item.paddingStatus == '执行中' ? 'primary' : 'info'"
+                    class="status-tag">
+                    <i
+                      :class="item.paddingStatus == '未开始' ? 'el-icon-time' : item.paddingStatus == '成功' ? 'el-icon-circle-check' : item.paddingStatus == '失败' ? 'el-icon-warning-outline' : item.paddingStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
+                    {{ item.paddingStatus }}
                   </el-tag></div>
-                <div>样本特征提取：<el-tag type="danger" class="status-tag">
-                    <i class="el-icon-warning-outline"></i> 失败
+                <div>样本特征提取：<el-tag
+                    :type="item.featureExtractionStatus == '未开始' ? 'info' : item.featureExtractionStatus == '成功' ? 'success' : item.featureExtractionStatus == '失败' ? 'danger' : item.featureExtractionStatus == '执行中' ? 'primary' : 'primary'"
+                    class="status-tag">
+                    <i
+                      :class="item.paddingStatus == '未开始' ? 'el-icon-time' : item.paddingStatus == '成功' ? 'el-icon-circle-check' : item.paddingStatus == '失败' ? 'el-icon-warning-outline' : item.paddingStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
+                    {{ item.featureExtractionStatus }}
                   </el-tag>
                 </div>
               </div>
@@ -101,18 +109,18 @@
       <!-- 新增筛选区域 -->
       <el-form :model="drawerQueryParams" ref="drawerQueryForm" size="small" :inline="true" label-width="80px"
         style="margin: 15px 0;">
-        <el-form-item label="字段名称">
+        <el-form-item label="字段名称" prop="fieldName"> <!-- 添加prop -->
           <el-input v-model="drawerQueryParams.fieldName" placeholder="请输入字段名称搜索"
             @keyup.enter.native="handleDrawerSearch" style="width: 180px;"></el-input>
         </el-form-item>
-        <el-form-item label="脏数据">
+        <el-form-item label="脏数据" prop="dirtyData"> <!-- 添加prop -->
           <el-select v-model="drawerQueryParams.dirtyData" placeholder="全部" @change="handleDrawerSearch"
             style="width: 120px;">
             <el-option label="是" value="是"></el-option>
             <el-option label="否" value="否"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="样本特征">
+        <el-form-item label="样本特征" prop="sampleFeature"> <!-- 添加prop -->
           <el-select v-model="drawerQueryParams.sampleFeature" placeholder="全部" @change="handleDrawerSearch"
             style="width: 120px;">
             <el-option label="包含" value="包含"></el-option>
@@ -123,7 +131,6 @@
           <el-button icon="el-icon-refresh" size="small" @click="resetDrawerSearch">重置</el-button>
         </el-form-item>
       </el-form>
-
       <el-table :data="filteredDrawerData" ref="tableRef" height="calc(100% - 100px)" :key="tableKey" border
         class="tableBox">
         <el-table-column label="字段名称" align="center" prop="fieldName" width="150" show-overflow-tooltip />
@@ -173,10 +180,10 @@
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column label="是否包含特征" align="center" prop="hasFeature" width="100" show-overflow-tooltip />
+        <el-table-column label="是否包含特征" align="center" prop="featureData" width="100" show-overflow-tooltip />
         <el-table-column label="数据特征" align="center" min-width="150" prop="dataFeature" show-overflow-tooltip />
-        <el-table-column label="是否添加为匹配策略" align="center" min-width="150" prop="isMatchStrategy"
-          show-overflow-tooltip />
+        <!-- <el-table-column label="是否添加为匹配策略" align="center" min-width="150" prop="isMatchStrategy"
+          show-overflow-tooltip /> -->
       </el-table>
 
       <!-- 新增分页组件 -->
@@ -472,7 +479,7 @@ export default {
             ele.dirtyDataEditMsg = ''
             // 确保状态字段有默认值
             ele.dirtyData = ele.dirtyData || '否'
-            ele.hasFeature = ele.hasFeature || '不包含'
+            ele.featureData = ele.featureData || '不包含'
             return ele
           })
           this.drawerShow = true
@@ -497,7 +504,7 @@ export default {
 
         // 样本特征筛选
         const matchFeature = !this.drawerQueryParams.sampleFeature ||
-          item.hasFeature === this.drawerQueryParams.sampleFeature
+          item.featureData === this.drawerQueryParams.sampleFeature
 
         return matchField && matchDirty && matchFeature
       })
@@ -521,15 +528,27 @@ export default {
           const matchDirty = !this.drawerQueryParams.dirtyData ||
             item.dirtyData === this.drawerQueryParams.dirtyData
           const matchFeature = !this.drawerQueryParams.sampleFeature ||
-            item.hasFeature === this.drawerQueryParams.sampleFeature
+            item.featureData === this.drawerQueryParams.sampleFeature
           return matchField && matchDirty && matchFeature
         })
       )
     },
     // 重置筛选条件
     resetDrawerSearch() {
-      this.$refs.drawerQueryForm.resetFields()
-      this.handleDrawerSearch()
+      // 先手动重置筛选参数
+      this.drawerQueryParams = {
+        fieldName: '',
+        dirtyData: '',
+        sampleFeature: '',
+        pageNum: 1,
+        pageSize: 10
+      };
+      // 再调用表单重置方法（双重保障）
+      if (this.$refs.drawerQueryForm) {
+        this.$refs.drawerQueryForm.resetFields();
+      }
+      // 重新执行筛选
+      this.handleDrawerSearch();
     },
     // 树节点过滤方法
     filterNode(value, data) {
@@ -547,8 +566,8 @@ export default {
         this.databaseName = ''
       }
       this.queryParams.tableName = ''
-      this.queryParams.fillStatus = ''
-      this.queryParams.extractStatus = ''
+      this.queryParams.paddingStatus = ''
+      this.queryParams.featureExtractionStatus = ''
       this.isChildrenNode = data.nodeLayerIndex
       this.handleQuery();
       this.getSelectTableNamesFn()
@@ -561,8 +580,8 @@ export default {
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
     selectProjectIdChange(val) {
-      console.log('val',val);
-      console.log('queryParams',this.queryParams);
+      console.log('val', val);
+      console.log('queryParams', this.queryParams);
       this.handleQuery()
     },
     // 左侧树数据
