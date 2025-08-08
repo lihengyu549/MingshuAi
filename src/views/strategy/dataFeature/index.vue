@@ -197,18 +197,22 @@
 
                                 <!-- 右侧竖排按钮组 -->
                                 <div class="vertical-actions">
-                                    <el-button icon="el-icon-plus" type="primary" @click="addMappingRow" size="small"
-                                        :disabled="isView || !tempFeatureKey || !tempFeatureVal"
-                                        tooltip="新增"></el-button>
-                                    <el-button icon="el-icon-delete" type="danger" @click="deleteSelectedRows"
-                                        size="small" :disabled="isView || selectedMappingRows.length === 0"
-                                        tooltip="删除选中"></el-button>
-                                    <el-button icon="el-icon-upload" type="warning" @click="handleImport" size="small"
-                                        :disabled="isView" tooltip="导入"></el-button>
-                                    <el-button icon="el-icon-download" type="success" @click="handleExport" size="small"
-                                        :disabled="isView" tooltip="导出"></el-button>
-                                    <el-button icon="el-icon-delete" type="info" @click="clearAllRows" size="small"
-                                        :disabled="isView || form.mappingList.length === 0" tooltip="清空"></el-button>
+                                    <svg-icon icon-class="plus-circle" @click="addMappingRow"
+                                        :class="{ 'icon-disabled': isView || !tempFeatureKey || !tempFeatureVal }"
+                                        class="icon"
+                                        @click.native="(isView || !tempFeatureKey || !tempFeatureVal) && $event.stopPropagation()" />
+                                    <svg-icon icon-class="删除" @click="deleteSelectedRows"
+                                        :class="{ 'icon-disabled': isView || selectedMappingRows.length === 0 }"
+                                        class="icon"
+                                        @click.native="(isView || selectedMappingRows.length === 0) && $event.stopPropagation()" />
+                                    <svg-icon icon-class="导入" @click="handleImport" :class="{ 'icon-disabled': isView }"
+                                        class="icon" @click.native="isView && $event.stopPropagation()" />
+                                    <svg-icon icon-class="导出" @click="handleExport" :class="{ 'icon-disabled': isView }"
+                                        class="icon" @click.native="isView && $event.stopPropagation()" />
+                                    <svg-icon icon-class="清空" @click="clearAllRows"
+                                        :class="{ 'icon-disabled': isView || form.mappingList.length === 0 }"
+                                        class="icon"
+                                        @click.native="(isView || form.mappingList.length === 0) && $event.stopPropagation()" />
                                 </div>
                             </div>
 
@@ -855,5 +859,18 @@ export default {
 .mapping-pagination .pagination-container {
     position: relative;
     right: -3%;
+}
+
+.icon {
+    width: 1.5em;
+    height: 1.5em;
+    margin: 6px auto;
+    cursor: pointer;
+}
+
+.icon-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 </style>
