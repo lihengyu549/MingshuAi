@@ -232,7 +232,9 @@
 </template>
 
 <script>
-import { getPageListFeature, addFeature, getFeatureById, updateFeature, deleteFeature } from '@/api/system/systemPolicy'
+import { getPageListFeature, addFeature, getFeatureById, updateFeature, deleteFeature, getFeatureItemListByFeatureId, addFeatureItem, deleteFeatureItem, deleteFeatureItemAll, importFeatureItem, exportFeatureItem } from '@/api/system/systemPolicy'
+
+
 
 
 export default {
@@ -305,19 +307,27 @@ export default {
     methods: {
         // 初始化
         async init() {
-            let params = {
-                pageNum: this.pagination.currentPage,
-                pageSize: this.pagination.pageSize,
-                featureName: this.searchForm.featureName,
-                featureType: this.searchForm.featureType,
-                source: this.searchForm.source
+            this.loading = true; // 开始加载时显示loading
+            try {
+                let params = {
+                    pageNum: this.pagination.currentPage,
+                    pageSize: this.pagination.pageSize,
+                    featureName: this.searchForm.featureName,
+                    featureType: this.searchForm.featureType,
+                    source: this.searchForm.source
+                };
+                const res = await getPageListFeature(params);
+                this.tableData = res.data.records;
+                this.pagination.currentPage = res.data.pages;
+                this.pagination.pageSize = res.data.size;
+                this.pagination.total = res.data.total;
+            } catch (error) {
+                this.$message.error('数据加载失败：' + (error.message || '未知错误'));
+                this.tableData = []; // 加载失败时清空表格
+                this.pagination.total = 0;
+            } finally {
+                this.loading = false; // 无论成功失败都关闭loading
             }
-            const res = await getPageListFeature(params)
-            this.tableData = res.data.records
-            this.pagination.currentPage = res.data.pages
-            this.pagination.pageSize = res.data.size
-            this.pagination.total = res.data.total
-            console.log('数据特征列表', res.data);
         },
         // 搜索
         handleSearch() {
@@ -351,7 +361,6 @@ export default {
         // 删除选中项
         async handleDelete() {
             try {
-                // 使用await等待用户确认，避免回调嵌套
                 await this.$confirm(
                     `确定要删除选中的${this.selectedRows.length}条数据吗?`,
                     '提示',
@@ -362,24 +371,22 @@ export default {
                     }
                 );
 
-                // 用户点击确定后执行删除逻辑
+                this.loading = true; // 开始删除操作时显示loading
                 const params = {
                     ids: this.selectedRows.map(item => item.id)
-                }
+                };
                 await deleteFeature(params);
                 this.$message.success('删除成功');
-                this.init();
+                await this.init(); // 重新加载数据
                 this.selectedRows = [];
-                this.pagination.total = this.tableData.length;
-
             } catch (error) {
-                // 用户点击取消或操作中断时执行
-                // 排除因点击取消导致的错误提示
                 if (error !== 'cancel') {
                     this.$message.error('删除失败：' + (error.message || '未知错误'));
                 } else {
                     this.$message.info('已取消删除');
                 }
+            } finally {
+                this.loading = false; // 无论成功失败都关闭loading
             }
         },
         // 表格多选事件
@@ -412,12 +419,29 @@ export default {
                 this.form.mappingList = [] // 清空对照表数据
             } else if (row.featureType == '2') {
                 // 解析特征值为键值对
-                this.form.mappingList = res.data.featureItemList
+                this.getFeatureItemListByFeatureId(row)
                 this.form.featureValue = '' // 正则模式的特征值置空
             }
             this.mappingPagination.total = this.form.mappingList.length;
             this.tempFeatureKey = ''
             this.tempFeatureVal = ''
+        },
+        // 查询对照表数据
+        async getFeatureItemListByFeatureId(row) {
+            const params = {
+                featureId: row.id,
+                pageNum: 1,
+                pageSize: 10
+            }
+            const res = await getFeatureItemListByFeatureId(params)
+            this.form.mappingList = res.data.records
+            this.mappingPagination.total = res.data.total
+            this.mappingPagination.currentPage = res.data.pages
+            this.mappingPagination.pageSize = res.data.size
+            // 如果当前页数据为空且不是第一页，自动跳转到上一页
+            if (this.form.mappingList.length === 0 && this.mappingPagination.currentPage > 1) {
+                this.mappingPagination.currentPage--;
+            }
         },
         // 类型改变时处理
         handleTypeChange(type) {
@@ -428,7 +452,7 @@ export default {
             }
         },
         // 对照表：新增一行
-        addMappingRow() {
+        async addMappingRow() {
             if (this.tempFeatureKey && this.tempFeatureVal) {
                 // 检查是否已存在相同的特征值
                 const exists = this.form.mappingList.some(item => item.itemKey === this.tempFeatureKey)
@@ -436,22 +460,23 @@ export default {
                     this.$message.warning('该特征值已存在')
                     return
                 }
-
-                this.form.mappingList.push({
+                const params = {
+                    id: this.form.id,
                     itemKey: this.tempFeatureKey,
-                    itemVal: this.tempFeatureVal
-                })
+                    itemValue: this.tempFeatureVal
+                }
+                await addFeatureItem(params)
                 this.tempFeatureKey = ''
                 this.tempFeatureVal = ''
             } else {
                 this.$message.warning('特征值和对照含义不能为空')
             }
-            this.updateMappingTotal();
+            this.getFeatureItemListByFeatureId(this.form);
         },
         // 对照表：删除一行
         deleteMappingRow(index) {
             this.form.mappingList.splice(index, 1)
-            this.updateMappingTotal();
+            this.getFeatureItemListByFeatureId(this.form);
         },
         // 确认提交
         async handleConfirm() {
@@ -465,7 +490,7 @@ export default {
                 this.$message.warning('请添加至少一条对照数据')
                 return
             }
-
+            this.loading = true;
 
             // 实际项目中这里会调用保存接口
             if (this.form.id === '系统默认生成') {
@@ -504,6 +529,7 @@ export default {
 
             this.pagination.total = this.tableData.length
             this.drawerVisible = false
+            this.loading = false;
         },
         // 抽屉关闭前的处理
         handleDrawerClose(done) {
@@ -514,61 +540,151 @@ export default {
                 .catch(_ => { })
         },
         // 分页-改变页码
-        handleCurrentChange(val) {
-            this.pagination.currentPage = val
+        async handleCurrentChange(val) {
+            this.pagination.currentPage = val;
+            this.loading = true; // 切换页码时显示loading
+            try {
+                await this.init(); // 复用init方法加载数据
+            } finally {
+                this.loading = false;
+            }
         },
         // 分页-改变页大小
-        handleSizeChange(val) {
-            this.pagination.pageSize = val
-            this.pagination.currentPage = 1
+        async handleSizeChange(val) {
+            this.pagination.pageSize = val;
+            this.pagination.currentPage = 1;
+            this.loading = true; // 改变页大小时显示loading
+            try {
+                await this.init(); // 复用init方法加载数据
+            } finally {
+                this.loading = false;
+            }
         },
         // 新增：处理对照行选中事件
         handleMappingSelectionChange(val) {
             this.selectedMappingRows = val
         },
         // 新增：删除选中的对照行
-        deleteSelectedRows() {
+        async deleteSelectedRows() {
             this.$confirm(`确定要删除选中的${this.selectedMappingRows.length}条数据吗?`, '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
-            }).then(() => {
-                const keysToDelete = this.selectedMappingRows.map(item => item.itemKey)
-                this.form.mappingList = this.form.mappingList.filter(
-                    item => !keysToDelete.includes(item.itemKey)
-                )
+            }).then(async () => {
+                const keysToDelete = this.selectedMappingRows.map(item => item.id)
+                const params = {
+                    ids: keysToDelete
+                }
+                await deleteFeatureItem(params)
                 this.selectedMappingRows = []
-                this.updateMappingTotal();
+                this.getFeatureItemListByFeatureId(this.form);
                 this.$message.success('删除成功')
             }).catch(() => {
                 this.$message.info('已取消删除')
             })
         },
         // 新增：导入功能（示例实现）
+        // 导入功能实现（仅发送文件流给后端）
         handleImport() {
-            this.$message.info('导入功能待实现')
-            // 实际实现可调用文件上传组件，解析文件内容后添加到mappingList
+            // 创建隐藏的文件选择input
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.txt'; // 只接受txt文件
+            fileInput.style.display = 'none';
+            document.body.appendChild(fileInput);
+
+            // 监听文件选择事件
+            fileInput.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) {
+                    document.body.removeChild(fileInput);
+                    return;
+                }
+
+                // 校验文件大小（示例：不超过10MB）
+                if (file.size > 10 * 1024 * 1024) {
+                    this.$message.error('文件大小不能超过10MB');
+                    document.body.removeChild(fileInput);
+                    return;
+                }
+
+                try {
+                    // 创建FormData对象，用于传输文件
+                    const formData = new FormData();
+                    // 追加文件流（注意：后端接口需对应此参数名，如"file"）
+                    formData.append('file', file);
+                    // 追加特征ID（根据后端需求传递，如当前编辑的特征ID）
+                    if (this.form.id && this.form.id !== '系统默认生成') {
+                        formData.append('id', this.form.id);
+                    }
+
+                    // 发送文件流到后端（假设后端导入接口为importFeatureItem）
+                    await importFeatureItem(formData);
+
+                    // 导入成功后刷新对照表数据
+                    this.getFeatureItemListByFeatureId(this.form);
+                    this.$message.success('导入成功');
+                } catch (error) {
+                    this.$message.error('导入失败：' + (error.message || '未知错误'));
+                } finally {
+                    document.body.removeChild(fileInput);
+                }
+            };
+
+            // 触发文件选择
+            fileInput.click();
         },
         // 新增：导出功能（示例实现）
+        // 导出功能实现
         handleExport() {
             if (this.form.mappingList.length === 0) {
-                this.$message.warning('暂无数据可导出')
-                return
+                this.$message.warning('暂无数据可导出');
+                return;
             }
-            const exportData = this.form.mappingList.map(item => `${item.key}=${item.val}`).join('\n')
-            // 实际实现可使用文件下载库，将数据转为CSV/Excel格式
-            this.$message.success('导出成功')
+
+            try {
+                // 1. 按格式拼接数据（key,value 每行一条）
+                const exportContent = this.form.mappingList
+                    .map(item => `${item.itemKey},${item.itemValue}`)
+                    .join('\n');
+
+                // 2. 创建Blob对象（UTF-8编码）
+                const blob = new Blob(['\ufeff' + exportContent], { type: 'text/plain;charset=utf-8' });
+                // \ufeff 是BOM头，用于解决Windows系统下Excel打开UTF-8文件乱码问题
+
+                // 3. 创建下载链接
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                // 文件名建议包含特征名称，如“特征名称_对照表.txt”
+                // a.download = `${this.form.featureName || '特征'}_对照表.txt`;
+                a.download = '特征值_对照表.txt';
+                document.body.appendChild(a);
+
+                // 4. 触发下载并清理
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                this.$message.success('导出成功');
+            } catch (error) {
+                this.$message.error('导出失败：' + error.message);
+            }
         },
         // 新增：清空所有对照行
-        clearAllRows() {
+        async clearAllRows() {
             this.$confirm('确定要清空所有数据吗?', '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
-            }).then(() => {
+            }).then(async () => {
+                const params = {
+                    id: this.form.id
+                }
+                await deleteFeatureItemAll(params)
                 this.form.mappingList = []
                 this.selectedMappingRows = []
-                this.updateMappingTotal();
+                this.getFeatureItemListByFeatureId(this.form);
                 this.$message.success('清空成功')
             }).catch(() => {
                 this.$message.info('已取消清空')
@@ -583,14 +699,6 @@ export default {
             this.mappingPagination.pageSize = val;
             this.mappingPagination.currentPage = 1;
         },
-        // 在添加、删除、清空等操作后更新总条数
-        updateMappingTotal() {
-            this.mappingPagination.total = this.form.mappingList.length;
-            // 如果当前页数据为空且不是第一页，自动跳转到上一页
-            if (this.form.mappingList.length === 0 && this.mappingPagination.currentPage > 1) {
-                this.mappingPagination.currentPage--;
-            }
-        }
     },
     mounted() {
         this.init() // 初始化
