@@ -75,11 +75,11 @@
         </el-form-item>
         <el-form-item label="IP段" prop="ipScope">
           <el-input v-model="addOrEditFormData.ipScope" maxlength="50" placeholder="请输入单个IP或IP段"></el-input>
-          <div style="font-size: 12px; font-style: italic;">IP段示例：192.168.1.1-200，多个IP以逗号隔开</div>
+          <div style="font-size: 12px; font-style: italic;">IP段示例：192.168.1.1-200，多个IP以英文逗号隔开</div>
         </el-form-item>
         <el-form-item label="指定端口" prop="ports">
           <el-input v-model="addOrEditFormData.ports" maxlength="50" placeholder="请输入端口或端口范围"></el-input>
-          <div style="font-size: 12px; font-style: italic;">端口范围示例：0-65535，多个端口以逗号隔开</div>
+          <div style="font-size: 12px; font-style: italic;">端口范围示例：0-65535，多个端口以英文逗号隔开</div>
         </el-form-item>
         <el-form-item class="weekTimeClass" prop="scheduleType" label="周期">
           <el-select v-model="addOrEditFormData.scheduleType" @change="scheduleTypeChange">
