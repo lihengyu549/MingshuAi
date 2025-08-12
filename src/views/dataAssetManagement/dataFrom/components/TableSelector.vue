@@ -36,6 +36,12 @@
                             <i slot="prefix" class="el-input__icon el-icon-search"></i>
                         </el-input>
 
+                        <!-- 新增中间列表全选按钮 -->
+                        <el-button type="text" style="margin-bottom: 10px; padding: 0; align-self: flex-end;"
+                            @click="handleMiddleListCheckAll">
+                            {{ isMiddleListAllChecked ? '取消全选' : '全选' }}
+                        </el-button>
+
                         <!-- 表名列表容器 -->
                         <div class="table-list-container">
                             <!-- 空状态提示 - 放在前面确保优先显示 -->
@@ -114,7 +120,8 @@ export default {
             checkListChildAll: [], // 子列表所有表名
             searchQuery: '', // 查询表名
             serchListChildAll: [], // 查询后子列表所有表名
-            returnArr: [] // 汇总数据
+            returnArr: [], // 汇总数据
+            isMiddleListAllChecked: false // 中间列表全选状态
         };
     },
     mounted() {
@@ -191,6 +198,7 @@ export default {
                     this.checkListChildAll = [];
                     this.serchListChildAll = [];
                     this.updateCheckList();
+                    this.updateMiddleListCheckAllStatus(); // 更新中间列表全选状态
                 });
             } else {
                 // 取消全选：清除所有选中状态和中间列表
@@ -203,6 +211,7 @@ export default {
                 this.checkListChildAll = [];
                 this.serchListChildAll = [];
                 this.updateCheckList();
+                this.updateMiddleListCheckAllStatus(); // 更新中间列表全选状态
             }
         },
 
@@ -221,6 +230,7 @@ export default {
             if (database && database.children) {
                 this.checkListChildAll = [...database.children];
                 this.serchListChildAll = [...database.children];
+                this.updateMiddleListCheckAllStatus(); // 更新中间列表全选状态
             }
         },
 
@@ -240,15 +250,19 @@ export default {
                 this.checkListChildAll = [...database.children];
                 this.serchListChildAll = [...database.children];
             } else {
-                // 取消勾选：取消所有表的选中状态
+                // 取消勾选：只取消表的选中状态，保留中间列表展示（由激活状态决定）
                 if (database.children) {
                     database.children.forEach(table => table.checked = false);
                 }
-                // 从中间列表移除
-                this.checkListChildAll = this.checkListChildAll.filter(
-                    table => table.databaseName !== database.name
-                );
-                this.serchListChildAll = [...this.checkListChildAll];
+                // 移除这行错误的过滤逻辑：不再从中间列表删除数据
+                // this.checkListChildAll = this.checkListChildAll.filter(
+                //     table => table.databaseName !== database.name
+                // );
+                // 如果当前取消勾选的是激活状态的数据库，保持列表展示
+                if (database.isActive) {
+                    this.checkListChildAll = [...database.children];
+                    this.serchListChildAll = [...database.children];
+                }
             }
 
             this.updateCheckList();
@@ -274,6 +288,7 @@ export default {
 
             this.updateCheckList();
             this.updateCheckAllStatus();
+            this.updateMiddleListCheckAllStatus(); // 更新中间列表全选状态
         },
 
         // 清空选择
@@ -289,6 +304,7 @@ export default {
             this.checkList = [];
             this.checkListChildAll = [];
             this.serchListChildAll = [];
+            this.isMiddleListAllChecked = false; // 重置中间列表全选状态
         },
 
         // 搜索表名
@@ -296,6 +312,7 @@ export default {
             this.checkListChildAll = this.serchListChildAll.filter(item =>
                 item.tableName.includes(val)
             );
+            this.updateMiddleListCheckAllStatus(); // 更新中间列表全选状态
         },
 
         // 更新全选按钮状态
@@ -337,6 +354,60 @@ export default {
                 }
                 return false;
             }).map(database => database.name);
+        },
+
+        // 中间列表全选/取消全选
+        handleMiddleListCheckAll() {
+            if (this.checkListChildAll.length === 0) return;
+
+            // 切换全选状态
+            const newCheckedState = !this.isMiddleListAllChecked;
+
+            // 只对当前展示的表（包括筛选后的）进行操作
+            this.checkListChildAll.forEach(item => {
+                item.checked = newCheckedState;
+                // 同步更新对应数据库的状态
+                const database = this.returnArr.find(ele => ele.name === item.databaseName);
+                if (database) {
+                    const checkedChildren = database.children.filter(child => child.checked);
+                    const totalChildren = database.children.length;
+
+                    // 更新数据库的选中状态
+                    if (checkedChildren.length === 0) {
+                        database.checked = false;
+                        database.isBanxuan = false;
+                    } else if (checkedChildren.length === totalChildren) {
+                        database.checked = true;
+                        database.isBanxuan = false;
+                    } else {
+                        database.checked = false;
+                        database.isBanxuan = true;
+                    }
+                }
+            });
+
+            this.isMiddleListAllChecked = newCheckedState;
+            this.updateCheckList();
+            this.updateCheckAllStatus();
+        },
+
+        // 更新中间列表全选状态
+        updateMiddleListCheckAllStatus() {
+            if (this.checkListChildAll.length === 0) {
+                this.isMiddleListAllChecked = false;
+                return;
+            }
+            // 检查当前展示的所有表是否都被选中
+            this.isMiddleListAllChecked = this.checkListChildAll.every(item => item.checked);
+        }
+    },
+    watch: {
+        // 监听中间列表数据变化，更新全选状态
+        checkListChildAll: {
+            handler() {
+                this.updateMiddleListCheckAllStatus();
+            },
+            deep: true
         }
     }
 };
