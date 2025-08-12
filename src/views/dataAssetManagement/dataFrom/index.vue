@@ -983,7 +983,7 @@ export default {
         }
       })
       this.form.tables = result
-      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.tableNum}张表`  //共${this.$refs.scanContentTreeRef.fieldCount}个字段
+      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedTableCount}张表`  //共${this.$refs.scanContentTreeRef.fieldCount}个字段
       this.scanContentShow = false
     },
   }

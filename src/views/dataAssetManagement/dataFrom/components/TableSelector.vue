@@ -176,6 +176,16 @@ export default {
             } else {
                 return `(${fullCount}个数据源 + ${partialCount}个数据源中的${partialTableCount}张表)`;
             }
+        },
+
+        // 已选表数量
+        selectedTableCount() {
+            return this.returnArr.reduce((total, db) => {
+                if (db.children && db.children.length) {
+                    return total + db.children.filter(table => table.checked).length;
+                }
+                return total;
+            }, 0);
         }
     },
     methods: {
