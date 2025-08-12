@@ -36,16 +36,24 @@
                             <i slot="prefix" class="el-input__icon el-icon-search"></i>
                         </el-input>
 
-                        <!-- 表名列表 -->
-                        <RecycleScroller :items="checkListChildAll" :item-size="30"
-                            style="max-height: calc(100% - 100px); overflow: auto;" key-field="value">
-                            <template #default="{ item }">
-                                <el-checkbox v-model="item.checked" @change="handleCheckedChildChange(item, $event)"
-                                    :label="item.tableName" :key="item.value" class="inline-checkbox">
-                                    {{ item.tableName }}
-                                </el-checkbox>
-                            </template>
-                        </RecycleScroller>
+                        <!-- 表名列表容器 -->
+                        <div class="table-list-container">
+                            <!-- 空状态提示 - 放在前面确保优先显示 -->
+                            <div v-if="checkListChildAll.length === 0" class="empty-state">
+                                请选择左侧数据库查看表
+                            </div>
+
+                            <!-- 表名列表 - 只有当有数据时才显示 -->
+                            <RecycleScroller v-else :items="checkListChildAll" :item-size="30" class="table-scroller"
+                                key-field="value">
+                                <template #default="{ item }">
+                                    <el-checkbox v-model="item.checked" @change="handleCheckedChildChange(item, $event)"
+                                        :label="item.tableName" :key="item.value" class="inline-checkbox">
+                                        {{ item.tableName }}
+                                    </el-checkbox>
+                                </template>
+                            </RecycleScroller>
+                        </div>
                     </div>
                 </div>
             </el-card>
@@ -117,7 +125,7 @@ export default {
             isBanxuan: false,
             value: item.value,
             children: [],
-            isActive: false // 新增：用于标识是否被点击激活（高亮）
+            isActive: false // 用于标识是否被点击激活（高亮）
         }));
     },
     computed: {
@@ -169,24 +177,27 @@ export default {
             this.isIndeterminate = false;
 
             if (checked) {
-                // 全选：加载所有表并选中
+                // 全选：加载所有表并选中，但不在中间列表展示
                 const fetchPromises = this.returnArr.map(item =>
                     this.fetchTableNames(item.name).then(() => {
                         item.checked = true;
+                        item.isActive = false; // 全选时不高亮任何单个数据库
                         item.children.forEach(table => table.checked = true);
                     })
                 );
 
                 Promise.all(fetchPromises).then(() => {
-                    this.checkListChildAll = this.returnArr.flatMap(db => db.children);
-                    this.serchListChildAll = [...this.checkListChildAll];
+                    // 全选时清空中间列表，不展示任何表
+                    this.checkListChildAll = [];
+                    this.serchListChildAll = [];
                     this.updateCheckList();
                 });
             } else {
-                // 取消全选：清除所有选中状态
+                // 取消全选：清除所有选中状态和中间列表
                 this.returnArr.forEach(item => {
                     item.checked = false;
                     item.isBanxuan = false;
+                    item.isActive = false;
                     item.children.forEach(table => table.checked = false);
                 });
                 this.checkListChildAll = [];
@@ -205,7 +216,7 @@ export default {
             // 加载表数据
             await this.fetchTableNames(item.name);
 
-            // 只展示当前库的表，确保不勾选
+            // 只展示当前库的表
             const database = this.returnArr.find(ele => ele.name === item.name);
             if (database && database.children) {
                 this.checkListChildAll = [...database.children];
@@ -338,19 +349,25 @@ export default {
     display: flex;
 }
 
+/* 滚动条样式 */
 /deep/ ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
 }
 
 /deep/::-webkit-scrollbar-thumb {
-    background-color: #0003;
-    border-radius: 10px;
+    background-color: #c1c1c1;
+    border-radius: 4px;
     transition: all .2s ease-in-out;
 }
 
+/deep/::-webkit-scrollbar-thumb:hover {
+    background-color: #a8a8a8;
+}
+
 /deep/::-webkit-scrollbar-track {
-    border-radius: 10px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
 }
 
 ul {
@@ -374,13 +391,15 @@ li {
 }
 
 .canChoose_main {
-    height: calc(100%);
+    height: calc(100% - 40px);
+    /* 调整高度计算，留出卡片头部空间 */
     display: flex;
 }
 
 .canChoose_left {
     height: 100%;
     overflow-y: auto;
+    /* 确保左侧列表有滚动条 */
     width: 45%;
     border-right: 2px solid #c7c7c7;
     padding: 0 10px;
@@ -430,6 +449,45 @@ li {
     padding: 0 20px;
     box-sizing: border-box;
     flex: 1;
+    height: 100%;
+    /* 确保右侧容器有明确高度 */
+    display: flex;
+    flex-direction: column;
+    /* 使用flex布局确保高度正确计算 */
+}
+
+/* 表列表容器和滚动设置 */
+.table-list-container {
+    flex: 1;
+    /* 占满剩余空间 */
+    border-radius: 4px;
+    overflow: hidden;
+    min-height: 0;
+    /* 允许容器小于内容高度 */
+    position: relative;
+    /* 为绝对定位的空状态做准备 */
+}
+
+/* 确保虚拟滚动容器有正确的滚动设置 */
+.table-scroller {
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* 空状态样式 - 确保始终可见 */
+.empty-state {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #909399;
+    margin: 0;
+    z-index: 1;
+    /* 确保在内容之上 */
 }
 
 .dowmChoose {
@@ -463,5 +521,6 @@ li {
 .inline-checkbox {
     width: 100%;
     margin: 3px 0;
+    padding: 2px 0;
 }
 </style>
