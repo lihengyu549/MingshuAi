@@ -98,7 +98,6 @@ export default {
             selectedItemsChild: [],// 右侧数据的子节点数据
             selectedItemsParent: [],// 右側父節點
             selectedItemsChildCount: [],// 右側增加的无用数据展示
-            isSelectAll: false, // 新增：标识是否正在执行全选操作
 
             //汇总数据
             returnArr: []
@@ -184,12 +183,12 @@ export default {
         handleCheckAllChange(val) {
             this.isIndeterminate = false;
             if (val) {
-                // 全选：设置标志位为true
-                this.isSelectAll = true;
-
+                // 全选：加载所有数据源的表并选中所有表
                 this.checkList = this.scanContentTreeData.map(item => item.label);
+                // 批量加载所有数据源的表
                 const fetchPromises = this.scanContentTreeData.map(item => {
                     return this.fetchTableNames(item.label).then(() => {
+                        // 加载完成后，选中当前数据源的所有表
                         const database = this.returnArr.find(db => db.name === item.label);
                         if (database && database.children) {
                             database.children.forEach(table => {
@@ -198,7 +197,7 @@ export default {
                         }
                     });
                 });
-
+                // 等待所有表加载完成后更新状态
                 Promise.all(fetchPromises).then(() => {
                     this.returnArr.forEach(database => {
                         database.checked = true;
@@ -206,11 +205,9 @@ export default {
                     });
                     this.updateCheckList();
                     this.$forceUpdate();
-                    // 全选完成：重置标志位
-                    this.isSelectAll = false;
                 });
             } else {
-                // 取消全选：清空状态（现有逻辑不变）
+                // 取消全选：清空所有选中状态和表数据
                 this.checkList = [];
                 this.returnArr.forEach(database => {
                     database.checked = false;
@@ -297,11 +294,12 @@ export default {
             this.$forceUpdate();
         },
         async fetchTableNames(databaseName) {
+            // 若已加载过该数据源的表，直接返回避免重复请求
             const database = this.returnArr.find(ele => ele.name === databaseName);
             if (database && database.children && database.children.length > 0) {
                 return;
             }
-
+            // 原有请求逻辑
             this.databaseTableNameP.databaseName = databaseName;
             let res = await getDatabaseTableNameList(this.databaseTableNameP);
             const tables = res.data.map((item) => {
@@ -309,19 +307,15 @@ export default {
                     databaseName: item.databaseName,
                     tableName: item.tableName,
                     value: item.parentID,
-                    checked: false
+                    checked: false // 初始不选中，全选时会手动设为true
                 };
             });
             const targetDb = this.returnArr.find(ele => ele.name === databaseName);
             if (targetDb) {
                 targetDb.children = tables;
             }
-
-            // 仅在非全选操作时，才更新中间列表的数据源
-            if (!this.isSelectAll) {
-                this.checkListChildAll = tables;
-                this.serchListChildAll = [...tables];
-            }
+            this.checkListChildAll = tables;
+            this.serchListChildAll = [...tables];
         },
         updateCheckList() {
             this.checkList = this.returnArr.filter(database => {
