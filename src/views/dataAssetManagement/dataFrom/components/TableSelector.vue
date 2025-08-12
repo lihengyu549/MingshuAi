@@ -68,12 +68,13 @@
         <!-- 右侧已选区域优化 -->
         <div class="dowmChoose">
             <el-card class="right-panel">
-                <div slot="header" class="clearfix">
+                <div slot="header" class="clearfix" style="display: flex; justify-content: space-between;">
+
                     <span>
                         已选
                         <span class="right-panel-text">{{ selectedDisplayText }}</span>
                     </span>
-                    <el-button style="float: right; padding: 3px 0;color: #409EFF;" type="text" @click="clearSelection">
+                    <el-button style="padding: 3px 0;color: #409EFF;" type="text" @click="clearSelection">
                         清空
                     </el-button>
                 </div>
@@ -197,13 +198,13 @@ export default {
             const partialCount = this.partialSelectedDbs.length;
             const partialTableCount = this.partialSelectedTables;
             if (fullCount === 0 && partialCount === 0) {
-                return '(未选择数据)';
+                return '(暂无选中的数据库或表)';
             } else if (partialCount === 0) {
-                return `(${fullCount}个数据源的所有表)`;
+                return `(${fullCount}个数据库的所有表)`;
             } else if (fullCount === 0) {
-                return `(${partialCount}个数据源中的${partialTableCount}张数据表)`;
+                return `(${partialCount}个数据库中的${partialTableCount}张数据表)`;
             } else {
-                return `(${fullCount}个数据源的所有表+${partialCount}个数据源中的${partialTableCount}张数据表)`;
+                return `(${fullCount}个数据库的所有表+${partialCount}个数据库中的${partialTableCount}张数据表)`;
             }
         },
 
