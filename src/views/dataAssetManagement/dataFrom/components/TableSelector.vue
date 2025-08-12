@@ -1,30 +1,43 @@
 <template>
     <div class="main_div">
         <div class="canChoose">
-            <!-- 右侧已选列表 -->
             <el-card class="left-panel">
                 <div slot="header" class="clearfix">可选</div>
                 <div class="canChoose_main">
                     <div class="canChoose_left">
-                        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll"
-                            @change="handleCheckAllChange">全选</el-checkbox>
-                        <el-checkbox-group v-model="checkList" @change="handleCheckedChangeGroup">
-                            <el-checkbox v-for="item in returnArr" :label="item.name" :key="item.value"
-                                class="inline-checkbox" @change="handleCheckedChange(item, $event)"
-                                :indeterminate="item.isBanxuan">
-                                {{ item.name }}
+                        <!-- 全选复选框 -->
+                        <div class="check-item">
+                            <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll"
+                                @change="handleCheckAllChange">
+                                全选
                             </el-checkbox>
-                        </el-checkbox-group>
+                        </div>
+
+                        <!-- 数据库列表 - 复选框与文本完全分离 -->
+                        <div v-for="item in returnArr" :key="item.value" class="check-item">
+                            <div class="check-item-inner">
+                                <!-- 复选框单独存在，只负责勾选逻辑 -->
+                                <el-checkbox :indeterminate="item.isBanxuan" v-model="item.checked"
+                                    @change="handleCheckboxClick(item, $event)">
+                                </el-checkbox>
+
+                                <!-- 文本内容单独存在，只负责展示表名 -->
+                                <span class="database-name" @click="handleDatabaseNameClick(item)">
+                                    {{ item.name }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
+
                     <div class="canChoose_right">
                         <el-input style="margin-bottom: 10px;" placeholder="请输入表名" v-model="searchQuery"
                             @input="inputSearch" clearable>
                             <i slot="prefix" class="el-input__icon el-icon-search"></i>
                         </el-input>
-                        <!-- 使用 RecycleScroller 替换原来的 el-checkbox-group -->
+
+                        <!-- 表名列表 -->
                         <RecycleScroller :items="checkListChildAll" :item-size="30"
                             style="max-height: calc(100% - 100px); overflow: auto;" key-field="value">
-                            <!-- 每个列表项的高度，根据实际情况调整 -->
                             <template #default="{ item }">
                                 <el-checkbox v-model="item.checked" @change="handleCheckedChildChange(item, $event)"
                                     :label="item.tableName" :key="item.value" class="inline-checkbox">
@@ -36,19 +49,20 @@
                 </div>
             </el-card>
         </div>
+
         <div class="dowmChoose">
-            <!-- 右侧已选列表 -->
             <el-card class="right-panel">
                 <div slot="header" class="clearfix">
                     <span>
                         已选
                         <span class="right-panel-text">{{ selectedDisplayText }}</span>
                     </span>
-                    <el-button style="float: right; padding: 3px 0;color: blue;" type="text"
-                        @click="clearSelection">清空</el-button>
+                    <el-button style="float: right; padding: 3px 0;color: blue;" type="text" @click="clearSelection">
+                        清空
+                    </el-button>
                 </div>
                 <ul>
-                    <li v-for="item in checkList" :key="item.value">
+                    <li v-for="item in checkList" :key="item">
                         <span style="line-height: 20px;">{{ item }}</span>
                     </li>
                 </ul>
@@ -60,24 +74,23 @@
 <script>
 import { RecycleScroller } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
-import {
-    getDatabaseTableNameList
-} from "@/api/system/proxys";
+import { getDatabaseTableNameList } from "@/api/system/proxys";
+
 export default {
     name: "TableSelector",
     components: {
         RecycleScroller
     },
     props: {
-        scanContentTreeData: { //总库名
+        scanContentTreeData: { // 总库名
             type: Array,
             default: () => []
         },
-        treeCheckedData: { //已选表名
+        treeCheckedData: { // 已选表名
             type: Array,
             default: []
         },
-        databaseTableNameParama: { //数据库表名传参
+        databaseTableNameParama: { // 数据库表名传参
             type: Object,
             default: {}
         }
@@ -85,194 +98,149 @@ export default {
     data() {
         return {
             checkAll: false,
-            checkList: [], //已选数据库库名
-            databaseTableNameP: { ...this.databaseTableNameParama, databaseName: "" }, //数据库表名传参
-            databaseTableNameList: [],//数据库表名列表
+            checkList: [], // 已选数据库库名
+            databaseTableNameP: { ...this.databaseTableNameParama, databaseName: "" },
             isIndeterminate: false,
-            // 表明列表属性
-            checkListChild: [], //已选子列表表名
-            checkListChildAll: [], //子列表所有表名
-            searchQuery: '', //查询表名
-            serchListChildAll: [], //查询后子列表所有表名
-
-            selectedItemsChild: [],// 右侧数据的子节点数据
-            selectedItemsParent: [],// 右側父節點
-            selectedItemsChildCount: [],// 右側增加的无用数据展示
-
-            //汇总数据
-            returnArr: []
+            checkListChild: [], // 已选子列表表名
+            checkListChildAll: [], // 子列表所有表名
+            searchQuery: '', // 查询表名
+            serchListChildAll: [], // 查询后子列表所有表名
+            returnArr: [] // 汇总数据
         };
     },
-    created() {
-    },
     mounted() {
-        this.returnArr = this.scanContentTreeData.map(item => {
-            return {
-                name: item.label,//左侧label
-                checked: false,// 是否选中
-                isBanxuan: false,//是否半选
-                value: item.value,
-                children: []
-            }
-        })
+        // 初始化数据库列表
+        this.returnArr = this.scanContentTreeData.map(item => ({
+            name: item.label,
+            checked: false,
+            isBanxuan: false,
+            value: item.value,
+            children: []
+        }));
     },
     computed: {
-        tableNum() {
-            const count = (items) => {
-                return items.reduce((total, item) => {
-                    const isLeafNode = !item.children || item.children.length === 0;
-                    const currentCount = isLeafNode && item.checked ? 1 : 0;
-                    const childrenCount = item.children ? count(item.children) : 0;
-                    return total + currentCount + childrenCount;
-                }, 0);
-            };
-            return count(this.returnArr);
-        },
-        isAllTablesSelected() {
-            return this.returnArr.every(database => {
-                return database.checked && database.children.every(table => table.checked);
-            });
-        },
-        // 新增：完全选中的数据源数量（所有表均选中）
+        // 完全选中的数据源数量
         fullSelectedDbs() {
-            return this.returnArr.filter(db => {
-                // 数据源有子表且全部表都被选中
-                return db.children.length > 0 &&
-                    db.checked &&
-                    db.children.every(table => table.checked);
-            }).length;
+            return this.returnArr.filter(db =>
+                db.children.length > 0 &&
+                db.checked &&
+                db.children.every(table => table.checked)
+            ).length;
         },
 
-        // 新增：部分选中的数据源（有表选中但未全选）
+        // 部分选中的数据源
         partialSelectedDbs() {
             return this.returnArr.filter(db => {
-                const hasCheckedTables = db.children.some(table => table.checked); // 存在选中的表
-                const isFullSelected = db.children.length > 0 && db.children.every(table => table.checked); // 未全选
+                const hasCheckedTables = db.children.some(table => table.checked);
+                const isFullSelected = db.children.length > 0 && db.children.every(table => table.checked);
                 return hasCheckedTables && !isFullSelected;
             });
         },
 
-        // 新增：部分选中数据源的总表数
+        // 部分选中数据源的总表数
         partialSelectedTables() {
             return this.partialSelectedDbs.reduce((total, db) => {
-                const checkedCount = db.children.filter(table => table.checked).length;
-                return total + checkedCount;
+                return total + db.children.filter(table => table.checked).length;
             }, 0);
         },
 
-        // 新增：已选文本展示内容（核心逻辑）
+        // 已选文本展示内容
         selectedDisplayText() {
-            const fullCount = this.fullSelectedDbs; // 完全选中的数据源数量
-            const partialCount = this.partialSelectedDbs.length; // 部分选中的数据源数量
-            const partialTableCount = this.partialSelectedTables; // 部分选中的表总数
+            const fullCount = this.fullSelectedDbs;
+            const partialCount = this.partialSelectedDbs.length;
+            const partialTableCount = this.partialSelectedTables;
 
             if (fullCount === 0 && partialCount === 0) {
-                return '(未选择数据)'; // 无任何选中时
+                return '(未选择数据)';
             } else if (partialCount === 0) {
-                return `(${fullCount}个数据源)`; // 仅完全选中时
+                return `(${fullCount}个数据源)`;
             } else if (fullCount === 0) {
-                return `(${partialCount}个数据源中的${partialTableCount}张表)`; // 仅部分选中时
+                return `(${partialCount}个数据源中的${partialTableCount}张表)`;
             } else {
-                return `(${fullCount}个数据源 + ${partialCount}个数据源中的${partialTableCount}张表)`; // 混合选中时
+                return `(${fullCount}个数据源 + ${partialCount}个数据源中的${partialTableCount}张表)`;
             }
         }
     },
-    watch: {
-    },
     methods: {
-        handleCheckAllChange(val) {
+        // 全选复选框事件
+        handleCheckAllChange(checked) {
             this.isIndeterminate = false;
-            if (val) {
-                // 全选：加载所有数据源的表并选中所有表
-                this.checkList = this.scanContentTreeData.map(item => item.label);
-                // 批量加载所有数据源的表
-                const fetchPromises = this.scanContentTreeData.map(item => {
-                    return this.fetchTableNames(item.label).then(() => {
-                        // 加载完成后，选中当前数据源的所有表
-                        const database = this.returnArr.find(db => db.name === item.label);
-                        if (database && database.children) {
-                            database.children.forEach(table => {
-                                table.checked = true;
-                            });
-                        }
-                    });
-                });
-                // 等待所有表加载完成后更新状态
+
+            if (checked) {
+                // 全选：加载所有表并选中
+                const fetchPromises = this.returnArr.map(item =>
+                    this.fetchTableNames(item.name).then(() => {
+                        item.checked = true;
+                        item.children.forEach(table => table.checked = true);
+                    })
+                );
+
                 Promise.all(fetchPromises).then(() => {
-                    this.returnArr.forEach(database => {
-                        database.checked = true;
-                        database.isBanxuan = false;
-                    });
+                    this.checkListChildAll = this.returnArr.flatMap(db => db.children);
+                    this.serchListChildAll = [...this.checkListChildAll];
                     this.updateCheckList();
-                    this.$forceUpdate();
                 });
             } else {
-                // 取消全选：清空所有选中状态和表数据
-                this.checkList = [];
-                this.returnArr.forEach(database => {
-                    database.checked = false;
-                    database.isBanxuan = false;
-                    database.children = [];
+                // 取消全选：清除所有选中状态
+                this.returnArr.forEach(item => {
+                    item.checked = false;
+                    item.isBanxuan = false;
+                    item.children.forEach(table => table.checked = false);
                 });
                 this.checkListChildAll = [];
                 this.serchListChildAll = [];
                 this.updateCheckList();
-                this.$forceUpdate();
             }
         },
-        // flag 为0 左侧数据  // flag为1：中间数据
-        // 树节点点击事件
-        clearSelection() {
-            this.checkList = [];
-            this.checkListChild = [];
-            this.checkAll = false;
-            this.isIndeterminate = false
-            this.returnArr.forEach(database => {
-                database.checked = false;
-                database.isBanxuan = false;
-                database.children = [];
-            });
-            this.checkListChildAll = [];
-            this.serchListChildAll = [];
-            this.$forceUpdate();
-        },
-        inputSearch(val) {
-            this.checkListChildAll = this.serchListChildAll.filter(item => {
-                return item.tableName.indexOf(val) !== -1;
-            })
-        },
-        handleCheckedChangeGroup(val) {
-            let checkedCount = val.length;
-            this.checkAll = checkedCount === this.scanContentTreeData.length;
-            this.isIndeterminate = checkedCount > 0 && checkedCount < this.scanContentTreeData.length;
-        },
-        async handleCheckedChange(val, e) {
-            const database = this.returnArr.find(ele => ele.name === val.name);
-            database.isBanxuan = false;
-            if (e) {
-                // 清空中间列表
-                // this.checkListChildAll = [];
-                this.serchListChildAll = [];
 
-                await this.fetchTableNames(val.name);
-                database.checked = true;
-                database.children.forEach(table => {
-                    table.checked = true;
-                });
-                this.checkListChild = this.checkListChildAll.filter(item => item.databaseName === val.name).map(item => item.tableName);
-            } else {
-                database.checked = false;
-                database.children = [];
-                this.checkListChild = this.checkListChild.filter(item => item.databaseName !== val.name);
-                this.checkListChildAll = this.checkListChildAll.filter(item => item.databaseName !== val.name);
-                this.serchListChildAll = this.serchListChildAll.filter(item => item.databaseName !== val.name);
+        // 点击数据库名称 - 只展示表，不勾选
+        async handleDatabaseNameClick(item) {
+            // 加载表数据
+            await this.fetchTableNames(item.name);
+
+            // 只展示当前库的表，确保不勾选
+            const database = this.returnArr.find(ele => ele.name === item.name);
+            if (database && database.children) {
+                // 确保表保持当前勾选状态，不做修改
+                this.checkListChildAll = [...database.children];
+                this.serchListChildAll = [...database.children];
             }
-            this.updateCheckList();
-            this.$forceUpdate();
         },
-        handleCheckedChildChange(item, e) {
+
+        // 点击复选框 - 勾选/取消勾选
+        async handleCheckboxClick(item, checked) {
+            const database = this.returnArr.find(ele => ele.name === item.name);
+            database.checked = checked;
+            database.isBanxuan = false;
+
+            if (checked) {
+                // 勾选：加载表并全选
+                await this.fetchTableNames(item.name);
+                database.children.forEach(table => table.checked = true);
+                this.checkListChildAll = [...database.children];
+                this.serchListChildAll = [...database.children];
+            } else {
+                // 取消勾选：取消所有表的选中状态
+                if (database.children) {
+                    database.children.forEach(table => table.checked = false);
+                }
+                // 从中间列表移除
+                this.checkListChildAll = this.checkListChildAll.filter(
+                    table => table.databaseName !== database.name
+                );
+                this.serchListChildAll = [...this.checkListChildAll];
+            }
+
+            this.updateCheckList();
+            this.updateCheckAllStatus();
+        },
+
+        // 子表勾选变化
+        handleCheckedChildChange(item, checked) {
             const database = this.returnArr.find(ele => ele.name === item.databaseName);
             const checkedChildren = database.children.filter(child => child.checked);
+
+            // 更新数据库的选中状态
             if (checkedChildren.length === 0) {
                 database.checked = false;
                 database.isBanxuan = false;
@@ -283,62 +251,81 @@ export default {
                 database.checked = false;
                 database.isBanxuan = true;
             }
-            this.updateCheckList();
 
-            // 重新计算全选按钮的状态
-            const allChecked = this.returnArr.every(database => database.checked);
-            const someChecked = this.returnArr.some(database => database.checked || database.isBanxuan);
+            this.updateCheckList();
+            this.updateCheckAllStatus();
+        },
+
+        // 清空选择
+        clearSelection() {
+            this.checkAll = false;
+            this.isIndeterminate = false;
+            this.returnArr.forEach(database => {
+                database.checked = false;
+                database.isBanxuan = false;
+                database.children.forEach(table => table.checked = false);
+            });
+            this.checkList = [];
+            this.checkListChildAll = [];
+            this.serchListChildAll = [];
+        },
+
+        // 搜索表名
+        inputSearch(val) {
+            this.checkListChildAll = this.serchListChildAll.filter(item =>
+                item.tableName.includes(val)
+            );
+        },
+
+        // 更新全选按钮状态
+        updateCheckAllStatus() {
+            const allChecked = this.returnArr.every(db => db.checked);
+            const someChecked = this.returnArr.some(db => db.checked || db.isBanxuan);
             this.checkAll = allChecked;
             this.isIndeterminate = someChecked && !allChecked;
-
-            this.$forceUpdate();
         },
+
+        // 获取表名列表
         async fetchTableNames(databaseName) {
-            // 若已加载过该数据源的表，直接返回避免重复请求
             const database = this.returnArr.find(ele => ele.name === databaseName);
             if (database && database.children && database.children.length > 0) {
-                return;
+                return; // 已加载过，直接返回
             }
-            // 原有请求逻辑
+
+            // 请求表数据
             this.databaseTableNameP.databaseName = databaseName;
-            let res = await getDatabaseTableNameList(this.databaseTableNameP);
-            const tables = res.data.map((item) => {
-                return {
-                    databaseName: item.databaseName,
-                    tableName: item.tableName,
-                    value: item.parentID,
-                    checked: false // 初始不选中，全选时会手动设为true
-                };
-            });
-            const targetDb = this.returnArr.find(ele => ele.name === databaseName);
-            if (targetDb) {
-                targetDb.children = tables;
+            const res = await getDatabaseTableNameList(this.databaseTableNameP);
+            const tables = res.data.map(item => ({
+                databaseName: item.databaseName,
+                tableName: item.tableName,
+                value: item.parentID,
+                checked: false // 初始不选中
+            }));
+
+            if (database) {
+                database.children = tables;
             }
-            this.checkListChildAll = tables;
-            this.serchListChildAll = [...tables];
         },
+
+        // 更新已选列表
         updateCheckList() {
             this.checkList = this.returnArr.filter(database => {
-                if (database.checked) {
-                    return database.checked
-                }
+                if (database.checked) return true;
                 if (database.isBanxuan) {
                     return database.children.some(child => child.checked);
                 }
+                return false;
             }).map(database => database.name);
-        },
+        }
     }
-
 };
 </script>
 
 <style scoped>
-/* 添加一些基本的样式 */
 .main_div {
     width: 100%;
     height: 600px;
     display: flex;
-
 }
 
 /deep/ ::-webkit-scrollbar {
@@ -358,18 +345,13 @@ export default {
 
 ul {
     padding: 0;
-    /* 移除内边距 */
     margin: 0;
-    /* 移除外边距 */
     list-style: none;
-    /* 移除项目符号 */
 }
 
 li {
     padding: 0;
-    /* 如果需要，也可以移除列表项的内边距 */
     margin: 0;
-    /* 如果需要，也可以移除列表项的外边距 */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -384,7 +366,6 @@ li {
 .canChoose_main {
     height: calc(100%);
     display: flex;
-    /* 添加内边距 */
 }
 
 .canChoose_left {
@@ -392,34 +373,29 @@ li {
     overflow-y: auto;
     width: 45%;
     border-right: 2px solid #c7c7c7;
+    padding: 0 10px;
 }
 
-.canChoose_left /deep/ .el-tree-node__children {
-    height: 534px;
-    overflow-y: auto;
+/* 复选框与文本分离的样式 */
+.check-item {
+    margin: 5px 0;
 }
 
-/deep/.el-tree-node {
-    height: 40px;
-}
-
-/deep/.custom-tree-node {
-    width: 100%;
+.check-item-inner {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
 }
 
-/deep/.el-tree-node__content {
-    height: 100%;
-}
-
-/deep/.expand-icon {
+/* 数据库名称样式 */
+.database-name {
+    margin-left: 8px;
     cursor: pointer;
+    user-select: none;
 }
 
-/deep/.expand-icon-box {
-    text-align: right;
-    margin-right: 20px;
+.database-name:hover {
+    color: #409EFF;
+    /* 鼠标悬停效果 */
 }
 
 .left-panel /deep/.el-card__body {
@@ -433,17 +409,8 @@ li {
     flex: 1;
 }
 
-.centerCheckedBox {
-    display: flex;
-    flex-direction: column;
-}
-
-.centerCheckedBox /deep/.el-checkbox {
-    padding: 5px;
-}
-
 .dowmChoose {
-    width: 40%;
+    width: 35%;
     height: 100%;
 }
 
@@ -459,39 +426,15 @@ li {
     height: 100%;
     background-color: #fff;
     margin-right: 10px;
-    /* 添加右侧间距 */
 }
 
 .right-panel {
     height: 100%;
 }
 
-/deep/ .el-tree-node__expand-icon,
-/deep/.expand-icon-box {
-    display: none;
-}
-
 .right-panel-text {
     color: #c4c4c4;
     margin-left: 5px;
-}
-
-.tree-node {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 14px;
-    /* padding-right: 8px; */
-}
-
-.over-ellipsis {
-    display: block;
-    width: 140PX;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    -webkit-line-clamp: 1;
 }
 
 .inline-checkbox {
