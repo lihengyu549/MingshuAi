@@ -65,6 +65,7 @@
             </el-card>
         </div>
 
+        <!-- 右侧已选区域优化 -->
         <div class="dowmChoose">
             <el-card class="right-panel">
                 <div slot="header" class="clearfix">
@@ -72,15 +73,45 @@
                         已选
                         <span class="right-panel-text">{{ selectedDisplayText }}</span>
                     </span>
-                    <el-button style="float: right; padding: 3px 0;color: blue;" type="text" @click="clearSelection">
+                    <el-button style="float: right; padding: 3px 0;color: #409EFF;" type="text" @click="clearSelection">
                         清空
                     </el-button>
                 </div>
-                <ul>
-                    <li v-for="item in checkList" :key="item">
-                        <span style="line-height: 20px;">{{ item }}</span>
-                    </li>
-                </ul>
+
+                <!-- 已选数据库列表 -->
+                <div class="selected-db-container">
+                    <ul class="selected-db-list">
+                        <li v-for="db in formattedSelectedDatabases" :key="db.name" class="selected-db-item">
+                            <!-- 数据库名称与状态标识 -->
+                            <div class="db-header">
+                                <span class="db-name">{{ db.name }}</span>
+                                <span class="db-status" :class="db.statusClass">
+                                    {{ db.statusText }}
+                                </span>
+                            </div>
+
+                            <!-- 部分选中时显示表名摘要 -->
+                            <div v-if="!db.isFullSelected" class="partial-tables">
+                                <span class="table-item" v-for="(table, index) in db.displayTables"
+                                    :key="table.tableName">
+                                    {{ table.tableName }}
+                                    <template v-if="index < db.displayTables.length - 1">、</template>
+                                </span>
+                                <template v-if="db.hiddenTableCount > 0">
+                                    <span class="more-tip">...等{{ db.hiddenTableCount }}张表</span>
+                                </template>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <!-- 空状态 -->
+                    <div v-if="formattedSelectedDatabases.length === 0" class="selected-empty">
+                        <div class="empty-icon">
+                            <i class="el-icon-document-empty"></i>
+                        </div>
+                        <div class="empty-text">暂无选中的数据库或表</div>
+                    </div>
+                </div>
             </el-card>
         </div>
     </div>
@@ -90,22 +121,21 @@
 import { RecycleScroller } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import { getDatabaseTableNameList } from "@/api/system/proxys";
-
 export default {
     name: "TableSelector",
     components: {
         RecycleScroller
     },
     props: {
-        scanContentTreeData: { // 总库名
+        scanContentTreeData: {
             type: Array,
             default: () => []
         },
-        treeCheckedData: { // 已选表名
+        treeCheckedData: {
             type: Array,
             default: []
         },
-        databaseTableNameParama: { // 数据库表名传参
+        databaseTableNameParama: {
             type: Object,
             default: {}
         }
@@ -113,15 +143,15 @@ export default {
     data() {
         return {
             checkAll: false,
-            checkList: [], // 已选数据库库名
+            checkList: [],
             databaseTableNameP: { ...this.databaseTableNameParama, databaseName: "" },
             isIndeterminate: false,
-            checkListChild: [], // 已选子列表表名
-            checkListChildAll: [], // 子列表所有表名
-            searchQuery: '', // 查询表名
-            serchListChildAll: [], // 查询后子列表所有表名
-            returnArr: [], // 汇总数据
-            isMiddleListAllChecked: false // 中间列表全选状态
+            checkListChild: [],
+            checkListChildAll: [],
+            searchQuery: '',
+            serchListChildAll: [],
+            returnArr: [],
+            isMiddleListAllChecked: false
         };
     },
     mounted() {
@@ -132,7 +162,7 @@ export default {
             isBanxuan: false,
             value: item.value,
             children: [],
-            isActive: false // 用于标识是否被点击激活（高亮）
+            isActive: false
         }));
     },
     computed: {
@@ -166,15 +196,14 @@ export default {
             const fullCount = this.fullSelectedDbs;
             const partialCount = this.partialSelectedDbs.length;
             const partialTableCount = this.partialSelectedTables;
-
             if (fullCount === 0 && partialCount === 0) {
                 return '(未选择数据)';
             } else if (partialCount === 0) {
-                return `(${fullCount}个数据源)`;
+                return `(${fullCount}个数据源的所有表)`;
             } else if (fullCount === 0) {
-                return `(${partialCount}个数据源中的${partialTableCount}张表)`;
+                return `(${partialCount}个数据源中的${partialTableCount}张数据表)`;
             } else {
-                return `(${fullCount}个数据源 + ${partialCount}个数据源中的${partialTableCount}张表)`;
+                return `(${fullCount}个数据源的所有表+${partialCount}个数据源中的${partialTableCount}张数据表)`;
             }
         },
 
@@ -186,6 +215,34 @@ export default {
                 }
                 return total;
             }, 0);
+        },
+        // 格式化已选数据库数据
+        formattedSelectedDatabases() {
+            return this.returnArr
+                .filter(db => {
+                    const hasSelectedTables = db.children.some(table => table.checked);
+                    return hasSelectedTables;
+                })
+                .map(db => {
+                    const selectedTables = db.children.filter(table => table.checked);
+                    const isFullSelected = selectedTables.length === db.children.length;
+                    const maxDisplay = 3; // 最多显示3张表名
+
+                    return {
+                        name: db.name,
+                        isFullSelected,
+                        selectedTables,
+                        // 显示的表名（最多3个）
+                        displayTables: selectedTables.slice(0, maxDisplay),
+                        // 隐藏的表数量
+                        hiddenTableCount: selectedTables.length > maxDisplay
+                            ? selectedTables.length - maxDisplay
+                            : 0,
+                        // 状态样式与文本
+                        statusClass: isFullSelected ? 'status-full' : 'status-partial',
+                        statusText: isFullSelected ? '全部表' : `${selectedTables.length}张表`
+                    };
+                });
         }
     },
     methods: {
@@ -198,7 +255,7 @@ export default {
                 const fetchPromises = this.returnArr.map(item =>
                     this.fetchTableNames(item.name).then(() => {
                         item.checked = true;
-                        item.isActive = false; // 全选时不高亮任何单个数据库
+                        item.isActive = false;
                         item.children.forEach(table => table.checked = true);
                     })
                 );
@@ -208,7 +265,7 @@ export default {
                     this.checkListChildAll = [];
                     this.serchListChildAll = [];
                     this.updateCheckList();
-                    this.updateMiddleListCheckAllStatus(); // 更新中间列表全选状态
+                    this.updateMiddleListCheckAllStatus();
                 });
             } else {
                 // 取消全选：清除所有选中状态和中间列表
@@ -221,7 +278,7 @@ export default {
                 this.checkListChildAll = [];
                 this.serchListChildAll = [];
                 this.updateCheckList();
-                this.updateMiddleListCheckAllStatus(); // 更新中间列表全选状态
+                this.updateMiddleListCheckAllStatus();
             }
         },
 
@@ -254,7 +311,6 @@ export default {
                 // 勾选：加载表并全选，同时高亮当前数据库
                 this.returnArr.forEach(db => db.isActive = false);
                 database.isActive = true;
-
                 await this.fetchTableNames(item.name);
                 database.children.forEach(table => table.checked = true);
                 this.checkListChildAll = [...database.children];
@@ -274,7 +330,6 @@ export default {
                     this.serchListChildAll = [...database.children];
                 }
             }
-
             this.updateCheckList();
             this.updateCheckAllStatus();
         },
@@ -295,10 +350,9 @@ export default {
                 database.checked = false;
                 database.isBanxuan = true;
             }
-
             this.updateCheckList();
             this.updateCheckAllStatus();
-            this.updateMiddleListCheckAllStatus(); // 更新中间列表全选状态
+            this.updateMiddleListCheckAllStatus();
         },
 
         // 清空选择
@@ -308,13 +362,13 @@ export default {
             this.returnArr.forEach(database => {
                 database.checked = false;
                 database.isBanxuan = false;
-                database.isActive = false; // 清空高亮状态
+                database.isActive = false;
                 database.children.forEach(table => table.checked = false);
             });
             this.checkList = [];
             this.checkListChildAll = [];
             this.serchListChildAll = [];
-            this.isMiddleListAllChecked = false; // 重置中间列表全选状态
+            this.isMiddleListAllChecked = false;
         },
 
         // 搜索表名
@@ -322,7 +376,7 @@ export default {
             this.checkListChildAll = this.serchListChildAll.filter(item =>
                 item.tableName.includes(val)
             );
-            this.updateMiddleListCheckAllStatus(); // 更新中间列表全选状态
+            this.updateMiddleListCheckAllStatus();
         },
 
         // 更新全选按钮状态
@@ -347,7 +401,7 @@ export default {
                 databaseName: item.databaseName,
                 tableName: item.tableName,
                 value: item.parentID,
-                checked: false // 初始不选中
+                checked: false
             }));
 
             if (database) {
@@ -365,24 +419,15 @@ export default {
                 return false;
             }).map(database => database.name);
         },
-
-        // 中间列表全选/取消全选
         handleMiddleListCheckAll() {
             if (this.checkListChildAll.length === 0) return;
-
-            // 切换全选状态
             const newCheckedState = !this.isMiddleListAllChecked;
-
-            // 只对当前展示的表（包括筛选后的）进行操作
             this.checkListChildAll.forEach(item => {
                 item.checked = newCheckedState;
-                // 同步更新对应数据库的状态
                 const database = this.returnArr.find(ele => ele.name === item.databaseName);
                 if (database) {
                     const checkedChildren = database.children.filter(child => child.checked);
                     const totalChildren = database.children.length;
-
-                    // 更新数据库的选中状态
                     if (checkedChildren.length === 0) {
                         database.checked = false;
                         database.isBanxuan = false;
@@ -395,7 +440,6 @@ export default {
                     }
                 }
             });
-
             this.isMiddleListAllChecked = newCheckedState;
             this.updateCheckList();
             this.updateCheckAllStatus();
@@ -460,9 +504,6 @@ ul {
 li {
     padding: 0;
     margin: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
 .canChoose {
@@ -473,20 +514,17 @@ li {
 
 .canChoose_main {
     height: calc(100% - 40px);
-    /* 调整高度计算，留出卡片头部空间 */
     display: flex;
 }
 
 .canChoose_left {
     height: 100%;
     overflow-y: auto;
-    /* 确保左侧列表有滚动条 */
     width: 45%;
     border-right: 2px solid #c7c7c7;
     padding: 0 10px;
 }
 
-/* 复选框与文本分离的样式 */
 .check-item {
     margin: 5px 0;
 }
@@ -498,7 +536,6 @@ li {
     border-radius: 4px;
 }
 
-/* 数据库名称样式 */
 .database-name {
     margin-left: 8px;
     cursor: pointer;
@@ -506,13 +543,11 @@ li {
     transition: all 0.2s ease;
 }
 
-/* 高亮样式 - 点击后激活 */
 .database-name-active {
     color: #409EFF;
     font-weight: 500;
 }
 
-/* 包含高亮数据库的行样式 */
 .check-item-inner:has(.database-name-active) {
     background-color: #ecf5ff;
 }
@@ -531,31 +566,23 @@ li {
     box-sizing: border-box;
     flex: 1;
     height: 100%;
-    /* 确保右侧容器有明确高度 */
     display: flex;
     flex-direction: column;
-    /* 使用flex布局确保高度正确计算 */
 }
 
-/* 表列表容器和滚动设置 */
 .table-list-container {
     flex: 1;
-    /* 占满剩余空间 */
     border-radius: 4px;
     overflow: hidden;
     min-height: 0;
-    /* 允许容器小于内容高度 */
     position: relative;
-    /* 为绝对定位的空状态做准备 */
 }
 
-/* 确保虚拟滚动容器有正确的滚动设置 */
 .table-scroller {
     height: 100%;
     overflow-y: auto;
 }
 
-/* 空状态样式 - 确保始终可见 */
 .empty-state {
     position: absolute;
     top: 0;
@@ -568,7 +595,6 @@ li {
     color: #909399;
     margin: 0;
     z-index: 1;
-    /* 确保在内容之上 */
 }
 
 .dowmChoose {
@@ -579,6 +605,7 @@ li {
 .dowmChoose .el-card /deep/ .el-card__body {
     max-height: 534px;
     overflow-y: auto;
+    padding: 15px;
 }
 
 .left-panel {
@@ -603,5 +630,106 @@ li {
     width: 100%;
     margin: 3px 0;
     padding: 2px 0;
+}
+
+/* 右侧已选列表核心样式优化 */
+.selected-stats {
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f5f5;
+    margin-bottom: 15px;
+}
+
+.stats-text {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.selected-db-container {
+    width: 100%;
+}
+
+.selected-db-list {
+    width: 100%;
+}
+
+.selected-db-item {
+    background-color: #f9fafb;
+    border-radius: 6px;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+}
+
+.selected-db-item:hover {
+    background-color: #f0f2f5;
+}
+
+.db-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.db-name {
+    font-weight: 500;
+    color: #303133;
+    font-size: 14px;
+}
+
+.db-status {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.status-full {
+    background-color: #ecfdf5;
+    color: #059669;
+    border: 1px solid #d1fae5;
+}
+
+.status-partial {
+    background-color: #fff7e6;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+.partial-tables {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.table-item {
+    white-space: nowrap;
+}
+
+.more-tip {
+    color: #909399;
+    font-size: 12px;
+}
+
+/* 空状态优化 */
+.selected-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    color: #909399;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    color: #dcdfe6;
+}
+
+.empty-text {
+    font-size: 14px;
 }
 </style>
