@@ -21,8 +21,9 @@
                                     @change="handleCheckboxClick(item, $event)">
                                 </el-checkbox>
 
-                                <!-- 文本内容单独存在，只负责展示表名 -->
-                                <span class="database-name" @click="handleDatabaseNameClick(item)">
+                                <!-- 文本内容单独存在，只负责展示表名，添加高亮状态 -->
+                                <span class="database-name" :class="{ 'database-name-active': item.isActive }"
+                                    @click="handleDatabaseNameClick(item)">
                                     {{ item.name }}
                                 </span>
                             </div>
@@ -109,13 +110,14 @@ export default {
         };
     },
     mounted() {
-        // 初始化数据库列表
+        // 初始化数据库列表，添加isActive属性用于高亮显示
         this.returnArr = this.scanContentTreeData.map(item => ({
             name: item.label,
             checked: false,
             isBanxuan: false,
             value: item.value,
-            children: []
+            children: [],
+            isActive: false // 新增：用于标识是否被点击激活（高亮）
         }));
     },
     computed: {
@@ -193,15 +195,19 @@ export default {
             }
         },
 
-        // 点击数据库名称 - 只展示表，不勾选
+        // 点击数据库名称 - 只展示表，不勾选，添加高亮
         async handleDatabaseNameClick(item) {
+            // 移除所有数据库的高亮状态
+            this.returnArr.forEach(db => db.isActive = false);
+            // 为当前点击的数据库添加高亮状态
+            item.isActive = true;
+
             // 加载表数据
             await this.fetchTableNames(item.name);
 
             // 只展示当前库的表，确保不勾选
             const database = this.returnArr.find(ele => ele.name === item.name);
             if (database && database.children) {
-                // 确保表保持当前勾选状态，不做修改
                 this.checkListChildAll = [...database.children];
                 this.serchListChildAll = [...database.children];
             }
@@ -214,7 +220,10 @@ export default {
             database.isBanxuan = false;
 
             if (checked) {
-                // 勾选：加载表并全选
+                // 勾选：加载表并全选，同时高亮当前数据库
+                this.returnArr.forEach(db => db.isActive = false);
+                database.isActive = true;
+
                 await this.fetchTableNames(item.name);
                 database.children.forEach(table => table.checked = true);
                 this.checkListChildAll = [...database.children];
@@ -263,6 +272,7 @@ export default {
             this.returnArr.forEach(database => {
                 database.checked = false;
                 database.isBanxuan = false;
+                database.isActive = false; // 清空高亮状态
                 database.children.forEach(table => table.checked = false);
             });
             this.checkList = [];
@@ -384,6 +394,8 @@ li {
 .check-item-inner {
     display: flex;
     align-items: center;
+    padding: 4px 6px;
+    border-radius: 4px;
 }
 
 /* 数据库名称样式 */
@@ -391,11 +403,22 @@ li {
     margin-left: 8px;
     cursor: pointer;
     user-select: none;
+    transition: all 0.2s ease;
+}
+
+/* 高亮样式 - 点击后激活 */
+.database-name-active {
+    color: #409EFF;
+    font-weight: 500;
+}
+
+/* 包含高亮数据库的行样式 */
+.check-item-inner:has(.database-name-active) {
+    background-color: #ecf5ff;
 }
 
 .database-name:hover {
     color: #409EFF;
-    /* 鼠标悬停效果 */
 }
 
 .left-panel /deep/.el-card__body {
