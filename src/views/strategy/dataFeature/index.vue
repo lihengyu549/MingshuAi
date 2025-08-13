@@ -205,9 +205,10 @@
                                         :class="{ 'icon-disabled': isView || selectedMappingRows.length === 0 }"
                                         class="icon"
                                         @click.native="(isView || selectedMappingRows.length === 0) && $event.stopPropagation()" />
-                                    <svg-icon icon-class="导入" @click="handleImport" :class="{ 'icon-disabled': isView }"
+                                    <svg-icon icon-class="导入" @click="handleImport" :class="{ 'icon-disabled': isView || form.id == '系统默认生成' }"
                                         class="icon" @click.native="isView && $event.stopPropagation()" />
-                                    <svg-icon icon-class="导出" @click="handleExport" :class="{ 'icon-disabled': isView }"
+                                    <svg-icon icon-class="导出" @click="handleExport" :class="{ 'icon-disabled': isView || form.id == '系统默认生成' }"
+
                                         class="icon" @click.native="isView && $event.stopPropagation()" />
                                     <svg-icon icon-class="清空" @click="clearAllRows"
                                         :class="{ 'icon-disabled': isView || form.mappingList.length === 0 }"
@@ -464,12 +465,20 @@ export default {
                     this.$message.warning('该特征值已存在')
                     return
                 }
-                const params = {
-                    id: this.form.id,
-                    itemKey: this.tempFeatureKey,
-                    itemValue: this.tempFeatureVal
+                
+                if (this.form.id != '系统默认生成') {
+                    const params = {
+                        id: this.form.id,
+                        itemKey: this.tempFeatureKey,
+                        itemValue: this.tempFeatureVal
+                    }
+                    await addFeatureItem(params)
+                }else{
+                    this.form.mappingList.push({
+                        itemKey: this.tempFeatureKey,
+                        itemValue: this.tempFeatureVal
+                    })
                 }
-                await addFeatureItem(params)
                 this.tempFeatureKey = ''
                 this.tempFeatureVal = ''
             } else {
