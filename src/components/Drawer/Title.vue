@@ -1,0 +1,51 @@
+<template>
+  <div class="title">
+    <div class="basic-info-title">{{ label }}</div>
+    <el-divider style="margin: 10px 0;"></el-divider>
+  </div>
+
+</template>
+
+<script>
+export default {
+  props: {
+    title: {
+      type: String,
+      default: '基本信息'
+    }
+  },
+  data() {
+    return {
+      label: this.title
+    }
+  }
+
+}
+</script>
+
+<style scoped>
+.title{
+  margin: 20px 0;
+}
+.basic-info-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+.el-divider--horizontal{
+  margin: 9px 0;
+  height: 3px;
+}
+.el-divider--horizontal::before {
+    content: "";
+    /* 伪元素必须设置content属性 */
+    position: absolute;
+    /* 设置定位使top/left生效 */
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 10%;
+    background-color: #009dff;
+}
+</style>

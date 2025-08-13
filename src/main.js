@@ -37,6 +37,31 @@ import DictTag from '@/components/DictTag'
 import VueMeta from 'vue-meta'
 // 字典数据组件
 import DictData from '@/components/DictData'
+
+// 动态导入 components 目录下的所有 .vue 文件
+const requireComponent = require.context(
+  '@/components', // 组件目录
+  true,           // 是否递归查找子目录
+  /\.vue$/        // 匹配 .vue 文件
+);
+
+requireComponent.keys().forEach(fileName => {
+  // 获取组件配置
+  const componentConfig = requireComponent(fileName);
+
+  // 获取组件名（去除文件扩展名和路径）
+  const componentName = fileName
+    .split('/')
+    .pop()
+    .replace(/\.\w+$/, '');
+  // 注册全局组件
+  Vue.component(
+    componentName,
+    componentConfig.default || componentConfig
+  );
+});
+
+
 import * as echarts from 'echarts';
 Vue.prototype.$echarts = echarts;
 

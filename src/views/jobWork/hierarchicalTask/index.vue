@@ -108,7 +108,7 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
-    <el-dialog class="addMsg" :title="title" v-loading="formLoading" :visible.sync="open" width="580px" append-to-body
+    <!-- <el-dialog class="addMsg" :title="title" v-loading="formLoading" :visible.sync="open" width="580px" append-to-body
       :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
         <el-form-item label="任务名称" prop="tasksName" :rules="rules.tasksName">
@@ -123,13 +123,6 @@
         <el-form-item label="分类分级标准">
           <el-input v-model="form.projectName" :disabled="true" />
         </el-form-item>
-        <!-- <el-form-item label="分类分级标准" prop="projectName" :rules="rules.projectName">
-          <el-select v-model="form.projectName" :disabled="editIsFlag" placeholder="请选择分类分级标准" clearable
-            @change="projectChangeEdit($event)">
-            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
-            </el-option>
-          </el-select>
-        </el-form-item> -->
         <el-form-item label="AI分析引擎" prop="aiAnalyticsEngine">
           <el-radio-group v-model="aiAnalyticsEngine">
             <el-radio label="1">快速响应</el-radio>
@@ -170,7 +163,154 @@
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="closeFn">取消</el-button>
       </div>
-    </el-dialog>
+    </el-dialog> -->
+    <Drawer :title="title" v-loading="formLoading" :visible.sync="open">
+      <el-form slot="body" ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent
+        label-position="top">
+        <Title title="基本信息" />
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="任务名称" prop="tasksName" :rules="rules.tasksName">
+              <el-input v-model="form.tasksName" maxlength="50" placeholder="请输入任务名称" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="数据源名称" prop="id" :rules="rules.id">
+              <el-select v-model="form.id" clearable @change="projectChangeEdit($event)">
+                <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.sourceName" :value="item.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="分类分级框架">
+              <el-input v-model="form.projectName" :disabled="true" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <Title title="脏数据过滤" />
+        <!-- <el-form-item label="分类分级标准" prop="projectName" :rules="rules.projectName">
+          <el-select v-model="form.projectName" :disabled="editIsFlag" placeholder="请选择分类分级标准" clearable
+            @change="projectChangeEdit($event)">
+            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item> -->
+        <el-row>
+          <el-col :span="12">
+            <el-form-item prop="id" :rules="rules.id">
+              <el-switch v-model="value1" active-text="样本全部为空" />
+            </el-form-item>
+            <el-form-item prop="id" :rules="rules.id">
+              <el-switch v-model="value1" active-text="样本重复率高于" />
+              <el-input size="mini" style="width: 15%;margin-left:15px;" />
+              <svg-icon icon-class="dengpao" style="margin-left:15px;" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item prop="id" :rules="rules.id">
+              <el-switch v-model="value1" active-text="样本内容为单字符或数字" />
+              <svg-icon icon-class="dengpao" style="margin-left:15px;" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <Title title="注释填充" />
+        <el-row>
+          <el-col :span="12">
+            <el-form-item prop="id" :rules="rules.id">
+              <el-switch v-model="value1" active-text="是否启用" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <Title title="分类任务" />
+        <el-row>
+          <el-col :span="12">
+            <el-form-item prop="id" :rules="rules.id">
+              <el-switch v-model="value1" active-text="是否启用" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="分类逻辑" prop="id" :rules="rules.id">
+              <el-radio v-model="radio" label="1">基于表</el-radio>
+              <el-radio v-model="radio" label="2">基于字段</el-radio>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item prop="id" :rules="rules.id">
+              <el-switch v-model="value1" active-text="个人信息识别" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="分类状态" prop="id" :rules="rules.id">
+              <el-select v-model="form.selectedTags" multiple clearable placeholder="请选择或输入内容" style="width: 100%">
+                <!-- 可输入搜索 -->
+                <el-option v-for="item in [
+                  { label: '选项1', value: '1' },
+                  { label: '选项2', value: '2' },
+                  { label: '选项3', value: '3' },
+                  { label: '选项4', value: '4' },
+                  { label: '选项5', value: '5' }
+                ]" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="置信度" prop="confidenceLevel" :rules="rules.confidenceLevel">
+              <el-select v-model="form.confidenceLevel" clearable>
+                <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="确认状态" prop="confirm" :rules="rules.confirm">
+              <el-select v-model="form.confirm" placeholder="全部">
+                <el-option v-for="item in confirmList" :key="item.value" :label="item.name" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <Title title="样本特征提取" />
+        <el-row>
+          <el-col :span="12">
+            <el-form-item prop="id" :rules="rules.id">
+              <el-switch v-model="value1" active-text="是否启用" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <Title title="调度周期" />
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="执行周期" prop="confidenceLevel" :rules="rules.confidenceLevel">
+              <el-select v-model="form.confidenceLevel" clearable>
+                <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <div slot="footer" class="dialog-footer" style="display: flex;justify-content: flex-end;">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="closeFn">取消</el-button>
+      </div>
+    </Drawer>
     <el-drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
       size="100%" :before-close="handleClose">
       <Result :treeOptions="treeOptions" :drawerData="drawerData" />
@@ -300,13 +440,13 @@ export default {
         confidenceLevel: '',
         confirm: '',
         projectName: '',
-        projectId:'',
+        projectId: '',
         tasksName: '',
         id: '',
         confirm: "",
         classificationState: '',
-        piiDetectionFlag:false,
-        classificationLogic:'2',
+        piiDetectionFlag: false,
+        classificationLogic: '2',
       },
       // 表单校验
       rules: {
@@ -343,7 +483,7 @@ export default {
   },
   methods: {
     //控制多选框是否可选
-    selectableFn(row, index){
+    selectableFn(row, index) {
       if (row.publishStatus == 1) {
         return false
       } else {
@@ -760,6 +900,7 @@ input[aria-hidden=true] {
 .addMsg .el-select /deep/ .el-input {
   width: 100%;
 }
+
 .spanClass {
   position: absolute;
   left: -58px;
@@ -936,5 +1077,15 @@ input[aria-hidden=true] {
 .iconBtnBox i:hover {
   cursor: pointer;
   color: #1890FF;
+}
+
+/deep/.el-form-item__content{
+  padding-right: 15px;
+}
+.el-select.el-select--medium{
+  width: 100%;
+}
+/deep/.el-form-item__label,.el-switch__label span{
+  font-size: 16px;
 }
 </style>
