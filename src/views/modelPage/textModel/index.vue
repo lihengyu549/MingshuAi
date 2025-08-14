@@ -211,6 +211,9 @@ export default {
             if (model.enabled) {
                 // 请求接口
                 let src = await onOffAiConfig(model.id)
+                if (src.code != 200) {
+                    this.$message.warning(src.data);
+                }
                 this.init()
                 // 当当前模型开关开启时，关闭其他模型的开关
                 // this.models.forEach(m => {
