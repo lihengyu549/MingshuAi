@@ -185,7 +185,7 @@
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="分类分级框架">
+            <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
               <el-input v-model="form.projectName" :disabled="true" />
             </el-form-item>
           </el-col>
@@ -201,18 +201,18 @@
         </el-form-item> -->
         <el-row>
           <el-col :span="12">
-            <el-form-item prop="id" :rules="rules.id">
-              <el-switch v-model="value1" active-text="样本全部为空" />
+            <el-form-item>
+              <el-switch v-model="form.ifStartDataNull" active-text="样本全部为空" />
             </el-form-item>
-            <el-form-item prop="id" :rules="rules.id">
-              <el-switch v-model="value1" active-text="样本重复率高于" />
-              <el-input size="mini" style="width: 15%;margin-left:15px;" />
+            <el-form-item>
+              <el-switch v-model="form.ifStartDataRepetition" active-text="样本重复率高于" />
+              <el-input v-model="form.dataRepetitionValue" size="mini" style="width: 15%;margin-left:15px;" />
               <svg-icon icon-class="dengpao" style="margin-left:15px;" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item prop="id" :rules="rules.id">
-              <el-switch v-model="value1" active-text="样本内容为单字符或数字" />
+            <el-form-item>
+              <el-switch v-model="form.ifStartDataShort" active-text="样本内容为单字符或数字" />
               <svg-icon icon-class="dengpao" style="margin-left:15px;" />
             </el-form-item>
           </el-col>
@@ -221,8 +221,8 @@
         <Title title="注释填充" />
         <el-row>
           <el-col :span="12">
-            <el-form-item prop="id" :rules="rules.id">
-              <el-switch v-model="value1" active-text="是否启用" />
+            <el-form-item>
+              <el-switch v-model="form.ifStartAiFill" active-text="是否启用" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -230,66 +230,64 @@
         <Title title="分类任务" />
         <el-row>
           <el-col :span="12">
-            <el-form-item prop="id" :rules="rules.id">
-              <el-switch v-model="value1" active-text="是否启用" />
+            <el-form-item>
+              <el-switch v-model="form.ifStartTask" active-text="是否启用" />
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="分类逻辑" prop="id" :rules="rules.id">
-              <el-radio v-model="radio" label="1">基于表</el-radio>
-              <el-radio v-model="radio" label="2">基于字段</el-radio>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item prop="id" :rules="rules.id">
-              <el-switch v-model="value1" active-text="个人信息识别" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="分类状态" prop="id" :rules="rules.id">
-              <el-select v-model="form.selectedTags" multiple clearable placeholder="请选择或输入内容" style="width: 100%">
-                <!-- 可输入搜索 -->
-                <el-option v-for="item in [
-                  { label: '选项1', value: '1' },
-                  { label: '选项2', value: '2' },
-                  { label: '选项3', value: '3' },
-                  { label: '选项4', value: '4' },
-                  { label: '选项5', value: '5' }
-                ]" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="置信度" prop="confidenceLevel" :rules="rules.confidenceLevel">
-              <el-select v-model="form.confidenceLevel" clearable>
-                <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="确认状态" prop="confirm" :rules="rules.confirm">
-              <el-select v-model="form.confirm" placeholder="全部">
-                <el-option v-for="item in confirmList" :key="item.value" :label="item.name" :value="item.value">
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
+        <div style="padding-left: 40px;">
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="分类逻辑" prop="classificationLogic" :rules="rules.classificationLogic">
+                <el-radio v-model="form.classificationLogic" label="1" :disabled="!form.ifStartTask">基于表</el-radio>
+                <el-radio v-model="form.classificationLogic" label="2" :disabled="!form.ifStartTask">基于字段</el-radio>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item>
+                <el-switch v-model="form.piiDetectionFlag" active-text="个人信息识别" :disabled="!form.ifStartTask" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24">
+              <el-form-item label="分类状态">
+                <el-select v-model="form.classificationState" multiple clearable placeholder="请选择内容" style="width: 100%"
+                  :disabled="!form.ifStartTask">
+                  <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
+                    :value="item.value" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="置信度" prop="confidenceLevel" :rules="rules.confidenceLevel">
+                <el-select v-model="form.confidenceLevel" clearable :disabled="!form.ifStartTask">
+                  <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name"
+                    :value="item.value">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="确认状态" prop="confirm" :rules="rules.confirm">
+                <el-select v-model="form.confirm" placeholder="全部" :disabled="!form.ifStartTask">
+                  <el-option v-for="item in confirmList" :key="item.value" :label="item.name" :value="item.value">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
 
         <Title title="样本特征提取" />
         <el-row>
           <el-col :span="12">
             <el-form-item prop="id" :rules="rules.id">
-              <el-switch v-model="value1" active-text="是否启用" />
+              <el-switch v-model="form.ifStartFeatureExtract" active-text="是否启用" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -297,9 +295,9 @@
         <Title title="调度周期" />
         <el-row>
           <el-col :span="12">
-            <el-form-item label="执行周期" prop="confidenceLevel" :rules="rules.confidenceLevel">
-              <el-select v-model="form.confidenceLevel" clearable>
-                <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
+            <el-form-item label="执行周期" prop="executeCycle" :rules="rules.executeCycle">
+              <el-select v-model="executeCycle" clearable>
+                <el-option label="手动执行" value="1">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -347,7 +345,7 @@ export default {
       drawerData: null,
       mainLoading: false,
       editIsFlag: false,
-      aiAnalyticsEngine: '1',
+      // aiAnalyticsEngine: '1',
       confidenceLevelList: [
         { name: "全部", value: "0" },
         { name: "低", value: "1" },
@@ -443,11 +441,18 @@ export default {
         projectId: '',
         tasksName: '',
         id: '',
-        confirm: "",
-        classificationState: '',
+        classificationState: [],
         piiDetectionFlag: false,
         classificationLogic: '2',
+        ifStartDataNull: false,
+        ifStartDataRepetition: false,
+        dataRepetitionValue: '',
+        ifStartDataShort: false,
+        ifStartAiFill: false,
+        ifStartTask: false,
+        ifStartFeatureExtract: false,
       },
+      executeCycle: '1',
       // 表单校验
       rules: {
         tasksName: [
@@ -457,16 +462,19 @@ export default {
           { required: true, message: "数据源名称不能为空", trigger: "blur" },
         ],
         projectName: [
-          { required: true, message: "分类分级标准不能为空", trigger: "blur" },
+          { required: true, message: "分类分级框架不能为空", trigger: "blur" },
         ],
+        classificationLogic: [{
+          required: true, message: "分类逻辑不能为空", trigger: "blur"
+        }],
+        classificationState: [{
+          required: true, message: "分类状态不能为空", trigger: "blur"
+        }],
         confidenceLevel: [{
           required: true, message: "置信度不能为空", trigger: "blur"
         }],
-        classificationLogic: [{
-          required: true, message: "", trigger: "blur"
-        }],
         confirm: [{
-          required: true, message: "人工确认状态不能为空", trigger: "blur"
+          required: true, message: "确认状态不能为空", trigger: "blur"
         }],
       },
       debounceTimeout: null,
@@ -635,7 +643,7 @@ export default {
     },
     reset() {
       this.form = {}
-      this.aiAnalyticsEngine = "1"
+      // this.aiAnalyticsEngine = "1"
       this.form.projectName = ''
       this.$set(this.form, 'piiDetectionFlag', false)
       this.$set(this.form, 'confidenceLevel', "0")
@@ -671,9 +679,18 @@ export default {
     handleUpdate(row) {
       this.getScanCompleteDataFn(row.id)
       this.form = JSON.parse(JSON.stringify(row));
-      this.form.piiDetectionFlag = row.piiDetectionFlag == "true" ? true : false
+      this.$set(this.form, 'ifStartDataNull', row.ifStartDataNull == "1");
+      this.$set(this.form, 'ifStartDataShort', row.ifStartDataShort == "1");
+      this.$set(this.form, 'ifStartDataRepetition', row.ifStartDataRepetition == "1");
+      this.$set(this.form, 'ifStartAiFill', row.ifStartAiFill == "1");
+      this.$set(this.form, 'ifStartTask', row.ifStartTask == "1");
+      this.$set(this.form, 'piiDetectionFlag', row.piiDetectionFlag == "1");
+      this.$set(this.form, 'ifStartFeatureExtract', row.ifStartFeatureExtract == "1");
+      this.form.classificationState = row.classificationState.split(',').map(item => {
+        return item
+      })
       if (row.classificationState == '0') {
-        this.form.classificationState = ''
+        this.form.classificationState = []
       }
       this.open = true;
       this.editIsFlag = true;
@@ -686,24 +703,36 @@ export default {
           if (!await this.getNameTestingFn()) {
             return
           }
+          const params = {
+              ...this.form,
+              ifStartDataNull: this.form.ifStartDataNull ? '1' : '0',
+              ifStartDataShort: this.form.ifStartDataShort ? '1' : '0',
+              ifStartDataRepetition: this.form.ifStartDataRepetition ? '1' : '0',
+              ifStartAiFill: this.form.ifStartAiFill ? '1' : '0',
+              ifStartTask: this.form.ifStartTask ? '1' : '0',
+              piiDetectionFlag: this.form.piiDetectionFlag ? '1' : '0',
+              ifStartFeatureExtract: this.form.ifStartFeatureExtract ? '1' : '0',
+              classificationState: this.form.classificationState.join(','),
+            }
           if (this.form.isAddTasks === '1') {
-            this.form.piiDetectionFlag = this.form.piiDetectionFlag + ''
-            this.form.aiAnalyticsEngine = this.aiAnalyticsEngine
-            editScanCompleteDataTasks(this.form).then(response => {
+            // this.form.piiDetectionFlag = this.form.piiDetectionFlag + ''
+            // this.form.aiAnalyticsEngine = this.aiAnalyticsEngine
+            editScanCompleteDataTasks(params).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            let data = JSON.parse(JSON.stringify(this.form))
-            data.aiAnalyticsEngine = this.aiAnalyticsEngine
-            data.piiDetectionFlag = this.form.piiDetectionFlag + ''
-            addScanCompleteDataTasks(data).then(response => {
+            // let data = JSON.parse(JSON.stringify(this.form))
+            // data.aiAnalyticsEngine = this.aiAnalyticsEngine
+            // data.piiDetectionFlag = this.form.piiDetectionFlag + ''
+            addScanCompleteDataTasks(params).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
             });
           }
+          this.getList()
         }
       });
     },
@@ -1079,13 +1108,16 @@ input[aria-hidden=true] {
   color: #1890FF;
 }
 
-/deep/.el-form-item__content{
+/deep/.el-form-item__content {
   padding-right: 15px;
 }
-.el-select.el-select--medium{
+
+.el-select.el-select--medium {
   width: 100%;
 }
-/deep/.el-form-item__label,.el-switch__label span{
+
+/deep/.el-form-item__label,
+.el-switch__label span {
   font-size: 16px;
 }
 </style>
