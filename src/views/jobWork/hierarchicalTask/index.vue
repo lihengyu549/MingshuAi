@@ -204,9 +204,10 @@
             <el-form-item>
               <el-switch v-model="form.ifStartDataNull" active-text="样本全部为空" />
             </el-form-item>
-            <el-form-item>
-              <el-switch v-model="form.ifStartDataRepetition" active-text="样本重复率高于" />
-              <el-input v-model="form.dataRepetitionValue" size="mini" style="width: 15%;margin-left:15px;" />
+            <el-form-item prop="dataRepetitionValue">
+              <el-switch v-model="form.ifStartDataRepetition" active-text="样本重复率高于" @change="handleRepetitionChange" />
+              <el-input v-model="form.dataRepetitionValue" size="mini" style="width: 15%;margin-left:15px;"
+                @input="formatPercentage" />
               <svg-icon icon-class="dengpao" style="margin-left:15px;" />
             </el-form-item>
           </el-col>
@@ -253,7 +254,7 @@
           </el-row>
           <el-row>
             <el-col :span="24">
-              <el-form-item label="分类状态">
+              <el-form-item label="分类状态" prop="classificationState" :rules="rules.classificationState">
                 <el-select v-model="form.classificationState" multiple clearable placeholder="请选择内容" style="width: 100%"
                   :disabled="!form.ifStartTask">
                   <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
@@ -265,7 +266,7 @@
           <el-row>
             <el-col :span="12">
               <el-form-item label="置信度" prop="confidenceLevel" :rules="rules.confidenceLevel">
-                <el-select v-model="form.confidenceLevel" clearable :disabled="!form.ifStartTask">
+                <el-select v-model="form.confidenceLevel" :disabled="!form.ifStartTask">
                   <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name"
                     :value="item.value">
                   </el-option>
@@ -468,7 +469,16 @@ export default {
           required: true, message: "分类逻辑不能为空", trigger: "blur"
         }],
         classificationState: [{
-          required: true, message: "分类状态不能为空", trigger: "blur"
+          validator: (rule, value, callback) => {
+            if (this.form.ifStartTask) {
+              // 由于是多选，判断数组是否为空
+              if (!value || value.length === 0) {
+                return callback(new Error('分类状态不能为空'));
+              }
+            }
+            callback();
+          },
+          trigger: ['blur', 'change']
         }],
         confidenceLevel: [{
           required: true, message: "置信度不能为空", trigger: "blur"
@@ -476,6 +486,31 @@ export default {
         confirm: [{
           required: true, message: "确认状态不能为空", trigger: "blur"
         }],
+        dataRepetitionValue: [
+          {
+            validator: (rule, value, callback) => {
+              // 只有当开关开启时才校验
+              if (this.form.ifStartDataRepetition) {
+                // 验证是否为空
+                if (!value) {
+                  return callback(new Error('请输入样本重复率阈值'));
+                }
+                // 验证格式是否为1-100%
+                const reg = /^(100|[1-9]\d?|0)\%$/;
+                if (!reg.test(value)) {
+                  return callback(new Error('请输入1-100之间的数字并包含百分号（例如：50%）'));
+                }
+                // 验证数值是否在1-100之间
+                const num = parseInt(value);
+                if (num < 1 || num > 100) {
+                  return callback(new Error('请输入1-100之间的数值'));
+                }
+              }
+              callback();
+            },
+            trigger: ['blur', 'change']
+          }
+        ],
       },
       debounceTimeout: null,
       formLoading: false,
@@ -489,7 +524,31 @@ export default {
   },
   mounted() {
   },
+  watch: {
+    'form.ifStartTask'(newVal) {
+      // 确保表单实例已存在再调用校验方法
+      if (this.$refs.form) {
+        this.$refs.form.validateField([
+          'classificationState'
+        ]);
+      }
+    }
+  },
   methods: {
+    handleRepetitionChange() {
+      // 当开关状态变化时，手动触发输入框的校验
+      this.$refs.form.validateField('dataRepetitionValue');
+      if (!this.form.ifStartDataRepetition) {
+        this.form.dataRepetitionValue = ''
+      }
+    },
+    // 格式化百分比输入（自动补充百分号）
+    formatPercentage(val) {
+      // 如果已经包含百分号则不处理
+      if (val && !val.includes('%')) {
+        this.form.dataRepetitionValue = val + '%';
+      }
+    },
     //控制多选框是否可选
     selectableFn(row, index) {
       if (row.publishStatus == 1) {
@@ -704,16 +763,17 @@ export default {
             return
           }
           const params = {
-              ...this.form,
-              ifStartDataNull: this.form.ifStartDataNull ? '1' : '0',
-              ifStartDataShort: this.form.ifStartDataShort ? '1' : '0',
-              ifStartDataRepetition: this.form.ifStartDataRepetition ? '1' : '0',
-              ifStartAiFill: this.form.ifStartAiFill ? '1' : '0',
-              ifStartTask: this.form.ifStartTask ? '1' : '0',
-              piiDetectionFlag: this.form.piiDetectionFlag ? '1' : '0',
-              ifStartFeatureExtract: this.form.ifStartFeatureExtract ? '1' : '0',
-              classificationState: this.form.classificationState.join(','),
-            }
+            ...this.form,
+            ifStartDataNull: this.form.ifStartDataNull ? '1' : '0',
+            ifStartDataShort: this.form.ifStartDataShort ? '1' : '0',
+            ifStartDataRepetition: this.form.ifStartDataRepetition ? '1' : '0',
+            ifStartAiFill: this.form.ifStartAiFill ? '1' : '0',
+            ifStartTask: this.form.ifStartTask ? '1' : '0',
+            piiDetectionFlag: this.form.piiDetectionFlag ? '1' : '0',
+            ifStartFeatureExtract: this.form.ifStartFeatureExtract ? '1' : '0',
+            classificationState: this.form.classificationState.join(',') ? this.form.classificationState.join(',') : '0',
+
+          }
           if (this.form.isAddTasks === '1') {
             // this.form.piiDetectionFlag = this.form.piiDetectionFlag + ''
             // this.form.aiAnalyticsEngine = this.aiAnalyticsEngine
