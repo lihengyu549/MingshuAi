@@ -254,7 +254,7 @@
           </el-row>
           <el-row>
             <el-col :span="24">
-              <el-form-item label="分类状态" prop="classificationState" :rules="rules.classificationState">
+              <el-form-item label="分类状态">
                 <el-select v-model="form.classificationState" multiple clearable placeholder="请选择内容" style="width: 100%"
                   :disabled="!form.ifStartTask">
                   <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
@@ -468,18 +468,18 @@ export default {
         classificationLogic: [{
           required: true, message: "分类逻辑不能为空", trigger: "blur"
         }],
-        classificationState: [{
-          validator: (rule, value, callback) => {
-            if (this.form.ifStartTask) {
-              // 由于是多选，判断数组是否为空
-              if (!value || value.length === 0) {
-                return callback(new Error('分类状态不能为空'));
-              }
-            }
-            callback();
-          },
-          trigger: ['blur', 'change']
-        }],
+        // classificationState: [{
+        //   validator: (rule, value, callback) => {
+        //     if (this.form.ifStartTask) {
+        //       // 由于是多选，判断数组是否为空
+        //       if (!value || value.length === 0) {
+        //         return callback(new Error('分类状态不能为空'));
+        //       }
+        //     }
+        //     callback();
+        //   },
+        //   trigger: ['blur', 'change']
+        // }],
         confidenceLevel: [{
           required: true, message: "置信度不能为空", trigger: "blur"
         }],
@@ -525,14 +525,14 @@ export default {
   mounted() {
   },
   watch: {
-    'form.ifStartTask'(newVal) {
-      // 确保表单实例已存在再调用校验方法
-      if (this.$refs.form) {
-        this.$refs.form.validateField([
-          'classificationState'
-        ]);
-      }
-    }
+    // 'form.ifStartTask'(newVal) {
+    //   // 确保表单实例已存在再调用校验方法
+    //   if (this.$refs.form) {
+    //     this.$refs.form.validateField([
+    //       'classificationState'
+    //     ]);
+    //   }
+    // }
   },
   methods: {
     handleRepetitionChange() {
