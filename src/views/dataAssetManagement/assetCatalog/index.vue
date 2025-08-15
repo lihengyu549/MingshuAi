@@ -16,7 +16,7 @@
       <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" label-width="100px">
           <el-form-item label="表名" prop="tableName">
-            <el-select v-model="queryParams.tableName" @change="selectProjectIdChange" placeholder="全部">
+            <el-select v-model="queryParams.tableName" @change="selectProjectIdChange" filterable placeholder="全部">
               <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.tableId">
               </el-option>
             </el-select>
