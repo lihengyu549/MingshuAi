@@ -143,7 +143,7 @@
       style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
       <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
         <el-form-item label="分类" class="addSelectClass">
-          <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable  :filter-method="handleSearch">
+          <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable :filter-method="handleSearch">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
                 :filter-node-method="filterNode" ref="treeSelectSec" node-key="id" highlight-current
@@ -568,9 +568,9 @@ export default {
     this.getListTableByProject()
   },
   methods: {
-  handleSearch(val) {
-    this.$refs.treeSelectSec.filter(val);
-  },
+    handleSearch(val) {
+      this.$refs.treeSelectSec.filter(val);
+    },
     handleCheckAllChange(val) {
       this.checkedColumn = val ? this.setList : [];
       this.isIndeterminate = false;
@@ -880,18 +880,61 @@ export default {
       this.deleteVisible = true
     },
     addHandleNodeCheck(node, checkData) {
-      const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
-      if (parentLabels) {
-        this.addNodeName = parentLabels.join('-') + '-' + node.categoryName;
-      } else {
-        this.addNodeName = node.categoryName;
+      // 筛选出选中的叶子节点（无children的节点）
+      const checkedLeafNodes = checkData.checkedNodes.filter(item => !item.children);
+
+      // 无选中节点或无选中子项（叶子节点），清空展示
+      if (checkData.checkedKeys.length === 0 || checkedLeafNodes.length === 0) {
+        this.addNodeName = '';
+        this.queryParams.categoryIds = '';
+        this.getList();
+        return;
       }
-      if (checkData.checkedKeys.length == 0) {
-        this.addNodeName = ''
+
+      // 收集所有选中叶子节点对应的根节点（去重）
+      const rootNodeNames = new Set();
+      checkedLeafNodes.forEach(leafNode => {
+        const rootNode = this.findRootNode(this.categoryList, leafNode.id);
+        if (rootNode) {
+          rootNodeNames.add(rootNode.categoryName); // 根节点名称
+        }
+      });
+
+      // 展示根节点名称（用逗号分隔）
+      this.addNodeName = Array.from(rootNodeNames).join(',');
+
+      // 保持原有逻辑：收集叶子节点ID作为查询参数
+      this.queryParams.categoryIds = checkedLeafNodes.map(item => item.id).join();
+      this.getList();
+    },
+    // 查找节点对应的根节点
+    findRootNode(tree, nodeId) {
+      // 递归查找节点本身
+      const findNode = (nodes, id) => {
+        for (const node of nodes) {
+          if (node.id === id) {
+            return node;
+          }
+          if (node.children && node.children.length) {
+            const found = findNode(node.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      // 先找到当前节点
+      const node = findNode(tree, nodeId);
+      if (!node) return null;
+
+      // 向上追溯到根节点（根节点的parentId为初始的projectId）
+      let currentNode = node;
+      while (currentNode.parentId !== this.drawerData.projectId && currentNode.parentId) {
+        const parentNode = findNode(tree, currentNode.parentId);
+        if (!parentNode) break; // 防止死循环
+        currentNode = parentNode;
       }
-      let lastNodeData = checkData.checkedNodes.filter(item => !item.children)
-      this.queryParams.categoryIds = lastNodeData.map(item => item.id).join()
-      this.getList()
+      return currentNode;
     },
     piiHandleNodeCheck(node, checkData) {
       const parentLabels = this.findParentLabelsById(this.piiList, node.id);
