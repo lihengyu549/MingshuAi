@@ -1,391 +1,458 @@
 <template>
-  <div class="app-container" v-loading="Loading">
-    <div class="header">
-      <div class="header_left_titleClass">
-        <img src="../../../assets/icons/jobWork/renwu.png"></img>
-        <span>{{ allData.databaseName }}</span>
+  <div class="task-progress-container">
+    <!-- 任务基本信息 -->
+    <el-card class="task-info-card" shadow="hover">
+      <div class="task-info">
+        <!-- 放大加粗的任务名称 -->
+        <p class="task-name"><span>任务名称</span>：{{ taskName }}</p>
+        <!-- 其他信息放到第二行 -->
+        <div class="other-info">
+          <p><span>开始时间</span>：{{ startTime }}</p>
+          <p><span>结束时间</span>：{{ endTime || '执行中' }}</p>
+          <p><span>运行时间</span>：{{ runTime }}</p>
+          <p><span>运行状态</span>：
+            <el-tag :type="status === '执行中' ? 'warning' : 'success'">{{ status }}</el-tag>
+          </p>
+        </div>
       </div>
-      <div class="header_center_titleClass">
-        <span>行业模版：{{ allData.categoryName }}</span>
-        <span>字段总数：{{ allData.filedCount }}</span>
+    </el-card>
+
+    <!-- 整体进度条 -->
+    <el-card class="progress-card" shadow="hover">
+      <div class="progress-info">
+        <span>整体进度</span>
+        <!-- 自定义进度条容器 -->
+        <div class="custom-progress-container">
+          <el-progress :percentage="progressPercent" :format="progressFormat"
+            :status="progressPercent === 100 ? 'success' : ''"></el-progress>
+        </div>
       </div>
-      <div class="header_right_titleClass">
-        <span>进度：</span>
-        <el-progress :percentage="allData.schedule" :color="allData.maskComplete == 'ERR' ? 'red' : '#409eff'"
-          :stroke-width="26" :format="progressFormat"></el-progress>
-      </div>
-    </div>
-    <div class="timeBox">
-      <div class="timeBox_left">
-        <img src="../../../assets/icons/jobWork/kaishishijian.png" alt="">
-        <span>开始时间：{{ allData.startTime }}</span>
-      </div>
-      <div class="timeBox_center">
-        <img src="../../../assets/icons/jobWork/yinghaoshi.png" alt="">
-        <span>处理耗时：{{ allData.processingTime }}</span>
-      </div>
-      <div class="timeBox_right">
-        <img src="../../../assets/icons/jobWork/state.png" alt="">
-        <span>任务状态：{{ stateMsg(allData.maskComplete) }}</span>
-      </div>
-    </div>
-    <div class="stepsBox">
-      <el-steps direction="vertical" :active="allData.taskStepState" :process-status="processStatus"
-        :finish-status="allData.maskComplete == 'ERR' ? 'error' : 'success'">
-        <el-step class="step_text" icon="el-icon-loading" v-for="(item, index) in directionData" :title="item.title">
-          <template slot="description">
-            <el-popover id="popover" popper-class="popoverClass" placement="left" :title="item.titlepop" width="200"
-              trigger="click">
-              <div>
-                <pre>{{ item.content }}</pre>
-              </div>
-              <i class="el-icon-warning-outline" @click.stop="handleMouseOver(item, index)"
-                style="color:rgb(168 168 168);" circle slot="reference"></i>
-            </el-popover>
-          </template>
-        </el-step>
-      </el-steps>
-    </div>
-    <div
-      style="width: 100%;height: 60px; display: flex; justify-content: flex-end;align-items: center; padding-right: 100px;">
-      <el-button size="medium" style="font-size: 18px;" type="primary" round @click="goBack()">返 回</el-button>
+    </el-card>
+
+    <!-- 标签与内容区域 -->
+    <el-card class="tab-card" shadow="hover">
+      <el-tabs v-model="activeTab">
+        <el-tab-pane label="实时日志" name="realtime">
+          <div class="log-container" v-infinite-scroll="loadMoreRealtimeLogs"
+            infinite-scroll-disabled="infiniteScrollDisabled" infinite-scroll-distance="10">
+            <p v-for="(log, index) in realtimeLogs" :key="index" class="log-item"
+              :class="{ 'warning-log': log.includes('警告'), 'error-log': log.includes('错误') }">{{ log }}</p>
+
+            <div v-if="loadingMore" class="loading-indicator">
+              <el-loading-spinner></el-loading-spinner>
+              <span>加载更多日志...</span>
+            </div>
+          </div>
+        </el-tab-pane>
+        <el-tab-pane label="分析日志" name="analysis">
+          <div class="analysis-log-container">
+            <el-table :data="analysisLogs" border style="width: 100%;" v-if="analysisLogs.length > 0">
+              <el-table-column prop="time" label="时间" width="180">
+              </el-table-column>
+              <el-table-column prop="level" label="级别" width="100">
+                <template slot-scope="scope">
+                  <el-tag :type="scope.row.level === 'ERROR' ? 'danger' : 'info'">
+                    {{ scope.row.level }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="message" label="日志内容">
+              </el-table-column>
+            </el-table>
+
+            <div v-else class="empty-state">
+              <el-empty description="暂无分析日志数据"></el-empty>
+            </div>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+    </el-card>
+
+    <!-- 操作按钮 -->
+    <div class="button-group">
+      <el-button type="primary" @click="handleReturn">返回</el-button>
+      <el-button type="warning" @click="handleRefresh" v-if="activeTab === 'analysis'">
+        <i class="el-icon-refresh"></i> 刷新
+      </el-button>
     </div>
   </div>
 </template>
 
 <script>
-import { getTaskMonitoring, taskProgressQuery } from "@/api/system/proxys";
+import io from 'socket.io-client';
 export default {
-  name: "jobMonitoring",
+  name: 'TaskProgress',
   data() {
     return {
-      routeData: this.$route.query || {},
-      allData: {},
-      timer: null,
-      Loading: false,
-      processStatus: 'finish',
-      executeStatus: [
-        {
-          value: 'COMPLETE',
-          label: '执行完成'
-        },
-        {
-          value: 'RUNNING',
-          label: '执行中'
-        },
-        {
-          value: 'NONE',
-          label: '待执行'
-        },
-        {
-          value: 'PAUSED',
-          label: '暂停执行'
-        }
-        ,
-        {
-          value: 'KILLED',
-          label: '执行终止'
-        },
-        {
-          value: 'ERR',
-          label: '执行失败'
-        },
-      ],
-      directionData: [
-        {
-          title: '数据质量评估',
-          titlepop: '数据质量评估',
-          description: '描述',
-          status: 1,
-          content: '',
-        },
-        {
-          title: '关键字/正则精确匹配',
-          titlepop: '策略精确匹配',
-          description: '描述',
-          status: 2,
-          content: '',
-        },
-        {
-          title: 'AI推理',
-          titlepop: 'AI推理',
-          description: '描述',
-          status: 3,
-          content: '',
-        },
-        {
-          title: 'AI审核',
-          titlepop: 'AI审核',
-          description: '描述',
-          status: 4,
-          content: '',
-        },
-      ],
-      iIndex: 0,
+      // 任务基本信息
+      taskName: '',
+      startTime: '',
+      endTime: '',
+      runTime: '',
+      status: '',
+
+      // 进度条数据
+      progressTotal: 12,
+      progressCurrent: 7,
+
+      // tab控制
+      activeTab: 'realtime',
+
+      // 实时日志
+      realtimeLogs: [],
+      socket: null,
+      hasMoreRealtimeLogs: true,
+      pageSize: 10,
+      currentPage: 1,
+      loadingMore: false,
+      infiniteScrollDisabled: false,
+
+      // 分析日志
+      analysisLogs: []
     };
   },
-
-  created() {
-    this.fristGetTaskMonitoringFn()
+  computed: {
+    // 进度条百分比计算
+    progressPercent() {
+      return Math.round((this.progressCurrent / this.progressTotal) * 100);
+    },
+    // 进度条显示文本格式化
+    progressFormat() {
+      return () => `${this.progressCurrent}/${this.progressTotal} (${this.progressPercent}%)`;
+    }
   },
   mounted() {
-    // this.getBtnClick()
-  },
-  methods: {
-    handleMouseOver(item) {
-      if(this.allData.maskComplete == 'ERR') {
-        item.content = '执行失败,请重新执行'
-        return
-      }
-      if (item.status == this.allData.taskStepState + 1) {
-        item.content = '进行中'
-      } else if (item.status > this.allData.taskStepState) {
-        item.content = '未开始'
-      } else if (item.status <= this.allData.taskStepState) {
-        switch (item.status) {
-          case 1:
-            return item.content = `高质量数据表：${this.allData.heightTableNum}个\n高质量数据表占比：${this.allData.heightTableScale}%`
-          case 2:
-            return item.content = `关键字/正则命中数量：${this.allData.ruleHitNum}个\n关键字/正则命中占比：${this.allData.ruleHitScale}%`
-
-          case 3:
-            return item.content = `推理成功数量：${this.allData.successNum}个\n无法分类数量：${this.allData.falseNum}个\n无法分类占比：${this.allData.falseScale}%`
-
-          case 4:
-            return item.content = `置信度高数量：${this.allData.trustNum}个\n置信度高占比：${this.allData.trustScale}%`
-          default:
-            break;
-        }
-      }
-    },
-    handleMouseOut() { },
-    getBtnClick() {
-      let Ele = document.querySelectorAll('.el-step__main')
-      Ele.forEach((item, index) => {
-        const newParagraph = document.createElement("i");
-        newParagraph.style.position = 'absolute';
-        newParagraph.style.top = '25px';
-        newParagraph.style.right = '15%';
-        newParagraph.style.color = '#b9b9b9';
-        newParagraph.style.fontSize = '40px';
-        newParagraph.className = 'el-icon-warning-outline iconClassBox';
-        Ele[index].appendChild(newParagraph)
-        newParagraph.style.display = 'none'
-        item.addEventListener("click", function (ele) {
-          let iEle = document.querySelectorAll('.iconClassBox')
-          iEle.forEach((iItem, i) => {
-            iItem.style.display = 'none'
-          })
-          let paraentEle = ele.target.parentNode
-          paraentEle.children[2].style.display = ''
-        });
-
-      });
-      let iEle = document.querySelectorAll('.iconClassBox')
-      iEle.forEach((iItem, i) => {
-        iItem.addEventListener("click", function (iItem) {
-          let popover = document.getElementById('popover')
-          popover.style.position = 'absolute';
-          let ipostion = iItem.srcElement.getBoundingClientRect();
-          popover.style.top = ipostion.top - 50 + 'px';
-          popover.style.right = '28%';
-        })
-      })
-
-    },
-    fristGetTaskMonitoringFn() {
-      this.Loading = true
-      getTaskMonitoring({ proxyId: this.routeData.id }).then(res => {
-        if (res.code == 200) {
-          this.Loading = false
-          this.allData = res.data
-          if (this.allData.maskComplete == 'RUNNING') {
-            this.getTaskMonitoringFn()
-            return
-          }
-        }
-      })
-    },
-    getTaskMonitoringFn() {
-      this.timer = setInterval(() => {
-        getTaskMonitoring({ proxyId: this.routeData.id }).then(res => {
-          if (res.code == 200) {
-            this.allData = res.data
-            if (this.allData.schedule == 100 || this.allData.maskComplete != 'RUNNING') {
-              clearInterval(this.timer)
-            }
-
-            if (this.allData.maskComplete == 'ERROR') {
-              this.processStatus = 'error'
-              clearInterval(this.timer)
-            }
-          }
-        })
-          .catch(err => {
-            clearInterval(this.timer)
-          });
-      }, 1500);
-    },
-    // 进度条完成提示
-    progressFormat() {
-      if (this.allData.maskComplete == 'ERR') {
-        return '失败'
-      } else {
-        return this.allData.schedule == 100 ? '已完成' : `${this.allData.schedule || 0}%`;
-      }
-    },
-    // 执行状态中文
-    stateMsg(val) {
-      let msg = ''
-      for (let item of this.executeStatus) {
-        if (item.value == val) {
-          msg = item.label
-        }
-      }
-      return msg
-    },
-
-    goBack() {
-      this.$router.go(-1)
-    },
+    // 初始化任务基本信息
+    this.initTaskInfo();
+    // 初始化WebSocket连接
+    this.initWebSocket();
+    // 获取分析日志
+    this.getAnalysisLogs();
+    // 模拟进度更新
+    this.startProgressSimulation();
   },
   beforeDestroy() {
-    clearInterval(this.timer)
+    // 关闭WebSocket连接
+    if (this.socket) {
+      this.socket.disconnect();
+    }
+    // 清除定时器
+    if (this.progressTimer) {
+      clearInterval(this.progressTimer);
+    }
+  },
+  methods: {
+    // 初始化任务基本信息
+    initTaskInfo() {
+      this.taskName = 'ERP系统数据分类分级处理';
+      this.startTime = '2025-08-15 09:30:00';
+      this.runTime = '00:25:36';
+      this.status = '执行中';
+    },
+
+    // 初始化WebSocket
+    initWebSocket() {
+      // 连接WebSocket服务器
+      this.socket = io('ws://your-server-address/ws/task-logs');
+
+      // 连接成功
+      this.socket.on('connect', () => {
+        console.log('WebSocket连接成功');
+        // 发送任务ID订阅特定任务的日志
+        this.socket.emit('subscribe', { taskId: this.$route.params.taskId });
+      });
+
+      // 接收实时日志
+      this.socket.on('realtimeLog', (data) => {
+        this.realtimeLogs.push(`[${this.formatTime(new Date())}] ${data.message}`);
+        // 自动滚动到底部
+        this.scrollToBottom();
+      });
+
+      // 接收进度更新
+      this.socket.on('progressUpdate', (data) => {
+        this.progressCurrent = data.current;
+        this.progressTotal = data.total;
+        this.runTime = data.runTime;
+
+        // 如果任务完成
+        if (data.current === data.total) {
+          this.status = '已完成';
+          this.endTime = this.formatTime(new Date());
+        }
+      });
+
+      // 连接断开
+      this.socket.on('disconnect', (reason) => {
+        console.log('WebSocket连接断开:', reason);
+        // 如果不是手动断开，尝试重连
+        if (reason !== 'io client disconnect') {
+          this.socket.connect();
+        }
+      });
+    },
+
+    // 加载更多实时日志（无限滚动逻辑）
+    loadMoreRealtimeLogs() {
+      if (!this.hasMoreRealtimeLogs || this.loadingMore) return;
+
+      this.loadingMore = true;
+      this.infiniteScrollDisabled = true;
+
+      // 模拟从服务器加载历史日志
+      setTimeout(() => {
+        this.currentPage++;
+        // 实际应用中这里应该通过WebSocket或API请求历史日志
+        const historyLogs = [];
+        for (let i = 0; i < this.pageSize; i++) {
+          const time = new Date(Date.now() - (this.currentPage * 100000 + i * 10000));
+          historyLogs.push(`[${this.formatTime(time)}] 历史日志记录 ${(this.currentPage - 1) * this.pageSize + i + 1}`);
+        }
+
+        // 向数组头部添加历史日志（因为是加载更早的日志）
+        this.realtimeLogs.unshift(...historyLogs);
+
+        // 假设最多加载5页历史数据
+        if (this.currentPage >= 5) {
+          this.hasMoreRealtimeLogs = false;
+        }
+
+        this.loadingMore = false;
+        this.infiniteScrollDisabled = false;
+      }, 1000);
+    },
+
+    // 获取分析日志
+    getAnalysisLogs() {
+      this.$axios.get(`/api/tasks/${this.$route.params.taskId}/analysis-logs`)
+        .then((res) => {
+          if (res.data.code === 200) {
+            this.analysisLogs = res.data.data;
+          }
+        })
+        .catch((err) => {
+          console.error('获取分析日志失败：', err);
+          this.$message.error('获取分析日志失败，请稍后重试');
+        });
+    },
+
+    // 刷新分析日志
+    handleRefresh() {
+      this.getAnalysisLogs();
+    },
+
+    // 返回按钮事件
+    handleReturn() {
+      this.$router.back();
+    },
+
+    // 格式化时间
+    formatTime(date) {
+      return date.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).replace(/\//g, '-');
+    },
+
+    // 滚动到最新日志
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const container = this.$el.querySelector('.log-container');
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
+      });
+    },
+
+    // 模拟进度更新（实际项目中可删除，由WebSocket推送）
+    startProgressSimulation() {
+      this.progressTimer = setInterval(() => {
+        if (this.progressCurrent < this.progressTotal) {
+          this.progressCurrent++;
+          // 更新运行时间
+          const [hours, minutes, seconds] = this.runTime.split(':').map(Number);
+          let totalSeconds = hours * 3600 + minutes * 60 + seconds + 10;
+          const newHours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+          totalSeconds %= 3600;
+          const newMinutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+          const newSeconds = (totalSeconds % 60).toString().padStart(2, '0');
+          this.runTime = `${newHours}:${newMinutes}:${newSeconds}`;
+        } else {
+          clearInterval(this.progressTimer);
+        }
+      }, 5000);
+    }
   }
-}
+};
 </script>
-<style>
-.popoverClass {
-  border-radius: 15px !important;
-}
-</style>
-<style scoped lang="scss">
-.app-container {
-  padding: 20px 0;
+
+<style scoped>
+.task-progress-container {
+  padding: 20px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
 }
 
-.header {
-  height: 100px;
+.task-info-card,
+.progress-card,
+.tab-card {
+  margin-bottom: 20px;
+  background-color: #fff;
+}
+
+.task-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 40px;
+  padding: 10px 0;
+}
+
+.task-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #606266;
+}
+
+.task-info span {
+  font-weight: 500;
+  color: #303133;
+}
+
+.progress-info {
+  padding: 10px 0;
   width: 100%;
-  background-color: #e6f6fe;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
-.header_left_titleClass {
-  width: 30%;
-  font-size: 25px;
-  padding: 0 25px;
-  display: flex;
-  align-items: center;
+.progress-info span {
+  font-size: 14px;
+  color: #303133;
+  margin-bottom: 8px;
+  display: inline-block;
 }
 
-.header_left_titleClass img {
-  width: 60px;
-  height: 60px;
-  display: block;
-}
-
-.header_center_titleClass {
-  width: 30%;
-  font-size: 25px;
-}
-
-.header_center_titleClass span {
-  margin-right: 25px;
-}
-
-.header_right_titleClass {
-  display: flex;
-  align-items: center;
-  width: 30%;
-  font-size: 25px;
-}
-
-.header_right_titleClass .el-progress {
-  display: flex;
-  width: 40%;
-
-  ::v-deep .el-progress__text {
-    width: 100px;
-  }
-}
-
-.timeBox {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding-right: 40px;
-  margin-top: 30px;
-}
-
-.timeBox img {
-  width: 40px;
-  height: 40px;
-  margin-right: 20px;
-}
-
-.timeBox .timeBox_left {
-  font-size: 23px;
-  display: flex;
-  align-items: center;
-}
-
-.timeBox .timeBox_center {
-  font-size: 23px;
-  margin-left: 30px;
-  display: flex;
-  align-items: center;
-}
-
-.timeBox .timeBox_right {
-  font-size: 23px;
-  margin-left: 30px;
-  display: flex;
-  align-items: center;
-}
-
-.stepsBox {
-  height: 500px;
+/* 自定义进度条样式 - 将文本放在进度条上方右侧 */
+.custom-progress-container {
   width: 100%;
-  padding-left: 100px;
-  margin-top: 100px;
 }
 
-.stepsBox ::deep .el-step__title {
-  font-size: 25px;
+/* 使用深度选择器覆盖Element UI默认样式 */
+/deep/ .el-progress {
+  position: relative;
+  padding-top: 20px;
+  /* 为上方的文本预留空间 */
 }
 
-.step_text {
-  ::v-deep .el-step__title {
-    font-size: 25px !important;
-    height: 90%;
-    border-bottom: 1px solid #dbdbdb;
-  }
+/deep/ .el-progress__text {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  /* 移除默认margin */
+  font-size: 14px;
+  color: #606266;
 }
 
-.step_text {
-  ::v-deep .el-step__main {
-    height: 100px;
-    position: relative;
-  }
+/deep/ .el-progress__bar {
+  width: 100%;
 }
 
-.step_text {
-  ::v-deep .el-step__icon-inner {
-    font-size: 30px;
-  }
+.log-container,
+.analysis-log-container {
+  height: 400px;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #fafafa;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
 }
 
-.step_text {
-  ::v-deep .el-step__description {
-    position: absolute;
-    top: 20px;
-    right: 20%;
-    ;
-    font-size: 30px;
-    padding: 0;
-  }
+.log-item {
+  margin: 0 0 8px 0;
+  line-height: 1.6;
+  font-size: 13px;
+  color: #303133;
+  word-break: break-all;
+}
+
+.warning-log {
+  color: #e6a23c;
+}
+
+.error-log {
+  color: #f56c6c;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 10px;
+  color: #606266;
+}
+
+.loading-indicator .el-loading-spinner {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.button-group {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.empty-state {
+  padding: 40px 0;
+}
+
+/deep/ .el-tabs__content {
+  margin-top: 15px;
+}
+
+/deep/ .el-progress-bar__outer {
+  height: 10px !important;
+  width: 100%;
+}
+
+/deep/ .el-progress-bar {
+  padding-right: 0;
+}
+
+.task-info {
+  display: flex;
+  flex-direction: column;
+  /* 改为垂直布局 */
+  gap: 15px;
+  /* 名称和其他信息之间的间距 */
+  padding: 15px 0;
+}
+
+.task-name {
+  font-size: 18px;
+  /* 放大字体 */
+  font-weight: bold;
+  /* 加粗 */
+  margin: 0;
+  color: #303133;
+}
+
+.other-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 40px;
+  /* 保持原有水平间距 */
+}
+
+.other-info p {
+  line-height: 28px;
+  margin: 0;
+  font-size: 14px;
+  color: #606266;
+}
+
+.other-info span {
+  font-weight: 500;
+  color: #303133;
 }
 </style>
