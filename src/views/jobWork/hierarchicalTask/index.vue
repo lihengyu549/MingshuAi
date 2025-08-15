@@ -206,15 +206,14 @@
             </el-form-item>
             <el-form-item prop="dataRepetitionValue">
               <el-switch v-model="form.ifStartDataRepetition" active-text="样本重复率高于" @change="handleRepetitionChange" />
-              <el-input v-model="form.dataRepetitionValue" size="mini" style="width: 15%;margin-left:15px;"
-                @input="formatPercentage" />
-              <svg-icon icon-class="dengpao" style="margin-left:15px;" />
+              <el-input v-model="form.dataRepetitionValue" size="mini" style="width: 15%;margin-left:15px;"/> %
+              <svg-icon icon-class="dengpao" style="margin-left:8px;" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item>
               <el-switch v-model="form.ifStartDataShort" active-text="样本内容为单字符或数字" />
-              <svg-icon icon-class="dengpao" style="margin-left:15px;" />
+              <svg-icon icon-class="dengpao" style="margin-left:8px;" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -495,11 +494,6 @@ export default {
                 if (!value) {
                   return callback(new Error('请输入样本重复率阈值'));
                 }
-                // 验证格式是否为1-100%
-                const reg = /^(100|[1-9]\d?|0)\%$/;
-                if (!reg.test(value)) {
-                  return callback(new Error('请输入1-100之间的数字并包含百分号（例如：50%）'));
-                }
                 // 验证数值是否在1-100之间
                 const num = parseInt(value);
                 if (num < 1 || num > 100) {
@@ -540,13 +534,6 @@ export default {
       this.$refs.form.validateField('dataRepetitionValue');
       if (!this.form.ifStartDataRepetition) {
         this.form.dataRepetitionValue = ''
-      }
-    },
-    // 格式化百分比输入（自动补充百分号）
-    formatPercentage(val) {
-      // 如果已经包含百分号则不处理
-      if (val && !val.includes('%')) {
-        this.form.dataRepetitionValue = val + '%';
       }
     },
     //控制多选框是否可选
