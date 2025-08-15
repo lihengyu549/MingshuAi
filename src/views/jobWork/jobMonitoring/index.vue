@@ -3,9 +3,7 @@
     <!-- 任务基本信息 -->
     <el-card class="task-info-card" shadow="hover">
       <div class="task-info">
-        <!-- 放大加粗的任务名称 -->
-        <p class="task-name"><span>任务名称</span>：{{ taskName }}</p>
-        <!-- 其他信息放到第二行 -->
+        <p class="task-name"><span>任务名称</span>：{{ tasksName }}</p>
         <div class="other-info">
           <p><span>开始时间</span>：{{ startTime }}</p>
           <p><span>结束时间</span>：{{ endTime || '执行中' }}</p>
@@ -21,10 +19,10 @@
     <el-card class="progress-card" shadow="hover">
       <div class="progress-info">
         <span>整体进度</span>
-        <!-- 自定义进度条容器 -->
         <div class="custom-progress-container">
           <el-progress :percentage="progressPercent" :format="progressFormat"
-            :status="progressPercent === 100 ? 'success' : ''"></el-progress>
+            :status="progressPercent === 100 ? 'success' : undefined">
+          </el-progress>
         </div>
       </div>
     </el-card>
@@ -33,22 +31,25 @@
     <el-card class="tab-card" shadow="hover">
       <el-tabs v-model="activeTab">
         <el-tab-pane label="实时日志" name="realtime">
-          <div class="log-container" v-infinite-scroll="loadMoreRealtimeLogs"
-            infinite-scroll-disabled="infiniteScrollDisabled" infinite-scroll-distance="10">
-            <p v-for="(log, index) in realtimeLogs" :key="index" class="log-item"
-              :class="{ 'warning-log': log.includes('警告'), 'error-log': log.includes('错误') }">{{ log }}</p>
-
-            <div v-if="loadingMore" class="loading-indicator">
-              <el-loading-spinner></el-loading-spinner>
-              <span>加载更多日志...</span>
+          <div class="log-container">
+            <div class="log-timeline"></div>
+            <div class="log-list">
+              <!-- 修改日志项展示，直接显示text字段 -->
+              <div v-for="(log, index) in realtimeLogs" :key="index" class="log-item">
+                <span class="log-time">{{ log.time }}</span>
+                <span class="log-content">{{ log.text }}</span>
+              </div>
+              <div v-if="realtimeLogs.length === 0 && socketConnected" class="empty-log">
+                <i class="el-icon-loading"></i>
+                等待日志更新...
+              </div>
             </div>
           </div>
         </el-tab-pane>
         <el-tab-pane label="分析日志" name="analysis">
           <div class="analysis-log-container">
             <el-table :data="analysisLogs" border style="width: 100%;" v-if="analysisLogs.length > 0">
-              <el-table-column prop="time" label="时间" width="180">
-              </el-table-column>
+              <el-table-column prop="time" label="时间" width="180"></el-table-column>
               <el-table-column prop="level" label="级别" width="100">
                 <template slot-scope="scope">
                   <el-tag :type="scope.row.level === 'ERROR' ? 'danger' : 'info'">
@@ -56,8 +57,7 @@
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="message" label="日志内容">
-              </el-table-column>
+              <el-table-column prop="message" label="日志内容"></el-table-column>
             </el-table>
 
             <div v-else class="empty-state">
@@ -79,33 +79,35 @@
 </template>
 
 <script>
-import io from 'socket.io-client';
 export default {
   name: 'TaskProgress',
   data() {
     return {
+      routeData: this.$route.query || {},
       // 任务基本信息
-      taskName: '',
+      tasksName: '',
       startTime: '',
       endTime: '',
       runTime: '',
       status: '',
 
       // 进度条数据
-      progressTotal: 12,
-      progressCurrent: 7,
+      progressTotal: 0,
+      progressCurrent: 0,
 
       // tab控制
       activeTab: 'realtime',
 
-      // 实时日志
-      realtimeLogs: [],
+      // 实时日志：【核心变更】
+      realtimeLogs: [], // 日志数据结构改为：[{time, tableName, status}]
       socket: null,
-      hasMoreRealtimeLogs: true,
-      pageSize: 10,
-      currentPage: 1,
-      loadingMore: false,
-      infiniteScrollDisabled: false,
+      socketConnected: false, // 标记WebSocket是否已连接
+      // 移除手动加载相关变量（无需无限滚动）
+      // hasMoreRealtimeLogs: true,
+      // pageSize: 10,
+      // currentPage: 1,
+      // loadingMore: false,
+      // infiniteScrollDisabled: false,
 
       // 分析日志
       analysisLogs: []
@@ -144,96 +146,101 @@ export default {
   methods: {
     // 初始化任务基本信息
     initTaskInfo() {
-      this.taskName = 'ERP系统数据分类分级处理';
-      this.startTime = '2025-08-15 09:30:00';
-      this.runTime = '00:25:36';
-      this.status = '执行中';
+      this.tasksName = this.routeData.tasksName;
+      // this.startTime = '2025-08-15 09:30:00';
+      // this.endTime = this.routeData.endTime || '';
+      // this.runTime = '00:25:36';
+      // this.status = '执行中';
+      console.log('this.routeData', this.routeData);
     },
 
-    // 初始化WebSocket
+    // 【核心变更】初始化WebSocket：处理后端返回的结构化日志
     initWebSocket() {
-      // 连接WebSocket服务器
-      this.socket = io('ws://your-server-address/ws/task-logs');
+      // 1. 使用原生WebSocket建立连接
+      this.socket = new WebSocket(`ws://192.168.7.84:8080/system/websocket/${this.routeData.id}`);
 
-      // 连接成功
-      this.socket.on('connect', () => {
+      // 2. 连接成功处理（对应原connect事件）
+      this.socket.onopen = () => {
         console.log('WebSocket连接成功');
-        // 发送任务ID订阅特定任务的日志
-        this.socket.emit('subscribe', { taskId: this.$route.params.taskId });
-      });
+        this.socketConnected = true;
+        // 发送订阅请求（原生WebSocket使用send发送JSON字符串）
+        this.socket.send(JSON.stringify({
+          event: 'subscribe',
+          data: { taskId: this.$route.params.taskId || this.routeData.id }
+        }));
+      };
 
-      // 接收实时日志
-      this.socket.on('realtimeLog', (data) => {
-        this.realtimeLogs.push(`[${this.formatTime(new Date())}] ${data.message}`);
-        // 自动滚动到底部
-        this.scrollToBottom();
-      });
+      // 3. 接收消息处理（原生WebSocket需手动区分事件类型）
+      this.socket.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          // 根据消息中的event字段区分不同类型
+          switch (message.event) {
+            case 'realtimeLog':
+              // 处理实时日志（保持原逻辑）
+              const logData = {
+                time: message.data.time || this.formatTime(new Date()),
+                tableName: message.data.tableName || message.data.table,
+                status: message.data.status || message.data.message
+              };
+              this.realtimeLogs.push(logData);
+              this.scrollToBottom();
+              break;
 
-      // 接收进度更新
-      this.socket.on('progressUpdate', (data) => {
-        this.progressCurrent = data.current;
-        this.progressTotal = data.total;
-        this.runTime = data.runTime;
+            case 'progressUpdate':
+              // 处理进度更新（保持原逻辑）
+              this.progressCurrent = message.data.current;
+              this.progressTotal = message.data.total;
+              this.runTime = message.data.runTime;
+              this.status = message.data.status;
+              this.startTime = message.data.startTime;
+              this.endTime = message.data.endTime;
+              if (message.data.current === message.data.total) {
+                this.status = '已完成';
+                this.endTime = this.formatTime(new Date());
+              }
+              break;
 
-        // 如果任务完成
-        if (data.current === data.total) {
-          this.status = '已完成';
-          this.endTime = this.formatTime(new Date());
+            default:
+              console.log('收到未知类型消息:', message);
+          }
+        } catch (e) {
+          console.error('解析WebSocket消息失败:', e, event.data);
         }
-      });
+      };
 
-      // 连接断开
-      this.socket.on('disconnect', (reason) => {
-        console.log('WebSocket连接断开:', reason);
-        // 如果不是手动断开，尝试重连
-        if (reason !== 'io client disconnect') {
-          this.socket.connect();
+      // 4. 连接断开处理（对应原disconnect事件）
+      this.socket.onclose = (event) => {
+        console.log('WebSocket连接断开:', event.reason);
+        this.socketConnected = false;
+        // 非手动关闭时尝试重连
+        if (!event.wasClean) {
+          setTimeout(() => {
+            this.initWebSocket(); // 重连
+          }, 3000);
         }
-      });
+      };
+
+      // 5. 错误处理（对应原error事件）
+      this.socket.onerror = (error) => {
+        console.error('WebSocket错误:', error);
+        this.$message.error('日志连接异常，请刷新页面重试');
+      };
     },
 
-    // 加载更多实时日志（无限滚动逻辑）
-    loadMoreRealtimeLogs() {
-      if (!this.hasMoreRealtimeLogs || this.loadingMore) return;
-
-      this.loadingMore = true;
-      this.infiniteScrollDisabled = true;
-
-      // 模拟从服务器加载历史日志
-      setTimeout(() => {
-        this.currentPage++;
-        // 实际应用中这里应该通过WebSocket或API请求历史日志
-        const historyLogs = [];
-        for (let i = 0; i < this.pageSize; i++) {
-          const time = new Date(Date.now() - (this.currentPage * 100000 + i * 10000));
-          historyLogs.push(`[${this.formatTime(time)}] 历史日志记录 ${(this.currentPage - 1) * this.pageSize + i + 1}`);
-        }
-
-        // 向数组头部添加历史日志（因为是加载更早的日志）
-        this.realtimeLogs.unshift(...historyLogs);
-
-        // 假设最多加载5页历史数据
-        if (this.currentPage >= 5) {
-          this.hasMoreRealtimeLogs = false;
-        }
-
-        this.loadingMore = false;
-        this.infiniteScrollDisabled = false;
-      }, 1000);
-    },
 
     // 获取分析日志
     getAnalysisLogs() {
-      this.$axios.get(`/api/tasks/${this.$route.params.taskId}/analysis-logs`)
-        .then((res) => {
-          if (res.data.code === 200) {
-            this.analysisLogs = res.data.data;
-          }
-        })
-        .catch((err) => {
-          console.error('获取分析日志失败：', err);
-          this.$message.error('获取分析日志失败，请稍后重试');
-        });
+      // this.$axios.get(`/api/tasks/${this.$route.params.taskId}/analysis-logs`)
+      //   .then((res) => {
+      //     if (res.data.code === 200) {
+      //       this.analysisLogs = res.data.data;
+      //     }
+      //   })
+      //   .catch((err) => {
+      //     console.error('获取分析日志失败：', err);
+      //     this.$message.error('获取分析日志失败，请稍后重试');
+      //   });
     },
 
     // 刷新分析日志
@@ -268,24 +275,16 @@ export default {
       });
     },
 
-    // 模拟进度更新（实际项目中可删除，由WebSocket推送）
-    startProgressSimulation() {
-      this.progressTimer = setInterval(() => {
-        if (this.progressCurrent < this.progressTotal) {
-          this.progressCurrent++;
-          // 更新运行时间
-          const [hours, minutes, seconds] = this.runTime.split(':').map(Number);
-          let totalSeconds = hours * 3600 + minutes * 60 + seconds + 10;
-          const newHours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-          totalSeconds %= 3600;
-          const newMinutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
-          const newSeconds = (totalSeconds % 60).toString().padStart(2, '0');
-          this.runTime = `${newHours}:${newMinutes}:${newSeconds}`;
-        } else {
-          clearInterval(this.progressTimer);
+    // 【核心优化】自动滚动到底部：确保新日志显示在视图内
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const logContainer = this.$el.querySelector('.log-container');
+        if (logContainer) {
+          // 滚动到容器底部（scrollHeight是总高度，scrollTop设为总高度即可）
+          logContainer.scrollTop = logContainer.scrollHeight;
         }
-      }, 5000);
-    }
+      });
+    },
   }
 };
 </script>
@@ -454,5 +453,97 @@ export default {
 .other-info span {
   font-weight: 500;
   color: #303133;
+}
+
+/* 1. 日志容器：固定高度，隐藏滚动条（可选），相对定位用于节点条 */
+.log-container {
+  height: 400px;
+  overflow-y: auto;
+  padding: 10px 20px;
+  background-color: #fafafa;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  position: relative;
+  /* 隐藏滚动条（美观，可选） */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.log-container::-webkit-scrollbar {
+  display: none;
+  /* Chrome/Safari */
+}
+
+/* 2. 左侧节点条：垂直时间线，固定位置 */
+.log-timeline {
+  position: absolute;
+  left: 25px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background-color: #e4e7ed;
+  /* 灰色主线 */
+}
+
+/* 3. 日志列表：向右偏移，给节点条留空间 */
+.log-list {
+  margin-left: 40px;
+  /* 偏移量 = 节点条宽度 + 间距 */
+}
+
+/* 4. 单个日志项：垂直间距，相对定位用于节点点 */
+.log-item {
+  margin-bottom: 20px;
+  padding-left: 15px;
+  position: relative;
+  line-height: 1.8;
+}
+
+/* 日志项左侧的节点点（与时间线对齐） */
+.log-item::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  /* 与时间线对齐 */
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #1890ff;
+  /* 蓝色节点（参考图风格） */
+  z-index: 1;
+}
+
+/* 5. 日志时间：固定宽度，灰色字体（参考图样式） */
+.log-time {
+  display: inline-block;
+  width: 180px;
+  /* 固定时间宽度，确保内容对齐 */
+  color: #606266;
+  font-size: 13px;
+}
+
+/* 6. 日志内容：默认字体，表名与状态区分 */
+.log-content {
+  font-size: 13px;
+  color: #303133;
+}
+
+/* 日志状态：可加浅色背景突出（参考图“打标完成”样式） */
+.log-status {
+  margin-left: 8px;
+  padding: 2px 8px;
+  background-color: #f0f7ff;
+  color: #1890ff;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+/* 7. 空日志提示：居中显示 */
+.empty-log {
+  text-align: center;
+  padding: 20px;
+  color: #909399;
+  font-size: 13px;
 }
 </style>
