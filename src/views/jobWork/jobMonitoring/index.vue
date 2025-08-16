@@ -397,12 +397,12 @@ export default {
 /* 时间线主线（垂直线） */
 .timeline-line {
   position: absolute;
-  left: 18px;
+  left: 25px;
   /* 与圆点中心对齐 */
   top: 10px;
   bottom: 10px;
   width: 2px;
-  background-color: #e4e7ed;
+  background-color: #1890ff;
   /* 浅灰色主线 */
 }
 
@@ -434,6 +434,7 @@ export default {
   top: 6px;
   /* 垂直居中 */
   z-index: 1;
+  border: 3px solid white;
 }
 
 /* 日志内容（匹配图片字体） */
