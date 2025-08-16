@@ -246,11 +246,9 @@ export default {
         id: Number(this.routeData.id)
       }
       getAnalyseLog(params).then((res) => {
-        if (res.data.code === 200) {
+        if (res.code === 200) {
           // 修正：将数据赋值给analysisLogs（原代码为analysisLog
-          console.log('分析日志', res.data.data);
-
-          this.analysisLogs = res.data.data;
+          this.analysisLogs = res.data;
         }
       }).catch((err) => {
         console.error('获取分析日志失败：', err);

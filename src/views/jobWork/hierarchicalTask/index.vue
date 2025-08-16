@@ -865,7 +865,6 @@ export default {
     // 执行状态中文
     stateMsg(val) {
       let msg = ''
-      console.log('val', val);
       for (let item of this.executeStatus) {
         if (item.value == val) {
           msg = item.label
