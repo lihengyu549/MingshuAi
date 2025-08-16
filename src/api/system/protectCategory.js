@@ -321,3 +321,12 @@ export function updateDataQualityAssessmentByAll(params) {
     data: params,
   })
 }
+
+//分析日志接口
+export function getAnalyseLog(id) {
+  return request({
+    url: `/system/proxy/getAnalyseLog`,
+    method: 'post',
+    data: id,
+  })
+}

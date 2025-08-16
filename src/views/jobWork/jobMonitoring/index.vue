@@ -6,10 +6,10 @@
         <p class="task-name"><span>任务名称</span>：{{ tasksName }}</p>
         <div class="other-info">
           <p><span>开始时间</span>：{{ startTime }}</p>
-          <p><span>结束时间</span>：{{ endTime || '执行中' }}</p>
+          <p><span>结束时间</span>：{{ overTime || '执行中' }}</p>
           <p><span>运行时间</span>：{{ runTime }}</p>
           <p><span>运行状态</span>：
-            <el-tag :type="status === '执行中' ? 'warning' : 'success'">{{ status }}</el-tag>
+            <el-tag :type="statusType">{{ statusName }}</el-tag>
           </p>
         </div>
       </div>
@@ -20,7 +20,7 @@
       <div class="progress-info">
         <span>整体进度</span>
         <div class="custom-progress-container">
-          <el-progress :percentage="progressPercent" :format="progressFormat"
+          <el-progress :percentage="progressPercent ? progressPercent : 0" :format="progressFormat"
             :status="progressPercent === 100 ? 'success' : undefined">
           </el-progress>
         </div>
@@ -30,15 +30,20 @@
     <!-- 标签与内容区域 -->
     <el-card class="tab-card" shadow="hover">
       <el-tabs v-model="activeTab">
+        <!-- 实时日志（修改后） -->
         <el-tab-pane label="实时日志" name="realtime">
           <div class="log-container">
-            <div class="log-timeline"></div>
+            <!-- 左侧垂直线（时间线主线） -->
+            <div class="timeline-line"></div>
+            <!-- 实时日志列表 -->
             <div class="log-list">
-              <!-- 修改日志项展示，直接显示text字段 -->
               <div v-for="(log, index) in realtimeLogs" :key="index" class="log-item">
-                <span class="log-time">{{ log.time }}</span>
+                <!-- 时间线圆点（与垂直线对齐） -->
+                <span class="timeline-dot"></span>
+                <!-- 日志内容（匹配图片字体样式） -->
                 <span class="log-content">{{ log.text }}</span>
               </div>
+              <!-- 空日志提示 -->
               <div v-if="realtimeLogs.length === 0 && socketConnected" class="empty-log">
                 <i class="el-icon-loading"></i>
                 等待日志更新...
@@ -46,20 +51,44 @@
             </div>
           </div>
         </el-tab-pane>
+
+        <!-- 分析日志（修改后） -->
         <el-tab-pane label="分析日志" name="analysis">
           <div class="analysis-log-container">
-            <el-table :data="analysisLogs" border style="width: 100%;" v-if="analysisLogs.length > 0">
-              <el-table-column prop="time" label="时间" width="180"></el-table-column>
-              <el-table-column prop="level" label="级别" width="100">
-                <template slot-scope="scope">
-                  <el-tag :type="scope.row.level === 'ERROR' ? 'danger' : 'info'">
-                    {{ scope.row.level }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column prop="message" label="日志内容"></el-table-column>
-            </el-table>
-
+            <!-- 数据存在时渲染时间线 -->
+            <div v-if="Object.keys(analysisLogs).length > 0">
+              <!-- 左侧垂直线（时间线主线） -->
+              <div class="timeline-line"></div>
+              <!-- 分析日志列表 -->
+              <div class="analysis-list">
+                <div class="analysis-item">
+                  <span class="timeline-dot"></span>
+                  <span class="analysis-label">过滤脏数据字段数量:</span>
+                  <span class="analysis-value">{{ analysisLogs.dirtyDataNum || "暂无" }}</span>
+                </div>
+                <div class="analysis-item">
+                  <span class="timeline-dot"></span>
+                  <span class="analysis-label">命中匹配规则字段数量:</span>
+                  <span class="analysis-value">{{ analysisLogs.classificationNum || "暂无" }}</span>
+                </div>
+                <div class="analysis-item">
+                  <span class="timeline-dot"></span>
+                  <span class="analysis-label">AI注释填充情况:</span>
+                  <span class="analysis-value">{{ analysisLogs.aiNoteFilling || "暂无" }}</span>
+                </div>
+                <div class="analysis-item">
+                  <span class="timeline-dot"></span>
+                  <span class="analysis-label">分类情况:</span>
+                  <span class="analysis-value">{{ analysisLogs.classification || "暂无" }}</span>
+                </div>
+                <div class="analysis-item">
+                  <span class="timeline-dot"></span>
+                  <span class="analysis-label">样本特征提取数量:</span>
+                  <span class="analysis-value">{{ analysisLogs.featureDataNum || "暂无" }}</span>
+                </div>
+              </div>
+            </div>
+            <!-- 空状态 -->
             <div v-else class="empty-state">
               <el-empty description="暂无分析日志数据"></el-empty>
             </div>
@@ -79,6 +108,7 @@
 </template>
 
 <script>
+import { getAnalyseLog } from "@/api/system/protectCategory"
 export default {
   name: 'TaskProgress',
   data() {
@@ -87,173 +117,155 @@ export default {
       // 任务基本信息
       tasksName: '',
       startTime: '',
-      endTime: '',
+      overTime: '',
       runTime: '',
       status: '',
-
+      statusName: '',
       // 进度条数据
       progressTotal: 0,
       progressCurrent: 0,
-
       // tab控制
       activeTab: 'realtime',
-
-      // 实时日志：【核心变更】
-      realtimeLogs: [], // 日志数据结构改为：[{time, tableName, status}]
+      // 实时日志
+      realtimeLogs: [],
       socket: null,
-      socketConnected: false, // 标记WebSocket是否已连接
-      // 移除手动加载相关变量（无需无限滚动）
-      // hasMoreRealtimeLogs: true,
-      // pageSize: 10,
-      // currentPage: 1,
-      // loadingMore: false,
-      // infiniteScrollDisabled: false,
-
-      // 分析日志
-      analysisLogs: []
+      socketConnected: false,
+      // 分析日志（默认数据匹配图片）
+      analysisLogs: {
+        "过滤脏数据字段数量": "20个",
+        "命中匹配规则字段数量": "10个",
+        "AI注释填充情况": "成功10张表,失败2张表",
+        "分类情况": "分类成功100字段,分类失败20字段,未匹配到子类10字段,置信度低10字段",
+        "样本特征提取数量": "3个"
+      }
     };
   },
   computed: {
-    // 进度条百分比计算
+    // 进度条百分比
     progressPercent() {
       return Math.round((this.progressCurrent / this.progressTotal) * 100);
     },
-    // 进度条显示文本格式化
+    // 进度条文本格式化
     progressFormat() {
       return () => `${this.progressCurrent}/${this.progressTotal} (${this.progressPercent}%)`;
+    },
+    // 状态标签类型
+    statusType() {
+      if (this.status === 'RUNNING' || this.status === 'PAUSEDING' || this.status === 'KILLEDING') {
+        return 'primary';
+      } else if (this.status === 'COMPLETE' || this.status === 'PAUSED' || this.status === 'KILLED') {
+        return 'success';
+      } else if (this.status === 'ERR') {
+        return 'danger';
+      } else {
+        return 'info';
+      }
     }
   },
   mounted() {
-    // 初始化任务基本信息
     this.initTaskInfo();
-    // 初始化WebSocket连接
     this.initWebSocket();
-    // 获取分析日志
     this.getAnalysisLogs();
-    // 模拟进度更新
-    this.startProgressSimulation();
   },
   beforeDestroy() {
     // 关闭WebSocket连接
     if (this.socket) {
-      this.socket.disconnect();
-    }
-    // 清除定时器
-    if (this.progressTimer) {
-      clearInterval(this.progressTimer);
+      this.socket.close(1000, '页面销毁，主动关闭连接');
     }
   },
   methods: {
     // 初始化任务基本信息
     initTaskInfo() {
       this.tasksName = this.routeData.tasksName;
-      // this.startTime = '2025-08-15 09:30:00';
-      // this.endTime = this.routeData.endTime || '';
-      // this.runTime = '00:25:36';
-      // this.status = '执行中';
+      this.status = this.routeData.maskComplete;
+      this.statusName = this.routeData.causeDescription;
       console.log('this.routeData', this.routeData);
     },
-
-    // 【核心变更】初始化WebSocket：处理后端返回的结构化日志
+    // 生成UUID
+    generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    },
+    // 初始化WebSocket
     initWebSocket() {
-      // 1. 使用原生WebSocket建立连接
-      this.socket = new WebSocket(`ws://192.168.7.84:8080/system/websocket/${this.routeData.id}`);
+      const uuid = this.generateUUID();
+      this.socket = new WebSocket(`ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`);
 
-      // 2. 连接成功处理（对应原connect事件）
+      // 连接成功
       this.socket.onopen = () => {
         console.log('WebSocket连接成功');
         this.socketConnected = true;
-        // 发送订阅请求（原生WebSocket使用send发送JSON字符串）
         this.socket.send(JSON.stringify({
           event: 'subscribe',
           data: { taskId: this.$route.params.taskId || this.routeData.id }
         }));
       };
 
-      // 3. 接收消息处理（原生WebSocket需手动区分事件类型）
+      // 接收消息
       this.socket.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
-          // 根据消息中的event字段区分不同类型
-          switch (message.event) {
-            case 'realtimeLog':
-              // 处理实时日志（保持原逻辑）
-              const logData = {
-                time: message.data.time || this.formatTime(new Date()),
-                tableName: message.data.tableName || message.data.table,
-                status: message.data.status || message.data.message
-              };
-              this.realtimeLogs.push(logData);
-              this.scrollToBottom();
-              break;
-
-            case 'progressUpdate':
-              // 处理进度更新（保持原逻辑）
-              this.progressCurrent = message.data.current;
-              this.progressTotal = message.data.total;
-              this.runTime = message.data.runTime;
-              this.status = message.data.status;
-              this.startTime = message.data.startTime;
-              this.endTime = message.data.endTime;
-              if (message.data.current === message.data.total) {
-                this.status = '已完成';
-                this.endTime = this.formatTime(new Date());
-              }
-              break;
-
-            default:
-              console.log('收到未知类型消息:', message);
-          }
+          // 新增实时日志
+          this.realtimeLogs.push({ text: message.text });
+          this.scrollToBottom();
+          // 更新进度与状态
+          this.progressCurrent = message.progressCurrent;
+          this.progressTotal = message.progressTotal;
+          this.runTime = message.runTime;
+          this.status = message.status;
+          this.statusName = message.statusName;
+          this.startTime = message.startTime;
+          this.overTime = message.overTime;
         } catch (e) {
-          console.error('解析WebSocket消息失败:', e, event.data);
+          console.error('解析WebSocket消息失败:', e);
         }
       };
 
-      // 4. 连接断开处理（对应原disconnect事件）
+      // 连接断开
       this.socket.onclose = (event) => {
         console.log('WebSocket连接断开:', event.reason);
         this.socketConnected = false;
-        // 非手动关闭时尝试重连
+        // 自动重连
         if (!event.wasClean) {
-          setTimeout(() => {
-            this.initWebSocket(); // 重连
-          }, 3000);
+          setTimeout(() => this.initWebSocket(), 3000);
         }
       };
 
-      // 5. 错误处理（对应原error事件）
+      // 连接错误
       this.socket.onerror = (error) => {
         console.error('WebSocket错误:', error);
         this.$message.error('日志连接异常，请刷新页面重试');
       };
     },
-
-
-    // 获取分析日志
+    // 获取分析日志（修复数据赋值错误）
     getAnalysisLogs() {
-      // this.$axios.get(`/api/tasks/${this.$route.params.taskId}/analysis-logs`)
-      //   .then((res) => {
-      //     if (res.data.code === 200) {
-      //       this.analysisLogs = res.data.data;
-      //     }
-      //   })
-      //   .catch((err) => {
-      //     console.error('获取分析日志失败：', err);
-      //     this.$message.error('获取分析日志失败，请稍后重试');
-      //   });
-    },
+      const params = {
+        id: Number(this.routeData.id)
+      }
+      getAnalyseLog(params).then((res) => {
+        if (res.data.code === 200) {
+          // 修正：将数据赋值给analysisLogs（原代码为analysisLog
+          console.log('分析日志', res.data.data);
 
+          this.analysisLogs = res.data.data;
+        }
+      }).catch((err) => {
+        console.error('获取分析日志失败：', err);
+        this.$message.error('获取分析日志失败，请稍后重试');
+      })
+    },
     // 刷新分析日志
     handleRefresh() {
       this.getAnalysisLogs();
     },
-
-    // 返回按钮事件
+    // 返回上一页
     handleReturn() {
       this.$router.back();
     },
-
-    // 格式化时间
+    // 时间格式化
     formatTime(date) {
       return date.toLocaleString('zh-CN', {
         year: 'numeric',
@@ -264,23 +276,11 @@ export default {
         second: '2-digit'
       }).replace(/\//g, '-');
     },
-
-    // 滚动到最新日志
-    scrollToBottom() {
-      this.$nextTick(() => {
-        const container = this.$el.querySelector('.log-container');
-        if (container) {
-          container.scrollTop = container.scrollHeight;
-        }
-      });
-    },
-
-    // 【核心优化】自动滚动到底部：确保新日志显示在视图内
+    // 日志容器滚动到底部
     scrollToBottom() {
       this.$nextTick(() => {
         const logContainer = this.$el.querySelector('.log-container');
         if (logContainer) {
-          // 滚动到容器底部（scrollHeight是总高度，scrollTop设为总高度即可）
           logContainer.scrollTop = logContainer.scrollHeight;
         }
       });
@@ -290,12 +290,14 @@ export default {
 </script>
 
 <style scoped>
+/* 基础容器样式 */
 .task-progress-container {
   padding: 20px;
   background-color: #f5f7fa;
   min-height: 100vh;
 }
 
+/* 卡片通用样式 */
 .task-info-card,
 .progress-card,
 .tab-card {
@@ -303,135 +305,17 @@ export default {
   background-color: #fff;
 }
 
-.task-info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px 40px;
-  padding: 10px 0;
-}
-
-.task-info p {
-  margin: 0;
-  font-size: 14px;
-  color: #606266;
-}
-
-.task-info span {
-  font-weight: 500;
-  color: #303133;
-}
-
-.progress-info {
-  padding: 10px 0;
-  width: 100%;
-}
-
-.progress-info span {
-  font-size: 14px;
-  color: #303133;
-  margin-bottom: 8px;
-  display: inline-block;
-}
-
-/* 自定义进度条样式 - 将文本放在进度条上方右侧 */
-.custom-progress-container {
-  width: 100%;
-}
-
-/* 使用深度选择器覆盖Element UI默认样式 */
-/deep/ .el-progress {
-  position: relative;
-  padding-top: 20px;
-  /* 为上方的文本预留空间 */
-}
-
-/deep/ .el-progress__text {
-  position: absolute;
-  top: 0;
-  right: 0;
-  margin: 0;
-  /* 移除默认margin */
-  font-size: 14px;
-  color: #606266;
-}
-
-/deep/ .el-progress__bar {
-  width: 100%;
-}
-
-.log-container,
-.analysis-log-container {
-  height: 400px;
-  overflow-y: auto;
-  padding: 10px;
-  background-color: #fafafa;
-  border: 1px solid #e4e7ed;
-  border-radius: 4px;
-}
-
-.log-item {
-  margin: 0 0 8px 0;
-  line-height: 1.6;
-  font-size: 13px;
-  color: #303133;
-  word-break: break-all;
-}
-
-.warning-log {
-  color: #e6a23c;
-}
-
-.error-log {
-  color: #f56c6c;
-}
-
-.loading-indicator {
-  text-align: center;
-  padding: 10px;
-  color: #606266;
-}
-
-.loading-indicator .el-loading-spinner {
-  display: inline-block;
-  margin-right: 8px;
-}
-
-.button-group {
-  margin-top: 10px;
-  text-align: right;
-}
-
-.empty-state {
-  padding: 40px 0;
-}
-
-/deep/ .el-tabs__content {
-  margin-top: 15px;
-}
-
-/deep/ .el-progress-bar__outer {
-  height: 10px !important;
-  width: 100%;
-}
-
-/deep/ .el-progress-bar {
-  padding-right: 0;
-}
-
+/* 任务信息样式 */
 .task-info {
   display: flex;
   flex-direction: column;
-  /* 改为垂直布局 */
   gap: 15px;
-  /* 名称和其他信息之间的间距 */
   padding: 15px 0;
 }
 
 .task-name {
   font-size: 18px;
-  /* 放大字体 */
   font-weight: bold;
-  /* 加粗 */
   margin: 0;
   color: #303133;
 }
@@ -440,7 +324,6 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 20px 40px;
-  /* 保持原有水平间距 */
 }
 
 .other-info p {
@@ -455,7 +338,48 @@ export default {
   color: #303133;
 }
 
-/* 1. 日志容器：固定高度，隐藏滚动条（可选），相对定位用于节点条 */
+/* 进度条样式 */
+.progress-info {
+  padding: 10px 0;
+  width: 100%;
+}
+
+.progress-info span {
+  font-size: 14px;
+  color: #303133;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+.custom-progress-container {
+  width: 100%;
+}
+
+/* 覆盖Element UI进度条样式 */
+/deep/ .el-progress {
+  position: relative;
+  padding-top: 20px;
+}
+
+/deep/ .el-progress__text {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  font-size: 14px;
+  color: #606266;
+}
+
+/deep/ .el-progress-bar__outer {
+  height: 10px !important;
+  width: 100%;
+}
+
+/deep/ .el-progress-bar {
+  padding-right: 0;
+}
+
+/* --------------- 实时日志样式（统一时间线）--------------- */
 .log-container {
   height: 400px;
   overflow-y: auto;
@@ -464,86 +388,133 @@ export default {
   border: 1px solid #e4e7ed;
   border-radius: 4px;
   position: relative;
-  /* 隐藏滚动条（美观，可选） */
+  /* 隐藏滚动条（可选） */
   scrollbar-width: none;
-  /* Firefox */
 }
 
 .log-container::-webkit-scrollbar {
   display: none;
-  /* Chrome/Safari */
 }
 
-/* 2. 左侧节点条：垂直时间线，固定位置 */
-.log-timeline {
+/* 时间线主线（垂直线） */
+.timeline-line {
   position: absolute;
-  left: 25px;
+  left: 18px;
+  /* 与圆点中心对齐 */
   top: 10px;
   bottom: 10px;
   width: 2px;
   background-color: #e4e7ed;
-  /* 灰色主线 */
+  /* 浅灰色主线 */
 }
 
-/* 3. 日志列表：向右偏移，给节点条留空间 */
+/* 日志列表（向右偏移） */
 .log-list {
-  margin-left: 40px;
-  /* 偏移量 = 节点条宽度 + 间距 */
+  margin-left: 36px;
+  /* 偏移量=主线宽度+圆点直径+间距 */
 }
 
-/* 4. 单个日志项：垂直间距，相对定位用于节点点 */
+/* 单个日志项 */
 .log-item {
-  margin-bottom: 20px;
-  padding-left: 15px;
-  position: relative;
+  margin-bottom: 25px;
+  /* 垂直间距，匹配图片 */
   line-height: 1.8;
+  position: relative;
 }
 
-/* 日志项左侧的节点点（与时间线对齐） */
-.log-item::before {
-  content: '';
-  position: absolute;
-  left: -5px;
-  /* 与时间线对齐 */
-  top: 6px;
+/* 时间线圆点（蓝色实心圆） */
+.timeline-dot {
+  display: inline-block;
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background-color: #1890ff;
-  /* 蓝色节点（参考图风格） */
+  /* 蓝色圆点，匹配图片 */
+  position: absolute;
+  left: -36px;
+  /* 与列表偏移量对应，左移对齐主线 */
+  top: 6px;
+  /* 垂直居中 */
   z-index: 1;
 }
 
-/* 5. 日志时间：固定宽度，灰色字体（参考图样式） */
-.log-time {
-  display: inline-block;
-  width: 180px;
-  /* 固定时间宽度，确保内容对齐 */
-  color: #606266;
-  font-size: 13px;
-}
-
-/* 6. 日志内容：默认字体，表名与状态区分 */
+/* 日志内容（匹配图片字体） */
 .log-content {
-  font-size: 13px;
+  font-size: 14px;
+  /* 统一字体大小 */
   color: #303133;
+  /* 统一字体颜色 */
+  word-break: break-all;
 }
 
-/* 日志状态：可加浅色背景突出（参考图“打标完成”样式） */
-.log-status {
-  margin-left: 8px;
-  padding: 2px 8px;
-  background-color: #f0f7ff;
-  color: #1890ff;
-  border-radius: 12px;
-  font-size: 12px;
-}
-
-/* 7. 空日志提示：居中显示 */
+/* 空日志提示 */
 .empty-log {
   text-align: center;
   padding: 20px;
   color: #909399;
-  font-size: 13px;
+  font-size: 14px;
+}
+
+/* --------------- 分析日志样式（与实时日志统一）--------------- */
+.analysis-log-container {
+  height: 400px;
+  overflow-y: auto;
+  padding: 10px 20px;
+  background-color: #fafafa;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  position: relative;
+  /* 隐藏滚动条（可选） */
+  scrollbar-width: none;
+}
+
+.analysis-log-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* 分析日志列表 */
+.analysis-list {
+  margin-left: 36px;
+  /* 与实时日志偏移量一致 */
+}
+
+/* 单个分析项 */
+.analysis-item {
+  margin-bottom: 25px;
+  /* 垂直间距，与实时日志一致 */
+  line-height: 1.8;
+  position: relative;
+  font-size: 14px;
+  /* 统一字体大小 */
+}
+
+/* 分析日志标签 */
+.analysis-label {
+  color: #303133;
+  margin-right: 8px;
+}
+
+/* 分析日志数值 */
+.analysis-value {
+  color: #303133;
+  /* 与标签同色，匹配图片 */
+  word-break: break-all;
+}
+
+/* 空状态 */
+.empty-state {
+  padding: 40px 0;
+  text-align: center;
+}
+
+/* 操作按钮 */
+.button-group {
+  margin-top: 10px;
+  text-align: right;
+}
+
+/* 标签页内容间距 */
+/deep/ .el-tabs__content {
+  margin-top: 15px;
 }
 </style>

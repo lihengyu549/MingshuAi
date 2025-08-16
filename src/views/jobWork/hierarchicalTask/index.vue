@@ -25,7 +25,8 @@
       </el-form-item>
       <el-form-item label="执行状态" prop="maskComplete">
         <el-select clearable v-model="queryParams.maskComplete" @change="inputSearch" placeholder="请选择执行状态">
-          <el-option v-for="item in executeStatus" :key="item.value" :label="item.label" :value="item.value">
+          <el-option v-for="item in dict.type.sys_executing_state" :key="item.value" :label="item.label"
+            :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
@@ -206,7 +207,7 @@
             </el-form-item>
             <el-form-item prop="dataRepetitionValue">
               <el-switch v-model="form.ifStartDataRepetition" active-text="样本重复率高于" @change="handleRepetitionChange" />
-              <el-input v-model="form.dataRepetitionValue" size="mini" style="width: 15%;margin-left:15px;"/> %
+              <el-input v-model="form.dataRepetitionValue" size="mini" style="width: 15%;margin-left:15px;" /> %
               <svg-icon icon-class="dengpao" style="margin-left:8px;" />
             </el-form-item>
           </el-col>
@@ -336,7 +337,7 @@ import Result from './components/result.vue'
 import { path } from "d3";
 export default {
   name: "hierarchicalTask",
-  dicts: ['sys_risk_level', 'sys_classification_state'],
+  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_executing_state'],
   components: { Result },
   data() {
     return {
@@ -376,31 +377,14 @@ export default {
         },
       ],
       executeStatus: [
-        {
-          value: 'COMPLETE',
-          label: '执行完成'
-        },
-        {
-          value: 'RUNNING',
-          label: '执行中'
-        },
-        {
-          value: 'NONE',
-          label: '待执行'
-        },
-        {
-          value: 'PAUSED',
-          label: '暂停执行'
-        }
-        ,
-        {
-          value: 'KILLED',
-          label: '执行终止'
-        },
-        {
-          value: 'ERR',
-          label: '执行失败'
-        },
+        { value: 'NONE', label: '未开始' },       // 字典键值NONE → 标签未开始
+        { value: 'RUNNING', label: '执行中' },    // 字典键值RUNNING → 标签执行中
+        { value: 'COMPLETE', label: '执行完成' }, // 字典键值COMPLETE → 标签执行完成
+        { value: 'ERR', label: '执行失败' },      // 字典键值ERR → 标签执行失败
+        { value: 'PAUSEDING', label: '正在暂停中' },// 字典键值PAUSING → 标签正在暂停中
+        { value: 'PAUSED', label: '暂停成功' },   // 字典键值PAUSED → 标签暂停成功
+        { value: 'KILLEDING', label: '正在终止中' },// 字典键值KILLING → 标签正在终止中
+        { value: 'KILLED', label: '终止成功' }    // 字典键值KILLED → 标签终止成功
       ],
       // 遮罩层
       loading: true,
@@ -601,71 +585,77 @@ export default {
       }, 500); // 设置防抖的时间间隔为300毫秒
     },
     implementFn(row) {
-      if (row.maskComplete == 'RUNNING') {
-        this.$message({
-          message: '当前任务执行中，请等待执行完成后再执行',
-          type: 'warning'
-        })
-        return
+      // 核心：拦截「正在进行中」的状态（执行中/正在暂停/正在终止），禁止执行操作
+      const processingStates = ['RUNNING', 'PAUSING', 'KILLING'];
+      if (processingStates.includes(row.maskComplete)) {
+        this.$message.warning(`当前任务${this.stateMsg(row.maskComplete)}，请等待操作完成后再执行`);
+        return;
       }
-      if (row.maskComplete == 'PAUSED') {
+
+      // 暂停成功（PAUSED）：执行 = 恢复任务
+      if (row.maskComplete === 'PAUSED') {
         this.$confirm(`当前任务已暂停，确定继续执行？`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           recoveryTask({ proxyId: row.id }).then(res => {
-            if (res.code == 200) {
-              this.$message({ message: res.msg, type: 'success' })
-              this.getList()
+            if (res.code === 200) {
+              this.$message.success(res.msg);
+              this.getList();
             }
-          })
-        })
-        return
+          });
+        });
+        return;
       }
-      if (row.maskComplete == 'KILLED') {
+
+      // 终止成功（KILLED）：执行 = 重新执行
+      if (row.maskComplete === 'KILLED') {
         this.$confirm(`当前任务已终止，确定重新执行？`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           dataMark(row.id).then(res => {
-            if (res.code == 200) {
-              this.$message.success(res.msg)
-              this.getList()
+            if (res.code === 200) {
+              this.$message.success(res.msg);
+              this.getList();
             }
-          })
-        })
-        return
+          });
+        });
+        return;
       }
+
+      // 非初始状态（如执行完成/失败）：执行 = 覆盖历史结果
       if (row.maskComplete !== 'NONE') {
-        this.$confirm(`重新执行任务前，⚠️ 请注意任务细节，否则可能将会覆盖改数据源上一次执行的所有结果`, '提示', {
+        this.$confirm(`重新执行任务前，⚠️ 请注意任务细节，否则可能将会覆盖该数据源上一次执行的所有结果`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           dataMark(row.id).then(res => {
-            if (res.code == 200) {
-              this.$message.success(res.msg)
-              this.getList()
+            if (res.code === 200) {
+              this.$message.success(res.msg);
+              this.getList();
             }
-          })
-        })
-        return
-      } else {
-        this.$confirm(`确定执行所选中的项吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          dataMark(row.id).then(res => {
-            if (res.code == 200) {
-              this.$message.success(res.msg)
-              this.getList()
-            }
-          })
-        })
+          });
+        });
+        return;
       }
+
+      // 初始状态（NONE）：直接执行
+      this.$confirm(`确定执行所选中的项吗`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        dataMark(row.id).then(res => {
+          if (res.code === 200) {
+            this.$message.success(res.msg);
+            this.getList();
+          }
+        });
+      });
     },
 
     projectChangeEdit(e) {
@@ -875,6 +865,7 @@ export default {
     // 执行状态中文
     stateMsg(val) {
       let msg = ''
+      console.log('val', val);
       for (let item of this.executeStatus) {
         if (item.value == val) {
           msg = item.label
@@ -884,6 +875,12 @@ export default {
     },
     // 暂停任务
     suspendWorkFn(row) {
+      const processingStates = ['RUNNING', 'PAUSING', 'KILLING'];
+      if (processingStates.includes(row.maskComplete)) {
+        this.$message.warning(`当前任务${this.stateMsg(row.maskComplete)}，请等待操作完成后再执行`);
+        return;
+      }
+
       if (row.maskComplete !== 'RUNNING') {
         this.$message({ message: `当前状态为${this.stateMsg(row.maskComplete)}，无法执行暂停操作`, type: 'warning' })
         return
@@ -900,7 +897,6 @@ export default {
             }
           })
         })
-
       }
     },
     // 恢复任务
@@ -908,6 +904,12 @@ export default {
     },
     // 终止任务
     terminationWorkFn(row) {
+      const processingStates = ['RUNNING', 'PAUSING', 'KILLING'];
+      if (processingStates.includes(row.maskComplete)) {
+        this.$message.warning(`当前任务${this.stateMsg(row.maskComplete)}，请等待操作完成后再执行`);
+        return;
+      }
+
       if (row.maskComplete === 'PAUSED' || row.maskComplete === 'RUNNING') {
         this.$confirm(`确定终止任务吗`, '提示', {
           confirmButtonText: '确定',
