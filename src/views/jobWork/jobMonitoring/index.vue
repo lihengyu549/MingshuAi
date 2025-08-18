@@ -34,7 +34,7 @@
         <el-tab-pane label="实时日志" name="realtime">
           <div class="log-container">
             <!-- 左侧垂直线（时间线主线） -->
-            <div class="timeline-line"></div>
+            <div class="timeline-line-s"></div>
             <!-- 实时日志列表 -->
             <div class="log-list">
               <div v-for="(log, index) in realtimeLogs" :key="index" class="log-item">
@@ -131,13 +131,7 @@ export default {
       socket: null,
       socketConnected: false,
       // 分析日志（默认数据匹配图片）
-      analysisLogs: {
-        "过滤脏数据字段数量": "20个",
-        "命中匹配规则字段数量": "10个",
-        "AI注释填充情况": "成功10张表,失败2张表",
-        "分类情况": "分类成功100字段,分类失败20字段,未匹配到子类10字段,置信度低10字段",
-        "样本特征提取数量": "3个"
-      }
+      analysisLogs: {}
     };
   },
   computed: {
@@ -202,13 +196,14 @@ export default {
       const token = getCookie('Admin-Token');
       // 处理token为空的情况，避免传递无效子协议
       const protocols = token ? [`${token}`] : [];
-
+      
       // 仅获取当前URL的IP/域名（不包含端口）
       const currentUrl = new URL(window.location.href);
       const hostName = currentUrl.hostname; // 只取主机名（IP或域名），不含端口
-
+       //本地：192.168.7.84
       this.socket = new WebSocket(
-        `ws://${hostName}:8080/system/websocket/${this.routeData.id}/${uuid}`, //本地：192.168.7.84
+        // `ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
+        `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`,  // 线上
         protocols  // 只有当token存在时才传递子协议
       );
 
@@ -318,6 +313,7 @@ export default {
 .tab-card {
   margin-bottom: 20px;
   background-color: #fff;
+  position: relative;
 }
 
 /* 任务信息样式 */
@@ -402,7 +398,7 @@ export default {
   background-color: #fafafa;
   border: 1px solid #e4e7ed;
   border-radius: 4px;
-  position: relative;
+  /* position: relative; */
   /* 隐藏滚动条（可选） */
   scrollbar-width: none;
 }
@@ -412,7 +408,7 @@ export default {
 }
 
 /* 时间线主线（垂直线） */
-.timeline-line {
+.timeline-line-s,.timeline-line {
   position: absolute;
   left: 25px;
   /* 与圆点中心对齐 */
@@ -421,6 +417,9 @@ export default {
   width: 2px;
   background-color: #1890ff;
   /* 浅灰色主线 */
+}
+.timeline-line-s{
+  left: 26px;
 }
 
 /* 日志列表（向右偏移） */
@@ -448,7 +447,7 @@ export default {
   position: absolute;
   left: -36px;
   /* 与列表偏移量对应，左移对齐主线 */
-  top: 6px;
+  top: 8px;
   /* 垂直居中 */
   z-index: 1;
   border: 3px solid white;
