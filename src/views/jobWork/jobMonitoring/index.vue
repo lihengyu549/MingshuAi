@@ -6,7 +6,7 @@
         <p class="task-name"><span>任务名称</span>：{{ tasksName }}</p>
         <div class="other-info">
           <p><span>开始时间</span>：{{ startTime }}</p>
-          <p><span>结束时间</span>：{{ overTime || '执行中' }}</p>
+          <p><span>结束时间</span>：{{ overTime }}</p>
           <p><span>运行时间</span>：{{ runTime }}</p>
           <p><span>运行状态</span>：
             <el-tag :type="statusType">{{ statusName }}</el-tag>
@@ -192,7 +192,25 @@ export default {
     // 初始化WebSocket
     initWebSocket() {
       const uuid = this.generateUUID();
-      this.socket = new WebSocket(`ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`);
+      // 从cookie获取Admin-Token
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+      };
+      const token = getCookie('Admin-Token');
+      // 处理token为空的情况，避免传递无效子协议
+      const protocols = token ? [`${token}`] : [];
+
+      // 仅获取当前URL的IP/域名（不包含端口）
+      const currentUrl = new URL(window.location.href);
+      const hostName = currentUrl.hostname; // 只取主机名（IP或域名），不含端口
+
+      this.socket = new WebSocket(
+        `ws://${hostName}:8080/system/websocket/${this.routeData.id}/${uuid}`, //本地：192.168.7.84
+        protocols  // 只有当token存在时才传递子协议
+      );
 
       // 连接成功
       this.socket.onopen = () => {
@@ -203,7 +221,6 @@ export default {
           data: { taskId: this.$route.params.taskId || this.routeData.id }
         }));
       };
-
       // 接收消息
       this.socket.onmessage = (event) => {
         try {

@@ -874,8 +874,8 @@ export default {
     },
     // 暂停任务
     suspendWorkFn(row) {
-      const processingStates = ['RUNNING', 'PAUSING', 'KILLING'];
-      if (processingStates.includes(row.maskComplete)) {
+      const processingStates = ['RUNNING', 'KILLING'];
+      if (!processingStates.includes(row.maskComplete)) {
         this.$message.warning(`当前任务${this.stateMsg(row.maskComplete)}，请等待操作完成后再执行`);
         return;
       }
@@ -903,8 +903,8 @@ export default {
     },
     // 终止任务
     terminationWorkFn(row) {
-      const processingStates = ['RUNNING', 'PAUSING', 'KILLING'];
-      if (processingStates.includes(row.maskComplete)) {
+      const processingStates = ['RUNNING', 'KILLING'];
+      if (!processingStates.includes(row.maskComplete)) {
         this.$message.warning(`当前任务${this.stateMsg(row.maskComplete)}，请等待操作完成后再执行`);
         return;
       }
