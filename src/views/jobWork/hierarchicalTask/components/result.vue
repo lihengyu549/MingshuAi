@@ -10,7 +10,7 @@
         <el-select ref="addSelectRef" v-model="addNodeName">
           <el-option style="height: 100%; padding: 0" value="">
             <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
-              :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+              :filter-node-method="filterNode" ref="treeSelectQuery" node-key="id" highlight-current
               @check="addHandleNodeCheck" />
           </el-option>
         </el-select>
@@ -41,8 +41,8 @@
         </el-select>
       </el-form-item>
       <el-form-item label="所属表" prop="tableName">
-        <el-select clearable v-model="queryParams.tableName" filterable :disabled="!queryParams.databaseName" @change="inputSearch"
-          placeholder="全部">
+        <el-select clearable v-model="queryParams.tableName" filterable :disabled="!queryParams.databaseName"
+          @change="inputSearch" placeholder="全部">
           <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.tableName">
           </el-option>
         </el-select>
@@ -862,6 +862,11 @@ export default {
       this.addNodeName = ''
       this.piiNodeName = ''
       this.resetForm("queryParams");
+      // 重置分类树形组件的勾选状态
+      if (this.$refs.treeSelectQuery) {
+        // 清除所有勾选
+        this.$refs.treeSelectQuery.setCheckedKeys([]);
+      }
       this.handleQuery();
     },
     // 多选框选中数据

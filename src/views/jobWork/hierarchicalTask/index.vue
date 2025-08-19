@@ -266,10 +266,12 @@
         <el-button @click="closeFn">取消</el-button>
       </div>
     </Drawer>
-    <el-drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
+    <Drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
       size="100%" :before-close="handleClose">
-      <Result :treeOptions="treeOptions" :drawerData="drawerData" />
-    </el-drawer>
+      <template slot="body">
+        <Result :treeOptions="treeOptions" :drawerData="drawerData" />
+      </template>
+    </Drawer>
   </div>
 </template>
 
