@@ -111,22 +111,30 @@
         style="margin: 15px 0;">
         <el-form-item label="字段名称" prop="fieldName"> <!-- 添加prop -->
           <el-input v-model="drawerQueryParams.fieldName" placeholder="请输入字段名称搜索"
-            @keyup.enter.native="handleDrawerSearch" style="width: 180px;"></el-input>
+            @input="handleDrawerSearch" style="width: 180px;"></el-input>
         </el-form-item>
-        <el-form-item label="脏数据" prop="dirtyData"> <!-- 添加prop -->
+        <el-form-item label="字段类型" prop="fieldType"> <!-- 添加prop -->
+          <el-input v-model="drawerQueryParams.fieldType" placeholder="请输入字段类型搜索"
+            @input="handleDrawerSearch" style="width: 180px;"></el-input>
+        </el-form-item>
+        <el-form-item label="字段注释" prop="oldFieldRemark"> <!-- 添加prop -->
+          <el-input v-model="drawerQueryParams.oldFieldRemark" placeholder="请输入字段注释搜索"
+            @input="handleDrawerSearch" style="width: 180px;"></el-input>
+        </el-form-item>
+        <!-- <el-form-item label="脏数据" prop="dirtyData">
           <el-select v-model="drawerQueryParams.dirtyData" placeholder="全部" @change="handleDrawerSearch"
             style="width: 120px;">
             <el-option label="是" value="是"></el-option>
             <el-option label="否" value="否"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="样本特征" prop="sampleFeature"> <!-- 添加prop -->
+        <el-form-item label="样本特征" prop="sampleFeature">
           <el-select v-model="drawerQueryParams.sampleFeature" placeholder="全部" @change="handleDrawerSearch"
             style="width: 120px;">
             <el-option label="包含" value="包含"></el-option>
             <el-option label="不包含" value="不包含"></el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item>
           <el-button icon="el-icon-refresh" size="small" @click="resetDrawerSearch">重置</el-button>
         </el-form-item>
@@ -135,12 +143,12 @@
         class="tableBox">
         <el-table-column label="字段名称" align="center" prop="fieldName" width="150" show-overflow-tooltip />
         <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip />
-        <el-table-column label="原生字段注释" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
+        <el-table-column label="字段注释" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.oldFieldRemark }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="合成字段注释（可编辑）" align="center" prop="aiFieldRemark" width="200" show-overflow-tooltip>
+        <el-table-column label="AI字段注释（可编辑）" align="center" prop="aiFieldRemark" width="200" show-overflow-tooltip>
           <template slot-scope="scope">
             <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, 'aiFieldRemark')">{{
               scope.row.aiFieldRemark }}</span>
@@ -249,6 +257,8 @@ export default {
         fieldName: '',
         dirtyData: '',
         sampleFeature: '',
+        fieldType: '',
+        oldFieldRemark: '',
         pageNum: 1,
         pageSize: 10
       },
@@ -498,15 +508,15 @@ export default {
         const matchField = !this.drawerQueryParams.fieldName ||
           (item.fieldName && item.fieldName.includes(this.drawerQueryParams.fieldName))
 
-        // 脏数据筛选
-        const matchDirty = !this.drawerQueryParams.dirtyData ||
-          item.dirtyData === this.drawerQueryParams.dirtyData
+        // 字段类型筛选
+        const matchType = !this.drawerQueryParams.fieldType ||
+          (item.fieldType && item.fieldType.includes(this.drawerQueryParams.fieldType))
 
-        // 样本特征筛选
-        const matchFeature = !this.drawerQueryParams.sampleFeature ||
-          item.featureData === this.drawerQueryParams.sampleFeature
+        // 字段注释筛选
+        const matchRemark = !this.drawerQueryParams.oldFieldRemark ||
+          (item.oldFieldRemark && item.oldFieldRemark.includes(this.drawerQueryParams.oldFieldRemark))
 
-        return matchField && matchDirty && matchFeature
+        return matchField && matchType && matchRemark
       })
 
       // 计算总条数和分页数据
@@ -525,11 +535,16 @@ export default {
         this.drawerData.filter(item => {
           const matchField = !this.drawerQueryParams.fieldName ||
             (item.fieldName && item.fieldName.includes(this.drawerQueryParams.fieldName))
-          const matchDirty = !this.drawerQueryParams.dirtyData ||
-            item.dirtyData === this.drawerQueryParams.dirtyData
-          const matchFeature = !this.drawerQueryParams.sampleFeature ||
-            item.featureData === this.drawerQueryParams.sampleFeature
-          return matchField && matchDirty && matchFeature
+
+          // 字段类型筛选
+          const matchType = !this.drawerQueryParams.fieldType ||
+            (item.fieldType && item.fieldType.includes(this.drawerQueryParams.fieldType))
+
+          // 字段注释筛选
+          const matchRemark = !this.drawerQueryParams.oldFieldRemark ||
+            (item.oldFieldRemark && item.oldFieldRemark.includes(this.drawerQueryParams.oldFieldRemark))
+
+          return matchField && matchType && matchRemark
         })
       )
     },
@@ -538,8 +553,8 @@ export default {
       // 先手动重置筛选参数
       this.drawerQueryParams = {
         fieldName: '',
-        dirtyData: '',
-        sampleFeature: '',
+        fieldType: '',
+        oldFieldRemark: '',
         pageNum: 1,
         pageSize: 10
       };
@@ -794,5 +809,17 @@ export default {
   font-size: 10px;
   height: 20px;
   line-height: 20px;
+}
+
+/deep/.el-drawer__header {
+  padding-bottom: 20px;
+  margin-bottom: 0;
+  background-color: rgb(230, 242, 255);
+}
+
+/deep/.el-drawer__header> :first-child {
+  font-size: 18px;
+  color: black;
+  font-weight: bold;
 }
 </style>
