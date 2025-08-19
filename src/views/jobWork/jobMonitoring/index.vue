@@ -43,6 +43,14 @@
                 <!-- 日志内容（匹配图片字体样式） -->
                 <span class="log-content">{{ log.text }}</span>
               </div>
+              <!-- 新增：数据处理中提示项 -->
+              <div class="log-item processing-item">
+                <span class="timeline-dot"></span>
+                <span class="log-content">
+                  数据处理中
+                  <i class="el-icon-loading loading-icon"></i>
+                </span>
+              </div>
               <!-- 空日志提示 -->
               <div v-if="realtimeLogs.length === 0 && socketConnected" class="empty-log">
                 <i class="el-icon-loading"></i>
@@ -196,11 +204,11 @@ export default {
       const token = getCookie('Admin-Token');
       // 处理token为空的情况，避免传递无效子协议
       const protocols = token ? [`${token}`] : [];
-      
+
       // 仅获取当前URL的IP/域名（不包含端口）
       const currentUrl = new URL(window.location.href);
       const hostName = currentUrl.hostname; // 只取主机名（IP或域名），不含端口
-       //本地：192.168.7.84
+      //本地：192.168.7.84
       this.socket = new WebSocket(
         // `ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
         `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`,  // 线上
@@ -408,7 +416,8 @@ export default {
 }
 
 /* 时间线主线（垂直线） */
-.timeline-line-s,.timeline-line {
+.timeline-line-s,
+.timeline-line {
   position: absolute;
   left: 25px;
   /* 与圆点中心对齐 */
@@ -418,7 +427,8 @@ export default {
   background-color: #1890ff;
   /* 浅灰色主线 */
 }
-.timeline-line-s{
+
+.timeline-line-s {
   left: 26px;
 }
 
@@ -453,13 +463,33 @@ export default {
   border: 3px solid white;
 }
 
-/* 日志内容（匹配图片字体） */
+/* 日志内容（匹配图片字体样式） */
 .log-content {
   font-size: 14px;
   /* 统一字体大小 */
   color: #303133;
   /* 统一字体颜色 */
   word-break: break-all;
+}
+
+/* 新增：处理中样式 */
+.processing-item {
+  opacity: 0.8;
+}
+
+.loading-icon {
+  margin-left: 8px;
+  animation: rotating 1.5s linear infinite;
+}
+
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 空日志提示 */

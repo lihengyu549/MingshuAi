@@ -109,62 +109,6 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
-    <!-- <el-dialog class="addMsg" :title="title" v-loading="formLoading" :visible.sync="open" width="580px" append-to-body
-      :close-on-click-modal="false">
-      <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
-        <el-form-item label="任务名称" prop="tasksName" :rules="rules.tasksName">
-          <el-input v-model="form.tasksName" maxlength="50" placeholder="请输入任务名称" />
-        </el-form-item>
-        <el-form-item label="数据源名称" prop="id" :rules="rules.id">
-          <el-select v-model="form.id" clearable @change="projectChangeEdit($event)">
-            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.sourceName" :value="item.id">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="分类分级标准">
-          <el-input v-model="form.projectName" :disabled="true" />
-        </el-form-item>
-        <el-form-item label="AI分析引擎" prop="aiAnalyticsEngine">
-          <el-radio-group v-model="aiAnalyticsEngine">
-            <el-radio label="1">快速响应</el-radio>
-            <el-radio label="2">深度思考</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="个人信息识别" prop="piiDetectionFlag">
-          <el-switch v-model="form.piiDetectionFlag">
-          </el-switch>
-        </el-form-item>
-        <el-form-item label="分类逻辑" prop="classificationLogic">
-          <el-radio-group v-model="form.classificationLogic">
-            <el-radio label="1">基于表</el-radio>
-            <el-radio label="2">基于字段</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="置信度" prop="confidenceLevel" :rules="rules.confidenceLevel">
-          <el-select v-model="form.confidenceLevel" clearable>
-            <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="确认状态" prop="confirm" :rules="rules.confirm">
-          <el-select v-model="form.confirm" placeholder="全部">
-            <el-option v-for="item in confirmList" :key="item.value" :label="item.name" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="分类状态" prop="classificationState">
-          <el-select v-model="form.classificationState" placeholder="全部">
-            <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="closeFn">取消</el-button>
-      </div>
-    </el-dialog> -->
     <Drawer :title="title" v-loading="formLoading" :visible.sync="open">
       <el-form slot="body" ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent
         label-position="top">
@@ -210,10 +154,22 @@
               <el-input v-model="form.dataRepetitionValue" size="mini" style="width: 15%;margin-left:15px;" /> %
               <svg-icon icon-class="dengpao" style="margin-left:8px;" />
             </el-form-item>
+            <el-form-item>
+              <el-switch v-model="form.ifConfigurationParameters" active-text="配置参数" />
+              <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+            </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item>
               <el-switch v-model="form.ifStartDataShort" active-text="样本内容为单字符或数字" />
+              <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+            </el-form-item>
+            <el-form-item>
+              <el-switch v-model="form.ifTechnicalIdentifier" active-text="技术标识符" />
+              <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+            </el-form-item>
+            <el-form-item>
+              <el-switch v-model="form.ifRedundantFields" active-text="冗余字段" />
               <svg-icon icon-class="dengpao" style="margin-left:8px;" />
             </el-form-item>
           </el-col>
@@ -432,6 +388,9 @@ export default {
         ifStartDataRepetition: false,
         dataRepetitionValue: '',
         ifStartDataShort: false,
+        ifConfigurationParameters: false,
+        ifTechnicalIdentifier: false,
+        ifRedundantFields: false,
         ifStartAiFill: false,
         ifStartTask: false,
         ifStartFeatureExtract: false,
@@ -722,6 +681,9 @@ export default {
       this.$set(this.form, 'ifStartTask', row.ifStartTask == "1");
       this.$set(this.form, 'piiDetectionFlag', row.piiDetectionFlag == "1");
       this.$set(this.form, 'ifStartFeatureExtract', row.ifStartFeatureExtract == "1");
+      this.$set(this.form, 'ifConfigurationParameters', row.ifConfigurationParameters == "1");
+      this.$set(this.form, 'ifTechnicalIdentifier', row.ifTechnicalIdentifier == "1");
+      this.$set(this.form, 'ifRedundantFields', row.ifRedundantFields == "1");
       this.form.classificationState = row.classificationState.split(',').map(item => {
         return item
       })
@@ -748,6 +710,9 @@ export default {
             ifStartTask: this.form.ifStartTask ? '1' : '0',
             piiDetectionFlag: this.form.piiDetectionFlag ? '1' : '0',
             ifStartFeatureExtract: this.form.ifStartFeatureExtract ? '1' : '0',
+            ifConfigurationParameters: this.form.ifConfigurationParameters ? '1' : '0',
+            ifTechnicalIdentifier: this.form.ifTechnicalIdentifier ? '1' : '0',
+            ifRedundantFields: this.form.ifRedundantFields ? '1' : '0',
             classificationState: this.form.classificationState.join(',') ? this.form.classificationState.join(',') : '0',
 
           }
