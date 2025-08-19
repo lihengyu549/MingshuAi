@@ -323,7 +323,7 @@ export default {
                 };
                 const res = await getPageListFeature(params);
                 this.tableData = res.data.records;
-                this.pagination.currentPage = res.data.pages;
+                // this.pagination.currentPage = res.data.pageNum;
                 this.pagination.pageSize = res.data.size;
                 this.pagination.total = res.data.total;
             } catch (error) {
@@ -442,7 +442,7 @@ export default {
             const res = await getFeatureItemListByFeatureId(params)
             this.form.mappingList = res.data.records
             this.mappingPagination.total = res.data.total
-            this.mappingPagination.currentPage = res.data.pages
+            // this.mappingPagination.currentPage = res.data.pageNum
             this.mappingPagination.pageSize = res.data.size
             // 如果当前页数据为空且不是第一页，自动跳转到上一页
             if (this.form.mappingList.length === 0 && this.mappingPagination.currentPage > 1) {
