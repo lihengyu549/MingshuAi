@@ -51,10 +51,10 @@
                     style="font-size: 14px;">（字段总数{{ item.fieldCount }}）</span></div>
                 <div></div>
                 <div style="display: flex; align-items: center;">
-                  <div class="btnItem" @click="aiDataSetFn(item)"><img class="btnImg"
+                  <!-- <div class="btnItem" @click="aiDataSetFn(item)"><img class="btnImg"
                       src="../../../assets/images/ai.png" alt=""><span>数据填充</span></div>
                   <div class="btnItem" @click="qualityEvaluationFn(item)"><img class="btnImg"
-                      src="../../../assets/images/cz-zlpg.png" alt=""><span>质量评估</span></div>
+                      src="../../../assets/images/cz-zlpg.png" alt=""><span>质量评估</span></div> -->
                   <div class="btnItem" @click="fieldInformationFn(item)"><img class="btnImg"
                       src="../../../assets/images/chaxun.png" alt=""><span>字段信息</span></div>
                 </div>

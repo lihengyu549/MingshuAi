@@ -2,8 +2,8 @@
 
 <template>
   <div class="app-container" v-loading="mainLoading">
-    <el-form :model="queryParams" ref="queryParams" v-show="showSearch" class="yuanDataClass" size="small" :inline="true"
-      label-width="auto">
+    <el-form :model="queryParams" ref="queryParams" v-show="showSearch" class="yuanDataClass" size="small"
+      :inline="true" label-width="auto">
       <el-form-item label="标准编号" prop="standardId">
         <el-input v-model="queryParams.standardId" @input="inputSearch" placeholder="请输入标准编号" clearable
           @keyup.enter.native="handleQuery" />
@@ -55,21 +55,21 @@
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div
-            style="margin-top: 30px;text-align: center; display: flex; justify-content: center; align-items: center;">
+              style="margin-top: 30px;text-align: center; display: flex; justify-content: center; align-items: center;">
 
-            <el-tag class="div_btn" size="medium" style="border: none;" color="#4c70ac" round>{{ item.standardTypeName
-            }}</el-tag>
-            <el-tag class="div_btn" size="medium" style="border: none;" color="#dce2ee" round>{{ item.current
-            }}</el-tag>
-            <el-tag class="div_btn" size="medium" style="border: none;" color="#a9a9a9" round>{{ item.dataSource
-            }}</el-tag>
-          </div>
-          <div class="listBox_btn">
-            <el-button type="text" size="medium" @click="editFn(item)">编辑</el-button>
-            <el-button type="text" size="medium" @click="detailFn(item)">详情</el-button>
-            <el-button type="text" size="medium" :disabled="item.dataSource === '内置'"
-              @click="deleteFn(item)">删除</el-button>
-          </div>
+              <el-tag class="div_btn" size="medium" style="border: none;" color="#4c70ac" round>{{ item.standardTypeName
+                }}</el-tag>
+              <el-tag class="div_btn" size="medium" style="border: none;" color="#dce2ee" round>{{ item.current
+                }}</el-tag>
+              <el-tag class="div_btn" size="medium" style="border: none;" color="#a9a9a9" round>{{ item.dataSource
+                }}</el-tag>
+            </div>
+            <div class="listBox_btn">
+              <el-button type="text" size="medium" @click="editFn(item)">编辑</el-button>
+              <el-button type="text" size="medium" @click="detailFn(item)">详情</el-button>
+              <el-button type="text" size="medium" :disabled="item.dataSource === '内置'"
+                @click="deleteFn(item)">删除</el-button>
+            </div>
           </div>
         </div>
       </div>
@@ -296,8 +296,19 @@ export default {
       }).then(() => {
         deleteStandardById({ id: row.id }).then(res => {
           if (res.code == 200) {
-            this.$message.success(res.msg)
-            this.getList()
+            this.$message.success(res.msg);
+
+            // 检查当前页是否只剩一条数据
+            const isLastItem = this.proxysList.length === 1;
+            // 检查是否是第一页（第一页不需要向前跳转）
+            const isFirstPage = this.queryParams.pageNum === 1;
+
+            // 如果是最后一条且不是第一页，删除后跳转到上一页
+            if (isLastItem && !isFirstPage) {
+              this.queryParams.pageNum--;
+            }
+
+            this.getList(); // 重新获取列表数据
           }
         })
       })
@@ -310,7 +321,7 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.resetForm("queryParams");
-      this.handleQuery(); 
+      this.handleQuery();
     },
     /** 提交按钮 */
     async submitForm() {
@@ -332,7 +343,7 @@ export default {
           formData.append('inner', this.form.inner || '');
           formData.append('standardId', this.form.standardId);
           formData.append('standardType', this.form.standardType);
-          if(this.form.implementTime){
+          if (this.form.implementTime) {
             formData.append('implementTime', this.form.implementTime);
           }
           formData.append('source', this.form.source);
