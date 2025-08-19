@@ -152,25 +152,32 @@
             <el-form-item prop="dataRepetitionValue">
               <el-switch v-model="form.ifStartDataRepetition" active-text="样本重复率高于" @change="handleRepetitionChange" />
               <el-input v-model="form.dataRepetitionValue" size="mini" style="width: 15%;margin-left:15px;" /> %
-              <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+              <el-tooltip class="item" effect="dark" content="样本重复率" placement="top-start">
+                <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+              </el-tooltip>
             </el-form-item>
             <el-form-item>
               <el-switch v-model="form.ifConfigurationParameters" active-text="配置参数" />
-              <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+              <el-tooltip class="item" effect="dark" content="配置参数" placement="top-start">
+                <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+              </el-tooltip>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item>
               <el-switch v-model="form.ifStartDataShort" active-text="样本内容为单字符或数字" />
-              <svg-icon icon-class="dengpao" style="margin-left:8px;" />
             </el-form-item>
             <el-form-item>
               <el-switch v-model="form.ifTechnicalIdentifier" active-text="技术标识符" />
-              <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+              <el-tooltip class="item" effect="dark" content="技术标识符" placement="top-start">
+                <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+              </el-tooltip>
             </el-form-item>
             <el-form-item>
               <el-switch v-model="form.ifRedundantFields" active-text="冗余字段" />
-              <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+              <el-tooltip class="item" effect="dark" content="冗余字段" placement="top-start">
+                <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+              </el-tooltip>
             </el-form-item>
           </el-col>
         </el-row>
