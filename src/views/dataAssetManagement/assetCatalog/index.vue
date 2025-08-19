@@ -148,13 +148,13 @@
               size="small" />
           </template>
         </el-table-column>
-        <el-table-column label="样本是否为空" align="center" prop="dataIsNull" width="100" show-overflow-tooltip />
+        <!-- <el-table-column label="样本是否为空" align="center" prop="dataIsNull" width="100" show-overflow-tooltip />
         <el-table-column label="样本重复率" align="center" prop="dataIsRepeat" width="100" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.dataIsRepeat ? scope.row.dataIsRepeat + '%' : '' }}</span>
           </template>
-        </el-table-column>
-        <el-table-column label="样本长度过短" align="center" prop="sampleLengthShort" width="100" show-overflow-tooltip />
+        </el-table-column> -->
+        <!-- <el-table-column label="样本长度过短" align="center" prop="sampleLengthShort" width="100" show-overflow-tooltip />
         <el-table-column label="是否为脏数据（可编辑）" align="center" prop="dirtyData" width="200" show-overflow-tooltip>
           <template slot-scope="scope">
             <span v-if="!scope.row.drawerEditDirtyData" @click="drawerEditFn(scope.row, 'dirtyData')">{{
@@ -165,7 +165,7 @@
               </el-option>
             </el-select>
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column label="样本" align="center" width="80" class-name="small-padding fixed-width">
           <template slot-scope="scope">
             <el-tooltip placement="bottom" effect="light">
@@ -180,8 +180,8 @@
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column label="是否包含特征" align="center" prop="featureData" width="100" show-overflow-tooltip />
-        <el-table-column label="数据特征" align="center" min-width="150" prop="dataFeature" show-overflow-tooltip />
+        <!-- <el-table-column label="是否包含特征" align="center" prop="featureData" width="100" show-overflow-tooltip />
+        <el-table-column label="数据特征" align="center" min-width="150" prop="dataFeature" show-overflow-tooltip /> -->
         <!-- <el-table-column label="是否添加为匹配策略" align="center" min-width="150" prop="isMatchStrategy"
           show-overflow-tooltip /> -->
       </el-table>

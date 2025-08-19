@@ -3,17 +3,17 @@
         <!-- 搜索区域卡片 -->
         <el-form :inline="true" :model="searchForm">
             <el-form-item label="特征名称:">
-                <el-input v-model="searchForm.featureName" placeholder="请输入特征名称" clearable style="width: 200px;" />
+                <el-input v-model="searchForm.featureName" placeholder="请输入特征名称" clearable style="width: 200px;" @input="handleSearch" />
             </el-form-item>
             <el-form-item label="特征类型:">
-                <el-select v-model="searchForm.featureType" placeholder="请选择特征类型" clearable style="width: 180px;">
+                <el-select v-model="searchForm.featureType" placeholder="请选择特征类型" clearable style="width: 180px;" @change="handleSearch">
                     <el-option v-for="item in dict.type.sys_feature_type" :key="item.value" :label="item.label"
                         :value="item.value">
                     </el-option>
                 </el-select>
             </el-form-item>
             <el-form-item label="来源:">
-                <el-select v-model="searchForm.source" placeholder="请选择来源" clearable style="width: 180px;">
+                <el-select v-model="searchForm.source" placeholder="请选择来源" clearable style="width: 180px;" @change="handleSearch">
                     <el-option v-for="item in dict.type.sys_source" :key="item.value" :label="item.label"
                         :value="item.value">
                     </el-option>
@@ -336,7 +336,7 @@ export default {
         },
         // 搜索
         handleSearch() {
-            console.log('搜索条件：', this.searchForm)
+            this.init()
             // 实际项目中这里会调用接口获取数据
         },
         // 重置搜索
@@ -346,6 +346,7 @@ export default {
                 featureType: '',
                 source: ''
             }
+            this.init()
         },
         // 新增
         handleAdd() {

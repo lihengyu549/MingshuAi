@@ -41,7 +41,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="所属表" prop="tableName">
-        <el-select clearable v-model="queryParams.tableName" :disabled="!queryParams.databaseName" @change="inputSearch"
+        <el-select clearable v-model="queryParams.tableName" filterable :disabled="!queryParams.databaseName" @change="inputSearch"
           placeholder="全部">
           <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.tableName">
           </el-option>
