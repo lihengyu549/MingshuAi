@@ -1,11 +1,13 @@
 <template>
-    <el-drawer title="API接口文档" :visible="visible" :size="'100%'" :with-header="true" @close="handleClose">
+    <el-drawer title="API接口文档" :visible="visible" size="100%" :with-header="true" @close="handleClose">
         <div class="api-document-container">
             <!-- 左侧API列表 -->
             <div class="api-list-container">
                 <el-menu :default-active="activeApiIndex" class="api-menu" @select="handleApiSelect">
                     <el-menu-item v-for="(api, index) in apiData" :key="index" :index="index.toString()">
-                        <el-tag :type="api.method == 'POST' ? 'success' : api.method == 'GET' ? 'primary' : api.method == 'PUT' ? 'warning' : api.method == 'DELETE' ? 'danger' : 'info'" style="margin-right: 10px;">{{ api.method }}</el-tag>
+                        <el-tag
+                            :type="api.method == 'POST' ? 'success' : api.method == 'GET' ? 'primary' : api.method == 'PUT' ? 'warning' : api.method == 'DELETE' ? 'danger' : 'info'"
+                            style="margin-right: 10px;">{{ api.method }}</el-tag>
                         <span class="api-name">{{ api.name }}</span>
                     </el-menu-item>
                 </el-menu>
@@ -18,7 +20,9 @@
                     <div class="api-basic-info">
                         <h2>{{ currentApi.name }}</h2>
                         <div class="api-request-info">
-                            <el-tag :type="currentApi.method == 'POST' ? 'success' : currentApi.method == 'GET' ? 'primary' : currentApi.method == 'PUT' ? 'warning' : currentApi.method == 'DELETE' ? 'danger' : 'info'" style="margin-right: 10px;">{{ currentApi.method }}</el-tag>
+                            <el-tag
+                                :type="currentApi.method == 'POST' ? 'success' : currentApi.method == 'GET' ? 'primary' : currentApi.method == 'PUT' ? 'warning' : currentApi.method == 'DELETE' ? 'danger' : 'info'"
+                                style="margin-right: 10px;">{{ currentApi.method }}</el-tag>
                             <span class="request-url">{{ currentApi.url }}</span>
                             <span class="request-type" v-if="currentApi.dataType">数据类型: {{ currentApi.dataType }}</span>
                         </div>
@@ -58,7 +62,7 @@
                                     </el-table-column>
                                     <el-table-column prop="description" label="说明"></el-table-column>
                                 </el-table>
-                                
+
                                 <span class="body-data-type-tag" v-if="currentApi.dataType">请求数据类型: {{
                                     currentApi.dataType }}</span>
                             </template>
@@ -381,5 +385,17 @@ export default {
     margin: 0;
     font-family: monospace;
     /* 确保JSON格式显示正确 */
+}
+
+/deep/.el-drawer__header {
+    padding-bottom: 20px;
+    margin-bottom: 0;
+    background-color: rgb(230, 242, 255);
+}
+
+/deep/.el-drawer__header> :first-child {
+    font-size: 18px;
+    color: black;
+    font-weight: bold;
 }
 </style>

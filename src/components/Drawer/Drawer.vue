@@ -1,5 +1,5 @@
 <template>
-  <el-drawer v-bind="$attrs" v-on="$listeners" :title="title" :visible="visible" direction="rtl" size="40%">
+  <el-drawer v-bind="$attrs" v-on="$listeners" :title="title" :visible="visible" direction="rtl" :size="size">
     <slot name="body">
     </slot>
     <slot name="footer">
@@ -20,7 +20,10 @@ export default {
       type: String,
       default: '打开抽屉'
     },
-
+    size: {
+      type: String,
+      default: '40%'
+    },
   },
   data() {
     return {
