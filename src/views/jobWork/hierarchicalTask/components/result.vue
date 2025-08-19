@@ -68,7 +68,7 @@
         <el-select ref="addSelectRef" v-model="piiNodeName">
           <el-option style="height: 100%; padding: 0" value="">
             <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
-              :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+              :filter-node-method="filterNode" ref="treeSelectPii" node-key="id" highlight-current
               @check="piiHandleNodeCheck" />
           </el-option>
         </el-select>
@@ -455,6 +455,7 @@ export default {
         businessName: '',
         databaseName: '',
         categoryId: '',
+        categoryIds: '',
         piiDetection: '',
       },
       confirmList: [
@@ -866,6 +867,14 @@ export default {
       if (this.$refs.treeSelectQuery) {
         // 清除所有勾选
         this.$refs.treeSelectQuery.setCheckedKeys([]);
+      }
+      // 重置PII树形组件的勾选状态
+      if (this.$refs.treeSelectPii) {
+        // 清除所有勾选
+        this.$refs.treeSelectPii.setCheckedKeys([]);
+      }
+      if (this.queryParams.categoryIds) {
+        this.queryParams.categoryIds = ''
       }
       this.handleQuery();
     },
