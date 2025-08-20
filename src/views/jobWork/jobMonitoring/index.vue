@@ -117,6 +117,8 @@
 
 <script>
 import { getAnalyseLog } from "@/api/system/protectCategory"
+// 在文件开头添加导入语句
+import { debounce } from '@/utils/index';
 export default {
   name: 'TaskProgress',
   data() {
@@ -268,8 +270,7 @@ export default {
         this.$message.error('日志连接异常，请刷新页面重试');
       };
     },
-    // 获取分析日志（修复数据赋值错误）
-    getAnalysisLogs() {
+    getAnalysisLogs: debounce(function () {
       const params = {
         id: Number(this.routeData.id)
       }
@@ -282,7 +283,7 @@ export default {
         console.error('获取分析日志失败：', err);
         this.$message.error('获取分析日志失败，请稍后重试');
       })
-    },
+    }, 500), // 500ms 防抖时间
     // 刷新分析日志
     handleRefresh() {
       this.getAnalysisLogs();
