@@ -875,18 +875,24 @@ export default {
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
+          this.loading = true
           dataSacn({ proxyIds: row.id }).then(async res => {
             // this.scanStateName = false
             await this.getList()
+          }).finally(() => {
+            this.loading = false
           })
         })
           .catch(() => {
             this.getList()
           })
       } else {
+        this.loading = true
         dataSacn({ proxyIds: row.id }).then(async res => {
           // this.scanStateName = false
           await this.getList()
+        }).finally(() => {
+          this.loading = false
         })
           .catch(() => {
             this.getList()
