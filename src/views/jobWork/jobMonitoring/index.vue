@@ -218,8 +218,8 @@ export default {
       const hostName = currentUrl.hostname; // 只取主机名（IP或域名），不含端口
       //本地：192.168.7.84
       this.socket = new WebSocket(
-        `ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
-        // `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`,  // 线上
+        // `ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
+        `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`,  // 线上
         protocols  // 只有当token存在时才传递子协议
       );
 
