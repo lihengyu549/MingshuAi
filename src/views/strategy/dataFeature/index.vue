@@ -747,9 +747,9 @@ export default {
 .pagination-container {
     margin-top: 15px;
     text-align: right;
-    position: absolute;
+    /* position: absolute;
     bottom: 6%;
-    right: 2%;
+    right: 2%; */
 }
 
 /* 抽屉样式 */
