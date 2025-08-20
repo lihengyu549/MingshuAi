@@ -228,15 +228,19 @@ export default {
       recognizeObjectList: [
         {
           value: '1',
-          label: '名称匹配'
+          label: '字段名称匹配'
         },
         {
           value: '2',
-          label: '注释匹配'
+          label: '字段注释匹配'
         },
         {
           value: '3',
-          label: '内容匹配'
+          label: '字段内容匹配'
+        },
+        {
+          value: '4',
+          label: 'AI字段注释匹配'
         },
       ],
       addOptions: [
