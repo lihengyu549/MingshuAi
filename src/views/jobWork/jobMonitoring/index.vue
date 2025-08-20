@@ -44,7 +44,7 @@
                 <span class="log-content">{{ log.text }}</span>
               </div>
               <!-- 新增：数据处理中提示项 -->
-              <div v-if="statusName == '执行中'" class="log-item processing-item">
+              <div v-if="status == 'RUNNING'" class="log-item processing-item">
                 <span class="timeline-dot"></span>
                 <span class="log-content">
                   数据处理中
@@ -198,7 +198,7 @@ export default {
     // 初始化WebSocket
     initWebSocket() {
       // 如果状态不是执行中，则不连接WebSocket
-      if (this.routeData.causeDescription !== '执行中') {
+      if (this.routeData.maskComplete !== "RUNNING") {
         return;
       }
       const uuid = this.generateUUID();
@@ -218,8 +218,8 @@ export default {
       const hostName = currentUrl.hostname; // 只取主机名（IP或域名），不含端口
       //本地：192.168.7.84
       this.socket = new WebSocket(
-        // `ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
-        `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`,  // 线上
+        `ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
+        // `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`,  // 线上
         protocols  // 只有当token存在时才传递子协议
       );
 
