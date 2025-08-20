@@ -65,12 +65,12 @@
                 <div>数据量级：{{ item.dataMagnitude ? item.dataMagnitude + '行' : '--' }}</div>
                 <el-tooltip :content="item.oldTableRemark" :ref="`tooltip-${index}`" :disabled="!overflowStatus[index]"
                   effect="dark" placement="top">
-                  <div id="textContainer" :ref="`container-${index}`">原生表注释：<span>{{ item.oldTableRemark ?
+                  <div id="textContainer" :ref="`container-${index}`">表注释：<span>{{ item.oldTableRemark ?
                     item.oldTableRemark
                     : '--' }}</span></div>
                 </el-tooltip>
-                <div>合成表注释：{{ item.craftTableRemark ? item.craftTableRemark : '--' }}</div>
-                <div>原生字段注释占比：{{ item.oldFieldRemark ? item.oldFieldRemark + '%' : '0%' }}</div>
+                <div>AI表注释：{{ item.craftTableRemark ? item.craftTableRemark : '--' }}</div>
+                <div>字段注释占比：{{ item.oldFieldRemark ? item.oldFieldRemark + '%' : '0%' }}</div>
                 <div>空值字段比例：{{ item.nullValueField ? item.nullValueField + '%' : '0%' }}</div>
                 <div>样本长度过短比例：{{ item.onlyOneValueField ? item.onlyOneValueField + '%' : '0%' }}</div>
                 <div>样本重复率过高比例：{{ item.repeatValueField ? item.repeatValueField + '%' : '0%' }}</div>
@@ -105,21 +105,21 @@
         :limit.sync="queryParams.pageSize" @pagination="getList" />
     </el-row>
     <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow"
-      :destroy-on-close="true" direction="rtl" size="80%">
+      :destroy-on-close="true" direction="rtl" size="51%">
       <!-- 新增筛选区域 -->
       <el-form :model="drawerQueryParams" ref="drawerQueryForm" size="small" :inline="true" label-width="80px"
         style="margin: 15px 0;">
         <el-form-item label="字段名称" prop="fieldName"> <!-- 添加prop -->
           <el-input v-model="drawerQueryParams.fieldName" placeholder="请输入字段名称搜索"
-            @input="handleDrawerSearch" style="width: 180px;"></el-input>
+            @input="handleDrawerSearch" size="mini" style="width: 120px;"></el-input>
         </el-form-item>
         <el-form-item label="字段类型" prop="fieldType"> <!-- 添加prop -->
           <el-input v-model="drawerQueryParams.fieldType" placeholder="请输入字段类型搜索"
-            @input="handleDrawerSearch" style="width: 180px;"></el-input>
+            @input="handleDrawerSearch" size="mini" style="width: 120px;"></el-input>
         </el-form-item>
         <el-form-item label="字段注释" prop="oldFieldRemark"> <!-- 添加prop -->
           <el-input v-model="drawerQueryParams.oldFieldRemark" placeholder="请输入字段注释搜索"
-            @input="handleDrawerSearch" style="width: 180px;"></el-input>
+            @input="handleDrawerSearch" size="mini" style="width: 120px;"></el-input>
         </el-form-item>
         <!-- <el-form-item label="脏数据" prop="dirtyData">
           <el-select v-model="drawerQueryParams.dirtyData" placeholder="全部" @change="handleDrawerSearch"
@@ -143,12 +143,12 @@
         class="tableBox">
         <el-table-column label="字段名称" align="center" prop="fieldName" width="150" show-overflow-tooltip />
         <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip />
-        <el-table-column label="字段注释" align="center" min-width="200" prop="oldFieldRemark" show-overflow-tooltip>
+        <el-table-column label="字段注释" align="center" width="150" prop="oldFieldRemark" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.oldFieldRemark }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="AI字段注释（可编辑）" align="center" prop="aiFieldRemark" width="200" show-overflow-tooltip>
+        <el-table-column label="AI字段注释" align="center" prop="aiFieldRemark" width="200" show-overflow-tooltip>
           <template slot-scope="scope">
             <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, 'aiFieldRemark')">{{
               scope.row.aiFieldRemark }}</span>
@@ -195,7 +195,7 @@
       </el-table>
 
       <!-- 新增分页组件 -->
-      <pagination class="paginationClass" v-show="drawerTotal > 0" :total="drawerTotal"
+      <Pagination class="paginationClass" v-show="drawerTotal > 0" :total="drawerTotal"
         :page.sync="drawerQueryParams.pageNum" :limit.sync="drawerQueryParams.pageSize"
         @pagination="handleDrawerPagination" style="margin-top: 15px;" />
     </el-drawer>
@@ -717,9 +717,9 @@ export default {
 }
 
 .paginationClass {
-  position: fixed;
+  /* position: fixed;
   bottom: 5%;
-  left: 70%;
+  left: 70%; */
 }
 
 .success {
