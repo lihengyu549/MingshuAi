@@ -111,15 +111,15 @@
         style="margin: 15px 0;">
         <el-form-item label="字段名称" prop="fieldName"> <!-- 添加prop -->
           <el-input v-model="drawerQueryParams.fieldName" placeholder="请输入字段名称搜索"
-            @input="handleDrawerSearch" size="mini" style="width: 120px;"></el-input>
+            @input="handleDrawerSearch" size="mini"></el-input>
         </el-form-item>
         <el-form-item label="字段类型" prop="fieldType"> <!-- 添加prop -->
           <el-input v-model="drawerQueryParams.fieldType" placeholder="请输入字段类型搜索"
-            @input="handleDrawerSearch" size="mini" style="width: 120px;"></el-input>
+            @input="handleDrawerSearch" size="mini"></el-input>
         </el-form-item>
         <el-form-item label="字段注释" prop="oldFieldRemark"> <!-- 添加prop -->
           <el-input v-model="drawerQueryParams.oldFieldRemark" placeholder="请输入字段注释搜索"
-            @input="handleDrawerSearch" size="mini" style="width: 120px;"></el-input>
+            @input="handleDrawerSearch" size="mini"></el-input>
         </el-form-item>
         <!-- <el-form-item label="脏数据" prop="dirtyData">
           <el-select v-model="drawerQueryParams.dirtyData" placeholder="全部" @change="handleDrawerSearch"
@@ -141,14 +141,14 @@
       </el-form>
       <el-table :data="filteredDrawerData" ref="tableRef" height="calc(100% - 100px)" :key="tableKey" border
         class="tableBox">
-        <el-table-column label="字段名称" align="center" prop="fieldName" width="150" show-overflow-tooltip />
-        <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip />
-        <el-table-column label="字段注释" align="center" width="150" prop="oldFieldRemark" show-overflow-tooltip>
+        <el-table-column label="字段名称" align="center" prop="fieldName" width="200" show-overflow-tooltip />
+        <el-table-column label="字段类型" align="center" prop="fieldType" width="200" show-overflow-tooltip />
+        <el-table-column label="字段注释" align="center" width="200" prop="oldFieldRemark" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.oldFieldRemark }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="AI字段注释" align="center" prop="aiFieldRemark" width="200" show-overflow-tooltip>
+        <el-table-column label="AI字段注释" align="center" prop="aiFieldRemark" min-width="200" show-overflow-tooltip>
           <template slot-scope="scope">
             <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, 'aiFieldRemark')">{{
               scope.row.aiFieldRemark }}</span>
