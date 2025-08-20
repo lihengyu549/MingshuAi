@@ -63,7 +63,10 @@
             </el-option>
           </el-select>
         </el-form-item>
-
+        <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
+          <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
+          <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
+        </el-form-item>
         <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
           <el-input v-model="form.targetIp" placeholder="请输入主机IP地址" />
         </el-form-item>
@@ -98,10 +101,6 @@
               '点击选择扫描内容' }}</el-tag>
           </div>
         </el-form-item>
-        <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
-          <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
-          <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
-        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -111,7 +110,8 @@
     <el-dialog title="扫描配置" class="scanContentBox" v-loading="scanContentLoading" :visible.sync="scanContentShow"
       width="950px" append-to-body :close-on-click-modal="false">
       <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData"
-        :scanContentTreeData="scanContentTreeData" ref="scanContentTreeRef" />
+        :scanContentTreeData="scanContentTreeData" :databaseTableNameParama="databaseTableNameParama"
+        ref="scanContentTreeRef" />
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="scanContentSubmitFn">确 定</el-button>
         <el-button @click="scanContentShow = false">取 消</el-button>
@@ -122,7 +122,7 @@
 
 <script>
 import TableSelector from './TableSelector.vue'
-import { getListTables, saveDatabaseAndTables } from "@/api/system/proxys";
+import { getListTables, saveDatabaseAndTables, getDatabaseNameList } from "@/api/system/proxys";
 import {
   getFrameworks, checkSourceName
 } from "@/api/system/protectCategory"
@@ -142,6 +142,7 @@ export default {
   },
   data() {
     return {
+      databaseTableNameParama: {}, // 数据库表名传参
       imgSrc: {
         '1': require('@/assets/stateImg/stateSuess.png'),
         '0': require('@/assets/stateImg/stateWaiting.png'),
@@ -384,7 +385,7 @@ export default {
     async scanContentFn() {
       this.$refs["form"].validate(async valid => {
         if (valid) {
-          let data = {
+          this.databaseTableNameParama = {
             targetIp: this.form.targetIp,
             targetPort: this.form.targetPort,
             targetUserName: this.form.targetUserName,
@@ -395,11 +396,11 @@ export default {
             examplesName: this.form.examplesName,
             sourceName: this.form.sourceName,
           }
-          let res = await getListTables(data)
-          if (res.data.option.length == 0) {
+          let res = await getDatabaseNameList(this.databaseTableNameParama)
+          if (res.data.length == 0) {
             this.$message({ message: '暂无数据，请稍后再试', type: 'warning' })
           } else {
-            this.scanContentTreeData = res.data.option
+            this.scanContentTreeData = res.data
             this.scanContentShow = true
           }
         }
@@ -424,36 +425,25 @@ export default {
       }
     },
     scanContentSubmitFn() {
-      let checkedNodes = this.$refs.scanContentTreeRef.$refs.tree.getCheckedNodes().filter((item => item.value !== '0'))
-      let halfCheckedNodes = this.$refs.scanContentTreeRef.$refs.tree.getHalfCheckedNodes().filter((item => item.value !== '0'))
-      let allData = [...halfCheckedNodes, ...checkedNodes,]
-      let targetDatabaseArr = []
-      let params = {}
-      for (let item of allData) {
-        if (item.children) {
-          let obj = {
-            [item.label]: []
-          }
-          targetDatabaseArr.push(item.label)
-          params = Object.assign(params, obj)
-        } else {
-          this.treeCheckedData.push(item.value)
-          params[item.databaseName].push({
-            schemaName: item.schemaName,
-            tableName: item.label,
-            dataCount: item.dataCount,
-            tableRemark: item.tableRemark,
-            databaseName: item.databaseName,
-            projectId: '',
-            agentServerId: '',
-            fieldCount: item.count,
-            fields: null,
-          })
+      let returnArr = this.$refs.scanContentTreeRef.returnArr
+      let result = {}
+      returnArr.forEach(element => {
+        if (element.checked) {
+          result[element.name] = [...element.children.filter(item => item.checked)]
         }
-      }
-      this.form.targetDatabase = targetDatabaseArr
-      this.form.tables = params
-      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedItemsChild.length}张表 共${this.$refs.scanContentTreeRef.fieldCount}个字段`
+      });
+      this.form.targetDatabase = []
+      // if(typeof this.form.targetDatabase == 'string'){
+      //   this.form.targetDatabase = this.form.targetDatabase.trim().replace(/^"|"$/g, '').split(',').filter(Boolean);
+      // }
+      returnArr.forEach((item) => {
+        if (item.checked) {
+          this.form.targetDatabase.push(item.name)
+        }
+      })
+      this.form.tables = result
+      console.log('this.form.tables', this.form);
+      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedTableCount}张表`  //共${this.$refs.scanContentTreeRef.fieldCount}个字段
       this.scanContentShow = false
     },
     handleAdda() {
@@ -490,10 +480,22 @@ export default {
       this.$refs["form"].validate(async valid => {
         let data = JSON.parse(JSON.stringify(this.form))
         delete data.projectName
+        if (!Array.isArray(data.targetDatabase)) {
+          let str = data.targetDatabase
+          data.targetDatabase = str.trim() // 去除字符串首尾的空白字符
+            .replace(/^"|"$/g, '') // 移除首尾的引号
+            .split(',') // 按逗号分割字符串
+            .filter(Boolean); // 过滤掉空字符串
+        }
         data.targetDatabase = JSON.stringify(data.targetDatabase)
         data.connectionType = this.connectionType
         data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
-        if (!this.editIsFlag && Object.keys(data.tables).length == 0) {
+        console.log(data);
+
+        if (!this.editIsFlag && !data.tables) {
+          this.$message({ message: '请选择扫描内容', type: 'warning' })
+          return
+        } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
           this.$message({ message: '请选择扫描内容', type: 'warning' })
           return
         }
@@ -501,11 +503,20 @@ export default {
           if (!await this.getNameTestingFn()) {
             return
           }
-          saveDatabaseAndTables(data).then(response => {
-            this.$modal.msgSuccess("新增成功");
-            this.open = false;
-            this.getList();
-          });
+          if (this.form.id != null) {
+            data.id = this.form.id
+            updateDatabaseAndTables(data).then(response => {
+              this.$modal.msgSuccess("修改成功");
+              this.open = false;
+              this.getList();
+            });
+          } else {
+            saveDatabaseAndTables(data).then(response => {
+              this.$modal.msgSuccess("新增成功");
+              this.open = false;
+              this.getList();
+            });
+          }
         }
       });
     },

@@ -744,7 +744,7 @@ export default {
         data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
         console.log(data);
 
-        if (!this.editIsFlag && Object.keys(data.tables).length == 0) {
+        if (!this.editIsFlag && !data.tables) {
           this.$message({ message: '请选择扫描内容', type: 'warning' })
           return
         } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
