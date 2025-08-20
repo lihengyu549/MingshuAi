@@ -901,12 +901,14 @@ export default {
         return
       }
     },
+    
     // 跳转任务监控
     toJobMonitoring(row) {
       if (row.maskComplete == 'NONE') {
         this.$message({ message: `当前状态为${this.stateMsg(row.maskComplete)}，无法查看任务监控`, type: 'warning' })
         return
       }
+
       this.$router.push({ path: '/jobMonitoring', query: row })
     },
   }

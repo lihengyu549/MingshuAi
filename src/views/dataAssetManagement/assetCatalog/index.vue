@@ -195,7 +195,7 @@
       </el-table>
 
       <!-- 新增分页组件 -->
-      <Pagination class="paginationClass" v-show="drawerTotal > 0" :total="drawerTotal"
+      <Pagination v-show="drawerTotal > 0" :total="drawerTotal"
         :page.sync="drawerQueryParams.pageNum" :limit.sync="drawerQueryParams.pageSize"
         @pagination="handleDrawerPagination" style="margin-top: 15px;" />
     </el-drawer>
@@ -717,9 +717,9 @@ export default {
 }
 
 .paginationClass {
-  /* position: fixed;
+  position: fixed;
   bottom: 5%;
-  left: 70%; */
+  left: 70%;
 }
 
 .success {

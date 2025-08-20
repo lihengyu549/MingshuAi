@@ -111,7 +111,7 @@
                         <el-input type="textarea" v-model="form.description" placeholder="请输入描述" rows="3" />
                     </el-form-item>
                     <el-form-item label="特征值:" prop="featureValue">
-                        <el-input v-model="form.featureValue" placeholder="请输入正则表达式" />
+                        <el-input type="textarea" v-model="form.featureValue" placeholder="请输入正则表达式" rows="3" />
                     </el-form-item>
                 </el-form>
             </template>

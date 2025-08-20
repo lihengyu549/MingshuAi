@@ -44,7 +44,7 @@
                 <span class="log-content">{{ log.text }}</span>
               </div>
               <!-- 新增：数据处理中提示项 -->
-              <div class="log-item processing-item">
+              <div v-if="statusName == '执行中'" class="log-item processing-item">
                 <span class="timeline-dot"></span>
                 <span class="log-content">
                   数据处理中
@@ -52,10 +52,10 @@
                 </span>
               </div>
               <!-- 空日志提示 -->
-              <div v-if="realtimeLogs.length === 0 && socketConnected" class="empty-log">
+              <!-- <div v-if="realtimeLogs.length === 0 && socketConnected" class="empty-log">
                 <i class="el-icon-loading"></i>
                 等待日志更新...
-              </div>
+              </div> -->
             </div>
           </div>
         </el-tab-pane>
@@ -181,6 +181,10 @@ export default {
       this.tasksName = this.routeData.tasksName;
       this.status = this.routeData.maskComplete;
       this.statusName = this.routeData.causeDescription;
+      this.startTime = this.routeData.startTime;
+      this.overTime = this.routeData.overTime;
+      this.runTime = this.routeData.runTime;
+
       console.log('this.routeData', this.routeData);
     },
     // 生成UUID
@@ -193,6 +197,10 @@ export default {
     },
     // 初始化WebSocket
     initWebSocket() {
+      // 如果状态不是执行中，则不连接WebSocket
+      if (this.routeData.causeDescription !== '执行中') {
+        return;
+      }
       const uuid = this.generateUUID();
       // 从cookie获取Admin-Token
       const getCookie = (name) => {
