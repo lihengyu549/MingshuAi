@@ -438,6 +438,12 @@ export default {
           label: "敏感数据",
           prop: "sensitiveDataName",
           width: "150"
+        },
+        {
+          label: "样本类型",
+          prop: "regularExpression",
+          width: "150"
+
         }
       ],
       // 弹出层标题
