@@ -627,11 +627,11 @@ export default {
         databaseName: this.databaseName,
       }
       getTableListByProxysId(params).then((response) => {
-        this.dataAll = response.data.rows;
+        this.dataAll = response.data.rows || [];
         this.dataAll.forEach(ele => {
           ele.isShowTooltip = true
         })
-        this.total = response.data.total;
+        this.total = response.data.total || 0;
         this.overflowStatus = {}
         this.Loading = false
         this.loading = false
