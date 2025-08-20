@@ -240,8 +240,8 @@ export default {
           this.realtimeLogs.push({ text: message.text });
           this.scrollToBottom();
           // 更新进度与状态
-          this.progressCurrent = message.progressCurrent;
-          this.progressTotal = message.progressTotal;
+          this.progressCurrent = message.progressCurrent ? message.progressCurrent : this.progressCurrent;
+          this.progressTotal = message.progressTotal ? message.progressTotal : this.progressTotal;
           this.runTime = message.runTime;
           this.status = message.status;
           this.statusName = message.statusName;
