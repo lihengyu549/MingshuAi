@@ -1,6 +1,6 @@
 <template>
   <div class="app-container" v-loading="loading">
-    <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
+    <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" label-position="left"
       v-show="showSearch" label-width="auto">
       <el-form-item label="主机" prop="ip">
         <el-input v-model="queryParams.ip" @input="inputSearch" placeholder="请输入ip" clearable
@@ -16,7 +16,7 @@
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
-    <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+    <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column label="主机" align="center" prop="ip" show-overflow-tooltip />
       <el-table-column label="端口" align="center" prop="port" show-overflow-tooltip />
@@ -725,21 +725,18 @@ export default {
 
 .yuanDataClass {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-around;
   align-items: center;
   flex-wrap: wrap;
+  margin-bottom: 35px;
 }
 
 .yuanDataClass /deep/ .el-form-item {
   width: 35%;
 }
 
-.yuanDataClass /deep/ .el-form-item__label {
-  width: 25%;
-}
-
 .yuanDataClass /deep/ .el-form-item__content {
-  width: 75%;
+  width: 70%;
 }
 
 .yuanDataClass /deep/ .el-select {

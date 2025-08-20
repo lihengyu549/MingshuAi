@@ -102,10 +102,12 @@
         <el-button @click="addCancel">取 消</el-button>
       </div>
     </el-dialog>
-    <el-drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
+    <Drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
       size="60%" :before-close="handleClose">
-      <Result :drawerData="drawerData" />
-    </el-drawer>
+      <template slot="body">
+        <Result :drawerData="drawerData" />
+      </template>
+    </Drawer>
   </div>
 </template>
 
