@@ -18,7 +18,7 @@
       </el-form-item>
 
       <el-form-item label="分类分级框架" prop="projectId">
-        <el-select clearable v-model="queryParams.projectId" @change="inputSearch" placeholder="请选择分类分级框架">
+        <el-select clearable v-model="queryParams.projectId" filterable @change="inputSearch" placeholder="请选择分类分级框架">
           <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
           </el-option>
         </el-select>
