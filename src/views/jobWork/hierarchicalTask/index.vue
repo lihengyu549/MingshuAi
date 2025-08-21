@@ -200,15 +200,20 @@
           </el-col>
         </el-row>
         <div style="padding-left: 40px;">
-          <el-row>
+          <!-- <el-row>
             <el-col :span="12">
               <el-form-item label="分类逻辑" prop="classificationLogic" :rules="rules.classificationLogic">
                 <el-radio v-model="form.classificationLogic" label="1" :disabled="!form.ifStartTask">基于表</el-radio>
                 <el-radio v-model="form.classificationLogic" label="2" :disabled="!form.ifStartTask">基于字段</el-radio>
               </el-form-item>
             </el-col>
-          </el-row>
+          </el-row> -->
           <el-row>
+            <el-col :span="12">
+              <el-form-item>
+                <el-switch v-model="form.ifStartRuleMatching" active-text="匹配规则引擎" :disabled="!form.ifStartTask" />
+              </el-form-item>
+            </el-col>
             <el-col :span="12">
               <el-form-item>
                 <el-switch v-model="form.piiDetectionFlag" active-text="个人信息识别" :disabled="!form.ifStartTask" />
@@ -392,6 +397,7 @@ export default {
         id: '',
         classificationState: [],
         piiDetectionFlag: false,
+        ifStartRuleMatching: false,
         classificationLogic: '2',
         ifStartDataNull: false,
         ifStartDataRepetition: false,
@@ -689,6 +695,7 @@ export default {
       this.$set(this.form, 'ifStartAiFill', row.ifStartAiFill == "1");
       this.$set(this.form, 'ifStartTask', row.ifStartTask == "1");
       this.$set(this.form, 'piiDetectionFlag', row.piiDetectionFlag == "1");
+      this.$set(this.form, 'ifStartRuleMatching', row.ifStartRuleMatching == "1");
       this.$set(this.form, 'ifStartFeatureExtract', row.ifStartFeatureExtract == "1");
       this.$set(this.form, 'ifConfigurationParameters', row.ifConfigurationParameters == "1");
       this.$set(this.form, 'ifTechnicalIdentifier', row.ifTechnicalIdentifier == "1");
@@ -718,6 +725,7 @@ export default {
             ifStartAiFill: this.form.ifStartAiFill ? '1' : '0',
             ifStartTask: this.form.ifStartTask ? '1' : '0',
             piiDetectionFlag: this.form.piiDetectionFlag ? '1' : '0',
+            ifStartRuleMatching: this.form.ifStartRuleMatching ? '1' : '0',
             ifStartFeatureExtract: this.form.ifStartFeatureExtract ? '1' : '0',
             ifConfigurationParameters: this.form.ifConfigurationParameters ? '1' : '0',
             ifTechnicalIdentifier: this.form.ifTechnicalIdentifier ? '1' : '0',
