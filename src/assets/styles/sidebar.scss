@@ -86,6 +86,12 @@
       }
     }
 
+    // 新增：菜单选中状态样式
+    .el-menu-item.is-active,
+    .el-submenu__title.is-active {
+      background-color: $base-menu-active-background !important;
+    }
+
     & .theme-dark .is-active > .el-submenu__title {
       color: $base-menu-color-active !important;
     }
