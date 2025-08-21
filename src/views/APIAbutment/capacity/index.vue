@@ -137,7 +137,7 @@ export default {
         const api = {};
 
         // 1. 修复接口名称提取（核心问题：未取match结果的分组值）
-        // 替换原name提取逻辑
+        // 提取API名称
         const nameLine = lines.find(line => line.match(/^##\s*\d+\.\s*.+$/));
         if (nameLine) { // API名称 ：从 ## 数字. 名称 格式的行提取
           const nameMatch = nameLine.match(/^##\s*\d+\.\s*(.*)$/);
@@ -165,27 +165,31 @@ export default {
           api.dataType = dataTypeMatch ? dataTypeMatch[1].trim() : '';
         }
 
-        // 5. 提取请求参数（Header和Body）
-        const params = { header: [], body: [] };
-        let currentParamType = null; // 标记当前解析的参数类型（header/body）
-        let startParsingData = false; // 标记是否开始解析数据行（分隔线后）
+        // 5. 提取请求参数（Header、Body、Path和Query）
+        const params = { header: [], body: [], path: [], query: [] };
+        let currentParamType = null;
+        let startParsingData = false;
 
         lines.forEach(line => {
-          // 切换参数类型（Header/Body）
+          // 切换参数类型
           if (line.includes('### Header参数')) {
             currentParamType = 'header';
-            startParsingData = false; // 重置数据行标记
+            startParsingData = false;
           } else if (line.includes('### Body参数')) {
             currentParamType = 'body';
-            startParsingData = false; // 重置数据行标记
+            startParsingData = false;
+          } else if (line.includes('### Path参数')) {
+            currentParamType = 'path';
+            startParsingData = false;
+          } else if (line.includes('### Query参数')) {
+            currentParamType = 'query';
+            startParsingData = false;
           }
-          // 解析表格行（仅处理当前参数类型下的表格）
+          // 解析表格行
           else if (currentParamType && line.startsWith('|') && line.endsWith('|')) {
             if (line.includes('|---')) {
-              // 分隔线行：之后的行是数据行
               startParsingData = true;
             } else if (startParsingData) {
-              // 数据行：分割并提取参数
               const parts = line.split('|').map(p => p.trim()).filter(p => p);
               if (parts.length === 4) {
                 params[currentParamType].push({
@@ -196,11 +200,10 @@ export default {
                 });
               }
             }
-            // 表头行（分隔线前的表格行）会被自动跳过（因startParsingData为false）
           }
-          // 处理"无Body参数"的场景
-          else if (currentParamType === 'body' && line.trim() === '无') {
-            params.body = [];
+          // 处理"无参数"的场景
+          else if (currentParamType && line.trim() === '无') {
+            params[currentParamType] = [];
           }
         });
         api.params = params;

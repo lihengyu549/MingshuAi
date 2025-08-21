@@ -33,6 +33,28 @@
                         <div slot="header">
                             <h3>请求参数</h3>
                         </div>
+                        <div class="param-section" v-if="currentApi.params.path.length > 0">
+                            <h4>Path参数</h4>
+                            <el-table :data="currentApi.params.path" border size="small" class="api-params-table">
+                                <el-table-column prop="name" label="参数名" width="150"></el-table-column>
+                                <el-table-column prop="type" label="类型" width="100"></el-table-column>
+                                <el-table-column prop="required" label="必填" width="80">
+                                    <template slot-scope="scope">{{ scope.row.required ? '是' : '否' }}</template>
+                                </el-table-column>
+                                <el-table-column prop="description" label="说明"></el-table-column>
+                            </el-table>
+                        </div>
+                        <div class="param-section" v-else-if="currentApi.params.query.length > 0">
+                            <h4>Query参数</h4>
+                            <el-table :data="currentApi.params.query" border size="small" class="api-params-table">
+                                <el-table-column prop="name" label="参数名" width="150"></el-table-column>
+                                <el-table-column prop="type" label="类型" width="100"></el-table-column>
+                                <el-table-column prop="required" label="必填" width="80">
+                                    <template slot-scope="scope">{{ scope.row.required ? '是' : '否' }}</template>
+                                </el-table-column>
+                                <el-table-column prop="description" label="说明"></el-table-column>
+                            </el-table>
+                        </div>
                         <!-- Header参数 -->
                         <div class="param-section">
                             <h4>Header参数</h4>
