@@ -440,7 +440,7 @@ export default {
           width: "150"
         },
         {
-          label: "样本类型",
+          label: "样本特征",
           prop: "regularExpression",
           width: "150"
 
