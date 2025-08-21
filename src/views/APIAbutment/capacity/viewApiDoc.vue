@@ -24,7 +24,7 @@
                                 :type="currentApi.method == 'POST' ? 'success' : currentApi.method == 'GET' ? 'primary' : currentApi.method == 'PUT' ? 'warning' : currentApi.method == 'DELETE' ? 'danger' : 'info'"
                                 style="margin-right: 10px;">{{ currentApi.method }}</el-tag>
                             <span class="request-url">{{ currentApi.url }}</span>
-                            <span class="request-type" v-if="currentApi.dataType">数据类型: {{ currentApi.dataType }}</span>
+                            <!-- <span class="request-type" v-if="currentApi.dataType">数据类型: {{ currentApi.dataType }}</span> -->
                         </div>
                     </div>
 
@@ -105,8 +105,13 @@
                         </div>
                         <template v-if="currentApi.responseStructure.length">
                             <el-table :data="currentApi.responseStructure" border size="small" class="api-params-table">
-                                <el-table-column prop="field" label="字段名" width="180"></el-table-column>
+                                <el-table-column prop="field" label="参数名" width="120"></el-table-column>
                                 <el-table-column prop="type" label="类型" width="100"></el-table-column>
+                                <el-table-column prop="required" label="必选" width="80">
+                                    <template slot-scope="scope">{{ scope.row.required ? '是' : '否' }}</template>
+                                </el-table-column>
+                                <el-table-column prop="constraint" label="约束" width="100"></el-table-column>
+                                <el-table-column prop="chineseName" label="中文名" width="120"></el-table-column>
                                 <el-table-column prop="description" label="说明"></el-table-column>
                             </el-table>
                         </template>

@@ -79,16 +79,16 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-aim" size="medium" @click="handleAdd">确认勾选项</el-button>
+        <el-button type="primary" plain icon="el-icon-aim" size="medium" @click="handleAdd">确认勾选项</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-more" size="medium" @click="handleEcelFn">确认过滤项</el-button>
+        <el-button type="primary" plain icon="el-icon-more" size="medium" @click="handleEcelFn">确认过滤项</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-refresh-left" size="medium" @click="handleAddFnClose">取消勾选项</el-button>
+        <el-button type="primary" plain icon="el-icon-refresh-left" size="medium" @click="handleAddFnClose">取消勾选项</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-magic-stick" size="medium" @click="handleEcelFnClose">取消过滤项</el-button>
+        <el-button type="primary" plain icon="el-icon-magic-stick" size="medium" @click="handleEcelFnClose">取消过滤项</el-button>
       </el-col>
       <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
         <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
@@ -107,7 +107,7 @@
       <el-table-column label="字段名" align="center" prop="fieldName" width="150" show-overflow-tooltip fixed />
       <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip fixed />
       <el-table-column label="字段注释" align="center" prop="fieldRemark" width="150" show-overflow-tooltip fixed />
-      <el-table-column label="合成字段注释" align="center" prop="craftRemark" width="100" show-overflow-tooltip fixed />
+      <el-table-column label="AI字段注释" align="center" prop="craftRemark" width="100" show-overflow-tooltip fixed />
       <template>
         <el-table-column v-for="item in checkedColumn" :label="item.label" align="center" :prop="item.prop"
           :width="item.width" show-overflow-tooltip />
@@ -390,7 +390,7 @@ export default {
           width: "200"
         },
         {
-          label: "合成表注释",
+          label: "AI表注释",
           prop: "tableCraftRemark",
           width: "200"
         },

@@ -126,37 +126,39 @@ export default {
  */
     parseApiDocs(mdContent) {
       const apiSections = [];
-      const sections = mdContent.split('---\n');
+      // 调整正则：兼容空格、Windows换行符(\r\n)和Unix换行符(\n)
+      const sectionSeparator = /\r?\n\s*---\s*\r?\n/;
+      // 分割文档并过滤空内容
+      const sections = mdContent.split(sectionSeparator).filter(section => section.trim() !== '');
 
-      sections.forEach(section => {
+      sections.forEach(section => { // 遍历
         if (!section.trim()) return;
-
         const lines = section.split('\n').map(line => line.trimEnd()); // 移除行尾空格
         const api = {};
 
         // 1. 修复接口名称提取（核心问题：未取match结果的分组值）
         // 替换原name提取逻辑
         const nameLine = lines.find(line => line.match(/^##\s*\d+\.\s*.+$/));
-        if (nameLine) {
+        if (nameLine) { // API名称 ：从 ## 数字. 名称 格式的行提取
           const nameMatch = nameLine.match(/^##\s*\d+\.\s*(.*)$/);
           api.name = nameMatch ? nameMatch[1].trim() : '';
         }
 
-        // 2. 提取请求方法（method）
+        // 2. 提取请求方法（method） 请求方法 ：从包含 **请求方法**: 的行提取
         const methodLine = lines.find(line => line.includes('**请求方法**:'));
         if (methodLine) {
           const methodMatch = methodLine.match(/\*\*请求方法\*\*:\s*(.*)/);
           api.method = methodMatch ? methodMatch[1].trim() : '';
         }
 
-        // 3. 提取请求地址（url）
+        // 3. 提取请求地址（url）请求地址 ：从包含 **请求地址**: 的行提取
         const urlLine = lines.find(line => line.includes('**请求地址**:'));
         if (urlLine) {
           const urlMatch = urlLine.match(/\*\*请求地址\*\*:\s*(.*)/);
           api.url = urlMatch ? urlMatch[1].trim() : '';
         }
 
-        // 4. 提取请求数据类型（dataType）
+        // 4. 提取请求数据类型（dataType）请求数据类型 ：从包含 **请求数据类型**: 的行提取
         const dataTypeLine = lines.find(line => line.includes('**请求数据类型**:'));
         if (dataTypeLine) {
           const dataTypeMatch = dataTypeLine.match(/\*\*请求数据类型\*\*:\s*(.*)/);
@@ -268,7 +270,6 @@ export default {
         const responseStructure = [];
         const responseStructureLineIndex = lines.findIndex(line => line.includes('**响应数据结构**:'));
         let startResponseData = false; // 标记响应结构数据行开始
-
         if (responseStructureLineIndex !== -1) {
           for (let i = responseStructureLineIndex + 1; i < lines.length; i++) {
             const line = lines[i];
@@ -278,11 +279,15 @@ export default {
                 startResponseData = true;
               } else if (startResponseData) {
                 const parts = line.split('|').map(p => p.trim()).filter(p => p);
-                if (parts.length === 3) {
+                // 适配新的6列结构
+                if (parts.length === 6) {
                   responseStructure.push({
-                    field: parts[0],
-                    type: parts[1],
-                    description: parts[2]
+                    field: parts[0],       // 参数名
+                    type: parts[1],        // 类型
+                    required: parts[2] === 'true', // 必选
+                    constraint: parts[3],  // 约束
+                    chineseName: parts[4], // 中文名
+                    description: parts[5]  // 说明
                   });
                 }
               }
@@ -300,7 +305,7 @@ export default {
     async loadMdFile() {
       try {
         // 关键：请求路径为根目录下的 docs/api-docs.md
-        const response = await axios.get('/docs/api-docs.md');
+        const response = await axios.get('/docs/API接口文档_20250820_v1.0.md');
         const mdContent = response.data; // 获取 MD 原始文本
         this.parsedApiData = this.parseApiDocs(mdContent); // 解析为组件所需数据
         console.log('this.parsedApiData', this.parsedApiData);
