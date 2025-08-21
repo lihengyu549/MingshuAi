@@ -128,7 +128,7 @@
       </el-table-column>
       <el-table-column label="确认状态" fixed="right" align="center" prop="confirm">
         <template slot-scope="scope">
-          <span>{{ scope.row.confirm == 0 ? '未确认' : '已确认' }}</span>
+          <span>{{ scope.row.confirm == 1 ? '已确认' : '未确认' }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" fixed="right" align="center" class-name="small-padding fixed-width">
