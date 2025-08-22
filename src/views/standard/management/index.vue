@@ -40,17 +40,17 @@
           <div>实施时间：{{ item.implementTime }}</div>
         </div>
         <div class="listBox_body">
-          <el-tooltip class="item" effect="dark" :content="item.categoryName" placement="top-start">
+          <!-- <el-tooltip class="item" effect="dark" :content="item.categoryName" placement="top-start"> -->
             <div class="listBox_itemTitle">{{ item.categoryName }}</div>
-          </el-tooltip>
+          <!-- </el-tooltip> -->
           <div style="font-size: 14px; display: flex; justify-content: space-between;align-items: center;">
             <span></span>
-            <el-tooltip class="item" effect="dark" :content="item.source" placement="top-start">
+            <!-- <el-tooltip class="item" effect="dark" :content="item.source" placement="top-start"> -->
               <span class="listBox_msg">来源：{{ item.source }}</span>
-            </el-tooltip>
-            <el-tooltip class="item" effect="dark" :content="item.industryCategory" placement="top-start">
+            <!-- </el-tooltip> -->
+            <!-- <el-tooltip class="item" effect="dark" :content="item.industryCategory" placement="top-start"> -->
               <span class="listBox_msg">行业类别：{{ item.industryCategory }}</span>
-            </el-tooltip>
+            <!-- </el-tooltip> -->
             <span></span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center;">
