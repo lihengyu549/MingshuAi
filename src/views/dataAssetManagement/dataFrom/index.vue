@@ -747,7 +747,6 @@ export default {
         data.connectionType = this.connectionType
         data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
         console.log(data);
-
         if (!this.editIsFlag && !data.tables) {
           this.$message({ message: '请选择扫描内容', type: 'warning' })
           return
@@ -998,7 +997,7 @@ export default {
       let returnArr = this.$refs.scanContentTreeRef.returnArr
       let result = {}
       returnArr.forEach(element => {
-        if (element.checked) {
+        if (element.checked || element.children.length > 0) {
           result[element.name] = [...element.children.filter(item => item.checked)]
         }
       });
@@ -1007,7 +1006,7 @@ export default {
       //   this.form.targetDatabase = this.form.targetDatabase.trim().replace(/^"|"$/g, '').split(',').filter(Boolean);
       // }
       returnArr.forEach((item) => {
-        if (item.checked) {
+        if (item.checked || item.children.length > 0) {
           this.form.targetDatabase.push(item.name)
         }
       })
