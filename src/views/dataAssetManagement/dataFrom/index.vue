@@ -79,10 +79,14 @@
       </el-table-column>
       <el-table-column label="耗时(毫秒)" align="center" prop="scanTime" />
       <el-table-column label="更新时间" align="center" prop="updateTime" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="表数量" align="center" prop="updateTime" />
+      <el-table-column label="字段数量" align="center" prop="updateTime" />
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
             :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">开始扫描</el-button>
+          <el-button size="mini" type="text"
+            :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">停止扫描</el-button>
           <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
             @click="scanContentEdit(scope.row)">编辑</el-button>
         </template>
