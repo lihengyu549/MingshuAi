@@ -21,7 +21,7 @@
         <span>整体进度</span>
         <div class="custom-progress-container">
           <el-progress :percentage="progressPercent ? progressPercent : 0" :format="progressFormat"
-            :status="progressPercent === 100 ? 'success' : undefined">
+            :status="status == 'COMPLETE' ? 'success' : 'exception'">
           </el-progress>
         </div>
       </div>
@@ -182,7 +182,7 @@ export default {
     initTaskInfo() {
       this.tasksName = this.routeData.tasksName;
       this.status = this.routeData.maskComplete;
-      this.statusName = this.routeData.causeDescription;
+      this.statusName = this.routeData.stateName;
       this.startTime = this.routeData.startTime;
       this.overTime = this.routeData.overTime;
       this.runTime = this.routeData.runTime;
