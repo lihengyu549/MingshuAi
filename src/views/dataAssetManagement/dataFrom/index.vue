@@ -85,8 +85,8 @@
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
             :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">开始扫描</el-button>
-          <el-button size="mini" type="text"
-            :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">停止扫描</el-button>
+          <el-button size="mini" type="text" @click="stopScan(scope.row)"
+            :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">终止扫描</el-button>
           <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
             @click="scanContentEdit(scope.row)">编辑</el-button>
         </template>
@@ -225,7 +225,7 @@ import {
 
 import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys,
-  importExcel, publish, saveDatabaseAndTables, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI, getDatabaseNameList, getDatabaseTableNameList
+  importExcel, publish, saveDatabaseAndTables, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI, getDatabaseNameList, getDatabaseTableNameList, stopDataScan
 } from "@/api/system/proxys";
 import {
   forceLogout, nameTesting, dataSacn, getFrameworks, checkSourceName, getDatabaseAndTablesById, updateDatabaseAndTables
@@ -902,6 +902,25 @@ export default {
             this.getList()
           })
       }
+    },
+    stopScan(row) {
+      this.$confirm(`确定要终止"${row.sourceName}"的扫描任务吗？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.loading = true
+        stopDataScan({ proxyIds: row.id }).then(async res => {
+          this.$message.success(res.msg || '终止扫描成功')
+          await this.getList()
+        }).catch(() => {
+          this.$message.error('终止扫描失败')
+        }).finally(() => {
+          this.loading = false
+        })
+      }).catch(() => {
+        // 用户取消操作，不做处理
+      })
     },
     scanContentEdit(row) {
       if (row.isAddTasks == 1) {

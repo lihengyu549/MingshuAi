@@ -358,3 +358,12 @@ export function getCategoryAttachData (params) {
     params: params
   })
 }
+
+// 终止扫描数据源
+export function stopDataScan (params) {
+  return request({
+    url: '/system/proxy/database/stopDataScan',
+    method: 'post',
+    data: params
+  })
+}
