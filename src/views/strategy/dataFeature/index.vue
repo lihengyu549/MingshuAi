@@ -3,17 +3,20 @@
         <!-- 搜索区域卡片 -->
         <el-form :inline="true" :model="searchForm">
             <el-form-item label="特征名称:">
-                <el-input v-model="searchForm.featureName" placeholder="请输入特征名称" clearable style="width: 200px;" @input="handleSearch" />
+                <el-input v-model="searchForm.featureName" placeholder="请输入特征名称" clearable style="width: 200px;"
+                    @input="handleSearch" />
             </el-form-item>
             <el-form-item label="特征类型:">
-                <el-select v-model="searchForm.featureType" placeholder="请选择特征类型" clearable style="width: 180px;" @change="handleSearch">
+                <el-select v-model="searchForm.featureType" placeholder="请选择特征类型" clearable style="width: 180px;"
+                    @change="handleSearch">
                     <el-option v-for="item in dict.type.sys_feature_type" :key="item.value" :label="item.label"
                         :value="item.value">
                     </el-option>
                 </el-select>
             </el-form-item>
             <el-form-item label="来源:">
-                <el-select v-model="searchForm.source" placeholder="请选择来源" clearable style="width: 180px;" @change="handleSearch">
+                <el-select v-model="searchForm.source" placeholder="请选择来源" clearable style="width: 180px;"
+                    @change="handleSearch">
                     <el-option v-for="item in dict.type.sys_source" :key="item.value" :label="item.label"
                         :value="item.value">
                     </el-option>
@@ -116,7 +119,7 @@
                 </el-form>
             </template>
 
-            <template v-else-if="form.featureType == '2'">
+            <template v-else-if="form.featureType == '2' || form.featureType == '3'">
                 <el-form :model="form" label-width="100px" :disabled="isView" size="small" class="feature-form"
                     :rules="rules" label-position="top">
                     <div class="basic-info-title">基本信息</div>
@@ -161,22 +164,47 @@
                         <div class="mapping-table-container">
                             <!-- 新增：表格与右侧按钮组容器 -->
                             <div class="table-with-actions">
-                                <!-- 对照表表格 -->
+                                <!-- 对照表表格 && 数据字典表 -->
                                 <div class="table-container">
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <el-input v-model="tempFeatureKey" placeholder="请输入特征值" :disabled="isView"
-                                            style="width: 48%;" />
-                                        <el-input v-model="tempFeatureVal" placeholder="请输入对照含义" :disabled="isView"
-                                            style="width: 48%;" />
-                                    </div>
-                                    <el-table :data="form.mappingList" style="margin-top: 10px; width: 100%"
-                                        size="small" @selection-change="handleMappingSelectionChange">
-                                        <!-- 新增：复选框列 -->
-                                        <el-table-column type="selection" width="45" />
-                                        <el-table-column prop="itemKey" label="特征值" width="180" />
-                                        <el-table-column prop="itemValue" label="对照含义" min-width="180" />
-                                        <!-- 已删除原有操作列 -->
-                                    </el-table>
+                                    <template v-if="form.featureType == '2'">
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <el-input v-model="tempFeatureKey" placeholder="请输入特征值" :disabled="isView"
+                                                style="width: 48%;" />
+                                            <el-input v-model="tempFeatureVal" placeholder="请输入对照含义" :disabled="isView"
+                                                style="width: 48%;" />
+                                        </div>
+                                        <el-table :data="form.mappingList" style="margin-top: 10px; width: 100%"
+                                            size="small" @selection-change="handleMappingSelectionChange">
+                                            <!-- 新增：复选框列 -->
+                                            <el-table-column type="selection" width="45" />
+                                            <el-table-column prop="itemKey" label="特征值" width="180" />
+                                            <el-table-column prop="itemValue" label="对照含义" min-width="180" />
+                                            <!-- 已删除原有操作列 -->
+                                        </el-table>
+                                    </template>
+                                    <template v-else-if="form.featureType == '3'">
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <el-input v-model="tempFeatureKey" placeholder="请输入特征值" :disabled="isView"
+                                                style="width: 30%;" />
+                                            <el-input v-model="tempFeatureVal" placeholder="请输入对照含义" :disabled="isView"
+                                                style="width: 30%;" />
+                                            <el-input v-model="tempFeatureKey" placeholder="请输入字段名称" :disabled="isView"
+                                                style="width: 30%;" />
+                                            <el-input v-model="tempFeatureVal" placeholder="请输入字段注释" :disabled="isView"
+                                                style="width: 30%;" />
+                                        </div>
+                                        <el-table :data="form.mappingList" style="margin-top: 10px; width: 100%"
+                                            size="small" @selection-change="handleMappingSelectionChange">
+                                            <!-- 新增：复选框列 -->
+                                            <el-table-column type="selection" width="45" />
+                                            <el-table-column prop="itemKey" label="特征值" width="180" />
+                                            <el-table-column prop="itemValue" label="对照含义" min-width="180" />
+                                            <el-table-column prop="itemValue" label="字段名称" min-width="180" />
+                                            <el-table-column prop="itemValue" label="字段注释" min-width="180" />
+                                            <!-- 已删除原有操作列 -->
+                                        </el-table>
+                                    </template>
+
                                     <!-- 还原样式的提示条 -->
                                     <div class="import-format-tip"
                                         style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #f9f9f9; border: 1px solid #eee; border-radius: 4px;">
@@ -205,11 +233,12 @@
                                         :class="{ 'icon-disabled': isView || selectedMappingRows.length === 0 }"
                                         class="icon"
                                         @click.native="(isView || selectedMappingRows.length === 0) && $event.stopPropagation()" />
-                                    <svg-icon icon-class="导入" @click="handleImport" :class="{ 'icon-disabled': isView || form.id == '系统默认生成' }"
-                                        class="icon" @click.native="isView && $event.stopPropagation()" />
-                                    <svg-icon icon-class="导出" @click="handleExport" :class="{ 'icon-disabled': isView || form.id == '系统默认生成' }"
-
-                                        class="icon" @click.native="isView && $event.stopPropagation()" />
+                                    <svg-icon icon-class="导入" @click="handleImport"
+                                        :class="{ 'icon-disabled': isView || form.id == '系统默认生成' }" class="icon"
+                                        @click.native="isView && $event.stopPropagation()" />
+                                    <svg-icon icon-class="导出" @click="handleExport"
+                                        :class="{ 'icon-disabled': isView || form.id == '系统默认生成' }" class="icon"
+                                        @click.native="isView && $event.stopPropagation()" />
                                     <svg-icon icon-class="清空" @click="clearAllRows"
                                         :class="{ 'icon-disabled': isView || form.mappingList.length === 0 }"
                                         class="icon"
@@ -466,7 +495,7 @@ export default {
                     this.$message.warning('该特征值已存在')
                     return
                 }
-                
+
                 if (this.form.id != '系统默认生成') {
                     const params = {
                         id: this.form.id,
@@ -474,7 +503,7 @@ export default {
                         itemValue: this.tempFeatureVal
                     }
                     await addFeatureItem(params)
-                }else{
+                } else {
                     this.form.mappingList.push({
                         itemKey: this.tempFeatureKey,
                         itemValue: this.tempFeatureVal
@@ -767,7 +796,7 @@ export default {
     margin-bottom: 15px;
 }
 
-.mapping-table-container {
+.mapping-table-container,.table-container {
     width: 100%;
 }
 
