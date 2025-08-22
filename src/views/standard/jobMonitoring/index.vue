@@ -143,7 +143,7 @@
             @input="sonNameTestingFn(addOrEditDataRuls.attachData)" maxlength="50" placeholder="请输入子类名称"></el-input>
         </el-form-item>
         <el-form-item class="addSelectClass" label="所属父类" prop="categoryId">
-          <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3">
+          <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3" filterable :filter-method="handleAddSelectInput">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
                 :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
@@ -524,6 +524,14 @@ export default {
         this.$refs.addSelectRef.blur()
       }
     },
+    
+    // 处理添加选择框的输入事件
+    handleAddSelectInput(value) {
+      // 当输入内容变化时，触发树的过滤
+      if (this.$refs.treeSelect) {
+        this.$refs.treeSelect.filter(value);
+      }
+    },
     append(data, parentNode) {
       if (!parentNode.expanded) {
         this.$message({
@@ -714,9 +722,42 @@ export default {
     handleClose(tag, index) {
       this.tags.splice(index, 1);
     },
+    // 修改过滤方法以支持最下级节点匹配
     filterNode(value, data) {
       if (!value) return true;
-      return data.categoryName.indexOf(value) !== -1;
+      // 实现基于categoryName的模糊匹配，支持匹配最下级节点
+      const lowerValue = value.toLowerCase();
+      
+      // 检查当前节点是否是叶子节点（最下级）
+      const isLeafNode = !data.children || data.children.length === 0;
+      
+      // 如果是叶子节点，直接匹配
+      if (isLeafNode) {
+        return data.categoryName && data.categoryName.toLowerCase().includes(lowerValue);
+      }
+      
+      // 如果不是叶子节点，检查其子节点是否匹配
+      if (data.children && data.children.length > 0) {
+        return this.checkChildrenMatch(data.children, lowerValue);
+      }
+      
+      return false;
+    },
+    
+    // 递归检查子节点是否匹配
+    checkChildrenMatch(children, searchValue) {
+      for (let child of children) {
+        const isChildLeaf = !child.children || child.children.length === 0;
+        if (isChildLeaf && child.categoryName && child.categoryName.toLowerCase().includes(searchValue)) {
+          return true;
+        }
+        if (child.children && child.children.length > 0) {
+          if (this.checkChildrenMatch(child.children, searchValue)) {
+            return true;
+          }
+        }
+      }
+      return false;
     },
     handleNodeClick(data) {
       if (data.addEdit) {
