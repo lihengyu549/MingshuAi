@@ -348,6 +348,7 @@ export default {
       ],
       executeStatus: [
         { value: 'NONE', label: '未开始' },       // 字典键值NONE → 标签未开始
+        { value: 'STAYEXECUTE', label: '待执行' },       // 字典键值NONE → 标签未开始
         { value: 'RUNNING', label: '执行中' },    // 字典键值RUNNING → 标签执行中
         { value: 'COMPLETE', label: '执行完成' }, // 字典键值COMPLETE → 标签执行完成
         { value: 'ERR', label: '执行失败' },      // 字典键值ERR → 标签执行失败
@@ -560,7 +561,7 @@ export default {
     },
     implementFn(row) {
       // 核心：拦截「正在进行中」的状态（执行中/正在暂停/正在终止），禁止执行操作
-      const processingStates = ['RUNNING', 'PAUSING', 'KILLING'];
+      const processingStates = ['RUNNING', 'PAUSING', 'KILLING', 'STAYEXECUTE'];
       if (processingStates.includes(row.maskComplete)) {
         this.$message.warning(`当前任务${this.stateMsg(row.maskComplete)}，请等待操作完成后再执行`);
         return;
@@ -885,7 +886,7 @@ export default {
     },
     // 终止任务
     terminationWorkFn(row) {
-      const processingStates = ['RUNNING', 'KILLING'];
+      const processingStates = ['RUNNING', 'PAUSING'];
       if (!processingStates.includes(row.maskComplete)) {
         this.$message.warning(`当前任务${this.stateMsg(row.maskComplete)}，请等待操作完成后再执行`);
         return;
