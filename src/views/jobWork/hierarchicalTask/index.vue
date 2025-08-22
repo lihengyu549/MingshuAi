@@ -186,7 +186,7 @@
         <el-row>
           <el-col :span="12">
             <el-form-item>
-              <el-switch v-model="form.ifStartAiFill" active-text="是否启用" />
+              <el-switch v-model="form.ifStartAiFill" active-text="是否启用" :disabled="form.maskComplete == 'RUNNING' || form.maskComplete == 'PAUSED'" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -195,7 +195,7 @@
         <el-row>
           <el-col :span="12">
             <el-form-item>
-              <el-switch v-model="form.ifStartTask" active-text="是否启用" />
+              <el-switch v-model="form.ifStartTask" active-text="是否启用" :disabled="form.maskComplete == 'RUNNING' || form.maskComplete == 'PAUSED'" />
             </el-form-item>
           </el-col>
         </el-row>
