@@ -917,7 +917,7 @@ export default {
         this.$message({ message: `当前状态为${this.stateMsg(row.maskComplete)}，无法查看任务监控`, type: 'warning' })
         return
       }
-
+      row.stateName = this.stateMsg(row.maskComplete)
       this.$router.push({ path: '/jobMonitoring', query: row })
     },
   }
