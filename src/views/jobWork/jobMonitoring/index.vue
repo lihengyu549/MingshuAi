@@ -134,8 +134,6 @@ export default {
       // 进度条数据
       progressTotal: 0,
       progressCurrent: 0,
-      // tab控制
-      activeTab: 'realtime',
       // 实时日志
       realtimeLogs: [],
       socket: null,
@@ -164,7 +162,11 @@ export default {
       } else {
         return 'info';
       }
-    }
+    },
+    // tab控制
+      activeTab() {
+        return this.status === 'RUNNING' ? 'realtime' : 'analysis';
+      },
   },
   mounted() {
     this.initTaskInfo();
