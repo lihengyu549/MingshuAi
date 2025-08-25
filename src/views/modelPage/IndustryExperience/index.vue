@@ -190,19 +190,16 @@ export default {
         // 经验引用按钮点击事件
         // 处理经验引用下拉项点击
         handleReferenceItemClick(command) {
+            console.log('command', command);
             switch (command) {
-                case 'ref1':
+                case 1:
                     this.$message.info('执行引用经验 1 的逻辑');
                     break;
-                case 'ref2':
+                case 2:
                     this.$message.info('执行引用经验 2 的逻辑');
                     break;
-                case 'ref3':
+                case 3:
                     this.$message.info('执行引用经验 3 的逻辑');
-                    break;
-                case 'custom':
-                    this.$message.info('打开自定义引用对话框');
-                    // 可在此处打开弹窗让用户输入自定义内容
                     break;
                 default:
                     break;
