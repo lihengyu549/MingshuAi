@@ -65,7 +65,9 @@ export default {
 <style lang="scss" scoped>
   @import "~@/assets/styles/mixin.scss";
   @import "~@/assets/styles/variables.scss";
-
+  .main-container{
+    background-color: #f9fafd;
+  }
   .app-wrapper {
     @include clearfix;
     position: relative;
