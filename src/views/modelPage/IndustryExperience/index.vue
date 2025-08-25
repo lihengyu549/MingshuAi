@@ -22,8 +22,6 @@
                         <el-dropdown-item v-for="item in referenceOptions" :key="item.id" :command="item.id">
                             {{ item.name }} <!-- 显示选项名称 -->
                         </el-dropdown-item>
-                        <!-- 可选：添加固定的自定义选项 -->
-                        <!-- <el-dropdown-item divided command="custom">自定义引用</el-dropdown-item> -->
                     </el-dropdown-menu>
                 </el-dropdown>
             </el-col>
@@ -58,9 +56,7 @@
 
                     <!-- 其他类型保持列表形式 -->
                     <div v-else class="list-container">
-                        <div class="list-item" v-for="(item, index) in listData" :key="index"
-                            @click="handleRowClick(item)"
-                            :class="{ 'active': selectedRow && selectedRow.id === item.id }">
+                        <div class="list-item" v-for="(item, index) in listData" :key="index">
                             <span class="list-desc">{{ item.content }}</span>
                         </div>
                     </div>
@@ -72,7 +68,7 @@
 
 
 <script>
-import { getCategoryLowerDataByType, getCategoryList, addCategoryLowerData, deleteCategoryLowerDataById, updateCategoryLowerDataById } from "@/api/system/IndustryExperience";
+import { getCategoryLowerDataByType, getCategoryList } from "@/api/system/IndustryExperience";
 import { getDicts } from "@/api/system/dict/data";
 export default {
     dicts: ['sys_industry_type'],
@@ -91,9 +87,6 @@ export default {
             tableData: [],
 
             loading: false,
-            selectedRow: null, // 当前选中行数据
-            formContent: '', // 右侧编辑区内容
-            isEdit: false, // 标记新增/编辑状态
             referenceOptions: [
                 {
                     id: 1,
@@ -117,13 +110,10 @@ export default {
             this.standardOptions = response.data
             this.selectedStandard = this.standardOptions[0]?.categoryName || ''
             this.activeTab = this.dict.type.sys_industry_type[0]?.label || ''
-            if (this.standardOptions[0]?.id && this.dict.type.sys_industry_type[0]?.value) {
-                this.fetchListData(this.standardOptions[0].id, this.dict.type.sys_industry_type[0].value)
-            }
 
             // 假设获取经验引用选项的接口为 getReferenceOptions()
-            const refResponse = await getReferenceOptions(); // 自定义接口，需实际实现
-            this.referenceOptions = refResponse.data; // 假设返回格式：[{id: 1, name: '引用1'}, ...]
+            // const refResponse = await getReferenceOptions(); // 自定义接口，需实际实现
+            // this.referenceOptions = refResponse.data; // 假设返回格式：[{id: 1, name: '引用1'}, ...]
 
             if (this.standardOptions[0]?.id && this.dict.type.sys_industry_type[0]?.value) {
                 this.fetchListData(this.standardOptions[0].id, this.dict.type.sys_industry_type[0].value);
@@ -171,6 +161,7 @@ export default {
                     // 保持原列表数据格式
                     this.listData = response.data
                 }
+                console.log('listData', this.listData);
             } catch (error) {
                 console.error('获取数据失败', error)
             } finally {
@@ -194,90 +185,6 @@ export default {
             if (id && val) {
                 this.fetchListData(id, val)
             }
-        },
-
-        // 列表项点击事件
-        handleRowClick(row) {
-            this.selectedRow = row
-            // 根据不同表格类型设置表单内容
-            if (this.activeTab === '拼音对照表' || this.activeTab === '英文对照表') {
-                this.formContent = `${row.featureValue}=${row.meaning}`
-            } else if (this.activeTab === '数据字典') {
-                this.formContent = `${row.tableName},${row.tableComment},${row.fieldName},${row.fieldComment}`
-            } else {
-                this.formContent = row.content
-            }
-            this.isEdit = true
-        },
-
-        // 新增按钮
-        handleCreate() {
-            this.selectedRow = null
-            this.formContent = ''
-            this.isEdit = false
-        },
-
-        // 编辑按钮
-        handleEdit() {
-            // 编辑逻辑已在handleRowClick中处理
-        },
-
-        // 删除按钮
-        async handleDelete(row) {
-            this.$confirm('确认删除这条记录吗？', '提示', {
-                type: 'warning'
-            }).then(async () => {
-                const id = {
-                    id: row.id
-                }
-                await deleteCategoryLowerDataById(id)
-                this.fetchListData(row.categoryId, row.dicType)
-                // 重置状态
-                this.selectedRow = null
-                this.formContent = ''
-                this.isEdit = false
-                this.$message.success('删除成功')
-            }).catch(() => {
-                this.$message.info('已取消删除')
-            })
-        },
-
-        // 取消按钮
-        handleCancel() {
-            this.selectedRow = null
-            this.formContent = ''
-            this.isEdit = false
-        },
-
-        // 保存按钮
-        async handleSave() {
-            let parsedData = {}
-            if (this.isEdit) {
-                parsedData = { //编辑
-                    id: this.selectedRow.id,
-                    content: this.formContent,
-                }
-                await updateCategoryLowerDataById(parsedData)
-                this.fetchListData(this.selectedRow.categoryId, this.selectedRow.dicType)
-                this.$message.success('编辑成功')
-            } else {
-                parsedData = { //新增
-                    categoryId: this.standardOptions.find(item => item.categoryName === this.selectedStandard)?.id,
-                    dicType: this.dict.type.sys_industry_type.find(item => item.label === this.activeTab)?.value,
-                    content: this.formContent,
-                }
-                await addCategoryLowerData(parsedData)
-                this.fetchListData(
-                    this.standardOptions.find(item => item.categoryName === this.selectedStandard)?.id,
-                    this.dict.type.sys_industry_type.find(item => item.label === this.activeTab)?.value
-                )
-                this.$message.success('新增成功')
-            }
-
-            // 重置状态
-            this.selectedRow = null
-            this.formContent = ''
-            this.isEdit = false
         },
 
         // 经验引用按钮点击事件
@@ -319,27 +226,6 @@ export default {
     font-weight: 500;
 }
 
-.right-panel {
-    border: 1px solid #ebeef5;
-    border-radius: 4px;
-    padding: 16px;
-    height: calc(100% - 40px);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.header,
-.footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.footer {
-    margin-top: 16px;
-}
-
 /* 列表样式 */
 .list-container {
     margin-top: 10px;
@@ -348,7 +234,6 @@ export default {
 .list-item {
     padding: 10px 15px;
     border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -356,10 +241,6 @@ export default {
 
 .list-item:last-child {
     border-bottom: none;
-}
-
-.list-item.active {
-    background-color: #f5f7fa;
 }
 
 .list-code {
