@@ -3,9 +3,9 @@
     <div class="headerview">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <img src="../assets/indexImg/jiqiren-2.png" alt="" style="width: 50px;height: 50px;">
-         <el-button type="primary" @click="goData">切换大屏</el-button>
+        <el-button type="primary" @click="goData">切换大屏</el-button>
       </div>
-      <div style="margin-top: 10px;">Hi，欢迎来到{{ $store.state.user.projectData.projectName}}！</div>
+      <div style="margin-top: 10px;">Hi，欢迎来到{{ $store.state.user.projectData.projectName }}！</div>
       <p style="margin: 16px 0;">可持续化运营，只需4步！</p>
       <div class="card_box">
         <el-card class="box-card" v-for="item in cardList" :key="item.id">
@@ -274,7 +274,7 @@ export default {
 
 .headerview {
   height: 380px;
-  margin-top: 10px;
+  /* margin-top: 10px; */
   padding: 25px 50px 0px 50px;
 }
 
