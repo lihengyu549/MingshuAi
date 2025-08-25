@@ -269,7 +269,7 @@ export default {
 <style scoped>
 /* @import url(); 引入公共css类 */
 .content {
-  background-color: #fafafc;
+  background-color: #fff; /* #fafafc */
 }
 
 .headerview {
