@@ -36,9 +36,9 @@
                     <!-- 拼音对照表或英文对照表 - 双列表格 -->
                     <el-table v-if="activeTab === '拼音对照表' || activeTab === '英文对照表'" :data="tableData" border
                         style="width: 100%">
-                        <el-table-column prop="featureValue" label="特征值">
+                        <el-table-column prop="itemKey" label="特征值">
                         </el-table-column>
-                        <el-table-column prop="meaning" label="对照含义">
+                        <el-table-column prop="itemValue" label="对照含义">
                         </el-table-column>
                     </el-table>
 
@@ -46,11 +46,11 @@
                     <el-table v-if="activeTab === '数据字典'" :data="tableData" border style="width: 100%">
                         <el-table-column prop="tableName" label="表名">
                         </el-table-column>
-                        <el-table-column prop="tableComment" label="表注释">
+                        <el-table-column prop="tableRemark" label="表注释">
                         </el-table-column>
                         <el-table-column prop="fieldName" label="字段名称">
                         </el-table-column>
-                        <el-table-column prop="fieldComment" label="字段注释">
+                        <el-table-column prop="fieldRemark" label="字段注释">
                         </el-table-column>
                     </el-table>
 
@@ -133,11 +133,11 @@ export default {
                     // 转换为双列表格数据格式
                     this.tableData = response.data.map(item => {
                         // 这里假设content格式为"特征值=对照含义"，可根据实际格式调整
-                        const [featureValue, meaning] = item.content.split('=')
+                        const [itemKey, itemValue] = item.content.split('=')
                         return {
                             id: item.id,
-                            featureValue: featureValue || item.content,
-                            meaning: meaning || '',
+                            itemKey: itemKey || item.content,
+                            itemValue: itemValue || '',
                             categoryId: item.categoryId,
                             dicType: item.dicType
                         }
@@ -146,13 +146,13 @@ export default {
                     // 转换为四列表格数据格式
                     this.tableData = response.data.map(item => {
                         // 这里假设content格式为"表名,表注释,字段名称,字段注释"，可根据实际格式调整
-                        const [tableName, tableComment, fieldName, fieldComment] = item.content.split(',')
+                        const [tableName, tableRemark, fieldName, fieldRemark] = item.content.split(',')
                         return {
                             id: item.id,
                             tableName: tableName || '',
-                            tableComment: tableComment || '',
+                            tableRemark: tableRemark || '',
                             fieldName: fieldName || '',
-                            fieldComment: fieldComment || '',
+                            fieldRemark: fieldRemark || '',
                             categoryId: item.categoryId,
                             dicType: item.dicType
                         }
