@@ -104,3 +104,12 @@ export function exportFeatureItem(data) {
         responseType: 'blob' //响应数据格式配置
     })
 }
+
+// 数据特征-校验名称是否重复的接口
+export function verifyFeatureName(data) {
+    return request({
+        url: '/system/feature/verifyFeatureName',
+        method: 'post',
+        data: data,
+    })
+}

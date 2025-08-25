@@ -184,23 +184,23 @@
                                     </template>
                                     <template v-else-if="form.featureType == '3'">
                                         <div style="display: flex; justify-content: space-between;">
-                                            <el-input v-model="tempFeatureKey" placeholder="请输入特征值" :disabled="isView"
-                                                style="width: 30%;" />
-                                            <el-input v-model="tempFeatureVal" placeholder="请输入对照含义" :disabled="isView"
-                                                style="width: 30%;" />
-                                            <el-input v-model="tempFeatureKey" placeholder="请输入字段名称" :disabled="isView"
-                                                style="width: 30%;" />
-                                            <el-input v-model="tempFeatureVal" placeholder="请输入字段注释" :disabled="isView"
-                                                style="width: 30%;" />
+                                            <el-input v-model="tempFeatureKey" placeholder="请输入表名" :disabled="isView"
+                                                style="width: 24%;" />
+                                            <el-input v-model="tempFeatureVal" placeholder="请输入表注释" :disabled="isView"
+                                                style="width: 24%;" />
+                                            <el-input v-model="tempFeatureName" placeholder="请输入字段名称" :disabled="isView"
+                                                style="width: 24%;" />
+                                            <el-input v-model="tempFeatureType" placeholder="请输入字段注释" :disabled="isView"
+                                                style="width: 24%;" />
                                         </div>
                                         <el-table :data="form.mappingList" style="margin-top: 10px; width: 100%"
                                             size="small" @selection-change="handleMappingSelectionChange">
                                             <!-- 新增：复选框列 -->
                                             <el-table-column type="selection" width="45" />
-                                            <el-table-column prop="itemKey" label="特征值" width="180" />
-                                            <el-table-column prop="itemValue" label="对照含义" min-width="180" />
-                                            <el-table-column prop="itemValue" label="字段名称" min-width="180" />
-                                            <el-table-column prop="itemValue" label="字段注释" min-width="180" />
+                                            <el-table-column prop="tableName" label="表名" width="180" />
+                                            <el-table-column prop="tableRemark" label="表注释" min-width="180" />
+                                            <el-table-column prop="fieldName" label="字段名称" min-width="180" />
+                                            <el-table-column prop="fieldRemark" label="字段注释" min-width="180" />
                                             <!-- 已删除原有操作列 -->
                                         </el-table>
                                     </template>
@@ -266,11 +266,7 @@
 </template>
 
 <script>
-import { getPageListFeature, addFeature, getFeatureById, updateFeature, deleteFeature, getFeatureItemListByFeatureId, addFeatureItem, deleteFeatureItem, deleteFeatureItemAll, importFeatureItem, exportFeatureItem } from '@/api/system/systemPolicy'
-
-
-
-
+import { getPageListFeature, addFeature, getFeatureById, updateFeature, deleteFeature, getFeatureItemListByFeatureId, addFeatureItem, deleteFeatureItem, deleteFeatureItemAll, importFeatureItem, exportFeatureItem, verifyFeatureName } from '@/api/system/systemPolicy'
 export default {
     name: 'DataFeature',
     dicts: ['sys_feature_type', 'sys_source'],
@@ -311,6 +307,8 @@ export default {
             // 临时变量（对照表动态行）
             tempFeatureKey: '',
             tempFeatureVal: '',
+            tempFeatureName: '',
+            tempFeatureType: '',
             rules: {
                 id: { required: true, message: '请输入id', trigger: 'blur' },
                 featureName: { required: true, message: '请输入名称', trigger: 'blur' },
@@ -391,6 +389,8 @@ export default {
             }
             this.tempFeatureKey = ''
             this.tempFeatureVal = ''
+            this.tempFeatureName = ''
+            this.tempFeatureType = ''
             this.drawerVisible = true
         },
         // 删除选中项
@@ -452,7 +452,7 @@ export default {
             if (row.featureType == '1') {
                 this.form.featureValue = res.data.featureValue
                 this.form.mappingList = [] // 清空对照表数据
-            } else if (row.featureType == '2') {
+            } else if (row.featureType == '2' || row.featureType == '3') {
                 // 解析特征值为键值对
                 this.getFeatureItemListByFeatureId(row)
                 this.form.featureValue = '' // 正则模式的特征值置空
@@ -460,13 +460,16 @@ export default {
             this.mappingPagination.total = this.form.mappingList.length;
             this.tempFeatureKey = ''
             this.tempFeatureVal = ''
+            this.tempFeatureName = ''
+            this.tempFeatureType = ''
         },
         // 查询对照表数据
         async getFeatureItemListByFeatureId(row) {
             const params = {
                 featureId: row.id,
                 pageNum: 1,
-                pageSize: 10
+                pageSize: 10,
+                featureType: row.featureType
             }
             const res = await getFeatureItemListByFeatureId(params)
             this.form.mappingList = res.data.records
@@ -488,38 +491,69 @@ export default {
         },
         // 对照表：新增一行
         async addMappingRow() {
-            if (this.tempFeatureKey && this.tempFeatureVal) {
-                // 检查是否已存在相同的特征值
-                const exists = this.form.mappingList.some(item => item.itemKey === this.tempFeatureKey)
-                if (exists) {
-                    this.$message.warning('该特征值已存在')
-                    return
-                }
-
-                if (this.form.id != '系统默认生成') {
-                    const params = {
-                        id: this.form.id,
-                        itemKey: this.tempFeatureKey,
-                        itemValue: this.tempFeatureVal
-                    }
-                    await addFeatureItem(params)
-                } else {
-                    this.form.mappingList.push({
-                        itemKey: this.tempFeatureKey,
-                        itemValue: this.tempFeatureVal
-                    })
-                }
-                this.tempFeatureKey = ''
-                this.tempFeatureVal = ''
-            } else {
-                this.$message.warning('特征值和对照含义不能为空')
+            // 基础校验：输入是否为空
+            if (!this.tempFeatureKey || !this.tempFeatureVal || !this.tempFeatureName || !this.tempFeatureType) {
+                this.$message.warning('特征值、对照含义、字段名、字段备注不能为空');
+                return;
             }
-            this.getFeatureItemListByFeatureId(this.form);
-        },
-        // 对照表：删除一行
-        deleteMappingRow(index) {
-            this.form.mappingList.splice(index, 1)
-            this.getFeatureItemListByFeatureId(this.form);
+
+            // 校验：特征值是否已存在（统一判断条件）
+            // const exists = this.form.mappingList.some(item =>
+            //     item.tableName === this.tempFeatureKey || item.itemKey === this.tempFeatureKey
+            // );
+            // if (exists) {
+            //     this.$message.warning('该特征值已存在');
+            //     return;
+            // }
+
+            // 构造通用参数（提取公共逻辑）
+            const commonParams = {
+                id: this.form.id == '系统默认生成' ? null : this.form.id,
+                featureType: this.form.featureType
+            };
+
+            // 根据 featureType 差异化处理
+            let requestParams;
+            switch (this.form.featureType) {
+                case '1':
+                case '2':
+                    requestParams = {
+                        ...commonParams,
+                        itemKey: this.tempFeatureKey,
+                        itemValue: this.tempFeatureVal
+                    };
+                    break;
+                case '3':
+                    requestParams = {
+                        ...commonParams,
+                        tableName: this.tempFeatureKey,
+                        tableRemark: this.tempFeatureVal,
+                        fieldName: this.tempFeatureName,
+                        fieldRemark: this.tempFeatureType
+                    };
+                    break;
+                default:
+                    this.$message.warning('无效的特征类型');
+                    return;
+            }
+
+            // 调用接口或本地添加（统一逻辑）
+            if (this.form.id !== '系统默认生成') {
+                await addFeatureItem(requestParams);
+                this.getFeatureItemListByFeatureId(this.form);
+            } else {
+                this.form.mappingList.push(
+                    this.form.featureType === '3' ? requestParams : {
+                        itemKey: requestParams.itemKey,
+                        itemValue: requestParams.itemValue,
+                    }
+                );
+            }
+            // 统一清空输入（减少重复代码）
+            this.tempFeatureKey = '';
+            this.tempFeatureVal = '';
+            this.tempFeatureName = '';
+            this.tempFeatureType = '';
         },
         // 确认提交
         async handleConfirm() {
@@ -529,10 +563,24 @@ export default {
                 return
             }
 
-            if (this.form.featureType === '2' && this.form.mappingList.length === 0) {
+            if ((this.form.featureType === '2' || this.form.featureType === '3') && this.form.mappingList.length === 0) {
                 this.$message.warning('请添加至少一条对照数据')
                 return
             }
+            // 验证特征名称是否存在
+            const params = { featureName: this.form.featureName }
+            try {
+                const res = await verifyFeatureName(params)
+                // 如果返回500，提示并终止执行
+                // if (res.code === 500) {
+                //     this.$message.warning('特征名称已存在')
+                //     return
+                // }
+            } catch (error) {
+                // this.$message.error(error.message || '未知错误')
+                return
+            }
+
             this.loading = true;
 
             // 实际项目中这里会调用保存接口
@@ -544,8 +592,8 @@ export default {
                     featureType: this.form.featureType,
                     featureSource: this.form.source,
                     featureDescribe: this.form.description,
-                    featureItemList: this.form.featureType == '1'
-                        ? [{ itemKey: this.form.featureValue }]
+                    [this.form.featureType == '3' ? 'featureDataDictionariesList' : 'featureItemList']: this.form.featureType == '1'
+                        ? [{ tableName: this.form.featureValue }]
                         : this.form.mappingList
                 }
                 console.log('提交数据：', submitData)
@@ -561,7 +609,7 @@ export default {
                     featureSource: this.form.source,
                     featureDescribe: this.form.description,
                     featureItemList: this.form.featureType == '1'
-                        ? [{ itemKey: this.form.featureValue }]
+                        ? [{ tableName: this.form.featureValue }]
                         : this.form.mappingList
                 }
                 console.log('提交数据：', submitData)
@@ -616,7 +664,8 @@ export default {
             }).then(async () => {
                 const keysToDelete = this.selectedMappingRows.map(item => item.id)
                 const params = {
-                    ids: keysToDelete
+                    ids: keysToDelete,
+                    featureType: this.form.featureType
                 }
                 await deleteFeatureItem(params)
                 this.selectedMappingRows = []
@@ -656,6 +705,10 @@ export default {
                     const formData = new FormData();
                     // 追加文件流（注意：后端接口需对应此参数名，如"file"）
                     formData.append('file', file);
+                    // 追加特征类型（根据后端需求传递，如当前编辑的特征类型）
+                    if (this.form.featureType) {
+                        formData.append('featureType', this.form.featureType);
+                    }
                     // 追加特征ID（根据后端需求传递，如当前编辑的特征ID）
                     if (this.form.id && this.form.id !== '系统默认生成') {
                         formData.append('id', this.form.id);
@@ -686,30 +739,34 @@ export default {
             }
 
             try {
-                // 1. 按格式拼接数据（key,value 每行一条）
-                const exportContent = this.form.mappingList
-                    .map(item => `${item.itemKey},${item.itemValue}`)
-                    .join('\n');
+                // 准备请求参数
+                const requestData = {
+                    id: this.form.id, // 假设特征ID存储在form中
+                    featureType: this.form.featureType, // 要导出的映射列表
+                };
 
-                // 2. 创建Blob对象（UTF-8编码）
-                const blob = new Blob(['\ufeff' + exportContent], { type: 'text/plain;charset=utf-8' });
-                // \ufeff 是BOM头，用于解决Windows系统下Excel打开UTF-8文件乱码问题
+                // 调用导出接口
+                exportFeatureItem(requestData).then(response => {
+                    // 创建Blob对象 - 使用Excel的MIME类型
+                    const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 
-                // 3. 创建下载链接
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                // 文件名建议包含特征名称，如“特征名称_对照表.txt”
-                // a.download = `${this.form.featureName || '特征'}_对照表.txt`;
-                a.download = '特征值_对照表.txt';
-                document.body.appendChild(a);
+                    // 创建下载链接
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    // 文件名使用标准Excel扩展名.xlsx
+                    a.download = `${this.form.featureName || '特征'}_对照表.xlsx`;
+                    document.body.appendChild(a);
 
-                // 4. 触发下载并清理
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                    // 触发下载并清理
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
 
-                this.$message.success('导出成功');
+                    this.$message.success('导出成功');
+                }).catch(error => {
+                    this.$message.error('导出失败：' + error.message);
+                });
             } catch (error) {
                 this.$message.error('导出失败：' + error.message);
             }
@@ -722,7 +779,8 @@ export default {
                 type: 'warning'
             }).then(async () => {
                 const params = {
-                    id: this.form.id
+                    id: this.form.id,
+                    featureType: this.form.featureType
                 }
                 await deleteFeatureItemAll(params)
                 this.form.mappingList = []
@@ -796,7 +854,8 @@ export default {
     margin-bottom: 15px;
 }
 
-.mapping-table-container,.table-container {
+.mapping-table-container,
+.table-container {
     width: 100%;
 }
 
