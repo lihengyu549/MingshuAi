@@ -731,7 +731,7 @@ export default {
             ifConfigurationParameters: this.form.ifConfigurationParameters ? '1' : '0',
             ifTechnicalIdentifier: this.form.ifTechnicalIdentifier ? '1' : '0',
             ifRedundantFields: this.form.ifRedundantFields ? '1' : '0',
-            classificationState: this.form.classificationState.join(',') ? this.form.classificationState.join(',') : '0',
+            classificationState: this.form.classificationState ? this.form.classificationState.join(',') : '0',
 
           }
           if (this.form.isAddTasks === '1') {
