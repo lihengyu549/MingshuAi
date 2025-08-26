@@ -228,7 +228,9 @@ export default {
 
 .label-text {
     line-height: 36px;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 14px;
+    color: #26244ce0;
 }
 
 /* 列表样式 */

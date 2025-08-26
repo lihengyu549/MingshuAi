@@ -21,7 +21,7 @@
         <span>整体进度</span>
         <div class="custom-progress-container">
           <el-progress :percentage="progressPercent ? progressPercent : 0" :format="progressFormat"
-            :status="status == 'COMPLETE' ? 'success' : 'exception'">
+            :status="statusIcon">
           </el-progress>
         </div>
       </div>
@@ -119,6 +119,7 @@
 import { getAnalyseLog } from "@/api/system/protectCategory"
 // 在文件开头添加导入语句
 import { debounce } from '@/utils/index';
+import { status } from "nprogress";
 export default {
   name: 'TaskProgress',
   data() {
@@ -163,10 +164,24 @@ export default {
         return 'info';
       }
     },
+    // 优化后的状态图标方法
+    statusIcon() {
+      // 使用对象映射替代多个if-else条件判断
+      const statusMap = {
+        'COMPLETE': 'success',
+        'KILLED': 'success',
+        'PAUSED': 'warning',
+        'ERR': 'exception'
+        // 移除RUNNING、PAUSEDING、KILLEDING对应的空字符串值
+      };
+
+      // 返回对应状态的值，如果不存在则返回undefined（Vue会自动跳过这个属性）
+      return statusMap[this.status];
+    },
     // tab控制
-      activeTab() {
-        return this.status === 'RUNNING' ? 'realtime' : 'analysis';
-      },
+    activeTab() {
+      return this.status === 'RUNNING' ? 'realtime' : 'analysis';
+    },
   },
   mounted() {
     this.initTaskInfo();
@@ -246,7 +261,7 @@ export default {
           // 更新进度与状态
           this.progressCurrent = message.progressCurrent ? message.progressCurrent : this.progressCurrent;
           this.progressTotal = message.progressTotal ? message.progressTotal : this.progressTotal;
-          this.runTime = message.runTime;
+          this.runTime = message?.runTime || this.runTime;
           this.status = message.status;
           this.statusName = message.statusName;
           this.startTime = message.startTime;
