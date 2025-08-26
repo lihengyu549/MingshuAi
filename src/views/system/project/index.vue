@@ -57,8 +57,8 @@
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
           </el-form-item>
           <div style="margin: 20px 0 20px 25px;">
-            <el-button type="primary" icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
-            <el-button type="primary" icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
+            <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
+            <el-button type="primary" plain icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
           </div>
         </el-form>
         <el-table v-loading="loading" :data="protectTableFieldList" height="630px" ref="tableRef" class="tableBox">
@@ -111,7 +111,7 @@
       <el-button style="margin-left: 100px;" size="small" type="text" @click="downloadFile" id="btnDownload"
         icon="el-icon-download">样例下载</el-button>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" plain @click="submitForm">确 定</el-button>
         <el-button @click="importcancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -161,7 +161,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">确
+        <el-button type="primary" plain v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">确
           定</el-button>
         <el-button @click="addCancel">取 消</el-button>
       </div>

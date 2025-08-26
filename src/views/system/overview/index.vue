@@ -154,7 +154,7 @@
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="deblockingVisible = false">取 消</el-button>
-        <el-button type="primary" @click="definiteUnsealing(deblockingIp)">确 定</el-button>
+        <el-button type="primary" plain @click="definiteUnsealing(deblockingIp)">确 定</el-button>
       </span>
     </el-dialog>
     <!-- 攻击IP排行榜 -->
@@ -166,7 +166,7 @@
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="blacklistVisible = false">取 消</el-button>
-        <el-button type="primary" @click="requireBlack(blackIp)">确 定</el-button>
+        <el-button type="primary" plain @click="requireBlack(blackIp)">确 定</el-button>
       </span>
     </el-dialog>
     <!-- 详情 -->
@@ -219,7 +219,7 @@
 
         <span slot="footer" class="dialog-footer">
           <el-button @click="whiteVisible = false">取 消</el-button>
-          <el-button type="primary" @click="reqWhiteList(particularsTab.uri)">确 定</el-button>
+          <el-button type="primary" plain @click="reqWhiteList(particularsTab.uri)">确 定</el-button>
         </span>
       </el-dialog>
     </el-dialog>

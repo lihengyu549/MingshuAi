@@ -46,7 +46,7 @@
           <el-button icon="el-icon-refresh-right" size="small" @click="rotateRight()"></el-button>
         </el-col>
         <el-col :lg="{span: 2, offset: 6}" :sm="2" :xs="2">
-          <el-button type="primary" size="small" @click="uploadImg()">提 交</el-button>
+          <el-button type="primary" plain size="small" @click="uploadImg()">提 交</el-button>
         </el-col>
       </el-row>
     </el-dialog>

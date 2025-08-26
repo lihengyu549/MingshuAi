@@ -101,7 +101,7 @@
           </span>
           <el-input v-model="info.genPath">
             <el-dropdown slot="append">
-              <el-button type="primary">
+              <el-button type="primary" plain>
                 最近路径快速选择
                 <i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>

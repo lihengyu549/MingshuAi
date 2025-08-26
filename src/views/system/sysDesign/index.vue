@@ -49,7 +49,7 @@
         </div>
       </div>
       <div class="foot_btn">
-        <el-button type="primary" @click="submit">确 定</el-button>
+        <el-button type="primary" plain @click="submit">确 定</el-button>
       </div>
     </el-card>
   </div>

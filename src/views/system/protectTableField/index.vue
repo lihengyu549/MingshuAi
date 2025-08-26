@@ -54,7 +54,7 @@
           </el-form-item>
           <div style="margin: 20px 20px 20px 0; display: flex;justify-content: flex-end;">
             <!-- <el-button type="primary" icon="el-icon-link" size="medium" @click="apiSumbit()">API调用</el-button> -->
-            <el-button type="primary" icon="el-icon-document" size="medium" @click="downloadFile()">清单导出</el-button>
+            <el-button type="primary" plain icon="el-icon-document" size="medium" @click="downloadFile()">清单导出</el-button>
           </div>
         </el-form>
 
