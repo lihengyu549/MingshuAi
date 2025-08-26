@@ -46,4 +46,20 @@ export function updateCategoryLowerDataById(data) {
     })
 }
 
+// 经验引用下拉框查询接口
+export function getFeatureSelect(data) {
+    return request({
+        url: '/system/feature/getFeatureSelect',
+        method: 'get',
+        params: data
+    })
+}
 
+// 经验引用选择调用接口
+export function addExperienceQuote(data) {
+    return request({
+        url: '/system/categoryLowerData/addExperienceQuote',
+        method: 'post',
+        data: data
+    })
+}

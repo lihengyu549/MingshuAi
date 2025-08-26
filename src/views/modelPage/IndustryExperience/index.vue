@@ -20,7 +20,7 @@
                     <el-dropdown-menu slot="dropdown">
                         <!-- 循环动态生成下拉项 -->
                         <el-dropdown-item v-for="item in referenceOptions" :key="item.id" :command="item.id">
-                            {{ item.name }} <!-- 显示选项名称 -->
+                            {{ item.featureName }} <!-- 显示选项名称 -->
                         </el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
@@ -34,7 +34,8 @@
                 <!-- 根据Tab名称显示不同表格 -->
                 <div v-loading="loading" class="table-container">
                     <!-- 拼音对照表或英文对照表 - 双列表格 -->
-                    <el-table v-if="activeTab === '拼音对照表' || activeTab === '英文对照表'" :data="tableData" border :key="activeTab">
+                    <el-table v-if="activeTab === '拼音对照表' || activeTab === '英文对照表'" :data="tableData" border
+                        :key="activeTab">
                         <el-table-column prop="itemKey" label="特征值">
                         </el-table-column>
                         <el-table-column prop="itemValue" label="对照含义">
@@ -67,7 +68,7 @@
 
 
 <script>
-import { getCategoryLowerDataByType, getCategoryList } from "@/api/system/IndustryExperience";
+import { getCategoryLowerDataByType, getCategoryList, getFeatureSelect, addExperienceQuote } from "@/api/system/IndustryExperience";
 import { getDicts } from "@/api/system/dict/data";
 export default {
     dicts: ['sys_industry_type'],
@@ -86,20 +87,7 @@ export default {
             tableData: [],
 
             loading: false,
-            referenceOptions: [
-                {
-                    id: 1,
-                    name: '引用1'
-                },
-                {
-                    id: 2,
-                    name: '引用2'
-                },
-                {
-                    id: 3,
-                    name: '引用3'
-                }
-            ],// 经验引用下拉选项
+            referenceOptions: [],// 经验引用下拉选项
         }
     },
     methods: {
@@ -110,9 +98,11 @@ export default {
             this.selectedStandard = this.standardOptions[0]?.categoryName || ''
             this.activeTab = this.dict.type.sys_industry_type[0]?.label || ''
 
-            // 假设获取经验引用选项的接口为 getReferenceOptions()
-            // const refResponse = await getReferenceOptions(); // 自定义接口，需实际实现
-            // this.referenceOptions = refResponse.data; // 假设返回格式：[{id: 1, name: '引用1'}, ...]
+            // 假设获取经验引用选项的接口为 getFeatureSelect()
+
+            const refResponse = await getFeatureSelect({ featureType: this.dict.type.sys_industry_type[0]?.value }); // 自定义接口，需实际实现
+            console.log('refResponse', refResponse);
+            this.referenceOptions = refResponse.data;
 
             if (this.standardOptions[0]?.id && this.dict.type.sys_industry_type[0]?.value) {
                 this.fetchListData(this.standardOptions[0].id, this.dict.type.sys_industry_type[0].value);
@@ -120,6 +110,13 @@ export default {
         },
         // 请求列表数据
         async fetchListData(id, val) {
+            console.log('调用fetchListData', { id, val });
+            // 参数校验
+            if (!id || !val) {
+                console.error('fetchListData参数不完整', { id, val });
+                this.loading = false;
+                return;
+            }
             this.loading = true
             let resParams = {
                 categoryId: id,
@@ -145,13 +142,13 @@ export default {
                     // 转换为四列表格数据格式
                     this.tableData = response.data.map(item => {
                         // 这里假设content格式为"表名,表注释,字段名称,字段注释"，可根据实际格式调整
-                        const [tableName, tableRemark, fieldName, fieldRemark] = item.content.split(',')
+                        // const [tableName, tableRemark, fieldName, fieldRemark] = item.content.split(',')
                         return {
                             id: item.id,
-                            tableName: tableName || '',
-                            tableRemark: tableRemark || '',
-                            fieldName: fieldName || '',
-                            fieldRemark: fieldRemark || '',
+                            tableName: item.tableName || '',
+                            tableRemark: item.tableRemark || '',
+                            fieldName: item.fieldName || '',
+                            fieldRemark: item.fieldRemark || '',
                             categoryId: item.categoryId,
                             dicType: item.dicType
                         }
@@ -160,7 +157,6 @@ export default {
                     // 保持原列表数据格式
                     this.listData = response.data
                 }
-                console.log('listData', this.listData);
             } catch (error) {
                 console.error('获取数据失败', error)
             } finally {
@@ -187,24 +183,37 @@ export default {
         },
 
         // 经验引用按钮点击事件
-        // 处理经验引用下拉项点击
-        handleReferenceItemClick(command) {
-            console.log('command', command);
-            switch (command) {
-                case 1:
-                    this.$message.info('执行引用经验 1 的逻辑');
-                    break;
-                case 2:
-                    this.$message.info('执行引用经验 2 的逻辑');
-                    break;
-                case 3:
-                    this.$message.info('执行引用经验 3 的逻辑');
-                    break;
-                default:
-                    break;
-            }
-        },
+        async handleReferenceItemClick(command) {
+            try {
+                // 先获取categoryId和dicType
+                const categoryId = this.standardOptions.find(item => item.categoryName === this.selectedStandard)?.id;
+                const dicType = this.dict.type.sys_industry_type.find(item => item.label === this.activeTab)?.value;
 
+                // 参数校验
+                if (!categoryId || !dicType) {
+                    console.error('缺少必要参数', { categoryId, dicType });
+                    this.$message.error('引用失败：参数不完整');
+                    return;
+                }
+
+                // 调用引用接口
+                await addExperienceQuote({
+                    categoryId,
+                    dicType,
+                    featureId: command,
+                });
+
+                console.log('引用成功，准备刷新数据', { categoryId, dicType });
+
+                // 刷新数据
+                await this.fetchListData(categoryId, dicType);
+
+                this.$message.success('引用成功');
+            } catch (error) {
+                console.error('引用经验失败', error);
+                this.$message.error('引用失败：' + (error.message || '未知错误'));
+            }
+        }
     },
     created() {
         this.init()
