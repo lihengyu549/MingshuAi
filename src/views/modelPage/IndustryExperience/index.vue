@@ -34,8 +34,7 @@
                 <!-- 根据Tab名称显示不同表格 -->
                 <div v-loading="loading" class="table-container">
                     <!-- 拼音对照表或英文对照表 - 双列表格 -->
-                    <el-table v-if="activeTab === '拼音对照表' || activeTab === '英文对照表'" :data="tableData" border
-                        style="width: 100%">
+                    <el-table v-if="activeTab === '拼音对照表' || activeTab === '英文对照表'" :data="tableData" border :key="activeTab">
                         <el-table-column prop="itemKey" label="特征值">
                         </el-table-column>
                         <el-table-column prop="itemValue" label="对照含义">
@@ -43,7 +42,7 @@
                     </el-table>
 
                     <!-- 数据字典 - 四列表格 -->
-                    <el-table v-if="activeTab === '数据字典'" :data="tableData" border style="width: 100%">
+                    <el-table v-if="activeTab === '数据字典'" :data="tableData" border :key="activeTab">
                         <el-table-column prop="tableName" label="表名">
                         </el-table-column>
                         <el-table-column prop="tableRemark" label="表注释">
@@ -133,11 +132,11 @@ export default {
                     // 转换为双列表格数据格式
                     this.tableData = response.data.map(item => {
                         // 这里假设content格式为"特征值=对照含义"，可根据实际格式调整
-                        const [itemKey, itemValue] = item.content.split('=')
+                        // const [itemKey, itemValue] = item.content.split('=')
                         return {
                             id: item.id,
-                            itemKey: itemKey || item.content,
-                            itemValue: itemValue || '',
+                            itemKey: item.itemKey || '',
+                            itemValue: item.itemValue || '',
                             categoryId: item.categoryId,
                             dicType: item.dicType
                         }
