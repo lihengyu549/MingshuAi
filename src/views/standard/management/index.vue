@@ -23,15 +23,15 @@
         <el-input v-model="queryParams.industryCategory" @input="inputSearch" placeholder="请输入行业类别" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item class="searchBtn">
+      <!-- <el-form-item class="searchBtn">
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
-      </el-form-item>
+      </el-form-item> -->
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="managementImport">标准导入</el-button>
       </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+      <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
     <div class="listBox">
       <div class="listBox_item" v-for="item in proxysList">

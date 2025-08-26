@@ -78,11 +78,9 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item class="searchBtn">
+          <!-- <el-form-item class="searchBtn">
             <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
-          </el-form-item>
-          <!-- <div style="margin: 20px 0 20px 25px;">
-          </div> -->
+          </el-form-item> -->
         </el-form>
         <el-row :gutter="10" class="mb8">
           <el-col :span="1.5">
@@ -91,7 +89,7 @@
           <el-col :span="1.5">
             <el-button type="primary" plain icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
           </el-col>
-          <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+          <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
         </el-row>
         <el-table v-loading="loading" :data="protectTableFieldList" height="650px" ref="tableRef" class="tableBox">
           <el-table-column type="selection" width="60" align="center">

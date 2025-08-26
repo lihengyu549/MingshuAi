@@ -36,9 +36,9 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item class="searchBtn">
+      <!-- <el-form-item class="searchBtn">
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
-      </el-form-item>
+      </el-form-item> -->
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
@@ -47,7 +47,7 @@
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除任务</el-button>
       </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+      <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
     <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
