@@ -106,7 +106,7 @@
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="whiteVisible = false">取 消</el-button>
-        <el-button type="primary" @click="reqWhiteList()">确 定</el-button>
+        <el-button type="primary" plain @click="reqWhiteList()">确 定</el-button>
       </span>
     </el-dialog>
     <!-- 黑名单 -->
@@ -117,7 +117,7 @@
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="blacklistVisible = false">取 消</el-button>
-        <el-button type="primary" @click="requireBlack(blackIp)">确 定</el-button>
+        <el-button type="primary" plain @click="requireBlack(blackIp)">确 定</el-button>
       </span>
     </el-dialog>
     <el-dialog title="解封IP" append-to-body :close-on-click-modal="false" :visible.sync="deblockingVisible" width="20%">
@@ -127,7 +127,7 @@
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="deblockingVisible = false">取 消</el-button>
-        <el-button type="primary" @click="requirelockIp(lockIp)">确 定</el-button>
+        <el-button type="primary" plain @click="requirelockIp(lockIp)">确 定</el-button>
       </span>
     </el-dialog>
     <el-dialog width="40%" title="HTTP详情" :close-on-click-modal="false" :visible.sync="HTTPVisible" append-to-body>

@@ -29,7 +29,7 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="managementImport">标准导入</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="managementImport">标准导入</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -118,7 +118,7 @@
       <el-button style="margin-left: 100px;" size="small" type="text" @click="downloadFile" id="btnDownload"
         icon="el-icon-download">样例下载</el-button>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" plain @click="submitForm">确 定</el-button>
         <el-button @click="closeFn">取消</el-button>
       </div>
     </el-dialog>

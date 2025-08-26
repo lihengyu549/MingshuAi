@@ -40,13 +40,13 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd">新增数据库</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">新增数据库</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleEcelFn">新增Excel文件</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleEcelFn">新增Excel文件</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
+        <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -162,7 +162,7 @@
         </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" plain @click="submitForm">确 定</el-button>
         <el-button @click="scanContentCanlce">取消</el-button>
       </div>
     </el-dialog>
@@ -196,7 +196,7 @@
       <el-button style="margin-left: 100px;" size="small" type="text" @click="downloadFile" id="btnDownload"
         icon="el-icon-download">样例下载</el-button>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitFormExcelFn">确 定</el-button>
+        <el-button type="primary" plain @click="submitFormExcelFn">确 定</el-button>
         <el-button @click="importcancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -211,7 +211,7 @@
         :scanContentTreeData="scanContentTreeData" :databaseTableNameParama="databaseTableNameParama"
         ref="scanContentTreeRef" />
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="scanContentSubmitFn">确 定</el-button>
+        <el-button type="primary" plain @click="scanContentSubmitFn">确 定</el-button>
         <el-button @click="scanContentShow = false">取 消</el-button>
       </div>
     </el-dialog>

@@ -103,7 +103,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" plain @click="submitForm">确 定</el-button>
         <el-button @click="cancleFn">取消</el-button>
       </div>
     </el-dialog>
@@ -113,7 +113,7 @@
         :scanContentTreeData="scanContentTreeData" :databaseTableNameParama="databaseTableNameParama"
         ref="scanContentTreeRef" />
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="scanContentSubmitFn">确 定</el-button>
+        <el-button type="primary" plain @click="scanContentSubmitFn">确 定</el-button>
         <el-button @click="scanContentShow = false">取 消</el-button>
       </div>
     </el-dialog>

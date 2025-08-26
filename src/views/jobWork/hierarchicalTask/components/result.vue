@@ -188,7 +188,7 @@
       </el-form>
       <template #footer>
         <span>
-          <el-button type="primary" @click="updataResultFn"> 确定 </el-button>
+          <el-button type="primary" plain @click="updataResultFn"> 确定 </el-button>
           <el-button @click="updataResultCanelFn">取消</el-button>
         </span>
       </template>

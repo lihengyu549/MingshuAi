@@ -13,7 +13,7 @@
             <el-input size="mini" style="width: 250px; height: 15px" v-model="input"></el-input>
           </div>
           <div class="search-btn">
-            <el-button type="primary" style="width: 48px; height: 24px; line-height: 5px; padding: 1px">搜索</el-button>
+            <el-button type="primary" plain style="width: 48px; height: 24px; line-height: 5px; padding: 1px">搜索</el-button>
 
             <el-button style="width: 72px; height: 24px; line-height: 5px; padding: 1px">新建任务</el-button>
           </div>
@@ -75,7 +75,7 @@
                 </el-select>
               </div>
 
-              <el-button type="primary" style="
+              <el-button type="primary" plain style="
                     width: 48px;
                     height: 24px;
                     line-height: 5px;

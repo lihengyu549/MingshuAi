@@ -6,7 +6,7 @@
         <el-input v-model="queryParams.name" placeholder="请输入项目名称" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button type="primary" plain icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
@@ -128,7 +128,7 @@
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确定</el-button>
+          <el-button type="primary" plain @click="submitForm">确定</el-button>
           <el-button @click="cancel">取 消</el-button>
         </div>
       </el-dialog>
@@ -225,7 +225,7 @@
               <el-input v-model="protectionForm.portNum" placeholder="请输入端口号" />
             </el-form-item>
             <el-form-item class="kaiqifanghu">
-              <el-button type="primary" @click="openGuard('protectionForm')">开启防护</el-button>
+              <el-button type="primary" plain @click="openGuard('protectionForm')">开启防护</el-button>
             </el-form-item>
           </el-form>
         </div>
@@ -248,7 +248,7 @@
         </div>
         <div slot="footer" class="dialog-footer">
           <el-button>重置表单</el-button>
-          <el-button type="primary">下一步</el-button>
+          <el-button type="primary" plain>下一步</el-button>
         </div>
       </el-dialog>
     </div>

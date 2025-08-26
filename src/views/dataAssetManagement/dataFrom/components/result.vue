@@ -51,10 +51,10 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-aim" size="medium" @click="handleAdda">确认勾选项</el-button>
+        <el-button type="primary" plain icon="el-icon-aim" size="medium" @click="handleAdda">确认勾选项</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-more" size="medium" @click="handleEcelFn">确认过滤项</el-button>
+        <el-button type="primary" plain icon="el-icon-more" size="medium" @click="handleEcelFn">确认过滤项</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -119,7 +119,7 @@
       </el-form>
       <template #footer>
         <span>
-          <el-button type="primary" @click="updataResultFn"> 确定 </el-button>
+          <el-button type="primary" plain @click="updataResultFn"> 确定 </el-button>
           <el-button @click="updataResultCanelFn">取消</el-button>
         </span>
       </template>

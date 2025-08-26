@@ -20,10 +20,10 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd">新增</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">新增</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="deleteFn">删除</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="deleteFn">删除</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -94,14 +94,14 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitFormFn">确 定</el-button>
+        <el-button type="primary" plain @click="submitFormFn">确 定</el-button>
         <el-button @click="importcancel">取 消</el-button>
       </div>
     </el-dialog>
     <el-dialog title="推送内容" :visible.sync="contentShow" width="850px">
       <Result v-if="contentShow" ref="ResultSon" :treeData="categoryList" :checkList="dialogData.pushBodyList" />
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="pushBodySumbit">确 定</el-button>
+        <el-button type="primary" plain @click="pushBodySumbit">确 定</el-button>
         <el-button @click="pushBodycancel">取 消</el-button>
       </div>
     </el-dialog>

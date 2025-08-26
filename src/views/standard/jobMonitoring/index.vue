@@ -86,10 +86,10 @@
         </el-form>
         <el-row :gutter="10" class="mb8">
           <el-col :span="1.5">
-            <el-button type="primary" icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
+            <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
           </el-col>
           <el-col :span="1.5">
-            <el-button type="primary" icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
+            <el-button type="primary" plain icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
           </el-col>
           <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
         </el-row>
@@ -201,7 +201,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">确
+        <el-button type="primary" plain v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">确
           定</el-button>
         <el-button @click="addCancel">取 消</el-button>
       </div>

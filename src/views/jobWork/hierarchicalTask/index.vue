@@ -42,10 +42,10 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="medium" @click="handleAdd">新增任务</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">新增任务</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-close" size="medium" @click="deleteFn">删除任务</el-button>
+        <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除任务</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -274,7 +274,7 @@
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer" style="display: flex;justify-content: flex-end;">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" plain @click="submitForm">确 定</el-button>
         <el-button @click="closeFn">取消</el-button>
       </div>
     </Drawer>

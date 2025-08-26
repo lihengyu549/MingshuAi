@@ -60,7 +60,7 @@
                             <el-option v-for="item in currentModel.availableModels" :key="item.value"
                                 :label="item.label" :value="item.value"></el-option>
                         </el-select>
-                        <el-button type="primary" style="margin-left: 10px;" @click="refreshModelList(currentModel.id)">
+                        <el-button type="primary" plain style="margin-left: 10px;" @click="refreshModelList(currentModel.id)">
                             刷新模型列表
                         </el-button>
                     </el-form-item>
@@ -114,7 +114,7 @@
                     <el-button type="primary" plain @click="handleTest" :disabled="!currentModel.enabled">
                         测试连接
                     </el-button>
-                    <el-button type="primary" style="margin-left: 10px;" @click="handleSave">
+                    <el-button type="primary" plain style="margin-left: 10px;" @click="handleSave">
                         保存配置
                     </el-button>
                 </div>

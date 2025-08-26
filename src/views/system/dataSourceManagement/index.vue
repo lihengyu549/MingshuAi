@@ -19,7 +19,7 @@
       </el-form-item>
 
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button type="primary" plain icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
@@ -151,7 +151,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="addSubmitForm()">确 定</el-button>
+        <el-button type="primary" plain @click="addSubmitForm()">确 定</el-button>
         <el-button @click="addCancel">取 消</el-button> 
       </div>
     </el-dialog>
@@ -196,7 +196,7 @@
             </el-option>
           </el-select>
           <div class="getDiv">
-            <el-button type="primary" @click="getDatabaseName">获 取</el-button>
+            <el-button type="primary" plain @click="getDatabaseName">获 取</el-button>
           </div>
         </el-form-item>
         <div class="impShow" v-show="showSucType > 0">
@@ -212,7 +212,7 @@
         </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" plain @click="submitForm">确 定</el-button>
         <el-button @click="connectTest('form')">测试</el-button>
         <!-- <el-button @click="cancel">取 消</el-button> -->
       </div>
@@ -234,7 +234,7 @@
           <el-checkbox v-model="checkList" label="启用NLP打标规则（姓名、民族、地址）"></el-checkbox>
         </div> -->
         <div style="text-align: right;">
-          <el-button type="primary" @click="markingCli">确定</el-button>
+          <el-button type="primary" plain @click="markingCli">确定</el-button>
         </div>
       </div>
     </el-dialog>
@@ -248,7 +248,7 @@
         </div>
         <div style="text-align: right;">
           <el-button @click="deleteVisible = false">取消</el-button>
-          <el-button type="primary" @click="deleteClick(serialNumber)">确定</el-button>
+          <el-button type="primary" plain @click="deleteClick(serialNumber)">确定</el-button>
         </div>
       </div>
     </el-dialog>

@@ -34,7 +34,7 @@
 
         <!-- 操作按钮区域 -->
         <div class="operation-buttons">
-            <el-button type="primary" @click="handleAdd">
+            <el-button type="primary" plain @click="handleAdd">
                 <!-- <i class="el-icon-plus"></i>  -->新增
             </el-button>
             <el-button type="primary" plain @click="handleDelete" :disabled="selectedRows.length === 0">
@@ -258,7 +258,7 @@
             <!-- 抽屉底部按钮 -->
             <div class="drawer-footer">
                 <el-button @click="drawerVisible = false" size="small">取消</el-button>
-                <el-button type="primary" @click="handleConfirm" v-if="!isView" size="small"
+                <el-button type="primary" plain @click="handleConfirm" v-if="!isView" size="small"
                     style="margin-left: 10px;">确认</el-button>
             </div>
         </el-drawer>

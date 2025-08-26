@@ -10,7 +10,7 @@
             </el-option>
           </el-select>
         </div>
-        <div style="height: 100%;"><el-button type="primary" size="medium" @click="handleExport()">导出报告</el-button>
+        <div style="height: 100%;"><el-button type="primary" plain size="medium" @click="handleExport()">导出报告</el-button>
         </div>
       </div>
       <el-tabs v-model="activeName" @tab-click="handleClick" :stretch="true">
