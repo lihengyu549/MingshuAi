@@ -66,7 +66,7 @@
         </template>
       </el-table-column>
       <el-table-column label="任务字段数" align="center" prop="fieldCount" />
-      <el-table-column label="执行状态" align="center" min-width="100" prop="maskComplete">
+      <el-table-column label="执行状态" align="center" width="120" prop="maskComplete">
         <template slot-scope="scope">
           <div class="runType">
             <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'" class="el-icon-loading" style="margin-right: 10px;font-size: 18px;"></i>
@@ -77,7 +77,7 @@
       </el-table-column>
       <el-table-column label="发布状态" align="center" prop="publishStatus">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'success'">{{ scope.row.publishStatus == 0 ? '未发布' : '已发布' }}</el-tag>
+          <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ? '未发布' : '已发布' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="更新时间" align="center" prop="updateTime" />
@@ -1163,6 +1163,5 @@ input[aria-hidden=true] {
 .runType {
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 </style>

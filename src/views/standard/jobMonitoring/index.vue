@@ -87,7 +87,7 @@
             <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
           </el-col>
           <el-col :span="1.5">
-            <el-button type="primary" plain icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
+            <el-button type="primary" plain icon="el-icon-close" size="medium" @click="enabledFn('删除')">删除</el-button>
           </el-col>
           <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
         </el-row>

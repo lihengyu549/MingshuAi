@@ -31,7 +31,7 @@
           v-hasPermi="['system:protectSensitiveRule:add']">新增</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
+        <el-button type="danger" plain icon="el-icon-close" size="mini" :disabled="multiple" @click="handleDelete"
           v-hasPermi="['system:protectSensitiveRule:remove']">删除</el-button>
       </el-col>
       <el-col :span="1.5">

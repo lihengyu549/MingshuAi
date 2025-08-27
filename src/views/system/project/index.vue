@@ -58,7 +58,7 @@
           </el-form-item>
           <div style="margin: 20px 0 20px 25px;">
             <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
-            <el-button type="primary" plain icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
+            <el-button type="primary" plain icon="el-icon-close" size="medium" @click="enabledFn('删除')">删除</el-button>
           </div>
         </el-form>
         <el-table v-loading="loading" :data="protectTableFieldList" height="630px" ref="tableRef" class="tableBox">

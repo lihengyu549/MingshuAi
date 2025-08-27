@@ -28,7 +28,8 @@
         </div>
         <div class="main_body">
           <div class="main_body_head">
-            <div v-for="item in yuanList" class="yuan" @click="yuanClick(item)" :style="item.bgcColor">{{ item.text }}
+            <div v-for="item in yuanList" class="yuan" @click="yuanClick(item)"><el-tag :type="item.type">{{ item.text
+                }}</el-tag>
             </div>
             <!-- <div class="yuan2 yuan">行标</div>
             <div class="yuan3 yuan">团标</div>
@@ -138,27 +139,32 @@ export default {
         {
           text: '国标',
           bgcColor: 'backgroundColor: #fbf4f5;',
-          value: '0'
+          value: '0',
+          type: 'danger'
         },
         {
           text: '行标',
           bgcColor: 'backgroundColor: #e1bee7;',
-          value: '1'
+          value: '1',
+          type: 'success'
         },
         {
           text: '地标',
           bgcColor: 'backgroundColor:#b2ebf2;',
-          value: '2'
+          value: '2',
+          type: 'info'
         },
         {
           text: '团标',
           bgcColor: 'backgroundColor:#ffe0b2;',
-          value: '3'
+          value: '3',
+          type: 'warning'
         },
         {
           text: '企标',
           bgcColor: 'backgroundColor:#b3e5fc;',
-          value: '4'
+          value: '4',
+          type: 'primary'
         },
       ],
       tableRightData: [
@@ -269,7 +275,8 @@ export default {
 <style scoped>
 /* @import url(); 引入公共css类 */
 .content {
-  background-color: #fff; /* #fafafc */
+  background-color: #fff;
+  /* #fafafc */
 }
 
 .headerview {
@@ -437,5 +444,12 @@ export default {
   100% {
     background-position: -400% 0;
   }
+}
+
+.el-tag--medium {
+  height: 100%;
+  width: 100%;
+  line-height: 60px;
+  border-radius: 50%;
 }
 </style>
