@@ -15,7 +15,7 @@
       <el-form-item>
       </el-form-item>
       <el-form-item class="searchBtn" label-width="0">
-        <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
+        <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
       </el-form-item>
     </el-form>
     <el-row :gutter="10" class="mb8">

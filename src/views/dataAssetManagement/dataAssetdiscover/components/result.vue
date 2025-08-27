@@ -13,7 +13,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="" class="searchBtn">
-        <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
+        <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
       </el-form-item>
     </el-form>
     <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->

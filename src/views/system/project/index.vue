@@ -54,7 +54,7 @@
             </el-select>
           </el-form-item>
           <el-form-item>
-            <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
+            <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
           </el-form-item>
           <div style="margin: 20px 0 20px 25px;">
             <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>

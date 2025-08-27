@@ -50,7 +50,7 @@
           </el-form-item>
           <el-form-item>
             <!-- <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button> -->
-            <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
+            <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
           </el-form-item>
           <div style="margin: 20px 20px 20px 0; display: flex;justify-content: flex-end;">
             <!-- <el-button type="primary" icon="el-icon-link" size="medium" @click="apiSumbit()">API调用</el-button> -->

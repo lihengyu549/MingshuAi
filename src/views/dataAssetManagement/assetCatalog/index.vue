@@ -38,7 +38,7 @@
             </el-select>
           </el-form-item>
           <el-form-item>
-            <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
+            <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
             <!-- <el-button icon="el-icon-s-opportunity" type="primary" size="small" @click="allFill">一键填充</el-button>
             <el-button icon="el-icon-s-help" type="primary" size="small" @click="allAssess">一键评估</el-button> -->
           </el-form-item>
@@ -136,7 +136,7 @@
           </el-select>
         </el-form-item> -->
         <el-form-item>
-          <el-button icon="el-icon-refresh" size="small" @click="resetDrawerSearch">重置</el-button>
+          <!-- <el-button icon="el-icon-refresh" size="small" @click="resetDrawerSearch">重置</el-button> -->
         </el-form-item>
       </el-form>
       <el-table :data="filteredDrawerData" ref="tableRef" height="calc(100% - 100px)" :key="tableKey" border
