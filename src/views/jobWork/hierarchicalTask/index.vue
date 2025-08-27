@@ -66,14 +66,18 @@
         </template>
       </el-table-column>
       <el-table-column label="任务字段数" align="center" prop="fieldCount" />
-      <el-table-column label="执行状态" align="center" prop="maskComplete">
+      <el-table-column label="执行状态" align="center" min-width="100" prop="maskComplete">
         <template slot-scope="scope">
-          <span>{{ stateMsg(scope.row.maskComplete) }}</span>
+          <div class="runType">
+            <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'" class="el-icon-loading" style="margin-right: 10px;font-size: 18px;"></i>
+            <svg-icon v-else :icon-class="scope.row.maskComplete" class="runIcon" style="margin-right: 10px;width: 20px;height: 20px;"></svg-icon>
+            <span>{{ stateMsg(scope.row.maskComplete) }}</span>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="发布状态" align="center" prop="publishStatus">
         <template slot-scope="scope">
-          <span>{{ scope.row.publishStatus == 0 ? '未发布' : '已发布' }}</span>
+          <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'success'">{{ scope.row.publishStatus == 0 ? '未发布' : '已发布' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="更新时间" align="center" prop="updateTime" />
@@ -186,7 +190,8 @@
         <el-row>
           <el-col :span="12">
             <el-form-item>
-              <el-switch v-model="form.ifStartAiFill" active-text="是否启用" :disabled="form.maskComplete == 'RUNNING' || form.maskComplete == 'PAUSED'" />
+              <el-switch v-model="form.ifStartAiFill" active-text="是否启用"
+                :disabled="form.maskComplete == 'RUNNING' || form.maskComplete == 'PAUSED'" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -195,7 +200,8 @@
         <el-row>
           <el-col :span="12">
             <el-form-item>
-              <el-switch v-model="form.ifStartTask" active-text="是否启用" :disabled="form.maskComplete == 'RUNNING' || form.maskComplete == 'PAUSED'" />
+              <el-switch v-model="form.ifStartTask" active-text="是否启用"
+                :disabled="form.maskComplete == 'RUNNING' || form.maskComplete == 'PAUSED'" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -910,7 +916,7 @@ export default {
         return
       }
     },
-    
+
     // 跳转任务监控
     toJobMonitoring(row) {
       if (row.maskComplete == 'NONE') {
@@ -1152,5 +1158,11 @@ input[aria-hidden=true] {
 /deep/.el-form-item__label,
 .el-switch__label span {
   font-size: 16px;
+}
+
+.runType {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
