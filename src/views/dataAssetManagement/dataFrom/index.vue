@@ -34,9 +34,9 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item class="searchBtn">
-        <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
-      </el-form-item>
+      <!-- <el-form-item class="searchBtn">
+        <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
+      </el-form-item> -->
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">

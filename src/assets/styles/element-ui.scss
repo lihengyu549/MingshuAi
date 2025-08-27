@@ -147,8 +147,12 @@ line-height: 33px;
 .el-date-editor--datetimerange.el-input, .el-date-editor--datetimerange.el-input__inner{
   width: 320px;
 }
-// 全局设置Element UI表单label样式（修改后）
+// 全局设置Element UI表单样式（修改后）
+.el-form{
+  margin-bottom: 50px;
+}
 .el-form-item__label {
   font-size: 14px !important;
   color: #26244ce0 !important;
 }
+

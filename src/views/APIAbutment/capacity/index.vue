@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
     <div class="header">
-      <el-button size="medium" type="primary" @click="addApiKeys()">创建API Key</el-button>
-      <el-button size="medium" type="primary" style="float:right" @click="showApiDoc = true">查看接口文档</el-button>
+      <el-button size="medium" type="primary" plain @click="addApiKeys()">创建API Key</el-button>
+      <el-button size="medium" type="primary" plain style="float:right" @click="showApiDoc = true">查看接口文档</el-button>
     </div>
     <el-table v-loading="loading" max-height="700px" class="tableBox" :data="tableList" ref="tableRef">
       <el-table-column label="API Key" width="300" align="center" prop="proxyToken">

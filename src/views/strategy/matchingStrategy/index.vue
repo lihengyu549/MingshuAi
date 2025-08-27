@@ -40,14 +40,14 @@
             <!-- <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button> -->
             <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
           </el-form-item>
-          <div style="margin: 20px 0 20px 25px;">
-            <el-button type="primary" plain icon="el-icon-plus" size="medium" :disabled="isChildrenNode !== 4"
-              @click="addFn">新增</el-button>
-            <el-button type="primary" plain icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
-            <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="enabledFn('启用')">启用</el-button>
-            <el-button type="primary" plain icon="el-icon-warning" size="medium" @click="enabledFn('禁用')">禁用</el-button>
-          </div>
         </el-form>
+        <div style="margin: 20px 0 20px 25px;">
+          <el-button type="primary" plain icon="el-icon-plus" size="medium" :disabled="isChildrenNode !== 4"
+            @click="addFn">新增</el-button>
+          <el-button type="primary" plain icon="el-icon-delete" size="medium" @click="enabledFn('删除')">删除</el-button>
+          <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="enabledFn('启用')">启用</el-button>
+          <el-button type="primary" plain icon="el-icon-warning" size="medium" @click="enabledFn('禁用')">禁用</el-button>
+        </div>
         <el-table v-loading="loading" :data="protectTableFieldList" ref="tableRef" height="630px" class="tableBox">
           <!-- <el-table-column width="55" align="center" /> -->
           <el-table-column type="selection" width="60" align="center">

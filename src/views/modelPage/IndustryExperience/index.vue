@@ -224,6 +224,10 @@ export default {
 <style scoped>
 .page-container {
     padding: 20px;
+
+    &>.el-row {
+        margin-bottom: 50px !important;
+    }
 }
 
 .label-text {
