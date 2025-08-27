@@ -65,7 +65,7 @@
           <el-button type="primary" plain icon="el-icon-upload2" size="mini" @click="handleImport"
             v-hasPermi="['system:api:edit']">导入</el-button>
         </el-col>
-        <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+        <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
       </el-row>
     </div>
     <el-table v-loading="loading" :data="apiList" @selection-change="handleSelectionChange"

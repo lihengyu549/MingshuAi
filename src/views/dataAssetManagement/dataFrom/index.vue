@@ -48,7 +48,7 @@
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
       </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+      <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
     <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
