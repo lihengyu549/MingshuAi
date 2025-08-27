@@ -84,13 +84,17 @@
     .el-submenu__title {
       &:hover {
         background-color: rgba(0, 0, 0, 0.06) !important;
+        border-radius: $base-menu-border-radius !important; // 添加圆角样式
+        // margin: 0 10px; // 添加边距让圆角效果更明显
       }
     }
 
     // 新增：菜单选中状态样式
-    .el-menu-item.is-active,
+    .el-menu-item.is-active, 
     .el-submenu__title.is-active {
       background-color: $base-menu-active-background !important;
+      border-radius: $base-menu-border-radius !important; // 添加圆角样式
+      // margin: 0 10px; // 可选：添加边距让圆角效果更明显
     }
 
     & .theme-dark .is-active>.el-submenu__title {
@@ -103,6 +107,8 @@
 
       &:hover {
         background-color: rgba(0, 0, 0, 0.06) !important;
+        border-radius: $base-menu-border-radius !important; // 添加圆角样式
+        // margin: 0 10px; // 添加边距让圆角效果更明显
       }
     }
 
@@ -212,6 +218,8 @@
     &:hover {
       // you can use $subMenuHover
       background-color: rgba(0, 0, 0, 0.06) !important;
+      border-radius: $base-menu-border-radius !important; // 添加圆角样式
+      margin: 0 10px; // 添加边距让圆角效果更明显
     }
   }
 

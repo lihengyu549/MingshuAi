@@ -8,6 +8,9 @@ $tiffany: #4AB7BD;
 $yellow: #FEC171;
 $panGreen: #30B08F;
 
+// 在变量定义区域添加圆角变量
+$base-menu-border-radius: 10px; // 可根据需要调整圆角大小
+
 // 默认菜单主题风格
 $base-menu-color: #26244ce0; // 菜单文字颜色（黑色）
 $base-menu-color-active: #26244ce0; // 选中菜单文字颜色（黑色）
