@@ -1,13 +1,13 @@
 <template>
     <div class="feature-management-container">
         <!-- 搜索区域卡片 -->
-        <el-form :inline="true" :model="searchForm">
+        <el-form :inline="true" :model="searchForm" class="yuanDataClass">
             <el-form-item label="特征名称:">
-                <el-input v-model="searchForm.featureName" placeholder="请输入特征名称" clearable style="width: 200px;"
+                <el-input v-model="searchForm.featureName" placeholder="请输入特征名称" clearable
                     @input="handleSearch" />
             </el-form-item>
             <el-form-item label="特征类型:">
-                <el-select v-model="searchForm.featureType" placeholder="请选择特征类型" clearable style="width: 180px;"
+                <el-select v-model="searchForm.featureType" placeholder="请选择特征类型" clearable
                     @change="handleSearch">
                     <el-option v-for="item in dict.type.sys_feature_type" :key="item.value" :label="item.label"
                         :value="item.value">
@@ -15,21 +15,21 @@
                 </el-select>
             </el-form-item>
             <el-form-item label="来源:">
-                <el-select v-model="searchForm.source" placeholder="请选择来源" clearable style="width: 180px;"
+                <el-select v-model="searchForm.source" placeholder="请选择来源" clearable
                     @change="handleSearch">
                     <el-option v-for="item in dict.type.sys_source" :key="item.value" :label="item.label"
                         :value="item.value">
                     </el-option>
                 </el-select>
             </el-form-item>
-            <el-form-item>
-                <!-- <el-button type="primary" @click="handleSearch">
-            <i class="el-icon-search"></i> 查询
-          </el-button> -->
+            <!-- <el-form-item>
+                <el-button type="primary" @click="handleSearch">
+                    <i class="el-icon-search"></i> 查询
+                </el-button>
                 <el-button @click="handleReset" style="margin-left: 10px;">
                     <i class="el-icon-refresh"></i> 重置
                 </el-button>
-            </el-form-item>
+            </el-form-item> -->
         </el-form>
 
         <!-- 操作按钮区域 -->
@@ -892,6 +892,22 @@ export default {
     font-weight: bold;
     padding-bottom: 20px;
     margin-bottom: 0;
+}
+
+.yuanDataClass /deep/ .el-form-item {
+    width: 30%;
+}
+
+.yuanDataClass /deep/ .el-form-item__label {
+    width: 25%;
+}
+
+.yuanDataClass /deep/ .el-form-item__content {
+    width: 75%;
+}
+
+.yuanDataClass /deep/ .el-select {
+    width: 100%;
 }
 
 .form-input {

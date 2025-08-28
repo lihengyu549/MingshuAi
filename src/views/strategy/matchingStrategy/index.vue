@@ -17,8 +17,8 @@
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" v-show="showSearch"
-          label-width="90px">
+        <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
+          v-show="showSearch" label-width="90px">
           <el-form-item label="规则名称" prop="ruleName">
             <el-input v-model="queryParams.ruleName" @input="inputSearch" placeholder="请输入规则名称" clearable
               @keyup.enter.native="handleQuery" />
@@ -481,7 +481,7 @@ export default {
         if (response.data.length > 0) {
           this.queryParams.categoryId = response.data[0].id;
           this.getProtectCategory(this.queryParams.categoryId);
-        }else {
+        } else {
           this.Loading = false
         }
       });
@@ -651,13 +651,20 @@ export default {
   }
 }
 
-.importForm /deep/ .el-form-item--medium {
-  width: 70%;
-
+.yuanDataClass /deep/ .el-form-item {
+  width: 30%;
 }
 
-.importForm /deep/ .el-form-item__content {
-  width: calc(100% - 145px);
+.yuanDataClass /deep/ .el-form-item__label {
+  width: 25%;
+}
+
+.yuanDataClass /deep/ .el-form-item__content {
+  width: 75%;
+}
+
+.yuanDataClass /deep/ .el-select {
+  width: 100%;
 }
 
 .uploadClass {

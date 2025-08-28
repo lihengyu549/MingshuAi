@@ -18,7 +18,7 @@
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" label-width="100px">
+        <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true">
           <el-form-item label="分类" class="addSelectClass">
             <el-select ref="resultSelectRef" v-model="resultFormNodeName" @change="handleQuery">
               <el-option style="height: 100%; padding: 0" value="">
@@ -54,7 +54,8 @@
           </el-form-item>
           <div style="margin: 20px 20px 20px 0; display: flex;justify-content: flex-end;">
             <!-- <el-button type="primary" icon="el-icon-link" size="medium" @click="apiSumbit()">API调用</el-button> -->
-            <el-button type="primary" plain icon="el-icon-document" size="medium" @click="downloadFile()">清单导出</el-button>
+            <el-button type="primary" plain icon="el-icon-document" size="medium"
+              @click="downloadFile()">清单导出</el-button>
           </div>
         </el-form>
 
@@ -589,7 +590,7 @@ Authorization:Bearer ${this.Token}`
       let data = {
         parentId: 1,
         needSub: 1,
-        ifAddUnclassified:2,
+        ifAddUnclassified: 2,
       };
       treeListI(data).then((resp) => {
         this.piiList = resp.data
@@ -613,7 +614,7 @@ Authorization:Bearer ${this.Token}`
       let data = {
         parentId: key,
         needSub: 1,
-        ifAddUnclassified:1,
+        ifAddUnclassified: 1,
       };
       treeListI(data).then((resp) => {
         this.categoryList = resp.data
@@ -759,13 +760,20 @@ Authorization:Bearer ${this.Token}`
   }
 }
 
-.importForm /deep/ .el-form-item--medium {
-  width: 70%;
-
+.yuanDataClass /deep/ .el-form-item {
+  width: 30%;
 }
 
-.importForm /deep/ .el-form-item__content {
-  width: calc(100% - 145px);
+.yuanDataClass /deep/ .el-form-item__label {
+  width: 25%;
+}
+
+.yuanDataClass /deep/ .el-form-item__content {
+  width: 75%;
+}
+
+.yuanDataClass /deep/ .el-select {
+  width: 100%;
 }
 
 .uploadClass {

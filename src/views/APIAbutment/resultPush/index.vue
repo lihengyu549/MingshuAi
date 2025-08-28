@@ -30,13 +30,13 @@
     <el-table v-loading="loading" height="700px" class="tableBox" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="任务名称" align="center" prop="taskName" width="150" show-overflow-tooltip/>
-      <el-table-column label="对接厂商" align="center" prop="providerName" width="150" show-overflow-tooltip/>
-      <el-table-column label="推送类型" align="center" prop="pushTypeName" width="150" show-overflow-tooltip/>
-      <el-table-column label="发布数据源名称" align="center" prop="sourceName" width="250" show-overflow-tooltip/>
-      <el-table-column label="分类分级标准" align="center" prop="standardName" show-overflow-tooltip/>
-      <el-table-column label="推送状态" align="center" prop="pushStatusName" width="150" show-overflow-tooltip/>
-      <el-table-column label="更新时间" align="center" prop="updateTime" width="250" show-overflow-tooltip/>
+      <el-table-column label="任务名称" align="center" prop="taskName" width="150" show-overflow-tooltip />
+      <el-table-column label="对接厂商" align="center" prop="providerName" width="150" show-overflow-tooltip />
+      <el-table-column label="推送类型" align="center" prop="pushTypeName" width="150" show-overflow-tooltip />
+      <el-table-column label="发布数据源名称" align="center" prop="sourceName" width="250" show-overflow-tooltip />
+      <el-table-column label="分类分级标准" align="center" prop="standardName" show-overflow-tooltip />
+      <el-table-column label="推送状态" align="center" prop="pushStatusName" width="150" show-overflow-tooltip />
+      <el-table-column label="更新时间" align="center" prop="updateTime" width="250" show-overflow-tooltip />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="150">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="handleEcelFn(scope.row)">编辑</el-button>
@@ -51,7 +51,7 @@
       <el-form class="dialogForm" :rules="dialogDataRules" :model="dialogData" size="medium" ref="dialogData"
         :inline="true" label-width="110px">
         <el-form-item label="任务名称" prop="taskName">
-          <el-input v-model="dialogData.taskName"   placeholder="请输入任务名称"></el-input>
+          <el-input v-model="dialogData.taskName" placeholder="请输入任务名称"></el-input>
         </el-form-item>
         <el-form-item label="推送类型" prop="pushType">
           <el-select clearable v-model="dialogData.pushType" placeholder="请选择">
@@ -67,17 +67,17 @@
           </el-select>
         </el-form-item>
         <el-form-item label="主机" prop="host">
-          <el-input v-model="dialogData.host"   placeholder="请输入主机"></el-input>
+          <el-input v-model="dialogData.host" placeholder="请输入主机"></el-input>
         </el-form-item>
 
         <el-form-item label="端口" prop="port">
-          <el-input v-model="dialogData.port"   placeholder="请输入端口"></el-input>
+          <el-input v-model="dialogData.port" placeholder="请输入端口"></el-input>
         </el-form-item>
         <el-form-item label="账号" prop="userName">
-          <el-input v-model="dialogData.userName"  placeholder="请输入账号"></el-input>
+          <el-input v-model="dialogData.userName" placeholder="请输入账号"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="passWord">
-          <el-input v-model="dialogData.passWord" show-password  placeholder="请输入密码"></el-input>
+          <el-input v-model="dialogData.passWord" show-password placeholder="请输入密码"></el-input>
         </el-form-item>
         <el-form-item label="分类分级标准" prop="standardId">
           <el-select clearable v-model="dialogData.standardId" placeholder="请选择">
@@ -86,7 +86,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="推送内容" prop="pushBodyList">
-          <el-input readonly   placeholder="请选择推送内容">
+          <el-input readonly placeholder="请选择推送内容">
           </el-input>
           <el-tag type="info" style="position: absolute; top: 3px;left: 2px; background-color: #e5e5e5;"
             @click="pushBodyClickFn">已选{{ dialogData.pushBodyList && dialogData.pushBodyList.length
@@ -249,7 +249,7 @@ export default {
       listByDataType({ type: 'sys_provider_type' }).then(res => {
         this.providerList = res.data;// 此字典只给新增子类的建议防护措施用
       })
-       listByDataType({ type: 'sys_push_type' }).then(res => {
+      listByDataType({ type: 'sys_push_type' }).then(res => {
         this.pushList = res.data;// 此字典只给新增子类的建议防护措施用
       })
     },
@@ -354,7 +354,7 @@ export default {
             return item.id
           })
           let idsParams = ids
-          deleteResultPush({ids,}).then(res => {
+          deleteResultPush({ ids, }).then(res => {
             if (res.code == 200) {
               this.$message.success(res.msg)
               this.getList()
@@ -388,12 +388,12 @@ export default {
         type: 'warning'
       }).then(() => {
         // 接口
-        pushResult({id:row.id}).then(res=> { 
+        pushResult({ id: row.id }).then(res => {
           if (res.code == 200) {
             this.$message.success('推送成功')
             this.getList()
           }
-})
+        })
       }).catch(() => {
       });
     },
@@ -419,6 +419,22 @@ input[aria-hidden=true] {
   justify-content: flex-start;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.yuanDataClass /deep/ .el-form-item {
+  width: 30%;
+}
+
+.yuanDataClass /deep/ .el-form-item__label {
+  width: 25%;
+}
+
+.yuanDataClass /deep/ .el-form-item__content {
+  width: 75%;
+}
+
+.yuanDataClass /deep/ .el-select {
+  width: 100%;
 }
 
 .dialogForm .el-form-item {
