@@ -2,11 +2,11 @@
     <div class="feature-management-container">
         <!-- 搜索区域卡片 -->
         <el-form :inline="true" :model="searchForm" class="yuanDataClass">
-            <el-form-item label="特征名称:">
+            <el-form-item label="特征名称">
                 <el-input v-model="searchForm.featureName" placeholder="请输入特征名称" clearable
                     @input="handleSearch" />
             </el-form-item>
-            <el-form-item label="特征类型:">
+            <el-form-item label="特征类型">
                 <el-select v-model="searchForm.featureType" placeholder="请选择特征类型" clearable
                     @change="handleSearch">
                     <el-option v-for="item in dict.type.sys_feature_type" :key="item.value" :label="item.label"
@@ -14,7 +14,7 @@
                     </el-option>
                 </el-select>
             </el-form-item>
-            <el-form-item label="来源:">
+            <el-form-item label="来源">
                 <el-select v-model="searchForm.source" placeholder="请选择来源" clearable
                     @change="handleSearch">
                     <el-option v-for="item in dict.type.sys_source" :key="item.value" :label="item.label"
@@ -35,10 +35,10 @@
         <!-- 操作按钮区域 -->
         <div class="operation-buttons">
             <el-button type="primary" plain @click="handleAdd">
-                <!-- <i class="el-icon-plus"></i>  -->新增
+                <i class="el-icon-plus"></i> 新增
             </el-button>
             <el-button type="primary" plain @click="handleDelete" :disabled="selectedRows.length === 0">
-                <!-- <i class="el-icon-delete"></i>  -->删除
+                <i class="el-icon-delete"></i> 删除
             </el-button>
         </div>
 
@@ -810,7 +810,7 @@ export default {
 
 <style scoped>
 .feature-management-container {
-    padding: 20px;
+    padding: 40px;
     background-color: #ffffff;
     min-height: 100vh;
     box-sizing: border-box;
@@ -899,7 +899,7 @@ export default {
 }
 
 .yuanDataClass /deep/ .el-form-item__label {
-    width: 25%;
+    /* width: 25%; */
 }
 
 .yuanDataClass /deep/ .el-form-item__content {

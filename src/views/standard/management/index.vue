@@ -96,7 +96,6 @@
             </el-form-item>
           </el-col>
         </el-row>
-
         <el-row>
           <el-col>
             <el-form-item label="标准描述" prop="standardId" :rules="rules.tasksName">
@@ -560,9 +559,11 @@ input[aria-hidden=true] {
   display: flex;
   justify-content: space-between;
 }
-.upload-demoupload-demo{
+
+.upload-demoupload-demo {
   margin-left: 15px;
 }
+
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
@@ -588,9 +589,11 @@ input[aria-hidden=true] {
 .listBox {
   max-height: 700px;
   display: flex;
-  justify-content: space-around;
-  align-items: center;
   flex-wrap: wrap;
+  justify-content: space-between;
+  /* 项目在主轴上均匀分布 */
+  align-items: center;
+  /* 项目在交叉轴上居中对齐 */
   overflow-y: auto;
   background-color: #fefefe;
   padding: 40px 20px;
@@ -613,7 +616,10 @@ input[aria-hidden=true] {
 }
 
 .listBox_item {
-  width: 26%;
+  width: 23%;
+  /* 设置每个项目的宽度为23% */
+  margin: 1%;
+  /* 设置项目之间的间距为1% */
   height: 250px;
   background-color: #fafafa;
   /* box-shadow: 5px 5px 10px 1px rgba(141, 141, 141, 0.5); */
