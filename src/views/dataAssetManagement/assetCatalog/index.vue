@@ -14,7 +14,7 @@
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" ref="queryParams" size="small" :inline="true" label-width="100px">
+        <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="true" label-width="100px">
           <el-form-item label="表名" prop="tableName">
             <el-select v-model="queryParams.tableName" @change="selectProjectIdChange" filterable placeholder="全部">
               <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.tableId">
@@ -821,5 +821,20 @@ export default {
   font-size: 18px;
   color: black;
   font-weight: bold;
+}
+.yuanDataClass /deep/ .el-form-item {
+  width: 30%;
+}
+
+.yuanDataClass /deep/ .el-form-item__label {
+  width: 25%;
+}
+
+.yuanDataClass /deep/ .el-form-item__content {
+  width: 75%;
+}
+
+.yuanDataClass /deep/ .el-select {
+  width: 100%;
 }
 </style>
