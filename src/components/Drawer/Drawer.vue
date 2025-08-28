@@ -53,4 +53,7 @@ export default {
 /deep/.el-drawer__body {
   padding: 40px;
 }
+/deep/.el-form-item__content {
+  padding-right: 15px;
+}
 </style>

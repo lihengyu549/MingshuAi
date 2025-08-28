@@ -288,6 +288,7 @@ export default {
 .main {
   width: 100%;
   display: flex;
+  justify-content: space-around
 }
 
 .main_left {
@@ -295,11 +296,13 @@ export default {
   margin-left: 30px;
   background-color: #fff;
   padding: 20px 30px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1),
+  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), */
     /* 底部阴影 */
-    0 2px 4px rgba(0, 0, 0, 0.08);
+    /* 0 2px 4px rgba(0, 0, 0, 0.08); */
   /* 浮动效果的阴影 */
+  border: 1px solid #e6ebf5;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 15px;
   /* 添加过渡效果 */
 }
 
@@ -308,11 +311,13 @@ export default {
   background-color: #fff;
   margin-left: 30px;
   padding: 20px 30px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1),
+  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), */
     /* 底部阴影 */
-    0 2px 4px rgba(0, 0, 0, 0.08);
+    /* 0 2px 4px rgba(0, 0, 0, 0.08); */
   /* 浮动效果的阴影 */
+  border: 1px solid #e6ebf5;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 15px;
   /* 添加过渡效果 */
 }
 
@@ -378,7 +383,7 @@ export default {
 .card_box {
   width: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
   flex-wrap: nowrap;
 }
@@ -394,6 +399,9 @@ export default {
 .box-card {
   width: 22%;
   border-radius: 15px;
+}
+.el-card.is-always-shadow{
+  box-shadow: none;
 }
 
 .line {

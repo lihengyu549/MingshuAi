@@ -4,10 +4,10 @@
   <div class="app-container" v-loading="mainLoading">
     <el-form :model="queryParams" ref="queryParams" v-show="showSearch" class="yuanDataClass" size="small"
       :inline="true" label-width="auto">
-      <el-form-item label="标准编号" prop="standardId">
+      <!-- <el-form-item label="标准编号" prop="standardId">
         <el-input v-model="queryParams.standardId" @input="inputSearch" placeholder="请输入标准编号" clearable
           @keyup.enter.native="handleQuery" />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="标准名称" prop="standardName">
         <el-input v-model="queryParams.standardName" @input="inputSearch" placeholder="请输入标准名称" clearable
           @keyup.enter.native="handleQuery" />
@@ -35,49 +35,112 @@
     </el-row>
     <div class="listBox">
       <div class="listBox_item" v-for="item in proxysList">
-        <div class="listBox_title">
-          <div style="font-size: 18px;">{{ item.standardId }}</div>
-          <div>实施时间：{{ item.implementTime }}</div>
+        <div class="listBox_header">
+          <div class="listBox_title">
+            <div class="title_content">
+              <img src="@/assets/images/file.png" alt="标准" class="standard_icon">
+              <div class="title_text_area">
+                <h3>{{ item.categoryName }}</h3>
+                <div class="title_tags">
+                  <el-tag class="tag-item" size="small" type="primary">国标</el-tag>
+                  <el-tag class="tag-item" size="small" type="info">现行</el-tag>
+                  <el-tag class="tag-item" size="small" type="info">内置</el-tag>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="listBox_desc">
+            <p>{{ item.standardId }}</p>
+          </div>
         </div>
         <div class="listBox_body">
-          <!-- <el-tooltip class="item" effect="dark" :content="item.categoryName" placement="top-start"> -->
-            <div class="listBox_itemTitle">{{ item.categoryName }}</div>
-          <!-- </el-tooltip> -->
-          <div style="font-size: 14px; display: flex; justify-content: space-between;align-items: center;">
-            <span></span>
-            <!-- <el-tooltip class="item" effect="dark" :content="item.source" placement="top-start"> -->
-              <span class="listBox_msg">来源：{{ item.source }}</span>
-            <!-- </el-tooltip> -->
-            <!-- <el-tooltip class="item" effect="dark" :content="item.industryCategory" placement="top-start"> -->
-              <span class="listBox_msg">行业类别：{{ item.industryCategory }}</span>
-            <!-- </el-tooltip> -->
-            <span></span>
+          <p class="standard_desc">{{ item.categoryName }}</p>
+          <div class="standard_info">
+            <span>行业类别：{{ item.industryCategory }}</span>
+            <span>{{ item.implementTime }}实施</span>
           </div>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div
-              style="margin-top: 30px;text-align: center; display: flex; justify-content: center; align-items: center;">
-
-              <el-tag class="div_btn" size="medium" style="border: none;" color="#4c70ac" round>{{ item.standardTypeName
-                }}</el-tag>
-              <el-tag class="div_btn" size="medium" style="border: none;" color="#dce2ee" round>{{ item.current
-                }}</el-tag>
-              <el-tag class="div_btn" size="medium" style="border: none;" color="#a9a9a9" round>{{ item.dataSource
-                }}</el-tag>
-            </div>
-            <div class="listBox_btn">
-              <el-button type="text" size="medium" @click="editFn(item)">编辑</el-button>
-              <el-button type="text" size="medium" @click="detailFn(item)">详情</el-button>
-              <el-button type="text" size="medium" :disabled="item.dataSource === '内置'"
-                @click="deleteFn(item)">删除</el-button>
-            </div>
-          </div>
+        </div>
+        <div class="listBox_footer">
+          <el-button type="text" size="small" @click="deleteFn(item)" :disabled="item.dataSource === '内置'"
+            style="color: #d1d1da;"><i class="el-icon-delete"></i> 删除</el-button>
+          <el-button type="text" size="small" @click="editFn(item)"><i class="el-icon-edit-outline"></i> 编辑</el-button>
+          <el-button type="text" size="small" @click="detailFn(item)"><i class="el-icon-warning-outline"></i>
+            查看详情</el-button>
         </div>
       </div>
     </div>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :pageSizes="[6]"
       :limit.sync="queryParams.pageSize" @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
-    <el-dialog class="addMsg" :title="title" v-loading="formLoading" :visible.sync="open" width="580px" append-to-body
+    <Drawer :title="title" v-loading="formLoading" :visible.sync="open" size="40%" append-to-body
+      :close-on-click-modal="false">
+      <el-form slot="body" ref="addForm" :model="form" :rules="rules" label-width="auto" @submit.native.prevent
+        class="importForm" label-position="top">
+        <Title title="基本信息" />
+        <el-form-item label="标准名称" prop="categoryName" :rules="rules.tasksName">
+          <el-input v-model="form.categoryName" maxlength="50" placeholder="请输入标准名称" />
+        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="标准类型" prop="standardType">
+              <el-select clearable v-model="form.standardType" @change="inputSearch" placeholder="请选择">
+                <el-option v-for="item in dict.type.sys_standard_type" :key="item.value" :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="行业类别" prop="industryCategory">
+              <el-input v-model="form.industryCategory" maxlength="50" placeholder="请输入行业类别" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col>
+            <el-form-item label="标准描述" prop="standardId" :rules="rules.tasksName">
+              <el-input type="textarea" v-model="form.standardId" maxlength="50" placeholder="请输入标准描述" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="标准来源" prop="source">
+              <el-input v-model="form.source" maxlength="50" placeholder="请输入来源" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="标准实施时间" prop="implementTime">
+              <el-date-picker class="managementDate" v-model="form.implementTime" type="date" value-format="yyyy-MM-dd"
+                format="yyyy-MM-dd" placeholder="选择日期">
+              </el-date-picker>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col>
+            <el-form-item label="导入标准" prop="importFile" class="uploadClassName">
+              <el-input v-model="form.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
+              <el-upload ref="uploadRef" class="upload-demoupload-demo" :limit="1" :file-list="fileList"
+                :auto-upload="false" :http-request="submitForm" action="" accept=".xls,.xlsx" :show-file-list="false"
+                :on-change="handleFileChange" :on-exceed="handleFileExceed">
+                <el-button size="mini" type="primary" plain>选择文件</el-button>
+              </el-upload>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <div slot="footer" class="drawer-footer">
+        <el-button style="margin-left: 15px;" size="small" type="text" @click="downloadFile" id="btnDownload"
+          icon="el-icon-download">样例下载</el-button>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" plain @click="submitForm">确 定</el-button>
+          <el-button @click="closeFn">取消</el-button>
+        </div>
+      </div>
+    </Drawer>
+    <!-- <el-dialog class="addMsg" :title="title" v-loading="formLoading" :visible.sync="open" width="580px" append-to-body
       :close-on-click-modal="false">
       <el-form ref="addForm" :model="form" :rules="rules" label-width="auto" @submit.native.prevent class="importForm">
         <el-form-item label="标准名称" prop="categoryName" :rules="rules.tasksName">
@@ -115,13 +178,7 @@
           </el-upload>
         </el-form-item>
       </el-form>
-      <el-button style="margin-left: 100px;" size="small" type="text" @click="downloadFile" id="btnDownload"
-        icon="el-icon-download">样例下载</el-button>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="submitForm">确 定</el-button>
-        <el-button @click="closeFn">取消</el-button>
-      </div>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 
@@ -478,6 +535,7 @@ input[aria-hidden=true] {
   width: 100%;
 }
 
+
 .searchBtn {
   margin-left: auto;
   height: 100%;
@@ -487,12 +545,27 @@ input[aria-hidden=true] {
   margin-left: 263px
 }
 
-.importForm .el-form-item {
-  width: 70%;
+.importForm /deep/.el-form-item,
+.importForm /deep/.el-form-item__content,
+.importForm /deep/.el-select,
+.importForm /deep/.el-date-editor {
+  width: 100%;
 }
 
-.uploadClassName {
-  display: inline-block;
+.importForm /deep/.el-form-item__content {
+  padding-right: 15px;
+}
+
+.uploadClassName /deep/.el-form-item__content {
+  display: flex;
+  justify-content: space-between;
+}
+.upload-demoupload-demo{
+  margin-left: 15px;
+}
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .uploadClass {
@@ -515,7 +588,7 @@ input[aria-hidden=true] {
 .listBox {
   max-height: 700px;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-around;
   align-items: center;
   flex-wrap: wrap;
   overflow-y: auto;
@@ -540,72 +613,119 @@ input[aria-hidden=true] {
 }
 
 .listBox_item {
-  width: 30%;
+  width: 26%;
   height: 250px;
-  background-color: #fff;
-  /* 添加立体阴影 */
-  box-shadow: 5px 5px 10px 1px rgba(141, 141, 141, 0.5);
+  background-color: #fafafa;
+  /* box-shadow: 5px 5px 10px 1px rgba(141, 141, 141, 0.5); */
   border-radius: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 50px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border: 1px solid #e8eaed;
 }
 
-.listBox_item:nth-child(2) {
-  margin: 0 60px;
-  margin-bottom: 20px;
-}
-
-.listBox_item:nth-child(5) {
-  margin: 0 60px;
-  margin-bottom: 20px;
+.listBox_header {
+  padding: 15px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  /* border-bottom: 1px solid #e6e6e6; */
 }
 
 .listBox_title {
-  background-color: #f1fafe;
-  padding: 15px;
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.title_content {
+  display: flex;
   align-items: center;
+  /* 确保图标和文字区域垂直居中对齐 */
+}
+
+.standard_icon {
+  width: 50px;
+  height: 50px;
+  margin-right: 20px;
+  vertical-align: middle;
+}
+
+.title_text_area {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.title_content h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  line-height: 24px;
+  /* 与图标高度保持一致 */
+}
+
+.tag-item {
+  height: 20px;
+  /* 调整标签高度 */
+  line-height: 20px;
+  /* 确保标签文字居中 */
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.listBox_desc {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
 }
 
 .listBox_body {
-  padding: 20px;
+  flex: 1;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.div_btn {
-  /* padding: 10px; */
+.standard_desc {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.standard_info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #999;
+}
+
+.listBox_footer {
+  padding: 10px 15px;
+  border-top: 1px solid #e6e6e6;
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.listBox_footer .el-button {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.title_tags span {
   margin-right: 10px;
-  width: 80px;
-  height: 30px;
-  line-height: 30px;
-  border-radius: 15px;
-  color: rgb(255, 255, 255);
-}
-
-.listBox_btn {
-  text-align: right;
-  margin-top: 30px;
-}
-
-.listBox_itemTitle {
-  width: 100%;
-  margin-bottom: 15px;
-  padding: 10px 0;
-  white-space: nowrap;
-  /* 文字不换行 */
-  overflow: hidden;
-  /* 隐藏超出部分 */
-  text-overflow: ellipsis;
-  /* 超出部分显示为省略号 */
-}
-
-.listBox_msg {
-
-  width: 100%;
-  white-space: nowrap;
-  /* 文字不换行 */
-  overflow: hidden;
-  /* 隐藏超出部分 */
-  text-overflow: ellipsis;
-  /* 超出部分显示为省略号 */
+  width: 50px;
+  height: 25px;
+  line-height: 25px;
+  text-align: center;
+  font-size: 14px;
+  border-radius: 10px;
 }
 </style>
