@@ -56,7 +56,7 @@
         <div class="listBox_body">
           <p class="standard_desc">{{ item.categoryName }}</p>
           <div class="standard_info">
-            <span>行业类别：{{ item.industryCategory }}</span>
+            <span>{{ item.industryCategory }}</span>
             <span>{{ item.implementTime }}实施</span>
           </div>
         </div>
