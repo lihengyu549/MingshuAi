@@ -573,24 +573,24 @@ export default {
                 this.$message.warning('请添加至少一条对照数据')
                 return
             }
-            // 验证特征名称是否存在
-            const params = { featureName: this.form.featureName }
-            try {
-                const res = await verifyFeatureName(params)
-                // 如果返回500，提示并终止执行
-                // if (res.code === 500) {
-                //     this.$message.warning('特征名称已存在')
-                //     return
-                // }
-            } catch (error) {
-                // this.$message.error(error.message || '未知错误')
-                return
-            }
 
             this.loading = true;
 
             // 实际项目中这里会调用保存接口
             if (this.form.id === '系统默认生成') {
+                // 验证特征名称是否存在
+                const params = { featureName: this.form.featureName }
+                try {
+                    const res = await verifyFeatureName(params)
+                    // 如果返回500，提示并终止执行
+                    // if (res.code === 500) {
+                    //     this.$message.warning('特征名称已存在')
+                    //     return
+                    // }
+                } catch (error) {
+                    // this.$message.error(error.message || '未知错误')
+                    return
+                }
                 // 新增操作
                 // 构建提交数据
                 let submitData = {
@@ -607,6 +607,19 @@ export default {
                 this.$message.success('新增成功')
                 this.init()
             } else {
+                // 验证特征名称是否存在
+                const params = { id: this.form.id, featureName: this.form.featureName }
+                try {
+                    const res = await verifyFeatureName(params)
+                    // 如果返回500，提示并终止执行
+                    // if (res.code === 500) {
+                    //     this.$message.warning('特征名称已存在')
+                    //     return
+                    // }
+                } catch (error) {
+                    // this.$message.error(error.message || '未知错误')
+                    return
+                }
                 // 编辑操作
                 let submitData = {
                     id: this.form.id,
@@ -614,7 +627,7 @@ export default {
                     featureType: this.form.featureType,
                     featureSource: this.form.source,
                     featureDescribe: this.form.description,
-                    featureItemList: this.form.featureType == '1'
+                    [this.form.featureType == '3' ? 'featureDataDictionariesList' : 'featureItemList']: this.form.featureType == '1'
                         ? [{ tableName: this.form.featureValue }]
                         : this.form.mappingList
                 }
