@@ -711,6 +711,9 @@ export default {
   margin-right: 10px;
   margin-left: 10px;
 }
+.mian_box_item /deep/ .el-card{
+  box-shadow: none;
+}
 
 .addMsg /deep/ .el-input--medium {
   width: 237px;
