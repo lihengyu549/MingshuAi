@@ -634,7 +634,7 @@ input[aria-hidden=true] {
   margin-bottom: 50px;
   display: flex;
   flex-direction: column;
-  padding: 0;
+  padding: 8px;
   border: 1px solid #e8eaed;
 }
 
