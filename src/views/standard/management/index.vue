@@ -83,7 +83,7 @@
       :close-on-click-modal="false">
       <el-form slot="body" ref="addForm" :model="form" :rules="rules" label-width="auto" @submit.native.prevent
         class="importForm" label-position="top">
-        <Title title="基本信息" />
+        <!-- <Title title="基本信息" /> -->
         <el-form-item label="标准名称" prop="categoryName" :rules="rules.tasksName">
           <el-input v-model="form.categoryName" maxlength="50" placeholder="请输入标准名称" />
         </el-form-item>
