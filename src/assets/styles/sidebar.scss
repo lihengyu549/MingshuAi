@@ -94,6 +94,8 @@
     .el-submenu__title.is-active {
       background-color: $base-menu-active-background !important;
       border-radius: $base-menu-border-radius !important; // 添加圆角样式
+      font-weight: 600 !important; // 添加字体加粗设置
+      color: $base-menu-color-active !important;
       // margin: 0 10px; // 可选：添加边距让圆角效果更明显
     }
 
