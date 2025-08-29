@@ -622,21 +622,6 @@ input[aria-hidden=true] {
   border-radius: 10px;
 }
 
-.listBox_item {
-  width: 23%;
-  /* 设置每个项目的宽度为23% */
-  margin: 0%;
-  /* 设置项目之间的间距为1% */
-  height: 250px;
-  background-color: #fafafa;
-  /* box-shadow: 5px 5px 10px 1px rgba(141, 141, 141, 0.5); */
-  border-radius: 10px;
-  margin-bottom: 50px;
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-  border: 1px solid #e8eaed;
-}
 
 .listBox_header {
   padding: 15px;
@@ -759,7 +744,7 @@ input[aria-hidden=true] {
 
 .listBox_item {
   width: 23%;
-  margin: 1%;
+  margin: 0%;
   height: 250px;
   /* 固定高度确保布局稳定 */
   background-color: #fafafa;
@@ -769,6 +754,7 @@ input[aria-hidden=true] {
   flex-direction: column;
   /* 垂直排列四个模块 */
   padding: 0;
+  padding: 8px;
   border: 1px solid #e8eaed;
 }
 
