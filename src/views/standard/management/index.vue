@@ -38,7 +38,8 @@
         <!-- 头部区域：包含图标和标签 -->
         <div class="listBox_header">
           <div class="title_content">
-            <img src="@/assets/images/file.png" alt="标准" class="standard_icon">
+            <!-- <img src="@/assets/images/file.png" alt="标准" class="standard_icon"> -->
+            <svg-icon icon-class="dunpai-2" class="standard_icon"></svg-icon>
             <div class="title_text_area">
               <h3>{{ item.categoryName }}</h3>
               <div class="title_tags">
@@ -602,7 +603,7 @@ input[aria-hidden=true] {
   /* 项目在交叉轴上居中对齐 */
   /* overflow-y: auto; */
   background-color: #fefefe;
-  padding: 40px 20px;
+  padding: 40px 0px;
   margin-top: 20px;
 }
 
@@ -624,7 +625,7 @@ input[aria-hidden=true] {
 .listBox_item {
   width: 23%;
   /* 设置每个项目的宽度为23% */
-  margin: 1%;
+  margin: 0%;
   /* 设置项目之间的间距为1% */
   height: 250px;
   background-color: #fafafa;
@@ -662,6 +663,9 @@ input[aria-hidden=true] {
   height: 50px;
   margin-right: 20px;
   vertical-align: middle;
+  background-color: #e1f2fe;
+  padding: 10px;
+  border-radius: 10px;
 }
 
 .title_text_area {
