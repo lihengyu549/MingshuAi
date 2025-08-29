@@ -4,8 +4,8 @@
   <div class="app-container" v-loading="mainLoading">
     <el-form :model="queryParams" ref="queryParams" v-show="showSearch" class="yuanDataClass" size="small"
       :inline="true" label-width="auto">
-      <!-- <el-form-item label="标准编号" prop="standardId">
-        <el-input v-model="queryParams.standardId" @input="inputSearch" placeholder="请输入标准编号" clearable
+      <!-- <el-form-item label="标准编号" prop="standardDescription">
+        <el-input v-model="queryParams.standardDescription" @input="inputSearch" placeholder="请输入标准编号" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item> -->
       <el-form-item label="标准名称" prop="standardName">
@@ -34,42 +34,48 @@
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
     <div class="listBox">
-      <div class="listBox_item" v-for="item in proxysList">
+      <div class="listBox_item" v-for="item in proxysList" :key="item.id">
+        <!-- 头部区域：包含图标和标签 -->
         <div class="listBox_header">
-          <div class="listBox_title">
-            <div class="title_content">
-              <img src="@/assets/images/file.png" alt="标准" class="standard_icon">
-              <div class="title_text_area">
-                <h3>{{ item.categoryName }}</h3>
-                <div class="title_tags">
-                  <el-tag class="tag-item" size="small" type="primary">国标</el-tag>
-                  <el-tag class="tag-item" size="small" type="info">现行</el-tag>
-                  <el-tag class="tag-item" size="small" type="info">内置</el-tag>
-                </div>
+          <div class="title_content">
+            <img src="@/assets/images/file.png" alt="标准" class="standard_icon">
+            <div class="title_text_area">
+              <h3>{{ item.categoryName }}</h3>
+              <div class="title_tags">
+                <el-tag class="tag-item" size="small" type="primary">国标</el-tag>
+                <el-tag class="tag-item" size="small" type="info">现行</el-tag>
+                <el-tag class="tag-item" size="small" type="info">内置</el-tag>
               </div>
             </div>
           </div>
-          <div class="listBox_desc">
-            <p>{{ item.standardId }}</p>
-          </div>
         </div>
+
+        <!-- 中间描述区域：即使内容为空也保持高度 -->
         <div class="listBox_body">
-          <p class="standard_desc">{{ item.categoryName }}</p>
+          <p class="desc_content">{{ item.standardDescription || '' }}</p>
+        </div>
+
+        <!-- 信息展示区域 -->
+        <div class="listBox_info">
           <div class="standard_info">
             <span>{{ item.industryCategory }}</span>
             <span>{{ item.implementTime }}实施</span>
           </div>
         </div>
+
+        <!-- 底部操作区域 -->
         <div class="listBox_footer">
           <el-button type="text" size="small" @click="deleteFn(item)" :disabled="item.dataSource === '内置'"
             style="color: #d1d1da;"><i class="el-icon-delete"></i> 删除</el-button>
-          <el-button type="text" size="small" @click="editFn(item)"><i class="el-icon-edit-outline"></i> 编辑</el-button>
-          <el-button type="text" size="small" @click="detailFn(item)"><i class="el-icon-warning-outline"></i>
+          <el-button type="text" size="small" @click="editFn(item)" style="color: #666580;"><i
+              class="el-icon-edit-outline"></i> 编辑</el-button>
+          <el-button type="text" size="small" @click="detailFn(item)" style="color: #666580;"><i
+              class="el-icon-warning-outline"></i>
             查看详情</el-button>
         </div>
       </div>
     </div>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :pageSizes="[6]"
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :pageSizes="[8]"
       :limit.sync="queryParams.pageSize" @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
     <Drawer :title="title" v-loading="formLoading" :visible.sync="open" size="40%" append-to-body
@@ -98,8 +104,8 @@
         </el-row>
         <el-row>
           <el-col>
-            <el-form-item label="标准描述" prop="standardId" :rules="rules.tasksName">
-              <el-input type="textarea" v-model="form.standardId" maxlength="50" placeholder="请输入标准描述" />
+            <el-form-item label="标准描述" prop="standardDescription" :rules="rules.tasksName">
+              <el-input type="textarea" v-model="form.standardDescription" maxlength="50" placeholder="请输入标准描述" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -145,8 +151,8 @@
         <el-form-item label="标准名称" prop="categoryName" :rules="rules.tasksName">
           <el-input v-model="form.categoryName" maxlength="50" placeholder="请输入标准名称" />
         </el-form-item>
-        <el-form-item label="标准编号" prop="standardId" :rules="rules.tasksName">
-          <el-input v-model="form.standardId" maxlength="50" placeholder="请输入标准编号" />
+        <el-form-item label="标准编号" prop="standardDescription" :rules="rules.tasksName">
+          <el-input v-model="form.standardDescription" maxlength="50" placeholder="请输入标准编号" />
         </el-form-item>
         <el-form-item label="标准类型" prop="standardType">
           <el-select clearable v-model="form.standardType" @change="inputSearch" placeholder="请选择">
@@ -223,7 +229,7 @@ export default {
       // 查询参数
       queryParams: {
         pageNum: 1,
-        pageSize: 6,
+        pageSize: 8,
         sourceType: '',
         sourceName: '',
         businessName: '',
@@ -236,7 +242,7 @@ export default {
       // 表单参数
       form: {
         standardType: '',
-        standardId: '',
+        standardDescription: '',
         categoryName: '',
         implementTime: '',
         source: '',
@@ -248,9 +254,9 @@ export default {
         standardType: [
           { required: true, message: "标准类型不能为空", trigger: "blur" },
         ],
-        // standardId: [
-        //   { required: true, message: "标准编号不能为空", trigger: "blur" },
-        // ],
+        standardDescription: [
+          { required: true, message: "标准描述不能为空", trigger: "blur" },
+        ],
         categoryName: [{
           required: true, message: "标准名称不能为空", trigger: "blur"
         }],
@@ -397,7 +403,7 @@ export default {
           }
           formData.append('categoryName', this.form.categoryName);
           formData.append('inner', this.form.inner || '');
-          formData.append('standardId', this.form.standardId);
+          formData.append('standardDescription', this.form.standardDescription);
           formData.append('standardType', this.form.standardType);
           if (this.form.implementTime) {
             formData.append('implementTime', this.form.implementTime);
@@ -662,6 +668,7 @@ input[aria-hidden=true] {
   display: flex;
   flex-direction: column;
   flex: 1;
+  overflow: hidden;
 }
 
 .title_content h3 {
@@ -670,7 +677,15 @@ input[aria-hidden=true] {
   font-weight: 600;
   color: #333;
   line-height: 24px;
-  /* 与图标高度保持一致 */
+  /* 关键样式：控制只显示一行并添加省略号 */
+  white-space: nowrap;
+  /* 禁止换行 */
+  overflow: hidden;
+  /* 超出部分隐藏 */
+  text-overflow: ellipsis;
+  /* 超出部分显示省略号 */
+  max-width: 100%;
+  /* 限制最大宽度为父容器宽度 */
 }
 
 .tag-item {
@@ -733,5 +748,82 @@ input[aria-hidden=true] {
   text-align: center;
   font-size: 14px;
   border-radius: 10px;
+}
+</style>
+<style scoped>
+/* 保持其他原有样式不变，添加/修改以下样式 */
+
+.listBox_item {
+  width: 23%;
+  margin: 1%;
+  height: 250px;
+  /* 固定高度确保布局稳定 */
+  background-color: #fafafa;
+  border-radius: 10px;
+  margin-bottom: 50px;
+  display: flex;
+  flex-direction: column;
+  /* 垂直排列四个模块 */
+  padding: 0;
+  border: 1px solid #e8eaed;
+}
+
+/* 头部区域样式 */
+.listBox_header {
+  padding: 15px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  /* border-bottom: 1px solid #e6e6e6; */
+}
+
+/* 中间描述区域样式 - 确保空内容时不塌陷 */
+.listBox_body {
+  padding: 15px;
+  flex: 1;
+  /* 占据剩余空间 */
+  min-height: 60px;
+  /* 设置最小高度 */
+  display: flex;
+  align-items: center;
+  /* border-bottom: 1px solid #e6e6e6; */
+}
+
+.desc_content {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  /* 保持文本溢出处理 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+}
+
+/* 信息区域样式 */
+.listBox_info {
+  padding: 10px 15px;
+  /* border-bottom: 1px solid #e6e6e6; */
+}
+
+.standard_info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #999;
+}
+
+/* 底部操作区域样式 */
+.listBox_footer {
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 </style>
