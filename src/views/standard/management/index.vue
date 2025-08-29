@@ -600,7 +600,7 @@ input[aria-hidden=true] {
   /* 项目在主轴上均匀分布 */
   align-items: center;
   /* 项目在交叉轴上居中对齐 */
-  overflow-y: auto;
+  /* overflow-y: auto; */
   background-color: #fefefe;
   padding: 40px 20px;
   margin-top: 20px;
