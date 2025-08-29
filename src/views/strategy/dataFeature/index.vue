@@ -3,20 +3,17 @@
         <!-- 搜索区域卡片 -->
         <el-form :inline="true" :model="searchForm" class="yuanDataClass">
             <el-form-item label="特征名称">
-                <el-input v-model="searchForm.featureName" placeholder="请输入特征名称" clearable
-                    @input="handleSearch" />
+                <el-input v-model="searchForm.featureName" placeholder="请输入特征名称" clearable @input="handleSearch" />
             </el-form-item>
             <el-form-item label="特征类型">
-                <el-select v-model="searchForm.featureType" placeholder="请选择特征类型" clearable
-                    @change="handleSearch">
+                <el-select v-model="searchForm.featureType" placeholder="请选择特征类型" clearable @change="handleSearch">
                     <el-option v-for="item in dict.type.sys_feature_type" :key="item.value" :label="item.label"
                         :value="item.value">
                     </el-option>
                 </el-select>
             </el-form-item>
             <el-form-item label="来源">
-                <el-select v-model="searchForm.source" placeholder="请选择来源" clearable
-                    @change="handleSearch">
+                <el-select v-model="searchForm.source" placeholder="请选择来源" clearable @change="handleSearch">
                     <el-option v-for="item in dict.type.sys_source" :key="item.value" :label="item.label"
                         :value="item.value">
                     </el-option>
@@ -492,9 +489,18 @@ export default {
         // 对照表：新增一行
         async addMappingRow() {
             // 基础校验：输入是否为空
-            if (!this.tempFeatureKey || !this.tempFeatureVal || !this.tempFeatureName || !this.tempFeatureType) {
-                this.$message.warning('特征值、对照含义、字段名、字段备注不能为空');
-                return;
+            if (this.form.featureType === '2') {
+                // 当featureType为2时，只校验前两个值
+                if (!this.tempFeatureKey || !this.tempFeatureVal) {
+                    this.$message.warning('特征值、对照含义不能为空');
+                    return;
+                }
+            } else if (this.form.featureType === '3') {
+                // 当featureType为3时，校验所有四个值
+                if (!this.tempFeatureKey || !this.tempFeatureVal || !this.tempFeatureName || !this.tempFeatureType) {
+                    this.$message.warning('表名、表注释、字段名、字段备注不能为空');
+                    return;
+                }
             }
 
             // 校验：特征值是否已存在（统一判断条件）
