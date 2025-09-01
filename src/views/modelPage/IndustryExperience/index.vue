@@ -18,10 +18,16 @@
                         经验引用
                     </el-button>
                     <el-dropdown-menu slot="dropdown">
-                        <!-- 循环动态生成下拉项 -->
-                        <el-dropdown-item v-for="item in referenceOptions" :key="item.id" :command="item.id">
-                            {{ item.featureName }} <!-- 显示选项名称 -->
+                        <!-- 无数据时显示暂无数据 -->
+                        <el-dropdown-item v-if="referenceOptions.length === 0" disabled>
+                            暂无数据
                         </el-dropdown-item>
+                        <!-- 有数据时循环动态生成下拉项 -->
+                        <template v-else>
+                            <el-dropdown-item v-for="item in referenceOptions" :key="item.id" :command="item.id">
+                                {{ item.featureName }} <!-- 显示选项名称 -->
+                            </el-dropdown-item>
+                        </template>
                     </el-dropdown-menu>
                 </el-dropdown>
             </el-col>

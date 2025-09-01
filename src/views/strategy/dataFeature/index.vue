@@ -206,7 +206,8 @@
                                     <div class="import-format-tip"
                                         style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #f9f9f9; border: 1px solid #eee; border-radius: 4px;">
                                         <i class="el-icon-warning-outline" type="info" />
-                                        支持UTF-8编码的txt文件,每行一条请用英文逗号分隔关键字和对照值, 例如: sz,市值
+                                        支持UTF-8编码的txt文件,每行一条请用英文逗号分隔关键字和对照值, 例如:{{ form.featureType == '3' ?
+                                        '表名,表注释,字段名称,字段注释' : '特征值,对照含义' }}
                                     </div>
 
                                     <!-- 对照表分页 -->
@@ -230,9 +231,8 @@
                                         :class="{ 'icon-disabled': isView || selectedMappingRows.length === 0 }"
                                         class="icon"
                                         @click.native="(isView || selectedMappingRows.length === 0) && $event.stopPropagation()" />
-                                    <svg-icon icon-class="导入" @click="handleImport"
-                                        :class="{ 'icon-disabled': false }" class="icon"
-                                        @click.native="isView && $event.stopPropagation()" />
+                                    <svg-icon icon-class="导入" @click="handleImport" :class="{ 'icon-disabled': false }"
+                                        class="icon" @click.native="isView && $event.stopPropagation()" />
                                     <svg-icon icon-class="导出" @click="handleExport"
                                         :class="{ 'icon-disabled': isView || form.id == '系统默认生成' }" class="icon"
                                         @click.native="isView && $event.stopPropagation()" />
