@@ -356,6 +356,7 @@ export default {
      */
     handleTreeCheck(currentNode, selectedNodes) {
       // 同步“选中节点ID数组”（从选中节点数组中提取ID）
+      console.log('selectedNodes', selectedNodes);//    树结构数据待处理
       this.selectedTreeNodeIds = selectedNodes.map(node => node.id);
     },
 
