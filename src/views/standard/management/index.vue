@@ -597,14 +597,31 @@ input[aria-hidden=true] {
   max-height: 700px;
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  /* 项目在主轴上均匀分布 */
-  align-items: center;
-  /* 项目在交叉轴上居中对齐 */
-  /* overflow-y: auto; */
+  /* 移除space-between，默认就是左对齐排列 */
+  align-items: flex-start;
+  /* 顶部对齐防止高度不一致导致错位 */
   background-color: #fefefe;
   padding: 40px 0px;
   margin-top: 20px;
+}
+
+.listBox_item {
+  /* 计算宽度：4个项目均分100%宽度，减去间距 */
+  width: calc(25% - 3%);
+  margin: 0 3% 50px 0;
+  /* 右侧和底部保留间距 */
+  height: 250px;
+  background-color: #fafafa;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  border: 1px solid #e8eaed;
+  box-sizing: border-box;
+  /* 确保padding和border不影响宽度计算 */
+}
+.listBox_item:nth-child(4n) {
+  margin-right: 0;
 }
 
 .listBox::-webkit-scrollbar {
@@ -722,6 +739,7 @@ input[aria-hidden=true] {
   gap: 10px;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
+  overflow: hidden;
 }
 
 .listBox_footer .el-button {
@@ -742,21 +760,7 @@ input[aria-hidden=true] {
 <style scoped>
 /* 保持其他原有样式不变，添加/修改以下样式 */
 
-.listBox_item {
-  width: 23%;
-  margin: 0%;
-  height: 250px;
-  /* 固定高度确保布局稳定 */
-  background-color: #fafafa;
-  border-radius: 10px;
-  margin-bottom: 50px;
-  display: flex;
-  flex-direction: column;
-  /* 垂直排列四个模块 */
-  padding: 0;
-  padding: 8px;
-  border: 1px solid #e8eaed;
-}
+
 
 /* 头部区域样式 */
 .listBox_header {
