@@ -165,7 +165,7 @@
         </el-form-item>
         <el-form-item class="addSelectClass" prop="dataOwner" label="数据持有者">
           <el-select v-model="addOrEditDataRuls.dataOwner" placeholder="全部"
-            :disabled="this.$store.state.user.name !== 'admin'">
+            :disabled="addOrEdit.flag == 3">
             <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
             </el-option>
           </el-select>
@@ -615,7 +615,9 @@ export default {
       this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
       this.tags = row.featureLabel ? row.featureLabel.split(',') : []
-      this.addOrEditDataRuls.confirmProtectMethod = row.confirmProtectMethod ? row.confirmProtectMethod.split(',') : []
+      this.addOrEditDataRuls.confirmProtectMethod = Array.isArray(row.confirmProtectMethod) 
+        ? row.confirmProtectMethod 
+        : (row.confirmProtectMethod ? row.confirmProtectMethod.split(',') : []);
       this.addOrEdit.show = true
       this.addOrEdit.title = '编辑'
       this.addNodeName = row.owner
