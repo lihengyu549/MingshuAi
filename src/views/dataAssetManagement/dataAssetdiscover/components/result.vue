@@ -658,6 +658,18 @@ export default {
   text-align: left;
 }
 
+.addMsg /deep/ .el-input {
+  width: 80%;
+}
+
+.addMsg /deep/ .el-select {
+  width: 80%;
+}
+
+.addMsg .el-select /deep/ .el-input {
+  width: 100%;
+}
+
 .addSelectClass /deep/ .el-select {
   width: calc(100%);
 }

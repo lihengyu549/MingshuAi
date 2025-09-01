@@ -40,7 +40,8 @@
       <el-table-column label="指定端口" align="center" prop="ports" />
       <el-table-column label="周期" align="center" prop="scheduleType">
         <template slot-scope="scope">
-          <span>{{ scope.row.scheduleType == '0' ? '手动' : scope.row.scheduleType == '1' ? '每天' : scope.row.scheduleType == '2' ? '每周' : scope.row.scheduleType == '3' ? '每月' : '' }}</span>
+          <span>{{ scope.row.scheduleType == '0' ? '手动' : scope.row.scheduleType == '1' ? '每天' : scope.row.scheduleType
+            == '2' ? '每周' : scope.row.scheduleType == '3' ? '每月' : '' }}</span>
         </template>
       </el-table-column>
       <el-table-column label="服务数" align="center" prop="servicesNum" />
@@ -121,7 +122,7 @@ import {
   updateDatabaseProxysScan,
 } from "@/api/dataAssetManagement"
 import {
- nameTesting,checkSourceName,
+  nameTesting, checkSourceName,
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import Vue from 'vue';
@@ -262,7 +263,7 @@ export default {
             required: true, message: "请输入IP段", trigger: "blur"
           }
         ],
-        ports:[
+        ports: [
           {
             required: true, message: "请输入指定端口", trigger: "blur"
           }
@@ -302,7 +303,7 @@ export default {
     // },
     scheduleTypeChange(val) {
       console.log(val);
-      
+
       if (val == '3') {
         // 获取当前月的天数
         this.addOrEditFormData.scheduleInterval = '1'
@@ -487,7 +488,7 @@ export default {
         this.$message({ message: '至少选择一条数据', type: 'warning' })
       }
     },
-    scanStateClickFn(row) { 
+    scanStateClickFn(row) {
       this.drawerData = JSON.parse(JSON.stringify(row))
       this.drawerShow = true
     },
