@@ -99,14 +99,17 @@ export default {
             this.activeTab = this.dict.type.sys_industry_type[0]?.label || ''
 
             // 假设获取经验引用选项的接口为 getFeatureSelect()
-
-            const refResponse = await getFeatureSelect({ featureType: this.dict.type.sys_industry_type[0]?.value }); // 自定义接口，需实际实现
-            console.log('refResponse', refResponse);
-            this.referenceOptions = refResponse.data;
+            this.getReferenceOptions()
 
             if (this.standardOptions[0]?.id && this.dict.type.sys_industry_type[0]?.value) {
                 this.fetchListData(this.standardOptions[0].id, this.dict.type.sys_industry_type[0].value);
             }
+        },
+        // 经验引用请求
+        async getReferenceOptions() {
+            const refResponse = await getFeatureSelect({ featureType: this.dict.type.sys_industry_type[0]?.value }); // 自定义接口，需实际实现
+            console.log('refResponse', refResponse);
+            this.referenceOptions = refResponse.data;
         },
         // 请求列表数据
         async fetchListData(id, val) {
@@ -170,6 +173,7 @@ export default {
             if (id && val) {
                 this.fetchListData(id, val)
             }
+            this.getReferenceOptions()
         },
         // Tab 切换事件
         async handleTabClick() {
@@ -180,6 +184,7 @@ export default {
             if (id && val) {
                 this.fetchListData(id, val)
             }
+            this.getReferenceOptions()
         },
 
         // 经验引用按钮点击事件
