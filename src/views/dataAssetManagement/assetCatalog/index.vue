@@ -2,19 +2,39 @@
   <div class="app-container" v-loading="Loading">
     <el-row :gutter="20">
       <el-col :span="4" :xs="24">
+        <!-- 1. 原有搜索输入框（保持不变，位于最上方） -->
         <div class="head-container" style="margin-bottom: 15px;">
-          <el-input v-model="filterText" placeholder="请输入库名搜索"> <i slot="prefix"
-              class="el-input__icon el-icon-search"></i></el-input>
+          <el-input v-model="filterText" placeholder="请输入库名搜索">
+            <i slot="prefix" class="el-input__icon el-icon-search"></i>
+          </el-input>
         </div>
+
+        <!-- 2. 新增：全选框（左） + 导出按钮（右） 区域 -->
+        <div class="tree-operation-bar"
+          style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <!-- 左侧全选框（带文字说明） -->
+          <el-checkbox v-model="isTreeAllChecked" @change="handleTreeAllCheck" style="font-size: 14px;">
+            全选
+          </el-checkbox>
+          <!-- 右侧导出按钮（无选中节点时禁用） -->
+          <el-button type="text" @click="handleTreeExport"
+            :disabled="selectedTreeNodeIds.length === 0" style="color: #26244ce0;">
+            <svg-icon icon-class="导出" />
+            导出
+          </el-button>
+        </div>
+
         <div class="head-container" v-loading="treeLoading">
           <el-tree class="treeBox" style="overflow-y: auto;height: 785px;" :data="categoryList" :props="defaultProps"
             :default-expanded-keys="[treeID]" :current-node-key="treeID" :expand-on-click-node="false"
-            :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current @node-click="handleNodeClick" />
+            :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current @node-click="handleNodeClick"
+            show-checkbox :check-strictly="false" :default-checked-keys="defaultCheckedKeys" @check="handleTreeCheck" />
         </div>
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="true" label-width="100px">
+        <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="true"
+          label-width="100px">
           <el-form-item label="表名" prop="tableName">
             <el-select v-model="queryParams.tableName" @change="selectProjectIdChange" filterable placeholder="全部">
               <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.tableId">
@@ -110,16 +130,16 @@
       <el-form :model="drawerQueryParams" ref="drawerQueryForm" size="small" :inline="true" label-width="80px"
         style="margin: 15px 0;">
         <el-form-item label="字段名称" prop="fieldName"> <!-- 添加prop -->
-          <el-input v-model="drawerQueryParams.fieldName" placeholder="请输入字段名称搜索"
-            @input="handleDrawerSearch" size="mini"></el-input>
+          <el-input v-model="drawerQueryParams.fieldName" placeholder="请输入字段名称搜索" @input="handleDrawerSearch"
+            size="mini"></el-input>
         </el-form-item>
         <el-form-item label="字段类型" prop="fieldType"> <!-- 添加prop -->
-          <el-input v-model="drawerQueryParams.fieldType" placeholder="请输入字段类型搜索"
-            @input="handleDrawerSearch" size="mini"></el-input>
+          <el-input v-model="drawerQueryParams.fieldType" placeholder="请输入字段类型搜索" @input="handleDrawerSearch"
+            size="mini"></el-input>
         </el-form-item>
         <el-form-item label="字段注释" prop="oldFieldRemark"> <!-- 添加prop -->
-          <el-input v-model="drawerQueryParams.oldFieldRemark" placeholder="请输入字段注释搜索"
-            @input="handleDrawerSearch" size="mini"></el-input>
+          <el-input v-model="drawerQueryParams.oldFieldRemark" placeholder="请输入字段注释搜索" @input="handleDrawerSearch"
+            size="mini"></el-input>
         </el-form-item>
         <!-- <el-form-item label="脏数据" prop="dirtyData">
           <el-select v-model="drawerQueryParams.dirtyData" placeholder="全部" @change="handleDrawerSearch"
@@ -195,9 +215,8 @@
       </el-table>
 
       <!-- 新增分页组件 -->
-      <Pagination v-show="drawerTotal > 0" :total="drawerTotal"
-        :page.sync="drawerQueryParams.pageNum" :limit.sync="drawerQueryParams.pageSize"
-        @pagination="handleDrawerPagination" style="margin-top: 15px;" />
+      <Pagination v-show="drawerTotal > 0" :total="drawerTotal" :page.sync="drawerQueryParams.pageNum"
+        :limit.sync="drawerQueryParams.pageSize" @pagination="handleDrawerPagination" style="margin-top: 15px;" />
     </el-drawer>
   </div>
 </template>
@@ -272,11 +291,39 @@ export default {
       editMsg: '',
       scrollTop: '',
       scrollLeft: '',
+
+      // 新增：树复选框相关状态
+      isTreeAllChecked: false, // 全选框的勾选状态（双向绑定）
+      selectedTreeNodeIds: [], // 存储所有勾选的节点ID（用于导出和状态判断）
+      defaultCheckedKeys: [], // 树初始化时默认勾选的节点ID（可空）
     };
   },
   watch: {
     filterText(val) {
       this.$refs.tree.filter(val);
+    },
+    // 监听“全选框状态”变化，同步树的勾选状态（避免手动勾选节点后全选框状态不一致）
+    isTreeAllChecked(newVal) {
+      const treeRef = this.$refs.tree;
+      if (!treeRef) return;
+
+      if (newVal) {
+        // 全选：勾选所有树节点
+        const allNodeIds = this.getAllTreeIds(this.categoryList); // 递归获取所有节点ID
+        treeRef.setCheckedKeys(allNodeIds);
+        this.selectedTreeNodeIds = allNodeIds;
+      } else {
+        // 取消全选：清空所有勾选
+        treeRef.setCheckedKeys([]);
+        this.selectedTreeNodeIds = [];
+      }
+    },
+
+    // 监听“选中节点ID数组”变化，同步全选框状态
+    selectedTreeNodeIds(newVal) {
+      const allNodeIds = this.getAllTreeIds(this.categoryList);
+      // 当所有节点都被勾选时，全选框自动勾选；否则取消
+      this.isTreeAllChecked = newVal.length === allNodeIds.length && allNodeIds.length > 0;
     }
   },
   created() {
@@ -285,6 +332,109 @@ export default {
   mounted() {
   },
   methods: {
+    /**
+     * 新增：递归获取所有树节点的ID（适配 DataSource → Database 二级结构）
+     * @param {Array} treeData - 树数据源（categoryList）
+     * @returns {Array} 所有节点的ID数组
+     */
+    getAllTreeIds(treeData) {
+      let ids = [];
+      treeData.forEach(node => {
+        ids.push(node.id);
+        // 若节点有子节点（如 DataSource01 下的 CoreDatabase），递归获取子节点ID
+        if (node.children && node.children.length > 0) {
+          ids = [...ids, ...this.getAllTreeIds(node.children)];
+        }
+      });
+      return ids;
+    },
+
+    /**
+     * 新增：树节点复选框状态变更事件（勾选/取消勾选时触发）
+     * @param {Object} currentNode - 当前操作的节点
+     * @param {Array} selectedNodes - 所有已勾选的节点数组
+     */
+    handleTreeCheck(currentNode, selectedNodes) {
+      // 同步“选中节点ID数组”（从选中节点数组中提取ID）
+      this.selectedTreeNodeIds = selectedNodes.map(node => node.id);
+    },
+
+    /**
+     * 新增：全选框点击事件（与 watch 配合确保状态同步）
+     * @param {Boolean} checked - 全选框的新状态
+     */
+    handleTreeAllCheck(checked) {
+      this.isTreeAllChecked = checked;
+    },
+
+    /**
+     * 新增：导出选中的树节点数据（按图片层级格式化为 DataSource → Databases）
+     */
+    handleTreeExport() {
+      if (this.selectedTreeNodeIds.length === 0) {
+        this.$message.warning("请先勾选要导出的节点");
+        return;
+      }
+
+      // 1. 获取选中节点的完整数据（含 label、parentId 等）
+      const selectedNodes = this.getCheckedNodeData(this.categoryList, this.selectedTreeNodeIds);
+      // 2. 按层级格式化数据（适配图片：DataSource 为顶级，Database 为子级）
+      const exportData = this.formatExportData(selectedNodes);
+      // 3. 生成JSON文件并下载
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: "application/json;charset=utf-8"
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `数据源导出_${new Date().format("yyyyMMddHHmmss")}.json`; // 带时间戳的文件名
+      a.click();
+      URL.revokeObjectURL(url); // 释放URL资源
+
+      this.$message.success(`成功导出 ${this.selectedTreeNodeIds.length} 个节点`);
+    },
+
+    /**
+     * 工具方法：根据选中的ID数组，筛选出对应的节点完整数据
+     * @param {Array} treeData - 树数据源
+     * @param {Array} checkedIds - 选中的节点ID数组
+     * @returns {Array} 选中节点的完整数据
+     */
+    getCheckedNodeData(treeData, checkedIds) {
+      let checkedNodes = [];
+      treeData.forEach(node => {
+        if (checkedIds.includes(node.id)) {
+          checkedNodes.push(node);
+        }
+        // 递归处理子节点
+        if (node.children && node.children.length > 0) {
+          checkedNodes = [...checkedNodes, ...this.getCheckedNodeData(node.children, checkedIds)];
+        }
+      });
+      return checkedNodes;
+    },
+
+    /**
+     * 工具方法：格式化导出数据（按图片层级分组，如 DataSource01 → [CoreDatabase, UserDatabase]）
+     * @param {Array} selectedNodes - 选中节点的完整数据
+     * @returns {Array} 格式化后的导出数据
+     */
+    formatExportData(selectedNodes) {
+      // 1. 筛选顶级节点（图片中的 DataSource01、DataSource02，特征：无 parentId）
+      const topNodes = selectedNodes.filter(node => !node.parentId);
+      // 2. 为每个顶级节点匹配其子节点（图片中的 CoreDatabase 等，特征：parentId = 顶级节点ID）
+      return topNodes.map(topNode => ({
+        数据源名称: topNode.label, // 如 "DataSource01"
+        数据源ID: topNode.id,
+        包含数据库: selectedNodes
+          .filter(node => node.parentId === topNode.id)
+          .map(dbNode => ({
+            数据库名称: dbNode.label, // 如 "CoreDatabase"
+            数据库ID: dbNode.id
+          }))
+      }));
+    },
+
     //一键填充
     allFill() {
       this.$confirm('确定执行一键填充操作？', '提示', {
@@ -711,7 +861,8 @@ export default {
   margin-right: 10px;
   margin-left: 10px;
 }
-.mian_box_item /deep/ .el-card{
+
+.mian_box_item /deep/ .el-card {
   box-shadow: none;
 }
 
@@ -825,6 +976,7 @@ export default {
   color: black;
   font-weight: bold;
 }
+
 .yuanDataClass /deep/ .el-form-item {
   width: 30%;
 }
@@ -839,5 +991,16 @@ export default {
 
 .yuanDataClass /deep/ .el-select {
   width: 100%;
+}
+
+/* 新增：树操作栏（全选框+导出按钮）样式 */
+.tree-operation-bar {
+  padding: 0 3px;
+  /* 与输入框、树组件保持一致的内边距 */
+}
+
+/* 优化：树复选框与文字的间距（避免拥挤） */
+.treeBox /deep/ .el-tree-node__content .el-checkbox {
+  margin-right: 7px;
 }
 </style>
