@@ -231,7 +231,7 @@
                                         class="icon"
                                         @click.native="(isView || selectedMappingRows.length === 0) && $event.stopPropagation()" />
                                     <svg-icon icon-class="导入" @click="handleImport"
-                                        :class="{ 'icon-disabled': isView || form.id == '系统默认生成' }" class="icon"
+                                        :class="{ 'icon-disabled': false }" class="icon"
                                         @click.native="isView && $event.stopPropagation()" />
                                     <svg-icon icon-class="导出" @click="handleExport"
                                         :class="{ 'icon-disabled': isView || form.id == '系统默认生成' }" class="icon"
