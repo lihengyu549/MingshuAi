@@ -2,11 +2,13 @@
   <div class="content" v-loading="loading" element-loading-background="rgba(255, 255, 255, 0.98)">
     <div class="headerview">
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <img src="../assets/indexImg/jiqiren-2.png" alt="" style="width: 50px;height: 50px;">
+        <!-- <img src="../assets/indexImg/jiqiren-2.png" alt="" style="width: 50px;height: 50px;"> -->
+        <div>
+          <div style="margin-top: 10px;">Hi，欢迎来到{{ $store.state.user.projectData.projectName }}！</div>
+          <p style="margin: 16px 0;">可持续化运营，只需4步！</p>
+        </div>
         <el-button type="primary" plain @click="goData">切换大屏</el-button>
       </div>
-      <div style="margin-top: 10px;">Hi，欢迎来到{{ $store.state.user.projectData.projectName }}！</div>
-      <p style="margin: 16px 0;">可持续化运营，只需4步！</p>
       <div class="card_box">
         <el-card class="box-card" v-for="item in cardList" :key="item.id">
           <div class="text item">
@@ -23,13 +25,14 @@
     <div class="main">
       <div class="main_left">
         <div class="main_head">
-          <div class="line"></div>
+          <!-- <div class="line"></div> -->
+          <svg-icon icon-class="dunpai-3" style="font-size: 20px; margin-right: 5px;"></svg-icon>
           <div>参考标准</div>
         </div>
         <div class="main_body">
           <div class="main_body_head">
             <div v-for="item in yuanList" class="yuan" @click="yuanClick(item)"><el-tag :type="item.type">{{ item.text
-                }}</el-tag>
+            }}</el-tag>
             </div>
             <!-- <div class="yuan2 yuan">行标</div>
             <div class="yuan3 yuan">团标</div>
@@ -58,8 +61,8 @@
       </div>
       <div class="main_right">
         <div class="main_head">
-          <div class="line"></div>
-          <div>数据库统计 TOP5</div>
+          <svg-icon icon-class="jurassic_data" style="font-size: 20px; margin-right: 5px;"></svg-icon> 
+          <div>数据库统计</div>
         </div>
         <div class="main_body">
           <div class="main_body_head">
@@ -297,8 +300,8 @@ export default {
   background-color: #fff;
   padding: 20px 30px;
   /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), */
-    /* 底部阴影 */
-    /* 0 2px 4px rgba(0, 0, 0, 0.08); */
+  /* 底部阴影 */
+  /* 0 2px 4px rgba(0, 0, 0, 0.08); */
   /* 浮动效果的阴影 */
   border: 1px solid #e6ebf5;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -312,8 +315,8 @@ export default {
   margin-left: 30px;
   padding: 20px 30px;
   /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), */
-    /* 底部阴影 */
-    /* 0 2px 4px rgba(0, 0, 0, 0.08); */
+  /* 底部阴影 */
+  /* 0 2px 4px rgba(0, 0, 0, 0.08); */
   /* 浮动效果的阴影 */
   border: 1px solid #e6ebf5;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -350,9 +353,9 @@ export default {
   line-height: 60px;
   text-align: center;
   margin-right: 20px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3),
+  /* box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), */
     /* 右下方向的阴影 */
-    -2px -2px 5px rgba(255, 255, 255, 0.7);
+    /* -2px -2px 5px rgba(255, 255, 255, 0.7); */
   /* 左上方向的阴影 */
 }
 
@@ -383,9 +386,10 @@ export default {
 .card_box {
   width: 100%;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
   flex-wrap: nowrap;
+  margin-top: 25px;
 }
 
 .text {
@@ -397,10 +401,11 @@ export default {
 }
 
 .box-card {
-  width: 22%;
+  width: 23%;
   border-radius: 15px;
 }
-.el-card.is-always-shadow{
+
+.el-card.is-always-shadow {
   box-shadow: none;
 }
 
@@ -425,10 +430,11 @@ export default {
   line-height: 60px;
   text-align: center;
   margin-right: 20px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3),
+  /* box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), */
     /* 右下方向的阴影 */
-    -2px -2px 5px rgba(255, 255, 255, 0.7);
+    /* -2px -2px 5px rgba(255, 255, 255, 0.7); */
   /* 左上方向的阴影 */
+  border: solid 0.5px #e5e5e5;
 }
 
 .yuanimg:hover {
