@@ -4,7 +4,7 @@
       <el-col :span="4" :xs="24">
         <!-- 1. 原有搜索输入框（保持不变，位于最上方） -->
         <div class="head-container" style="margin-bottom: 15px;">
-          <el-input v-model="filterText" placeholder="请输入库名搜索">
+          <el-input v-model="filterText" placeholder="请输入库名搜索" clearable>
             <i slot="prefix" class="el-input__icon el-icon-search"></i>
           </el-input>
         </div>
@@ -872,9 +872,8 @@ export default {
 }
 
 .paginationClass {
-  position: fixed;
+  position: absolute;
   bottom: 5%;
-  left: 70%;
 }
 
 .success {
