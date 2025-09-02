@@ -724,6 +724,7 @@ export default {
           if (!await this.getNameTestingFn()) {
             return
           }
+          this.formLoading = true
           const params = {
             ...this.form,
             ifStartDataNull: this.form.ifStartDataNull ? '1' : '0',
@@ -744,6 +745,7 @@ export default {
             // this.form.piiDetectionFlag = this.form.piiDetectionFlag + ''
             // this.form.aiAnalyticsEngine = this.aiAnalyticsEngine
             editScanCompleteDataTasks(params).then(response => {
+              this.formLoading = false
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
@@ -753,6 +755,7 @@ export default {
             // data.aiAnalyticsEngine = this.aiAnalyticsEngine
             // data.piiDetectionFlag = this.form.piiDetectionFlag + ''
             addScanCompleteDataTasks(params).then(response => {
+              this.formLoading = false
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
