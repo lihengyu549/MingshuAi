@@ -17,8 +17,8 @@
             全选
           </el-checkbox>
           <!-- 右侧导出按钮（无选中节点时禁用） -->
-          <el-button type="text" @click="handleTreeExport"
-            :disabled="selectedTreeNodeIds.length === 0" style="color: #26244ce0;">
+          <el-button type="text" @click="handleTreeExport" :disabled="selectedTreeNodeIds.length === 0"
+            style="color: #26244ce0;">
             <svg-icon icon-class="导出" />
             导出
           </el-button>
@@ -873,7 +873,8 @@ export default {
 
 .paginationClass {
   position: absolute;
-  bottom: 5%;
+  bottom: -5%;
+  right: 0;
 }
 
 .success {
