@@ -35,12 +35,20 @@
         </div>
       </el-col>
       <!--用户数据-->
-      <el-col :span="20" :xs="24">
+      <el-col :span="20" :xs="24" style="border-left: solid 0.5px #dcdfe6;">
         <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
           v-show="showSearch" label-width="auto">
           <el-form-item label="子类名称" prop="name">
             <el-input v-model="queryParams.name" @input="inputSearch" placeholder="请输入子类名称" clearable
               @keyup.enter.native="handleQuery" />
+          </el-form-item>
+          <el-form-item label="确认防护措施" prop="confirmProtectMethod">
+            <el-select v-model="queryParams.confirmProtectMethod" @change="selectProjectIdChange" multiple
+              placeholder="全部">
+              <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
+                :value="item.dictLabel">
+              </el-option>
+            </el-select>
           </el-form-item>
           <el-form-item label="来源" prop="dataSourceId">
             <el-select v-model="queryParams.dataSourceId" clearable @change="dataSourceIdIdChange" placeholder="全部"
@@ -64,14 +72,6 @@
               </el-option>
             </el-select>
           </el-form-item> -->
-          <el-form-item label="确认防护措施" prop="confirmProtectMethod">
-            <el-select v-model="queryParams.confirmProtectMethod" @change="selectProjectIdChange" multiple
-              placeholder="全部">
-              <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
-                :value="item.dictLabel">
-              </el-option>
-            </el-select>
-          </el-form-item>
           <el-form-item prop="dataOwner" label="数据持有者">
             <el-select v-model="queryParams.dataOwner" @change="selectProjectIdChange" clearable placeholder="全部">
               <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
@@ -98,15 +98,25 @@
           <el-table-column label="安全分级" align="center" prop="securityLevelName" />
           <el-table-column label="建议防护措施" align="center" prop="protectMethodName" width="200">
             <template slot-scope="scope">
-              <el-tag class="tagsBox" v-for="item in scope.row.protectMethodNameList" :color="colorFn(item)"
-                :key="item">{{ item }}</el-tag>
+              <el-tag class="tagsBox custom-plain-tag" v-for="item in scope.row.protectMethodNameList" :key="item"
+                :style="{
+                  '--tag-color': colorFn(item),
+                  '--tag-rgb': hexToRgb(colorFn(item))
+                }" plain>
+                {{ item }}
+              </el-tag>
             </template>
           </el-table-column>
           <el-table-column label="数据持有者" align="center" prop="dataOwner" />
           <el-table-column label="确认防护措施" align="center" prop="confirmProtectMethod" width="200">
             <template slot-scope="scope">
-              <el-tag class="tagsBox" v-for="item in scope.row.confirmProtectMethodList" :color="colorFn(item)"
-                :key="item">{{ item }}</el-tag>
+              <el-tag class="tagsBox custom-plain-tag" v-for="item in scope.row.confirmProtectMethodList" :key="item"
+                :style="{
+                  '--tag-color': colorFn(item),
+                  '--tag-rgb': hexToRgb(colorFn(item))
+                }" plain>
+                {{ item }}
+              </el-tag>
             </template>
           </el-table-column>
           <el-table-column label="来源" align="center" prop="dataSource">
@@ -141,7 +151,8 @@
             @input="sonNameTestingFn(addOrEditDataRuls.attachData)" maxlength="50" placeholder="请输入子类名称"></el-input>
         </el-form-item>
         <el-form-item class="addSelectClass" label="所属父类" prop="categoryId">
-          <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3" filterable :filter-method="handleAddSelectInput">
+          <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3" filterable
+            :filter-method="handleAddSelectInput">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
                 :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
@@ -164,8 +175,7 @@
           </el-select>
         </el-form-item>
         <el-form-item class="addSelectClass" prop="dataOwner" label="数据持有者">
-          <el-select v-model="addOrEditDataRuls.dataOwner" placeholder="全部"
-            :disabled="addOrEdit.flag == 3">
+          <el-select v-model="addOrEditDataRuls.dataOwner" placeholder="全部" :disabled="addOrEdit.flag == 3">
             <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
             </el-option>
           </el-select>
@@ -286,10 +296,10 @@ export default {
         name: '',//子类名称
         dataSourceId: '',//来源
         levelId: [],//安全级别，
-        dataSource:'',
+        dataSource: '',
       },
       addOrEditDataRuls: {
-        additional:'',
+        additional: '',
         attachData: '',
         categoryId: '',
         minSecurityLevel: null,
@@ -355,7 +365,7 @@ export default {
     }
   },
   created() {
-    if(this.$route.query && this.$route.query.id){
+    if (this.$route.query && this.$route.query.id) {
       this.queryParams.categoryId = this.$route.query.id * 1
     }
     this.gettreeOptionsList(this.$route.query.id)
@@ -377,16 +387,30 @@ export default {
     colorFn(item) {
       switch (item) {
         case '加密':
-          return '#70b503'
+          return '#70b503';
         case 'DLP':
-          return '#0600ff'
+          return '#0600ff';
         case '脱敏':
-          return '#f59b22'
+          return '#f59b22';
         case '无保护':
-          return '#409eff'
+          return '#409eff';
         case '空':
-          return '#909399'
+          return '#909399';
+        // 新增默认情况，避免返回undefined
+        default:
+          return '#909399'; // 默认使用灰色
       }
+    },
+    // 新增方法：将十六进制颜色转换为RGB格式
+    hexToRgb(hex) {
+      // 新增参数校验，避免undefined或非字符串值
+      if (!hex || typeof hex !== 'string' || hex.length !== 7 || hex[0] !== '#') {
+        return '0, 0, 0'; // 默认返回黑色的RGB值
+      }
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `${r}, ${g}, ${b}`;
     },
     //  获取用户列表
     getSelectUserListAll() {
@@ -522,7 +546,7 @@ export default {
         this.$refs.addSelectRef.blur()
       }
     },
-    
+
     // 处理添加选择框的输入事件
     handleAddSelectInput(value) {
       // 当输入内容变化时，触发树的过滤
@@ -615,8 +639,8 @@ export default {
       this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
       this.tags = row.featureLabel ? row.featureLabel.split(',') : []
-      this.addOrEditDataRuls.confirmProtectMethod = Array.isArray(row.confirmProtectMethod) 
-        ? row.confirmProtectMethod 
+      this.addOrEditDataRuls.confirmProtectMethod = Array.isArray(row.confirmProtectMethod)
+        ? row.confirmProtectMethod
         : (row.confirmProtectMethod ? row.confirmProtectMethod.split(',') : []);
       this.addOrEdit.show = true
       this.addOrEdit.title = '编辑'
@@ -657,7 +681,7 @@ export default {
             attachStatus(data).then(res => {
               if (res.code == 200) {
                 this.messsucc(res, flag)
-                 this.handleQuery();
+                this.handleQuery();
               }
             })
           } else if (flag == '禁用') {
@@ -665,7 +689,7 @@ export default {
             attachStatus(data).then(res => {
               if (res.code == 200) {
                 this.messsucc(res, flag)
-                 this.handleQuery();
+                this.handleQuery();
               }
             })
           } else if (flag == '删除') {
@@ -681,7 +705,7 @@ export default {
             deleteAttachData(data).then(res => {
               if (res.code == 200) {
                 this.messsucc(res, flag)
-                 this.handleQuery();
+                this.handleQuery();
               }
             })
           } else {
@@ -705,13 +729,13 @@ export default {
       getFrameworks().then((response) => {
         this.treeOptions = response.data
         if (response.data.length > 0) {
-          if(!id) {
+          if (!id) {
             this.queryParams.categoryId = response.data[0].id;
           }
           this.getProtectCategory(this.queryParams.categoryId);
-        }else {
+        } else {
           this.Loading = false
-          
+
         }
       });
     },
@@ -727,23 +751,23 @@ export default {
       if (!value) return true;
       // 实现基于categoryName的模糊匹配，支持匹配最下级节点
       const lowerValue = value.toLowerCase();
-      
+
       // 检查当前节点是否是叶子节点（最下级）
       const isLeafNode = !data.children || data.children.length === 0;
-      
+
       // 如果是叶子节点，直接匹配
       if (isLeafNode) {
         return data.categoryName && data.categoryName.toLowerCase().includes(lowerValue);
       }
-      
+
       // 如果不是叶子节点，检查其子节点是否匹配
       if (data.children && data.children.length > 0) {
         return this.checkChildrenMatch(data.children, lowerValue);
       }
-      
+
       return false;
     },
-    
+
     // 递归检查子节点是否匹配
     checkChildrenMatch(children, searchValue) {
       for (let child of children) {
@@ -1020,15 +1044,24 @@ export default {
 }
 
 .tagsBox {
-  border: none;
-  color: white;
-  margin-left: 5px;
+  /* border: none; */
+  /* color: white; */
+  /* border: none; */
+  /* justify-content: space-between; */
 }
 
-.custom-tree-node {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
+/* 自定义plain标签样式 */
+::v-deep .custom-plain-tag {
+  /* 使用CSS变量设置颜色 */
+  color: var(--tag-color) !important;
+  border-color: var(--tag-color) !important;
+  /* 背景色使用RGB值加透明度实现浅色效果 */
+  background-color: rgba(var(--tag-rgb), 0.1) !important;
+}
+
+/* 去除默认hover样式干扰 */
+::v-deep .custom-plain-tag:hover {
+  background-color: rgba(var(--tag-rgb), 0.15) !important;
 }
 
 .addNode {
@@ -1037,11 +1070,13 @@ export default {
     line-height: 23px;
   }
 }
+
 .node-label {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 120px; /* 根据需要调整宽度 */
+  max-width: 120px;
+  /* 根据需要调整宽度 */
   line-height: 28px;
 }
 </style>
