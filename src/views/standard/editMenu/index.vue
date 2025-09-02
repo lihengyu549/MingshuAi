@@ -1,5 +1,6 @@
 <template>
     <div class="app-container" v-loading="loading">
+        <div class="page-title">分类管理</div>
         <div class="tree-container" v-loading="treeLoading">
             <el-tree :indent="8" :data="categoryList" :props="defaultProps" :default-expanded-keys="[currentNodeId]"
                 :current-node-key="currentNodeId" :expand-on-click-node="false" ref="tree" node-key="id"
@@ -8,26 +9,25 @@
                     <span class="node-label" v-if="!data.addEdit" :title="node.label">{{ node.label }}</span>
                     <el-input id="addNode" class="addNode" v-else v-model="nodeLabel"
                         @blur="addEditNodeFn(node, data)"></el-input>
-                    <span>
+                    <span class="node-actions">
                         <el-button type="text" v-show="!data.addEdit && data.nodeLayerIndex !== 3" size="mini"
-                            @click.stop="() => append(data, node)">
+                            class="action-btn add-btn" @click.stop="() => append(data, node)">
                             增加
                         </el-button>
                         <el-button type="text" v-show="!data.addEdit && data.nodeLayerIndex !== 0" size="mini"
-                            @click.stop="() => editNode(data)">
+                            class="action-btn edit-btn" @click.stop="() => editNode(data)">
                             编辑
                         </el-button>
                         <el-button type="text" v-show="!data.addEdit && data.nodeLayerIndex !== 0" size="mini"
-                            @click.stop="() => remove(node, data)">
+                            class="action-btn delete-btn" @click.stop="() => remove(node, data)">
                             删除
                         </el-button>
                     </span>
                 </span>
             </el-tree>
         </div>
-        <div class="page-header">
+        <div class="page-actions">
             <el-button type="primary" plain @click="goBack">返回</el-button>
-            <!-- 移除保存按钮 -->
         </div>
     </div>
 </template>
@@ -50,7 +50,6 @@ export default {
                 children: "children",
                 label: "label"
             }
-            // 移除modifiedNodes数组
         };
     },
     created() {
@@ -153,7 +152,6 @@ export default {
             }
         },
 
-        // 修改删除方法，直接调用接口
         async remove(node, data) {
             this.$confirm(`确定删除当前节点及其下所有子节点吗？`, '提示', {
                 confirmButtonText: '确定',
@@ -162,17 +160,14 @@ export default {
             }).then(async () => {
                 this.loading = true;
                 try {
-                    // 先调用删除接口
                     await deleteCategory({ id: data.id });
 
-                    // 接口调用成功后再从界面移除
                     const parent = node.parent;
                     const children = parent.data.children || parent.data;
                     const index = children.findIndex(d => d.id === data.id);
                     children.splice(index, 1);
 
                     this.$message.success('删除成功');
-                    // 重新加载树数据
                     this.getTreeData(this.$route.query.id);
                 } catch (error) {
                     this.$message.error('删除失败：' + (error.message || '未知错误'));
@@ -193,16 +188,13 @@ export default {
             });
         },
 
-        // 修改编辑和添加完成方法，直接调用接口
         async addEditNodeFn(node, data) {
             if (!this.nodeLabel && data.addEdit) {
                 this.$message({
                     type: 'warning',
                     message: '节点名称不能为空',
                 });
-                // 恢复原始状态
                 if (!data.id) {
-                    // 如果是新节点且未输入内容，则移除
                     const parent = node.parent;
                     const children = parent.data.children || parent.data;
                     const index = children.findIndex(d => d === data);
@@ -213,10 +205,7 @@ export default {
 
             this.loading = true;
             try {
-                // 取消编辑状态
                 this.$set(data, 'addEdit', false);
-
-                // 更新节点名称
                 data.label = this.nodeLabel;
                 data.categoryName = this.nodeLabel;
 
@@ -225,20 +214,17 @@ export default {
                     categoryName: data.label,
                     parentId: data.parentId,
                     id: data.id || null,
-                    topId: this.currentNodeId // 根节点ID
+                    topId: this.currentNodeId
                 };
 
                 if (params.id) {
-                    // 已有节点，调用更新接口
                     await updateCategory(params);
                     this.$message.success('更新成功');
                 } else {
-                    // 新节点，调用添加接口
                     await addCategory(params);
                     this.$message.success('添加成功');
                 }
 
-                // 重新加载树数据
                 this.getTreeData(this.$route.query.id);
             } catch (error) {
                 this.$message.error('操作失败：' + (error.message || '未知错误'));
@@ -246,23 +232,41 @@ export default {
                 this.loading = false;
             }
         }
-
-        // 移除saveChanges方法
     }
 };
 </script>
 
 <style scoped>
-.page-header {
-    margin-bottom: 20px;
-    float: right;
+.page-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #26244ce0;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.page-actions {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.back-btn {
+    border-color: #26244ce0;
+    color: #26244ce0;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background-color: #f5f5f7;
 }
 
 .tree-container {
     background: #fff;
     padding: 20px;
-    border-radius: 4px;
+    border-radius: 6px;
     min-height: 500px;
+    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); */
 }
 
 .custom-tree-node {
@@ -270,6 +274,7 @@ export default {
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    padding: 4px 0;
 }
 
 .node-label {
@@ -278,13 +283,64 @@ export default {
     text-overflow: ellipsis;
     max-width: 180px;
     line-height: 28px;
+    color: #333;
+    transition: color 0.2s;
+}
+
+.node-label:hover {
+    color: #26244ce0;
+}
+
+.node-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 8px;
+}
+
+.action-btn {
+    color: #26244ce0 !important;
+    padding: 0 6px;
+    height: 28px;
+    line-height: 28px;
+    font-size: 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background-color: #f0f0f5;
+    color: #1a1938 !important;
 }
 
 .addNode {
     input {
-        height: 23px;
-        line-height: 23px;
+        height: 28px;
+        line-height: 28px;
         width: 180px;
+        border-radius: 4px;
+        border-color: #dcdfe6;
+        transition: border-color 0.2s;
     }
+
+    input:focus {
+        border-color: #26244ce0;
+        box-shadow: 0 0 0 2px rgba(38, 36, 76, 0.1);
+    }
+}
+
+/* 优化树节点连接线样式 */
+::v-deep .el-tree-node__content {
+    height: 36px;
+    align-items: center;
+}
+
+::v-deep .el-tree-node:focus>.el-tree-node__content {
+    background-color: #f5f5f7;
+}
+
+::v-deep .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
+    background-color: #f0f0f5;
+    color: #26244ce0;
+    font-weight: 500;
 }
 </style>

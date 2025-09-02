@@ -24,7 +24,7 @@
         </div>
       </el-col>
       <!-- 用户数据部分保持不变 -->
-      <el-col :span="20" :xs="24" style="border-left: solid 0.5px #dcdfe6;">
+      <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
           v-show="showSearch" label-width="auto">
           <el-form-item label="子类名称" prop="name">
