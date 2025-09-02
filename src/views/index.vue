@@ -14,7 +14,7 @@
           <div class="text item">
             <p>{{ 'Setp' + item.id }}</p>
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <h3><svg-icon :icon-class="item.id" style="margin-right: 5px;" />{{ item.title }}</h3>
+              <h3><svg-icon :icon-class="String(item.id)" style="margin-right: 5px;" />{{ item.title }}</h3>
               <el-button type="text" @click="routerPush(item)">{{ item.btnText }}</el-button>
             </div>
             <span style="font-size: 12px; color: #aaaaaa;">{{ item.msg }}</span>
