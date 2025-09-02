@@ -873,7 +873,7 @@ export default {
 
 .paginationClass {
   position: absolute;
-  bottom: -5%;
+  bottom: 0%;
   right: 0;
 }
 
