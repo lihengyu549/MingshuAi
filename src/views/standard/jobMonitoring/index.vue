@@ -16,8 +16,8 @@
             <span class="custom-tree-node" slot-scope="{ node, data }">
               <span class="node-label" :title="node.label">{{ node.label }}</span>
               <!-- 只在根节点显示齿轮按钮 -->
-              <el-button v-if="isRootNode(data)" type="text" size="mini" icon="el-icon-setting"
-                @click.stop="goToMenuEdit(data)">
+              <el-button v-if="isRootNode(data)" type="text" size="large" icon="el-icon-setting"
+                @click.stop="goToMenuEdit(data)" style="color: #26244ce0;">
               </el-button>
             </span>
           </el-tree>
