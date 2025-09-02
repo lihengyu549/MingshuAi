@@ -113,7 +113,7 @@ export default {
         },
         // 经验引用请求
         async getReferenceOptions() {
-            const refResponse = await getFeatureSelect({ featureType: this.dict.type.sys_industry_type[0]?.value }); // 自定义接口，需实际实现
+            const refResponse = await getFeatureSelect({ featureType: this.dict.type.sys_industry_type.find(item => item.label === this.activeTab)?.value }); // 自定义接口，需实际实现
             console.log('refResponse', refResponse);
             this.referenceOptions = refResponse.data;
         },

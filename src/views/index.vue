@@ -14,7 +14,7 @@
           <div class="text item">
             <p>{{ 'Setp' + item.id }}</p>
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <h3>{{ item.title }}</h3>
+              <h3><svg-icon :icon-class="item.id" style="margin-right: 5px;" />{{ item.title }}</h3>
               <el-button type="text" @click="routerPush(item)">{{ item.btnText }}</el-button>
             </div>
             <span style="font-size: 12px; color: #aaaaaa;">{{ item.msg }}</span>
@@ -61,7 +61,7 @@
       </div>
       <div class="main_right">
         <div class="main_head">
-          <svg-icon icon-class="jurassic_data" style="font-size: 20px; margin-right: 5px;"></svg-icon> 
+          <svg-icon icon-class="jurassic_data" style="font-size: 20px; margin-right: 5px;"></svg-icon>
           <div>数据库统计</div>
         </div>
         <div class="main_body">
@@ -280,23 +280,24 @@ export default {
 .content {
   background-color: #fff;
   /* #fafafc */
+  padding: 50px;
 }
 
 .headerview {
   height: 380px;
   /* margin-top: 10px; */
-  padding: 25px 50px 0px 50px;
+  /* padding: 25px 50px 0px 50px; */
 }
 
 .main {
   width: 100%;
   display: flex;
-  justify-content: space-around
+  justify-content: space-between;
 }
 
 .main_left {
   width: 47%;
-  margin-left: 30px;
+  /* margin-left: 30px; */
   background-color: #fff;
   padding: 20px 30px;
   /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), */
@@ -312,7 +313,7 @@ export default {
 .main_right {
   width: 47%;
   background-color: #fff;
-  margin-left: 30px;
+  /* margin-left: 30px; */
   padding: 20px 30px;
   /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), */
   /* 底部阴影 */
@@ -354,8 +355,8 @@ export default {
   text-align: center;
   margin-right: 20px;
   /* box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), */
-    /* 右下方向的阴影 */
-    /* -2px -2px 5px rgba(255, 255, 255, 0.7); */
+  /* 右下方向的阴影 */
+  /* -2px -2px 5px rgba(255, 255, 255, 0.7); */
   /* 左上方向的阴影 */
 }
 
@@ -431,8 +432,8 @@ export default {
   text-align: center;
   margin-right: 20px;
   /* box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), */
-    /* 右下方向的阴影 */
-    /* -2px -2px 5px rgba(255, 255, 255, 0.7); */
+  /* 右下方向的阴影 */
+  /* -2px -2px 5px rgba(255, 255, 255, 0.7); */
   /* 左上方向的阴影 */
   border: solid 0.5px #e5e5e5;
 }
