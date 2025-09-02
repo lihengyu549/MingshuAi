@@ -1057,6 +1057,7 @@ export default {
   border-color: var(--tag-color) !important;
   /* 背景色使用RGB值加透明度实现浅色效果 */
   background-color: rgba(var(--tag-rgb), 0.1) !important;
+  margin-right: 5px;
 }
 
 /* 去除默认hover样式干扰 */
