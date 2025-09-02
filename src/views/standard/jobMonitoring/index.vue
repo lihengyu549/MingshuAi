@@ -14,27 +14,16 @@
             :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
             node-key="id" highlight-current @node-click="handleNodeClick">
             <span class="custom-tree-node" slot-scope="{ node, data }">
-              <span class="node-label" v-if="!data.addEdit" :title="node.label">{{ node.label }}</span>
-              <el-input id="addNode" class="addNode" v-else v-model="nodeLabel"
-                @blur="addEditNodeFn(node, data)"></el-input>
-              <span>
-                <el-button type="text" v-show="!data.addEdit && data.nodeLayerIndex !== 3" size="mini"
-                  @click.stop="() => append(data, node)">
-                  增加
-                </el-button>
-                <el-button type="text" v-show="!data.addEdit && data.nodeLayerIndex !== 0" size="mini"
-                  @click.stop="() => editNode(data)">
-                  编辑
-                </el-button>
-                <el-button type="text" v-show="!data.addEdit && data.nodeLayerIndex !== 0" size="mini"
-                  @click.stop="() => remove(node, data)">
-                  删除
-                </el-button>
-              </span>
-            </span></el-tree>
+              <span class="node-label" :title="node.label">{{ node.label }}</span>
+              <!-- 只在根节点显示齿轮按钮 -->
+              <el-button v-if="isRootNode(data)" type="text" size="mini" icon="el-icon-setting"
+                @click.stop="goToMenuEdit(data)">
+              </el-button>
+            </span>
+          </el-tree>
         </div>
       </el-col>
-      <!--用户数据-->
+      <!-- 用户数据部分保持不变 -->
       <el-col :span="20" :xs="24" style="border-left: solid 0.5px #dcdfe6;">
         <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
           v-show="showSearch" label-width="auto">
@@ -64,23 +53,12 @@
               </el-option>
             </el-select>
           </el-form-item>
-
-          <!-- <el-form-item label="建议防护措施 " prop="protectMethodId">
-            <el-select v-model="queryParams.protectMethodId" @change="selectProjectIdChange" multiple placeholder="全部">
-              <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
-                :value="item.dictValue">
-              </el-option>
-            </el-select>
-          </el-form-item> -->
           <el-form-item prop="dataOwner" label="数据持有者">
             <el-select v-model="queryParams.dataOwner" @change="selectProjectIdChange" clearable placeholder="全部">
               <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
               </el-option>
             </el-select>
           </el-form-item>
-          <!-- <el-form-item class="searchBtn">
-            <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
-          </el-form-item> -->
         </el-form>
         <el-row :gutter="10" class="mb8">
           <el-col :span="1.5">
@@ -89,7 +67,6 @@
           <el-col :span="1.5">
             <el-button type="primary" plain icon="el-icon-close" size="medium" @click="enabledFn('删除')">删除</el-button>
           </el-col>
-          <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
         </el-row>
         <el-table v-loading="loading" :data="protectTableFieldList" height="650px" ref="tableRef" class="tableBox">
           <el-table-column type="selection" width="60" align="center">
@@ -121,13 +98,6 @@
           </el-table-column>
           <el-table-column label="来源" align="center" prop="dataSource">
           </el-table-column>
-          <!-- <el-table-column label="状态" align="center" prop="state">
-            <template slot-scope="scope">
-              <span>
-                {{ scope.row.enable ? '启用' : '禁用' }}
-              </span>
-            </template>
-          </el-table-column> -->
           <el-table-column label="更新时间" align="center" prop="updateTime" />
           <el-table-column label="操作" align="center">
             <template slot-scope="scope">
@@ -227,11 +197,8 @@ import {
   editAttachData,
   selectUserListAll,
   deleteAttachData,
-  addCategory,
-  updateCategory,
-  deleteCategory,
 } from "@/api/standard";
-import { treeListI, categoryImport, getAttachData, attachStatus, forceLogout, updataAttach, nameTesting, addData, getFrameworks } from "@/api/system/protectCategory";
+import { treeListI, getAttachData, attachStatus, nameTesting, getFrameworks } from "@/api/system/protectCategory";
 export default {
   name: "ProtectTableField",
   components: { Treeselect },
@@ -247,7 +214,6 @@ export default {
         overflowY: 'auto'
       },
       inputVisible: false,
-      nodeLabel: '',
       countIs40: true,// 数量是否小于40
       tagsShow: false,
       inputValue: '',
@@ -273,10 +239,6 @@ export default {
         minSecurityLevel: [
           { required: true, message: "请选择安全分级", trigger: "blur" },
         ],
-
-        // confirmProtectMethod: [
-        //   { required: true, message: "请选确认防护措施", trigger: "blur" },
-        // ],
         dataOwner: [
           { required: true, message: "请选择数据持有者", trigger: "blur" },
         ],
@@ -331,10 +293,6 @@ export default {
       total: 0,
       // 数据库字段名表格数据
       protectTableFieldList: [],
-      // 弹出层标题
-      title: "",
-      // 是否显示弹出层
-      open: false,
       categoryList: [],
       yuanCategoryList: [],
       userList: [],
@@ -372,13 +330,24 @@ export default {
     this.getDictData()
     this.getSelectUserListAll()
   },
-  mounted() {
-  },
   methods: {
+    // 判断是否为根节点
+    isRootNode(data) {
+      return data.parentId === 0 || !data.parentId;
+    },
+
+    // 跳转到菜单编辑页面
+    goToMenuEdit(data) {
+      this.$router.push({
+        path: '/editMenu',
+        query: { id: data.id }
+      });
+    },
+
     //  字典数据
     getDictData() {
       listByDataType({ type: 'sys_protect_method' }).then(res => {
-        this.protectMethodIdList = res.data;// 此字典只给新增子类的建议防护措施用
+        this.protectMethodIdList = res.data;
       })
       listByDataType({ type: 'sys_confirm_protect_method' }).then(res => {
         this.confirmProtectMethodList = res.data;
@@ -396,16 +365,13 @@ export default {
           return '#409eff';
         case '空':
           return '#909399';
-        // 新增默认情况，避免返回undefined
         default:
-          return '#909399'; // 默认使用灰色
+          return '#909399';
       }
     },
-    // 新增方法：将十六进制颜色转换为RGB格式
     hexToRgb(hex) {
-      // 新增参数校验，避免undefined或非字符串值
       if (!hex || typeof hex !== 'string' || hex.length !== 7 || hex[0] !== '#') {
-        return '0, 0, 0'; // 默认返回黑色的RGB值
+        return '0, 0, 0';
       }
       const r = parseInt(hex.slice(1, 3), 16);
       const g = parseInt(hex.slice(3, 5), 16);
@@ -529,7 +495,7 @@ export default {
           }
         }
       }
-      return null; // 如果没有找到，返回 null
+      return null;
     },
 
     addHandleNodeClick(node) {
@@ -549,90 +515,9 @@ export default {
 
     // 处理添加选择框的输入事件
     handleAddSelectInput(value) {
-      // 当输入内容变化时，触发树的过滤
       if (this.$refs.treeSelect) {
         this.$refs.treeSelect.filter(value);
       }
-    },
-    append(data, parentNode) {
-      if (!parentNode.expanded) {
-        this.$message({
-          type: 'warning',
-          message: '当前节点未展开，请展开后再添加子节点',
-        });
-        // parentNode.expanded = true
-      } else {
-        const newChild = { id: '', label: '', children: [], addEdit: true, parentId: data.id };
-        if (!data.children) {
-          this.$set(data, 'children', []);
-        }
-        data.children.push(newChild);
-        this.$nextTick(() => {
-          let addNodeInput = document.getElementById('addNode')
-          if (addNodeInput) {
-
-            addNodeInput.focus()
-          }
-        })
-      }
-    },
-    remove(node, data) {
-      this.$confirm(`确定删除当前及其下数据吗`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        deleteCategory({ id: data.id }).then(res => {
-          this.$modal.msgSuccess("删除成功");
-          this.getProtectCategory(this.queryParams.categoryId)
-        })
-      })
-      // const parent = node.parent;
-      // const children = parent.data.children || parent.data;
-      // const index = children.findIndex(d => d.id === data.id);
-      // children.splice(index, 1);
-    },
-    editNode(data) {
-      this.nodeLabel = ''
-      this.$set(data, 'addEdit', true);
-      this.nodeLabel = data.label
-      this.$nextTick(() => {
-        let addNodeInput = document.getElementById('addNode')
-        addNodeInput.focus()
-      })
-    },
-    addEditNodeFn(node, data) {
-      if (!this.nodeLabel && data.addEdit) {
-        this.$message({
-          type: 'warning',
-          message: '请逐条添加，不可一次添加多条',
-        });
-        this.getProtectCategory(this.queryParams.categoryId)
-        return
-      }
-      this.Loading = true
-      let params = {
-        categoryName: this.nodeLabel,
-        parentId: data.parentId,
-        id: data.id || null,
-        topId: this.queryParams.categoryId,
-      }
-      if (data.id) {
-        updateCategory(params).then(res => {
-          this.getProtectCategory(this.queryParams.categoryId)
-        })
-          .catch(err => {
-            this.getProtectCategory(this.queryParams.categoryId)
-          })
-      } else {
-        addCategory(params).then(res => {
-          this.getProtectCategory(this.queryParams.categoryId)
-        }).catch(err => {
-          this.getProtectCategory(this.queryParams.categoryId)
-        })
-      }
-      this.nodeLabel = ''
-      this.Loading = false
     },
     editFn(row) {
       this.addOrEdit.flag = 2
@@ -711,7 +596,6 @@ export default {
           } else {
             this.$message({ message: '未知异常', type: 'warning' })
           }
-          // 接口
         }).catch(() => {
 
         });
@@ -749,7 +633,6 @@ export default {
     // 修改过滤方法以支持最下级节点匹配
     filterNode(value, data) {
       if (!value) return true;
-      // 实现基于categoryName的模糊匹配，支持匹配最下级节点
       const lowerValue = value.toLowerCase();
 
       // 检查当前节点是否是叶子节点（最下级）
@@ -797,7 +680,7 @@ export default {
       clearTimeout(this.debounceTimeout);
       this.debounceTimeout = setTimeout(() => {
         this.handleQuery()
-      }, 500); // 设置防抖的时间间隔为300毫秒
+      }, 500);
     },
     selectProjectIdChange(val) {
       this.handleQuery()
@@ -821,12 +704,6 @@ export default {
         if (resp.data.length == 0) {
           this.Loading = false
         } else {
-          // for (let index in resp.data) {
-          //   if (resp.data[index].parentId === 0) {
-          //     this.categoryList.splice(index, 1)
-          //     break
-          //   }
-          // }
           this.treeID = this.categoryList[0].id;
           this.$nextTick(function () {
             if (this.$refs.tree) {
@@ -852,7 +729,6 @@ export default {
         ...this.queryParams,
         nodeId: this.treeID,
         levelId: this.queryParams.levelId.length ? this.queryParams.levelId.join() : '-1',
-        // protectMethodId: this.queryParams.protectMethodId.length ? this.queryParams.protectMethodId.join() : '',
         confirmProtectMethod: this.queryParams.confirmProtectMethod.length ? this.queryParams.confirmProtectMethod.join() : '',
         dataSourceId: this.queryParams.dataSourceId ? this.queryParams.dataSourceId : 0,
       }
@@ -1077,7 +953,13 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 120px;
-  /* 根据需要调整宽度 */
   line-height: 28px;
+}
+
+.custom-tree-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 </style>
