@@ -599,7 +599,7 @@ export default {
                     featureSource: this.form.source,
                     featureDescribe: this.form.description,
                     [this.form.featureType == '3' ? 'featureDataDictionariesList' : 'featureItemList']: this.form.featureType == '1'
-                        ? [{ tableName: this.form.featureValue }]
+                        ? [{ itemKey: this.form.featureValue }]
                         : this.form.mappingList
                 }
                 console.log('提交数据：', submitData)
@@ -628,7 +628,7 @@ export default {
                     featureSource: this.form.source,
                     featureDescribe: this.form.description,
                     [this.form.featureType == '3' ? 'featureDataDictionariesList' : 'featureItemList']: this.form.featureType == '1'
-                        ? [{ tableName: this.form.featureValue }]
+                        ? [{ itemKey: this.form.featureValue }]
                         : this.form.mappingList
                 }
                 console.log('提交数据：', submitData)
