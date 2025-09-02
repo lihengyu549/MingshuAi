@@ -390,7 +390,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   flex-wrap: nowrap;
-  margin-top: 25px;
+  margin-top: 40px;
 }
 
 .text {
