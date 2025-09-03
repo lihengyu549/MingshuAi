@@ -330,3 +330,11 @@ export function getAnalyseLog(id) {
     data: id,
   })
 }
+
+// 引用数据特征的正则数据接口
+export function getFeatureItemSelect() {
+  return request({
+    url: `/system/feature/getFeatureItemSelect`,
+    method: 'get',
+  })
+}

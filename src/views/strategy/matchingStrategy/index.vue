@@ -124,8 +124,25 @@
           </div>
           <div class="forDiv">
             <div v-for="(item, index) in ruleContent" :key="index" style="margin-bottom: 15px;">
-              <el-input v-model="item.name" :disabled="addOrEdit.flag == 3" />
-              <span @click="delAddSelect(index)" v-if="addOrEdit.flag !== 3"
+              <!-- 当识别方式为正则(3)时显示带建议的输入框 -->
+              <el-autocomplete 
+                v-if="addOrEditDataRuls.recognizeWay === '3'" 
+                v-model="item.name" 
+                :disabled="addOrEdit.flag == 3" 
+                :fetch-suggestions="queryRegexSuggestions" 
+                placeholder="请输入正则表达式" 
+                clearable 
+                value-key="name" 
+                :popper-append-to-body="false">
+                <template slot-scope="{ item }">
+                  <div class="value-text">{{ item.value }}</div>
+                </template>
+              </el-autocomplete>
+      
+              <!-- 其他识别方式显示普通输入框 -->
+              <el-input v-else v-model="item.name" :disabled="addOrEdit.flag == 3" 
+                :placeholder="getInputPlaceholder()" />
+              <span @click="delAddSelect(index)" v-if="addOrEdit.flag !== 3" 
                 style="margin-left: 20px; color: red;">删除</span>
             </div>
           </div>
@@ -142,7 +159,7 @@
 <script>
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getParentIdTree, getListitem, enableDataItem, deleteDataItem, updateAttachDataItme, nameTesting, getFrameworks, addAttachDataItme, nameRules } from "@/api/system/protectCategory";
+import { getParentIdTree, getListitem, enableDataItem, deleteDataItem, updateAttachDataItme, nameTesting, getFrameworks, addAttachDataItme, nameRules, getFeatureItemSelect } from "@/api/system/protectCategory";
 import { number } from "echarts";
 import r from "highlight.js/lib/languages/r";
 export default {
@@ -291,6 +308,45 @@ export default {
       this.addOrEdit.show = true
       this.addOrEditDataRuls = {}
       this.ruleContent = []
+    },
+    // 正则表达式建议列表（可根据实际需求扩展）
+    async queryRegexSuggestions(queryString, callback) {
+      // 常用正则表达式建议列表
+      let regexSuggestions = [];
+      try {
+        let res = await getFeatureItemSelect()
+        res.data.forEach(item => {
+          regexSuggestions.push({
+            value: item.featureName,  // 建议列表中显示的值
+            name: item.featureValue   // 点击后输入框显示的值
+          })
+        })
+      } catch (error) {
+        console.error('获取特性项目选择数据失败:', error);
+        this.$message.error('获取数据失败，请稍后重试');
+      }
+
+      // 根据输入过滤建议 - 仍然基于value进行过滤
+      const results = queryString
+        ? regexSuggestions.filter(suggestion =>
+          suggestion.value.toLowerCase().includes(queryString.toLowerCase())
+        )
+        : regexSuggestions;
+
+      // 调用回调返回结果
+      callback(results);
+    },
+
+    // 获取输入框占位符
+    getInputPlaceholder() {
+      switch (this.addOrEditDataRuls.recognizeWay) {
+        case '1':
+          return '请输入精准匹配内容';
+        case '2':
+          return '请输入包含匹配内容';
+        default:
+          return '请输入内容';
+      }
     },
     // 数字输入框input事件
     numberInputFn(val) {
@@ -684,8 +740,12 @@ export default {
   max-height: 300px;
 }
 
-.rulesContClass /deep/ .el-input {
+.rulesContClass /deep/ .el-input ,.el-autocomplete  {
   width: calc(80%);
+}
+
+.rulesContClass /deep/ .el-autocomplete .el-input {
+  width: 100%;
 }
 
 .rulesContClass /deep/ .el-form-item__label {
