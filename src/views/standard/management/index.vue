@@ -43,9 +43,9 @@
             <div class="title_text_area">
               <h3>{{ item.categoryName }}</h3>
               <div class="title_tags">
-                <el-tag class="tag-item" size="small" type="primary">国标</el-tag>
+                <el-tag class="tag-item" size="small" type="primary">{{ item.standardTypeName }}</el-tag>
                 <el-tag class="tag-item" size="small" type="info">现行</el-tag>
-                <el-tag class="tag-item" size="small" type="info">内置</el-tag>
+                <el-tag class="tag-item" size="small" type="info">{{ item.dataSource }}</el-tag>
               </div>
             </div>
           </div>
