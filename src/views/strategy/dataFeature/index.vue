@@ -41,15 +41,15 @@
 
         <!-- 数据表格 -->
         <el-table v-loading="loading" :data="tableData" style="width: 100%;" @selection-change="handleSelectionChange">
-            <el-table-column type="selection" width="45" />
-            <!-- <el-table-column prop="id" label="特征编号" width="120" /> -->
-            <el-table-column prop="featureName" label="特征名称" width="160" />
-            <el-table-column prop="featureTypeName" label="特征类型" width="100" />
-            <!-- <el-table-column prop="featureValue" label="特征值" min-width="180" /> -->
-            <el-table-column prop="featureSourceName" label="来源" width="120" />
-            <el-table-column prop="featureDescribe" label="描述" min-width="200" />
-            <el-table-column prop="updateTime" label="更新时间" width="160" />
-            <el-table-column label="操作" width="120" fixed="right">
+            <el-table-column type="selection" align="center" width="45" />
+            <!-- <el-table-column prop="id" align="center" label="特征编号" width="120" /> -->
+            <el-table-column prop="featureName" align="center" label="特征名称" width="160" />
+            <el-table-column prop="featureTypeName" align="center" label="特征类型" width="100" />
+            <!-- <el-table-column prop="featureValue" align="center" label="特征值" min-width="180" /> -->
+            <el-table-column prop="featureSourceName" align="center" label="来源" width="120" />
+            <el-table-column prop="featureDescribe" align="center" label="描述" min-width="200" />
+            <el-table-column prop="updateTime" align="center" label="更新时间" width="160" />
+            <el-table-column align="center" label="操作" width="120" fixed="right">
                 <template slot-scope="scope">
                     <el-button type="text" size="small" @click="handleView(scope.row)">查看</el-button>
                     <el-button type="text" size="small" @click="handleEdit(scope.row)">编辑</el-button>
