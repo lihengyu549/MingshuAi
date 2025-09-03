@@ -73,7 +73,12 @@
           </el-table-column>
           <el-table-column label="子类名称" align="center" prop="attachData" />
           <el-table-column label="安全分级" align="center" prop="securityLevelName" />
-          <el-table-column label="建议防护措施" align="center" prop="protectMethodName" width="200">
+          <el-table-column label="建议防护措施" prop="protectMethodName" width="200">
+            <!-- 自定义标题样式 -->
+            <template slot="header">
+              <div style="text-align: center;">建议防护措施</div>
+            </template>
+            <!-- 内容保持默认靠左 -->
             <template slot-scope="scope">
               <el-tag class="tagsBox custom-plain-tag" v-for="item in scope.row.protectMethodNameList" :key="item"
                 :style="{

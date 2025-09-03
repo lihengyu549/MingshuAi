@@ -19,14 +19,6 @@
                     </el-option>
                 </el-select>
             </el-form-item>
-            <!-- <el-form-item>
-                <el-button type="primary" @click="handleSearch">
-                    <i class="el-icon-search"></i> 查询
-                </el-button>
-                <el-button @click="handleReset" style="margin-left: 10px;">
-                    <i class="el-icon-refresh"></i> 重置
-                </el-button>
-            </el-form-item> -->
         </el-form>
 
         <!-- 操作按钮区域 -->
@@ -42,10 +34,8 @@
         <!-- 数据表格 -->
         <el-table v-loading="loading" :data="tableData" style="width: 100%;" @selection-change="handleSelectionChange">
             <el-table-column type="selection" align="center" width="45" />
-            <!-- <el-table-column prop="id" align="center" label="特征编号" width="120" /> -->
             <el-table-column prop="featureName" align="center" label="特征名称" width="160" />
             <el-table-column prop="featureTypeName" align="center" label="特征类型" width="100" />
-            <!-- <el-table-column prop="featureValue" align="center" label="特征值" min-width="180" /> -->
             <el-table-column prop="featureSourceName" align="center" label="来源" width="120" />
             <el-table-column prop="featureDescribe" align="center" label="描述" min-width="200" />
             <el-table-column prop="updateTime" align="center" label="更新时间" width="160" />
@@ -169,13 +159,12 @@
                                             <el-input v-model="tempFeatureVal" placeholder="请输入对照含义" :disabled="isView"
                                                 style="width: 48%;" />
                                         </div>
-                                        <el-table :data="form.mappingList" style="margin-top: 10px; width: 100%"
+                                        <el-table :data="currentMappingPageData" style="margin-top: 10px; width: 100%"
                                             size="small" @selection-change="handleMappingSelectionChange">
                                             <!-- 新增：复选框列 -->
                                             <el-table-column type="selection" width="45" />
                                             <el-table-column prop="itemKey" label="特征值" width="180" />
                                             <el-table-column prop="itemValue" label="对照含义" min-width="180" />
-                                            <!-- 已删除原有操作列 -->
                                         </el-table>
                                     </template>
                                     <template v-else-if="form.featureType == '3'">
@@ -189,7 +178,7 @@
                                             <el-input v-model="tempFeatureType" placeholder="请输入字段注释" :disabled="isView"
                                                 style="width: 24%;" />
                                         </div>
-                                        <el-table :data="form.mappingList" style="margin-top: 10px; width: 100%"
+                                        <el-table :data="currentMappingPageData" style="margin-top: 10px; width: 100%"
                                             size="small" @selection-change="handleMappingSelectionChange">
                                             <!-- 新增：复选框列 -->
                                             <el-table-column type="selection" width="45" />
@@ -197,7 +186,6 @@
                                             <el-table-column prop="tableRemark" label="表注释" min-width="180" />
                                             <el-table-column prop="fieldName" label="字段名称" min-width="180" />
                                             <el-table-column prop="fieldRemark" label="字段注释" min-width="180" />
-                                            <!-- 已删除原有操作列 -->
                                         </el-table>
                                     </template>
 
@@ -206,7 +194,7 @@
                                         style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #f9f9f9; border: 1px solid #eee; border-radius: 4px;">
                                         <i class="el-icon-warning-outline" type="info" />
                                         支持UTF-8编码的txt文件,每行一条请用英文逗号分隔关键字和对照值, 例如:{{ form.featureType == '3' ?
-                                        '表名,表注释,字段名称,字段注释' : '特征值,对照含义' }}
+                                            '表名,表注释,字段名称,字段注释' : '特征值,对照含义' }}
                                     </div>
 
                                     <!-- 对照表分页 -->
@@ -230,7 +218,7 @@
                                         :class="{ 'icon-disabled': isView || selectedMappingRows.length === 0 }"
                                         class="icon"
                                         @click.native="(isView || selectedMappingRows.length === 0) && $event.stopPropagation()" />
-                                    <svg-icon icon-class="导入" @click="handleImport" :class="{ 'icon-disabled': false }"
+                                    <svg-icon icon-class="导入" @click="handleImport" :class="{ 'icon-disabled': isView }"
                                         class="icon" @click.native="isView && $event.stopPropagation()" />
                                     <svg-icon icon-class="导出" @click="handleExport"
                                         :class="{ 'icon-disabled': isView || form.id == '系统默认生成' }" class="icon"
@@ -253,7 +241,7 @@
 
             <!-- 抽屉底部按钮 -->
             <div class="drawer-footer">
-                <el-button @click="drawerVisible = false" size="small">取消</el-button>
+                <el-button @click="handleCancel" size="small">取消</el-button>
                 <el-button type="primary" plain @click="handleConfirm" v-if="!isView" size="small"
                     style="margin-left: 10px;">确认</el-button>
             </div>
@@ -277,8 +265,7 @@ export default {
                 source: ''
             },
             // 表格数据
-            tableData: [
-            ],
+            tableData: [],
             // 分页
             pagination: {
                 currentPage: 1,
@@ -312,7 +299,6 @@ export default {
                 featureType: { required: true, message: '请输入类型', trigger: 'blur' },
                 description: { required: true, message: '请输入描述', trigger: 'blur' },
                 featureValue: { required: true, message: '请输入特征值', trigger: 'blur' },
-                // mappingList: { required: true, message: '请输入特征值', trigger: 'change' },
             },
             // 新增：存储选中的对照行
             selectedMappingRows: [],
@@ -346,7 +332,6 @@ export default {
                 };
                 const res = await getPageListFeature(params);
                 this.tableData = res.data.records;
-                // this.pagination.currentPage = res.data.pageNum;
                 this.pagination.pageSize = res.data.size;
                 this.pagination.total = res.data.total;
             } catch (error) {
@@ -360,7 +345,6 @@ export default {
         // 搜索
         handleSearch() {
             this.init()
-            // 实际项目中这里会调用接口获取数据
         },
         // 重置搜索
         handleReset() {
@@ -387,6 +371,11 @@ export default {
             this.tempFeatureVal = ''
             this.tempFeatureName = ''
             this.tempFeatureType = ''
+            this.mappingPagination = {
+                currentPage: 1,
+                pageSize: 5,
+                total: 0
+            }
             this.drawerVisible = true
         },
         // 删除选中项
@@ -470,7 +459,6 @@ export default {
             const res = await getFeatureItemListByFeatureId(params)
             this.form.mappingList = res.data.records
             this.mappingPagination.total = res.data.total
-            // this.mappingPagination.currentPage = res.data.pageNum
             this.mappingPagination.pageSize = res.data.size
             // 如果当前页数据为空且不是第一页，自动跳转到上一页
             if (this.form.mappingList.length === 0 && this.mappingPagination.currentPage > 1) {
@@ -479,10 +467,19 @@ export default {
         },
         // 类型改变时处理
         handleTypeChange(type) {
-            if (type === '正则') {
-                this.form.mappingList = []
-            } else if (type === '对照表') {
-                this.form.featureValue = ''
+            // 切换类型时清空导入的数据
+            this.form.mappingList = [];
+            this.mappingPagination.total = 0;
+            this.mappingPagination.currentPage = 1;
+
+            if (type === '1') {
+                this.form.featureValue = '';
+            } else if (type === '2' || type === '3') {
+                this.form.featureValue = '';
+                this.tempFeatureKey = '';
+                this.tempFeatureVal = '';
+                this.tempFeatureName = '';
+                this.tempFeatureType = '';
             }
         },
         // 对照表：新增一行
@@ -502,16 +499,7 @@ export default {
                 }
             }
 
-            // 校验：特征值是否已存在（统一判断条件）
-            // const exists = this.form.mappingList.some(item =>
-            //     item.tableName === this.tempFeatureKey || item.itemKey === this.tempFeatureKey
-            // );
-            // if (exists) {
-            //     this.$message.warning('该特征值已存在');
-            //     return;
-            // }
-
-            // 构造通用参数（提取公共逻辑）
+            // 构造通用参数
             const commonParams = {
                 id: this.form.id == '系统默认生成' ? null : this.form.id,
                 featureType: this.form.featureType
@@ -542,7 +530,7 @@ export default {
                     return;
             }
 
-            // 调用接口或本地添加（统一逻辑）
+            // 调用接口或本地添加
             if (this.form.id !== '系统默认生成') {
                 await addFeatureItem(requestParams);
                 this.getFeatureItemListByFeatureId(this.form);
@@ -553,8 +541,10 @@ export default {
                         itemValue: requestParams.itemValue,
                     }
                 );
+                this.mappingPagination.total = this.form.mappingList.length;
             }
-            // 统一清空输入（减少重复代码）
+
+            // 统一清空输入
             this.tempFeatureKey = '';
             this.tempFeatureVal = '';
             this.tempFeatureName = '';
@@ -580,14 +570,10 @@ export default {
                 // 验证特征名称是否存在
                 const params = { featureName: this.form.featureName }
                 try {
-                    const res = await verifyFeatureName(params)
-                    // 如果返回500，提示并终止执行
-                    // if (res.code === 500) {
-                    //     this.$message.warning('特征名称已存在')
-                    //     return
-                    // }
+                    await verifyFeatureName(params)
                 } catch (error) {
-                    // this.$message.error(error.message || '未知错误')
+                    this.$message.error(error.message || '未知错误')
+                    this.loading = false;
                     return
                 }
                 // 新增操作
@@ -601,7 +587,6 @@ export default {
                         ? [{ itemKey: this.form.featureValue }]
                         : this.form.mappingList
                 }
-                console.log('提交数据：', submitData)
                 await addFeature(submitData)
                 this.$message.success('新增成功')
                 this.init()
@@ -609,14 +594,10 @@ export default {
                 // 验证特征名称是否存在
                 const params = { id: this.form.id, featureName: this.form.featureName }
                 try {
-                    const res = await verifyFeatureName(params)
-                    // 如果返回500，提示并终止执行
-                    // if (res.code === 500) {
-                    //     this.$message.warning('特征名称已存在')
-                    //     return
-                    // }
+                    await verifyFeatureName(params)
                 } catch (error) {
-                    // this.$message.error(error.message || '未知错误')
+                    this.$message.error(error.message || '未知错误')
+                    this.loading = false;
                     return
                 }
                 // 编辑操作
@@ -630,7 +611,6 @@ export default {
                         ? [{ itemKey: this.form.featureValue }]
                         : this.form.mappingList
                 }
-                console.log('提交数据：', submitData)
                 await updateFeature(submitData)
                 this.$message.success('编辑成功')
                 this.init()
@@ -640,13 +620,36 @@ export default {
             this.drawerVisible = false
             this.loading = false;
         },
+        // 取消按钮处理
+        handleCancel() {
+            this.$confirm('确定要取消吗？未保存的数据将丢失。')
+                .then(_ => {
+                    this.clearUploadedData();
+                    this.drawerVisible = false;
+                })
+                .catch(_ => { })
+        },
         // 抽屉关闭前的处理
         handleDrawerClose(done) {
             this.$confirm('确定要关闭吗？未保存的数据将丢失。')
                 .then(_ => {
-                    done()
+                    this.clearUploadedData();
+                    done();
                 })
                 .catch(_ => { })
+        },
+        // 清空上传的数据
+        clearUploadedData() {
+            this.form.mappingList = [];
+            this.mappingPagination = {
+                currentPage: 1,
+                pageSize: 5,
+                total: 0
+            };
+            this.tempFeatureKey = '';
+            this.tempFeatureVal = '';
+            this.tempFeatureName = '';
+            this.tempFeatureType = '';
         },
         // 分页-改变页码
         async handleCurrentChange(val) {
@@ -669,11 +672,20 @@ export default {
                 this.loading = false;
             }
         },
-        // 新增：处理对照行选中事件
+        // 对照表分页-改变页码
+        handleMappingCurrentChange(val) {
+            this.mappingPagination.currentPage = val;
+        },
+        // 对照表分页-改变页大小
+        handleMappingSizeChange(val) {
+            this.mappingPagination.pageSize = val;
+            this.mappingPagination.currentPage = 1;
+        },
+        // 处理对照行选中事件
         handleMappingSelectionChange(val) {
             this.selectedMappingRows = val
         },
-        // 新增：删除选中的对照行
+        // 删除选中的对照行
         async deleteSelectedRows() {
             this.$confirm(`确定要删除选中的${this.selectedMappingRows.length}条数据吗?`, '提示', {
                 confirmButtonText: '确定',
@@ -693,9 +705,39 @@ export default {
                 this.$message.info('已取消删除')
             })
         },
-        // 新增：导入功能（示例实现）
-        // 导入功能实现（仅发送文件流给后端）
+        // 清空所有对照行
+        async clearAllRows() {
+            this.$confirm('确定要清空所有数据吗?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(async () => {
+                if (this.form.id !== '系统默认生成') {
+                    const params = {
+                        featureId: this.form.id,
+                        featureType: this.form.featureType
+                    }
+                    await deleteFeatureItemAll(params)
+                    this.getFeatureItemListByFeatureId(this.form);
+                } else {
+                    this.form.mappingList = [];
+                    this.mappingPagination.total = 0;
+                }
+                this.$message.success('清空成功')
+            }).catch(() => {
+                this.$message.info('已取消清空')
+            })
+        },
+        // 导入功能实现
         handleImport() {
+            if (this.isView) return; // 查看模式下不执行
+
+            // 检查是否已选择特征类型
+            if (!['2', '3'].includes(this.form.featureType)) {
+                this.$message.warning('请先选择特征类型（2或3）');
+                return;
+            }
+
             // 创建隐藏的文件选择input
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
@@ -704,125 +746,140 @@ export default {
             document.body.appendChild(fileInput);
 
             // 监听文件选择事件
-            fileInput.onchange = async (e) => {
+            fileInput.onchange = (e) => {
                 const file = e.target.files[0];
                 if (!file) {
                     document.body.removeChild(fileInput);
                     return;
                 }
 
-                // 校验文件大小（示例：不超过10MB）
-                if (file.size > 10 * 1024 * 1024) {
-                    this.$message.error('文件大小不能超过10MB');
+                // 校验文件大小（不超过1MB）
+                if (file.size > 1 * 1024 * 1024) {
+                    this.$message.error('文件大小不能超过1MB');
                     document.body.removeChild(fileInput);
                     return;
                 }
 
                 try {
-                    // 创建FormData对象，用于传输文件
-                    const formData = new FormData();
-                    // 追加文件流（注意：后端接口需对应此参数名，如"file"）
-                    formData.append('file', file);
-                    // 追加特征类型（根据后端需求传递，如当前编辑的特征类型）
-                    if (this.form.featureType) {
-                        formData.append('featureType', this.form.featureType);
-                    }
-                    // 追加特征ID（根据后端需求传递，如当前编辑的特征ID）
-                    if (this.form.id && this.form.id !== '系统默认生成') {
-                        formData.append('id', this.form.id);
-                    }
+                    // 读取文件内容
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const content = event.target.result;
+                            const lines = content.split('\n');
+                            const newData = [];
 
-                    // 发送文件流到后端（假设后端导入接口为importFeatureItem）
-                    await importFeatureItem(formData);
+                            // 根据featureType解析不同格式的数据
+                            if (this.form.featureType === '2') {
+                                // 特征类型2：每行格式为"特征值,对照含义"
+                                lines.forEach((line, index) => {
+                                    const trimmedLine = line.trim();
+                                    if (trimmedLine) {
+                                        const parts = trimmedLine.split(',');
+                                        if (parts.length >= 2) {
+                                            newData.push({
+                                                itemKey: parts[0].trim(),
+                                                itemValue: parts.slice(1).join(',').trim()
+                                            });
+                                        } else {
+                                            this.$message.warning(`第${index + 1}行格式不正确，已跳过`);
+                                        }
+                                    }
+                                });
+                            } else if (this.form.featureType === '3') {
+                                // 特征类型3：每行格式为"表名,表注释,字段名称,字段注释"
+                                lines.forEach((line, index) => {
+                                    const trimmedLine = line.trim();
+                                    if (trimmedLine) {
+                                        const parts = trimmedLine.split(',');
+                                        if (parts.length >= 4) {
+                                            newData.push({
+                                                tableName: parts[0].trim(),
+                                                tableRemark: parts[1].trim(),
+                                                fieldName: parts[2].trim(),
+                                                fieldRemark: parts.slice(3).join(',').trim()
+                                            });
+                                        } else {
+                                            this.$message.warning(`第${index + 1}行格式不正确，已跳过`);
+                                        }
+                                    }
+                                });
+                            }
 
-                    // 导入成功后刷新对照表数据
-                    this.getFeatureItemListByFeatureId(this.form);
-                    this.$message.success('导入成功');
+                            // 处理大量数据时使用requestAnimationFrame避免卡顿
+                            let currentIndex = 0;
+                            const batchSize = 100; // 每次处理100条数据
+
+                            const processBatch = () => {
+                                const endIndex = Math.min(currentIndex + batchSize, newData.length);
+                                for (let i = currentIndex; i < endIndex; i++) {
+                                    this.form.mappingList.push(newData[i]);
+                                }
+                                currentIndex = endIndex;
+
+                                if (currentIndex < newData.length) {
+                                    requestAnimationFrame(processBatch);
+                                } else {
+                                    // 全部处理完成后更新分页
+                                    this.mappingPagination.total = this.form.mappingList.length;
+                                    this.mappingPagination.currentPage = 1; // 重置到第一页
+                                    this.$message.success(`成功导入${newData.length}条数据`);
+                                }
+                            };
+
+                            // 开始分批处理数据
+                            processBatch();
+
+                        } catch (error) {
+                            this.$message.error('文件解析失败: ' + error.message);
+                        }
+                    };
+
+                    reader.onerror = () => {
+                        this.$message.error('文件读取失败');
+                    };
+
+                    reader.readAsText(file, 'UTF-8'); // 明确指定UTF-8编码
+
                 } catch (error) {
-                    this.$message.error('导入失败：' + (error.message || '未知错误'));
+                    this.$message.error('导入失败: ' + error.message);
                 } finally {
                     document.body.removeChild(fileInput);
                 }
             };
 
-            // 触发文件选择
+            // 触发文件选择对话框
             fileInput.click();
         },
-        // 新增：导出功能（示例实现）
-        // 导出功能实现
+        // 导出功能（保留原功能）
         handleExport() {
-            if (this.form.mappingList.length === 0) {
-                this.$message.warning('暂无数据可导出');
-                return;
-            }
+            // 原导出功能实现
+            if (this.isView || this.form.id === '系统默认生成') return;
 
-            try {
-                // 准备请求参数
-                const requestData = {
-                    id: this.form.id, // 假设特征ID存储在form中
-                    featureType: this.form.featureType, // 要导出的映射列表
-                };
+            const params = {
+                featureId: this.form.id,
+                featureType: this.form.featureType
+            };
 
-                // 调用导出接口
-                exportFeatureItem(requestData).then(response => {
-                    // 创建Blob对象 - 使用Excel的MIME类型
-                    const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-                    // 创建下载链接
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    // 文件名使用标准Excel扩展名.xlsx
-                    a.download = `${this.form.featureName || '特征'}_对照表.xlsx`;
-                    document.body.appendChild(a);
-
-                    // 触发下载并清理
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-
-                    this.$message.success('导出成功');
-                }).catch(error => {
-                    this.$message.error('导出失败：' + error.message);
-                });
-            } catch (error) {
-                this.$message.error('导出失败：' + error.message);
-            }
-        },
-        // 新增：清空所有对照行
-        async clearAllRows() {
-            this.$confirm('确定要清空所有数据吗?', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-            }).then(async () => {
-                const params = {
-                    id: this.form.id,
-                    featureType: this.form.featureType
-                }
-                await deleteFeatureItemAll(params)
-                this.form.mappingList = []
-                this.selectedMappingRows = []
-                this.getFeatureItemListByFeatureId(this.form);
-                this.$message.success('清空成功')
-            }).catch(() => {
-                this.$message.info('已取消清空')
-            })
-        },
-        // 对照表分页-改变页码
-        handleMappingCurrentChange(val) {
-            this.mappingPagination.currentPage = val;
-        },
-        // 对照表分页-改变页大小
-        handleMappingSizeChange(val) {
-            this.mappingPagination.pageSize = val;
-            this.mappingPagination.currentPage = 1;
-        },
+            exportFeatureItem(params).then(res => {
+                const blob = new Blob([res.data], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${this.form.featureName}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                this.$message.success('导出成功');
+            }).catch(error => {
+                this.$message.error('导出失败: ' + (error.message || '未知错误'));
+            });
+        }
     },
     mounted() {
-        this.init() // 初始化
-    },
-
+        this.init()
+    }
 }
 </script>
 
