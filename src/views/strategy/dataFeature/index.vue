@@ -194,7 +194,7 @@
                                         style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #f9f9f9; border: 1px solid #eee; border-radius: 4px;">
                                         <i class="el-icon-warning-outline" type="info" />
                                         支持UTF-8编码的txt文件,每行一条请用英文逗号分隔关键字和对照值, 例如:{{ form.featureType == '3' ?
-                                            '表名,表注释,字段名称,字段注释' : '特征值,对照含义' }}
+                                        '表名,表注释,字段名称,字段注释' : '特征值,对照含义' }}
                                     </div>
 
                                     <!-- 对照表分页 -->
@@ -471,7 +471,7 @@ export default {
             this.form.mappingList = [];
             this.mappingPagination.total = 0;
             this.mappingPagination.currentPage = 1;
-
+            
             if (type === '1') {
                 this.form.featureValue = '';
             } else if (type === '2' || type === '3') {
@@ -543,7 +543,7 @@ export default {
                 );
                 this.mappingPagination.total = this.form.mappingList.length;
             }
-
+            
             // 统一清空输入
             this.tempFeatureKey = '';
             this.tempFeatureVal = '';
@@ -731,13 +731,13 @@ export default {
         // 导入功能实现
         handleImport() {
             if (this.isView) return; // 查看模式下不执行
-
+            
             // 检查是否已选择特征类型
             if (!['2', '3'].includes(this.form.featureType)) {
                 this.$message.warning('请先选择特征类型（2或3）');
                 return;
             }
-
+            
             // 创建隐藏的文件选择input
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
@@ -768,7 +768,7 @@ export default {
                             const content = event.target.result;
                             const lines = content.split('\n');
                             const newData = [];
-
+                            
                             // 根据featureType解析不同格式的数据
                             if (this.form.featureType === '2') {
                                 // 特征类型2：每行格式为"特征值,对照含义"
@@ -809,14 +809,14 @@ export default {
                             // 处理大量数据时使用requestAnimationFrame避免卡顿
                             let currentIndex = 0;
                             const batchSize = 100; // 每次处理100条数据
-
+                            
                             const processBatch = () => {
                                 const endIndex = Math.min(currentIndex + batchSize, newData.length);
                                 for (let i = currentIndex; i < endIndex; i++) {
                                     this.form.mappingList.push(newData[i]);
                                 }
                                 currentIndex = endIndex;
-
+                                
                                 if (currentIndex < newData.length) {
                                     requestAnimationFrame(processBatch);
                                 } else {
@@ -826,7 +826,7 @@ export default {
                                     this.$message.success(`成功导入${newData.length}条数据`);
                                 }
                             };
-
+                            
                             // 开始分批处理数据
                             processBatch();
 
@@ -834,13 +834,13 @@ export default {
                             this.$message.error('文件解析失败: ' + error.message);
                         }
                     };
-
+                    
                     reader.onerror = () => {
                         this.$message.error('文件读取失败');
                     };
-
+                    
                     reader.readAsText(file, 'UTF-8'); // 明确指定UTF-8编码
-
+                    
                 } catch (error) {
                     this.$message.error('导入失败: ' + error.message);
                 } finally {
@@ -855,12 +855,12 @@ export default {
         handleExport() {
             // 原导出功能实现
             if (this.isView || this.form.id === '系统默认生成') return;
-
+            
             const params = {
                 featureId: this.form.id,
                 featureType: this.form.featureType
             };
-
+            
             exportFeatureItem(params).then(res => {
                 const blob = new Blob([res.data], { type: 'text/plain;charset=utf-8' });
                 const url = URL.createObjectURL(blob);

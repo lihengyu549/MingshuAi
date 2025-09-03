@@ -387,7 +387,7 @@ export default {
         ],
         examplesName: () => {
           return [{
-            required: this.form.databaseType == 'POSTGRESQL',
+            required: ['SQL_SERVER', 'POSTGRESQL', 'GREENPLUM'].includes(this.form.databaseType),
             message: '请输入',
             trigger: 'blur'
           }]
