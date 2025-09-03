@@ -5,7 +5,7 @@
         <div class="tree-controls">
             <el-input v-model="searchKeyword" placeholder="搜索节点名称" clearable size="small" class="search-input"
                 @input="handleSearch"></el-input>
-            <el-button type="text" size="small" class="expand-btn" @click="toggleExpandAll">
+            <el-button type="primary" plain size="small" @click="toggleExpandAll">
                 {{ isAllExpanded ? '一键折叠' : '一键展开' }}
             </el-button>
         </div>
@@ -333,10 +333,10 @@ export default {
     width: 240px;
 }
 
-.expand-btn {
+/* .expand-btn {
     color: #26244ce0 !important;
     padding: 0 12px;
-}
+} */
 
 /* 原有样式保持不变 */
 .page-title {
