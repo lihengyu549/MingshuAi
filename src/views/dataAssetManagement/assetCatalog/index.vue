@@ -57,67 +57,119 @@
               <el-option label="执行中" value="4"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item>
+          <!-- <el-form-item> -->
             <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
             <!-- <el-button icon="el-icon-s-opportunity" type="primary" size="small" @click="allFill">一键填充</el-button>
             <el-button icon="el-icon-s-help" type="primary" size="small" @click="allAssess">一键评估</el-button> -->
-          </el-form-item>
+          <!-- </el-form-item> -->
         </el-form>
         <div class="mian_box" id="main_box">
-          <div v-for="(item, index) in dataAll" v-loading="loading" :key="index" class="mian_box_item">
-            <el-card class="box-card">
-              <div class="mian_box_head">
-                <div><span style="margin-right: 10px;">{{ index + 1 }} </span><span>{{ item.tableName }}</span><span
-                    style="font-size: 14px;">（字段总数{{ item.fieldCount }}）</span></div>
-                <div></div>
-                <div style="display: flex; align-items: center;">
-                  <!-- <div class="btnItem" @click="aiDataSetFn(item)"><img class="btnImg"
-                      src="../../../assets/images/ai.png" alt=""><span>数据填充</span></div>
-                  <div class="btnItem" @click="qualityEvaluationFn(item)"><img class="btnImg"
-                      src="../../../assets/images/cz-zlpg.png" alt=""><span>质量评估</span></div> -->
-                  <div class="btnItem" @click="fieldInformationFn(item)"><img class="btnImg"
-                      src="../../../assets/images/chaxun.png" alt=""><span>字段信息</span></div>
+          <div v-for="(item, index) in dataAll" v-loading="loading" :key="index" class="table-info-card">
+            <!-- 头部区域：表名 + 字段信息按钮 -->
+            <div class="card-header">
+              <h3 class="table-name">{{ item.tableName }}</h3>
+              <button class="field-info-btn" @click="fieldInformationFn(item)">
+                <i class="el-icon-warning-outline" style="margin-right: 5px;"></i>字段信息
+              </button>
+            </div>
+
+            <!-- 内容区域：分三行布局 -->
+            <div class="card-content">
+              <!-- 第一行：4 列 -->
+              <div class="row row-1">
+                <div class="col col-1">
+                  <div class="label">表注释</div>
+                  <div class="value" :title="item.oldTableRemark || '--'">{{ item.oldTableRemark ? item.oldTableRemark : '--' }}</div>
+                  <svg-icon icon-class="xinxi" class="info-icon" />
+                </div>
+                <div class="col col-2">
+                  <div class="label">数据大小</div>
+                  <div class="value" :title="item.dataSize || '--'">{{ item.dataSize ? item.dataSize : '--' }}</div>
+                  <svg-icon icon-class="database" class="info-icon" />
+                </div>
+                <div class="col col-3">
+                  <div class="label">数据量级</div>
+                  <div class="value" :title="item.dataMagnitude ? item.dataMagnitude + ' 行' : '--'">{{ item.dataMagnitude ? item.dataMagnitude + ' 行' : '--' }}</div>
+                  <svg-icon icon-class="list2" class="info-icon" />
+                </div>
+                <div class="col col-4">
+                  <div class="label">数据质量评分</div>
+                  <div class="value" :title="item.score || '--'">{{ item.score ? item.score : '--' }}</div>
+                  <svg-icon icon-class="xingxing" class="info-icon" />
+                  <div class="progress-bar">
+                    <el-progress :percentage="item.score" color="#f4a63e" :show-text="false"></el-progress>
+                  </div>
                 </div>
               </div>
-              <div class="mian_box_center">
-                <div>数据质量评分：{{ item.score ? item.score : '--' }}</div>
-                <div>数据大小：{{ item.dataSize ? item.dataSize : '--' }}</div>
-                <div>数据量级：{{ item.dataMagnitude ? item.dataMagnitude + '行' : '--' }}</div>
-                <el-tooltip :content="item.oldTableRemark" :ref="`tooltip-${index}`" :disabled="!overflowStatus[index]"
-                  effect="dark" placement="top">
-                  <div id="textContainer" :ref="`container-${index}`">表注释：<span>{{ item.oldTableRemark ?
-                    item.oldTableRemark
-                    : '--' }}</span></div>
-                </el-tooltip>
-                <div>AI表注释：{{ item.craftTableRemark ? item.craftTableRemark : '--' }}</div>
-                <div>字段注释占比：{{ item.oldFieldRemark ? item.oldFieldRemark + '%' : '0%' }}</div>
-                <div>空值字段比例：{{ item.nullValueField ? item.nullValueField + '%' : '0%' }}</div>
-                <div>样本长度过短比例：{{ item.onlyOneValueField ? item.onlyOneValueField + '%' : '0%' }}</div>
-                <div>样本重复率过高比例：{{ item.repeatValueField ? item.repeatValueField + '%' : '0%' }}</div>
-                <div>有效字段数：{{ item.effectiveCount ? item.effectiveCount : '--' }}</div>
-                <div>脏数据字段数：{{ item.dirtyData ? item.dirtyData : '--' }}</div>
-                <div>表分类：{{ item.tableCategoryName ? item.tableCategoryName : '--' }}</div>
-                <div>表分级：{{ item.tableSecurityLevel ? item.tableSecurityLevel : '--' }}</div>
-                <div>个人信息条数：{{ item.personalInformation ? item.personalInformation : '--' }}</div>
-                <div>未成年人信息条数：{{ item.minorsInformation ? item.minorsInformation : '--' }}</div>
-                <div>数据来源：{{ item.dataType ? item.dataType : '--' }}</div>
-                <div>注释填充：<el-tag
+
+              <!-- 第二行：6 列 -->
+              <div class="row row-2">
+                <div class="col">
+                  <div class="label">AI表注释</div>
+                  <div class="value" :title="item.craftTableRemark || '--'">{{ item.craftTableRemark ? item.craftTableRemark : '--' }}</div>
+                </div>
+                <div class="col">
+                  <div class="label">数据源名称</div>
+                  <div class="value" title="CS">CS</div>
+                </div>
+                <div class="col">
+                  <div class="label">分类分级标准</div>
+                  <div class="value" :title="item.tableSecurityLevel || '--'">{{ item.tableSecurityLevel ? item.tableSecurityLevel : '--' }}</div>
+                </div>
+                <div class="col">
+                  <div class="label">来源业务系统</div>
+                  <div class="value" title="ERP系统">ERP系统</div>
+                </div>
+                <div class="col">
+                  <div class="label">所属库名</div>
+                  <div class="value" title="client_info">client_info</div>
+                </div>
+                <div class="col">
+                  <div class="label">表分类</div>
+                  <div class="value" :title="item.tableCategoryName || '--'">{{ item.tableCategoryName ? item.tableCategoryName : '--' }}</div>
+                </div>
+              </div>
+
+              <!-- 第三行：6 列 -->
+              <div class="row row-3">
+                <div class="col">
+                  <div class="label">表分级</div>
+                  <div class="value" :title="item.tableSecurityLevel || '--'">{{ item.tableSecurityLevel ? item.tableSecurityLevel : '--' }}</div>
+                </div>
+                <div class="col">
+                  <div class="label">个人信息条数</div>
+                  <div class="value green" :title="item.personalInformation ? item.personalInformation + ' 条' : '--'">{{ item.personalInformation ? item.personalInformation + ' 条' : '--' }}</div>
+                </div>
+                <div class="col">
+                  <div class="label">未成年人信息条数</div>
+                  <div class="value" :title="item.minorsInformation || '--'">{{ item.minorsInformation ? item.minorsInformation : '--' }}</div>
+                </div>
+                <div class="col">
+                  <div class="label">字段数量</div>
+                  <div class="value" :title="item.fieldCount || '--'">{{ item.fieldCount ? item.fieldCount : '--' }}</div>
+                </div>
+                <div class="col">
+                  <div class="label">注释填充</div>
+                  <el-tag
                     :type="item.paddingStatus == '未开始' ? 'info' : item.paddingStatus == '成功' ? 'success' : item.paddingStatus == '失败' ? 'danger' : item.paddingStatus == '执行中' ? 'primary' : 'info'"
-                    class="status-tag">
+                    class="status-tag" :title="item.paddingStatus">
                     <i
                       :class="item.paddingStatus == '未开始' ? 'el-icon-time' : item.paddingStatus == '成功' ? 'el-icon-circle-check' : item.paddingStatus == '失败' ? 'el-icon-warning-outline' : item.paddingStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
                     {{ item.paddingStatus }}
-                  </el-tag></div>
-                <div>样本特征提取：<el-tag
+                  </el-tag>
+                </div>
+                <div class="col">
+                  <div class="label">样本特征提取</div>
+                  <el-tag
                     :type="item.featureExtractionStatus == '未开始' ? 'info' : item.featureExtractionStatus == '成功' ? 'success' : item.featureExtractionStatus == '失败' ? 'danger' : item.featureExtractionStatus == '执行中' ? 'primary' : 'primary'"
-                    class="status-tag">
+                    class="status-tag" :title="item.featureExtractionStatus">
                     <i
-                      :class="item.paddingStatus == '未开始' ? 'el-icon-time' : item.paddingStatus == '成功' ? 'el-icon-circle-check' : item.paddingStatus == '失败' ? 'el-icon-warning-outline' : item.paddingStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
+                      :class="item.featureExtractionStatus == '未开始' ? 'el-icon-time' : item.featureExtractionStatus == '成功' ? 'el-icon-circle-check' : item.featureExtractionStatus == '失败' ? 'el-icon-warning-outline' : item.featureExtractionStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
                     {{ item.featureExtractionStatus }}
                   </el-tag>
                 </div>
               </div>
-            </el-card>
+            </div>
           </div>
         </div>
       </el-col>
@@ -891,10 +943,11 @@ export default {
 
 .mian_box {
   width: 100%;
-  border: 7px solid #f7f7f7;
+  /* border: 7px solid #f7f7f7; */
   height: 700px;
   overflow: auto;
   margin-bottom: 50px;
+
 }
 
 .mian_box_head {
@@ -1003,5 +1056,211 @@ export default {
 /* 优化：树复选框与文字的间距（避免拥挤） */
 .treeBox /deep/ .el-tree-node__content .el-checkbox {
   margin-right: 7px;
+}
+
+.table-info-card {
+  background-color: #fff;
+  /* box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05); */
+  /* padding: 20px; */
+  font-family: "Microsoft YaHei", sans-serif;
+  border: 0.5px solid #e6e8ee;
+  border-radius: 15px;
+  margin-bottom: 50px;
+  overflow: hidden;
+  /* 新增：添加最大宽度和水平滚动 */
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* 头部样式 */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: #f9fafd;
+}
+
+.table-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.field-info-btn {
+  display: flex;
+  align-items: center;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: #606266;
+  font-size: 14px;
+}
+
+.field-info-btn .icon {
+  margin-right: 6px;
+}
+
+/* 内容区域样式 */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  /* 新增：确保内容区域有足够空间 */
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  gap: 20px;
+  /* 新增：确保行内容不会压缩列 */
+  flex-wrap: nowrap;
+}
+
+/* 第一行列样式 */
+.row-1 .col {
+  flex: 1;
+  background-color: #fff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border: 0.5px solid #e6e8ee;
+  border-radius: 10px;
+  /* 新增：限制列的最小宽度，防止过窄 */
+  min-width: 200px;
+}
+
+.row-1 .label {
+  font-size: 14px;
+  color: #909399;
+  margin-bottom: 6px;
+}
+
+.row-1 .label,
+.value,
+.row-2 .label,
+.value,
+.row-3 .label,
+.value {
+  font-weight: 600;
+  
+}
+
+.row-1 .value {
+  font-size: 16px;
+  color: #333;
+  padding: 10px 0;
+  /* 添加单行显示和省略号样式 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.row-1 .info-icon,
+.row-1 .db-icon,
+.row-1 .list-icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.row-1 .rating-star {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.progress-bar {
+  height: 4px;
+  background-color: #eee;
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #ff9f43;
+  border-radius: 2px;
+}
+
+/* 第二、三行列样式 */
+.row-2 .col,
+.row-3 .col {
+  flex: 1;
+  background-color: #fff;
+  border-radius: 4px;
+  padding: 12px;
+  border: 0.5px solid #e6e8ee;
+  border-radius: 10px;
+  /* 新增：限制列的最小宽度，防止过窄 */
+  min-width: 150px;
+}
+
+.row-2 .label,
+.row-3 .label {
+  font-size: 12px;
+  color: #909399;
+  margin-bottom: 4px;
+}
+
+.row-2 .value,
+.row-3 .value {
+  font-size: 14px;
+  color: #333;
+  padding: 5px 0;
+  /* 添加单行显示和省略号样式 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.row-3 .green {
+  color: #67c23a;
+}
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.status-tag .status-icon {
+  margin-right: 4px;
+}
+
+.status-tag.gray {
+  background-color: #e4e7ed;
+  color: #909399;
+}
+
+.status-tag.red {
+  background-color: #ffe3e3;
+  color: #f56c6c;
+}
+
+/* 调整滚动条样式，提升用户体验 */
+.table-info-card::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-info-card::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.table-info-card::-webkit-scrollbar-track {
+  border-radius: 10px;
 }
 </style>
