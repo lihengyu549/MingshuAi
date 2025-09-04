@@ -77,6 +77,14 @@
             <div class="card-content">
               <!-- 第一行：4 列 -->
               <div class="row row-1">
+                <div class="col col-4">
+                  <div class="label">数据质量评分</div>
+                  <div class="value" :title="item.score || '--'">{{ item.score ? item.score : '--' }}</div>
+                  <svg-icon icon-class="xingxing" class="info-icon" />
+                  <div class="progress-bar">
+                    <el-progress :percentage="Number(item.score)" color="#f4a63e" :show-text="false"></el-progress>
+                  </div>
+                </div>
                 <div class="col col-1">
                   <div class="label">表注释</div>
                   <div class="value" :title="item.oldTableRemark || '--'">{{ item.oldTableRemark ? item.oldTableRemark : '--' }}</div>
@@ -91,14 +99,6 @@
                   <div class="label">数据量级</div>
                   <div class="value" :title="item.dataMagnitude ? item.dataMagnitude + ' 行' : '--'">{{ item.dataMagnitude ? item.dataMagnitude + ' 行' : '--' }}</div>
                   <svg-icon icon-class="list2" class="info-icon" />
-                </div>
-                <div class="col col-4">
-                  <div class="label">数据质量评分</div>
-                  <div class="value" :title="item.score || '--'">{{ item.score ? item.score : '--' }}</div>
-                  <svg-icon icon-class="xingxing" class="info-icon" />
-                  <div class="progress-bar">
-                    <el-progress :percentage="item.score" color="#f4a63e" :show-text="false"></el-progress>
-                  </div>
                 </div>
               </div>
 
@@ -1079,6 +1079,7 @@ export default {
   align-items: center;
   padding: 20px;
   background-color: #f9fafd;
+
 }
 
 .table-name {
@@ -1130,7 +1131,7 @@ export default {
   border: 0.5px solid #e6e8ee;
   border-radius: 10px;
   /* 新增：限制列的最小宽度，防止过窄 */
-  min-width: 200px;
+  min-width: 230px;
 }
 
 .row-1 .label {
@@ -1201,7 +1202,7 @@ export default {
   border: 0.5px solid #e6e8ee;
   border-radius: 10px;
   /* 新增：限制列的最小宽度，防止过窄 */
-  min-width: 150px;
+  min-width: 147px;
 }
 
 .row-2 .label,
