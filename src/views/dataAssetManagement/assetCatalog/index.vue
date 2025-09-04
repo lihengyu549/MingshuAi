@@ -422,9 +422,18 @@ export default {
     handleTreeCheck(currentNode, selectedNodes) {
       // 同步“选中节点ID数组”（从选中节点数组中提取ID）
       console.log('selectedNodes', selectedNodes);
-      // this.selectedTreeNodeIds = selectedNodes.map(node => node.id);
+      // 恢复这行代码，确保选中节点ID被正确存储
+
+      // 获取完整的选中节点数据
+      const checkedNodeData = this.getCheckedNodeData(selectedNodes.checkedNodes);
+      console.log('完整的选中节点数据:', checkedNodeData);
+      this.selectedTreeNodeIds = checkedNodeData
+      // 可以根据需要在这里使用完整的选中节点数据
+      // 例如将其保存到组件的某个属性中供其他地方使用
+      // this.checkedNodeData = checkedNodeData;
+
       // 节点勾选状态变更后调用getList方法
-      this.getList();
+      this.getList(checkedNodeData);
     },
 
     /**
@@ -447,40 +456,41 @@ export default {
       }
 
       this.loading = true;
-      // 调用后端导出接口，传入选中的节点ID
-      const response = {
+      // 构造请求参数
+      const params = {
         tableNam: this.queryParams.tableName,
         paddingstatus: this.queryParams.paddingStatus,
         featureExtractionstatus: this.queryParams.featureExtractionStatus,
-        databaseList: this.collectAllChildren(this.categoryList),
-      }
-      propertyCatalogueExport(response)
-        .then(response => {
+        databaseList: this.selectedTreeNodeIds,
+      };
+
+      // 调用导出接口，注意需要指定responseType为blob
+      propertyCatalogueExport(params)
+        .then(res => {
           this.loading = false;
+
           // 处理文件流
-          const blob = new Blob([response.data], {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
-          });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          // 从响应头获取文件名（如果后端设置了的话）
-          const contentDisposition = response.headers["content-disposition"];
-          let fileName = "资产目录导出.xlsx";
-          if (contentDisposition) {
-            fileName = decodeURIComponent(
-              contentDisposition.split("filename=")[1]
-            );
-          }
-          a.download = fileName;
-          a.click();
-          URL.revokeObjectURL(url);
-          this.$message.success(`成功导出 ${this.selectedTreeNodeIds.length} 个节点数据`);
+          const blob = new Blob([res], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+          // 创建一个URL对象
+          const url = window.URL.createObjectURL(blob);
+          // 创建一个a标签并设置href属性
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = '资产目录.xlsx'; // 设置下载后的文件名
+          // 将a标签添加到DOM中
+          document.body.appendChild(link);
+          // 触发点击事件
+          link.click();
+          // 移除a标签
+          document.body.removeChild(link);
+          // 释放URL对象
+          window.URL.revokeObjectURL(url);
+          this.loading = false;
+          this.$message.success('导出成功');
         })
         .catch(error => {
           this.loading = false;
-          this.$message.error("导出失败，请重试");
-          console.error("导出错误:", error);
+          this.$message.error('导出失败: ' + (error.message || '未知错误'));
         });
     },
 
@@ -490,17 +500,20 @@ export default {
      * @param {Array} checkedIds - 选中的节点ID数组
      * @returns {Array} 选中节点的完整数据
      */
-    getCheckedNodeData(treeData, checkedIds) {
+    getCheckedNodeData(checkedIds) {
       let checkedNodes = [];
-      treeData.forEach(node => {
-        if (checkedIds.includes(node.id)) {
-          checkedNodes.push(node);
+      checkedIds.forEach(node => {
+        if (node.children) {
+          node.children.forEach(child => {
+            checkedNodes.push(child);
+          })
         }
         // 递归处理子节点
-        if (node.children && node.children.length > 0) {
-          checkedNodes = [...checkedNodes, ...this.getCheckedNodeData(node.children, checkedIds)];
-        }
+        // if (node.children && node.children.length > 0) {
+        //   checkedNodes = [...checkedNodes, ...this.getCheckedNodeData(node.children, checkedIds)];
+        // }
       });
+      console.log('checkedNodes', checkedNodes);
       return checkedNodes;
     },
 
@@ -863,11 +876,11 @@ export default {
             // 示例：获取所有children并打印（可根据需要调整调用时机）
             const allChildren = this.collectAllChildren(this.categoryList);
             console.log('所有children节点数组：', allChildren);
+            this.getList(allChildren);
           });
         }
         this.treeLoading = false;
         this.getSelectTableNamesFn();
-        this.getList();
       });
     },
     /**
@@ -900,7 +913,7 @@ export default {
       return result;
     },
     // 列表数据
-    getList() {
+    getList(treeNode) {
       // this.loading = true;
       // let params = {
       //   ...this.queryParams,
@@ -915,7 +928,7 @@ export default {
         tableNam: this.queryParams.tableName,
         paddingstatus: this.queryParams.paddingStatus,
         featureExtractionstatus: this.queryParams.featureExtractionStatus,
-        databaseList: this.collectAllChildren(this.categoryList),
+        databaseList: treeNode,
       }
       getTableListByProxysId(params, response).then((response) => {
         this.dataAll = response.data.rows || [];
