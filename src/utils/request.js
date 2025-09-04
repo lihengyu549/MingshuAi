@@ -84,7 +84,6 @@ service.interceptors.request.use(config => {
       }
     }
   }
-  checkTokenExpiration();
   return config
 }, error => {
   // console.log(error)
@@ -130,13 +129,13 @@ service.interceptors.response.use(
             // 调用刷新token接口
             const refreshRes = await store.dispatch('RefreshToken');
             const newToken = getToken(); // 刷新后获取新token
-
+            
             // 更新当前请求的token并重新发送
             res.config.headers['Authorization'] = 'Bearer ' + newToken;
-
+            
             // 通知所有等待的请求使用新token重新发送
             onAccessTokenFetched(newToken);
-
+            
             // 重新发送当前请求
             return service(res.config);
           } catch (error) {
@@ -177,7 +176,7 @@ service.interceptors.response.use(
       return Promise.reject('error')
     } else if (code == 400) {
       return res.data
-    } else if (code == 4003) {
+    }else if (code == 4003) {
       location.href = "/license";
     }
     else if (code !== 200) {
@@ -219,7 +218,7 @@ const closeLoading = (target) => {
 }
 
 // 通用下载方法
-export function download(url, params, filename, config) {
+export function download (url, params, filename, config) {
   downloadLoadingInstance = Loading.service({ text: "正在下载数据，请稍候", spinner: "el-icon-loading", background: "rgba(0, 0, 0, 0.7)", })
   return service.post(url, params, {
     transformRequest: [(params) => { return tansParams(params) }],
