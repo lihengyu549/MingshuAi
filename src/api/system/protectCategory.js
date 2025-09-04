@@ -1,9 +1,9 @@
 import request from '@/utils/request'
-import {stringify} from '@/utils/ruoyi'
+import { stringify } from '@/utils/ruoyi'
 import qs from 'qs'
 
 //获取分类框架列表
-export function treeListI (data) {
+export function treeListI(data) {
   return request({
     url: '/system/category/list/by/parentId',
     method: 'get',
@@ -12,19 +12,19 @@ export function treeListI (data) {
   })
 }
 // 从Excel中导入分类分级数据
-export function categoryImport (query) {
+export function categoryImport(query) {
   return request({
     url: '/system/category/import',
     method: 'post',
     headers: {
-      "Content-Type":"multipart/form-data; ",
+      "Content-Type": "multipart/form-data; ",
     },
     data: query
   })
 }
 
 // 分页查询节点的子类数据
-export function getAttachData (data) {
+export function getAttachData(data) {
   return request({
     url: '/system/category/list/attach/data',
     method: 'get',
@@ -38,7 +38,7 @@ export function attachStatus(data) {
     url: '/ruoyi-system/category/change/attach/status',
     method: 'post',
     headers: {
-      "Content-Type":"application/x-www-form-urlencoded",
+      "Content-Type": "application/x-www-form-urlencoded",
     },
     data: qs.stringify(data)
   })
@@ -50,7 +50,7 @@ export function forceLogout(data) {
     url: '/system/category/delete/attach/data',
     method: 'delete',
     headers: {
-      "Content-Type":"application/x-www-form-urlencoded",
+      "Content-Type": "application/x-www-form-urlencoded",
     },
     data: stringify(data)
   })
@@ -65,7 +65,7 @@ export function updataAttach(query) {
   })
 }
 // 获取所有分类框架名称
-export function getFrameworks (data) {
+export function getFrameworks(data) {
   return request({
     url: '/system/category/list/all/frameworks',
     method: 'get',
@@ -73,7 +73,7 @@ export function getFrameworks (data) {
   })
 }
 // 测试名称是否可用
-export function nameTesting (data) {
+export function nameTesting(data) {
   return request({
     url: '/system/category/name/testing',
     method: 'get',
@@ -87,7 +87,7 @@ export function addData(data) {
     url: '/system/category/add/attach/data',
     method: 'post',
     headers: {
-      "Content-Type":"application/x-www-form-urlencoded",
+      "Content-Type": "application/x-www-form-urlencoded",
     },
     data: qs.stringify(data)
   })
@@ -104,9 +104,9 @@ export function checkSourceName(data) {
 
 
 // 测试名称是否可用
-export function listTableByProject (data) {
+export function listTableByProject(data) {
   return request({
-    url: '/system/protectTableField/listTableByProject?databaseId='+data.databaseId+'&databaseName='+data.databaseName,
+    url: '/system/protectTableField/listTableByProject?databaseId=' + data.databaseId + '&databaseName=' + data.databaseName,
     method: 'get',
   })
 }
@@ -122,7 +122,7 @@ export function dashboardList(data) {
 // -----------------------------------------
 
 // 分页查询节点的子类数据
-export function getProtectCategory (id) {
+export function getProtectCategory(id) {
   return request({
     url: '/system/protectCategory/' + id,
     method: 'get'
@@ -130,7 +130,7 @@ export function getProtectCategory (id) {
 }
 
 // 新增行业分类
-export function addProtectCategory (data) {
+export function addProtectCategory(data) {
   return request({
     url: '/system/protectCategory',
     method: 'post',
@@ -139,7 +139,7 @@ export function addProtectCategory (data) {
 }
 
 // 修改行业分类
-export function updateProtectCategory (data) {
+export function updateProtectCategory(data) {
   return request({
     url: '/system/protectCategory',
     method: 'put',
@@ -148,7 +148,7 @@ export function updateProtectCategory (data) {
 }
 
 // 删除行业分类
-export function deleteCategoryTree (id) {
+export function deleteCategoryTree(id) {
   return request({
     url: '/system/protectCategory/deleteCategoryTree/' + id,
     method: 'delete'
@@ -156,7 +156,7 @@ export function deleteCategoryTree (id) {
 }
 
 // 行业列表插入
-export function insertCategoryTreeI (data) {
+export function insertCategoryTreeI(data) {
   return request({
     url: '/system/protectCategory/insertCategoryTree',
     method: 'post',
@@ -165,18 +165,18 @@ export function insertCategoryTreeI (data) {
 }
 
 // 扫描数据源
-export function dataSacn (data) {
+export function dataSacn(data) {
   return request({
     url: '/system/proxy/database/dataSacn',
     method: 'post',
     headers: {
-      "Content-Type":"multipart/form-data; ",
+      "Content-Type": "multipart/form-data; ",
     },
     params: data,
   })
 }
 // 查询指定数据源信息
-export function getDatabaseAndTablesById (data) {
+export function getDatabaseAndTablesById(data) {
   return request({
     url: `/system/proxy/database/getDatabaseAndTablesById?id=${data}`,
     method: 'get',
@@ -184,42 +184,42 @@ export function getDatabaseAndTablesById (data) {
 }
 // 修改数据库和指定表数据
 
-export function updateDatabaseAndTables (data) {
+export function updateDatabaseAndTables(data) {
   return request({
     url: `/system/proxy/database/updateDatabaseAndTables`,
     method: 'post',
-    data:data
+    data: data
   })
 }
 // 查询框架接口
-export function getParentIdTree (parentId) {
+export function getParentIdTree(parentId) {
   return request({
     url: `/system/category/list/by/parentId?parentId=${parentId}&needSub=${1}`,
     method: 'get',
   })
 }
 // 匹配策略列表
-export function getListitem (params) {
+export function getListitem(params) {
   return request({
     url: `/system/category/list/attach/data/item`,
     method: 'get',
-    params:params,
+    params: params,
   })
 }
 // 新增匹配规则接口
-export function addAttachDataItme (data) {
+export function addAttachDataItme(data) {
   return request({
     url: `/system/category/add/attach/data/item`,
     method: 'post',
-    data:data,
+    data: data,
   })
 }
 // 修改匹配规则接口
-export function updateAttachDataItme (data) {
+export function updateAttachDataItme(data) {
   return request({
     url: `/system/category/update/attach/data/item`,
     method: 'post',
-    data:data,
+    data: data,
   })
 }
 
@@ -250,13 +250,24 @@ export function getAllProxys(params) {
   })
 }
 // 资产目录列表接口
-export function getTableListByProxysId(params) {
+export function getTableListByProxysId(params, body) {
   return request({
     url: '/system/protectTableField/getTableListByProxysId',
-    method: 'get',
+    method: 'post',
     params: params,
+    data: body
   })
 }
+//资产目录导出接口
+export function propertyCatalogueExport(data) {
+  return request({
+    url: '/system/protectTableField/propertyCatalogueExport',
+    method: 'post',
+    data: data
+  })
+}
+
+
 // 查看字段信息接口
 export function getAllFieldListByTableIdAndDatabaseId(params) {
   return request({

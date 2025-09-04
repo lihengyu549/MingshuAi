@@ -13,7 +13,8 @@
         <div class="tree-operation-bar"
           style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
           <!-- 左侧全选框（带文字说明） -->
-          <el-checkbox v-model="isTreeAllChecked" @change="handleTreeAllCheck" style="font-size: 14px;">
+          <el-checkbox v-model="isTreeAllChecked" @change="handleTreeAllCheck"
+            style="font-size: 14px; margin-left: 20px;">
             全选
           </el-checkbox>
           <!-- 右侧导出按钮（无选中节点时禁用） -->
@@ -58,8 +59,8 @@
             </el-select>
           </el-form-item>
           <!-- <el-form-item> -->
-            <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
-            <!-- <el-button icon="el-icon-s-opportunity" type="primary" size="small" @click="allFill">一键填充</el-button>
+          <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
+          <!-- <el-button icon="el-icon-s-opportunity" type="primary" size="small" @click="allFill">一键填充</el-button>
             <el-button icon="el-icon-s-help" type="primary" size="small" @click="allAssess">一键评估</el-button> -->
           <!-- </el-form-item> -->
         </el-form>
@@ -87,7 +88,8 @@
                 </div>
                 <div class="col col-1">
                   <div class="label">表注释</div>
-                  <div class="value" :title="item.oldTableRemark || '--'">{{ item.oldTableRemark ? item.oldTableRemark : '--' }}</div>
+                  <div class="value" :title="item.oldTableRemark || '--'">{{ item.oldTableRemark ? item.oldTableRemark :
+                    '--' }}</div>
                   <svg-icon icon-class="xinxi" class="info-icon" />
                 </div>
                 <div class="col col-2">
@@ -97,7 +99,8 @@
                 </div>
                 <div class="col col-3">
                   <div class="label">数据量级</div>
-                  <div class="value" :title="item.dataMagnitude ? item.dataMagnitude + ' 行' : '--'">{{ item.dataMagnitude ? item.dataMagnitude + ' 行' : '--' }}</div>
+                  <div class="value" :title="item.dataMagnitude ? item.dataMagnitude + ' 行' : '--'">{{
+                    item.dataMagnitude ? item.dataMagnitude + ' 行' : '--' }}</div>
                   <svg-icon icon-class="list2" class="info-icon" />
                 </div>
               </div>
@@ -106,27 +109,33 @@
               <div class="row row-2">
                 <div class="col">
                   <div class="label">AI表注释</div>
-                  <div class="value" :title="item.craftTableRemark || '--'">{{ item.craftTableRemark ? item.craftTableRemark : '--' }}</div>
+                  <div class="value" :title="item.craftTableRemark || '--'">{{ item.craftTableRemark ?
+                    item.craftTableRemark : '--' }}</div>
                 </div>
                 <div class="col">
                   <div class="label">数据源名称</div>
-                  <div class="value" title="CS">CS</div>
+                  <div class="value" :title="item.dataSourceName || '--'">{{ item.dataSourceName ?
+                    item.dataSourceName : '--' }}</div>
                 </div>
                 <div class="col">
                   <div class="label">分类分级标准</div>
-                  <div class="value" :title="item.tableSecurityLevel || '--'">{{ item.tableSecurityLevel ? item.tableSecurityLevel : '--' }}</div>
+                  <div class="value" :title="item.categoryName || '--'">{{ item.categoryName ?
+                    item.categoryName : '--' }}</div>
                 </div>
                 <div class="col">
                   <div class="label">来源业务系统</div>
-                  <div class="value" title="ERP系统">ERP系统</div>
+                  <div class="value" :title="item.businessName || '--'">{{ item.businessName ?
+                    item.businessName : '--' }}</div>
                 </div>
                 <div class="col">
                   <div class="label">所属库名</div>
-                  <div class="value" title="client_info">client_info</div>
+                  <div class="value" :title="item.affiliationDatabaseName || '--'">{{ item.affiliationDatabaseName ?
+                    item.affiliationDatabaseName : '--' }}</div>
                 </div>
                 <div class="col">
                   <div class="label">表分类</div>
-                  <div class="value" :title="item.tableCategoryName || '--'">{{ item.tableCategoryName ? item.tableCategoryName : '--' }}</div>
+                  <div class="value" :title="item.tableCategoryName || '--'">{{ item.tableCategoryName ?
+                    item.tableCategoryName : '--' }}</div>
                 </div>
               </div>
 
@@ -134,19 +143,23 @@
               <div class="row row-3">
                 <div class="col">
                   <div class="label">表分级</div>
-                  <div class="value" :title="item.tableSecurityLevel || '--'">{{ item.tableSecurityLevel ? item.tableSecurityLevel : '--' }}</div>
+                  <div class="value" :title="item.tableSecurityLevel || '--'">{{ item.tableSecurityLevel ?
+                    item.tableSecurityLevel : '--' }}</div>
                 </div>
                 <div class="col">
                   <div class="label">个人信息条数</div>
-                  <div class="value green" :title="item.personalInformation ? item.personalInformation + ' 条' : '--'">{{ item.personalInformation ? item.personalInformation + ' 条' : '--' }}</div>
+                  <div class="value green" :title="item.personalInformation ? item.personalInformation + ' 条' : '--'">{{
+                    item.personalInformation ? item.personalInformation + ' 条' : '--' }}</div>
                 </div>
                 <div class="col">
                   <div class="label">未成年人信息条数</div>
-                  <div class="value" :title="item.minorsInformation || '--'">{{ item.minorsInformation ? item.minorsInformation : '--' }}</div>
+                  <div class="value" :title="item.minorsInformation || '--'">{{ item.minorsInformation ?
+                    item.minorsInformation : '--' }}</div>
                 </div>
                 <div class="col">
                   <div class="label">字段数量</div>
-                  <div class="value" :title="item.fieldCount || '--'">{{ item.fieldCount ? item.fieldCount : '--' }}</div>
+                  <div class="value" :title="item.fieldCount || '--'">{{ item.fieldCount ? item.fieldCount : '--' }}
+                  </div>
                 </div>
                 <div class="col">
                   <div class="label">注释填充</div>
@@ -277,7 +290,7 @@ import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import {
   getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId,
   getSelectTableNames, callAIPaddingComments, updateDataQualityAssessment, updateFieldListByFieldId,
-  callAIPaddingCommentsByAll, updateDataQualityAssessmentByAll
+  callAIPaddingCommentsByAll, updateDataQualityAssessmentByAll, propertyCatalogueExport
 } from "@/api/system/protectCategory";
 import { tree } from "d3";
 export default {
@@ -408,8 +421,10 @@ export default {
      */
     handleTreeCheck(currentNode, selectedNodes) {
       // 同步“选中节点ID数组”（从选中节点数组中提取ID）
-      console.log('selectedNodes', selectedNodes);//    树结构数据待处理
-      this.selectedTreeNodeIds = selectedNodes.map(node => node.id);
+      console.log('selectedNodes', selectedNodes);
+      // this.selectedTreeNodeIds = selectedNodes.map(node => node.id);
+      // 节点勾选状态变更后调用getList方法
+      this.getList();
     },
 
     /**
@@ -418,6 +433,8 @@ export default {
      */
     handleTreeAllCheck(checked) {
       this.isTreeAllChecked = checked;
+      // 全选状态变更后调用getList方法
+      this.getList();
     },
 
     /**
@@ -429,22 +446,42 @@ export default {
         return;
       }
 
-      // 1. 获取选中节点的完整数据（含 label、parentId 等）
-      const selectedNodes = this.getCheckedNodeData(this.categoryList, this.selectedTreeNodeIds);
-      // 2. 按层级格式化数据（适配图片：DataSource 为顶级，Database 为子级）
-      const exportData = this.formatExportData(selectedNodes);
-      // 3. 生成JSON文件并下载
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-        type: "application/json;charset=utf-8"
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `数据源导出_${new Date().format("yyyyMMddHHmmss")}.json`; // 带时间戳的文件名
-      a.click();
-      URL.revokeObjectURL(url); // 释放URL资源
-
-      this.$message.success(`成功导出 ${this.selectedTreeNodeIds.length} 个节点`);
+      this.loading = true;
+      // 调用后端导出接口，传入选中的节点ID
+      const response = {
+        tableNam: this.queryParams.tableName,
+        paddingstatus: this.queryParams.paddingStatus,
+        featureExtractionstatus: this.queryParams.featureExtractionStatus,
+        databaseList: this.collectAllChildren(this.categoryList),
+      }
+      propertyCatalogueExport(response)
+        .then(response => {
+          this.loading = false;
+          // 处理文件流
+          const blob = new Blob([response.data], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          // 从响应头获取文件名（如果后端设置了的话）
+          const contentDisposition = response.headers["content-disposition"];
+          let fileName = "资产目录导出.xlsx";
+          if (contentDisposition) {
+            fileName = decodeURIComponent(
+              contentDisposition.split("filename=")[1]
+            );
+          }
+          a.download = fileName;
+          a.click();
+          URL.revokeObjectURL(url);
+          this.$message.success(`成功导出 ${this.selectedTreeNodeIds.length} 个节点数据`);
+        })
+        .catch(error => {
+          this.loading = false;
+          this.$message.error("导出失败，请重试");
+          console.error("导出错误:", error);
+        });
     },
 
     /**
@@ -541,9 +578,15 @@ export default {
         });
     },
     checkOverflow(item, index) {
-      const container = this.$refs[`container-${index}`][0];
+      // 检查 ref 是否存在，避免访问 undefined 的属性
+      const containerRef = this.$refs[`container-${index}`];
+      if (!containerRef || !containerRef[0]) {
+        this.$set(this.overflowStatus, index, false);
+        return;
+      }
+      const container = containerRef[0];
       const isOverflowing = container.scrollWidth > container.clientWidth;
-      this.$set(this.overflowStatus, index, isOverflowing)
+      this.$set(this.overflowStatus, index, isOverflowing);
     },
     isOverflow(index) {
       return this.overflowStatus[index] || false; // 返回当前盒子的溢出状态
@@ -803,33 +846,78 @@ export default {
       this.handleQuery()
     },
     // 左侧树数据
-    getProtectCategory(key) {
-      this.treeLoading = true
-      this.Loading = true
-      getAllProxys(key).then((resp) => {
-        if (resp.data.length == 0) {
-          this.Loading = false
+    getProtectCategory() {
+      this.treeLoading = true;
+      this.Loading = true;
+      getAllProxys().then((resp) => {
+        if (resp.data.length === 0) {
+          this.Loading = false;
         } else {
-          this.categoryList = resp.data
-          this.treeID = resp.data[0].id
-          this.$nextTick(function () {
+          this.categoryList = resp.data;
+          this.treeID = resp.data[0].id;
+          this.$nextTick(() => {
             this.$refs.tree.setCurrentKey(this.treeID);
+            // 页面初次加载时全选所有节点
+            this.isTreeAllChecked = true;
+
+            // 示例：获取所有children并打印（可根据需要调整调用时机）
+            const allChildren = this.collectAllChildren(this.categoryList);
+            console.log('所有children节点数组：', allChildren);
           });
         }
-        this.treeLoading = false
-        this.getSelectTableNamesFn()
-        this.getList()
+        this.treeLoading = false;
+        this.getSelectTableNamesFn();
+        this.getList();
       });
+    },
+    /**
+ * 收集所有树节点的children，构建成指定结构数组
+ * @param {Array} treeData - 树数据源
+ * @returns {Array} 包含所有children节点的label和parentId的数组
+ */
+    collectAllChildren(treeData) {
+      const result = [];
+      const traverse = (nodes) => {
+        nodes.forEach(node => {
+          // 如果当前节点有children，处理每个child
+          if (node.children && node.children.length > 0) {
+            node.children.forEach(child => {
+              // 构建目标结构并添加到结果数组
+              result.push({
+                label: child.label,
+                parentId: node.id // parentId为当前节点的id
+              });
+              // 递归处理子节点的children（如果有多层嵌套）
+              if (child.children && child.children.length > 0) {
+                traverse([child]);
+              }
+            });
+          }
+        });
+      };
+      // 开始遍历整棵树
+      traverse(treeData);
+      return result;
     },
     // 列表数据
     getList() {
-      this.loading = true;
+      // this.loading = true;
+      // let params = {
+      //   ...this.queryParams,
+      //   proxysId: this.treeID,
+      //   databaseName: this.databaseName,
+      // }
       let params = {
-        ...this.queryParams,
-        proxysId: this.treeID,
-        databaseName: this.databaseName,
+        pageNum: this.queryParams.pageNum,
+        pageSize: this.queryParams.pageSize,
       }
-      getTableListByProxysId(params).then((response) => {
+      const response = {
+        tableNam: this.queryParams.tableName,
+        paddingstatus: this.queryParams.paddingStatus,
+        featureExtractionstatus: this.queryParams.featureExtractionStatus,
+        databaseList: this.collectAllChildren(this.categoryList),
+      }
+      getTableListByProxysId(params, response).then((response) => {
         this.dataAll = response.data.rows || [];
         this.dataAll.forEach(ele => {
           ele.isShowTooltip = true
@@ -1147,7 +1235,7 @@ export default {
 .row-3 .label,
 .value {
   font-weight: 600;
-  
+
 }
 
 .row-1 .value {
