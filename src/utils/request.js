@@ -20,18 +20,6 @@ const service = axios.create({
   timeout: 600000
 })
 
-// 在请求拦截器中添加token过期检查
-// 计算token剩余有效期
-const checkTokenExpiration = () => {
-  const expiresIn = getExpiresIn();
-  if (expiresIn && expiresIn > 60) { // 如果剩余时间小于60秒，则自动刷新
-    // 触发token刷新
-    if (!isRefreshing) {
-      store.dispatch('RefreshToken');
-    }
-  }
-};
-
 // request拦截器
 service.interceptors.request.use(config => {
   // 是否需要设置 token
@@ -90,24 +78,6 @@ service.interceptors.request.use(config => {
   Promise.reject(error)
 })
 
-// 在文件顶部添加一个变量用于控制刷新状态
-let isRefreshing = false;
-let refreshSubscribers = [];
-
-// 添加一个函数用于通知所有等待的请求
-function onAccessTokenFetched(newToken) {
-  refreshSubscribers.forEach(callback => {
-    callback(newToken);
-  });
-  refreshSubscribers = [];
-}
-
-// 添加一个函数用于将请求添加到等待队列
-function addRefreshSubscriber(callback) {
-  refreshSubscribers.push(callback);
-}
-
-// 修改响应拦截器
 // 响应拦截器
 service.interceptors.response.use(
   async res => {
@@ -122,50 +92,15 @@ service.interceptors.response.use(
     }
     if (code === 401) {
       if (!isRelogin.show) {
-        if (!isRefreshing) {
-          // 首次遇到401，尝试刷新token
-          isRefreshing = true;
-          try {
-            // 调用刷新token接口
-            const refreshRes = await store.dispatch('RefreshToken');
-            const newToken = getToken(); // 刷新后获取新token
-            
-            // 更新当前请求的token并重新发送
-            res.config.headers['Authorization'] = 'Bearer ' + newToken;
-            
-            // 通知所有等待的请求使用新token重新发送
-            onAccessTokenFetched(newToken);
-            
-            // 重新发送当前请求
-            return service(res.config);
-          } catch (error) {
-            // 刷新token失败，才执行登出
-            isRelogin.show = true;
-            MessageBox.confirm('登录状态已过期，您可以继续留在该页面，或者重新登录', '系统提示', {
-              confirmButtonText: '重新登录',
-              cancelButtonText: '取消',
-              type: 'warning'
-            }).then(() => {
-              isRelogin.show = false;
-              store.dispatch('LogOut').then(() => {
-                location.href = '/index';
-              })
-            }).catch(() => {
-              isRelogin.show = false;
-            });
-            return Promise.reject('无效的会话，或者会话已过期，请重新登录。');
-          } finally {
-            isRefreshing = false;
-          }
-        } else {
-          // 已经有请求在刷新token，将当前请求加入等待队列
-          return new Promise(resolve => {
-            addRefreshSubscriber((newToken) => {
-              res.config.headers['Authorization'] = 'Bearer ' + newToken;
-              resolve(service(res.config));
-            });
-          });
-        }
+        isRelogin.show = true;
+        MessageBox.confirm('登录状态已过期，您可以继续留在该页面，或者重新登录', '系统提示', { confirmButtonText: '重新登录', cancelButtonText: '取消', type: 'warning' }).then(() => {
+          isRelogin.show = false;
+          store.dispatch('LogOut').then(() => {
+            location.href = '/index';
+          })
+        }).catch(() => {
+          isRelogin.show = false;
+        });
       }
       return Promise.reject('无效的会话，或者会话已过期，请重新登录。')
     } else if (code === 500) {

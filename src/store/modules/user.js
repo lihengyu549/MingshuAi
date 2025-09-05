@@ -78,11 +78,21 @@ const user = {
     },
 
     // 刷新token
+    // 刷新token
     RefreshToken({commit, state}) {
       return new Promise((resolve, reject) => {
         refreshToken(state.token).then(res => {
-          setExpiresIn(res.data)
-          commit('SET_EXPIRES_IN', res.data)
+          // 检查返回数据结构，确保能获取到新的token和过期时间
+          if (res.data && res.data.access_token) {
+            setToken(res.data.access_token)
+            commit('SET_TOKEN', res.data.access_token)
+            setExpiresIn(res.data.expires_in)
+            commit('SET_EXPIRES_IN', res.data.expires_in)
+          } else {
+            // 如果返回格式不符合预期，尝试直接使用res作为过期时间
+            setExpiresIn(res.data)
+            commit('SET_EXPIRES_IN', res.data)
+          }
           resolve()
         }).catch(error => {
           reject(error)
