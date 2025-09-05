@@ -300,19 +300,25 @@ export default {
 
         // 递归过滤节点
         filterNodes(nodes, keyword) {
-            // 过滤当前层级节点
             return nodes.filter(node => {
-                // 先递归处理子节点
+                // 先判断当前节点是否匹配
+                const isNodeMatch = node.label && node.label.includes(keyword);
+
+                // 如果当前节点匹配，直接清空子节点并保留当前节点
+                if (isNodeMatch) {
+                    // 清空子节点，避免展示下级
+                    // node.children = [];
+                    return true;
+                }
+
+                // 当前节点不匹配时，继续过滤子节点
                 if (node.children && node.children.length) {
                     node.children = this.filterNodes(node.children, keyword);
                 }
 
-                // 检查当前节点是否匹配，或子节点中存在匹配项（子节点数组有长度）
-                const isNodeMatch = node.label && node.label.includes(keyword);
+                // 只有子节点有匹配项时才保留当前节点（用于展示路径）
                 const hasMatchedChildren = node.children && node.children.length > 0;
-
-                // 只要当前节点匹配或有匹配的子节点，就保留该节点
-                return isNodeMatch || hasMatchedChildren;
+                return hasMatchedChildren;
             });
         },
 

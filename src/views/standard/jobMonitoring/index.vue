@@ -10,15 +10,17 @@
           </el-select>
         </div>
         <div class="head-container" v-loading="treeLoading">
+          <el-input v-model="filterName" placeholder="搜索树节点..." clearable size="mini" style="margin-bottom: 20px;" />
           <el-tree :indent="8" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
             :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
             node-key="id" highlight-current @node-click="handleNodeClick">
             <span class="custom-tree-node" slot-scope="{ node, data }">
               <span class="node-label" :title="node.label">{{ node.label }}</span>
               <!-- 只在根节点显示齿轮按钮 -->
-              <el-button v-if="isRootNode(data)" type="text" size="large" icon="el-icon-setting"
+              <!-- <el-button v-if="isRootNode(data)" type="text" size="large" icon="el-icon-setting"
                 @click.stop="goToMenuEdit(data)" style="color: #26244ce0;">
-              </el-button>
+              </el-button> -->
+              <svg-icon icon-class="setting" v-if="isRootNode(data)" @click.stop="goToMenuEdit(data)" />
             </span>
           </el-tree>
         </div>
@@ -637,32 +639,59 @@ export default {
     },
     // 修改过滤方法以支持最下级节点匹配
     filterNode(value, data) {
-      if (!value) return true;
+      if (!value) return true; // 无搜索值时全部显示
       const lowerValue = value.toLowerCase();
 
-      // 检查当前节点是否是叶子节点（最下级）
-      const isLeafNode = !data.children || data.children.length === 0;
-
-      // 如果是叶子节点，直接匹配
-      if (isLeafNode) {
-        return data.categoryName && data.categoryName.toLowerCase().includes(lowerValue);
+      // 1. 检查当前节点自身是否匹配（无论是否为叶子节点）
+      if (data.categoryName && data.categoryName.toLowerCase().includes(lowerValue)) {
+        return true;
       }
 
-      // 如果不是叶子节点，检查其子节点是否匹配
+      // 2. 检查当前节点的祖先节点是否有匹配（若有，则当前节点强制显示）
+      if (this.hasMatchingAncestor(data, this.categoryList, lowerValue)) {
+        return true;
+      }
+
+      // 3. 检查当前节点的子节点是否有匹配（若有，则当前节点显示）
       if (data.children && data.children.length > 0) {
         return this.checkChildrenMatch(data.children, lowerValue);
       }
 
       return false;
     },
+    hasMatchingAncestor(node, tree, searchValue) {
+      let parent = this.findParentNode(tree, node.parentId); // 找到父节点
+      while (parent) {
+        // 若父节点自身匹配，则当前节点有匹配的祖先
+        if (parent.categoryName && parent.categoryName.toLowerCase().includes(searchValue)) {
+          return true;
+        }
+        // 继续向上查找祖先
+        parent = this.findParentNode(tree, parent.parentId);
+      }
+      return false;
+    },
+    findParentNode(tree, parentId) {
+      for (const node of tree) {
+        if (node.id === parentId) {
+          return node;
+        }
+        if (node.children && node.children.length > 0) {
+          const found = this.findParentNode(node.children, parentId);
+          if (found) return found;
+        }
+      }
+      return null;
+    },
 
     // 递归检查子节点是否匹配
     checkChildrenMatch(children, searchValue) {
       for (let child of children) {
-        const isChildLeaf = !child.children || child.children.length === 0;
-        if (isChildLeaf && child.categoryName && child.categoryName.toLowerCase().includes(searchValue)) {
+        // 子节点自身匹配
+        if (child.categoryName && child.categoryName.toLowerCase().includes(searchValue)) {
           return true;
         }
+        // 递归检查子节点的后代
         if (child.children && child.children.length > 0) {
           if (this.checkChildrenMatch(child.children, searchValue)) {
             return true;
