@@ -894,16 +894,20 @@ export default {
             if (this.isView || this.form.id === '系统默认生成') return;
 
             const params = {
-                featureId: this.form.id,
+                id: this.form.id,
                 featureType: this.form.featureType
             };
 
             exportFeatureItem(params).then(res => {
-                const blob = new Blob([res.data], { type: 'text/plain;charset=utf-8' });
+                // 修改MIME类型为Excel格式
+                const blob = new Blob([res], {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${this.form.featureName}.txt`;
+                // 修改文件扩展名为.xlsx
+                a.download = `${this.form.featureName}.xlsx`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
