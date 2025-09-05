@@ -414,6 +414,16 @@ export default {
       return ids;
     },
 
+
+    /**
+     * 新增：全选框点击事件（与 watch 配合确保状态同步）
+     * @param {Boolean} checked - 全选框的新状态
+     */
+    handleTreeAllCheck(checked) {
+      this.isTreeAllChecked = checked;
+      // 全选状态变更后调用getList方法
+      this.getList(checked ? this.selectedTreeNodeIds : []);
+    },
     /**
      * 新增：树节点复选框状态变更事件（勾选/取消勾选时触发）
      * @param {Object} currentNode - 当前操作的节点
@@ -434,16 +444,6 @@ export default {
 
       // 节点勾选状态变更后调用getList方法
       this.getList(checkedNodeData);
-    },
-
-    /**
-     * 新增：全选框点击事件（与 watch 配合确保状态同步）
-     * @param {Boolean} checked - 全选框的新状态
-     */
-    handleTreeAllCheck(checked) {
-      this.isTreeAllChecked = checked;
-      // 全选状态变更后调用getList方法
-      this.getList(checked ? this.getAllTreeIds(this.categoryList) : []);
     },
 
     /**
@@ -507,6 +507,8 @@ export default {
           node.children.forEach(child => {
             checkedNodes.push(child);
           })
+        } else {
+          checkedNodes.push(node);
         }
         // 递归处理子节点
         // if (node.children && node.children.length > 0) {
@@ -926,11 +928,11 @@ export default {
         databaseList: treeNode,
       }
       getTableListByProxysId(params, response).then((response) => {
-        this.dataAll = response.data.rows || [];
+        this.dataAll = response.data?.rows || [];
         this.dataAll.forEach(ele => {
           ele.isShowTooltip = true
         })
-        this.total = response.data.total || 0;
+        this.total = response.data?.total || 0;
         this.overflowStatus = {}
         this.Loading = false
         this.loading = false
