@@ -28,8 +28,8 @@
         <div class="head-container" v-loading="treeLoading">
           <el-tree class="treeBox" style="overflow-y: auto;height: 785px;" :data="categoryList" :props="defaultProps"
             :default-expanded-keys="[treeID]" :current-node-key="treeID" :expand-on-click-node="false"
-            :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current @node-click="handleNodeClick"
-            show-checkbox :check-strictly="false" :default-checked-keys="defaultCheckedKeys" @check="handleTreeCheck" />
+            :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current show-checkbox
+            :check-strictly="false" :default-checked-keys="defaultCheckedKeys" @check="handleTreeCheck" />
         </div>
       </el-col>
       <!--用户数据-->
@@ -305,8 +305,8 @@ export default {
       dirtyDataEditMsg: '',
       filterText: '',// 过滤条件tree
       Loading: false,// 全局loading
-      total: 10,
       loading: false,
+      total: 10,
       tableNameList: [],
       filedRowData: {},// 字段信息用来记录目录的rowdata
       dataAll: [
@@ -443,7 +443,7 @@ export default {
     handleTreeAllCheck(checked) {
       this.isTreeAllChecked = checked;
       // 全选状态变更后调用getList方法
-      this.getList();
+      this.getList(checked ? this.getAllTreeIds(this.categoryList) : []);
     },
 
     /**
@@ -830,22 +830,22 @@ export default {
       return data.label.indexOf(value) !== -1;
     },
     // 左侧树点击事件
-    handleNodeClick(data) {
-      console.log(data);
-      if (data.parentId) {
-        this.databaseName = data.label
-        this.treeID = data.parentId;
-      } else {
-        this.treeID = data.id;
-        this.databaseName = ''
-      }
-      this.queryParams.tableName = ''
-      this.queryParams.paddingStatus = ''
-      this.queryParams.featureExtractionStatus = ''
-      this.isChildrenNode = data.nodeLayerIndex
-      this.handleQuery();
-      this.getSelectTableNamesFn()
-    },
+    // handleNodeClick(data) {
+    //   console.log(data);
+    //   if (data.parentId) {
+    //     this.databaseName = data.label
+    //     this.treeID = data.parentId;
+    //   } else {
+    //     this.treeID = data.id;
+    //     this.databaseName = ''
+    //   }
+    //   this.queryParams.tableName = ''
+    //   this.queryParams.paddingStatus = ''
+    //   this.queryParams.featureExtractionStatus = ''
+    //   this.isChildrenNode = data.nodeLayerIndex
+    //   this.handleQuery();
+    //   this.getSelectTableNamesFn()
+    // },
     // 定时器，防抖使用
     inputSearch(data) {
       clearTimeout(this.debounceTimeout);
@@ -912,14 +912,9 @@ export default {
       traverse(treeData);
       return result;
     },
-    // 列表数据
+    // 请求列表数据
     getList(treeNode) {
-      // this.loading = true;
-      // let params = {
-      //   ...this.queryParams,
-      //   proxysId: this.treeID,
-      //   databaseName: this.databaseName,
-      // }
+      this.loading = true;
       let params = {
         pageNum: this.queryParams.pageNum,
         pageSize: this.queryParams.pageSize,
