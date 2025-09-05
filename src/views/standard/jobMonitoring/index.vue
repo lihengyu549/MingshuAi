@@ -131,7 +131,7 @@
           <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3" filterable
             :filter-method="handleAddSelectInput">
             <el-option style="height: 100%; padding: 0" value="">
-              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
+              <el-tree :data="categoryList" filterable :props="defaultProps" :expand-on-click-node="true"
                 :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
                 @node-click="addHandleNodeClick" />
             </el-option>

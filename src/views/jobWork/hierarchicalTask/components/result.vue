@@ -7,7 +7,7 @@
           @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="分类" prop="categoryId">
-        <el-select ref="addSelectRef" v-model="addNodeName">
+        <el-select ref="addSelectRef" v-model="addNodeName" :filter-method="filterCategoryTree">
           <el-option style="height: 100%; padding: 0" value="">
             <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
               :filter-node-method="filterNode" ref="treeSelectQuery" node-key="id" highlight-current
@@ -85,10 +85,12 @@
         <el-button type="primary" plain icon="el-icon-more" size="medium" @click="handleEcelFn">确认过滤项</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-refresh-left" size="medium" @click="handleAddFnClose">取消勾选项</el-button>
+        <el-button type="primary" plain icon="el-icon-refresh-left" size="medium"
+          @click="handleAddFnClose">取消勾选项</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-magic-stick" size="medium" @click="handleEcelFnClose">取消过滤项</el-button>
+        <el-button type="primary" plain icon="el-icon-magic-stick" size="medium"
+          @click="handleEcelFnClose">取消过滤项</el-button>
       </el-col>
       <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
         <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
@@ -145,7 +147,7 @@
         <el-form-item label="分类" class="addSelectClass">
           <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable :filter-method="handleSearch">
             <el-option style="height: 100%; padding: 0" value="">
-              <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
+              <el-tree :data="categoryList" :props="defaultProps" filterable :expand-on-click-node="true"
                 :filter-node-method="filterNode" ref="treeSelectSec" node-key="id" highlight-current
                 @node-click="resultHandleNodeClick" />
             </el-option>
@@ -1024,9 +1026,40 @@ export default {
       }
     },
     filterNode(value, data, node) {
-      if (!value) return true;
-      return data.label.indexOf(value) !== -1
+      if (!value) return true; // 无搜索值时显示所有节点
+
+      // 1. 检查当前节点是否匹配
+      const isCurrentMatch = data.label && data.label.toLowerCase().includes(value.toLowerCase());
+      if (isCurrentMatch) return true;
+
+      // 2. 检查所有父节点是否有匹配（确保子节点在父节点匹配时显示）
+      let parent = node.parent;
+      while (parent) {
+        if (parent.data?.label && parent.data.label.toLowerCase().includes(value.toLowerCase())) {
+          return true;
+        }
+        parent = parent.parent;
+      }
+
+      // 3. 检查所有子节点是否有匹配（确保父节点在子节点匹配时显示）
+      const hasMatchingChild = (children) => {
+        if (!children || !children.length) return false;
+        return children.some(child => {
+          // 子节点自身匹配
+          if (child.label && child.label.toLowerCase().includes(value.toLowerCase())) {
+            return true;
+          }
+          // 递归检查子节点的后代
+          return hasMatchingChild(child.children);
+        });
+      };
+
+      return hasMatchingChild(data.children);
     },
+    filterCategoryTree(val) {
+      this.$refs.treeSelectQuery.filter(val); // 触发树组件过滤
+    },
+
     getPiiList(key) {
       this.treeLoading = true
       let data = {
