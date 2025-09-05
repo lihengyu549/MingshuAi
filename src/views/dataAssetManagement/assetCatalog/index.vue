@@ -184,6 +184,9 @@
               </div>
             </div>
           </div>
+          <div v-if="dataAll.length === 0" class="no-data">
+            <el-empty description="暂无数据"></el-empty>
+          </div>
         </div>
       </el-col>
       <pagination class="paginationClass" v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
@@ -421,8 +424,13 @@ export default {
      */
     handleTreeAllCheck(checked) {
       this.isTreeAllChecked = checked;
+      if (checked) {
+        const allChildren = this.collectAllChildren(this.categoryList);
+        this.getList(allChildren)
+      }else{
+        this.getList([])
+      }
       // 全选状态变更后调用getList方法
-      this.getList(checked ? this.selectedTreeNodeIds : []);
     },
     /**
      * 新增：树节点复选框状态变更事件（勾选/取消勾选时触发）
@@ -555,7 +563,9 @@ export default {
             databaseName: this.databaseName,
           }
           callAIPaddingCommentsByAll(params).then(res => {
-            this.getList()
+            // 获取已选节点数据并传入
+            const checkedNodeData = this.getCheckedNodeData(this.selectedTreeNodeIds);
+            this.getList(checkedNodeData)
             this.$message.success(`填充成功`)
             this.loading = false
           })
@@ -581,7 +591,9 @@ export default {
             databaseName: this.databaseName,
           }
           updateDataQualityAssessmentByAll(params).then(res => {
-            this.getList()
+            // 获取已选节点数据并传入
+            const checkedNodeData = this.getCheckedNodeData(this.selectedTreeNodeIds);
+            this.getList(checkedNodeData)
             this.$message.success(`评估成功`)
             this.loading = false
           })
@@ -626,7 +638,9 @@ export default {
       }
       callAIPaddingComments(params).then(res => {
         if (res.code == 200) {
-          this.getList()
+          // 获取已选节点数据并传入
+          const checkedNodeData = this.getCheckedNodeData(this.selectedTreeNodeIds);
+          this.getList(checkedNodeData)
           this.loading = false
           this.$message.success(`填充成功`)
         }
@@ -643,7 +657,9 @@ export default {
       }
       updateDataQualityAssessment(params).then(res => {
         if (res.code == 200) {
-          this.getList()
+          // 获取已选节点数据并传入
+          const checkedNodeData = this.getCheckedNodeData(this.selectedTreeNodeIds);
+          this.getList(checkedNodeData)
           this.loading = false
           this.$message.success(`评估完成`)
         }
@@ -958,7 +974,9 @@ export default {
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
-      this.getList();
+      // 获取已选节点数据并传入
+      const checkedNodeData = this.getCheckedNodeData(this.selectedTreeNodeIds);
+      this.getList(checkedNodeData);
     },
     /** 重置按钮操作 */
     resetQuery() {
