@@ -55,7 +55,8 @@ export default {
             categoryList: [],
             yuanCategoryList: [],
             filteredCategoryList: [], // 用于搜索过滤后的列表
-            currentNodeId: '',
+            currentNodeId: '', // 当前点击的节点ID
+            topId: '', // 最上层节点ID
             nodeLabel: '',
             defaultProps: {
                 children: "children",
@@ -78,6 +79,36 @@ export default {
         goBack() {
             this.$router.go(-1);
         },
+        // 查找节点的最顶层祖先id
+        findTopNodeId(node) {
+            // 顶层节点的判定：nodeLayerIndex为0（根据现有代码中节点层级判断逻辑）
+            if (node.nodeLayerIndex === 0) {
+                return node.id;
+            }
+            // 递归查找父节点
+            const parentNode = this.findParentNode(this.categoryList, node.parentId);
+            if (parentNode) {
+                return this.findTopNodeId(parentNode);
+            }
+            // 容错处理：如果找不到父节点，默认当前节点所在树的顶层节点（通常是初始加载的根节点）
+            return this.categoryList.length > 0 ? this.categoryList[0].id : '';
+        },
+        // 辅助方法：根据parentId在树形结构中查找父节点
+        findParentNode(nodes, parentId) {
+            for (const node of nodes) {
+                if (node.id === parentId) {
+                    return node;
+                }
+                if (node.children && node.children.length) {
+                    const found = this.findParentNode(node.children, parentId);
+                    if (found) {
+                        return found;
+                    }
+                }
+            }
+            return null;
+        },
+
 
         getTreeData(id) {
             this.treeLoading = true;
@@ -95,6 +126,7 @@ export default {
                         item.label = item.categoryName;
                     }
                     this.categoryList = this.handleTree(tempList, "id");
+                    console.log('this.categoryList', this.categoryList);
                     this.filteredCategoryList = [...this.categoryList]; // 初始化过滤列表
                 }
 
@@ -143,6 +175,9 @@ export default {
                     message: '当前节点未展开，请展开后再添加子节点',
                 });
             } else {
+                // 获取顶层节点id并赋值给topId
+                this.topId = this.findTopNodeId(data);
+
                 const newChild = {
                     id: '',
                     label: '',
@@ -192,6 +227,9 @@ export default {
         },
 
         editNode(data) {
+            // 获取顶层节点id并赋值给topId
+            this.topId = this.findTopNodeId(data);
+
             this.nodeLabel = data.label || '';
             this.$set(data, 'addEdit', true);
             this.$nextTick(() => {
@@ -227,11 +265,11 @@ export default {
                 const params = {
                     categoryName: data.label,
                     parentId: data.parentId,
-                    id: data.id || null,
-                    topId: this.currentNodeId
+                    topId: this.topId
                 };
 
-                if (params.id) {
+                if (data.id) {
+                    params.id = data.id;
                     await updateCategory(params);
                     this.$message.success('更新成功');
                 } else {
