@@ -615,8 +615,10 @@ export default {
       }).then(() => {
         if (type === 'upgrade') {
           this.upgradeRuleTableData.splice(index, 1);
+          this.$refs.upgradeTableRef.clearSelection(); // 清除选中
         } else {
           this.downgradeRuleTableData.splice(index, 1);
+          this.$refs.downgradeTableRef.clearSelection(); // 清除选中
         }
         this.$message.success('规则删除成功');
       });
@@ -1345,7 +1347,8 @@ export default {
   font-weight: 600;
 }
 
-.addRuler /deep/ .el-input--medium, .el-select {
+.addRuler /deep/ .el-input--medium,
+.el-select {
   width: 100% !important;
 }
 
