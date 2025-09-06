@@ -152,7 +152,8 @@
         </el-form-item>
         <el-form-item label="子类描述" prop="additional">
           <el-input v-model="addOrEditDataRuls.additional" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
-            :disabled="addOrEdit.flag == 3" maxlength="500" placeholder="个人财产按 “有形 / 无形”“动产 / 不动产” 可分为四大类，每类财产的信息描述需包含独特维度"></el-input>
+            :disabled="addOrEdit.flag == 3" maxlength="500"
+            placeholder="个人财产按 “有形 / 无形”“动产 / 不动产” 可分为四大类，每类财产的信息描述需包含独特维度"></el-input>
         </el-form-item>
         <el-form-item class="addSelectClass" prop="minSecurityLevel" label="安全分级">
           <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部" :disabled="addOrEdit.flag == 3">
@@ -193,21 +194,20 @@
             tagsShow ? '展开' : '收起' }}</el-button>
         </el-form-item>
         <Title title="动态安全分级"></Title>
-        <el-form-item label="升级规则" prop="">
-          <el-switch />
+        <el-form-item label="" prop="">
+          <!-- 开关：绑定状态 + 变化事件 -->
+          <el-switch v-model="upgradeSwitch" @change="handleRuleSwitchChange('upgrade')" active-text="升级规则" />
           <div class="table-with-actions">
             <div class="table-container">
-              <!-- :data="currentMappingPageData" @selection-change="handleMappingSelectionChange" -->
-              <el-table style="margin-top: 10px; width: 100%" size="small">
-                <!-- 新增：复选框列 -->
-                <el-table-column type="selection" width="45" />
+              <!-- 升级规则表格：绑定假数据 + 开关控制禁用 + 加ref -->
+              <el-table ref="upgradeTableRef" style="margin-top: 10px; width: 100%" size="small"
+                :data="upgradeRuleTableData" :disabled="!upgradeSwitch">
+                <el-table-column type="selection" width="45" :disabled="!upgradeSwitch" />
                 <el-table-column prop="tableName" label="规则类型" width="180" />
                 <el-table-column prop="tableRemark" label="匹配条件" min-width="180" />
                 <el-table-column prop="fieldName" label="内容" min-width="180" />
                 <el-table-column prop="fieldRemark" label="安全分级" min-width="180" />
               </el-table>
-
-              <!-- 还原样式的提示条 -->
               <div class="import-format-tip"
                 style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #f9f9f9; border: 1px solid #eee; border-radius: 4px;">
                 <i class="el-icon-warning-outline" type="info" />
@@ -215,19 +215,24 @@
               </div>
             </div>
             <div class="vertical-actions">
-              <svg-icon icon-class="plus-circle" />
-              <svg-icon icon-class="删除" />
+              <!-- 加号按钮：绑定打开弹窗事件，传升级规则类型 -->
+              <svg-icon icon-class="plus-circle" @click="handleOpenRuleDialog('upgrade')"
+                :style="{ cursor: upgradeSwitch ? 'pointer' : 'not-allowed', opacity: upgradeSwitch ? 1 : 0.5 }" />
+              <!-- 删除按钮：绑定删除事件 + 开关控制样式 -->
+              <svg-icon icon-class="删除" @click="handleDeleteRule('upgrade', $index)"
+                :style="{ cursor: upgradeSwitch ? 'pointer' : 'not-allowed', opacity: upgradeSwitch ? 1 : 0.5 }" />
             </div>
           </div>
         </el-form-item>
         <el-form-item label="降级规则" prop="">
-          <el-switch />
+          <!-- 开关：绑定状态 + 变化事件 -->
+          <el-switch v-model="downgradeSwitch" @change="handleRuleSwitchChange('downgrade')" active-text="降级规则" />
           <div class="table-with-actions">
             <div class="table-container">
-              <!-- :data="currentMappingPageData" @selection-change="handleMappingSelectionChange" -->
-              <el-table style="margin-top: 10px; width: 100%" size="small">
-                <!-- 新增：复选框列 -->
-                <el-table-column type="selection" width="45" />
+              <!-- 降级规则表格：绑定假数据 + 开关控制禁用 + 加ref -->
+              <el-table ref="downgradeTableRef" style="margin-top: 10px; width: 100%" size="small"
+                :data="downgradeRuleTableData" :disabled="!downgradeSwitch">
+                <el-table-column type="selection" width="45" :disabled="!downgradeSwitch" />
                 <el-table-column prop="tableName" label="规则类型" width="180" />
                 <el-table-column prop="tableRemark" label="匹配条件" min-width="180" />
                 <el-table-column prop="fieldName" label="内容" min-width="180" />
@@ -242,8 +247,12 @@
               </div>
             </div>
             <div class="vertical-actions">
-              <svg-icon icon-class="plus-circle" />
-              <svg-icon icon-class="删除" />
+              <!-- 加号按钮：绑定打开弹窗事件，传降级规则类型 -->
+              <svg-icon icon-class="plus-circle" @click="handleOpenRuleDialog('downgrade')"
+                :style="{ cursor: downgradeSwitch ? 'pointer' : 'not-allowed', opacity: downgradeSwitch ? 1 : 0.5 }" />
+              <!-- 删除按钮：绑定删除事件 + 开关控制样式 -->
+              <svg-icon icon-class="删除" @click="handleDeleteRule('downgrade', $index)"
+                :style="{ cursor: downgradeSwitch ? 'pointer' : 'not-allowed', opacity: downgradeSwitch ? 1 : 0.5 }" />
             </div>
           </div>
         </el-form-item>
@@ -254,6 +263,48 @@
         <el-button @click="addCancel">取 消</el-button>
       </div>
     </Drawer>
+    <!-- 新增规则弹窗-->
+    <el-dialog class="addRuler" title="新增规则" :visible.sync="ruleDialogVisible" width="580px"
+      :close-on-click-modal="false" :show-close="false">
+      <el-form :model="ruleForm" ref="ruleForm" label-width="100px" class="rule-dialog-form" size="medium"
+        label-position="top">
+        <!-- 规则类型 -->
+        <el-form-item label="规则类型">
+          <el-input value="数据量级" disabled style="width: 220px" />
+        </el-form-item>
+
+        <!-- 匹配条件 -->
+        <el-form-item label="匹配条件">
+          <el-radio-group v-model="ruleForm.matchType"
+            style="width: 220px; display: flex; justify-content: space-between">
+            <el-radio label="greater">大于</el-radio>
+            <el-radio label="less">小于</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <!-- 内容 -->
+        <el-form-item label="内容">
+          <el-input v-model="ruleForm.content" style="width: 220px" placeholder="请输入数值"
+            oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+        </el-form-item>
+
+        <!-- 安全分级 -->
+        <el-form-item label="安全分级">
+          <el-select v-model="ruleForm.securityLevel" style="width: 220px" placeholder="请选择">
+            <el-option label="1级" value="1级"></el-option>
+            <el-option label="2级" value="2级"></el-option>
+            <el-option label="3级" value="3级"></el-option>
+            <el-option label="4级" value="4级"></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+
+      <!-- 弹窗底部按钮：返回 + 保存 -->
+      <div slot="footer" class="dialog-footer" style="justify-content: end; gap: 20px">
+        <el-button type="primary" plain @click="handleSaveRule">保存</el-button>
+        <el-button @click="ruleDialogVisible = false">返回</el-button>
+      </div>
+    </el-dialog>
     <!-- <el-dialog :title="addOrEdit.title" v-loading="importDataLoading" :top="tagsShow ? '15vh' : '8vh'"
       :visible.sync="addOrEdit.show" width="700px" append-to-body :close-on-click-modal="addOrEdit.flag == 3">
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
@@ -440,6 +491,28 @@ export default {
       userList: [],
       categoryListEdit: null,
       addNodeName: "",
+
+      // 新增规则弹窗相关
+      ruleDialogVisible: false, // 弹窗显示状态
+      currentRuleType: '', // 标记当前是「升级」还是「降级」规则：'upgrade'/'downgrade'
+      ruleForm: { // 弹窗表单数据
+        matchType: 'greater', // 匹配类型：'greater'大于/'less'小于
+        content: '100', // 内容数值
+        securityLevel: '4级' // 安全分级
+      },
+      // 升降级规则开关状态
+      upgradeSwitch: false, // 升级规则开关
+      downgradeSwitch: false, // 降级规则开关
+
+      // 升降级表格假数据（初始化2条假数据）
+      upgradeRuleTableData: [
+        { tableName: '数据量级', tableRemark: '大于', fieldName: '50', fieldRemark: '3级' },
+        { tableName: '数据量级', tableRemark: '小于', fieldName: '200', fieldRemark: '2级' }
+      ],
+      downgradeRuleTableData: [
+        { tableName: '数据量级', tableRemark: '大于', fieldName: '150', fieldRemark: '2级' },
+        { tableName: '数据量级', tableRemark: '小于', fieldName: '300', fieldRemark: '1级' }
+      ]
     };
   },
   watch: {
@@ -473,6 +546,97 @@ export default {
     this.getSelectUserListAll()
   },
   methods: {
+    /**
+   * 打开新增规则弹窗
+   * @param {String} type 规则类型：'upgrade'升级/'downgrade'降级
+   */
+    handleOpenRuleDialog(type) {
+      this.currentRuleType = type;
+      // 重置表单为默认值
+      this.ruleForm = {
+        matchType: 'greater',
+        content: '100',
+        securityLevel: '4级'
+      };
+      this.ruleDialogVisible = true;
+    },
+
+    /**
+     * 保存新增规则（弹窗确定按钮）
+     */
+    handleSaveRule() {
+      // 简单表单校验：内容必须是数字
+      if (!this.ruleForm.content || isNaN(Number(this.ruleForm.content))) {
+        this.$message.warning('请输入有效的内容数值');
+        return;
+      }
+
+      // 处理匹配条件文本（将 'greater' 转为 '大于'，'less' 转为 '小于'）
+      const matchText = this.ruleForm.matchType === 'greater' ? '大于' : '小于';
+
+      // 构造表格所需数据格式
+      const newRule = {
+        tableName: '数据量级', // 规则类型（固定为数据量级，可后续扩展为下拉）
+        tableRemark: matchText, // 匹配条件
+        fieldName: this.ruleForm.content, // 内容数值
+        fieldRemark: this.ruleForm.securityLevel // 安全分级
+      };
+
+      // 根据规则类型插入对应表格
+      if (this.currentRuleType === 'upgrade') {
+        this.upgradeRuleTableData.push(newRule);
+      } else if (this.currentRuleType === 'downgrade') {
+        this.downgradeRuleTableData.push(newRule);
+      }
+
+      // 关闭弹窗并提示
+      this.ruleDialogVisible = false;
+      this.$message.success('规则新增成功');
+    },
+
+    /**
+     * 删除升降级规则
+     * @param {String} type 规则类型：'upgrade'/'downgrade'
+     * @param {Number} index 要删除的行索引
+     */
+    handleDeleteRule(type, index) {
+      // 开关关闭时禁止删除
+      const isSwitchOpen = type === 'upgrade' ? this.upgradeSwitch : this.downgradeSwitch;
+      if (!isSwitchOpen) {
+        this.$message.warning('请先打开对应规则的开关');
+        return;
+      }
+
+      // 确认删除
+      this.$confirm('确定删除这条规则吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        if (type === 'upgrade') {
+          this.upgradeRuleTableData.splice(index, 1);
+        } else {
+          this.downgradeRuleTableData.splice(index, 1);
+        }
+        this.$message.success('规则删除成功');
+      });
+    },
+
+    /**
+     * 升降级开关变化时的处理（关闭时清空表格选择）
+     * @param {String} type 规则类型：'upgrade'/'downgrade'
+     */
+    handleRuleSwitchChange(type) {
+      const tableRef = type === 'upgrade' ? 'upgradeTableRef' : 'downgradeTableRef';
+      const isSwitchOpen = type === 'upgrade' ? this.upgradeSwitch : this.downgradeSwitch;
+
+      // 开关关闭时清空表格选择
+      if (!isSwitchOpen && this.$refs[tableRef]) {
+        this.$refs[tableRef].clearSelection();
+      }
+    },
+
+
     // 判断是否为根节点
     isRootNode(data) {
       return data.parentId === 0 || !data.parentId;
@@ -1173,5 +1337,33 @@ export default {
 
 .table-container {
   width: 100%;
+}
+
+.addRuler /deep/.el-dialog__header {
+  padding: 20px;
+  background-color: rgb(230, 242, 255);
+  font-weight: 600;
+}
+
+.addRuler /deep/ .el-input--medium, .el-select {
+  width: 100% !important;
+}
+
+/* 新增规则弹窗表单样式 */
+.rule-dialog-form {
+  margin: 20px;
+}
+
+.rule-dialog-form /deep/ .el-form-item {
+  margin-bottom: 25px;
+}
+
+/* 弹窗按钮样式调整 */
+.rule-dialog-form /deep/ .el-radio {
+  margin-right: 30px;
+}
+
+.dialog-footer {
+  padding: 15px 0;
 }
 </style>
