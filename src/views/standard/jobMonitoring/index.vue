@@ -737,7 +737,18 @@ export default {
       this.addOrEdit.flag = 1
       this.addOrEdit.title = '新增'
       this.addOrEdit.show = true
-      // this.addOrEditDataRuls = {}
+      // 清空表单数据
+      this.addOrEditDataRuls = {
+        additional: '',
+        attachData: '',
+        categoryId: '',
+        minSecurityLevel: null,
+        dataOwner: this.$store.state.user.name, // 保留当前用户作为默认数据持有者
+        upgradeRule: false, // 重置为默认值false
+        downgradeRule: false, // 重置为默认值false
+        upgradeList: [], // 清空升级规则列表
+        demotionList: [], // 清空降级规则列表
+      }
       this.addOrEditDataRuls.dataOwner = this.$store.state.user.name
       this.tagsShow = true
       this.tags = []
