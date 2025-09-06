@@ -119,7 +119,142 @@
       </el-col>
     </el-row>
     <!-- 新增编辑框 -->
-    <el-dialog :title="addOrEdit.title" v-loading="importDataLoading" :top="tagsShow ? '15vh' : '8vh'"
+    <Drawer :title="addOrEdit.title" v-loading="importDataLoading" :visible.sync="addOrEdit.show" append-to-body
+      :close-on-click-modal="addOrEdit.flag == 3">
+      <el-form slot="body" :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules"
+        ref="addOrEdit" label-width="120px" label-position="top">
+        <Title title="基本信息"></Title>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="子类名称" prop="attachData">
+              <el-input v-model="addOrEditDataRuls.attachData" :disabled="addOrEdit.flag == 3"
+                @input="sonNameTestingFn(addOrEditDataRuls.attachData)" maxlength="50" placeholder="请输入子类名称"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item class="addSelectClass" prop="dataOwner" label="数据持有者">
+              <el-select v-model="addOrEditDataRuls.dataOwner" placeholder="全部" :disabled="addOrEdit.flag == 3">
+                <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item class="addSelectClass" label="所属父类" prop="categoryId">
+          <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3" filterable
+            :filter-method="handleAddSelectInput">
+            <el-option style="height: 100%; padding: 0" value="">
+              <el-tree :data="categoryList" filterable :props="defaultProps" :expand-on-click-node="true"
+                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+                @node-click="addHandleNodeClick" />
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="子类描述" prop="additional">
+          <el-input v-model="addOrEditDataRuls.additional" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
+            :disabled="addOrEdit.flag == 3" maxlength="500" placeholder="个人财产按 “有形 / 无形”“动产 / 不动产” 可分为四大类，每类财产的信息描述需包含独特维度"></el-input>
+        </el-form-item>
+        <el-form-item class="addSelectClass" prop="minSecurityLevel" label="安全分级">
+          <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部" :disabled="addOrEdit.flag == 3">
+            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <Title title="安全防护"></Title>
+        <el-form-item class="addSelectClass" prop="minSecurityLevel" label="建议防护措施">
+          <el-select v-model="addOrEditDataRuls.minSecurityLevel" :disabled="true" placeholder="全部">
+            <el-option v-for="item in protectMethodIdList" :key="item.dictValue" :label="item.dictLabel"
+              :value="item.dictValue">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item class="addSelectClass" prop="confirmProtectMethod" label="确认防护措施">
+          <el-select v-model="addOrEditDataRuls.confirmProtectMethod" multiple placeholder="全部"
+            :disabled="addOrEdit.flag == 3">
+            <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
+              :value="item.dictLabel">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="特征标签" prop="tags">
+          <div class="tagsClass" :style="tagsShow ? heightSmall : heightBig" style="width: 100%;">
+            <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag + index" class="mx-1"
+              :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index)" style="margin: 0 10px;">
+              {{ tag }}
+            </el-tag>
+            <el-input class="input-new-tag" v-if="inputVisible && countIs40" maxlength="10" v-model="inputValue"
+              ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
+            </el-input>
+            <el-button v-if="!inputVisible && countIs40 && addOrEdit.flag != 3" class="button-new-tag" size="small"
+              @click="showInput">+ 新增</el-button>
+          </div>
+          <el-button class="button-new-tag" size="small" v-show="tags.length > 10" @click="tagsShow = !tagsShow">{{
+            tagsShow ? '展开' : '收起' }}</el-button>
+        </el-form-item>
+        <Title title="动态安全分级"></Title>
+        <el-form-item label="升级规则" prop="">
+          <el-switch />
+          <div class="table-with-actions">
+            <div class="table-container">
+              <!-- :data="currentMappingPageData" @selection-change="handleMappingSelectionChange" -->
+              <el-table style="margin-top: 10px; width: 100%" size="small">
+                <!-- 新增：复选框列 -->
+                <el-table-column type="selection" width="45" />
+                <el-table-column prop="tableName" label="规则类型" width="180" />
+                <el-table-column prop="tableRemark" label="匹配条件" min-width="180" />
+                <el-table-column prop="fieldName" label="内容" min-width="180" />
+                <el-table-column prop="fieldRemark" label="安全分级" min-width="180" />
+              </el-table>
+
+              <!-- 还原样式的提示条 -->
+              <div class="import-format-tip"
+                style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #f9f9f9; border: 1px solid #eee; border-radius: 4px;">
+                <i class="el-icon-warning-outline" type="info" />
+                升级规则，当同时匹配多条规则时，等级最高规则生效
+              </div>
+            </div>
+            <div class="vertical-actions">
+              <svg-icon icon-class="plus-circle" />
+              <svg-icon icon-class="删除" />
+            </div>
+          </div>
+        </el-form-item>
+        <el-form-item label="降级规则" prop="">
+          <el-switch />
+          <div class="table-with-actions">
+            <div class="table-container">
+              <!-- :data="currentMappingPageData" @selection-change="handleMappingSelectionChange" -->
+              <el-table style="margin-top: 10px; width: 100%" size="small">
+                <!-- 新增：复选框列 -->
+                <el-table-column type="selection" width="45" />
+                <el-table-column prop="tableName" label="规则类型" width="180" />
+                <el-table-column prop="tableRemark" label="匹配条件" min-width="180" />
+                <el-table-column prop="fieldName" label="内容" min-width="180" />
+                <el-table-column prop="fieldRemark" label="安全分级" min-width="180" />
+              </el-table>
+
+              <!-- 还原样式的提示条 -->
+              <div class="import-format-tip"
+                style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #f9f9f9; border: 1px solid #eee; border-radius: 4px;">
+                <i class="el-icon-warning-outline" type="info" />
+                降级规则，当同时匹配多条规则时，等级最低规则生效
+              </div>
+            </div>
+            <div class="vertical-actions">
+              <svg-icon icon-class="plus-circle" />
+              <svg-icon icon-class="删除" />
+            </div>
+          </div>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" plain v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">确
+          定</el-button>
+        <el-button @click="addCancel">取 消</el-button>
+      </div>
+    </Drawer>
+    <!-- <el-dialog :title="addOrEdit.title" v-loading="importDataLoading" :top="tagsShow ? '15vh' : '8vh'"
       :visible.sync="addOrEdit.show" width="700px" append-to-body :close-on-click-modal="addOrEdit.flag == 3">
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" style="padding-right: 60px;">
@@ -190,7 +325,7 @@
           定</el-button>
         <el-button @click="addCancel">取 消</el-button>
       </div>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 <script>
@@ -994,6 +1129,49 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+}
+
+/* 表格与按钮组容器 */
+.table-with-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  justify-content: space-evenly;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 右侧竖排按钮组样式 */
+.vertical-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+  font-size: 20px;
+}
+
+/* 按钮提示样式 */
+.vertical-actions .el-button {
+  position: relative;
+}
+
+.vertical-actions .el-button:hover::after {
+  content: attr(tooltip);
+  position: absolute;
+  right: 30px;
+  white-space: nowrap;
+  background: #333;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.table-container {
   width: 100%;
 }
 </style>
