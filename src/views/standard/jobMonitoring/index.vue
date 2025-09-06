@@ -202,7 +202,7 @@
               <!-- 升级规则表格：绑定假数据 + 开关控制禁用 + 加ref -->
               <el-table ref="upgradeTableRef" style="margin-top: 10px; width: 100%" size="small"
                 :data="upgradeRuleTableData" :disabled="!upgradeSwitch">
-                <el-table-column type="selection" width="45" :disabled="!upgradeSwitch" />
+                <el-table-column type="selection" width="45" />
                 <el-table-column prop="tableName" label="规则类型" width="180" />
                 <el-table-column prop="tableRemark" label="匹配条件" min-width="180" />
                 <el-table-column prop="fieldName" label="内容" min-width="180" />
@@ -216,10 +216,10 @@
             </div>
             <div class="vertical-actions">
               <!-- 加号按钮：绑定打开弹窗事件，传升级规则类型 -->
-              <svg-icon icon-class="plus-circle" @click="handleOpenRuleDialog('upgrade')"
+              <svg-icon icon-class="plus-circle" @click="handleOpenRuleDialog('upgrade')" :disabled="!upgradeSwitch"
                 :style="{ cursor: upgradeSwitch ? 'pointer' : 'not-allowed', opacity: upgradeSwitch ? 1 : 0.5 }" />
               <!-- 删除按钮：绑定删除事件 + 开关控制样式 -->
-              <svg-icon icon-class="删除" @click="handleDeleteRule('upgrade', $index)"
+              <svg-icon icon-class="删除" @click="handleDeleteRule('upgrade', $index)" :disabled="!upgradeSwitch"
                 :style="{ cursor: upgradeSwitch ? 'pointer' : 'not-allowed', opacity: upgradeSwitch ? 1 : 0.5 }" />
             </div>
           </div>
@@ -232,7 +232,7 @@
               <!-- 降级规则表格：绑定假数据 + 开关控制禁用 + 加ref -->
               <el-table ref="downgradeTableRef" style="margin-top: 10px; width: 100%" size="small"
                 :data="downgradeRuleTableData" :disabled="!downgradeSwitch">
-                <el-table-column type="selection" width="45" :disabled="!downgradeSwitch" />
+                <el-table-column type="selection" width="45" />
                 <el-table-column prop="tableName" label="规则类型" width="180" />
                 <el-table-column prop="tableRemark" label="匹配条件" min-width="180" />
                 <el-table-column prop="fieldName" label="内容" min-width="180" />
@@ -248,10 +248,10 @@
             </div>
             <div class="vertical-actions">
               <!-- 加号按钮：绑定打开弹窗事件，传降级规则类型 -->
-              <svg-icon icon-class="plus-circle" @click="handleOpenRuleDialog('downgrade')"
+              <svg-icon icon-class="plus-circle" @click="handleOpenRuleDialog('downgrade')" :disabled="!downgradeSwitch"
                 :style="{ cursor: downgradeSwitch ? 'pointer' : 'not-allowed', opacity: downgradeSwitch ? 1 : 0.5 }" />
               <!-- 删除按钮：绑定删除事件 + 开关控制样式 -->
-              <svg-icon icon-class="删除" @click="handleDeleteRule('downgrade', $index)"
+              <svg-icon icon-class="删除" @click="handleDeleteRule('downgrade', $index)" :disabled="!downgradeSwitch"
                 :style="{ cursor: downgradeSwitch ? 'pointer' : 'not-allowed', opacity: downgradeSwitch ? 1 : 0.5 }" />
             </div>
           </div>
