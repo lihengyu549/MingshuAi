@@ -406,7 +406,7 @@ import {
   selectUserListAll,
   deleteAttachData,
 } from "@/api/standard";
-import { treeListI, getAttachData, attachStatus, nameTesting, getFrameworks } from "@/api/system/protectCategory";
+import { treeListI, getAttachData, attachStatus, nameTesting, getFrameworks, getCategoryAttachDataRuleByParentId } from "@/api/system/protectCategory";
 export default {
   name: "ProtectTableField",
   components: { Treeselect },
@@ -844,7 +844,7 @@ export default {
         this.$refs.treeSelect.filter(value);
       }
     },
-    editFn(row) {
+    async editFn(row) {
       this.addOrEdit.flag = 2
       this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
@@ -857,8 +857,22 @@ export default {
       this.addNodeName = row.owner
       this.tagsShow = false
       this.$set(this.addOrEditDataRuls, 'additional', row.attachDescribe)
+      try {
+        let query = {
+          parentId: row.id
+        }
+        let res = await getCategoryAttachDataRuleByParentId(query)
+        if (res.code == 200) {
+          this.addOrEditDataRuls.upgradeList = res.data.upgradeList
+          this.addOrEditDataRuls.upgradeRule = res.data.upgradeRule
+          this.addOrEditDataRuls.demotionList = res.data.demotionList
+          this.addOrEditDataRuls.demotionRule = res.data.demotionRule
+        }
+      } catch (error) {
+        this.$message({ message: '获取子类表格数据失败', type: 'warning' })
+      }
     },
-    lookFn(row) {
+    async lookFn(row) {
       this.addOrEdit.flag = 3
       this.addOrEditDataRuls = row
       this.addOrEditDataRuls.additional = row.attachDescribe
@@ -868,6 +882,20 @@ export default {
       this.addOrEdit.show = true
       this.addOrEdit.title = '查看'
       this.tagsShow = false
+      try {
+        let query = {
+          parentId: row.id
+        }
+        let res = await getCategoryAttachDataRuleByParentId(query)
+        if (res.code == 200) {
+          this.addOrEditDataRuls.upgradeList = res.data.upgradeList
+          this.addOrEditDataRuls.upgradeRule = res.data.upgradeRule
+          this.addOrEditDataRuls.demotionList = res.data.demotionList
+          this.addOrEditDataRuls.demotionRule = res.data.demotionRule
+        }
+      } catch (error) {
+        this.$message({ message: '获取子类表格数据失败', type: 'warning' })
+      }
     },
     messsucc(res, flag) {
       this.$message.success(`${res.msg},${flag}${res.data}个`)

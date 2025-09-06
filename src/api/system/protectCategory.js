@@ -350,3 +350,12 @@ export function getFeatureItemSelect() {
     method: 'get',
   })
 }
+
+// 获取子类表格数据
+export function getCategoryAttachDataRuleByParentId(data) {
+  return request({
+    url: `/system/category/getCategoryAttachDataRuleByParentId`,
+    method: 'get',
+    params: data,
+  })
+}
