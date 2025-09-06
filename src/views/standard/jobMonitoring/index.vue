@@ -196,19 +196,19 @@
         <Title title="动态安全分级"></Title>
         <el-form-item label="" prop="">
           <!-- 开关：绑定状态 + 变化事件 -->
-          <el-switch v-model="upgradeSwitch" @change="handleRuleSwitchChange('upgrade')" active-text="升级规则"
-            :disabled="addOrEdit.flag == 3" />
+          <el-switch v-model="addOrEditDataRuls.upgradeRule" @change="handleRuleSwitchChange('upgrade')"
+            active-text="升级规则" :disabled="addOrEdit.flag == 3" />
           <div class="table-with-actions">
             <div class="table-container">
               <!-- 升级规则表格：绑定假数据 + 开关控制禁用 + 加ref -->
-              <el-table ref="upgradeTableRef" style="margin-top: 10px; width: 100%" size="small"
-                :data="upgradeRuleTableData" :disabled="!upgradeSwitch">
+              <el-table ref="upgradeList" style="margin-top: 10px; width: 100%" size="small"
+                :data="addOrEditDataRuls.upgradeList" :disabled="!addOrEditDataRuls.upgradeRule">
                 <el-table-column type="selection" width="45"
-                  :selectable="(row, index) => upgradeSwitch && addOrEdit.flag != 3" />
-                <el-table-column prop="tableName" label="规则类型" width="180" />
-                <el-table-column prop="tableRemark" label="匹配条件" min-width="180" />
-                <el-table-column prop="fieldName" label="内容" min-width="180" />
-                <el-table-column prop="fieldRemark" label="安全分级" min-width="180" />
+                  :selectable="(row, index) => addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3" />
+                <el-table-column prop="ruleType" label="规则类型" width="180" />
+                <el-table-column prop="matchingCondition" label="匹配条件" min-width="180" />
+                <el-table-column prop="ruleContent" label="内容" min-width="180" />
+                <el-table-column prop="securityLevel" label="安全分级" min-width="180" />
               </el-table>
               <div class="import-format-tip"
                 style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #f9f9f9; border: 1px solid #eee; border-radius: 4px;">
@@ -218,31 +218,33 @@
             </div>
             <div class="vertical-actions">
               <!-- 加号按钮：绑定打开弹窗事件，传升级规则类型 -->
-              <svg-icon icon-class="plus-circle" @click="upgradeSwitch && addOrEdit.flag != 3 && handleOpenRuleDialog('upgrade')"
-                :disabled="!upgradeSwitch || addOrEdit.flag == 3"
-                :style="{ cursor: upgradeSwitch ? 'pointer' : 'not-allowed', opacity: upgradeSwitch ? 1 : 0.5 }" />
+              <svg-icon icon-class="plus-circle"
+                @click="addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3 && handleOpenRuleDialog('upgrade')"
+                :disabled="!addOrEditDataRuls.upgradeRule || addOrEdit.flag == 3"
+                :style="{ cursor: addOrEditDataRuls.upgradeRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.upgradeRule ? 1 : 0.5 }" />
               <!-- 删除按钮：绑定删除事件 + 开关控制样式 -->
-              <svg-icon icon-class="删除" @click="upgradeSwitch && addOrEdit.flag != 3 && handleDeleteRule('upgrade', $index)"
-                :disabled="!upgradeSwitch || addOrEdit.flag == 3"
-                :style="{ cursor: upgradeSwitch ? 'pointer' : 'not-allowed', opacity: upgradeSwitch ? 1 : 0.5 }" />
+              <svg-icon icon-class="删除"
+                @click="addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3 && handleDeleteRule('upgrade', $index)"
+                :disabled="!addOrEditDataRuls.upgradeRule || addOrEdit.flag == 3"
+                :style="{ cursor: addOrEditDataRuls.upgradeRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.upgradeRule ? 1 : 0.5 }" />
             </div>
           </div>
         </el-form-item>
         <el-form-item label="" prop="">
           <!-- 开关：绑定状态 + 变化事件 -->
-          <el-switch v-model="downgradeSwitch" @change="handleRuleSwitchChange('downgrade')" active-text="降级规则"
-            :disabled="addOrEdit.flag == 3" />
+          <el-switch v-model="addOrEditDataRuls.demotionRule" @change="handleRuleSwitchChange('downgrade')"
+            active-text="降级规则" :disabled="addOrEdit.flag == 3" />
           <div class="table-with-actions">
             <div class="table-container">
               <!-- 降级规则表格：绑定假数据 + 开关控制禁用 + 加ref -->
-              <el-table ref="downgradeTableRef" style="margin-top: 10px; width: 100%" size="small"
-                :data="downgradeRuleTableData" :disabled="!downgradeSwitch">
+              <el-table ref="demotionList" style="margin-top: 10px; width: 100%" size="small"
+                :data="addOrEditDataRuls.demotionList" :disabled="!addOrEditDataRuls.demotionRule">
                 <el-table-column type="selection" width="45"
-                  :selectable="(row, index) => downgradeSwitch && addOrEdit.flag != 3" />
-                <el-table-column prop="tableName" label="规则类型" width="180" />
-                <el-table-column prop="tableRemark" label="匹配条件" min-width="180" />
-                <el-table-column prop="fieldName" label="内容" min-width="180" />
-                <el-table-column prop="fieldRemark" label="安全分级" min-width="180" />
+                  :selectable="(row, index) => addOrEditDataRuls.demotionRule && addOrEdit.flag != 3" />
+                <el-table-column prop="ruleType" label="规则类型" width="180" />
+                <el-table-column prop="matchingCondition" label="匹配条件" min-width="180" />
+                <el-table-column prop="ruleContent" label="内容" min-width="180" />
+                <el-table-column prop="securityLevel" label="安全分级" min-width="180" />
               </el-table>
 
               <!-- 还原样式的提示条 -->
@@ -254,13 +256,15 @@
             </div>
             <div class="vertical-actions">
               <!-- 加号按钮：绑定打开弹窗事件，传降级规则类型 -->
-              <svg-icon icon-class="plus-circle" @click="downgradeSwitch && addOrEdit.flag != 3 && handleOpenRuleDialog('downgrade')"
-                :disabled="!downgradeSwitch || addOrEdit.flag == 3"
-                :style="{ cursor: downgradeSwitch ? 'pointer' : 'not-allowed', opacity: downgradeSwitch ? 1 : 0.5 }" />
+              <svg-icon icon-class="plus-circle"
+                @click="addOrEditDataRuls.demotionRule && addOrEdit.flag != 3 && handleOpenRuleDialog('downgrade')"
+                :disabled="!addOrEditDataRuls.demotionRule || addOrEdit.flag == 3"
+                :style="{ cursor: addOrEditDataRuls.demotionRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.demotionRule ? 1 : 0.5 }" />
               <!-- 删除按钮：绑定删除事件 + 开关控制样式 -->
-              <svg-icon icon-class="删除" @click="downgradeSwitch && addOrEdit.flag != 3 && handleDeleteRule('downgrade', $index)"
-                :disabled="!downgradeSwitch || addOrEdit.flag == 3"
-                :style="{ cursor: downgradeSwitch ? 'pointer' : 'not-allowed', opacity: downgradeSwitch ? 1 : 0.5 }" />
+              <svg-icon icon-class="删除"
+                @click="addOrEditDataRuls.demotionRule && addOrEdit.flag != 3 && handleDeleteRule('downgrade', $index)"
+                :disabled="!addOrEditDataRuls.demotionRule || addOrEdit.flag == 3"
+                :style="{ cursor: addOrEditDataRuls.demotionRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.demotionRule ? 1 : 0.5 }" />
             </div>
           </div>
         </el-form-item>
@@ -278,7 +282,10 @@
         label-position="top">
         <!-- 规则类型 -->
         <el-form-item label="规则类型">
-          <el-input value="数据量级" disabled style="width: 220px" />
+          <el-select v-model="ruleForm.ruleType" name="ruleType" id="">
+            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
         </el-form-item>
 
         <!-- 匹配条件 -->
@@ -292,7 +299,7 @@
 
         <!-- 内容 -->
         <el-form-item label="内容">
-          <el-input v-model="ruleForm.content" style="width: 220px" placeholder="请输入数值"
+          <el-input v-model="ruleForm.ruleContent" style="width: 220px" placeholder="请输入数值"
             oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
         </el-form-item>
 
@@ -467,6 +474,10 @@ export default {
         categoryId: '',
         minSecurityLevel: null,
         dataOwner: '',
+        upgradeRule: '',
+        downgradeRule: '',
+        upgradeList: [],
+        demotionList: [],
       },
       importDataLoading: false,
       filterName: undefined,
@@ -505,21 +516,15 @@ export default {
       currentRuleType: '', // 标记当前是「升级」还是「降级」规则：'upgrade'/'downgrade'
       ruleForm: { // 弹窗表单数据
         matchType: 'greater', // 匹配类型：'greater'大于/'less'小于
+        ruleType: '1',
         content: '100', // 内容数值
         securityLevel: '4级' // 安全分级
       },
-      // 升降级规则开关状态
-      upgradeSwitch: false, // 升级规则开关
-      downgradeSwitch: false, // 降级规则开关
-
-      // 升降级表格假数据（初始化2条假数据）
-      upgradeRuleTableData: [
-        { tableName: '数据量级', tableRemark: '大于', fieldName: '50', fieldRemark: '3级' },
-        { tableName: '数据量级', tableRemark: '小于', fieldName: '200', fieldRemark: '2级' }
-      ],
-      downgradeRuleTableData: [
-        { tableName: '数据量级', tableRemark: '大于', fieldName: '150', fieldRemark: '2级' },
-        { tableName: '数据量级', tableRemark: '小于', fieldName: '300', fieldRemark: '1级' }
+      options: [
+        {
+          value: '1',
+          label: '数据量级'
+        },
       ]
     };
   },
@@ -580,21 +585,22 @@ export default {
       }
 
       // 处理匹配条件文本（将 'greater' 转为 '大于'，'less' 转为 '小于'）
-      const matchText = this.ruleForm.matchType === 'greater' ? '大于' : '小于';
+      const matchText = this.ruleForm.matchingCondition === 'greater' ? '大于' : '小于';
 
       // 构造表格所需数据格式
       const newRule = {
-        tableName: '数据量级', // 规则类型（固定为数据量级，可后续扩展为下拉）
-        tableRemark: matchText, // 匹配条件
-        fieldName: this.ruleForm.content, // 内容数值
-        fieldRemark: this.ruleForm.securityLevel // 安全分级
+        ruleType: this.ruleForm.ruleType, // 规则类型（固定为数据量级，可后续扩展为下拉）
+        matchingCondition: matchText, // 匹配条件
+        ruleContent: this.ruleForm.ruleContent, // 内容数值
+        securityLevel: this.ruleForm.securityLevel // 安全分级
       };
 
       // 根据规则类型插入对应表格
       if (this.currentRuleType === 'upgrade') {
-        this.upgradeRuleTableData.push(newRule);
+        console.log('升级', this.addOrEditDataRuls);
+        this.addOrEditDataRuls.upgradeList.push(newRule);
       } else if (this.currentRuleType === 'downgrade') {
-        this.downgradeRuleTableData.push(newRule);
+        this.addOrEditDataRuls.demotionList.push(newRule);
       }
 
       // 关闭弹窗并提示
@@ -609,7 +615,7 @@ export default {
      */
     handleDeleteRule(type, index) {
       // 开关关闭时禁止删除
-      const isSwitchOpen = type === 'upgrade' ? this.upgradeSwitch : this.downgradeSwitch;
+      const isSwitchOpen = type === 'upgrade' ? this.upgradeRule : this.demotionRule;
       if (!isSwitchOpen) {
         this.$message.warning('请先打开对应规则的开关');
         return;
@@ -622,11 +628,11 @@ export default {
         type: 'warning'
       }).then(() => {
         if (type === 'upgrade') {
-          this.upgradeRuleTableData.splice(index, 1);
-          this.$refs.upgradeTableRef.clearSelection(); // 清除选中
+          this.addOrEditDataRuls.upgradeList.splice(index, 1);
+          this.$refs.upgradeList.clearSelection(); // 清除选中
         } else {
-          this.downgradeRuleTableData.splice(index, 1);
-          this.$refs.downgradeTableRef.clearSelection(); // 清除选中
+          this.addOrEditDataRuls.demotionList.splice(index, 1);
+          this.$refs.demotionRule.clearSelection(); // 清除选中
         }
         this.$message.success('规则删除成功');
       });
@@ -637,8 +643,8 @@ export default {
      * @param {String} type 规则类型：'upgrade'/'downgrade'
      */
     handleRuleSwitchChange(type) {
-      const tableRef = type === 'upgrade' ? 'upgradeTableRef' : 'downgradeTableRef';
-      const isSwitchOpen = type === 'upgrade' ? this.upgradeSwitch : this.downgradeSwitch;
+      const tableRef = type === 'upgrade' ? 'upgradeList' : 'demotionRule';
+      const isSwitchOpen = type === 'upgrade' ? this.upgradeRule : this.demotionRule;
 
       // 开关关闭时清空表格选择
       if (!isSwitchOpen && this.$refs[tableRef]) {
@@ -731,7 +737,7 @@ export default {
       this.addOrEdit.flag = 1
       this.addOrEdit.title = '新增'
       this.addOrEdit.show = true
-      this.addOrEditDataRuls = {}
+      // this.addOrEditDataRuls = {}
       this.addOrEditDataRuls.dataOwner = this.$store.state.user.name
       this.tagsShow = true
       this.tags = []
@@ -749,7 +755,10 @@ export default {
           confirmProtectMethod: this.addOrEditDataRuls.confirmProtectMethod.join(),
           dataOwner: this.addOrEditDataRuls.dataOwner,
           protectMethod: this.addOrEditDataRuls.minSecurityLevel,
-
+          upgradeRule: this.addOrEditDataRuls.upgradeRule ? '1' : '0',
+          demotionRule: this.addOrEditDataRuls.demotionRule ? '1' : '0',
+          upgradeList: this.addOrEditDataRuls.upgradeList,
+          demotionList: this.addOrEditDataRuls.demotionList
         }
         if (valid) {
           this.importDataLoading = true
