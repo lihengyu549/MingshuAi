@@ -582,17 +582,7 @@ export default {
       this.$refs.ruleForm.validate(async (valid) => {
         if (!valid) return;
 
-        if (valid) {
-          // 保存逻辑...
-          if (this.currentRuleType === 'upgrade') {
-            this.addOrEditDataRuls.upgradeList.push({ ...this.ruleForm });
-          } else {
-            this.addOrEditDataRuls.demotionList.push({ ...this.ruleForm });
-          }
-          this.ruleDialogVisible = false;
-        }
-
-
+        // 1. 先执行所有校验逻辑
         if (!this.ruleForm.ruleContent.trim()) {
           this.$message.warning('请输入数值');
           return;
@@ -629,6 +619,7 @@ export default {
           }
         }
 
+        // 2. 所有校验通过后，再执行保存逻辑
         // 处理匹配条件文本
         const matchText = this.ruleForm.matchType === 'greater' ? '大于' : '小于';
 
