@@ -427,7 +427,7 @@ export default {
       if (checked) {
         const allChildren = this.collectAllChildren(this.categoryList);
         this.getList(allChildren)
-      }else{
+      } else {
         this.getList([])
       }
       // 全选状态变更后调用getList方法
@@ -973,10 +973,15 @@ export default {
     },
     /** 搜索按钮操作 */
     handleQuery() {
+      // 重置页码
       this.queryParams.pageNum = 1;
-      // 获取已选节点数据并传入
-      const checkedNodeData = this.getCheckedNodeData(this.selectedTreeNodeIds);
-      this.getList(checkedNodeData);
+      // 获取当前选中的节点数据（完整结构）
+      const checkedNodes = this.$refs.tree.getCheckedNodes();
+      // 通过getCheckedNodeData处理成需要的格式
+      const processedNodes = this.getCheckedNodeData(checkedNodes);
+      console.log('processedNodes', processedNodes);
+      // 传入处理后的节点数据调用getList
+      this.getList(processedNodes);
     },
     /** 重置按钮操作 */
     resetQuery() {
