@@ -27,7 +27,7 @@
                 <i class="el-icon-plus"></i> 新增
             </el-button>
             <el-button type="primary" plain @click="handleDelete" :disabled="selectedRows.length === 0">
-                <i class="el-icon-delete"></i> 删除
+                <i class="el-icon-close"></i> 删除
             </el-button>
         </div>
 
