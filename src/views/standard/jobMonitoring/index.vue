@@ -279,7 +279,7 @@
     <el-dialog class="addRuler" title="新增规则" :visible.sync="ruleDialogVisible" width="580px"
       :close-on-click-modal="false" :show-close="false">
       <el-form :model="ruleForm" ref="ruleForm" label-width="100px" class="rule-dialog-form" size="medium"
-        label-position="top">
+        label-position="top" :rules="dialogRules">
         <!-- 规则类型 -->
         <el-form-item label="规则类型">
           <el-select v-model="ruleForm.ruleType" name="ruleType" id="">
@@ -306,10 +306,9 @@
         <!-- 安全分级 -->
         <el-form-item label="安全分级">
           <el-select v-model="ruleForm.securityLevel" style="width: 220px" placeholder="请选择">
-            <el-option label="1级" value="1级"></el-option>
-            <el-option label="2级" value="2级"></el-option>
-            <el-option label="3级" value="3级"></el-option>
-            <el-option label="4级" value="4级"></el-option>
+            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+              :value="item.value">
+            </el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -320,78 +319,6 @@
         <el-button @click="ruleDialogVisible = false">返回</el-button>
       </div>
     </el-dialog>
-    <!-- <el-dialog :title="addOrEdit.title" v-loading="importDataLoading" :top="tagsShow ? '15vh' : '8vh'"
-      :visible.sync="addOrEdit.show" width="700px" append-to-body :close-on-click-modal="addOrEdit.flag == 3">
-      <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
-        label-width="120px" style="padding-right: 60px;">
-        <el-form-item label="子类名称" prop="attachData">
-          <el-input v-model="addOrEditDataRuls.attachData" :disabled="addOrEdit.flag == 3"
-            @input="sonNameTestingFn(addOrEditDataRuls.attachData)" maxlength="50" placeholder="请输入子类名称"></el-input>
-        </el-form-item>
-        <el-form-item class="addSelectClass" label="所属父类" prop="categoryId">
-          <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3" filterable
-            :filter-method="handleAddSelectInput">
-            <el-option style="height: 100%; padding: 0" value="">
-              <el-tree :data="categoryList" filterable :props="defaultProps" :expand-on-click-node="true"
-                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
-                @node-click="addHandleNodeClick" />
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item class="addSelectClass" prop="minSecurityLevel" label="安全分级">
-          <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部" :disabled="addOrEdit.flag == 3">
-            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item class="addSelectClass" prop="minSecurityLevel" label="建议防护措施">
-          <el-select v-model="addOrEditDataRuls.minSecurityLevel" :disabled="true" placeholder="全部">
-            <el-option v-for="item in protectMethodIdList" :key="item.dictValue" :label="item.dictLabel"
-              :value="item.dictValue">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item class="addSelectClass" prop="dataOwner" label="数据持有者">
-          <el-select v-model="addOrEditDataRuls.dataOwner" placeholder="全部" :disabled="addOrEdit.flag == 3">
-            <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item class="addSelectClass" prop="confirmProtectMethod" label="确认防护措施">
-          <el-select v-model="addOrEditDataRuls.confirmProtectMethod" multiple placeholder="全部"
-            :disabled="addOrEdit.flag == 3">
-            <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
-              :value="item.dictLabel">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="子类描述" prop="additional">
-          <el-input v-model="addOrEditDataRuls.additional" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
-            :disabled="addOrEdit.flag == 3" maxlength="500" placeholder="请输入子类描述"></el-input>
-        </el-form-item>
-        <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="特征标签" prop="tags">
-          <div class="tagsClass" :style="tagsShow ? heightSmall : heightBig" style="width: 100%;">
-            <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag + index" class="mx-1"
-              :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index)" style="margin: 0 10px;">
-              {{ tag }}
-            </el-tag>
-            <el-input class="input-new-tag" v-if="inputVisible && countIs40" maxlength="10" v-model="inputValue"
-              ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
-            </el-input>
-            <el-button v-if="!inputVisible && countIs40 && addOrEdit.flag != 3" class="button-new-tag" size="small"
-              @click="showInput">+ 新增</el-button>
-          </div>
-          <el-button class="button-new-tag" size="small" v-show="tags.length > 10" @click="tagsShow = !tagsShow">{{
-            tagsShow ? '展开' : '收起' }}</el-button>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">确
-          定</el-button>
-        <el-button @click="addCancel">取 消</el-button>
-      </div>
-    </el-dialog> -->
   </div>
 </template>
 <script>
@@ -457,6 +384,20 @@ export default {
           { validator: this.tagsRlues, trigger: 'blur', required: true, }
         ]
       },
+      dialogRules: {
+        ruleType: [
+          { required: true, message: '请选择规则类型', trigger: 'blur' }
+        ],
+        matchType: [
+          { required: true, message: '请选择匹配条件', trigger: 'blur' }
+        ],
+        ruleContent: [
+          { required: true, message: '请输入内容', trigger: 'blur' }
+        ],
+        securityLevel: [
+          { required: true, message: '请选择安全分级', trigger: 'blur' }
+        ]
+      },
       treeID: '',
       // 查询参数
       queryParams: {
@@ -517,8 +458,8 @@ export default {
       ruleForm: { // 弹窗表单数据
         matchType: 'greater', // 匹配类型：'greater'大于/'less'小于
         ruleType: '1',
-        content: '100', // 内容数值
-        securityLevel: '4级' // 安全分级
+        content: '', // 内容数值
+        securityLevel: '' // 安全分级
       },
       options: [
         {
@@ -858,6 +799,8 @@ export default {
     async editFn(row) {
       this.addOrEdit.flag = 2
       this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
+      this.addOrEditDataRuls.upgradeRule = row.upgradeRule == '1' ? true : false
+      this.addOrEditDataRuls.demotionRule = row.demotionRule == '1' ? true : false
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
       this.tags = row.featureLabel ? row.featureLabel.split(',') : []
       this.addOrEditDataRuls.confirmProtectMethod = Array.isArray(row.confirmProtectMethod)
@@ -874,10 +817,9 @@ export default {
         }
         let res = await getCategoryAttachDataRuleByParentId(query)
         if (res.code == 200) {
+          console.log('res', res);
           this.addOrEditDataRuls.upgradeList = res.data.upgradeList
-          this.addOrEditDataRuls.upgradeRule = res.data.upgradeRule
           this.addOrEditDataRuls.demotionList = res.data.demotionList
-          this.addOrEditDataRuls.demotionRule = res.data.demotionRule
         }
       } catch (error) {
         this.$message({ message: '获取子类表格数据失败', type: 'warning' })
@@ -886,6 +828,8 @@ export default {
     async lookFn(row) {
       this.addOrEdit.flag = 3
       this.addOrEditDataRuls = row
+      this.addOrEditDataRuls.upgradeRule = row.upgradeRule == '1' ? true : false
+      this.addOrEditDataRuls.demotionRule = row.demotionRule == '1' ? true : false
       this.addOrEditDataRuls.additional = row.attachDescribe
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
       this.tags = row.featureLabel ? row.featureLabel.split(',') : []
@@ -900,9 +844,7 @@ export default {
         let res = await getCategoryAttachDataRuleByParentId(query)
         if (res.code == 200) {
           this.addOrEditDataRuls.upgradeList = res.data.upgradeList
-          this.addOrEditDataRuls.upgradeRule = res.data.upgradeRule
           this.addOrEditDataRuls.demotionList = res.data.demotionList
-          this.addOrEditDataRuls.demotionRule = res.data.demotionRule
         }
       } catch (error) {
         this.$message({ message: '获取子类表格数据失败', type: 'warning' })
