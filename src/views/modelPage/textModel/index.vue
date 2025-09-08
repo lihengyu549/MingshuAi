@@ -355,10 +355,10 @@ export default {
 <style scoped>
 /* 样式部分保持不变 */
 .model-config-page {
-    padding: 20px;
-    background-color: #f5f7fa;
+    padding: 40px;
+    background-color: #fff;
     height: 100vh;
-    box-sizing: border-box;
+    box-shadow: none;
 }
 
 /* .page-header {
@@ -377,9 +377,10 @@ export default {
     display: flex;
     height: calc(100% - 40px);
     background-color: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    /* box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05); */
     overflow: hidden;
+    border: solid 0.5px #dcdfe6;
 }
 
 .left-sidebar {
