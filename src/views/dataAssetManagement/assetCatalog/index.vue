@@ -938,7 +938,7 @@ export default {
         pageSize: this.queryParams.pageSize,
       }
       const response = {
-        tableNam: this.queryParams.tableName,
+        tableName: this.queryParams.tableName,
         paddingstatus: this.queryParams.paddingStatus,
         featureExtractionstatus: this.queryParams.featureExtractionStatus,
         databaseList: treeNode,

@@ -311,7 +311,15 @@
         <el-form-item label="安全分级" prop="securityLevel">
           <el-select v-model="ruleForm.securityLevel" style="width: 220px" placeholder="请选择">
             <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-              :value="item.value">
+              :value="item.value" :disabled="!filterSecurityLevels(item)">
+              <template #default>
+                <span>
+                  {{ item.label }}
+                  <span v-if="!filterSecurityLevels(item)" style="color: #999; margin-left: 8px; font-size: 12px;">
+                    ({{ currentRuleType === 'upgrade' ? '需大于当前等级' : '需小于当前等级' }})
+                  </span>
+                </span>
+              </template>
             </el-option>
           </el-select>
         </el-form-item>
@@ -409,7 +417,24 @@ export default {
           }
         ],
         securityLevel: [
-          { required: true, message: '请选择安全分级', trigger: 'blur' }
+          { required: true, message: '请选择安全分级', trigger: 'blur' },
+          {
+            validator: (rule, value, callback) => {
+              if (!this.currentBaseSecurityLevel) {
+                callback();
+                return;
+              }
+
+              if (this.currentRuleType === 'upgrade' && value <= this.currentBaseSecurityLevel) {
+                callback(new Error('升级规则的安全分级必须大于当前安全分级'));
+              } else if (this.currentRuleType === 'downgrade' && value >= this.currentBaseSecurityLevel) {
+                callback(new Error('降级规则的安全分级必须小于当前安全分级'));
+              } else {
+                callback();
+              }
+            },
+            trigger: 'blur'
+          }
         ]
       },
       treeID: '',
@@ -483,7 +508,9 @@ export default {
           value: '1',
           label: '数据量级'
         },
-      ]
+      ],
+      currentRuleType: '', // 记录当前是升级还是降级规则
+      currentBaseSecurityLevel: null, // 当前行的安全分级基准值
     };
   },
   watch: {
@@ -523,14 +550,29 @@ export default {
    */
     handleOpenRuleDialog(type) {
       this.currentRuleType = type;
-      // 根据规则类型预设匹配条件
+      // 记录当前的安全分级作为基准值
+      this.currentBaseSecurityLevel = this.addOrEditDataRuls.minSecurityLevel;
+
+      // 初始化表单
       this.ruleForm = {
-        matchType: type === 'upgrade' ? 'greater' : 'less', // 升级默认大于，降级默认小于
+        matchType: type === 'upgrade' ? 'greater' : 'less',
         ruleType: '1',
-        ruleContent: '', // 清空内容
+        ruleContent: '',
         securityLevel: ''
       };
       this.ruleDialogVisible = true;
+    },
+
+    // 过滤安全分级选项
+    filterSecurityLevels(item) {
+      if (!this.currentBaseSecurityLevel) return true;
+
+      if (this.currentRuleType === 'upgrade') {
+        return item.value > this.currentBaseSecurityLevel;
+      } else if (this.currentRuleType === 'downgrade') {
+        return item.value < this.currentBaseSecurityLevel;
+      }
+      return true;
     },
 
     /**
@@ -539,6 +581,16 @@ export default {
     handleSaveRule() {
       this.$refs.ruleForm.validate(async (valid) => {
         if (!valid) return;
+
+        if (valid) {
+          // 保存逻辑...
+          if (this.currentRuleType === 'upgrade') {
+            this.addOrEditDataRuls.upgradeList.push({ ...this.ruleForm });
+          } else {
+            this.addOrEditDataRuls.demotionList.push({ ...this.ruleForm });
+          }
+          this.ruleDialogVisible = false;
+        }
 
 
         if (!this.ruleForm.ruleContent.trim()) {
@@ -615,7 +667,7 @@ export default {
 
       // 获取选中的行
       const selection = type === 'upgrade' ? this.selectedUpgradeRows : this.selectedDemotionRows;
-      
+
       if (selection.length === 0) {
         this.$message.warning('请先选择要删除的规则');
         return;
@@ -629,7 +681,7 @@ export default {
       }).then(() => {
         // 获取要删除的规则内容（用于在原数组中查找）
         const contentsToDelete = selection.map(item => item.ruleContent);
-        
+
         // 过滤掉要删除的规则
         if (type === 'upgrade') {
           this.addOrEditDataRuls.upgradeList = this.addOrEditDataRuls.upgradeList.filter(
@@ -644,13 +696,13 @@ export default {
           // 清除选中状态
           this.selectedDemotionRows = [];
         }
-        
+
         // 清除表格选中状态
         const tableRef = type === 'upgrade' ? 'upgradeList' : 'demotionList';
         if (this.$refs[tableRef]) {
           this.$refs[tableRef].clearSelection();
         }
-        
+
         this.$message.success('规则删除成功');
       });
     },
