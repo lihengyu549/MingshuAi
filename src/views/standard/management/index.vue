@@ -620,6 +620,7 @@ input[aria-hidden=true] {
   box-sizing: border-box;
   /* 确保padding和border不影响宽度计算 */
 }
+
 .listBox_item:nth-child(4n) {
   margin-right: 0;
 }
@@ -749,9 +750,9 @@ input[aria-hidden=true] {
 
 .title_tags span {
   margin-right: 10px;
-  width: 50px;
+  width: auto;
   height: 25px;
-  line-height: 25px;
+  line-height: 23px;
   text-align: center;
   font-size: 14px;
   border-radius: 10px;
