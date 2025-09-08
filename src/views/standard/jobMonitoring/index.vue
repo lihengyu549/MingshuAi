@@ -281,30 +281,32 @@
       <el-form :model="ruleForm" ref="ruleForm" label-width="100px" class="rule-dialog-form" size="medium"
         label-position="top" :rules="dialogRules">
         <!-- 规则类型 -->
-        <el-form-item label="规则类型">
+        <el-form-item label="规则类型" prop="ruleType">
           <el-select v-model="ruleForm.ruleType" name="ruleType" id="">
             <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
 
-        <!-- 匹配条件 -->
-        <el-form-item label="匹配条件">
+        <!-- 匹配条件 - 根据规则类型动态展示 -->
+        <el-form-item label="匹配条件" prop="matchType">
           <el-radio-group v-model="ruleForm.matchType"
             style="width: 220px; display: flex; justify-content: space-between">
-            <el-radio label="greater">大于</el-radio>
-            <el-radio label="less">小于</el-radio>
+            <!-- 升级规则只显示大于 -->
+            <el-radio label="greater" v-if="currentRuleType === 'upgrade'">大于</el-radio>
+            <!-- 降级规则只显示小于 -->
+            <el-radio label="less" v-if="currentRuleType === 'downgrade'">小于</el-radio>
           </el-radio-group>
         </el-form-item>
 
         <!-- 内容 -->
-        <el-form-item label="内容">
+        <el-form-item label="内容" prop="ruleContent">
           <el-input v-model="ruleForm.ruleContent" style="width: 220px" placeholder="请输入数值"
             oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
         </el-form-item>
 
         <!-- 安全分级 -->
-        <el-form-item label="安全分级">
+        <el-form-item label="安全分级" prop="securityLevel">
           <el-select v-model="ruleForm.securityLevel" style="width: 220px" placeholder="请选择">
             <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
               :value="item.value">
@@ -392,7 +394,8 @@ export default {
           { required: true, message: '请选择匹配条件', trigger: 'blur' }
         ],
         ruleContent: [
-          { required: true, message: '请输入内容', trigger: 'blur' }
+          { required: true, message: '请输入内容', trigger: 'blur' },
+          { type: 'number', message: '请输入有效的数字', trigger: 'blur' }
         ],
         securityLevel: [
           { required: true, message: '请选择安全分级', trigger: 'blur' }
@@ -506,11 +509,12 @@ export default {
    */
     handleOpenRuleDialog(type) {
       this.currentRuleType = type;
-      // 重置表单为默认值
+      // 根据规则类型预设匹配条件
       this.ruleForm = {
-        matchType: 'greater',
-        content: '100',
-        securityLevel: '4级'
+        matchType: type === 'upgrade' ? 'greater' : 'less', // 升级默认大于，降级默认小于
+        ruleType: '1',
+        ruleContent: '', // 清空内容
+        securityLevel: ''
       };
       this.ruleDialogVisible = true;
     },
@@ -519,34 +523,63 @@ export default {
      * 保存新增规则（弹窗确定按钮）
      */
     handleSaveRule() {
-      // 简单表单校验：内容必须是数字
-      if (!this.ruleForm.content || isNaN(Number(this.ruleForm.content))) {
-        this.$message.warning('请输入有效的内容数值');
-        return;
-      }
+      this.$refs.ruleForm.validate(async (valid) => {
+        if (!valid) return;
 
-      // 处理匹配条件文本（将 'greater' 转为 '大于'，'less' 转为 '小于'）
-      const matchText = this.ruleForm.matchingCondition === 'greater' ? '大于' : '小于';
+        const content = Number(this.ruleForm.ruleContent);
+        if (isNaN(content)) {
+          this.$message.warning('请输入有效的数字');
+          return;
+        }
 
-      // 构造表格所需数据格式
-      const newRule = {
-        ruleType: this.ruleForm.ruleType, // 规则类型（固定为数据量级，可后续扩展为下拉）
-        matchingCondition: matchText, // 匹配条件
-        ruleContent: this.ruleForm.ruleContent, // 内容数值
-        securityLevel: this.ruleForm.securityLevel // 安全分级
-      };
+        // 获取升级和降级规则的数值列表
+        const upgradeValues = this.addOrEditDataRuls.upgradeList.map(item => Number(item.ruleContent));
+        const demotionValues = this.addOrEditDataRuls.demotionList.map(item => Number(item.ruleContent));
 
-      // 根据规则类型插入对应表格
-      if (this.currentRuleType === 'upgrade') {
-        console.log('升级', this.addOrEditDataRuls);
-        this.addOrEditDataRuls.upgradeList.push(newRule);
-      } else if (this.currentRuleType === 'downgrade') {
-        this.addOrEditDataRuls.demotionList.push(newRule);
-      }
+        // 升级规则校验：不能小于降级表格中的最大值
+        if (this.currentRuleType === 'upgrade') {
+          if (demotionValues.length > 0) {
+            const maxDemotion = Math.max(...demotionValues);
+            if (content <= maxDemotion) {
+              this.$message.warning(`升级数值不能小于等于降级表格中的最大值(${maxDemotion})`);
+              return;
+            }
+          }
+        }
 
-      // 关闭弹窗并提示
-      this.ruleDialogVisible = false;
-      this.$message.success('规则新增成功');
+        // 降级规则校验：不能大于升级表格中的最小值
+        if (this.currentRuleType === 'downgrade') {
+          if (upgradeValues.length > 0) {
+            const minUpgrade = Math.min(...upgradeValues);
+            if (content >= minUpgrade) {
+              this.$message.warning(`降级数值不能大于等于升级表格中的最小值(${minUpgrade})`);
+              return;
+            }
+          }
+        }
+
+        // 处理匹配条件文本
+        const matchText = this.ruleForm.matchType === 'greater' ? '大于' : '小于';
+
+        // 构造表格所需数据格式
+        const newRule = {
+          ruleType: this.ruleForm.ruleType,
+          matchingCondition: matchText,
+          ruleContent: this.ruleForm.ruleContent,
+          securityLevel: this.ruleForm.securityLevel
+        };
+
+        // 根据规则类型插入对应表格
+        if (this.currentRuleType === 'upgrade') {
+          this.addOrEditDataRuls.upgradeList.push(newRule);
+        } else if (this.currentRuleType === 'downgrade') {
+          this.addOrEditDataRuls.demotionList.push(newRule);
+        }
+
+        // 关闭弹窗并提示
+        this.ruleDialogVisible = false;
+        this.$message.success('规则新增成功');
+      });
     },
 
     /**
@@ -817,7 +850,6 @@ export default {
         }
         let res = await getCategoryAttachDataRuleByParentId(query)
         if (res.code == 200) {
-          console.log('res', res);
           this.addOrEditDataRuls.upgradeList = res.data.upgradeList
           this.addOrEditDataRuls.demotionList = res.data.demotionList
         }
