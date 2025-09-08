@@ -46,7 +46,7 @@
             @click="addFn">新增</el-button>
           <el-button type="primary" plain icon="el-icon-close" size="medium" @click="enabledFn('删除')">删除</el-button>
           <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="enabledFn('启用')">启用</el-button>
-          <el-button type="primary" plain icon="el-icon-warning" size="medium" @click="enabledFn('禁用')">禁用</el-button>
+          <el-button type="primary" plain icon="el-icon-warning-outline" size="medium" @click="enabledFn('禁用')">禁用</el-button>
         </div>
         <el-table v-loading="loading" :data="protectTableFieldList" ref="tableRef" height="630px" class="tableBox">
           <!-- <el-table-column width="55" align="center" /> -->
