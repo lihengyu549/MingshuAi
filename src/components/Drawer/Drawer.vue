@@ -1,5 +1,5 @@
 <template>
-  <el-drawer v-bind="$attrs" v-on="$listeners" :title="title" :visible="visible" direction="rtl" :size="size">
+  <el-drawer v-bind="$attrs" v-on="$listeners" :title="title" :visible="visible" direction="rtl" :size="size" :wrapper-closable="false">
     <slot name="body">
     </slot>
     <slot name="footer">
