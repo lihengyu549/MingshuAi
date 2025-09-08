@@ -202,7 +202,8 @@
             <div class="table-container">
               <!-- 升级规则表格：绑定假数据 + 开关控制禁用 + 加ref -->
               <el-table ref="upgradeList" style="margin-top: 10px; width: 100%" size="small"
-                :data="addOrEditDataRuls.upgradeList" :disabled="!addOrEditDataRuls.upgradeRule">
+                :data="addOrEditDataRuls.upgradeList" :disabled="!addOrEditDataRuls.upgradeRule"
+                @selection-change="handleUpgradeSelectionChange">
                 <el-table-column type="selection" width="45"
                   :selectable="(row, index) => addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3" />
                 <el-table-column prop="ruleType" label="规则类型" width="180" />
@@ -224,7 +225,7 @@
                 :style="{ cursor: addOrEditDataRuls.upgradeRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.upgradeRule ? 1 : 0.5 }" />
               <!-- 删除按钮：绑定删除事件 + 开关控制样式 -->
               <svg-icon icon-class="删除"
-                @click="addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3 && handleDeleteRule('upgrade', $index)"
+                @click="addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3 && handleDeleteRule('upgrade')"
                 :disabled="!addOrEditDataRuls.upgradeRule || addOrEdit.flag == 3"
                 :style="{ cursor: addOrEditDataRuls.upgradeRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.upgradeRule ? 1 : 0.5 }" />
             </div>
@@ -238,7 +239,8 @@
             <div class="table-container">
               <!-- 降级规则表格：绑定假数据 + 开关控制禁用 + 加ref -->
               <el-table ref="demotionList" style="margin-top: 10px; width: 100%" size="small"
-                :data="addOrEditDataRuls.demotionList" :disabled="!addOrEditDataRuls.demotionRule">
+                :data="addOrEditDataRuls.demotionList" :disabled="!addOrEditDataRuls.demotionRule"
+                @selection-change="handleDemotionSelectionChange">
                 <el-table-column type="selection" width="45"
                   :selectable="(row, index) => addOrEditDataRuls.demotionRule && addOrEdit.flag != 3" />
                 <el-table-column prop="ruleType" label="规则类型" width="180" />
@@ -262,7 +264,7 @@
                 :style="{ cursor: addOrEditDataRuls.demotionRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.demotionRule ? 1 : 0.5 }" />
               <!-- 删除按钮：绑定删除事件 + 开关控制样式 -->
               <svg-icon icon-class="删除"
-                @click="addOrEditDataRuls.demotionRule && addOrEdit.flag != 3 && handleDeleteRule('downgrade', $index)"
+                @click="addOrEditDataRuls.demotionRule && addOrEdit.flag != 3 && handleDeleteRule('downgrade')"
                 :disabled="!addOrEditDataRuls.demotionRule || addOrEdit.flag == 3"
                 :style="{ cursor: addOrEditDataRuls.demotionRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.demotionRule ? 1 : 0.5 }" />
             </div>
@@ -395,7 +397,16 @@ export default {
         ],
         ruleContent: [
           { required: true, message: '请输入内容', trigger: 'blur' },
-          { type: 'number', message: '请输入有效的数字', trigger: 'blur' }
+          {
+            validator: (rule, value, callback) => {
+              if (!/^\d+$/.test(value)) {
+                callback(new Error('请输入有效的数字'));
+              } else {
+                callback();
+              }
+            },
+            trigger: 'blur'
+          }
         ],
         securityLevel: [
           { required: true, message: '请选择安全分级', trigger: 'blur' }
@@ -423,6 +434,9 @@ export default {
         upgradeList: [],
         demotionList: [],
       },
+      // 添加选中行存储变量
+      selectedUpgradeRows: [],
+      selectedDemotionRows: [],
       importDataLoading: false,
       filterName: undefined,
       defaultProps: {
@@ -461,7 +475,7 @@ export default {
       ruleForm: { // 弹窗表单数据
         matchType: 'greater', // 匹配类型：'greater'大于/'less'小于
         ruleType: '1',
-        content: '', // 内容数值
+        ruleContent: '', // 内容数值
         securityLevel: '' // 安全分级
       },
       options: [
@@ -526,6 +540,11 @@ export default {
       this.$refs.ruleForm.validate(async (valid) => {
         if (!valid) return;
 
+
+        if (!this.ruleForm.ruleContent.trim()) {
+          this.$message.warning('请输入数值');
+          return;
+        }
         const content = Number(this.ruleForm.ruleContent);
         if (isNaN(content)) {
           this.$message.warning('请输入有效的数字');
@@ -585,31 +604,69 @@ export default {
     /**
      * 删除升降级规则
      * @param {String} type 规则类型：'upgrade'/'downgrade'
-     * @param {Number} index 要删除的行索引
      */
-    handleDeleteRule(type, index) {
+    handleDeleteRule(type) {
       // 开关关闭时禁止删除
-      const isSwitchOpen = type === 'upgrade' ? this.upgradeRule : this.demotionRule;
+      const isSwitchOpen = type === 'upgrade' ? this.addOrEditDataRuls.upgradeRule : this.addOrEditDataRuls.demotionRule;
       if (!isSwitchOpen) {
         this.$message.warning('请先打开对应规则的开关');
         return;
       }
 
+      // 获取选中的行
+      const selection = type === 'upgrade' ? this.selectedUpgradeRows : this.selectedDemotionRows;
+      
+      if (selection.length === 0) {
+        this.$message.warning('请先选择要删除的规则');
+        return;
+      }
+
       // 确认删除
-      this.$confirm('确定删除这条规则吗？', '提示', {
+      this.$confirm(`确定删除选中的 ${selection.length} 条规则吗？`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
+        // 获取要删除的规则内容（用于在原数组中查找）
+        const contentsToDelete = selection.map(item => item.ruleContent);
+        
+        // 过滤掉要删除的规则
         if (type === 'upgrade') {
-          this.addOrEditDataRuls.upgradeList.splice(index, 1);
-          this.$refs.upgradeList.clearSelection(); // 清除选中
+          this.addOrEditDataRuls.upgradeList = this.addOrEditDataRuls.upgradeList.filter(
+            item => !contentsToDelete.includes(item.ruleContent)
+          );
+          // 清除选中状态
+          this.selectedUpgradeRows = [];
         } else {
-          this.addOrEditDataRuls.demotionList.splice(index, 1);
-          this.$refs.demotionRule.clearSelection(); // 清除选中
+          this.addOrEditDataRuls.demotionList = this.addOrEditDataRuls.demotionList.filter(
+            item => !contentsToDelete.includes(item.ruleContent)
+          );
+          // 清除选中状态
+          this.selectedDemotionRows = [];
         }
+        
+        // 清除表格选中状态
+        const tableRef = type === 'upgrade' ? 'upgradeList' : 'demotionList';
+        if (this.$refs[tableRef]) {
+          this.$refs[tableRef].clearSelection();
+        }
+        
         this.$message.success('规则删除成功');
       });
+    },
+
+    /**
+     * 处理升级规则表格选中行变化
+     */
+    handleUpgradeSelectionChange(selection) {
+      this.selectedUpgradeRows = selection;
+    },
+
+    /**
+     * 处理降级规则表格选中行变化
+     */
+    handleDemotionSelectionChange(selection) {
+      this.selectedDemotionRows = selection;
     },
 
     /**
