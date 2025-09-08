@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-card class="card-box" v-loading="cardLoading">
-      <div>
+      <!-- <div>
         <h4 class="title">
           <div class="blue-circle"></div><span>脏数据识别</span>
         </h4>
@@ -24,7 +24,7 @@
               style="width: 20%;"></el-input>
           </div>
         </div>
-      </div>
+      </div> -->
       <div>
         <h4 class="title">
           <div class="blue-circle"></div><span>样本抽取</span>
