@@ -4,22 +4,22 @@
       <div style="display: flex;justify-content: space-between;align-items: center;padding: 10px;">
         <div style="height: 36px;display: flex;">
           <span class="selectLabel">所属标准</span>
-          <el-select v-model="queryParams.categoryId" class="serachInput"
-            placeholder="全部">
+          <el-select v-model="queryParams.categoryId" class="serachInput" placeholder="全部">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </div>
-        <div style="height: 100%;"><el-button type="primary" plain size="medium" @click="handleExport()">导出报告</el-button>
+        <div style="height: 100%;"><el-button type="primary" plain size="medium"
+            @click="handleExport()">导出报告</el-button>
         </div>
       </div>
       <el-tabs v-model="activeName" @tab-click="handleClick" :stretch="true">
         <el-tab-pane label="分类分级报告" name="分类分级报告">
-          <div >
+          <div>
             <div class="hede_bgc">
               <div class="hede_bgc-text">{{ activeName }}</div>
             </div>
-            <oneReport v-model="queryParams.categoryId" ref="pdfDownload" class="aaa"/>
+            <oneReport v-model="queryParams.categoryId" ref="pdfDownload" class="aaa" />
           </div>
         </el-tab-pane>
         <!-- <el-tab-pane label="数据特征报告" name="数据特征报告">
@@ -33,6 +33,16 @@
           </div>
         </el-tab-pane> -->
       </el-tabs>
+      // 在template部分添加loading提示
+
+      <!-- 添加加载提示 -->
+      <el-dialog title="导出中" :visible.sync="exportLoading" :close-on-click-modal="false" :show-close="false"
+        width="30%">
+        <div style="text-align: center; padding: 20px;">
+          <el-loading-spinner class="loading-spinner"></el-loading-spinner>
+          <p style="margin-top: 15px;">{{ exportMessage }}</p>
+        </div>
+      </el-dialog>
     </div>
   </div>
 </template>
@@ -53,12 +63,14 @@ export default {
       echarsLoding: false,
       // 查询参数
       queryParams: {
-        categoryId: '',
+        categoryId: 0, // Change from '' to 0
       },
       activeName: '分类分级报告',
       allData: {},
       treeOptions: [],
-      xiaohuiFlag:true
+      xiaohuiFlag: true,
+      exportLoading: false, // 导出加载状态
+      exportMessage: '正在准备导出内容，请稍候...' // 导出提示信息
     }
   },
   created() {
@@ -86,7 +98,7 @@ export default {
       //   })
       //   .save();
       let obj = {
-        title: '分类分级分析报告.pdf',
+        title: '分类分级分析报告',
         className: 'aaa'
       }
       downloadPDF(obj)
@@ -339,5 +351,10 @@ h4 {
   /* display: flex; */
   table-layout: fixed;
   /* 确保表格宽度均匀分配 */
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
 }
 </style>

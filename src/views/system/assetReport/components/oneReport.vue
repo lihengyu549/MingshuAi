@@ -189,12 +189,13 @@ import "echarts-wordcloud";
 export default {
     name: "oneReport",
     props: {
-        value: Number,
+        value: Number
     },
     watch: {
         value: {
             handler(val) {
-                this.getlistNewFn(val)
+                // Convert to number before using
+                this.getlistNewFn(Number(val))
             },
         },
     },
