@@ -60,11 +60,11 @@
       <el-table-column label="数据源" align="center" prop="sourceName" />
       <el-table-column label="来源业务系统" align="center" prop="businessName" />
       <el-table-column label="分类分级标准" align="center" prop="projectName" />
-      <el-table-column label="AI分析引擎" align="center">
+      <!-- <el-table-column label="AI分析引擎" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.aiAnalyticsEngine == 1 ? '快速响应' : '深度思考' }}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column label="任务字段数" align="center" prop="fieldCount" />
       <el-table-column label="执行状态" align="center" width="120" prop="maskComplete">
         <template slot-scope="scope">
