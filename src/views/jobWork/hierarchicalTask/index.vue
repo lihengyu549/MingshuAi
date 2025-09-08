@@ -85,16 +85,16 @@
         <template slot-scope="scope">
           <div class="iconBtnBox">
             <el-tooltip class="item" effect="dark" content="执行任务" placement="top-start">
-              <i class="el-icon-video-play" @click="implementFn(scope.row)"></i>
+              <i class="el-icon-video-play" @click="implementFn(scope.row)" :disabled="scope.row.publishStatus == 1" :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="暂停任务" placement="top-start">
-              <i class="el-icon-video-pause" @click="suspendWorkFn(scope.row)"></i>
+              <i class="el-icon-video-pause" @click="suspendWorkFn(scope.row)" :disabled="scope.row.publishStatus == 1" :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC'  } : {}"></i>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="终止任务" placement="top-start">
-              <i class="el-icon-switch-button" @click="terminationWorkFn(scope.row)"></i>
+              <i class="el-icon-switch-button" @click="terminationWorkFn(scope.row)" :disabled="scope.row.publishStatus == 1" :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC'  } : {}"></i>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="任务监控" placement="top-start">
-              <i class="el-icon-view" @click="toJobMonitoring(scope.row)"></i>
+              <i class="el-icon-view" @click="toJobMonitoring(scope.row)" :disabled="scope.row.publishStatus == 1" :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC'  } : {}"></i>
             </el-tooltip>
             <!-- <i class="el-icon-refresh-left" @click="recoverWorkFn(scope.row)"></i> -->
           </div>
@@ -311,6 +311,7 @@ import {
 import { getFrameworks, } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import { path } from "d3";
+import { color } from "echarts";
 export default {
   name: "hierarchicalTask",
   dicts: ['sys_risk_level', 'sys_classification_state', 'sys_executing_state'],
@@ -1141,14 +1142,16 @@ input[aria-hidden=true] {
 }
 
 .iconBtnBox i {
+  cursor: pointer;
   font-size: 25px;
   margin: 0 5px;
-}
-
-.iconBtnBox i:hover {
-  cursor: pointer;
   color: #1890FF;
 }
+
+/* .iconBtnBox i:hover {
+  cursor: pointer;
+  color: #1890FF;
+} */
 
 /deep/.el-form-item__content {
   padding-right: 15px;
