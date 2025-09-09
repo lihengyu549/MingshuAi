@@ -180,7 +180,12 @@ export default {
     },
     // tab控制
     activeTab() {
-      return this.status === 'RUNNING' ? 'realtime' : 'analysis';
+      const tab = this.status === 'RUNNING' ? 'realtime' : 'analysis';
+      // 当tab变为analysis时调用getAnalysisLogs方法
+      if (tab === 'analysis') {
+        this.getAnalysisLogs();
+      }
+      return tab;
     },
   },
   mounted() {
