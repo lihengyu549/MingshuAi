@@ -337,9 +337,15 @@ export default {
 
         // 子表勾选变化
         handleCheckedChildChange(item, checked) {
-            const database = this.returnArr.find(ele => ele.name === item.databaseName);
+            // 查找对应的数据库对象
+            let database;
+            if (item.databaseName != item.schemaName) {
+                database = this.returnArr.find(ele => ele.name === item.schemaName);
+            }else{
+                database = this.returnArr.find(ele => ele.name === item.databaseName);
+            }
+            // 获取该数据库下所有被选中的表
             const checkedChildren = database.children.filter(child => child.checked);
-
             // 更新数据库的选中状态
             if (checkedChildren.length === 0) {
                 database.checked = false;
@@ -402,7 +408,8 @@ export default {
                 databaseName: item.databaseName,
                 tableName: item.tableName,
                 value: item.parentID,
-                checked: false
+                checked: false,
+                schemaName: item.schemaName
             }));
 
             if (database) {
