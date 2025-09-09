@@ -52,6 +52,9 @@
         </div>
         <el-table v-loading="loading" :data="protectTableFieldList" ref="tableRef" height="630px" class="tableBox">
           <!-- <el-table-column width="55" align="center" /> -->
+          <template slot="empty">
+            <el-empty description="暂无数据"></el-empty>
+          </template>
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
           <el-table-column label="规则名称" align="center" prop="ruleName" show-overflow-tooltip />
@@ -643,7 +646,7 @@ export default {
           this.$nextTick(function () {
             this.$refs.tree.setCurrentKey(this.treeID);
           });
-          
+
           // Fixed code with null check and better error handling
           this.$nextTick(function () {
             // Add a safety check to ensure the tree component exists

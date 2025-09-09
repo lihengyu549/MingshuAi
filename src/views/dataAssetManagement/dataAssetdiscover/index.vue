@@ -30,6 +30,9 @@
     </el-row>
     <el-table v-loading="loading" height="670px" class="tableBox" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
+      <template slot="empty">
+        <el-empty description="暂无数据"></el-empty>
+      </template>
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="任务名称" align="center" prop="taskName" />
       <el-table-column label="IP段" align="center" prop="ipScope">

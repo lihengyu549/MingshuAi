@@ -71,6 +71,9 @@
           </el-col>
         </el-row>
         <el-table v-loading="loading" :data="protectTableFieldList" height="650px" ref="tableRef" class="tableBox">
+          <template slot="empty">
+            <el-empty description="暂无数据"></el-empty>
+          </template>
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
           <el-table-column label="子类名称" align="center" prop="attachData" />

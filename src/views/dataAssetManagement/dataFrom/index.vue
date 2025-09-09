@@ -52,6 +52,9 @@
     </el-row>
     <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
+      <template slot="empty">
+        <el-empty description="暂无数据"></el-empty>
+      </template>
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="数据源名称" align="center" prop="sourceName" />
 

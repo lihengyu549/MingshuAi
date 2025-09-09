@@ -33,6 +33,9 @@
 
         <!-- 数据表格 -->
         <el-table v-loading="loading" :data="tableData" style="width: 100%;" @selection-change="handleSelectionChange">
+            <template slot="empty">
+                <el-empty description="暂无数据"></el-empty>
+            </template>
             <el-table-column type="selection" align="center" width="45" />
             <el-table-column prop="featureName" align="center" label="特征名称" width="160" />
             <el-table-column prop="featureTypeName" align="center" label="特征类型" width="100" />
@@ -510,7 +513,7 @@ export default {
             let isDuplicate = false;
             if (this.form.featureType === '3') {
                 // 对于类型3，检查tableName和fieldName组合是否重复
-                isDuplicate = this.form.mappingList.some(item => 
+                isDuplicate = this.form.mappingList.some(item =>
                     item.tableName == this.tempFeatureKey && item.fieldName == this.tempFeatureName
                 );
                 if (isDuplicate) {
@@ -519,7 +522,7 @@ export default {
                 }
             } else {
                 // 对于其他类型，检查itemKey是否重复
-                isDuplicate = this.form.mappingList.some(item => 
+                isDuplicate = this.form.mappingList.some(item =>
                     item.itemKey == this.tempFeatureKey
                 );
                 if (isDuplicate) {

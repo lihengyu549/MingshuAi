@@ -63,6 +63,9 @@
 
         <el-table v-loading="loading" height="620px" :data="protectTableFieldList"
           @selection-change="handleSelectionChange" class="tableBox" ref="tableRef">
+          <template slot="empty">
+            <el-empty description="暂无数据"></el-empty>
+          </template>
           <el-table-column type="selection" width="60" align="center" />
           <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip />
           <el-table-column label="字段注释" align="center" prop="fieldRemark" show-overflow-tooltip />
@@ -429,7 +432,7 @@ Authorization:Bearer ${this.Token}`
     // 展开所有匹配节点
     expandMatchingNodes(tree, keyword, treeInstance) {
       if (!keyword || !treeInstance) return;
-    
+
       const expand = (nodes) => {
         nodes.forEach(node => {
           if (node.children && node.children.length) {
@@ -437,7 +440,7 @@ Authorization:Bearer ${this.Token}`
           }
         });
       };
-    
+
       expand(tree);
     },
     filterNode(value, data) {

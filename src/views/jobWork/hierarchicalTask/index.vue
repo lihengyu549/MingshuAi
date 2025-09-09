@@ -51,6 +51,9 @@
     </el-row>
     <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
+      <template slot="empty">
+        <el-empty description="暂无数据"></el-empty>
+      </template>
       <el-table-column type="selection" width="60" align="center" :selectable="selectableFn" />
       <el-table-column label="任务名称" align="center" prop="tasksName">
         <template slot-scope="scope">
@@ -69,15 +72,18 @@
       <el-table-column label="执行状态" align="center" width="120" prop="maskComplete">
         <template slot-scope="scope">
           <div class="runType">
-            <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'" class="el-icon-loading" style="margin-right: 10px;font-size: 18px;"></i>
-            <svg-icon v-else :icon-class="scope.row.maskComplete" class="runIcon" style="margin-right: 10px;width: 20px;height: 20px;"></svg-icon>
+            <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'"
+              class="el-icon-loading" style="margin-right: 10px;font-size: 18px;"></i>
+            <svg-icon v-else :icon-class="scope.row.maskComplete" class="runIcon"
+              style="margin-right: 10px;width: 20px;height: 20px;"></svg-icon>
             <span>{{ stateMsg(scope.row.maskComplete) }}</span>
           </div>
         </template>
       </el-table-column>
       <el-table-column label="发布状态" align="center" prop="publishStatus">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ? '未发布' : '已发布' }}</el-tag>
+          <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ? '未发布' :
+            '已发布' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="更新时间" align="center" prop="updateTime" />
@@ -85,16 +91,20 @@
         <template slot-scope="scope">
           <div class="iconBtnBox">
             <el-tooltip class="item" effect="dark" content="执行任务" placement="top-start">
-              <i class="el-icon-video-play" @click="scope.row.publishStatus != 1 && implementFn(scope.row)" :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+              <i class="el-icon-video-play" @click="scope.row.publishStatus != 1 && implementFn(scope.row)"
+                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="暂停任务" placement="top-start">
-              <i class="el-icon-video-pause" @click="scope.row.publishStatus != 1 && suspendWorkFn(scope.row)" :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC'  } : {}"></i>
+              <i class="el-icon-video-pause" @click="scope.row.publishStatus != 1 && suspendWorkFn(scope.row)"
+                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="终止任务" placement="top-start">
-              <i class="el-icon-switch-button" @click="scope.row.publishStatus != 1 && terminationWorkFn(scope.row)" :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC'  } : {}"></i>
+              <i class="el-icon-switch-button" @click="scope.row.publishStatus != 1 && terminationWorkFn(scope.row)"
+                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="任务监控" placement="top-start">
-              <i class="el-icon-view" @click="scope.row.publishStatus != 1 && toJobMonitoring(scope.row)" :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC'  } : {}"></i>
+              <i class="el-icon-view" @click="scope.row.publishStatus != 1 && toJobMonitoring(scope.row)"
+                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
             </el-tooltip>
             <!-- <i class="el-icon-refresh-left" @click="recoverWorkFn(scope.row)"></i> -->
           </div>

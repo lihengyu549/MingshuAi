@@ -5,6 +5,9 @@
       <el-button size="medium" type="primary" plain style="float:right" @click="showApiDoc = true">查看接口文档</el-button>
     </div>
     <el-table v-loading="loading" max-height="700px" class="tableBox" :data="tableList" ref="tableRef">
+      <template slot="empty">
+        <el-empty description="暂无数据"></el-empty>
+      </template>
       <el-table-column label="API Key" width="300" align="center" prop="proxyToken">
         <template slot-scope="scope">
           <span>{{ scope.row.proxyToken }}</span>

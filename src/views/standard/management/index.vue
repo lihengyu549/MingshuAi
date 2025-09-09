@@ -75,6 +75,9 @@
             查看详情</el-button>
         </div>
       </div>
+      <div v-if="proxysList.length == 0" style="margin: 0 auto;">
+        <el-empty description="暂无数据"></el-empty>
+      </div>
     </div>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :pageSizes="[8]"
       :limit.sync="queryParams.pageSize" @pagination="getList" />
