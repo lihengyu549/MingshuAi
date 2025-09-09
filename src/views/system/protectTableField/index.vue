@@ -20,10 +20,11 @@
       <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true">
           <el-form-item label="分类" class="addSelectClass">
-            <el-select ref="resultSelectRef" v-model="resultFormNodeName" @change="handleQuery">
+            <el-select ref="categorySelectRef" v-model="resultFormNodeName" @change="handleQuery" filterable
+              placeholder="搜索分类..." :filter-method="handleCategoryFilter">
               <el-option style="height: 100%; padding: 0" value="">
                 <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
-                  :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+                  :filter-node-method="filterCategoryNode" ref="categoryTreeRef" node-key="id" highlight-current
                   @check="resultHandleNodeClick" />
               </el-option>
             </el-select>
@@ -40,10 +41,11 @@
               @keyup.enter.native="handleQuery" />
           </el-form-item>
           <el-form-item label="个人信息识别" class="addSelectClass">
-            <el-select ref="resultSelectRef" v-model="piiNodeName">
+            <el-select ref="piiSelectRef" v-model="piiNodeName" filterable placeholder="搜索个人信息识别..."
+              :filter-method="handlePiiFilter">
               <el-option style="height: 100%; padding: 0" value="">
                 <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
-                  :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+                  :filter-node-method="filterPiiNode" ref="piiTreeRef" node-key="id" highlight-current
                   @check="piiHandleNodeCheck" />
               </el-option>
             </el-select>
@@ -354,6 +356,89 @@ Authorization:Bearer ${this.Token}`
         this.getProtectCategoryQuery(this.projectId)
         this.getPiiList(this.projectId)
       });
+    },
+    // 分类选择器过滤方法
+    handleCategoryFilter(query) {
+      if (!query) {
+        // 清空搜索时恢复原始数据
+        this.$refs.categoryTreeRef.filter('');
+        return;
+      }
+      // 触发树过滤
+      this.$refs.categoryTreeRef.filter(query);
+      // 展开所有匹配节点及其父节点
+      this.expandMatchingNodes(this.categoryList, query, this.$refs.categoryTreeRef);
+    },
+
+    // 个人信息识别选择器过滤方法
+    handlePiiFilter(query) {
+      if (!query) {
+        this.$refs.piiTreeRef.filter('');
+        return;
+      }
+      this.$refs.piiTreeRef.filter(query);
+      this.expandMatchingNodes(this.piiList, query, this.$refs.piiTreeRef);
+    },
+
+    // 分类节点过滤逻辑（支持中间层级匹配）
+    filterCategoryNode(value, data) {
+      if (!value) return true;
+      // 检查当前节点或其任何祖先节点是否包含关键字
+      return this.checkNodeOrAncestors(data, value, this.categoryList);
+    },
+
+    // 个人信息节点过滤逻辑（支持中间层级匹配）
+    filterPiiNode(value, data) {
+      if (!value) return true;
+      return this.checkNodeOrAncestors(data, value, this.piiList);
+    },
+
+    // 检查节点或其祖先节点是否包含关键字
+    checkNodeOrAncestors(node, keyword, tree) {
+      // 检查当前节点
+      if (node.categoryName && node.categoryName.includes(keyword)) {
+        return true;
+      }
+
+      // 检查所有祖先节点
+      let parent = this.findParentNode(tree, node.parentId);
+      while (parent) {
+        if (parent.categoryName && parent.categoryName.includes(keyword)) {
+          return true;
+        }
+        parent = this.findParentNode(tree, parent.parentId);
+      }
+
+      return false;
+    },
+
+    // 查找父节点
+    findParentNode(tree, parentId) {
+      for (const node of tree) {
+        if (node.id === parentId) {
+          return node;
+        }
+        if (node.children && node.children.length) {
+          const found = this.findParentNode(node.children, parentId);
+          if (found) return found;
+        }
+      }
+      return null;
+    },
+
+    // 展开所有匹配节点
+    expandMatchingNodes(tree, keyword, treeInstance) {
+      if (!keyword || !treeInstance) return;
+    
+      const expand = (nodes) => {
+        nodes.forEach(node => {
+          if (node.children && node.children.length) {
+            expand(node.children);
+          }
+        });
+      };
+    
+      expand(tree);
     },
     filterNode(value, data) {
       if (!value) return true;
@@ -684,10 +769,6 @@ Authorization:Bearer ${this.Token}`
       let lastNodeData = checkData.checkedNodes.filter(item => !item.children)
       this.queryParams.piiDetection = lastNodeData.map(item => item.id).join()
       this.handleQuery()
-    },
-    filterNode(value, data) {
-      if (!value) return true;
-      return data.categoryName.indexOf(value) !== -1;
     },
 
     // 递归函数，查找父节点的 label 并返回完整的路径
