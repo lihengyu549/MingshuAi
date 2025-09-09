@@ -506,51 +506,40 @@ export default {
                     return;
                 }
             }
-
-            // 构造通用参数
-            const commonParams = {
-                id: this.form.id == '系统默认生成' ? null : this.form.id,
-                featureType: this.form.featureType
-            };
-
-            // 根据 featureType 差异化处理
-            let requestParams;
-            switch (this.form.featureType) {
-                case '1':
-                case '2':
-                    requestParams = {
-                        ...commonParams,
-                        itemKey: this.tempFeatureKey,
-                        itemValue: this.tempFeatureVal
-                    };
-                    break;
-                case '3':
-                    requestParams = {
-                        ...commonParams,
-                        tableName: this.tempFeatureKey,
-                        tableRemark: this.tempFeatureVal,
-                        fieldName: this.tempFeatureName,
-                        fieldRemark: this.tempFeatureType
-                    };
-                    break;
-                default:
-                    this.$message.warning('无效的特征类型');
-                    return;
-            }
-
-            // 调用接口或本地添加
-            if (this.form.id !== '系统默认生成') {
-                await addFeatureItem(requestParams);
-                this.getFeatureItemListByFeatureId(this.form);
-            } else {
-                this.form.mappingList.push(
-                    this.form.featureType === '3' ? requestParams : {
-                        itemKey: requestParams.itemKey,
-                        itemValue: requestParams.itemValue,
-                    }
+            // 添加重复检查逻辑
+            let isDuplicate = false;
+            if (this.form.featureType === '3') {
+                // 对于类型3，检查tableName和fieldName组合是否重复
+                isDuplicate = this.form.mappingList.some(item => 
+                    item.tableName == this.tempFeatureKey && item.fieldName == this.tempFeatureName
                 );
-                this.mappingPagination.total = this.form.mappingList.length;
+                if (isDuplicate) {
+                    this.$message.warning('已存在相同的表名和字段名组合，请不要重复添加');
+                    return;
+                }
+            } else {
+                // 对于其他类型，检查itemKey是否重复
+                isDuplicate = this.form.mappingList.some(item => 
+                    item.itemKey == this.tempFeatureKey
+                );
+                if (isDuplicate) {
+                    this.$message.warning('已存在相同的特征值，请不要重复添加');
+                    return;
+                }
             }
+
+            this.form.mappingList.push(
+                this.form.featureType === '3' ? {
+                    tableName: this.tempFeatureKey,
+                    tableRemark: this.tempFeatureVal,
+                    fieldName: this.tempFeatureName,
+                    fieldRemark: this.tempFeatureType
+                } : {
+                    itemKey: this.tempFeatureKey,
+                    itemValue: this.tempFeatureVal,
+                }
+            );
+            this.mappingPagination.total = this.form.mappingList.length;
 
             // 统一清空输入
             this.tempFeatureKey = '';
