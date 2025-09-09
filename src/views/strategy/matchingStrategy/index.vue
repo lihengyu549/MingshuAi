@@ -10,6 +10,7 @@
           </el-select>
         </div>
         <div class="head-container" v-loading="treeLoading">
+          <el-input v-model="filterName" placeholder="搜索树节点..." clearable size="mini" style="margin-bottom: 20px;" />
           <el-tree style="overflow-y: auto;height: 785px;" :data="categoryList" :props="defaultProps"
             :default-expanded-keys="[treeID]" :current-node-key="treeID" :expand-on-click-node="false"
             :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current @node-click="handleNodeClick" />
@@ -46,7 +47,8 @@
             @click="addFn">新增</el-button>
           <el-button type="primary" plain icon="el-icon-close" size="medium" @click="enabledFn('删除')">删除</el-button>
           <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="enabledFn('启用')">启用</el-button>
-          <el-button type="primary" plain icon="el-icon-warning-outline" size="medium" @click="enabledFn('禁用')">禁用</el-button>
+          <el-button type="primary" plain icon="el-icon-warning-outline" size="medium"
+            @click="enabledFn('禁用')">禁用</el-button>
         </div>
         <el-table v-loading="loading" :data="protectTableFieldList" ref="tableRef" height="630px" class="tableBox">
           <!-- <el-table-column width="55" align="center" /> -->
@@ -125,24 +127,18 @@
           <div class="forDiv">
             <div v-for="(item, index) in ruleContent" :key="index" style="margin-bottom: 15px;">
               <!-- 当识别方式为正则(3)时显示带建议的输入框 -->
-              <el-autocomplete 
-                v-if="addOrEditDataRuls.recognizeWay === '3'" 
-                v-model="item.name" 
-                :disabled="addOrEdit.flag == 3" 
-                :fetch-suggestions="queryRegexSuggestions" 
-                placeholder="请输入正则表达式" 
-                clearable 
-                value-key="name" 
-                :popper-append-to-body="false">
+              <el-autocomplete v-if="addOrEditDataRuls.recognizeWay === '3'" v-model="item.name"
+                :disabled="addOrEdit.flag == 3" :fetch-suggestions="queryRegexSuggestions" placeholder="请输入正则表达式"
+                clearable value-key="name" :popper-append-to-body="false">
                 <template slot-scope="{ item }">
                   <div class="value-text">{{ item.value }}</div>
                 </template>
               </el-autocomplete>
-      
+
               <!-- 其他识别方式显示普通输入框 -->
-              <el-input v-else v-model="item.name" :disabled="addOrEdit.flag == 3" 
+              <el-input v-else v-model="item.name" :disabled="addOrEdit.flag == 3"
                 :placeholder="getInputPlaceholder()" />
-              <span @click="delAddSelect(index)" v-if="addOrEdit.flag !== 3" 
+              <span @click="delAddSelect(index)" v-if="addOrEdit.flag !== 3"
                 style="margin-left: 20px; color: red;">删除</span>
             </div>
           </div>
@@ -542,9 +538,68 @@ export default {
         }
       });
     },
+    // 修改过滤方法以支持最下级节点匹配
     filterNode(value, data) {
-      if (!value) return true;
-      return data.categoryName.indexOf(value) !== -1;
+      if (!value) return true; // 无搜索值时全部显示
+      const lowerValue = value.toLowerCase();
+
+      // 1. 检查当前节点自身是否匹配（无论是否为叶子节点）
+      if (data.categoryName && data.categoryName.toLowerCase().includes(lowerValue)) {
+        return true;
+      }
+
+      // 2. 检查当前节点的祖先节点是否有匹配（若有，则当前节点强制显示）
+      if (this.hasMatchingAncestor(data, this.categoryList, lowerValue)) {
+        return true;
+      }
+
+      // 3. 检查当前节点的子节点是否有匹配（若有，则当前节点显示）
+      if (data.children && data.children.length > 0) {
+        return this.checkChildrenMatch(data.children, lowerValue);
+      }
+
+      return false;
+    },
+    hasMatchingAncestor(node, tree, searchValue) {
+      let parent = this.findParentNode(tree, node.parentId); // 找到父节点
+      while (parent) {
+        // 若父节点自身匹配，则当前节点有匹配的祖先
+        if (parent.categoryName && parent.categoryName.toLowerCase().includes(searchValue)) {
+          return true;
+        }
+        // 继续向上查找祖先
+        parent = this.findParentNode(tree, parent.parentId);
+      }
+      return false;
+    },
+    findParentNode(tree, parentId) {
+      for (const node of tree) {
+        if (node.id === parentId) {
+          return node;
+        }
+        if (node.children && node.children.length > 0) {
+          const found = this.findParentNode(node.children, parentId);
+          if (found) return found;
+        }
+      }
+      return null;
+    },
+
+    // 递归检查子节点是否匹配
+    checkChildrenMatch(children, searchValue) {
+      for (let child of children) {
+        // 子节点自身匹配
+        if (child.categoryName && child.categoryName.toLowerCase().includes(searchValue)) {
+          return true;
+        }
+        // 递归检查子节点的后代
+        if (child.children && child.children.length > 0) {
+          if (this.checkChildrenMatch(child.children, searchValue)) {
+            return true;
+          }
+        }
+      }
+      return false;
     },
     handleNodeClick(data) {
       this.treeID = data.id;
@@ -584,8 +639,20 @@ export default {
             }
           }
           this.treeID = this.categoryList[0].id;
+          // Original problematic code
           this.$nextTick(function () {
             this.$refs.tree.setCurrentKey(this.treeID);
+          });
+          
+          // Fixed code with null check and better error handling
+          this.$nextTick(function () {
+            // Add a safety check to ensure the tree component exists
+            if (this.$refs.tree && typeof this.$refs.tree.setCurrentKey === 'function') {
+              this.$refs.tree.setCurrentKey(this.treeID);
+            } else {
+              // Optional: Log for debugging (can be removed in production)
+              console.log('Tree component not ready yet, skipping setCurrentKey');
+            }
           });
           let tempList = JSON.parse(JSON.stringify(this.categoryList))
           for (let item of tempList) {
@@ -740,7 +807,8 @@ export default {
   max-height: 300px;
 }
 
-.rulesContClass /deep/ .el-input ,.el-autocomplete  {
+.rulesContClass /deep/ .el-input,
+.el-autocomplete {
   width: calc(80%);
 }
 
