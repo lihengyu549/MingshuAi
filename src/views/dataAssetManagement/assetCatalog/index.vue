@@ -37,13 +37,13 @@
         <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="true"
           label-width="100px">
           <el-form-item label="表名" prop="tableName">
-            <el-select v-model="queryParams.tableName" @change="selectProjectIdChange" filterable placeholder="全部">
+            <el-select v-model="queryParams.tableName" @change="selectProjectIdChange" filterable placeholder="全部" clearable>
               <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.tableId">
               </el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="注释填充" prop="paddingStatus">
-            <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange" placeholder="全部">
+            <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange" placeholder="全部" clearable>
               <el-option label="未开始" value="1"></el-option>
               <el-option label="成功" value="2"></el-option>
               <el-option label="失败" value="3"></el-option>
@@ -51,7 +51,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="样本特征提取" prop="featureExtractionStatus">
-            <el-select v-model="queryParams.featureExtractionStatus" @change="selectProjectIdChange" placeholder="全部">
+            <el-select v-model="queryParams.featureExtractionStatus" @change="selectProjectIdChange" placeholder="全部" clearable>
               <el-option label="未开始" value="1"></el-option>
               <el-option label="成功" value="2"></el-option>
               <el-option label="失败" value="3"></el-option>
