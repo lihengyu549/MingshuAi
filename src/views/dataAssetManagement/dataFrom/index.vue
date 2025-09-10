@@ -110,7 +110,7 @@
         <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
           <el-input v-model="form.sourceName" maxlength="50" placeholder="请输入数据源名称" />
         </el-form-item>
-        <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
+        <el-form-item label="分类分级标准" prop="projectName" :rules="rules.projectName">
           <el-select v-model="form.projectName" :disabled="editIsFlag" placeholder="请输入分类分级框架" clearable
             @change="projectChangeEdit($event)">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
