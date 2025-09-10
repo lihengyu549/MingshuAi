@@ -1003,8 +1003,8 @@ export default {
       }
       const response = {
         tableName: this.queryParams.tableName,
-        paddingstatus: this.queryParams.paddingStatus,
-        featureExtractionstatus: this.queryParams.featureExtractionStatus,
+        paddingStatus: this.queryParams.paddingStatus,
+        featureExtractionStatus: this.queryParams.featureExtractionStatus,
         databaseList: treeNode,
       }
       getTableListByProxysId(params, response).then((response) => {
