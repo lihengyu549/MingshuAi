@@ -165,7 +165,7 @@
             </el-form-item>
             <el-form-item prop="dataRepetitionValue">
               <el-switch v-model="form.ifStartDataRepetition" active-text="样本重复率高于" @change="handleRepetitionChange" />
-              <el-input v-model="form.dataRepetitionValue" size="mini" style="width: 15%;margin-left:15px;" /> %
+              <el-input v-model="form.dataRepetitionValue" size="mini" style="width: 16%;margin-left:15px;" :disabled="!form.ifStartDataRepetition" oninput="value=value.replace(/[^\d]/g,'')" /> %
               <el-tooltip class="item" effect="dark" content="样本重复率" placement="top-start">
                 <svg-icon icon-class="dengpao" style="margin-left:8px;" />
               </el-tooltip>
