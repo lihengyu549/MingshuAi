@@ -14,9 +14,7 @@
           style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
           <!-- 左侧全选框（带文字说明） -->
           <el-checkbox v-model="isTreeAllChecked" @change="handleTreeAllCheck"
-            :indeterminate="isTreeAllChecked === null"
-            style="font-size: 14px; margin-left: 20px;"
-            >
+            :indeterminate="isTreeAllChecked === null" style="font-size: 14px; margin-left: 20px;">
             全选
           </el-checkbox>
           <!-- 右侧导出按钮（无选中节点时禁用） -->
@@ -484,6 +482,21 @@ export default {
       return checkedIds;
     },
 
+    findNodeById(treeData, id) {
+      for (const node of treeData) {
+        if (node.id === id) {
+          return node;
+        }
+        if (node.children && node.children.length > 0) {
+          const foundNode = this.findNodeById(node.children, id);
+          if (foundNode) {
+            return foundNode;
+          }
+        }
+      }
+      return null;
+    },
+
     /**
      * 新增：导出选中的树节点数据（按图片层级格式化为 DataSource → Databases）
      */
@@ -492,6 +505,20 @@ export default {
         this.$message.warning("请先勾选要导出的节点");
         return;
       }
+      console.log('this.selectedTreeNodeIds', this.selectedTreeNodeIds);
+
+      const selectedNodes = this.selectedTreeNodeIds
+        .map(id => this.findNodeById(this.categoryList, id))
+        .filter(Boolean); // 过滤无效节点
+
+      // 1.2 提取所有选中节点的子节点，组成数组
+      const allChildrenData = selectedNodes.reduce((acc, node) => {
+        // 只收集存在的子节点
+        if (node.children && node.children.length > 0) {
+          acc.push(...node.children);
+        }
+        return acc;
+      }, []);
 
       this.loading = true;
       // 构造请求参数
@@ -499,8 +526,9 @@ export default {
         tableNam: this.queryParams.tableName,
         paddingstatus: this.queryParams.paddingStatus,
         featureExtractionstatus: this.queryParams.featureExtractionStatus,
-        databaseList: this.selectedTreeNodeIds,
+        databaseList: allChildrenData,
       };
+
 
       // 调用导出接口，注意需要指定responseType为blob
       propertyCatalogueExport(params)
