@@ -512,18 +512,18 @@ export default {
             // 添加重复检查逻辑
             let isDuplicate = false;
             if (this.form.featureType === '3') {
-                // 对于类型3，检查tableName和fieldName组合是否重复
+                // 对于类型3，检查同一个表名下是否有重复的字段名
                 isDuplicate = this.form.mappingList.some(item =>
-                    item.tableName == this.tempFeatureKey && item.fieldName == this.tempFeatureName
+                    item.tableName === this.tempFeatureKey && item.fieldName === this.tempFeatureName
                 );
                 if (isDuplicate) {
-                    this.$message.warning('已存在相同的表名和字段名组合，请不要重复添加');
+                    this.$message.warning(`表名"${this.tempFeatureKey}"下已存在字段"${this.tempFeatureName}"，同一个表名下不能有重复字段`);
                     return;
                 }
             } else {
                 // 对于其他类型，检查itemKey是否重复
                 isDuplicate = this.form.mappingList.some(item =>
-                    item.itemKey == this.tempFeatureKey
+                    item.itemKey === this.tempFeatureKey
                 );
                 if (isDuplicate) {
                     this.$message.warning('已存在相同的特征值，请不要重复添加');
@@ -827,24 +827,96 @@ export default {
                                 });
                             }
 
+                            // 添加去重逻辑
+                            const uniqueData = [];
+                            let duplicateCount = 0;
+
+                            // 创建现有数据的索引，用于快速查找重复项
+                            const existingDataIndex = new Map();
+
+                            if (this.form.featureType === '2') {
+                                // 对于类型2，基于itemKey创建索引
+                                this.form.mappingList.forEach(item => {
+                                    existingDataIndex.set(item.itemKey, true);
+                                });
+                            } else if (this.form.featureType === '3') {
+                                // 对于类型3，基于tableName和fieldName的组合创建索引
+                                this.form.mappingList.forEach(item => {
+                                    const key = `${item.tableName}_${item.fieldName}`;
+                                    existingDataIndex.set(key, true);
+                                });
+                            }
+
+                            // 对新数据进行去重
+                            if (this.form.featureType === '2') {
+                                // 类型2：检查itemKey是否重复
+                                const tempMap = new Map();
+                                newData.forEach(item => {
+                                    // 检查是否与现有数据重复
+                                    if (existingDataIndex.has(item.itemKey)) {
+                                        duplicateCount++;
+                                        return;
+                                    }
+                                    // 检查是否与新数据内部重复
+                                    if (!tempMap.has(item.itemKey)) {
+                                        tempMap.set(item.itemKey, true);
+                                        uniqueData.push(item);
+                                    } else {
+                                        duplicateCount++;
+                                    }
+                                });
+                            } else if (this.form.featureType === '3') {
+                                // 类型3：检查tableName和fieldName的组合是否重复
+                                const tempMap = new Map();
+                                newData.forEach(item => {
+                                    const key = `${item.tableName}_${item.fieldName}`;
+                                    // 检查是否与现有数据重复
+                                    if (existingDataIndex.has(key)) {
+                                        duplicateCount++;
+                                        return;
+                                    }
+                                    // 检查是否与新数据内部重复
+                                    if (!tempMap.has(key)) {
+                                        tempMap.set(key, true);
+                                        uniqueData.push(item);
+                                    } else {
+                                        duplicateCount++;
+                                    }
+                                });
+                            }
+
+                            // 如果所有数据都是重复的，直接提示
+                            if (uniqueData.length === 0) {
+                                this.$message.warning(`导入的${newData.length}条数据全部已存在，未添加新数据`);
+                                this.drawerLoading = false;
+                                return;
+                            }
+
                             // 处理大量数据时使用requestAnimationFrame避免卡顿
                             let currentIndex = 0;
                             const batchSize = 100; // 每次处理100条数据
 
                             const processBatch = () => {
-                                const endIndex = Math.min(currentIndex + batchSize, newData.length);
+                                const endIndex = Math.min(currentIndex + batchSize, uniqueData.length);
                                 for (let i = currentIndex; i < endIndex; i++) {
-                                    this.form.mappingList.push(newData[i]);
+                                    this.form.mappingList.push(uniqueData[i]);
                                 }
                                 currentIndex = endIndex;
 
-                                if (currentIndex < newData.length) {
+                                if (currentIndex < uniqueData.length) {
                                     requestAnimationFrame(processBatch);
                                 } else {
                                     // 全部处理完成后更新分页
                                     this.mappingPagination.total = this.form.mappingList.length;
                                     this.mappingPagination.currentPage = 1; // 重置到第一页
-                                    this.$message.success(`成功导入${newData.length}条数据`);
+                                    
+                                    // 显示导入结果提示
+                                    let message = `成功导入${uniqueData.length}条数据`;
+                                    if (duplicateCount > 0) {
+                                        message += `，跳过了${duplicateCount}条重复数据`;
+                                    }
+                                    this.$message.success(message);
+                                    
                                     // 数据处理完成，设置加载状态为false
                                     this.drawerLoading = false;
                                 }
