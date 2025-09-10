@@ -41,8 +41,10 @@
             <!-- <img src="@/assets/images/file.png" alt="标准" class="standard_icon"> -->
             <svg-icon icon-class="dunpai-2" class="standard_icon"></svg-icon>
             <div class="title_text_area">
-              <h3>{{ item.categoryName }}</h3>
-              <div class="title_tags">
+              <el-tooltip class="item" effect="dark" :content="item.categoryName" placement="top-start">
+                    <h3 class="category-title">{{ item.categoryName }}</h3>
+                  </el-tooltip>
+                  <div class="title_tags">
                 <el-tag class="tag-item" size="small" type="primary">{{ item.standardTypeName }}</el-tag>
                 <el-tag class="tag-item" size="small" type="info">现行</el-tag>
                 <el-tag class="tag-item" size="small" type="info">{{ item.dataSource }}</el-tag>
