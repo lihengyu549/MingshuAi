@@ -298,9 +298,9 @@
           <el-radio-group v-model="ruleForm.matchType"
             style="width: 220px; display: flex; justify-content: space-between">
             <!-- 升级规则只显示大于 -->
-            <el-radio label="greater" v-if="currentRuleType === 'upgrade'">大于</el-radio>
+            <el-radio label="greater" v-if="currentRuleType === 'upgrade'">大于等于</el-radio>
             <!-- 降级规则只显示小于 -->
-            <el-radio label="less" v-if="currentRuleType === 'downgrade'">小于</el-radio>
+            <el-radio label="less" v-if="currentRuleType === 'downgrade'">小于等于</el-radio>
           </el-radio-group>
         </el-form-item>
 
@@ -429,9 +429,9 @@ export default {
               }
 
               if (this.currentRuleType === 'upgrade' && value <= this.currentBaseSecurityLevel) {
-                callback(new Error('升级规则的安全分级必须大于当前安全分级'));
+                callback(new Error('升级规则的安全分级必须大于等于当前安全分级'));
               } else if (this.currentRuleType === 'downgrade' && value >= this.currentBaseSecurityLevel) {
-                callback(new Error('降级规则的安全分级必须小于当前安全分级'));
+                callback(new Error('降级规则的安全分级必须小于等于当前安全分级'));
               } else {
                 callback();
               }
@@ -624,7 +624,7 @@ export default {
 
         // 2. 所有校验通过后，再执行保存逻辑
         // 处理匹配条件文本
-        const matchText = this.ruleForm.matchType === 'greater' ? '大于' : '小于';
+        const matchText = this.ruleForm.matchType === 'greater' ? '大于等于' : '小于等于';
 
         // 构造表格所需数据格式
         const newRule = {
