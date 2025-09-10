@@ -524,8 +524,8 @@ export default {
       // 构造请求参数
       const params = {
         tableNam: this.queryParams.tableName,
-        paddingstatus: this.queryParams.paddingStatus,
-        featureExtractionstatus: this.queryParams.featureExtractionStatus,
+        paddingStatus: this.queryParams.paddingStatus,
+        featureExtractionStatus: this.queryParams.featureExtractionStatus,
         databaseList: allChildrenData,
       };
 
