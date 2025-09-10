@@ -46,7 +46,7 @@
                   <span> {{ currentMsgFn(scope.row.standardType) }}</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="standardId" label="标准编号" width="100" align="center" show-overflow-tooltip />
+              <!-- <el-table-column prop="standardId" label="标准编号" width="100" align="center" show-overflow-tooltip /> -->
               <el-table-column prop="categoryName" label="标准名称" align="center" show-overflow-tooltip />
               <el-table-column prop="implementTime" label="实施时间" width="120" align="center" show-overflow-tooltip />
 
