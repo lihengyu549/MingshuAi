@@ -14,7 +14,9 @@
           style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
           <!-- 左侧全选框（带文字说明） -->
           <el-checkbox v-model="isTreeAllChecked" @change="handleTreeAllCheck"
-            style="font-size: 14px; margin-left: 20px;">
+            :indeterminate="isTreeAllChecked === null"
+            style="font-size: 14px; margin-left: 20px;"
+            >
             全选
           </el-checkbox>
           <!-- 右侧导出按钮（无选中节点时禁用） -->
@@ -370,16 +372,18 @@ export default {
     filterText(val) {
       this.$refs.tree.filter(val);
     },
-    // 监听“全选框状态”变化，同步树的勾选状态（避免手动勾选节点后全选框状态不一致）
+    // 监听全选框状态变化，同步树的勾选状态
     isTreeAllChecked(newVal) {
+      if (newVal === null) return; // 半选状态不处理
+
       const treeRef = this.$refs.tree;
       if (!treeRef) return;
 
       if (newVal) {
         // 全选：勾选所有树节点
-        const allNodeIds = this.getAllTreeIds(this.categoryList); // 递归获取所有节点ID
+        const allNodeIds = this.getAllTreeIds(this.categoryList);
         treeRef.setCheckedKeys(allNodeIds);
-        this.selectedTreeNodeIds = allNodeIds;
+        this.selectedTreeNodeIds = [...allNodeIds];
       } else {
         // 取消全选：清空所有勾选
         treeRef.setCheckedKeys([]);
@@ -387,11 +391,23 @@ export default {
       }
     },
 
-    // 监听“选中节点ID数组”变化，同步全选框状态
+    // 监听选中节点ID数组变化，同步全选框状态
     selectedTreeNodeIds(newVal) {
       const allNodeIds = this.getAllTreeIds(this.categoryList);
-      // 当所有节点都被勾选时，全选框自动勾选；否则取消
-      this.isTreeAllChecked = newVal.length === allNodeIds.length && allNodeIds.length > 0;
+      if (allNodeIds.length === 0) {
+        this.isTreeAllChecked = false;
+        return;
+      }
+
+      // 计算选中节点占比
+      const checkedCount = newVal.length;
+      if (checkedCount === 0) {
+        this.isTreeAllChecked = false; // 未选
+      } else if (checkedCount === allNodeIds.length) {
+        this.isTreeAllChecked = true; // 全选
+      } else {
+        this.isTreeAllChecked = null; // 半选
+      }
     }
   },
   created() {
@@ -407,11 +423,15 @@ export default {
      */
     getAllTreeIds(treeData) {
       let ids = [];
+      if (!Array.isArray(treeData)) return ids;
+
       treeData.forEach(node => {
-        ids.push(node.id);
-        // 若节点有子节点（如 DataSource01 下的 CoreDatabase），递归获取子节点ID
-        if (node.children && node.children.length > 0) {
-          ids = [...ids, ...this.getAllTreeIds(node.children)];
+        if (node && node.id) {
+          ids.push(node.id);
+          // 递归处理子节点
+          if (node.children && node.children.length > 0) {
+            ids = [...ids, ...this.getAllTreeIds(node.children)];
+          }
         }
       });
       return ids;
@@ -437,21 +457,31 @@ export default {
      * @param {Object} currentNode - 当前操作的节点
      * @param {Array} selectedNodes - 所有已勾选的节点数组
      */
-    handleTreeCheck(currentNode, selectedNodes) {
-      // 同步“选中节点ID数组”（从选中节点数组中提取ID）
-      console.log('selectedNodes', selectedNodes);
-      // 恢复这行代码，确保选中节点ID被正确存储
+    handleTreeCheck(currentNode, treeStatus) {
+      // 获取所有勾选的节点ID（包括半选节点的子节点）
+      const checkedIds = this.getCheckedNodeIds(this.categoryList);
+      this.selectedTreeNodeIds = checkedIds;
 
-      // 获取完整的选中节点数据
-      const checkedNodeData = this.getCheckedNodeData(selectedNodes.checkedNodes);
-      console.log('完整的选中节点数据:', checkedNodeData);
-      this.selectedTreeNodeIds = checkedNodeData
-      // 可以根据需要在这里使用完整的选中节点数据
-      // 例如将其保存到组件的某个属性中供其他地方使用
-      // this.checkedNodeData = checkedNodeData;
-
-      // 节点勾选状态变更后调用getList方法
+      // 调用列表刷新方法
+      const checkedNodeData = this.getCheckedNodeData(treeStatus.checkedNodes);
       this.getList(checkedNodeData);
+    },
+
+    getCheckedNodeIds(treeData) {
+      const checkedIds = [];
+      if (!Array.isArray(treeData)) return checkedIds;
+
+      treeData.forEach(node => {
+        const nodeStatus = this.$refs.tree.getNode(node.id);
+        if (nodeStatus && nodeStatus.checked) {
+          checkedIds.push(node.id);
+        }
+        // 处理子节点
+        if (node.children && node.children.length > 0) {
+          checkedIds.push(...this.getCheckedNodeIds(node.children));
+        }
+      });
+      return checkedIds;
     },
 
     /**
@@ -508,23 +538,29 @@ export default {
      * @param {Array} checkedIds - 选中的节点ID数组
      * @returns {Array} 选中节点的完整数据
      */
-    getCheckedNodeData(checkedIds) {
-      let checkedNodes = [];
-      checkedIds.forEach(node => {
-        if (node.children) {
-          node.children.forEach(child => {
-            checkedNodes.push(child);
-          })
+    getCheckedNodeData(checkedNodes) {
+      const checkedData = [];
+      if (!Array.isArray(checkedNodes)) return checkedData;
+
+      checkedNodes.forEach(node => {
+        // 处理有子节点的情况
+        if (node.children && node.children.length > 0) {
+          // 检查是否是半选状态
+          const nodeStatus = this.$refs.tree.getNode(node.id);
+          if (nodeStatus && nodeStatus.checked) {
+            // 全选状态的父节点，添加所有子节点
+            checkedData.push(...node.children);
+          } else if (nodeStatus && nodeStatus.indeterminate) {
+            // 半选状态的父节点，递归处理子节点
+            const childChecked = this.getCheckedNodeData(node.children);
+            checkedData.push(...childChecked);
+          }
         } else {
-          checkedNodes.push(node);
+          // 叶子节点直接添加
+          checkedData.push(node);
         }
-        // 递归处理子节点
-        // if (node.children && node.children.length > 0) {
-        //   checkedNodes = [...checkedNodes, ...this.getCheckedNodeData(node.children, checkedIds)];
-        // }
       });
-      console.log('checkedNodes', checkedNodes);
-      return checkedNodes;
+      return checkedData;
     },
 
     /**
