@@ -122,6 +122,7 @@ import { debounce } from '@/utils/index';
 import { status } from "nprogress";
 export default {
   name: 'TaskProgress',
+  // 在 data() 中添加 activeTab 属性
   data() {
     return {
       routeData: this.$route.query || {},
@@ -139,8 +140,10 @@ export default {
       realtimeLogs: [],
       socket: null,
       socketConnected: false,
-      // 分析日志（默认数据匹配图片）
-      analysisLogs: {}
+      // 分析日志
+      analysisLogs: {},
+      // 添加 activeTab 数据属性
+      activeTab: 'analysis' // 默认显示分析标签页
     };
   },
   computed: {
@@ -172,21 +175,33 @@ export default {
         'KILLED': 'success',
         'PAUSED': 'warning',
         'ERR': 'exception'
-        // 移除RUNNING、PAUSEDING、KILLEDING对应的空字符串值
       };
 
       // 返回对应状态的值，如果不存在则返回undefined（Vue会自动跳过这个属性）
       return statusMap[this.status];
+    }
+    // 移除原来的 activeTab 计算属性
+  },
+  // 添加 watch 来监听 status 变化并自动切换标签页
+  watch: {
+    status: {
+      handler(newStatus) {
+        const newTab = newStatus === 'RUNNING' ? 'realtime' : 'analysis';
+        this.activeTab = newTab;
+        
+        // 当tab变为analysis时调用getAnalysisLogs方法
+        if (newTab === 'analysis') {
+          this.getAnalysisLogs();
+        }
+      },
+      immediate: true // 组件初始化时立即执行一次
     },
-    // tab控制
-    activeTab() {
-      const tab = this.status === 'RUNNING' ? 'realtime' : 'analysis';
-      // 当tab变为analysis时调用getAnalysisLogs方法
-      if (tab === 'analysis') {
+    // 监听 activeTab 变化，在手动切换到 analysis 标签时也获取分析日志
+    activeTab(newTab) {
+      if (newTab === 'analysis') {
         this.getAnalysisLogs();
       }
-      return tab;
-    },
+    }
   },
   mounted() {
     this.initTaskInfo();
