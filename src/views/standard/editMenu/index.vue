@@ -63,7 +63,9 @@ export default {
                 label: "label"
             },
             searchKeyword: '', // 搜索关键词
-            isAllExpanded: false // 控制全部展开/折叠状态
+            isAllExpanded: false, // 控制全部展开/折叠状态
+            isShowingWarning: false, // 控制未展开提示的显示频率
+            isAddingNode: false // 控制是否允许创建新节点（避免重复创建）
         };
     },
     created() {
@@ -169,36 +171,56 @@ export default {
         },
 
         append(data, parentNode) {
-            if (!parentNode.expanded) {
-                this.$message({
-                    type: 'warning',
-                    message: '当前节点未展开，请展开后再添加子节点',
-                });
-            } else {
-                // 获取顶层节点id并赋值给topId
-                this.topId = this.findTopNodeId(data);
-
-                const newChild = {
-                    id: '',
-                    label: '',
-                    children: [],
-                    addEdit: true,
-                    parentId: data.id,
-                    nodeLayerIndex: data.nodeLayerIndex ? data.nodeLayerIndex + 1 : 1
-                };
-
-                if (!data.children) {
-                    this.$set(data, 'children', []);
-                }
-
-                data.children.push(newChild);
-                this.$nextTick(() => {
-                    let addNodeInput = document.getElementById('addNode');
-                    if (addNodeInput) {
-                        addNodeInput.focus();
-                    }
-                });
+            // 检查是否已有正在编辑的节点，有则直接返回
+            if (this.isAddingNode) {
+                return;
             }
+
+            if (!parentNode.expanded) {
+                // 限制未展开提示频率
+                if (!this.isShowingWarning) {
+                    this.$message({
+                        type: 'warning',
+                        message: '当前节点未展开，请展开后再添加子节点',
+                    });
+                    this.isShowingWarning = true;
+                    setTimeout(() => {
+                        this.isShowingWarning = false;
+                    }, 1000);
+                }
+                return;
+            }
+
+            // 检查当前节点下是否已有未完成的新增节点
+            if (data.children && data.children.some(item => item.addEdit)) {
+                return;
+            }
+
+            // 获取顶层节点id并赋值给topId
+            this.topId = this.findTopNodeId(data);
+
+            const newChild = {
+                id: '',
+                label: '',
+                children: [],
+                addEdit: true,
+                parentId: data.id,
+                nodeLayerIndex: data.nodeLayerIndex ? data.nodeLayerIndex + 1 : 1
+            };
+
+            if (!data.children) {
+                this.$set(data, 'children', []);
+            }
+
+            data.children.push(newChild);
+            this.isAddingNode = true; // 标记为正在添加节点
+
+            this.$nextTick(() => {
+                let addNodeInput = document.getElementById('addNode');
+                if (addNodeInput) {
+                    addNodeInput.focus();
+                }
+            });
         },
 
         async remove(node, data) {
