@@ -20,7 +20,7 @@
       <div class="progress-info">
         <span>整体进度</span>
         <div class="custom-progress-container">
-          <el-progress :percentage="progressPercent ? progressPercent : 0" :format="progressFormat"
+          <el-progress :percentage="progressPercent ? progressPercent : 50" :format="progressFormat"
             :status="statusIcon">
           </el-progress>
         </div>
