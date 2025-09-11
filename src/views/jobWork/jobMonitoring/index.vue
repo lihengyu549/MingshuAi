@@ -108,7 +108,7 @@
     <!-- 操作按钮 -->
     <div class="button-group">
       <el-button type="primary" plain @click="handleReturn">返回</el-button>
-      <el-button type="warning" @click="handleRefresh" v-if="activeTab === 'analysis'">
+      <el-button type="warning" plain @click="handleRefresh" v-if="activeTab === 'analysis'">
         <i class="el-icon-refresh"></i> 刷新
       </el-button>
     </div>
