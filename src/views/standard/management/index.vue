@@ -70,7 +70,7 @@
         <div class="listBox_footer">
           <el-button type="text" size="small" @click="deleteFn(item)" :disabled="item.dataSource === '内置'"
             style="color: #d1d1da;"><i class="el-icon-delete"></i> 删除</el-button>
-          <el-button type="text" size="small" @click="editFn(item)" style="color: #666580;"><i
+          <el-button type="text" size="small" :disabled="item.dataSource === '内置'" @click="editFn(item)" style="color: #666580;"><i
               class="el-icon-edit-outline"></i> 编辑</el-button>
           <el-button type="text" size="small" @click="detailFn(item)" style="color: #666580;"><i
               class="el-icon-warning-outline"></i>
@@ -354,7 +354,7 @@ export default {
       this.form.importFile = row.fileName
     },
     detailFn(row) {
-      this.$router.push({ path: '/standard/jobMonitorings', query: { id: row.id, } })
+      this.$router.push({ path: '/standard/jobMonitorings', query: { id: row.id, dataSource:row.dataSource } })
     },
     deleteFn(row) {
       this.$confirm(`删除任务，将会删除数据源所关联的所有执行结果,确定删除吗`, '提示', {

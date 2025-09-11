@@ -20,7 +20,7 @@
               <!-- <el-button v-if="isRootNode(data)" type="text" size="large" icon="el-icon-setting"
                 @click.stop="goToMenuEdit(data)" style="color: #26244ce0;">
               </el-button> -->
-              <svg-icon icon-class="setting" v-if="isRootNode(data)" @click.stop="goToMenuEdit(data)" />
+              <svg-icon icon-class="setting" v-if="isRootNode(data)" @click.stop="dataSource != '内置' && goToMenuEdit(data)" />
             </span>
           </el-tree>
         </div>
@@ -64,10 +64,10 @@
         </el-form>
         <el-row :gutter="10" class="mb8">
           <el-col :span="1.5">
-            <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="addFn">新增</el-button>
+            <el-button type="primary" plain icon="el-icon-plus" :disabled="dataSource === '内置'" size="medium" @click="addFn">新增</el-button>
           </el-col>
           <el-col :span="1.5">
-            <el-button type="primary" plain icon="el-icon-close" size="medium" @click="enabledFn('删除')">删除</el-button>
+            <el-button type="primary" plain icon="el-icon-close" :disabled="dataSource === '内置'" size="medium" @click="enabledFn('删除')">删除</el-button>
           </el-col>
         </el-row>
         <el-table v-loading="loading" :data="protectTableFieldList" height="650px" ref="tableRef" class="tableBox">
@@ -451,6 +451,7 @@ export default {
         levelId: [],//安全级别，
         dataSource: '',
       },
+      dataSource: '',
       addOrEditDataRuls: {
         additional: '',
         attachData: '',
@@ -541,6 +542,9 @@ export default {
   created() {
     if (this.$route.query && this.$route.query.id) {
       this.queryParams.categoryId = this.$route.query.id * 1
+    }
+    if (this.$route.query && this.$route.query.dataSource) {
+      this.dataSource = this.$route.query.dataSource
     }
     this.gettreeOptionsList(this.$route.query.id)
     this.getDictData()
