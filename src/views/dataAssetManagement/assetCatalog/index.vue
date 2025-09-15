@@ -190,7 +190,7 @@
         </div>
       </el-col>
       <pagination class="paginationClass" v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-        :limit.sync="queryParams.pageSize" @pagination="getList" />
+        :limit.sync="queryParams.pageSize" @pagination="handlePagination" />
     </el-row>
     <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow"
       :destroy-on-close="true" direction="rtl" size="51%">
@@ -888,6 +888,15 @@ export default {
           return matchField && matchType && matchRemark
         })
       )
+    },
+
+    // 分页事件处理
+    handlePagination() {
+      // 获取当前选中的节点数据
+      const checkedNodes = this.$refs.tree.getCheckedNodes();
+      const checkedNodeData = this.getCheckedNodeData(checkedNodes);
+      // 调用列表刷新方法
+      this.getList(checkedNodeData);
     },
     // 重置筛选条件
     resetDrawerSearch() {
