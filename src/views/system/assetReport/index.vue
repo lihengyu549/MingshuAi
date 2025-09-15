@@ -26,12 +26,13 @@
           <div class="hede_bgc">
             <div class="hede_bgc-text">{{ activeName }}</div>
           </div>
-        </el-tab-pane>
-        <el-tab-pane label="等保摸底报告" name="等保摸底报告">
+        </el-tab-pane> -->
+        <el-tab-pane label="数据摸底调查表" name="数据摸底调查表">
           <div class="hede_bgc">
             <div class="hede_bgc-text">{{ activeName }}</div>
           </div>
-        </el-tab-pane> -->
+          <dataBaseline />
+        </el-tab-pane>
       </el-tabs>
 
       <!-- 添加加载提示 -->
@@ -53,10 +54,11 @@ import "echarts-wordcloud";
 import { downloadPDF } from "@/utils/pdf.js"  //工具方法，导出操作
 import html2pdf from 'html2pdf.js';
 import oneReport from './components/oneReport.vue';
+import dataBaseline from './components/dataBaseline.vue';
 export default {
   name: "Post",
   dicts: ['sys_normal_disable'],
-  components: { oneReport },
+  components: { oneReport,dataBaseline },
   data() {
     return {
       echarsLoding: false,
