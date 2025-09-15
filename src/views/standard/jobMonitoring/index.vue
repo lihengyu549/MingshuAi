@@ -422,14 +422,10 @@
             <el-input v-model="dataBaselineForm.storage.cloud.hybridCloudInput" placeholder="混合云内容"
               v-if="dataBaselineForm.storage.cloud.hybridCloud"></el-input>
             <el-checkbox v-model="dataBaselineForm.storage.cloud.otherCloud"
-              :disabled="dataBaselineForm.storage.cloud.noCloud">其他云</el-checkbox>
-            <el-input v-model="dataBaselineForm.storage.cloud.otherCloudInput" placeholder="其他云内容"
+              :disabled="dataBaselineForm.storage.cloud.noCloud">政务云</el-checkbox>
+            <el-input v-model="dataBaselineForm.storage.cloud.otherCloudInput" placeholder="政务云内容"
               v-if="dataBaselineForm.storage.cloud.otherCloud"></el-input>
-            <el-checkbox v-model="dataBaselineForm.storage.cloud.edgeCloud"
-              :disabled="dataBaselineForm.storage.cloud.noCloud">边缘计算平台</el-checkbox>
-            <el-input v-model="dataBaselineForm.storage.cloud.edgeCloudInput" placeholder="边缘计算平台内容"
-              v-if="dataBaselineForm.storage.cloud.edgeCloud"></el-input>
-            <el-checkbox v-model="dataBaselineForm.storage.cloud.noCloud" @change="handleNoCloudChange">无</el-checkbox>
+            <el-checkbox v-model="dataBaselineForm.storage.cloud.noCloud" @change="handleNoCloudChange">非云计算平台</el-checkbox>
           </div>
         </el-form-item>
 
@@ -676,12 +672,10 @@ export default {
             publicCloud: false,
             hybridCloud: false,
             otherCloud: false,
-            edgeCloud: false,
             privateCloudInput: '',
             publicCloudInput: '',
             hybridCloudInput: '',
             otherCloudInput: '',
-            edgeCloudInput: ''
           },
           room: {
             noRoom: false,
@@ -1447,6 +1441,9 @@ export default {
         this.dataBaselineForm.interaction.provide = false;
         this.dataBaselineForm.interaction.entrust = false;
         this.dataBaselineForm.interaction.processTogether = false;
+        this.dataBaselineForm.interaction.provideInput = ''
+        this.dataBaselineForm.interaction.entrustInput = ''
+        this.dataBaselineForm.interaction.processTogetherInput = ''
       }
     },
     // 处理无云复选框变化
@@ -1456,7 +1453,10 @@ export default {
         this.dataBaselineForm.storage.cloud.publicCloud = false;
         this.dataBaselineForm.storage.cloud.hybridCloud = false;
         this.dataBaselineForm.storage.cloud.otherCloud = false;
-        this.dataBaselineForm.storage.cloud.edgeCloud = false;
+        this.dataBaselineForm.storage.cloud.otherCloudInput = ''
+        this.dataBaselineForm.storage.cloud.privateCloudInput = ''
+        this.dataBaselineForm.storage.cloud.publicCloudInput = ''
+        this.dataBaselineForm.storage.cloud.hybridCloudInput = ''
       }
     },
     // 处理无机房复选框变化
