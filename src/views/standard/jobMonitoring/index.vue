@@ -340,38 +340,39 @@
       </div>
     </el-dialog>
     <!-- 数据摸底弹窗 -->
-    <Drawer title="数据摸底" v-loading="dataBaselineLoading" :visible.sync="dataBaselineShow" append-to-body>
+    <Drawer title="数据摸底" v-loading="dataBaselineLoading" :visible.sync="dataBaselineShow" append-to-body size="85%">
       <el-form slot="body" ref="dataBaselineForm" :model="dataBaselineForm" label-width="120px" label-position="top">
         <!-- 数据来源 -->
-         <Title title="数据来源"></Title>
+        <Title title="数据来源"></Title>
         <el-form-item label="">
           <span class="label-text">请选择数据的产生方式/获取方式（可多选）</span>
-          <el-checkbox-group v-model="dataBaselineForm.dataSources" class="checkbox-two-per-line">
-            <el-checkbox label="系统采集" class="checkbox-item">系统采集</el-checkbox>
-            <el-checkbox label="系统生产" class="checkbox-item">系统生产</el-checkbox>
-            <el-checkbox label="人工填报" class="checkbox-item">人工填报</el-checkbox>
-            <el-checkbox label="交换购买" class="checkbox-item">交换购买</el-checkbox>
-            <el-checkbox label="共享交换" class="checkbox-item">共享交换</el-checkbox>
-            <el-checkbox label="其他" class="checkbox-item">其他</el-checkbox>
+          <el-checkbox-group v-model="dataBaselineForm.dataSources" class="checkbox-two-per-line"
+            @change="handleDataSourceChange">
+            <el-checkbox label="1" class="checkbox-item">系统采集</el-checkbox>
+            <el-checkbox label="2" class="checkbox-item">系统生产</el-checkbox>
+            <el-checkbox label="3" class="checkbox-item">人工填报</el-checkbox>
+            <el-checkbox label="4" class="checkbox-item">交换购买</el-checkbox>
+            <el-checkbox label="5" class="checkbox-item">共享交换</el-checkbox>
+            <el-checkbox label="6" class="checkbox-item">其他</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
 
         <!-- 单位间数据流转情况 -->
-         <Title title="单位间数据流转情况"></Title>
-         <!-- 数据来源单位 -->
+        <Title title="单位间数据流转情况"></Title>
+        <!-- 数据来源单位 -->
         <el-form-item label="数据来源单位">
           <div v-for="(item, index) in dataBaselineForm.dataFlowUnits" :key="index" class="flow-unit-item">
-            <el-input v-model="item.unit" placeholder="请输入来源单位" style="width: 300px; margin-right: 10px;"></el-input>
+            <el-input v-model="item.unit" placeholder="请输入来源单位" style="width: 80%; margin-right: 10px;"></el-input>
             <el-button @click="handleRemoveFlowUnit(index)" v-if="index > 0" type="text" icon="el-icon-remove-outline"
               style="color: #dcdfe6; font-size: 18px;"></el-button>
           </div>
           <el-button @click="handleAddFlowUnit" type="text" icon="el-icon-plus">添加来源单位</el-button>
         </el-form-item>
-        
+
         <!-- 数据流出单位 -->
         <el-form-item label="数据流出单位">
           <div v-for="(item, index) in dataBaselineForm.dataFlowOutUnits" :key="index" class="flow-unit-item">
-            <el-input v-model="item.unit" placeholder="请输入流出单位" style="width: 300px; margin-right: 10px;"></el-input>
+            <el-input v-model="item.unit" placeholder="请输入流出单位" style="width: 80%; margin-right: 10px;"></el-input>
             <el-button @click="handleRemoveFlowOutUnit(index)" v-if="index > 0" type="text" icon="el-icon-delete"
               style="color: #dcdfe6; font-size: 18px;"></el-button>
           </div>
@@ -379,71 +380,73 @@
         </el-form-item>
 
         <!-- 与其他数据处理者的交互 -->
-         <Title title="与其他数据处理者的交互"></Title>
+        <Title title="与其他数据处理者的交互"></Title>
+        <span class="label-text">请选择与其他数据的交互类型（可多选）</span>
         <el-form-item label="">
-          <el-checkbox v-model="dataBaselineForm.interaction.noInteraction"
-            @change="handleNoInteractionChange">无交互</el-checkbox>
           <el-checkbox v-model="dataBaselineForm.interaction.provide"
             :disabled="dataBaselineForm.interaction.noInteraction">对外提供</el-checkbox>
-          <el-checkbox v-model="dataBaselineForm.interaction.entrust"
-            :disabled="dataBaselineForm.interaction.noInteraction">委托</el-checkbox>
-          <el-checkbox v-model="dataBaselineForm.interaction.processTogether"
-            :disabled="dataBaselineForm.interaction.noInteraction">与...共同处理</el-checkbox>
-
           <el-input v-model="dataBaselineForm.interaction.provideInput" placeholder="对外提供内容"
             v-if="dataBaselineForm.interaction.provide"></el-input>
+          <el-checkbox v-model="dataBaselineForm.interaction.entrust"
+            :disabled="dataBaselineForm.interaction.noInteraction">委托</el-checkbox>
           <el-input v-model="dataBaselineForm.interaction.entrustInput" placeholder="委托内容"
             v-if="dataBaselineForm.interaction.entrust"></el-input>
+          <el-checkbox v-model="dataBaselineForm.interaction.processTogether"
+            :disabled="dataBaselineForm.interaction.noInteraction">与...共同处理</el-checkbox>
           <el-input v-model="dataBaselineForm.interaction.processTogetherInput" placeholder="共同处理内容"
             v-if="dataBaselineForm.interaction.processTogether"></el-input>
+          <el-checkbox v-model="dataBaselineForm.interaction.noInteraction"
+            @change="handleNoInteractionChange">无交互</el-checkbox>
         </el-form-item>
 
         <!-- 数据存储位置-云类型 -->
-        <el-form-item label="云类型">
+        <Title title="数据存储位置"></Title>
+        <span class="label-text">云类型（可多选）</span>
+        <el-form-item label="">
           <el-checkbox v-model="dataBaselineForm.storage.cloud.noCloud" @change="handleNoCloudChange">无</el-checkbox>
           <el-checkbox v-model="dataBaselineForm.storage.cloud.privateCloud"
             :disabled="dataBaselineForm.storage.cloud.noCloud">私有云</el-checkbox>
-          <el-checkbox v-model="dataBaselineForm.storage.cloud.publicCloud"
-            :disabled="dataBaselineForm.storage.cloud.noCloud">公有云</el-checkbox>
-          <el-checkbox v-model="dataBaselineForm.storage.cloud.hybridCloud"
-            :disabled="dataBaselineForm.storage.cloud.noCloud">混合云</el-checkbox>
-          <el-checkbox v-model="dataBaselineForm.storage.cloud.otherCloud"
-            :disabled="dataBaselineForm.storage.cloud.noCloud">其他云</el-checkbox>
-          <el-checkbox v-model="dataBaselineForm.storage.cloud.edgeCloud"
-            :disabled="dataBaselineForm.storage.cloud.noCloud">边缘计算平台</el-checkbox>
-
           <el-input v-model="dataBaselineForm.storage.cloud.privateCloudInput" placeholder="私有云内容"
             v-if="dataBaselineForm.storage.cloud.privateCloud"></el-input>
+          <el-checkbox v-model="dataBaselineForm.storage.cloud.publicCloud"
+            :disabled="dataBaselineForm.storage.cloud.noCloud">公有云</el-checkbox>
           <el-input v-model="dataBaselineForm.storage.cloud.publicCloudInput" placeholder="公有云内容"
             v-if="dataBaselineForm.storage.cloud.publicCloud"></el-input>
+          <el-checkbox v-model="dataBaselineForm.storage.cloud.hybridCloud"
+            :disabled="dataBaselineForm.storage.cloud.noCloud">混合云</el-checkbox>
           <el-input v-model="dataBaselineForm.storage.cloud.hybridCloudInput" placeholder="混合云内容"
             v-if="dataBaselineForm.storage.cloud.hybridCloud"></el-input>
+          <el-checkbox v-model="dataBaselineForm.storage.cloud.otherCloud"
+            :disabled="dataBaselineForm.storage.cloud.noCloud">其他云</el-checkbox>
           <el-input v-model="dataBaselineForm.storage.cloud.otherCloudInput" placeholder="其他云内容"
             v-if="dataBaselineForm.storage.cloud.otherCloud"></el-input>
+          <el-checkbox v-model="dataBaselineForm.storage.cloud.edgeCloud"
+            :disabled="dataBaselineForm.storage.cloud.noCloud">边缘计算平台</el-checkbox>
           <el-input v-model="dataBaselineForm.storage.cloud.edgeCloudInput" placeholder="边缘计算平台内容"
             v-if="dataBaselineForm.storage.cloud.edgeCloud"></el-input>
         </el-form-item>
 
         <!-- 数据存储位置-机房类型 -->
-        <el-form-item label="机房类型">
-          <el-checkbox v-model="dataBaselineForm.storage.room.noRoom" @change="handleNoRoomChange">无</el-checkbox>
+        <span class="label-text">机房类型（可多选）</span>
+        <el-form-item label="">
           <el-checkbox v-model="dataBaselineForm.storage.room.ownRoom"
             :disabled="dataBaselineForm.storage.room.noRoom">本单位机房</el-checkbox>
-          <el-checkbox v-model="dataBaselineForm.storage.room.foreignRoom"
-            :disabled="dataBaselineForm.storage.room.noRoom">外单位机房</el-checkbox>
-          <el-checkbox v-model="dataBaselineForm.storage.room.thirdPartyRoom"
-            :disabled="dataBaselineForm.storage.room.noRoom">第三方托管机房</el-checkbox>
-
           <el-input v-model="dataBaselineForm.storage.room.ownRoomInput" placeholder="本单位机房内容"
             v-if="dataBaselineForm.storage.room.ownRoom"></el-input>
+          <el-checkbox v-model="dataBaselineForm.storage.room.foreignRoom"
+            :disabled="dataBaselineForm.storage.room.noRoom">外单位机房</el-checkbox>
           <el-input v-model="dataBaselineForm.storage.room.foreignRoomInput" placeholder="外单位机房内容"
             v-if="dataBaselineForm.storage.room.foreignRoom"></el-input>
+          <el-checkbox v-model="dataBaselineForm.storage.room.thirdPartyRoom"
+            :disabled="dataBaselineForm.storage.room.noRoom">第三方托管机房</el-checkbox>
           <el-input v-model="dataBaselineForm.storage.room.thirdPartyRoomInput" placeholder="第三方托管机房内容"
             v-if="dataBaselineForm.storage.room.thirdPartyRoom"></el-input>
+          <el-checkbox v-model="dataBaselineForm.storage.room.noRoom" @change="handleNoRoomChange">无</el-checkbox>
         </el-form-item>
 
         <!-- 数据存储位置-存储地域 -->
-        <el-form-item label="存储地域">
+        <span class="label-text">存储地域（可多选）</span>
+        <el-form-item label="">
           <el-checkbox-group v-model="dataBaselineForm.storage.region">
             <el-checkbox label="境内">境内</el-checkbox>
             <el-checkbox label="境外">境外</el-checkbox>
@@ -581,7 +584,7 @@ export default {
         minSecurityLevel: null,
         dataOwner: '',
         upgradeRule: '',
-        downgradeRule: '',
+        demotionRule: '',
         upgradeList: [],
         demotionList: [],
       },
@@ -887,8 +890,8 @@ export default {
      * @param {String} type 规则类型：'upgrade'/'downgrade'
      */
     handleRuleSwitchChange(type) {
-      const tableRef = type === 'upgrade' ? 'upgradeList' : 'demotionRule';
-      const isSwitchOpen = type === 'upgrade' ? this.upgradeRule : this.demotionRule;
+      const tableRef = type === 'upgrade' ? 'upgradeList' : 'demotionList';
+      const isSwitchOpen = type === 'upgrade' ? this.addOrEditDataRuls.upgradeRule : this.addOrEditDataRuls.demotionRule;
 
       // 开关关闭时清空表格选择
       if (!isSwitchOpen && this.$refs[tableRef]) {
@@ -989,7 +992,7 @@ export default {
         minSecurityLevel: null,
         dataOwner: this.$store.state.user.name, // 保留当前用户作为默认数据持有者
         upgradeRule: false, // 重置为默认值false
-        downgradeRule: false, // 重置为默认值false
+        demotionRule: false, // 重置为默认值false
         upgradeList: [], // 清空升级规则列表
         demotionList: [], // 清空降级规则列表
       }
@@ -1484,7 +1487,12 @@ export default {
       // 重置自定义的数组等数据
       this.dataBaselineForm.dataFlowUnits = [{ unit: '' }];
       this.dataBaselineForm.dataFlowOutUnits = [{ unit: '' }];
-    }
+    },
+    // 数据来源变化处理
+    handleDataSourceChange(val) {
+      console.log('val', val);
+      console.log('this.dataBaselineForm.dataSources', this.dataBaselineForm.dataSources);
+    },
   },
 };
 </script>
