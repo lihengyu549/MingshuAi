@@ -98,7 +98,10 @@
             </template>
           </el-table-column>
           <el-table-column label="数据持有者" align="center" prop="dataOwner" />
-          <el-table-column label="确认防护措施" align="center" prop="confirmProtectMethod" width="200">
+          <el-table-column label="确认防护措施" prop="confirmProtectMethod" width="200">
+            <template slot="header">
+              <div style="text-align: center;">确认防护措施</div>
+            </template>
             <template slot-scope="scope">
               <el-tag class="tagsBox custom-plain-tag" v-for="item in scope.row.confirmProtectMethodList" :key="item"
                 :style="{
