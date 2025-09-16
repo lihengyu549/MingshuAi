@@ -22,25 +22,29 @@
       <!-- 单位间数据流转情况 -->
       <Title title="单位间数据流转情况" iconClass="circulation"></Title>
       <!-- 数据来源单位 -->
-      <el-form-item label="数据来源单位">
-        <div v-for="(item, index) in dataBaselineForm.dataFlowUnits" :key="index" class="flow-unit-item">
-          <el-input v-model="item.unit" placeholder="请输入来源单位"></el-input>
-          <el-button @click="index > 0 && handleRemoveFlowUnit(index)" type="text" icon="el-icon-remove-outline"
-            style="color: #dcdfe6; font-size: 18px;"></el-button>
+      <el-form-item label="数据来源单位" :error="sourceUnitError" :prop="'dataFlowUnits.' + activeSourceIndex + '.unit'">
+        <div v-for="(item, index) in dataBaselineForm.dataFlowUnits" :key="item.id" class="flow-unit-item">
+          <el-input v-model="item.unit" placeholder="请输入来源单位"
+            @blur="checkDuplicateUnit('dataFlowUnits', index)"></el-input>
+          <el-button @click="handleRemoveFlowUnit(index)" type="text" icon="el-icon-remove-outline"
+            :disabled="dataBaselineForm.dataFlowUnits.length <= 1" style="color: #dcdfe6; font-size: 18px;"></el-button>
         </div>
         <el-button @click="handleAddFlowUnit" type="text" icon="el-icon-plus">添加来源单位</el-button>
       </el-form-item>
 
       <!-- 数据流出单位 -->
-      <el-form-item label="数据流出单位">
-        <div v-for="(item, index) in dataBaselineForm.dataFlowOutUnits" :key="index" class="flow-unit-item">
-          <el-input v-model="item.unit" placeholder="请输入流出单位"></el-input>
-          <el-button @click="index > 0 && handleRemoveFlowOutUnit(index)" type="text" icon="el-icon-remove-outline"
+      <el-form-item label="数据流出单位" :error="outUnitError" :prop="'dataFlowOutUnits.' + activeOutIndex + '.unit'">
+        <div v-for="(item, index) in dataBaselineForm.dataFlowOutUnits" :key="item.id" class="flow-unit-item">
+          <el-input v-model="item.unit" placeholder="请输入流出单位"
+            @blur="checkDuplicateUnit('dataFlowOutUnits', index)"></el-input>
+          <el-button @click="handleRemoveFlowOutUnit(index)" type="text" icon="el-icon-remove-outline"
+            :disabled="dataBaselineForm.dataFlowOutUnits.length <= 1"
             style="color: #dcdfe6; font-size: 18px;"></el-button>
         </div>
         <el-button @click="handleAddFlowOutUnit" type="text" icon="el-icon-plus">添加流出单位</el-button>
       </el-form-item>
 
+      <!-- 其他内容保持不变 -->
       <!-- 与其他数据处理者的交互 -->
       <Title title="与其他数据处理者的交互" iconClass="peoplesBlue"></Title>
       <span class="label-text">请选择与其他数据的交互类型（可多选）</span>
@@ -121,11 +125,16 @@ export default {
   data() {
     return {
       Loading: false,
+      sourceUnitError: '',
+      outUnitError: '',
+      activeSourceIndex: 0,
+      activeOutIndex: 0,
       dataBaselineForm: {
         dataSources: [], // 数据来源
         otherDataSource: '',
-        dataFlowUnits: [{ unit: '' }], // 单位间数据流转-来源单位
-        dataFlowOutUnits: [{ unit: '' }], // 单位间数据流转-流出单位
+        // 修改数据结构，增加唯一标识id
+        dataFlowUnits: [{ id: this.generateId(), unit: '' }], // 单位间数据流转-来源单位
+        dataFlowOutUnits: [{ id: this.generateId(), unit: '' }], // 单位间数据流转-流出单位
         interaction: {
           noInteraction: false,
           provide: false,
@@ -284,46 +293,128 @@ export default {
     }
   },
   methods: {
+    // 生成唯一ID
+    generateId() {
+      return Date.now() + Math.floor(Math.random() * 1000);
+    },
+
+    // 检查重复单位
+    checkDuplicateUnit(type, index) {
+      const units = this.dataBaselineForm[type];
+      const currentUnit = units[index].unit.trim();
+      const errorKey = type === 'dataFlowUnits' ? 'sourceUnitError' : 'outUnitError';
+      const activeIndexKey = type === 'dataFlowUnits' ? 'activeSourceIndex' : 'activeOutIndex';
+
+      this[activeIndexKey] = index;
+
+      if (!currentUnit) {
+        this[errorKey] = '单位名称不能为空';
+        return false;
+      }
+
+      // 检查重复
+      const hasDuplicate = units.some((item, i) => {
+        return i !== index && item.unit.trim() === currentUnit;
+      });
+
+      if (hasDuplicate) {
+        this[errorKey] = '存在重复的单位名称';
+        return false;
+      }
+
+      this[errorKey] = '';
+      return true;
+    },
+
     // 处理无交互复选框变化
     handleNoInteractionChange(val) {
       if (val) {
         Object.keys(this.interactionOptions).forEach(key => {
-          this.dataBaselineForm.interaction[key] = false
-          this.dataBaselineForm.interaction[this.interactionOptions[key].inputKey] = ''
-        })
+          this.dataBaselineForm.interaction[key] = false;
+          this.dataBaselineForm.interaction[this.interactionOptions[key].inputKey] = '';
+        });
       }
     },
+
     // 处理无云复选框变化
     handleNoCloudChange(val) {
       if (val) {
         Object.keys(this.cloudOptions).forEach(key => {
-          this.dataBaselineForm.storage.cloud[key] = false
-          this.dataBaselineForm.storage.cloud[this.cloudOptions[key].inputKey] = ''
-        })
+          this.dataBaselineForm.storage.cloud[key] = false;
+          this.dataBaselineForm.storage.cloud[this.cloudOptions[key].inputKey] = '';
+        });
       }
     },
+
     // 添加来源单位
     handleAddFlowUnit() {
-      this.dataBaselineForm.dataFlowUnits.push({ unit: '' });
-    },
-    // 删除来源单位llll
-    handleRemoveFlowUnit(index) {
-      if (index > 0) {
-        this.dataBaselineForm.dataFlowUnits.splice(index, 1);
+      // 检查最后一个单位是否填写
+      const lastUnit = this.dataBaselineForm.dataFlowUnits[this.dataBaselineForm.dataFlowUnits.length - 1];
+      if (!this.checkDuplicateUnit('dataFlowUnits', this.dataBaselineForm.dataFlowUnits.length - 1)) {
+        this.$message.warning('请完善当前单位信息后再添加');
+        return;
       }
+
+      this.dataBaselineForm.dataFlowUnits.push({
+        id: this.generateId(),
+        unit: ''
+      });
     },
+
+    // 删除来源单位
+    handleRemoveFlowUnit(index) {
+      this.dataBaselineForm.dataFlowUnits.splice(index, 1);
+      // 重新检查是否有重复
+      this.dataBaselineForm.dataFlowUnits.forEach((_, i) => {
+        this.checkDuplicateUnit('dataFlowUnits', i);
+      });
+    },
+
     // 添加流出单位
     handleAddFlowOutUnit() {
-      this.dataBaselineForm.dataFlowOutUnits.push({ unit: '' });
+      // 检查最后一个单位是否填写
+      const lastUnit = this.dataBaselineForm.dataFlowOutUnits[this.dataBaselineForm.dataFlowOutUnits.length - 1];
+      if (!this.checkDuplicateUnit('dataFlowOutUnits', this.dataBaselineForm.dataFlowOutUnits.length - 1)) {
+        this.$message.warning('请完善当前单位信息后再添加');
+        return;
+      }
+
+      this.dataBaselineForm.dataFlowOutUnits.push({
+        id: this.generateId(),
+        unit: ''
+      });
     },
+
     // 删除流出单位
     handleRemoveFlowOutUnit(index) {
-      if (index > 0) {
-        this.dataBaselineForm.dataFlowOutUnits.splice(index, 1);
-      }
+      this.dataBaselineForm.dataFlowOutUnits.splice(index, 1);
+      // 重新检查是否有重复
+      this.dataBaselineForm.dataFlowOutUnits.forEach((_, i) => {
+        this.checkDuplicateUnit('dataFlowOutUnits', i);
+      });
     },
+
     // 提交表单
     handleSubmit() {
+      // 先验证单位信息
+      let isUnitValid = true;
+
+      this.dataBaselineForm.dataFlowUnits.forEach((_, i) => {
+        if (!this.checkDuplicateUnit('dataFlowUnits', i)) {
+          isUnitValid = false;
+        }
+      });
+
+      this.dataBaselineForm.dataFlowOutUnits.forEach((_, i) => {
+        if (!this.checkDuplicateUnit('dataFlowOutUnits', i)) {
+          isUnitValid = false;
+        }
+      });
+
+      if (!isUnitValid) {
+        return;
+      }
+
       this.$refs.dataBaselineForm.validate((valid) => {
         if (valid) {
           console.log('表单提交', this.dataBaselineForm);
@@ -334,14 +425,18 @@ export default {
         }
       });
     },
+
     // 重置表单
     handleReset() {
       this.$refs.dataBaselineForm.resetFields();
       // 重置自定义的数组等数据
-      this.dataBaselineForm.dataFlowUnits = [{ unit: '' }];
-      this.dataBaselineForm.dataFlowOutUnits = [{ unit: '' }];
-      this.$router.back()
+      this.dataBaselineForm.dataFlowUnits = [{ id: this.generateId(), unit: '' }];
+      this.dataBaselineForm.dataFlowOutUnits = [{ id: this.generateId(), unit: '' }];
+      this.sourceUnitError = '';
+      this.outUnitError = '';
+      this.$router.back();
     },
+
     // 数据来源变化处理
     handleDataSourceChange(val) {
       console.log('val', val);
