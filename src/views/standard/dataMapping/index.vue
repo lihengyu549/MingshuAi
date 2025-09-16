@@ -46,18 +46,14 @@
       <span class="label-text">请选择与其他数据的交互类型（可多选）</span>
       <el-form-item label="" style="color: red;">
         <div class="interaction-checkbox">
-          <el-checkbox v-model="dataBaselineForm.interaction.provide"
-            :disabled="dataBaselineForm.interaction.noInteraction">对外提供</el-checkbox>
-          <el-input v-model="dataBaselineForm.interaction.provideInput" placeholder="对外提供内容"
-            v-if="dataBaselineForm.interaction.provide"></el-input>
-          <el-checkbox v-model="dataBaselineForm.interaction.entrust"
-            :disabled="dataBaselineForm.interaction.noInteraction">委托</el-checkbox>
-          <el-input v-model="dataBaselineForm.interaction.entrustInput" placeholder="委托内容"
-            v-if="dataBaselineForm.interaction.entrust"></el-input>
-          <el-checkbox v-model="dataBaselineForm.interaction.processTogether"
-            :disabled="dataBaselineForm.interaction.noInteraction">与...共同处理</el-checkbox>
-          <el-input v-model="dataBaselineForm.interaction.processTogetherInput" placeholder="共同处理内容"
-            v-if="dataBaselineForm.interaction.processTogether"></el-input>
+          <template v-for="(item, key) in interactionOptions">
+            <el-checkbox :key="`interaction-checkbox-${key}`" v-model="dataBaselineForm.interaction[key]"
+              :disabled="dataBaselineForm.interaction.noInteraction">
+              {{ item.label }}
+            </el-checkbox>
+            <el-input :key="`interaction-input-${key}`" v-model="dataBaselineForm.interaction[item.inputKey]"
+              :placeholder="item.placeholder" v-if="dataBaselineForm.interaction[key]"></el-input>
+          </template>
           <el-checkbox v-model="dataBaselineForm.interaction.noInteraction"
             @change="handleNoInteractionChange">无交互</el-checkbox>
         </div>
@@ -68,22 +64,14 @@
       <span class="label-text">云类型（可多选）</span>
       <el-form-item label="">
         <div class="interaction-checkbox">
-          <el-checkbox v-model="dataBaselineForm.storage.cloud.privateCloud"
-            :disabled="dataBaselineForm.storage.cloud.noCloud">私有云</el-checkbox>
-          <el-input v-model="dataBaselineForm.storage.cloud.privateCloudInput" placeholder="私有云内容"
-            v-if="dataBaselineForm.storage.cloud.privateCloud"></el-input>
-          <el-checkbox v-model="dataBaselineForm.storage.cloud.publicCloud"
-            :disabled="dataBaselineForm.storage.cloud.noCloud">公有云</el-checkbox>
-          <el-input v-model="dataBaselineForm.storage.cloud.publicCloudInput" placeholder="公有云内容"
-            v-if="dataBaselineForm.storage.cloud.publicCloud"></el-input>
-          <el-checkbox v-model="dataBaselineForm.storage.cloud.hybridCloud"
-            :disabled="dataBaselineForm.storage.cloud.noCloud">混合云</el-checkbox>
-          <el-input v-model="dataBaselineForm.storage.cloud.hybridCloudInput" placeholder="混合云内容"
-            v-if="dataBaselineForm.storage.cloud.hybridCloud"></el-input>
-          <el-checkbox v-model="dataBaselineForm.storage.cloud.otherCloud"
-            :disabled="dataBaselineForm.storage.cloud.noCloud">政务云</el-checkbox>
-          <el-input v-model="dataBaselineForm.storage.cloud.otherCloudInput" placeholder="政务云内容"
-            v-if="dataBaselineForm.storage.cloud.otherCloud"></el-input>
+          <template v-for="(item, key) in cloudOptions">
+            <el-checkbox :key="`cloud-checkbox-${key}`" v-model="dataBaselineForm.storage.cloud[key]"
+              :disabled="dataBaselineForm.storage.cloud.noCloud">
+              {{ item.label }}
+            </el-checkbox>
+            <el-input :key="`cloud-input-${key}`" v-model="dataBaselineForm.storage.cloud[item.inputKey]"
+              :placeholder="item.placeholder" v-if="dataBaselineForm.storage.cloud[key]"></el-input>
+          </template>
           <el-checkbox v-model="dataBaselineForm.storage.cloud.noCloud"
             @change="handleNoCloudChange">非云计算平台</el-checkbox>
         </div>
@@ -93,19 +81,13 @@
       <span class="label-text">机房类型（可多选）</span>
       <el-form-item label="">
         <div class="interaction-checkbox">
-          <el-checkbox v-model="dataBaselineForm.storage.room.ownRoom"
-            :disabled="dataBaselineForm.storage.room.noRoom">本单位机房</el-checkbox>
-          <el-input v-model="dataBaselineForm.storage.room.ownRoomInput" placeholder="本单位机房内容"
-            v-if="dataBaselineForm.storage.room.ownRoom"></el-input>
-          <el-checkbox v-model="dataBaselineForm.storage.room.foreignRoom"
-            :disabled="dataBaselineForm.storage.room.noRoom">外单位机房</el-checkbox>
-          <el-input v-model="dataBaselineForm.storage.room.foreignRoomInput" placeholder="外单位机房内容"
-            v-if="dataBaselineForm.storage.room.foreignRoom"></el-input>
-          <el-checkbox v-model="dataBaselineForm.storage.room.thirdPartyRoom"
-            :disabled="dataBaselineForm.storage.room.noRoom">第三方托管机房</el-checkbox>
-          <el-input v-model="dataBaselineForm.storage.room.thirdPartyRoomInput" placeholder="第三方托管机房内容"
-            v-if="dataBaselineForm.storage.room.thirdPartyRoom"></el-input>
-          <!-- <el-checkbox v-model="dataBaselineForm.storage.room.noRoom" @change="handleNoRoomChange">无</el-checkbox> -->
+          <template v-for="(item, key) in roomOptions">
+            <el-checkbox :key="`room-checkbox-${key}`" v-model="dataBaselineForm.storage.room[key]">
+              {{ item.label }}
+            </el-checkbox>
+            <el-input :key="`room-input-${key}`" v-model="dataBaselineForm.storage.room[item.inputKey]"
+              :placeholder="item.placeholder" v-if="dataBaselineForm.storage.room[key]"></el-input>
+          </template>
         </div>
       </el-form-item>
 
@@ -113,12 +95,13 @@
       <span class="label-text">存储地域（可多选）</span>
       <el-form-item label="">
         <div class="interaction-checkbox">
-          <el-checkbox v-model="dataBaselineForm.storage.region.domestic" label="境内">境内</el-checkbox>
-          <el-input v-model="dataBaselineForm.storage.region.domesticDetail" placeholder="境内内容"
-            v-if="dataBaselineForm.storage.region.domestic"></el-input>
-          <el-checkbox v-model="dataBaselineForm.storage.region.overseas" label="境外">境外</el-checkbox>
-          <el-input v-model="dataBaselineForm.storage.region.overseasDetail" placeholder="境外内容"
-            v-if="dataBaselineForm.storage.region.overseas"></el-input>
+          <template v-for="(item, key) in regionOptions">
+            <el-checkbox :key="`region-checkbox-${key}`" v-model="dataBaselineForm.storage.region[key]">
+              {{ item.label }}
+            </el-checkbox>
+            <el-input :key="`region-input-${key}`" v-model="dataBaselineForm.storage.region[item.inputKey]"
+              :placeholder="item.placeholder" v-if="dataBaselineForm.storage.region[key]"></el-input>
+          </template>
         </div>
       </el-form-item>
     </el-form>
@@ -165,7 +148,6 @@ export default {
             otherCloudInput: '',
           },
           room: {
-            noRoom: false,
             ownRoom: false,
             foreignRoom: false,
             thirdPartyRoom: false,
@@ -181,41 +163,145 @@ export default {
           },
         }
       },
+      // 交互选项配置
+      interactionOptions: {
+        provide: {
+          label: '对外提供',
+          inputKey: 'provideInput',
+          placeholder: '对外提供内容'
+        },
+        entrust: {
+          label: '委托',
+          inputKey: 'entrustInput',
+          placeholder: '委托内容'
+        },
+        processTogether: {
+          label: '与...共同处理',
+          inputKey: 'processTogetherInput',
+          placeholder: '共同处理内容'
+        }
+      },
+      // 云类型选项配置
+      cloudOptions: {
+        privateCloud: {
+          label: '私有云',
+          inputKey: 'privateCloudInput',
+          placeholder: '私有云内容'
+        },
+        publicCloud: {
+          label: '公有云',
+          inputKey: 'publicCloudInput',
+          placeholder: '公有云内容'
+        },
+        hybridCloud: {
+          label: '混合云',
+          inputKey: 'hybridCloudInput',
+          placeholder: '混合云内容'
+        },
+        otherCloud: {
+          label: '政务云',
+          inputKey: 'otherCloudInput',
+          placeholder: '政务云内容'
+        }
+      },
+      // 机房类型选项配置
+      roomOptions: {
+        ownRoom: {
+          label: '本单位机房',
+          inputKey: 'ownRoomInput',
+          placeholder: '本单位机房内容'
+        },
+        foreignRoom: {
+          label: '外单位机房',
+          inputKey: 'foreignRoomInput',
+          placeholder: '外单位机房内容'
+        },
+        thirdPartyRoom: {
+          label: '第三方托管机房',
+          inputKey: 'thirdPartyRoomInput',
+          placeholder: '第三方托管机房内容'
+        }
+      },
+      // 存储地域选项配置
+      regionOptions: {
+        domestic: {
+          label: '境内',
+          inputKey: 'domesticDetail',
+          placeholder: '境内内容'
+        },
+        overseas: {
+          label: '境外',
+          inputKey: 'overseasDetail',
+          placeholder: '境外内容'
+        }
+      }
+    }
+  },
+  watch: {
+    // 监听交互选项变化，自动清除输入内容
+    'dataBaselineForm.interaction': {
+      deep: true,
+      handler(val) {
+        Object.keys(this.interactionOptions).forEach(key => {
+          if (!val[key]) {
+            val[this.interactionOptions[key].inputKey] = ''
+          }
+        })
+      }
+    },
+    // 监听云类型选项变化，自动清除输入内容
+    'dataBaselineForm.storage.cloud': {
+      deep: true,
+      handler(val) {
+        Object.keys(this.cloudOptions).forEach(key => {
+          if (!val[key]) {
+            val[this.cloudOptions[key].inputKey] = ''
+          }
+        })
+      }
+    },
+    // 监听机房类型选项变化，自动清除输入内容
+    'dataBaselineForm.storage.room': {
+      deep: true,
+      handler(val) {
+        Object.keys(this.roomOptions).forEach(key => {
+          if (!val[key]) {
+            val[this.roomOptions[key].inputKey] = ''
+          }
+        })
+      }
+    },
+    // 监听存储地域选项变化，自动清除输入内容
+    'dataBaselineForm.storage.region': {
+      deep: true,
+      handler(val) {
+        Object.keys(this.regionOptions).forEach(key => {
+          if (!val[key]) {
+            val[this.regionOptions[key].inputKey] = ''
+          }
+        })
+      }
     }
   },
   methods: {
     // 处理无交互复选框变化
     handleNoInteractionChange(val) {
       if (val) {
-        this.dataBaselineForm.interaction.provide = false;
-        this.dataBaselineForm.interaction.entrust = false;
-        this.dataBaselineForm.interaction.processTogether = false;
-        this.dataBaselineForm.interaction.provideInput = ''
-        this.dataBaselineForm.interaction.entrustInput = ''
-        this.dataBaselineForm.interaction.processTogetherInput = ''
+        Object.keys(this.interactionOptions).forEach(key => {
+          this.dataBaselineForm.interaction[key] = false
+          this.dataBaselineForm.interaction[this.interactionOptions[key].inputKey] = ''
+        })
       }
     },
     // 处理无云复选框变化
     handleNoCloudChange(val) {
       if (val) {
-        this.dataBaselineForm.storage.cloud.privateCloud = false;
-        this.dataBaselineForm.storage.cloud.publicCloud = false;
-        this.dataBaselineForm.storage.cloud.hybridCloud = false;
-        this.dataBaselineForm.storage.cloud.otherCloud = false;
-        this.dataBaselineForm.storage.cloud.otherCloudInput = ''
-        this.dataBaselineForm.storage.cloud.privateCloudInput = ''
-        this.dataBaselineForm.storage.cloud.publicCloudInput = ''
-        this.dataBaselineForm.storage.cloud.hybridCloudInput = ''
+        Object.keys(this.cloudOptions).forEach(key => {
+          this.dataBaselineForm.storage.cloud[key] = false
+          this.dataBaselineForm.storage.cloud[this.cloudOptions[key].inputKey] = ''
+        })
       }
     },
-    // 处理无机房复选框变化
-    // handleNoRoomChange(val) {
-    //   if (val) {
-    //     this.dataBaselineForm.storage.room.ownRoom = false;
-    //     this.dataBaselineForm.storage.room.foreignRoom = false;
-    //     this.dataBaselineForm.storage.room.thirdPartyRoom = false;
-    //   }
-    // },
     // 添加来源单位
     handleAddFlowUnit() {
       this.dataBaselineForm.dataFlowUnits.push({ unit: '' });
