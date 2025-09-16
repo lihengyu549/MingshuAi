@@ -70,7 +70,7 @@
         </template>
       </el-table-column>
       <el-table-column label="来源业务系统" align="center" prop="businessName" />
-      <!-- <el-table-column label="分类分级标准" align="center" prop="projectName" /> -->
+      <el-table-column label="分类分级标准" align="center" prop="projectName" />
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
           <div style="display: flex; align-items: center;justify-content: center;">
