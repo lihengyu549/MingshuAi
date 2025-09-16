@@ -5,61 +5,58 @@
       <Title title="数据来源" iconClass="databaseSolid"></Title>
       <el-form-item label="">
         <span class="label-text">请选择数据的产生方式/获取方式（可多选）</span>
-        <el-checkbox-group v-model="dataBaselineForm.dataSources" class="checkbox-two-per-line"
-          @change="handleDataSourceChange">
-          <el-checkbox label="1" class="checkbox-item">系统采集</el-checkbox>
-          <el-checkbox label="2" class="checkbox-item">系统生产</el-checkbox>
-          <el-checkbox label="3" class="checkbox-item">人工填报</el-checkbox>
-          <el-checkbox label="4" class="checkbox-item">交换购买</el-checkbox>
-          <el-checkbox label="5" class="checkbox-item">共享交换</el-checkbox>
-          <el-checkbox label="6" class="checkbox-item">其他</el-checkbox>
-        </el-checkbox-group>
+        <div class="checkbox-two-per-line">
+          <el-checkbox v-model="dataBaselineForm.systemGather">系统采集</el-checkbox>
+          <el-checkbox v-model="dataBaselineForm.systemProduction">系统生产</el-checkbox>
+          <el-checkbox v-model="dataBaselineForm.artificialFillIn">人工填报</el-checkbox>
+          <el-checkbox v-model="dataBaselineForm.dealBuy">交换购买</el-checkbox>
+          <el-checkbox v-model="dataBaselineForm.shareExchange">共享交换</el-checkbox>
+          <el-checkbox v-model="dataBaselineForm.other">其他</el-checkbox>
+        </div>
       </el-form-item>
-      <el-form-item label="其他数据来源" v-if="dataBaselineForm.dataSources.includes('6')">
-        <el-input v-model="dataBaselineForm.otherDataSource" placeholder="请输入其他数据来源"></el-input>
+      <el-form-item label="其他数据来源" v-if="dataBaselineForm.other">
+        <el-input v-model="dataBaselineForm.otherInput" placeholder="请输入其他数据来源"></el-input>
       </el-form-item>
 
       <!-- 单位间数据流转情况 -->
       <Title title="单位间数据流转情况" iconClass="circulation"></Title>
       <!-- 数据来源单位 -->
-      <el-form-item label="数据来源单位" :error="sourceUnitError" :prop="'dataFlowUnits.' + activeSourceIndex + '.unit'">
-        <div v-for="(item, index) in dataBaselineForm.dataFlowUnits" :key="item.id" class="flow-unit-item">
-          <el-input v-model="item.unit" placeholder="请输入来源单位"
-            @blur="checkDuplicateUnit('dataFlowUnits', index)"></el-input>
+      <el-form-item label="数据来源单位">
+        <div v-for="(item, index) in dataBaselineForm.dataSources" :key="index" class="flow-unit-item">
+          <el-input v-model="item.content" placeholder="请输入来源单位"></el-input>
           <el-button @click="handleRemoveFlowUnit(index)" type="text" icon="el-icon-remove-outline"
-            :disabled="dataBaselineForm.dataFlowUnits.length <= 1" style="color: #dcdfe6; font-size: 18px;"></el-button>
+            :disabled="dataBaselineForm.dataSources.length <= 1" style="color: #dcdfe6; font-size: 18px;"></el-button>
         </div>
         <el-button @click="handleAddFlowUnit" type="text" icon="el-icon-plus">添加来源单位</el-button>
       </el-form-item>
 
       <!-- 数据流出单位 -->
-      <el-form-item label="数据流出单位" :error="outUnitError" :prop="'dataFlowOutUnits.' + activeOutIndex + '.unit'">
-        <div v-for="(item, index) in dataBaselineForm.dataFlowOutUnits" :key="item.id" class="flow-unit-item">
-          <el-input v-model="item.unit" placeholder="请输入流出单位"
-            @blur="checkDuplicateUnit('dataFlowOutUnits', index)"></el-input>
+      <el-form-item label="数据流出单位">
+        <div v-for="(item, index) in dataBaselineForm.dataflow" :key="index" class="flow-unit-item">
+          <el-input v-model="item.content" placeholder="请输入流出单位"></el-input>
           <el-button @click="handleRemoveFlowOutUnit(index)" type="text" icon="el-icon-remove-outline"
-            :disabled="dataBaselineForm.dataFlowOutUnits.length <= 1"
-            style="color: #dcdfe6; font-size: 18px;"></el-button>
+            :disabled="dataBaselineForm.dataflow.length <= 1" style="color: #dcdfe6; font-size: 18px;"></el-button>
         </div>
         <el-button @click="handleAddFlowOutUnit" type="text" icon="el-icon-plus">添加流出单位</el-button>
       </el-form-item>
 
-      <!-- 其他内容保持不变 -->
       <!-- 与其他数据处理者的交互 -->
       <Title title="与其他数据处理者的交互" iconClass="peoplesBlue"></Title>
       <span class="label-text">请选择与其他数据的交互类型（可多选）</span>
-      <el-form-item label="" style="color: red;">
+      <el-form-item label="">
         <div class="interaction-checkbox">
-          <template v-for="(item, key) in interactionOptions">
-            <el-checkbox :key="`interaction-checkbox-${key}`" v-model="dataBaselineForm.interaction[key]"
-              :disabled="dataBaselineForm.interaction.noInteraction">
-              {{ item.label }}
-            </el-checkbox>
-            <el-input :key="`interaction-input-${key}`" v-model="dataBaselineForm.interaction[item.inputKey]"
-              :placeholder="item.placeholder" v-if="dataBaselineForm.interaction[key]"></el-input>
-          </template>
-          <el-checkbox v-model="dataBaselineForm.interaction.noInteraction"
-            @change="handleNoInteractionChange">无交互</el-checkbox>
+          <el-checkbox v-model="dataBaselineForm.externalProvisionBox"
+            :disabled="dataBaselineForm.noInteraction">对外提供给</el-checkbox>
+          <el-input v-model="dataBaselineForm.externalProvision" placeholder="请输入具体对象"
+            v-if="dataBaselineForm.externalProvisionBox"></el-input>
+          <el-checkbox v-model="dataBaselineForm.entrustBox" :disabled="dataBaselineForm.noInteraction">委托</el-checkbox>
+          <el-input v-model="dataBaselineForm.entrust" placeholder="请输入具体对象"
+            v-if="dataBaselineForm.entrustBox"></el-input>
+          <el-checkbox v-model="dataBaselineForm.jointDisposalBox"
+            :disabled="dataBaselineForm.noInteraction">与....共同处理</el-checkbox>
+          <el-input v-model="dataBaselineForm.jointDisposal" placeholder="请输入具体对象"
+            v-if="dataBaselineForm.jointDisposalBox"></el-input>
+          <el-checkbox v-model="dataBaselineForm.noInteraction" @change="handleNoInteractionChange">无交互</el-checkbox>
         </div>
       </el-form-item>
 
@@ -68,16 +65,21 @@
       <span class="label-text">云类型（可多选）</span>
       <el-form-item label="">
         <div class="interaction-checkbox">
-          <template v-for="(item, key) in cloudOptions">
-            <el-checkbox :key="`cloud-checkbox-${key}`" v-model="dataBaselineForm.storage.cloud[key]"
-              :disabled="dataBaselineForm.storage.cloud.noCloud">
-              {{ item.label }}
-            </el-checkbox>
-            <el-input :key="`cloud-input-${key}`" v-model="dataBaselineForm.storage.cloud[item.inputKey]"
-              :placeholder="item.placeholder" v-if="dataBaselineForm.storage.cloud[key]"></el-input>
-          </template>
-          <el-checkbox v-model="dataBaselineForm.storage.cloud.noCloud"
-            @change="handleNoCloudChange">非云计算平台</el-checkbox>
+          <el-checkbox v-model="dataBaselineForm.privateCloudBox">私有云</el-checkbox>
+          <el-input v-model="dataBaselineForm.privateCloud" placeholder="请输入具体对象"
+            v-if="dataBaselineForm.privateCloudBox"></el-input>
+          <el-checkbox v-model="dataBaselineForm.publicCloudBox">公有云</el-checkbox>
+          <el-input v-model="dataBaselineForm.publicCloud" placeholder="请输入具体对象"
+            v-if="dataBaselineForm.publicCloudBox"></el-input>
+          <el-checkbox v-model="dataBaselineForm.mixtureCloudBox">混合云</el-checkbox>
+          <el-input v-model="dataBaselineForm.mixtureCloud" placeholder="请输入具体对象"
+            v-if="dataBaselineForm.mixtureCloudBox"></el-input>
+          <el-checkbox v-model="dataBaselineForm.governmentCloudBox">政务云</el-checkbox>
+          <el-input v-model="dataBaselineForm.governmentCloud" placeholder="请输入具体对象"
+            v-if="dataBaselineForm.governmentCloudBox"></el-input>
+          <el-checkbox v-model="dataBaselineForm.noCloudComputingPlatformBox">非云计算平台</el-checkbox>
+          <el-input v-model="dataBaselineForm.noCloudComputingPlatform" placeholder="请输入具体对象"
+            v-if="dataBaselineForm.noCloudComputingPlatformBox"></el-input>
         </div>
       </el-form-item>
 
@@ -85,13 +87,15 @@
       <span class="label-text">机房类型（可多选）</span>
       <el-form-item label="">
         <div class="interaction-checkbox">
-          <template v-for="(item, key) in roomOptions">
-            <el-checkbox :key="`room-checkbox-${key}`" v-model="dataBaselineForm.storage.room[key]">
-              {{ item.label }}
-            </el-checkbox>
-            <el-input :key="`room-input-${key}`" v-model="dataBaselineForm.storage.room[item.inputKey]"
-              :placeholder="item.placeholder" v-if="dataBaselineForm.storage.room[key]"></el-input>
-          </template>
+          <el-checkbox v-model="dataBaselineForm.thisUnitMachineRoomBox">本单位机器机房</el-checkbox>
+          <el-input v-model="dataBaselineForm.thisUnitMachineRoom" placeholder="请输入具体对象"
+            v-if="dataBaselineForm.thisUnitMachineRoomBox"></el-input>
+          <el-checkbox v-model="dataBaselineForm.outerUnitMachineRoomBox">外部单位机器机房</el-checkbox>
+          <el-input v-model="dataBaselineForm.outerUnitMachineRoom" placeholder="请输入具体对象"
+            v-if="dataBaselineForm.outerUnitMachineRoomBox"></el-input>
+          <el-checkbox v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox">第三方托管机房</el-checkbox>
+          <el-input v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoom" placeholder="请输入具体对象"
+            v-if="dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox"></el-input>
         </div>
       </el-form-item>
 
@@ -99,13 +103,12 @@
       <span class="label-text">存储地域（可多选）</span>
       <el-form-item label="">
         <div class="interaction-checkbox">
-          <template v-for="(item, key) in regionOptions">
-            <el-checkbox :key="`region-checkbox-${key}`" v-model="dataBaselineForm.storage.region[key]">
-              {{ item.label }}
-            </el-checkbox>
-            <el-input :key="`region-input-${key}`" v-model="dataBaselineForm.storage.region[item.inputKey]"
-              :placeholder="item.placeholder" v-if="dataBaselineForm.storage.region[key]"></el-input>
-          </template>
+          <el-checkbox v-model="dataBaselineForm.domesticBox">境内</el-checkbox>
+          <el-input v-model="dataBaselineForm.domestic" placeholder="请输入具体对象"
+            v-if="dataBaselineForm.domesticBox"></el-input>
+          <el-checkbox v-model="dataBaselineForm.overseasBox">境外</el-checkbox>
+          <el-input v-model="dataBaselineForm.overseas" placeholder="请输入具体对象"
+            v-if="dataBaselineForm.overseasBox"></el-input>
         </div>
       </el-form-item>
     </el-form>
@@ -125,273 +128,201 @@ export default {
   data() {
     return {
       Loading: false,
-      sourceUnitError: '',
-      outUnitError: '',
-      activeSourceIndex: 0,
-      activeOutIndex: 0,
       dataBaselineForm: {
-        dataSources: [], // 数据来源
-        otherDataSource: '',
-        // 修改数据结构，增加唯一标识id
-        dataFlowUnits: [{ id: this.generateId(), unit: '' }], // 单位间数据流转-来源单位
-        dataFlowOutUnits: [{ id: this.generateId(), unit: '' }], // 单位间数据流转-流出单位
-        interaction: {
-          noInteraction: false,
-          provide: false,
-          entrust: false,
-          processTogether: false,
-          provideInput: '',
-          entrustInput: '',
-          processTogetherInput: ''
-        },
-        storage: {
-          cloud: {
-            noCloud: false,
-            privateCloud: false,
-            publicCloud: false,
-            hybridCloud: false,
-            otherCloud: false,
-            privateCloudInput: '',
-            publicCloudInput: '',
-            hybridCloudInput: '',
-            otherCloudInput: '',
-          },
-          room: {
-            ownRoom: false,
-            foreignRoom: false,
-            thirdPartyRoom: false,
-            ownRoomInput: '',
-            foreignRoomInput: '',
-            thirdPartyRoomInput: ''
-          },
-          region: {
-            domestic: false,
-            overseas: false,
-            domesticDetail: '',
-            overseasDetail: ''
-          },
-        }
+        systemGather: false, // 系统采集
+        systemProduction: false, // 系统生产
+        artificialFillIn: false, // 人工填报
+        dealBuy: false, // 交换购买
+        shareExchange: false, // 共享交换
+        other: false, // 其他
+        otherInput: '', // 其他数据来源
+        externalProvisionBox: false, // 与其他数据处理者的交互-对外提供给
+        externalProvision: '', // 与其他数据处理者的交互-对外提供给-具体对象
+        entrustBox: false, // 与其他数据处理者的交互-委托
+        entrust: '', // 与其他数据处理者的交互-委托-具体对象
+        jointDisposalBox: false, // 与其他数据处理者的交互-与...共同处理
+        jointDisposal: '', // 与其他数据处理者的交互-与...共同处理-具体对象
+        noInteraction: false, // 与其他数据处理者的交互-无交互
+        privateCloudBox: false, // 数据存储位置-云类型-私有云
+        privateCloud: '', // 数据存储位置-云类型-私有云-具体对象
+        publicCloudBox: false, // 数据存储位置-云类型-公有云
+        publicCloud: '', // 数据存储位置-云类型-公有云-具体对象
+        mixtureCloudBox: false, // 数据存储位置-云类型-混合云
+        mixtureCloud: '', // 数据存储位置-云类型-混合云-具体对象
+        governmentCloudBox: false, // 数据存储位置-云类型-政务云
+        governmentCloud: '', // 数据存储位置-云类型-政务云-具体对象
+        noCloudComputingPlatformBox: false, // 数据存储位置-云类型-非云计算平台
+        noCloudComputingPlatform: '', // 数据存储位置-云类型-非云计算平台-具体对象
+        thisUnitMachineRoomBox: false, // 数据存储位置-机房类型-本单位机器机房
+        thisUnitMachineRoom: '', // 数据存储位置-机房类型-本单位机器机房-具体对象
+        outerUnitMachineRoomBox: false, // 数据存储位置-机房类型-外部单位机器机房
+        outerUnitMachineRoom: '', // 数据存储位置-机房类型-外部单位机器机房-具体对象
+        thirdPartyTrusteeshipMachineRoomBox: false, // 数据存储位置-机房类型-第三方托管机房
+        thirdPartyTrusteeshipMachineRoom: '', // 数据存储位置-机房类型-第三方托管机房-具体对象
+        domesticBox: false, // 数据存储位置-存储地域-境内
+        domestic: '', // 数据存储位置-存储地域-境内-具体对象
+        overseasBox: false, // 数据存储位置-存储地域-境外
+        overseas: '', // 数据存储位置-存储地域-境外-具体对象
+        dataSources: [{ content: '' }], // 数据来源单位，移除id字段
+        dataflow: [{ content: '' }], // 数据流出单位，移除id字段
       },
-      // 交互选项配置
-      interactionOptions: {
-        provide: {
-          label: '对外提供',
-          inputKey: 'provideInput',
-          placeholder: '对外提供内容'
-        },
-        entrust: {
-          label: '委托',
-          inputKey: 'entrustInput',
-          placeholder: '委托内容'
-        },
-        processTogether: {
-          label: '与...共同处理',
-          inputKey: 'processTogetherInput',
-          placeholder: '共同处理内容'
-        }
-      },
-      // 云类型选项配置
-      cloudOptions: {
-        privateCloud: {
-          label: '私有云',
-          inputKey: 'privateCloudInput',
-          placeholder: '私有云内容'
-        },
-        publicCloud: {
-          label: '公有云',
-          inputKey: 'publicCloudInput',
-          placeholder: '公有云内容'
-        },
-        hybridCloud: {
-          label: '混合云',
-          inputKey: 'hybridCloudInput',
-          placeholder: '混合云内容'
-        },
-        otherCloud: {
-          label: '政务云',
-          inputKey: 'otherCloudInput',
-          placeholder: '政务云内容'
-        }
-      },
-      // 机房类型选项配置
-      roomOptions: {
-        ownRoom: {
-          label: '本单位机房',
-          inputKey: 'ownRoomInput',
-          placeholder: '本单位机房内容'
-        },
-        foreignRoom: {
-          label: '外单位机房',
-          inputKey: 'foreignRoomInput',
-          placeholder: '外单位机房内容'
-        },
-        thirdPartyRoom: {
-          label: '第三方托管机房',
-          inputKey: 'thirdPartyRoomInput',
-          placeholder: '第三方托管机房内容'
-        }
-      },
-      // 存储地域选项配置
-      regionOptions: {
-        domestic: {
-          label: '境内',
-          inputKey: 'domesticDetail',
-          placeholder: '境内内容'
-        },
-        overseas: {
-          label: '境外',
-          inputKey: 'overseasDetail',
-          placeholder: '境外内容'
-        }
-      }
     }
   },
   watch: {
-    // 监听交互选项变化，自动清除输入内容
-    'dataBaselineForm.interaction': {
-      deep: true,
-      handler(val) {
-        Object.keys(this.interactionOptions).forEach(key => {
-          if (!val[key]) {
-            val[this.interactionOptions[key].inputKey] = ''
-          }
-        })
+    // 监听与其他数据处理者的交互选项变化，自动清除输入内容
+    'dataBaselineForm.externalProvisionBox'(val) {
+      if (!val) {
+        this.dataBaselineForm.externalProvision = '';
       }
     },
+    'dataBaselineForm.entrustBox'(val) {
+      if (!val) {
+        this.dataBaselineForm.entrust = '';
+      }
+    },
+    'dataBaselineForm.jointDisposalBox'(val) {
+      if (!val) {
+        this.dataBaselineForm.jointDisposal = '';
+      }
+    },
+
     // 监听云类型选项变化，自动清除输入内容
-    'dataBaselineForm.storage.cloud': {
-      deep: true,
-      handler(val) {
-        Object.keys(this.cloudOptions).forEach(key => {
-          if (!val[key]) {
-            val[this.cloudOptions[key].inputKey] = ''
-          }
-        })
+    'dataBaselineForm.privateCloudBox'(val) {
+      if (!val) {
+        this.dataBaselineForm.privateCloud = '';
       }
     },
+    'dataBaselineForm.publicCloudBox'(val) {
+      if (!val) {
+        this.dataBaselineForm.publicCloud = '';
+      }
+    },
+    'dataBaselineForm.mixtureCloudBox'(val) {
+      if (!val) {
+        this.dataBaselineForm.mixtureCloud = '';
+      }
+    },
+    'dataBaselineForm.governmentCloudBox'(val) {
+      if (!val) {
+        this.dataBaselineForm.governmentCloud = '';
+      }
+    },
+    'dataBaselineForm.noCloudComputingPlatformBox'(val) {
+      if (!val) {
+        this.dataBaselineForm.noCloudComputingPlatform = '';
+      }
+    },
+
     // 监听机房类型选项变化，自动清除输入内容
-    'dataBaselineForm.storage.room': {
-      deep: true,
-      handler(val) {
-        Object.keys(this.roomOptions).forEach(key => {
-          if (!val[key]) {
-            val[this.roomOptions[key].inputKey] = ''
-          }
-        })
+    'dataBaselineForm.thisUnitMachineRoomBox'(val) {
+      if (!val) {
+        this.dataBaselineForm.thisUnitMachineRoom = '';
       }
     },
+    'dataBaselineForm.outerUnitMachineRoomBox'(val) {
+      if (!val) {
+        this.dataBaselineForm.outerUnitMachineRoom = '';
+      }
+    },
+    'dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox'(val) {
+      if (!val) {
+        this.dataBaselineForm.thirdPartyTrusteeshipMachineRoom = '';
+      }
+    },
+
     // 监听存储地域选项变化，自动清除输入内容
-    'dataBaselineForm.storage.region': {
-      deep: true,
-      handler(val) {
-        Object.keys(this.regionOptions).forEach(key => {
-          if (!val[key]) {
-            val[this.regionOptions[key].inputKey] = ''
-          }
-        })
+    'dataBaselineForm.domesticBox'(val) {
+      if (!val) {
+        this.dataBaselineForm.domestic = '';
+      }
+    },
+    'dataBaselineForm.overseasBox'(val) {
+      if (!val) {
+        this.dataBaselineForm.overseas = '';
+      }
+    },
+
+    // 监听其他数据来源选项变化
+    'dataBaselineForm.other'(val) {
+      if (!val) {
+        this.dataBaselineForm.otherInput = '';
       }
     }
   },
   methods: {
-    // 生成唯一ID
-    generateId() {
-      return Date.now() + Math.floor(Math.random() * 1000);
-    },
-
-    // 检查重复单位
-    checkDuplicateUnit(type, index) {
-      const units = this.dataBaselineForm[type];
-      const currentUnit = units[index].unit.trim();
-      const errorKey = type === 'dataFlowUnits' ? 'sourceUnitError' : 'outUnitError';
-      const activeIndexKey = type === 'dataFlowUnits' ? 'activeSourceIndex' : 'activeOutIndex';
-
-      this[activeIndexKey] = index;
-
-      if (!currentUnit) {
-        this[errorKey] = '单位名称不能为空';
-        return false;
-      }
-
-      // 检查重复
-      const hasDuplicate = units.some((item, i) => {
-        return i !== index && item.unit.trim() === currentUnit;
-      });
-
-      if (hasDuplicate) {
-        this[errorKey] = '存在重复的单位名称';
-        return false;
-      }
-
-      this[errorKey] = '';
-      return true;
-    },
-
     // 处理无交互复选框变化
     handleNoInteractionChange(val) {
       if (val) {
-        Object.keys(this.interactionOptions).forEach(key => {
-          this.dataBaselineForm.interaction[key] = false;
-          this.dataBaselineForm.interaction[this.interactionOptions[key].inputKey] = '';
-        });
-      }
-    },
-
-    // 处理无云复选框变化
-    handleNoCloudChange(val) {
-      if (val) {
-        Object.keys(this.cloudOptions).forEach(key => {
-          this.dataBaselineForm.storage.cloud[key] = false;
-          this.dataBaselineForm.storage.cloud[this.cloudOptions[key].inputKey] = '';
-        });
+        // 勾选无交互时，清空并禁用其他三个选项
+        this.dataBaselineForm.externalProvisionBox = false;
+        this.dataBaselineForm.externalProvision = '';
+        this.dataBaselineForm.entrustBox = false;
+        this.dataBaselineForm.entrust = '';
+        this.dataBaselineForm.jointDisposalBox = false;
+        this.dataBaselineForm.jointDisposal = '';
       }
     },
 
     // 添加来源单位
     handleAddFlowUnit() {
       // 检查最后一个单位是否填写
-      const lastUnit = this.dataBaselineForm.dataFlowUnits[this.dataBaselineForm.dataFlowUnits.length - 1];
-      if (!this.checkDuplicateUnit('dataFlowUnits', this.dataBaselineForm.dataFlowUnits.length - 1)) {
+      const lastIndex = this.dataBaselineForm.dataSources.length - 1;
+      const lastContent = this.dataBaselineForm.dataSources[lastIndex].content.trim();
+
+      if (!lastContent) {
         this.$message.warning('请完善当前单位信息后再添加');
         return;
       }
 
-      this.dataBaselineForm.dataFlowUnits.push({
-        id: this.generateId(),
-        unit: ''
+      // 检查是否有重复单位（通过content对比，排除最后一个元素本身）
+      const hasDuplicate = this.dataBaselineForm.dataSources.some(
+        (item, index) => index !== lastIndex && item.content.trim() === lastContent
+      );
+
+      if (hasDuplicate) {
+        this.$message.warning('存在重复的单位，请修改后再添加');
+        return;
+      }
+
+      this.dataBaselineForm.dataSources.push({
+        content: '' // 新增项不包含id
       });
     },
 
     // 删除来源单位
     handleRemoveFlowUnit(index) {
-      this.dataBaselineForm.dataFlowUnits.splice(index, 1);
-      // 重新检查是否有重复
-      this.dataBaselineForm.dataFlowUnits.forEach((_, i) => {
-        this.checkDuplicateUnit('dataFlowUnits', i);
-      });
+      this.dataBaselineForm.dataSources.splice(index, 1);
     },
 
     // 添加流出单位
     handleAddFlowOutUnit() {
       // 检查最后一个单位是否填写
-      const lastUnit = this.dataBaselineForm.dataFlowOutUnits[this.dataBaselineForm.dataFlowOutUnits.length - 1];
-      if (!this.checkDuplicateUnit('dataFlowOutUnits', this.dataBaselineForm.dataFlowOutUnits.length - 1)) {
+      const lastIndex = this.dataBaselineForm.dataflow.length - 1;
+      const lastContent = this.dataBaselineForm.dataflow[lastIndex].content.trim();
+
+      if (!lastContent) {
         this.$message.warning('请完善当前单位信息后再添加');
         return;
       }
 
-      this.dataBaselineForm.dataFlowOutUnits.push({
-        id: this.generateId(),
-        unit: ''
+      // 检查是否有重复单位（通过content对比，排除最后一个元素本身）
+      const hasDuplicate = this.dataBaselineForm.dataflow.some(
+        (item, index) => index !== lastIndex && item.content.trim() === lastContent
+      );
+
+      if (hasDuplicate) {
+        this.$message.warning('存在重复的单位，请修改后再添加');
+        return;
+      }
+
+      this.dataBaselineForm.dataflow.push({
+        content: ''
       });
     },
 
     // 删除流出单位
     handleRemoveFlowOutUnit(index) {
-      this.dataBaselineForm.dataFlowOutUnits.splice(index, 1);
-      // 重新检查是否有重复
-      this.dataBaselineForm.dataFlowOutUnits.forEach((_, i) => {
-        this.checkDuplicateUnit('dataFlowOutUnits', i);
-      });
+      this.dataBaselineForm.dataflow.splice(index, 1);
     },
 
     // 提交表单
@@ -399,48 +330,50 @@ export default {
       // 先验证单位信息
       let isUnitValid = true;
 
-      this.dataBaselineForm.dataFlowUnits.forEach((_, i) => {
-        if (!this.checkDuplicateUnit('dataFlowUnits', i)) {
+      // 验证数据来源单位
+      this.dataBaselineForm.dataSources.forEach((item) => {
+        if (!item.content.trim()) {
           isUnitValid = false;
         }
       });
 
-      this.dataBaselineForm.dataFlowOutUnits.forEach((_, i) => {
-        if (!this.checkDuplicateUnit('dataFlowOutUnits', i)) {
+      // 验证数据流出单位
+      this.dataBaselineForm.dataflow.forEach((item) => {
+        if (!item.content.trim()) {
           isUnitValid = false;
         }
       });
 
       if (!isUnitValid) {
+        this.$message.warning('请完善所有单位信息');
         return;
       }
 
-      this.$refs.dataBaselineForm.validate((valid) => {
-        if (valid) {
-          console.log('表单提交', this.dataBaselineForm);
-          // 这里可以添加提交到后端的逻辑
-        } else {
-          console.log('表单验证失败');
-          return false;
-        }
-      });
+      // 检查数据来源至少选择一项
+      const hasDataSource = this.dataBaselineForm.systemGather ||
+        this.dataBaselineForm.systemProduction ||
+        this.dataBaselineForm.artificialFillIn ||
+        this.dataBaselineForm.dealBuy ||
+        this.dataBaselineForm.shareExchange ||
+        this.dataBaselineForm.other;
+
+      if (!hasDataSource) {
+        this.$message.warning('请至少选择一种数据来源');
+        return;
+      }
+
+      // 其他验证逻辑...
+      console.log('表单提交', this.dataBaselineForm);
+      // 这里可以添加提交到后端的逻辑
     },
 
     // 重置表单
     handleReset() {
       this.$refs.dataBaselineForm.resetFields();
       // 重置自定义的数组等数据
-      this.dataBaselineForm.dataFlowUnits = [{ id: this.generateId(), unit: '' }];
-      this.dataBaselineForm.dataFlowOutUnits = [{ id: this.generateId(), unit: '' }];
-      this.sourceUnitError = '';
-      this.outUnitError = '';
+      this.dataBaselineForm.dataSources = [{ content: '' }];
+      this.dataBaselineForm.dataflow = [{ content: '' }];
       this.$router.back();
-    },
-
-    // 数据来源变化处理
-    handleDataSourceChange(val) {
-      console.log('val', val);
-      console.log('this.dataBaselineForm.dataSources', this.dataBaselineForm.dataSources);
     },
   },
 }
