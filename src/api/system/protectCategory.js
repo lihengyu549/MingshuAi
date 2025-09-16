@@ -359,3 +359,21 @@ export function getCategoryAttachDataRuleByParentId(data) {
     params: data,
   })
 }
+
+// 数据摸底  新增/修改接口
+export function addOrUpdateDataFeelBottomByCategoryId(params) {
+  return request({
+    url: `/system/category/addOrUpdateDataFeelBottomByCategoryId`,
+    method: 'post',
+    data: params,
+  })
+}
+
+// 数据摸底查询接口
+export function getCategoryAttachDataFeelBottomByCategoryId(params) {
+  return request({
+    url: '/system/category/getCategoryAttachDataFeelBottomByCategoryId',
+    method: 'get',
+    params: params,
+  })
+}

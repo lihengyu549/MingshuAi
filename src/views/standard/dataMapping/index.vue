@@ -121,6 +121,7 @@
 </template>
 
 <script>
+import {getCategoryAttachDataFeelBottomByCategoryId, addOrUpdateDataFeelBottomByCategoryId } from "@/api/system/protectCategory";
 export default {
   name: 'dataMapping',
   props: {
@@ -128,6 +129,7 @@ export default {
   data() {
     return {
       Loading: false,
+      query: {},
       dataBaselineForm: {
         systemGather: false, // 系统采集
         systemProduction: false, // 系统生产
@@ -249,7 +251,29 @@ export default {
       }
     }
   },
+  created() {
+    // 初始化时，根据路由参数设置表单数据
+    if (this.$route.query.row) {
+      this.query = JSON.parse(JSON.stringify(this.$route.query.row));
+    }
+  },
+  mounted() {
+    this.initData();
+  },
   methods: {
+    //初始化请求摸底数据
+    async initData() {
+      if (this.query.id) {
+        try {
+          const res = await getCategoryAttachDataFeelBottomByCategoryId({ categoryId: this.query.categoryId });
+          if (res.code === 200) {
+            console.log('数据摸底详情:', res.data);
+          }
+        } catch (error) {
+          console.error('获取数据摸底详情失败:', error);
+        }
+      }
+    },
     // 处理无交互复选框变化
     handleNoInteractionChange(val) {
       if (val) {
@@ -326,7 +350,7 @@ export default {
     },
 
     // 提交表单
-    handleSubmit() {
+    async handleSubmit() {
       // 先验证单位信息
       let isUnitValid = true;
 
@@ -364,7 +388,43 @@ export default {
 
       // 其他验证逻辑...
       console.log('表单提交', this.dataBaselineForm);
-      // 这里可以添加提交到后端的逻辑
+      const params = {
+        id: this.query.id,
+        categoryDataId: this.query.categoryId,
+        systemGather: this.dataBaselineForm.systemGather ? '1' : '0',
+        systemProduction: this.dataBaselineForm.systemProduction ? '1' : '0',
+        artificialFillIn: this.dataBaselineForm.artificialFillIn ? '1' : '0',
+        dealBuy: this.dataBaselineForm.dealBuy ? '1' : '0',
+        shareExchange: this.dataBaselineForm.shareExchange ? '1' : '0',
+        other: this.dataBaselineForm.otherInput,
+        externalProvision: this.dataBaselineForm.externalProvision,
+        entrust: this.dataBaselineForm.entrust,
+        jointDisposal: this.dataBaselineForm.jointDisposal,
+        noInteraction: this.dataBaselineForm.noInteraction ? '1' : '0',
+        privateCloud: this.dataBaselineForm.privateCloud,
+        publicCloud: this.dataBaselineForm.publicCloud,
+        mixtureCloud: this.dataBaselineForm.mixtureCloud,
+        governmentCloud: this.dataBaselineForm.governmentCloud,
+        noCloudComputingPlatform: this.dataBaselineForm.noCloudComputingPlatform,
+        thisUnitMachineRoom: this.dataBaselineForm.thisUnitMachineRoom,
+        outerUnitMachineRoom: this.dataBaselineForm.outerUnitMachineRoom,
+        thirdPartyTrusteeshipMachineRoom: this.dataBaselineForm.thirdPartyTrusteeshipMachineRoom,
+        domestic: this.dataBaselineForm.domestic,
+        overseas: this.dataBaselineForm.overseas,
+        dataSources: this.dataBaselineForm.dataSources,
+        dataflow: this.dataBaselineForm.dataflow,
+      }
+      try {
+        const res = await addOrUpdateDataFeelBottomByCategoryId(params);
+        if (res.code === 200) {
+          this.$message.success('提交成功');
+          this.$router.back();
+        } else {
+          this.$message.error(res.msg || '提交失败');
+        }
+      } catch (error) {
+        this.$message.error('提交失败');
+      }
     },
 
     // 重置表单
