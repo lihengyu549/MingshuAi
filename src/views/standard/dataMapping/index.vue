@@ -2,7 +2,7 @@
   <div class="app-container" v-loading="Loading">
     <el-form slot="body" ref="dataBaselineForm" :model="dataBaselineForm" label-width="120px" label-position="top">
       <!-- 数据来源 -->
-      <Title title="数据来源"></Title>
+      <Title title="数据来源" iconClass="databaseSolid"></Title>
       <el-form-item label="">
         <span class="label-text">请选择数据的产生方式/获取方式（可多选）</span>
         <el-checkbox-group v-model="dataBaselineForm.dataSources" class="checkbox-two-per-line"
@@ -20,7 +20,7 @@
       </el-form-item>
 
       <!-- 单位间数据流转情况 -->
-      <Title title="单位间数据流转情况"></Title>
+      <Title title="单位间数据流转情况" iconClass="circulation"></Title>
       <!-- 数据来源单位 -->
       <el-form-item label="数据来源单位">
         <div v-for="(item, index) in dataBaselineForm.dataFlowUnits" :key="index" class="flow-unit-item">
@@ -42,7 +42,7 @@
       </el-form-item>
 
       <!-- 与其他数据处理者的交互 -->
-      <Title title="与其他数据处理者的交互"></Title>
+      <Title title="与其他数据处理者的交互" iconClass="peoplesBlue"></Title>
       <span class="label-text">请选择与其他数据的交互类型（可多选）</span>
       <el-form-item label="" style="color: red;">
         <div class="interaction-checkbox">
@@ -64,7 +64,7 @@
       </el-form-item>
 
       <!-- 数据存储位置-云类型 -->
-      <Title title="数据存储位置"></Title>
+      <Title title="数据存储位置" iconClass="storage"></Title>
       <span class="label-text">云类型（可多选）</span>
       <el-form-item label="">
         <div class="interaction-checkbox">
@@ -134,10 +134,6 @@
 export default {
   name: 'dataMapping',
   props: {
-    title: {
-      type: String,
-      default: '基本信息'
-    }
   },
   data() {
     return {
