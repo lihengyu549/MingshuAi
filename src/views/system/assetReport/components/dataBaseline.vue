@@ -8,42 +8,42 @@
             <Title title="基础数据信息" iconClass="info"></Title>
             <!-- 基础数据信息 -->
             <el-form-item label="数据名称">
-                <el-input v-model="formData.dataName" disabled></el-input>
+                <el-input v-model="dataBaselineForm.dataName" disabled></el-input>
             </el-form-item>
             <!-- 拟定数据级别（单选） -->
             <el-form-item label="拟定数据级别">
-                <el-radio label="一般数据" disabled>一般数据</el-radio>
-                <el-radio label="重要及以上数据" disabled>重要及以上数据</el-radio>
+                <el-radio v-model="dataBaselineForm.dataLevel" label="1" disabled>一般数据</el-radio>
+                <el-radio v-model="dataBaselineForm.dataLevel" label="2" disabled>重要及以上数据</el-radio>
             </el-form-item>
             <!-- 数据类别 -->
             <el-form-item label="数据类别">
-                <el-input v-model="formData.dataCategory" disabled></el-input>
+                <el-input v-model="dataBaselineForm.dataType" disabled></el-input>
             </el-form-item>
             <!-- 数据安全责任部门 -->
             <el-form-item label="数据安全责任部门">
-                <el-input v-model="formData.dataSecurityDept" disabled></el-input>
+                <el-input v-model="dataBaselineForm.deptName" disabled></el-input>
             </el-form-item>
             <!-- 数据安全负责人 -->
             <el-form-item label="数据安全负责人">
-                <el-input v-model="formData.dataSecurityPerson" disabled></el-input>
+                <el-input v-model="dataBaselineForm.dataOwner" disabled></el-input>
             </el-form-item>
             <!-- 个人信息涉及情况（多选） -->
             <el-form-item label="个人信息涉及情况">
                 <div class="interaction-checkbox">
-                    <el-checkbox disabled>涉及敏感个人信息</el-checkbox>
-                    <el-checkbox disabled>涉及未成年人的个人信息</el-checkbox>
-                    <el-checkbox disabled>涉及一般个人信息</el-checkbox>
-                    <el-checkbox disabled>不涉及</el-checkbox>
+                    <el-checkbox v-model="dataBaselineForm.sensitivePersonalData" disabled>涉及敏感个人信息</el-checkbox>
+                    <el-checkbox v-model="dataBaselineForm.noPersonalData" disabled>涉及未成年人的个人信息</el-checkbox>
+                    <el-checkbox v-model="dataBaselineForm.ordinaryPersonalData" disabled>涉及一般个人信息</el-checkbox>
+                    <el-checkbox v-model="dataBaselineForm.personalData" disabled>不涉及</el-checkbox>
                 </div>
             </el-form-item>
             <!-- 数据总量 -->
             <el-form-item label="数据总量">
-                数据总量：<el-tag type="primary"><b>{{ formData.dataTotal || '200GB' }}</b></el-tag><br>
-                涉及个人信息：<el-tag type="primary"><b>{{ formData.personalInfoCount || '10万条' }}</b></el-tag>
+                数据总量：<el-tag type="primary"><b>{{ dataBaselineForm.dateSize }}</b></el-tag><br>
+                涉及个人信息：<el-tag type="primary"><b>{{ dataBaselineForm.piiCount }}</b></el-tag>
             </el-form-item>
             <!-- 数据月增长量 -->
             <el-form-item label="数据月增长量">
-                数据月增长量：<el-tag type="primary"><b>{{ formData.monthlyGrowth || '10GB' }}</b></el-tag>
+                数据月增长量：<el-tag type="primary"><b>{{ dataBaselineForm.monthAmountOfIncrease }}</b></el-tag>
             </el-form-item>
 
             <!-- 数据来源 -->
@@ -163,6 +163,18 @@ export default {
         return {
             Loading: false,
             dataBaselineForm: {
+                dataName: '', // 数据名称
+                dataLevel: '', // 数据级别
+                dataType: '', // 数据类别
+                dataOwner: '', // 数据安全负责人
+                deptName: '', // 数据安全责任部门
+                noPersonalData: '', // 未成年信息
+                ordinaryPersonalData: '', // 一般个人信息
+                sensitivePersonalData: '', // 敏感个人信息
+                personalData: '', // 不涉及
+                dateSize: '', // 数据总量
+                piiCount: '', // 个人信息条数
+                monthAmountOfIncrease: '', // 数据月增长量
                 systemGather: false, // 系统采集
                 systemProduction: false, // 系统生产
                 artificialFillIn: false, // 人工填报
@@ -210,35 +222,12 @@ export default {
             // 当前选中的下拉值
             selectedValue: "employee",
             // 不同选项对应的表单数据（这里仅为示例结构，需根据实际业务补充）
-            formDataMap: {
-                employee: {
-                    dataName: "员工信息",
-                    dataCategory: "经营-人力数据",
-                    dataSecurityDept: "IT",
-                    dataSecurityPerson: "张三",
-                    dataTotal: "200GB",
-                    personalInfoCount: "10万条",
-                    monthlyGrowth: "10GB",
-                    // 其他员工信息相关字段...
-                },
-                other: {
-                    dataName: "其他信息",
-                    dataCategory: "其他分类",
-                    dataSecurityDept: "其他部门",
-                    dataSecurityPerson: "李四",
-                    dataTotal: "100GB",
-                    personalInfoCount: "5万条",
-                    monthlyGrowth: "5GB",
-                    // 其他信息相关字段...
-                },
-            },
             // 用于表单双向绑定的当前数据
-            formData: {},
         }
     },
     watch: {
         selectedValue(newVal) {
-            this.formData = this.formDataMap[newVal] || {};
+            this.dataBaselineForm = this.formDataMap[newVal] || {};
         },
     },
     created() {
