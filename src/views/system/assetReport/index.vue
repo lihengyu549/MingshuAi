@@ -31,7 +31,7 @@
           <div class="hede_bgc">
             <div class="hede_bgc-text">{{ activeName }}</div>
           </div>
-          <dataBaseline />
+          <dataBaseline :categoryId="queryParams.categoryId" ref="dataBaseline" />
         </el-tab-pane>
       </el-tabs>
 

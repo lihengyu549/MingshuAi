@@ -377,3 +377,21 @@ export function getCategoryAttachDataFeelBottomByCategoryId(params) {
     params: params,
   })
 }
+
+// 下拉框查询接口
+export function getCategoryAttachDataByCategoryIds(params) {
+  return request({
+    url: '/system/category/getCategoryAttachDataByCategoryId',
+    method: 'get',
+    params: params,
+  })
+}
+
+// 数据摸底调查表
+export function listDataFeelBottomSurvey(params) {
+  return request({
+    url: '/system/dashboard/listDataFeelBottomSurvey',
+    method: 'get',
+    params: params,
+  })
+}

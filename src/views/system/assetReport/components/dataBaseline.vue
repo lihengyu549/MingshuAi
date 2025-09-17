@@ -1,8 +1,7 @@
 <template>
     <div class="dataBaseline" v-loading="Loading">
         <el-select v-model="selectedValue" class="select-top" placeholder="请选择">
-            <el-option v-for="item in selectOptions" :key="item.value" :label="item.label"
-                :value="item.value"></el-option>
+            <el-option v-for="item in selectOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
         </el-select>
         <el-form slot="body" ref="dataBaselineForm" :model="dataBaselineForm" label-width="120px" label-position="top">
             <Title title="基础数据信息" iconClass="info"></Title>
@@ -60,7 +59,7 @@
                 </div>
             </el-form-item>
             <el-form-item label="其他数据来源" v-if="dataBaselineForm.other">
-                <el-input v-model="dataBaselineForm.otherInput" placeholder="其他数据来源" disabled></el-input>
+                <el-input v-model="dataBaselineForm.otherInput" disabled></el-input>
             </el-form-item>
 
             <!-- 单位间数据流转情况 -->
@@ -68,14 +67,14 @@
             <!-- 数据来源单位 -->
             <el-form-item label="数据来源单位">
                 <div v-for="(item, index) in dataBaselineForm.dataSources" :key="index" class="flow-unit-item">
-                    <el-input v-model="item.content" placeholder="来源单位" disabled></el-input>
+                    <el-input v-model="item.content" disabled></el-input>
                 </div>
             </el-form-item>
 
             <!-- 数据流出单位 -->
             <el-form-item label="数据流出单位">
                 <div v-for="(item, index) in dataBaselineForm.dataflow" :key="index" class="flow-unit-item">
-                    <el-input v-model="item.content" placeholder="流出单位" disabled></el-input>
+                    <el-input v-model="item.content" disabled></el-input>
                 </div>
             </el-form-item>
 
@@ -85,13 +84,13 @@
             <el-form-item label="">
                 <div class="interaction-checkbox">
                     <el-checkbox v-model="dataBaselineForm.externalProvisionBox" disabled>对外提供给</el-checkbox>
-                    <el-input v-model="dataBaselineForm.externalProvision" placeholder="具体对象"
+                    <el-input v-model="dataBaselineForm.externalProvision"
                         v-if="dataBaselineForm.externalProvisionBox" disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.entrustBox" disabled>委托</el-checkbox>
-                    <el-input v-model="dataBaselineForm.entrust" placeholder="具体对象" v-if="dataBaselineForm.entrustBox"
+                    <el-input v-model="dataBaselineForm.entrust" v-if="dataBaselineForm.entrustBox"
                         disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.jointDisposalBox" disabled>与....共同处理</el-checkbox>
-                    <el-input v-model="dataBaselineForm.jointDisposal" placeholder="具体对象"
+                    <el-input v-model="dataBaselineForm.jointDisposal"
                         v-if="dataBaselineForm.jointDisposalBox" disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.noInteraction" disabled>无交互</el-checkbox>
                 </div>
@@ -103,19 +102,19 @@
             <el-form-item label="">
                 <div class="interaction-checkbox">
                     <el-checkbox v-model="dataBaselineForm.privateCloudBox" disabled>私有云</el-checkbox>
-                    <el-input v-model="dataBaselineForm.privateCloud" placeholder="具体对象"
+                    <el-input v-model="dataBaselineForm.privateCloud"
                         v-if="dataBaselineForm.privateCloudBox" disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.publicCloudBox" disabled>公有云</el-checkbox>
-                    <el-input v-model="dataBaselineForm.publicCloud" placeholder="具体对象"
+                    <el-input v-model="dataBaselineForm.publicCloud"
                         v-if="dataBaselineForm.publicCloudBox" disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.mixtureCloudBox" disabled>混合云</el-checkbox>
-                    <el-input v-model="dataBaselineForm.mixtureCloud" placeholder="具体对象"
+                    <el-input v-model="dataBaselineForm.mixtureCloud"
                         v-if="dataBaselineForm.mixtureCloudBox" disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.governmentCloudBox" disabled>政务云</el-checkbox>
-                    <el-input v-model="dataBaselineForm.governmentCloud" placeholder="具体对象"
+                    <el-input v-model="dataBaselineForm.governmentCloud"
                         v-if="dataBaselineForm.governmentCloudBox" disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.noCloudComputingPlatformBox" disabled>非云计算平台</el-checkbox>
-                    <el-input v-model="dataBaselineForm.noCloudComputingPlatform" placeholder="具体对象"
+                    <el-input v-model="dataBaselineForm.noCloudComputingPlatform"
                         v-if="dataBaselineForm.noCloudComputingPlatformBox" disabled></el-input>
                 </div>
             </el-form-item>
@@ -125,14 +124,14 @@
             <el-form-item label="">
                 <div class="interaction-checkbox">
                     <el-checkbox v-model="dataBaselineForm.thisUnitMachineRoomBox" disabled>本单位机器机房</el-checkbox>
-                    <el-input v-model="dataBaselineForm.thisUnitMachineRoom" placeholder="具体对象"
+                    <el-input v-model="dataBaselineForm.thisUnitMachineRoom"
                         v-if="dataBaselineForm.thisUnitMachineRoomBox" disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.outerUnitMachineRoomBox" disabled>外部单位机器机房</el-checkbox>
-                    <el-input v-model="dataBaselineForm.outerUnitMachineRoom" placeholder="具体对象"
+                    <el-input v-model="dataBaselineForm.outerUnitMachineRoom"
                         v-if="dataBaselineForm.outerUnitMachineRoomBox" disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox"
                         disabled>第三方托管机房</el-checkbox>
-                    <el-input v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoom" placeholder="具体对象"
+                    <el-input v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoom"
                         v-if="dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox" disabled></el-input>
                 </div>
             </el-form-item>
@@ -142,10 +141,10 @@
             <el-form-item label="">
                 <div class="interaction-checkbox">
                     <el-checkbox v-model="dataBaselineForm.domesticBox" disabled>境内</el-checkbox>
-                    <el-input v-model="dataBaselineForm.domestic" placeholder="具体对象" v-if="dataBaselineForm.domesticBox"
+                    <el-input v-model="dataBaselineForm.domestic" v-if="dataBaselineForm.domesticBox"
                         disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.overseasBox" disabled>境外</el-checkbox>
-                    <el-input v-model="dataBaselineForm.overseas" placeholder="具体对象" v-if="dataBaselineForm.overseasBox"
+                    <el-input v-model="dataBaselineForm.overseas" v-if="dataBaselineForm.overseasBox"
                         disabled></el-input>
                 </div>
             </el-form-item>
@@ -154,10 +153,14 @@
 </template>
 
 <script>
-import { getCategoryAttachDataFeelBottomByCategoryId } from "@/api/system/protectCategory";
+import { getCategoryAttachDataByCategoryIds, listDataFeelBottomSurvey } from "@/api/system/protectCategory";
 export default {
     name: 'dataBaseline',
     props: {
+        categoryId: {
+            type: [String, Number],
+            default: ''
+        }
     },
     data() {
         return {
@@ -214,78 +217,110 @@ export default {
             },
 
             // 下拉选项
-            selectOptions: [
-                { label: "员工信息", value: "employee" },
-                { label: "其他信息", value: "other" },
-                // 可根据需求添加更多选项
-            ],
+            selectOptions: [],
             // 当前选中的下拉值
-            selectedValue: "employee",
+            selectedValue: "",
             // 不同选项对应的表单数据（这里仅为示例结构，需根据实际业务补充）
             // 用于表单双向绑定的当前数据
         }
     },
     watch: {
         selectedValue(newVal) {
-            this.dataBaselineForm = this.formDataMap[newVal] || {};
+            // this.dataBaselineForm = this.formDataMap[newVal] || {};
         },
     },
     created() {
     },
     mounted() {
-        this.initData();
+        // 下拉框查询 等待父组件异步完成
+        setTimeout(() => {
+            this.getSelectList();
+        }, 100);
     },
     methods: {
+        // 下拉框查询
+        getSelectList() {
+            const params = {
+                categoryId: this.categoryId
+            }
+            try {
+                getCategoryAttachDataByCategoryIds(params).then((response) => {
+                    if (response.code === 200) {
+                        this.selectOptions = response.data;
+                        this.selectedValue = response.data[0]?.id || '';
+                        this.initData(response.data[0]?.id);
+                    }
+                });
+            } catch (error) {
+                console.error('下拉框查询失败:', error);
+            }
+        },
         //初始化请求摸底数据
-        initData() {
-            // if (this.query.id) {
-            //     try {
-            //         const res = await getCategoryAttachDataFeelBottomByCategoryId({ categoryId: this.query.categoryId });
-            //         if (res.code === 200) {
-            //             console.log('数据摸底详情:', res.data);
-            //             this.dataBaselineForm = {
-            //                 systemGather: res.data.systemGather === '1', // 系统采集
-            //                 systemProduction: res.data.systemProduction === '1', // 系统生产
-            //                 artificialFillIn: res.data.artificialFillIn === '1', // 人工填报
-            //                 dealBuy: res.data.dealBuy === '1', // 交换购买
-            //                 shareExchange: res.data.shareExchange === '1', // 共享交换
-            //                 other: res.data.other != '' ? true : false, // 其他
-            //                 otherInput: res.data.other != '' ? res.data.other : '', // 其他数据来源
-            //                 externalProvisionBox: res.data.externalProvision != '' ? true : false, // 与其他数据处理者的交互-对外提供给
-            //                 externalProvision: res.data.externalProvision != '' ? res.data.externalProvision : '', // 与其他数据处理者的交互-对外提供给-具体对象
-            //                 entrustBox: res.data.entrust != '' ? true : false, // 与其他数据处理者的交互-委托
-            //                 entrust: res.data.entrust != '' ? res.data.entrust : '', // 与其他数据处理者的交互-委托-具体对象
-            //                 jointDisposalBox: res.data.jointDisposal != '' ? true : false, // 与其他数据处理者的交互-与...共同处理
-            //                 jointDisposal: res.data.jointDisposal != '' ? res.data.jointDisposal : '', // 与其他数据处理者的交互-与...共同处理-具体对象
-            //                 noInteraction: res.data.noInteraction === '1', // 与其他数据处理者的交互-无交互
-            //                 privateCloudBox: res.data.privateCloud != '' ? true : false, // 数据存储位置-云类型-私有云
-            //                 privateCloud: res.data.privateCloud != '' ? res.data.privateCloud : '', // 数据存储位置-云类型-私有云-具体对象
-            //                 publicCloudBox: res.data.publicCloud != '' ? true : false, // 数据存储位置-云类型-公有云
-            //                 publicCloud: res.data.publicCloud != '' ? res.data.publicCloud : '', // 数据存储位置-云类型-公有云-具体对象
-            //                 mixtureCloudBox: res.data.mixtureCloud != '' ? true : false, // 数据存储位置-云类型-混合云
-            //                 mixtureCloud: res.data.mixtureCloud != '' ? res.data.mixtureCloud : '', // 数据存储位置-云类型-混合云-具体对象
-            //                 governmentCloudBox: res.data.governmentCloud != '' ? true : false, // 数据存储位置-云类型-政务云
-            //                 governmentCloud: res.data.governmentCloud != '' ? res.data.governmentCloud : '', // 数据存储位置-云类型-政务云-具体对象
-            //                 noCloudComputingPlatformBox: res.data.noCloudComputingPlatform != '' ? true : false, // 数据存储位置-云类型-非云计算平台
-            //                 noCloudComputingPlatform: res.data.noCloudComputingPlatform != '' ? res.data.noCloudComputingPlatform : '', // 数据存储位置-云类型-非云计算平台-具体对象
-            //                 thisUnitMachineRoomBox: res.data.thisUnitMachineRoom != '' ? true : false, // 数据存储位置-机房类型-本单位机器机房
-            //                 thisUnitMachineRoom: res.data.thisUnitMachineRoom != '' ? res.data.thisUnitMachineRoom : '', // 数据存储位置-机房类型-本单位机器机房-具体对象
-            //                 outerUnitMachineRoomBox: res.data.outerUnitMachineRoom != '' ? true : false, // 数据存储位置-机房类型-外部单位机器机房
-            //                 outerUnitMachineRoom: res.data.outerUnitMachineRoom != '' ? res.data.outerUnitMachineRoom : '', // 数据存储位置-机房类型-外部单位机器机房-具体对象
-            //                 thirdPartyTrusteeshipMachineRoomBox: res.data.thirdPartyTrusteeshipMachineRoom != '' ? true : false, // 数据存储位置-机房类型-第三方托管机房
-            //                 thirdPartyTrusteeshipMachineRoom: res.data.thirdPartyTrusteeshipMachineRoom != '' ? res.data.thirdPartyTrusteeshipMachineRoom : '', // 数据存储位置-机房类型-第三方托管机房-具体对象
-            //                 domesticBox: res.data.domestic != '' ? true : false, // 数据存储位置-存储地域-境内
-            //                 domestic: res.data.domestic != '' ? res.data.domestic : '', // 数据存储位置-存储地域-境内-具体对象
-            //                 overseasBox: res.data.overseas != '' ? true : false, // 数据存储位置-存储地域-境外
-            //                 overseas: res.data.overseas != '' ? res.data.overseas : '', // 数据存储位置-存储地域-境外-具体对象
-            //                 dataSources: res.data.dataSources || [], // 来源单位
-            //                 dataflow: res.data.dataflow || [], // 流出单位
-            //             }
-            //         }
-            //     } catch (error) {
-            //         console.error('获取数据摸底详情失败:', error);
-            //     }
-            // }
+        async initData(categoryDataId) {
+            if (this.categoryId) {
+                const params = {
+                    categoryId: this.categoryId,
+                    categoryDataId: categoryDataId
+                }
+                try {
+                    const res = await listDataFeelBottomSurvey(params);
+                    if (res.code === 200) {
+                        console.log('数据摸底详情:', res.data);
+                        this.dataBaselineForm = {
+                            dataName: res.data.dataName, // 数据名称
+                            dataLevel: res.data.dataLevel, // 数据级别
+                            dataType: res.data.dataType, // 数据类别
+                            dataOwner: res.data.dataOwner, // 数据安全负责人
+                            deptName: res.data.deptName, // 数据安全责任部门
+                            noPersonalData: res.data.noPersonalData === '1' ? true : false, // 未成年信息
+                            ordinaryPersonalData: res.data.ordinaryPersonalData === '1' ? true : false, // 一般个人信息
+                            sensitivePersonalData: res.data.sensitivePersonalData === '1' ? true : false, // 敏感个人信息
+                            personalData: res.data.personalData === '1' ? true : false, // 不涉及
+                            dateSize: res.data.dateSize, // 数据总量
+                            piiCount: res.data.piiCount, // 个人信息条数
+                            monthAmountOfIncrease: res.data.monthAmountOfIncrease, // 数据月增长量
+                            systemGather: res.data.systemGather === '1', // 系统采集
+                            systemProduction: res.data.systemProduction === '1', // 系统生产
+                            artificialFillIn: res.data.artificialFillIn === '1', // 人工填报
+                            dealBuy: res.data.dealBuy === '1', // 交换购买
+                            shareExchange: res.data.shareExchange === '1', // 共享交换
+                            other: res.data.other != '' ? true : false, // 其他
+                            otherInput: res.data.other != '' ? res.data.other : '', // 其他数据来源
+                            externalProvisionBox: res.data.externalProvision != '' ? true : false, // 与其他数据处理者的交互-对外提供给
+                            externalProvision: res.data.externalProvision != '' ? res.data.externalProvision : '', // 与其他数据处理者的交互-对外提供给-具体对象
+                            entrustBox: res.data.entrust != '' ? true : false, // 与其他数据处理者的交互-委托
+                            entrust: res.data.entrust != '' ? res.data.entrust : '', // 与其他数据处理者的交互-委托-具体对象
+                            jointDisposalBox: res.data.jointDisposal != '' ? true : false, // 与其他数据处理者的交互-与...共同处理
+                            jointDisposal: res.data.jointDisposal != '' ? res.data.jointDisposal : '', // 与其他数据处理者的交互-与...共同处理-具体对象
+                            noInteraction: res.data.noInteraction === '1', // 与其他数据处理者的交互-无交互
+                            privateCloudBox: res.data.privateCloud != '' ? true : false, // 数据存储位置-云类型-私有云
+                            privateCloud: res.data.privateCloud != '' ? res.data.privateCloud : '', // 数据存储位置-云类型-私有云-具体对象
+                            publicCloudBox: res.data.publicCloud != '' ? true : false, // 数据存储位置-云类型-公有云
+                            publicCloud: res.data.publicCloud != '' ? res.data.publicCloud : '', // 数据存储位置-云类型-公有云-具体对象
+                            mixtureCloudBox: res.data.mixtureCloud != '' ? true : false, // 数据存储位置-云类型-混合云
+                            mixtureCloud: res.data.mixtureCloud != '' ? res.data.mixtureCloud : '', // 数据存储位置-云类型-混合云-具体对象
+                            governmentCloudBox: res.data.governmentCloud != '' ? true : false, // 数据存储位置-云类型-政务云
+                            governmentCloud: res.data.governmentCloud != '' ? res.data.governmentCloud : '', // 数据存储位置-云类型-政务云-具体对象
+                            noCloudComputingPlatformBox: res.data.noCloudComputingPlatform != '' ? true : false, // 数据存储位置-云类型-非云计算平台
+                            noCloudComputingPlatform: res.data.noCloudComputingPlatform != '' ? res.data.noCloudComputingPlatform : '', // 数据存储位置-云类型-非云计算平台-具体对象
+                            thisUnitMachineRoomBox: res.data.thisUnitMachineRoom != '' ? true : false, // 数据存储位置-机房类型-本单位机器机房
+                            thisUnitMachineRoom: res.data.thisUnitMachineRoom != '' ? res.data.thisUnitMachineRoom : '', // 数据存储位置-机房类型-本单位机器机房-具体对象
+                            outerUnitMachineRoomBox: res.data.outerUnitMachineRoom != '' ? true : false, // 数据存储位置-机房类型-外部单位机器机房
+                            outerUnitMachineRoom: res.data.outerUnitMachineRoom != '' ? res.data.outerUnitMachineRoom : '', // 数据存储位置-机房类型-外部单位机器机房-具体对象
+                            thirdPartyTrusteeshipMachineRoomBox: res.data.thirdPartyTrusteeshipMachineRoom != '' ? true : false, // 数据存储位置-机房类型-第三方托管机房
+                            thirdPartyTrusteeshipMachineRoom: res.data.thirdPartyTrusteeshipMachineRoom != '' ? res.data.thirdPartyTrusteeshipMachineRoom : '', // 数据存储位置-机房类型-第三方托管机房-具体对象
+                            domesticBox: res.data.domestic != '' ? true : false, // 数据存储位置-存储地域-境内
+                            domestic: res.data.domestic != '' ? res.data.domestic : '', // 数据存储位置-存储地域-境内-具体对象
+                            overseasBox: res.data.overseas != '' ? true : false, // 数据存储位置-存储地域-境外
+                            overseas: res.data.overseas != '' ? res.data.overseas : '', // 数据存储位置-存储地域-境外-具体对象
+                            dataSources: res.data.dataSources || [], // 来源单位
+                            dataflow: res.data.dataflow || [], // 流出单位
+                        }
+                    }
+                } catch (error) {
+                    console.error('获取数据摸底详情失败:', error);
+                }
+            }
         },
     },
 }
