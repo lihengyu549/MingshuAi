@@ -59,7 +59,6 @@
           <!-- <el-button type="primary" icon="el-icon-link" size="medium" @click="apiSumbit()">API调用</el-button> -->
           <el-button type="primary" plain icon="el-icon-document" size="medium" @click="downloadFile()">清单导出</el-button>
         </div>
-
         <el-table v-loading="loading" height="620px" :data="protectTableFieldList"
           @selection-change="handleSelectionChange" class="tableBox" ref="tableRef">
           <template slot="empty">
@@ -75,7 +74,7 @@
           <el-table-column label="分类" align="center" prop="categoryName" min-width="250" show-overflow-tooltip />
           <el-table-column label="个人信息识别" align="center" prop="piiDetectionName" show-overflow-tooltip />
           <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
-          <el-table-column label="建议防护措施" prop="protectMethodNameList" width="200">
+          <el-table-column label="建议防护措施" prop="protectMethod" width="200">
             <!-- 自定义标题样式 -->
             <template slot="header">
               <div style="text-align: center;">建议防护措施</div>
@@ -646,6 +645,9 @@ Authorization:Bearer ${this.Token}`
           this.protectTableFieldList = response.rows || [];
           this.protectTableFieldList.forEach(ele => {
             ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
+            if (ele.protectMethodName) {
+            item.protectMethodNameList = item.protectMethodName.split(',');
+          }
           })
           this.total = response.total;
         }
