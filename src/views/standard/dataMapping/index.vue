@@ -121,7 +121,7 @@
 </template>
 
 <script>
-import {getCategoryAttachDataFeelBottomByCategoryId, addOrUpdateDataFeelBottomByCategoryId } from "@/api/system/protectCategory";
+import { getCategoryAttachDataFeelBottomByCategoryId, addOrUpdateDataFeelBottomByCategoryId } from "@/api/system/protectCategory";
 export default {
   name: 'dataMapping',
   props: {
@@ -268,6 +268,44 @@ export default {
           const res = await getCategoryAttachDataFeelBottomByCategoryId({ categoryId: this.query.categoryId });
           if (res.code === 200) {
             console.log('数据摸底详情:', res.data);
+            this.dataBaselineForm = {
+              systemGather: res.data.systemGather === '1', // 系统采集
+              systemProduction: res.data.systemProduction === '1', // 系统生产
+              artificialFillIn: res.data.artificialFillIn === '1', // 人工填报
+              dealBuy: res.data.dealBuy === '1', // 交换购买
+              shareExchange: res.data.shareExchange === '1', // 共享交换
+              other: res.data.other != '' ? true : false, // 其他
+              otherInput: res.data.other != '' ? res.data.other : '', // 其他数据来源
+              externalProvisionBox: res.data.externalProvision != '' ? true : false, // 与其他数据处理者的交互-对外提供给
+              externalProvision: res.data.externalProvision != '' ? res.data.externalProvision : '', // 与其他数据处理者的交互-对外提供给-具体对象
+              entrustBox: res.data.entrust != '' ? true : false, // 与其他数据处理者的交互-委托
+              entrust: res.data.entrust != '' ? res.data.entrust : '', // 与其他数据处理者的交互-委托-具体对象
+              jointDisposalBox: res.data.jointDisposal != '' ? true : false, // 与其他数据处理者的交互-与...共同处理
+              jointDisposal: res.data.jointDisposal != '' ? res.data.jointDisposal : '', // 与其他数据处理者的交互-与...共同处理-具体对象
+              noInteraction: res.data.noInteraction === '1', // 与其他数据处理者的交互-无交互
+              privateCloudBox: res.data.privateCloud != '' ? true : false, // 数据存储位置-云类型-私有云
+              privateCloud: res.data.privateCloud != '' ? res.data.privateCloud : '', // 数据存储位置-云类型-私有云-具体对象
+              publicCloudBox: res.data.publicCloud != '' ? true : false, // 数据存储位置-云类型-公有云
+              publicCloud: res.data.publicCloud != '' ? res.data.publicCloud : '', // 数据存储位置-云类型-公有云-具体对象
+              mixtureCloudBox: res.data.mixtureCloud != '' ? true : false, // 数据存储位置-云类型-混合云
+              mixtureCloud: res.data.mixtureCloud != '' ? res.data.mixtureCloud : '', // 数据存储位置-云类型-混合云-具体对象
+              governmentCloudBox: res.data.governmentCloud != '' ? true : false, // 数据存储位置-云类型-政务云
+              governmentCloud: res.data.governmentCloud != '' ? res.data.governmentCloud : '', // 数据存储位置-云类型-政务云-具体对象
+              noCloudComputingPlatformBox: res.data.noCloudComputingPlatform != '' ? true : false, // 数据存储位置-云类型-非云计算平台
+              noCloudComputingPlatform: res.data.noCloudComputingPlatform != '' ? res.data.noCloudComputingPlatform : '', // 数据存储位置-云类型-非云计算平台-具体对象
+              thisUnitMachineRoomBox: res.data.thisUnitMachineRoom != '' ? true : false, // 数据存储位置-机房类型-本单位机器机房
+              thisUnitMachineRoom: res.data.thisUnitMachineRoom != '' ? res.data.thisUnitMachineRoom : '', // 数据存储位置-机房类型-本单位机器机房-具体对象
+              outerUnitMachineRoomBox: res.data.outerUnitMachineRoom != '' ? true : false, // 数据存储位置-机房类型-外部单位机器机房
+              outerUnitMachineRoom: res.data.outerUnitMachineRoom != '' ? res.data.outerUnitMachineRoom : '', // 数据存储位置-机房类型-外部单位机器机房-具体对象
+              thirdPartyTrusteeshipMachineRoomBox: res.data.thirdPartyTrusteeshipMachineRoom != '' ? true : false, // 数据存储位置-机房类型-第三方托管机房
+              thirdPartyTrusteeshipMachineRoom: res.data.thirdPartyTrusteeshipMachineRoom != '' ? res.data.thirdPartyTrusteeshipMachineRoom : '', // 数据存储位置-机房类型-第三方托管机房-具体对象
+              domesticBox: res.data.domestic != '' ? true : false, // 数据存储位置-存储地域-境内
+              domestic: res.data.domestic != '' ? res.data.domestic : '', // 数据存储位置-存储地域-境内-具体对象
+              overseasBox: res.data.overseas != '' ? true : false, // 数据存储位置-存储地域-境外
+              overseas: res.data.overseas != '' ? res.data.overseas : '', // 数据存储位置-存储地域-境外-具体对象
+              dataSources: res.data.dataSources || [], // 来源单位
+              dataflow: res.data.dataflow || [], // 流出单位
+            }
           }
         } catch (error) {
           console.error('获取数据摸底详情失败:', error);

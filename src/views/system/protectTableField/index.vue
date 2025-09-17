@@ -19,6 +19,17 @@
       <!--用户数据-->
       <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true">
+          <el-form-item label="来源业务系统" prop="businessName">
+            <el-input v-model="queryParams.businessName" clearable @input="inputSearch" placeholder="请输入来源业务系统"
+              @keyup.enter.native="handleQuery" />
+          </el-form-item>
+          <el-form-item label="安全分级" prop="securityLevel">
+            <el-select v-model="queryParams.securityLevel" clearable multiple @change="handleQuery" placeholder="全部">
+              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item label="分类" class="addSelectClass">
             <el-select ref="categorySelectRef" v-model="resultFormNodeName" @change="handleQuery" filterable
               placeholder="搜索分类..." :filter-method="handleCategoryFilter">
@@ -28,17 +39,6 @@
                   @check="resultHandleNodeClick" />
               </el-option>
             </el-select>
-          </el-form-item>
-          <el-form-item label="安全分级" prop="securityLevel">
-            <el-select v-model="queryParams.securityLevel" clearable multiple @change="handleQuery" placeholder="全部">
-              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="来源业务系统" prop="businessName">
-            <el-input v-model="queryParams.businessName" clearable @input="inputSearch" placeholder="请输入来源业务系统"
-              @keyup.enter.native="handleQuery" />
           </el-form-item>
           <el-form-item label="个人信息识别" class="addSelectClass">
             <el-select ref="piiSelectRef" v-model="piiNodeName" filterable placeholder="搜索个人信息识别..."
@@ -50,16 +50,15 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item>
-            <!-- <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button> -->
-            <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
-          </el-form-item>
-          <div style="margin: 20px 20px 20px 0; display: flex;justify-content: flex-end;">
-            <!-- <el-button type="primary" icon="el-icon-link" size="medium" @click="apiSumbit()">API调用</el-button> -->
-            <el-button type="primary" plain icon="el-icon-document" size="medium"
-              @click="downloadFile()">清单导出</el-button>
-          </div>
+          <!-- <el-form-item> -->
+          <!-- <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button> -->
+          <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
+          <!-- </el-form-item> -->
         </el-form>
+        <div style="margin-bottom: 8px; display: flex;justify-content: flex-start;">
+          <!-- <el-button type="primary" icon="el-icon-link" size="medium" @click="apiSumbit()">API调用</el-button> -->
+          <el-button type="primary" plain icon="el-icon-document" size="medium" @click="downloadFile()">清单导出</el-button>
+        </div>
 
         <el-table v-loading="loading" height="620px" :data="protectTableFieldList"
           @selection-change="handleSelectionChange" class="tableBox" ref="tableRef">
@@ -76,6 +75,22 @@
           <el-table-column label="分类" align="center" prop="categoryName" min-width="250" show-overflow-tooltip />
           <el-table-column label="个人信息识别" align="center" prop="piiDetectionName" show-overflow-tooltip />
           <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
+          <el-table-column label="建议防护措施" prop="protectMethodNameList" width="200">
+            <!-- 自定义标题样式 -->
+            <template slot="header">
+              <div style="text-align: center;">建议防护措施</div>
+            </template>
+            <!-- 内容保持默认靠左 -->
+            <template slot-scope="scope">
+              <el-tag class="tagsBox custom-plain-tag" v-for="(item, index) in scope.row.protectMethodNameList"
+                :key="item + index" :style="{
+                  '--tag-color': colorFn(item),
+                  '--tag-rgb': hexToRgb(colorFn(item))
+                }" plain>
+                {{ item }}
+              </el-tag>
+            </template>
+          </el-table-column>
           <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
             <template slot-scope="scope">
               <el-tooltip placement="bottom" effect="light">
@@ -237,6 +252,31 @@ export default {
     this.init()
   },
   methods: {
+    colorFn(item) {
+      switch (item) {
+        case '加密':
+          return '#70b503';
+        case 'DLP':
+          return '#0600ff';
+        case '脱敏':
+          return '#f59b22';
+        case '无保护':
+          return '#409eff';
+        case '空':
+          return '#909399';
+        default:
+          return '#909399';
+      }
+    },
+    hexToRgb(hex) {
+      if (!hex || typeof hex !== 'string' || hex.length !== 7 || hex[0] !== '#') {
+        return '0, 0, 0';
+      }
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `${r}, ${g}, ${b}`;
+    },
     async init() {
       if (this.$route.params && this.$route.params.id) {
         this.routeDataShow = true
@@ -899,5 +939,20 @@ Authorization:Bearer ${this.Token}`
 
 .tableCla {
   height: 266px !important;
+}
+
+/* 自定义plain标签样式 */
+::v-deep .custom-plain-tag {
+  /* 使用CSS变量设置颜色 */
+  color: var(--tag-color) !important;
+  border-color: var(--tag-color) !important;
+  /* 背景色使用RGB值加透明度实现浅色效果 */
+  background-color: rgba(var(--tag-rgb), 0.1) !important;
+  margin-right: 5px;
+}
+
+/* 去除默认hover样式干扰 */
+::v-deep .custom-plain-tag:hover {
+  background-color: rgba(var(--tag-rgb), 0.15) !important;
 }
 </style>
