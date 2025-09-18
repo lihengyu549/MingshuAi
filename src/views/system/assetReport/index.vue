@@ -21,7 +21,7 @@
             </div>
             <oneReport v-model="queryParams.categoryId" ref="pdfDownload" class="aaa" />
           </div>
-        </el-tab-pane> 
+        </el-tab-pane>
         <!-- <el-tab-pane label="数据特征报告" name="数据特征报告">
           <div class="hede_bgc">
             <div class="hede_bgc-text">{{ activeName }}</div>
@@ -58,7 +58,7 @@ import dataBaseline from './components/dataBaseline.vue';
 export default {
   name: "Post",
   dicts: ['sys_normal_disable'],
-  components: { oneReport,dataBaseline },
+  components: { oneReport, dataBaseline },
   data() {
     return {
       echarsLoding: false,
@@ -98,11 +98,16 @@ export default {
       //     pagebreak: { mode: ['avoid-all'] }
       //   })
       //   .save();
-      let obj = {
-        title: '分类分级分析报告',
-        className: 'aaa'
+      if (this.activeName === '分类分级报告') {
+        let obj = {
+          title: '分类分级分析报告',
+          className: 'aaa'
+        }
+        downloadPDF(obj)
+      } else if (this.activeName === '数据摸底调查表') {
+        console.log('数据摸底调查表',this.$refs.dataBaseline);
+        this.$refs.dataBaseline.exportAllItems();
       }
-      downloadPDF(obj)
     },
     handleClick(tab, event) {
       console.log(tab, event);

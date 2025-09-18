@@ -227,6 +227,9 @@ export default {
         selectedValue(newVal) {
             // this.dataBaselineForm = this.formDataMap[newVal] || {};
         },
+        categoryId(newVal) {
+            this.getSelectList()
+        }
     },
     created() {
     },
@@ -269,7 +272,6 @@ export default {
                 try {
                     const res = await listDataFeelBottomSurvey(params);
                     if (res.code === 200) {
-                        console.log('数据摸底详情:', res.data);
                         this.dataBaselineForm = {
                             dataName: res.data.dataName, // 数据名称
                             dataLevel: res.data.dataLevel, // 数据级别
@@ -323,8 +325,12 @@ export default {
                     }
                 } catch (error) {
                     console.error('获取数据摸底详情失败:', error);
+                    // 返回错误信息，确保函数总是有返回值
+                    return { code: 500, message: '获取数据失败' };
                 }
             }
+            // 当this.categoryId为空时，返回空数据
+            return { code: 200, data: null };
         },
     },
 }
