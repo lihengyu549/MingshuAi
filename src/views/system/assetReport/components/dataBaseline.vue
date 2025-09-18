@@ -274,7 +274,7 @@ export default {
                     if (res.code === 200) {
                         this.dataBaselineForm = {
                             dataName: res.data.dataName, // 数据名称
-                            dataLevel: res.data.dataLevel, // 数据级别
+                            dataLevel: String(res.data.dataLevel), // 数据级别
                             dataType: res.data.dataType, // 数据类别
                             dataOwner: res.data.dataOwner, // 数据安全负责人
                             deptName: res.data.deptName, // 数据安全责任部门
