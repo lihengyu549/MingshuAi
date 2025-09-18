@@ -1,6 +1,6 @@
 <template>
     <div class="dataBaseline" v-loading="Loading">
-        <el-select v-model="selectedValue" class="select-top" placeholder="请选择">
+        <el-select v-model="selectedValue" class="select-top" placeholder="请选择" @change="handleSelectChange">
             <el-option v-for="item in selectOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
         </el-select>
         <el-form slot="body" ref="dataBaselineForm" :model="dataBaselineForm" label-width="120px" label-position="top">
@@ -84,14 +84,13 @@
             <el-form-item label="">
                 <div class="interaction-checkbox">
                     <el-checkbox v-model="dataBaselineForm.externalProvisionBox" disabled>对外提供给</el-checkbox>
-                    <el-input v-model="dataBaselineForm.externalProvision"
-                        v-if="dataBaselineForm.externalProvisionBox" disabled></el-input>
-                    <el-checkbox v-model="dataBaselineForm.entrustBox" disabled>委托</el-checkbox>
-                    <el-input v-model="dataBaselineForm.entrust" v-if="dataBaselineForm.entrustBox"
+                    <el-input v-model="dataBaselineForm.externalProvision" v-if="dataBaselineForm.externalProvisionBox"
                         disabled></el-input>
+                    <el-checkbox v-model="dataBaselineForm.entrustBox" disabled>委托</el-checkbox>
+                    <el-input v-model="dataBaselineForm.entrust" v-if="dataBaselineForm.entrustBox" disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.jointDisposalBox" disabled>与....共同处理</el-checkbox>
-                    <el-input v-model="dataBaselineForm.jointDisposal"
-                        v-if="dataBaselineForm.jointDisposalBox" disabled></el-input>
+                    <el-input v-model="dataBaselineForm.jointDisposal" v-if="dataBaselineForm.jointDisposalBox"
+                        disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.noInteraction" disabled>无交互</el-checkbox>
                 </div>
             </el-form-item>
@@ -102,17 +101,17 @@
             <el-form-item label="">
                 <div class="interaction-checkbox">
                     <el-checkbox v-model="dataBaselineForm.privateCloudBox" disabled>私有云</el-checkbox>
-                    <el-input v-model="dataBaselineForm.privateCloud"
-                        v-if="dataBaselineForm.privateCloudBox" disabled></el-input>
+                    <el-input v-model="dataBaselineForm.privateCloud" v-if="dataBaselineForm.privateCloudBox"
+                        disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.publicCloudBox" disabled>公有云</el-checkbox>
-                    <el-input v-model="dataBaselineForm.publicCloud"
-                        v-if="dataBaselineForm.publicCloudBox" disabled></el-input>
+                    <el-input v-model="dataBaselineForm.publicCloud" v-if="dataBaselineForm.publicCloudBox"
+                        disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.mixtureCloudBox" disabled>混合云</el-checkbox>
-                    <el-input v-model="dataBaselineForm.mixtureCloud"
-                        v-if="dataBaselineForm.mixtureCloudBox" disabled></el-input>
+                    <el-input v-model="dataBaselineForm.mixtureCloud" v-if="dataBaselineForm.mixtureCloudBox"
+                        disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.governmentCloudBox" disabled>政务云</el-checkbox>
-                    <el-input v-model="dataBaselineForm.governmentCloud"
-                        v-if="dataBaselineForm.governmentCloudBox" disabled></el-input>
+                    <el-input v-model="dataBaselineForm.governmentCloud" v-if="dataBaselineForm.governmentCloudBox"
+                        disabled></el-input>
                     <el-checkbox v-model="dataBaselineForm.noCloudComputingPlatformBox" disabled>非云计算平台</el-checkbox>
                     <el-input v-model="dataBaselineForm.noCloudComputingPlatform"
                         v-if="dataBaselineForm.noCloudComputingPlatformBox" disabled></el-input>
@@ -255,6 +254,11 @@ export default {
                 console.error('下拉框查询失败:', error);
             }
         },
+        // 下拉框选择变化时触发
+        handleSelectChange(newVal) {
+            this.selectedValue = newVal;
+            this.initData(newVal);
+        },
         //初始化请求摸底数据
         async initData(categoryDataId) {
             if (this.categoryId) {
@@ -284,37 +288,37 @@ export default {
                             artificialFillIn: res.data.artificialFillIn === '1', // 人工填报
                             dealBuy: res.data.dealBuy === '1', // 交换购买
                             shareExchange: res.data.shareExchange === '1', // 共享交换
-                            other: res.data.other != '-1' ? true : false, // 其他
-                            otherInput: res.data.other != '-1' ? res.data.other : '', // 其他数据来源
-                            externalProvisionBox: res.data.externalProvision != '-1' ? true : false, // 与其他数据处理者的交互-对外提供给
-                            externalProvision: res.data.externalProvision != '-1' ? res.data.externalProvision : '', // 与其他数据处理者的交互-对外提供给-具体对象
-                            entrustBox: res.data.entrust != '-1' ? true : false, // 与其他数据处理者的交互-委托
-                            entrust: res.data.entrust != '-1' ? res.data.entrust : '', // 与其他数据处理者的交互-委托-具体对象
-                            jointDisposalBox: res.data.jointDisposal != '-1' ? true : false, // 与其他数据处理者的交互-与...共同处理
-                            jointDisposal: res.data.jointDisposal != '-1' ? res.data.jointDisposal : '', // 与其他数据处理者的交互-与...共同处理-具体对象
+                            other: res.data.other != '-1' && res.data.other != null ? true : false, // 其他
+                            otherInput: res.data.other != '-1' && res.data.other != null ? res.data.other : '', // 其他数据来源
+                            externalProvisionBox: res.data.externalProvision != '-1' && res.data.externalProvision != null ? true : false, // 与其他数据处理者的交互-对外提供给
+                            externalProvision: res.data.externalProvision != '-1' && res.data.externalProvision != null ? res.data.externalProvision : '', // 与其他数据处理者的交互-对外提供给-具体对象
+                            entrustBox: res.data.entrust != '-1' && res.data.entrust != null ? true : false, // 与其他数据处理者的交互-委托
+                            entrust: res.data.entrust != '-1' && res.data.entrust != null ? res.data.entrust : '', // 与其他数据处理者的交互-委托-具体对象
+                            jointDisposalBox: res.data.jointDisposal != '-1' && res.data.jointDisposal != null ? true : false, // 与其他数据处理者的交互-与...共同处理
+                            jointDisposal: res.data.jointDisposal != '-1' && res.data.jointDisposal != null ? res.data.jointDisposal : '', // 与其他数据处理者的交互-与...共同处理-具体对象
                             noInteraction: res.data.noInteraction === '1', // 与其他数据处理者的交互-无交互
-                            privateCloudBox: res.data.privateCloud != '-1' ? true : false, // 数据存储位置-云类型-私有云
-                            privateCloud: res.data.privateCloud != '-1' ? res.data.privateCloud : '', // 数据存储位置-云类型-私有云-具体对象
-                            publicCloudBox: res.data.publicCloud != '-1' ? true : false, // 数据存储位置-云类型-公有云
-                            publicCloud: res.data.publicCloud != '-1' ? res.data.publicCloud : '', // 数据存储位置-云类型-公有云-具体对象
-                            mixtureCloudBox: res.data.mixtureCloud != '-1' ? true : false, // 数据存储位置-云类型-混合云
-                            mixtureCloud: res.data.mixtureCloud != '-1' ? res.data.mixtureCloud : '', // 数据存储位置-云类型-混合云-具体对象
-                            governmentCloudBox: res.data.governmentCloud != '-1' ? true : false, // 数据存储位置-云类型-政务云
-                            governmentCloud: res.data.governmentCloud != '-1' ? res.data.governmentCloud : '', // 数据存储位置-云类型-政务云-具体对象
-                            noCloudComputingPlatformBox: res.data.noCloudComputingPlatform != '-1' ? true : false, // 数据存储位置-云类型-非云计算平台
-                            noCloudComputingPlatform: res.data.noCloudComputingPlatform != '-1' ? res.data.noCloudComputingPlatform : '', // 数据存储位置-云类型-非云计算平台-具体对象
-                            thisUnitMachineRoomBox: res.data.thisUnitMachineRoom != '-1' ? true : false, // 数据存储位置-机房类型-本单位机器机房
-                            thisUnitMachineRoom: res.data.thisUnitMachineRoom != '-1' ? res.data.thisUnitMachineRoom : '', // 数据存储位置-机房类型-本单位机器机房-具体对象
-                            outerUnitMachineRoomBox: res.data.outerUnitMachineRoom != '-1' ? true : false, // 数据存储位置-机房类型-外部单位机器机房
-                            outerUnitMachineRoom: res.data.outerUnitMachineRoom != '-1' ? res.data.outerUnitMachineRoom : '', // 数据存储位置-机房类型-外部单位机器机房-具体对象
-                            thirdPartyTrusteeshipMachineRoomBox: res.data.thirdPartyTrusteeshipMachineRoom != '-1' ? true : false, // 数据存储位置-机房类型-第三方托管机房
-                            thirdPartyTrusteeshipMachineRoom: res.data.thirdPartyTrusteeshipMachineRoom != '-1' ? res.data.thirdPartyTrusteeshipMachineRoom : '', // 数据存储位置-机房类型-第三方托管机房-具体对象
-                            domesticBox: res.data.domestic != '-1' ? true : false, // 数据存储位置-存储地域-境内
-                            domestic: res.data.domestic != '-1' ? res.data.domestic : '', // 数据存储位置-存储地域-境内-具体对象
-                            overseasBox: res.data.overseas != '-1' ? true : false, // 数据存储位置-存储地域-境外
-                            overseas: res.data.overseas != '-1' ? res.data.overseas : '', // 数据存储位置-存储地域-境外-具体对象
-                            dataSources: res.data.dataSources || [], // 来源单位
-                            dataflow: res.data.dataflow || [], // 流出单位
+                            privateCloudBox: res.data.privateCloud != '-1' && res.data.privateCloud != null ? true : false, // 数据存储位置-云类型-私有云
+                            privateCloud: res.data.privateCloud != '-1' && res.data.privateCloud != null ? res.data.privateCloud : '', // 数据存储位置-云类型-私有云-具体对象
+                            publicCloudBox: res.data.publicCloud != '-1' && res.data.publicCloud != null ? true : false, // 数据存储位置-云类型-公有云
+                            publicCloud: res.data.publicCloud != '-1' && res.data.publicCloud != null ? res.data.publicCloud : '', // 数据存储位置-云类型-公有云-具体对象
+                            mixtureCloudBox: res.data.mixtureCloud != '-1' && res.data.mixtureCloud != null ? true : false, // 数据存储位置-云类型-混合云
+                            mixtureCloud: res.data.mixtureCloud != '-1' && res.data.mixtureCloud != null ? res.data.mixtureCloud : '', // 数据存储位置-云类型-混合云-具体对象
+                            governmentCloudBox: res.data.governmentCloud != '-1' && res.data.governmentCloud != null ? true : false, // 数据存储位置-云类型-政务云
+                            governmentCloud: res.data.governmentCloud != '-1' && res.data.governmentCloud != null ? res.data.governmentCloud : '', // 数据存储位置-云类型-政务云-具体对象
+                            noCloudComputingPlatformBox: res.data.noCloudComputingPlatform != '-1' && res.data.noCloudComputingPlatform != null ? true : false, // 数据存储位置-云类型-非云计算平台
+                            noCloudComputingPlatform: res.data.noCloudComputingPlatform != '-1' && res.data.noCloudComputingPlatform != null ? res.data.noCloudComputingPlatform : '', // 数据存储位置-云类型-非云计算平台-具体对象
+                            thisUnitMachineRoomBox: res.data.thisUnitMachineRoom != '-1' && res.data.thisUnitMachineRoom != null ? true : false, // 数据存储位置-机房类型-本单位机器机房
+                            thisUnitMachineRoom: res.data.thisUnitMachineRoom != '-1' && res.data.thisUnitMachineRoom != null ? res.data.thisUnitMachineRoom : '', // 数据存储位置-机房类型-本单位机器机房-具体对象
+                            outerUnitMachineRoomBox: res.data.outerUnitMachineRoom != '-1' && res.data.outerUnitMachineRoom != null ? true : false, // 数据存储位置-机房类型-外部单位机器机房
+                            outerUnitMachineRoom: res.data.outerUnitMachineRoom != '-1' && res.data.outerUnitMachineRoom != null ? res.data.outerUnitMachineRoom : '', // 数据存储位置-机房类型-外部单位机器机房-具体对象
+                            thirdPartyTrusteeshipMachineRoomBox: res.data.thirdPartyTrusteeshipMachineRoom != '-1' && res.data.thirdPartyTrusteeshipMachineRoom != null ? true : false, // 数据存储位置-机房类型-第三方托管机房
+                            thirdPartyTrusteeshipMachineRoom: res.data.thirdPartyTrusteeshipMachineRoom != '-1' && res.data.thirdPartyTrusteeshipMachineRoom != null ? res.data.thirdPartyTrusteeshipMachineRoom : '', // 数据存储位置-机房类型-第三方托管机房-具体对象
+                            domesticBox: res.data.domestic != '-1' && res.data.domestic != null ? true : false, // 数据存储位置-存储地域-境内
+                            domestic: res.data.domestic != '-1' && res.data.domestic != null ? res.data.domestic : '', // 数据存储位置-存储地域-境内-具体对象
+                            overseasBox: res.data.overseas != '-1' && res.data.overseas != null ? true : false, // 数据存储位置-存储地域-境外
+                            overseas: res.data.overseas != '-1' && res.data.overseas != null ? res.data.overseas : '', // 数据存储位置-存储地域-境外-具体对象
+                            dataSources: res.data.dataSources.length > 0 ? res.data.dataSources : [{ content: '' }], // 来源单位
+                            dataflow: res.data.dataflow.length > 0 ? res.data.dataflow : [{ content: '' }], // 流出单位
                         }
                     }
                 } catch (error) {
