@@ -11,8 +11,7 @@
             </el-form-item>
             <!-- 拟定数据级别（单选） -->
             <el-form-item label="拟定数据级别">
-                <el-radio v-model="dataBaselineForm.dataLevel" label="1" disabled>一般数据</el-radio>
-                <el-radio v-model="dataBaselineForm.dataLevel" label="2" disabled>重要及以上数据</el-radio>
+                <el-radio v-for="item in dict.type.sys_risk_level" v-model="dataBaselineForm.dataLevel" :key="item.value" :label="item.value" disabled>{{ item.label }}</el-radio>
             </el-form-item>
             <!-- 数据类别 -->
             <el-form-item label="数据类别">
@@ -155,6 +154,7 @@
 import { getCategoryAttachDataByCategoryIds, listDataFeelBottomSurvey } from "@/api/system/protectCategory";
 export default {
     name: 'dataBaseline',
+    dicts: ['sys_risk_level'],
     props: {
         categoryId: {
             type: [String, Number],
@@ -331,6 +331,51 @@ export default {
             }
             // 当this.categoryId为空时，返回空数据
             return { code: 200, data: null };
+        },
+        // 新增方法：获取所有下拉项的完整数据
+        async getAllOptionsData() {
+            try {
+                this.Loading = true;
+                // 1. 获取所有下拉选项
+                const optionsRes = await getCategoryAttachDataByCategoryIds({
+                    categoryId: this.categoryId
+                });
+
+                if (optionsRes.code !== 200) return [];
+
+                // 2. 批量获取所有选项对应的数据
+                const allData = [];
+                for (const option of optionsRes.data) {
+                    const dataRes = await listDataFeelBottomSurvey({
+                        categoryId: this.categoryId,
+                        categoryDataId: option.id
+                    });
+
+                    if (dataRes.code === 200) {
+                        allData.push({
+                            title: option.name, // 下拉项名称作为标题
+                            formData: this.formatFormData(dataRes.data) // 格式化数据
+                        });
+                    }
+                }
+                return allData;
+            } catch (error) {
+                console.error('获取所有数据失败:', error);
+                return [];
+            } finally {
+                this.Loading = false;
+            }
+        },
+
+        // 复用数据格式化逻辑（从initData中提取）
+        formatFormData(rawData) {
+            return {
+                dataName: rawData.dataName,
+                dataLevel: rawData.dataLevel,
+                // ... 其他字段（与initData中保持一致）
+                dataSources: rawData.dataSources.length > 0 ? rawData.dataSources : [{ content: '' }],
+                dataflow: rawData.dataflow.length > 0 ? rawData.dataflow : [{ content: '' }],
+            };
         },
     },
 }

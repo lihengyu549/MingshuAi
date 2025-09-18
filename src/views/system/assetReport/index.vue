@@ -105,10 +105,108 @@ export default {
         }
         downloadPDF(obj)
       } else if (this.activeName === '数据摸底调查表') {
-        console.log('数据摸底调查表',this.$refs.dataBaseline);
-        this.$refs.dataBaseline.exportAllItems();
+        this.dataBaselineExport();
       }
     },
+
+    async dataBaselineExport() {
+      // 1. 获取子组件实例
+      const dataBaselineComp = this.$refs.dataBaseline;
+      if (!dataBaselineComp) return;
+
+      // 2. 获取所有数据
+      const allData = await dataBaselineComp.getAllOptionsData();
+      if (allData.length === 0) {
+        this.$message.warning('没有可导出的数据');
+        return;
+      }
+
+      // 3. 生成HTML内容
+      const htmlContent = this.generateExportHtml(allData);
+
+      // 4. 转换为PDF并下载
+      this.exportToPdf(htmlContent);
+    },
+
+    // 生成导出的HTML结构（复用页面样式）
+    generateExportHtml(allData) {
+      let html = `
+    <div class="export-container" style="padding: 20px; font-family: sans-serif;">
+  `;
+
+      allData.forEach(item => {
+        // 每个下拉项作为一个section
+        html += `
+      <div class="export-section" style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+        <h2 style="color: #01a7f0; margin-bottom: 15px;">${item.title}</h2>
+        ${this.generateFormHtml(item.formData)}
+      </div>
+    `;
+      });
+
+      html += `</div>`;
+      return html;
+    },
+
+    // 生成表单内容HTML（对应页面展示结构）
+    generateFormHtml(formData) {
+      // 基础数据信息部分
+      let basicInfo = `
+    <div class="section-block" style="margin-bottom: 20px;">
+      <h3 style="font-size: 16px; margin: 10px 0;">基础数据信息</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr><td style="padding: 8px; border: 1px solid #eee; width: 20%;">数据名称</td><td style="padding: 8px; border: 1px solid #eee;">${formData.dataName || '-'}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #eee;">拟定数据级别</td><td style="padding: 8px; border: 1px solid #eee;">${formData.dataLevel === '1' ? '一般数据' : '重要及以上数据'}</td></tr>
+        <!-- 其他基础信息字段 -->
+      </table>
+    </div>
+  `;
+
+      // 数据来源部分
+      let dataSource = `
+    <div class="section-block" style="margin-bottom: 20px;">
+      <h3 style="font-size: 16px; margin: 10px 0;">数据来源</h3>
+      <div style="padding: 8px; border: 1px solid #eee;">
+        <p>数据的产生方式/获取方式：</p>
+        <ul style="margin: 5px 0; padding-left: 20px;">
+          ${formData.systemGather ? '<li>系统采集</li>' : ''}
+          ${formData.systemProduction ? '<li>系统生产</li>' : ''}
+          <!-- 其他数据来源选项 -->
+        </ul>
+        ${formData.other ? `<p>其他：${formData.otherInput}</p>` : ''}
+      </div>
+    </div>
+  `;
+
+      // 其他部分（数据流转、存储位置等）类似上述结构
+
+      return basicInfo + dataSource + ''/* 其他部分 */;
+    },
+
+    // 导出为PDF
+    exportToPdf(htmlContent) {
+      // 创建临时DOM元素
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      document.body.appendChild(tempDiv);
+
+      // 配置html2pdf
+      const opt = {
+        margin: 10,
+        filename: '数据基线导出.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      // 执行导出
+      html2pdf().set(opt).from(tempDiv).save().then(() => {
+        // 清理临时元素
+        document.body.removeChild(tempDiv);
+      });
+    },
+
+
     handleClick(tab, event) {
       console.log(tab, event);
     },
