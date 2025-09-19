@@ -368,8 +368,8 @@ export default {
       const opt = {
         margin: 10,
         filename: '数据摸底调查表.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
+        image: { type: 'jpeg', quality: 0.8 },
+        html2canvas: { scale: 1.5 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
