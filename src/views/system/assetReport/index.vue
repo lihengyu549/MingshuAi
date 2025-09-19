@@ -22,11 +22,6 @@
             <oneReport v-model="queryParams.categoryId" ref="pdfDownload" class="aaa" />
           </div>
         </el-tab-pane>
-        <!-- <el-tab-pane label="数据特征报告" name="数据特征报告">
-          <div class="hede_bgc">
-            <div class="hede_bgc-text">{{ activeName }}</div>
-          </div>
-        </el-tab-pane> -->
         <el-tab-pane label="数据摸底调查表" name="数据摸底调查表">
           <div class="hede_bgc">
             <div class="hede_bgc-text">{{ activeName }}</div>
@@ -48,11 +43,8 @@
 </template>
 
 <script>
-import { getFrameworks, dashboardList } from "@/api/system/protectCategory";
-import * as echarts from "echarts";
-import "echarts-wordcloud";
+import { getFrameworks } from "@/api/system/protectCategory";
 import { downloadPDF } from "@/utils/pdf.js"  //工具方法，导出操作
-import html2pdf from 'html2pdf.js';
 import oneReport from './components/oneReport.vue';
 import dataBaseline from './components/dataBaseline.vue';
 export default {
@@ -64,7 +56,7 @@ export default {
       echarsLoding: false,
       // 查询参数
       queryParams: {
-        categoryId: 0, // Change from '' to 0
+        categoryId: 0,
       },
       activeName: '分类分级报告',
       allData: {},
@@ -81,23 +73,6 @@ export default {
   },
   methods: {
     handleExport() {
-      // const table = document.getElementById('table');
-      // table.style.width = '100%';
-      // const element = this.$refs.pdfDownload;
-      // console.log(element);
-
-      // html2pdf()
-      //   .from(element)
-      //   .set({
-      //     // margin: 0,
-      //     margin: [10, 10, 10, 10],
-      //     filename: '分类分级分析报告.pdf',
-      //     image: { type: 'jpeg', quality: 0.98 },
-      //     html2canvas: { scale: 2 },
-      //     jsPDF: { unit: 'mm', format: [280, 350], orientation: 'portrait' },
-      //     pagebreak: { mode: ['avoid-all'] }
-      //   })
-      //   .save();
       if (this.activeName === '分类分级报告') {
         let obj = {
           title: '分类分级分析报告',
@@ -124,14 +99,29 @@ export default {
       // 3. 生成HTML内容
       const htmlContent = this.generateExportHtml(allData);
 
-      // 4. 转换为PDF并下载
-      this.exportToPdf(htmlContent);
+      // 4. 导出为HTML文件
+      this.exportToHtml(htmlContent);
     },
 
     // 生成导出的HTML结构（复用页面样式）
     generateExportHtml(allData) {
+      // 添加完整的HTML文档结构
       let html = `
-    <div class="export-container" style="padding: 20px; font-family: sans-serif;">
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>数据摸底调查表</title>
+  `;
+
+      // 引入页面使用的主样式
+      html += this.generateBaseStyles();
+
+      html += `
+    </head>
+    <body>
+      <div class="export-container" style="padding: 20px; font-family: sans-serif; max-width: 1000px; margin: 0 auto;">
   `;
 
       allData.forEach(item => {
@@ -144,31 +134,37 @@ export default {
     `;
       });
 
-      html += `</div>`;
+      html += `
+      </div>
+    </body>
+    </html>
+  `;
       return html;
+    },
+
+    // 生成基础样式
+    generateBaseStyles() {
+      return `
+      <style>
+        .form-section { margin-bottom: 24px; padding: 16px; border-radius: 4px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .form-section-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px; padding-left: 8px; border-left: 3px solid #409eff; }
+        .form-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+        .form-table th, .form-table td { border: 1px solid #e0e0e0; padding: 12px 16px; text-align: left; }
+        .form-table th { background-color: #f5f7fa; font-weight: 500; width: 20%; }
+        .form-table td { width: 80%; }
+        .sub-table { margin-left: 20px; margin-top: 8px; width: calc(100% - 20px); }
+        .tag { display: inline-block; padding: 2px 8px; margin-right: 8px; border-radius: 4px; font-size: 12px; }
+        .tag-primary { background: #ecf5ff; color: #409eff; }
+        .list-item { margin-bottom: 8px; padding: 8px; border: 1px solid #f0f0f0; border-radius: 4px; }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 16px; }
+        .checkbox-item { display: inline-flex; align-items: center; }
+        .checkbox-item::before { content: "☑️"; margin-right: 4px; }
+      </style>
+    `;
     },
 
     // 生成表格与页面样式完全一致的表单HTML
     generateFormHtml(formData) {
-      // 引入页面使用的主样式（从实际项目中复制关键CSS）
-      const baseStyles = `
-    <style>
-      .form-section { margin-bottom: 24px; padding: 16px; border-radius: 4px; background: #fff; }
-      .form-section-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px; padding-left: 8px; border-left: 3px solid #409eff; }
-      .form-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
-      .form-table th, .form-table td { border: 1px solid #e0e0e0; padding: 12px 16px; text-align: left; }
-      .form-table th { background-color: #f5f7fa; font-weight: 500; width: 20%; }
-      .form-table td { width: 80%; }
-      .sub-table { margin-left: 20px; margin-top: 8px; width: calc(100% - 20px); }
-      .tag { display: inline-block; padding: 2px 8px; margin-right: 8px; border-radius: 4px; font-size: 12px; }
-      .tag-primary { background: #ecf5ff; color: #409eff; }
-      .list-item { margin-bottom: 8px; padding: 8px; border: 1px solid #f0f0f0; border-radius: 4px; }
-      .checkbox-group { display: flex; flex-wrap: wrap; gap: 16px; }
-      .checkbox-item { display: inline-flex; align-items: center; }
-      .checkbox-item::before { content: "☑️"; margin-right: 4px; }
-    </style>
-  `;
-
       // 基础数据信息表格
       const basicInfoTable = `
     <div class="form-section">
@@ -247,7 +243,6 @@ export default {
   `;
 
       // 单位间数据流转情况表格
-      // 数据来源表格
       let dataSourcesHtml = '';
       formData.dataSources.forEach((item, index) => {
         dataSourcesHtml += `
@@ -307,7 +302,7 @@ export default {
     </div>
   `;
 
-      // 数据存储位置表格（多层级结构）
+      // 数据存储位置表格
       const storageLocationTable = `
     <div class="form-section">
       <div class="form-section-title">数据存储位置</div>
@@ -354,30 +349,27 @@ export default {
   `;
 
       // 组合所有表格部分    
-      return baseStyles + basicInfoTable + dataSourceTable + dataFlowTable + interactionTable + storageLocationTable ;
+      return basicInfoTable + dataSourceTable + dataFlowTable + interactionTable + storageLocationTable;
     },
 
-    // 导出为PDF
-    exportToPdf(htmlContent) {
-      // 创建临时DOM元素
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = htmlContent;
-      document.body.appendChild(tempDiv);
+    // 导出为HTML文件
+    exportToHtml(htmlContent) {
+      // 创建Blob对象
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
 
-      // 配置html2pdf
-      const opt = {
-        margin: 10,
-        filename: '数据摸底调查表.pdf',
-        image: { type: 'jpeg', quality: 0.8 },
-        html2canvas: { scale: 1.5 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
+      // 创建下载链接
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '数据摸底调查表.html';
+      document.body.appendChild(a);
 
-      // 执行导出
-      html2pdf().set(opt).from(tempDiv).save().then(() => {
-        // 清理临时元素
-        document.body.removeChild(tempDiv);
-      });
+      // 触发下载
+      a.click();
+
+      // 清理资源
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     },
 
 
@@ -435,11 +427,9 @@ export default {
   height: 180px;
   background: url('../../../assets/images/assetReportBgc.png');
   background-size: 100% 100%;
-  /* 修改背景图大小 */
   background-position: 0 60%;
   background-repeat: no-repeat;
   position: relative;
-  /* 添加相对定位 */
 }
 
 .hede_bgc-text {
@@ -447,17 +437,11 @@ export default {
   text-align: center;
   width: 100%;
   position: absolute;
-  /* 使用绝对定位 */
   top: 50%;
-  /* 调整文字垂直位置 */
   left: 50%;
-  /* 调整文字水平位置 */
   transform: translate(-50%, -50%);
-  /* 使文字居中 */
   color: white;
-  /* 设置文字颜色 */
   z-index: 1;
-  /* 确保文字在背景图上面 */
 }
 
 .box1 {
@@ -553,7 +537,6 @@ ul li.odd {
   span {
     color: #fff;
     font-size: 16px;
-    /* 如果文字会旋转,可以添加以下样式保持文字方向 */
     transform: rotate(0deg);
   }
 }
@@ -572,7 +555,6 @@ ul li.odd {
   span {
     color: #fff;
     font-size: 16px;
-    /* 如果文字会旋转,可以添加以下样式保持文字方向 */
     transform: rotate(0deg);
   }
 }
@@ -591,7 +573,6 @@ ul li.odd {
   span {
     color: #fff;
     font-size: 16px;
-    /* 如果文字会旋转,可以添加以下样式保持文字方向 */
     transform: rotate(0deg);
   }
 }
@@ -626,9 +607,7 @@ h4 {
 
 .tableBox {
   width: 100%;
-  /* display: flex; */
   table-layout: fixed;
-  /* 确保表格宽度均匀分配 */
 }
 
 .loading-spinner {
