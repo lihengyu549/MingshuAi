@@ -15,7 +15,7 @@
         </div>
       </el-form-item>
       <el-form-item label="其他数据来源" v-if="dataBaselineForm.other">
-        <el-input v-model="dataBaselineForm.otherInput" placeholder="请输入其他数据来源"></el-input>
+        <el-input v-model="dataBaselineForm.otherInput" placeholder="请输入其他数据来源" maxlength="30"></el-input>
       </el-form-item>
 
       <!-- 单位间数据流转情况 -->
@@ -23,7 +23,7 @@
       <!-- 数据来源单位 -->
       <el-form-item label="数据来源单位">
         <div v-for="(item, index) in dataBaselineForm.dataSources" :key="index" class="flow-unit-item">
-          <el-input v-model="item.content" placeholder="请输入来源单位"></el-input>
+          <el-input v-model="item.content" placeholder="请输入来源单位" maxlength="30"></el-input>
           <el-button @click="handleRemoveFlowUnit(index)" type="text" icon="el-icon-remove-outline"
             :disabled="dataBaselineForm.dataSources.length <= 1" style="color: #dcdfe6; font-size: 18px;"></el-button>
         </div>
@@ -33,7 +33,7 @@
       <!-- 数据流出单位 -->
       <el-form-item label="数据流出单位">
         <div v-for="(item, index) in dataBaselineForm.dataflow" :key="index" class="flow-unit-item">
-          <el-input v-model="item.content" placeholder="请输入流出单位"></el-input>
+          <el-input v-model="item.content" placeholder="请输入流出单位" maxlength="30"></el-input>
           <el-button @click="handleRemoveFlowOutUnit(index)" type="text" icon="el-icon-remove-outline"
             :disabled="dataBaselineForm.dataflow.length <= 1" style="color: #dcdfe6; font-size: 18px;"></el-button>
         </div>
@@ -47,14 +47,14 @@
         <div class="interaction-checkbox">
           <el-checkbox v-model="dataBaselineForm.externalProvisionBox"
             :disabled="dataBaselineForm.noInteraction">对外提供给</el-checkbox>
-          <el-input v-model="dataBaselineForm.externalProvision" placeholder="请输入具体对象"
+          <el-input v-model="dataBaselineForm.externalProvision" placeholder="请输入具体对象" maxlength="30"
             v-if="dataBaselineForm.externalProvisionBox"></el-input>
           <el-checkbox v-model="dataBaselineForm.entrustBox" :disabled="dataBaselineForm.noInteraction">委托</el-checkbox>
-          <el-input v-model="dataBaselineForm.entrust" placeholder="请输入具体对象"
+          <el-input v-model="dataBaselineForm.entrust" placeholder="请输入具体对象" maxlength="30"
             v-if="dataBaselineForm.entrustBox"></el-input>
           <el-checkbox v-model="dataBaselineForm.jointDisposalBox"
             :disabled="dataBaselineForm.noInteraction">与....共同处理</el-checkbox>
-          <el-input v-model="dataBaselineForm.jointDisposal" placeholder="请输入具体对象"
+          <el-input v-model="dataBaselineForm.jointDisposal" placeholder="请输入具体对象" maxlength="30"
             v-if="dataBaselineForm.jointDisposalBox"></el-input>
           <el-checkbox v-model="dataBaselineForm.noInteraction" @change="handleNoInteractionChange">无交互</el-checkbox>
         </div>
@@ -66,19 +66,19 @@
       <el-form-item label="">
         <div class="interaction-checkbox">
           <el-checkbox v-model="dataBaselineForm.privateCloudBox">私有云</el-checkbox>
-          <el-input v-model="dataBaselineForm.privateCloud" placeholder="请输入具体对象"
+          <el-input v-model="dataBaselineForm.privateCloud" placeholder="请输入具体对象" maxlength="30"
             v-if="dataBaselineForm.privateCloudBox"></el-input>
           <el-checkbox v-model="dataBaselineForm.publicCloudBox">公有云</el-checkbox>
-          <el-input v-model="dataBaselineForm.publicCloud" placeholder="请输入具体对象"
+          <el-input v-model="dataBaselineForm.publicCloud" placeholder="请输入具体对象" maxlength="30"
             v-if="dataBaselineForm.publicCloudBox"></el-input>
           <el-checkbox v-model="dataBaselineForm.mixtureCloudBox">混合云</el-checkbox>
-          <el-input v-model="dataBaselineForm.mixtureCloud" placeholder="请输入具体对象"
+          <el-input v-model="dataBaselineForm.mixtureCloud" placeholder="请输入具体对象" maxlength="30"
             v-if="dataBaselineForm.mixtureCloudBox"></el-input>
           <el-checkbox v-model="dataBaselineForm.governmentCloudBox">政务云</el-checkbox>
-          <el-input v-model="dataBaselineForm.governmentCloud" placeholder="请输入具体对象"
+          <el-input v-model="dataBaselineForm.governmentCloud" placeholder="请输入具体对象" maxlength="30"
             v-if="dataBaselineForm.governmentCloudBox"></el-input>
           <el-checkbox v-model="dataBaselineForm.noCloudComputingPlatformBox">非云计算平台</el-checkbox>
-          <el-input v-model="dataBaselineForm.noCloudComputingPlatform" placeholder="请输入具体对象"
+          <el-input v-model="dataBaselineForm.noCloudComputingPlatform" placeholder="请输入具体对象" maxlength="30"
             v-if="dataBaselineForm.noCloudComputingPlatformBox"></el-input>
         </div>
       </el-form-item>
@@ -88,13 +88,13 @@
       <el-form-item label="">
         <div class="interaction-checkbox">
           <el-checkbox v-model="dataBaselineForm.thisUnitMachineRoomBox">本单位机器机房</el-checkbox>
-          <el-input v-model="dataBaselineForm.thisUnitMachineRoom" placeholder="请输入具体对象"
+          <el-input v-model="dataBaselineForm.thisUnitMachineRoom" placeholder="请输入具体对象" maxlength="30"
             v-if="dataBaselineForm.thisUnitMachineRoomBox"></el-input>
           <el-checkbox v-model="dataBaselineForm.outerUnitMachineRoomBox">外部单位机器机房</el-checkbox>
-          <el-input v-model="dataBaselineForm.outerUnitMachineRoom" placeholder="请输入具体对象"
+          <el-input v-model="dataBaselineForm.outerUnitMachineRoom" placeholder="请输入具体对象" maxlength="30"
             v-if="dataBaselineForm.outerUnitMachineRoomBox"></el-input>
           <el-checkbox v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox">第三方托管机房</el-checkbox>
-          <el-input v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoom" placeholder="请输入具体对象"
+          <el-input v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoom" placeholder="请输入具体对象" maxlength="30"
             v-if="dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox"></el-input>
         </div>
       </el-form-item>
@@ -104,10 +104,10 @@
       <el-form-item label="">
         <div class="interaction-checkbox">
           <el-checkbox v-model="dataBaselineForm.domesticBox">境内</el-checkbox>
-          <el-input v-model="dataBaselineForm.domestic" placeholder="请输入具体对象"
+          <el-input v-model="dataBaselineForm.domestic" placeholder="请输入具体对象" maxlength="30"
             v-if="dataBaselineForm.domesticBox"></el-input>
           <el-checkbox v-model="dataBaselineForm.overseasBox">境外</el-checkbox>
-          <el-input v-model="dataBaselineForm.overseas" placeholder="请输入具体对象"
+          <el-input v-model="dataBaselineForm.overseas" placeholder="请输入具体对象" maxlength="30"
             v-if="dataBaselineForm.overseasBox"></el-input>
         </div>
       </el-form-item>
