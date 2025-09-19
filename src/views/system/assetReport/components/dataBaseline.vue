@@ -11,7 +11,8 @@
             </el-form-item>
             <!-- 拟定数据级别（单选） -->
             <el-form-item label="拟定数据级别">
-                <el-radio v-for="item in dict.type.sys_risk_level" v-model="dataBaselineForm.dataLevel" :key="item.value" :label="item.value" disabled>{{ item.label }}</el-radio>
+                <el-radio v-for="item in dict.type.sys_risk_level" v-model="dataBaselineForm.dataLevel"
+                    :key="item.value" :label="item.value" disabled>{{ item.label }}</el-radio>
             </el-form-item>
             <!-- 数据类别 -->
             <el-form-item label="数据类别">
@@ -371,8 +372,51 @@ export default {
         formatFormData(rawData) {
             return {
                 dataName: rawData.dataName,
-                dataLevel: rawData.dataLevel,
-                // ... 其他字段（与initData中保持一致）
+                dataLevel: this.dict.type.sys_risk_level.find(item => item.value == rawData.dataLevel)?.label,
+                dataType: rawData.dataType,
+                dataOwner: rawData.dataOwner,
+                deptName: rawData.deptName,
+                noPersonalData: rawData.noPersonalData === '1' ? true : false, // 未成年信息
+                ordinaryPersonalData: rawData.ordinaryPersonalData === '1' ? true : false, // 普通个人数据
+                sensitivePersonalData: rawData.sensitivePersonalData === '1' ? true : false, // 敏感个人数据
+                personalData: rawData.personalData === '1' ? true : false, // 个人数据
+                dataSize: rawData.dataSize, // 数据总量
+                piiCount: rawData.piiCount, // 个人信息条数
+                monthAmountOfIncrease: rawData.monthAmountOfIncrease, // 数据月增长量
+                systemGather: rawData.systemGather === '1', // 系统采集
+                systemProduction: rawData.systemProduction === '1', // 系统生产
+                artificialFillIn: rawData.artificialFillIn === '1', // 人工填报
+                dealBuy: rawData.dealBuy === '1', // 交换购买
+                shareExchange: rawData.shareExchange === '1', // 共享交换
+                other: rawData.other != '-1' && rawData.other != null ? true : false, // 其他
+                otherInput: rawData.other != '-1' && rawData.other != null ? rawData.other : '', // 其他数据来源
+                externalProvisionBox: rawData.externalProvision != '-1' && rawData.externalProvision != null ? true : false, // 与其他数据处理者的交互-对外提供给
+                externalProvision: rawData.externalProvision != '-1' && rawData.externalProvision != null ? rawData.externalProvision : '', // 与其他数据处理者的交互-对外提供给-具体对象
+                entrustBox: rawData.entrust != '-1' && rawData.entrust != null ? true : false, // 与其他数据处理者的交互-委托
+                entrust: rawData.entrust != '-1' && rawData.entrust != null ? rawData.entrust : '', // 与其他数据处理者的交互-委托-具体对象
+                jointDisposalBox: rawData.jointDisposal != '-1' && rawData.jointDisposal != null ? true : false, // 与其他数据处理者的交互-与...共同处理
+                jointDisposal: rawData.jointDisposal != '-1' && rawData.jointDisposal != null ? rawData.jointDisposal : '', // 与其他数据处理者的交互-与...共同处理-具体对象
+                noInteraction: rawData.noInteraction === '1', // 与其他数据处理者的交互-无交互
+                privateCloudBox: rawData.privateCloud != '-1' && rawData.privateCloud != null ? true : false, // 数据存储位置-云类型-私有云
+                privateCloud: rawData.privateCloud != '-1' && rawData.privateCloud != null ? rawData.privateCloud : '', // 数据存储位置-云类型-私有云-具体对象
+                publicCloudBox: rawData.publicCloud != '-1' && rawData.publicCloud != null ? true : false, // 数据存储位置-云类型-公有云
+                publicCloud: rawData.publicCloud != '-1' && rawData.publicCloud != null ? rawData.publicCloud : '', // 数据存储位置-云类型-公有云-具体对象
+                mixtureCloudBox: rawData.mixtureCloud != '-1' && rawData.mixtureCloud != null ? true : false, // 数据存储位置-云类型-混合云
+                mixtureCloud: rawData.mixtureCloud != '-1' && rawData.mixtureCloud != null ? rawData.mixtureCloud : '', // 数据存储位置-云类型-混合云-具体对象
+                governmentCloudBox: rawData.governmentCloud != '-1' && rawData.governmentCloud != null ? true : false, // 数据存储位置-云类型-政务云
+                governmentCloud: rawData.governmentCloud != '-1' && rawData.governmentCloud != null ? rawData.governmentCloud : '', // 数据存储位置-云类型-政务云-具体对象
+                noCloudComputingPlatformBox: rawData.noCloudComputingPlatform != '-1' && rawData.noCloudComputingPlatform != null ? true : false, // 数据存储位置-云类型-非云计算平台
+                noCloudComputingPlatform: rawData.noCloudComputingPlatform != '-1' && rawData.noCloudComputingPlatform != null ? rawData.noCloudComputingPlatform : '', // 数据存储位置-云类型-非云计算平台-具体对象
+                thisUnitMachineRoomBox: rawData.thisUnitMachineRoom != '-1' && rawData.thisUnitMachineRoom != null ? true : false, // 数据存储位置-机房类型-本单位机器机房
+                thisUnitMachineRoom: rawData.thisUnitMachineRoom != '-1' && rawData.thisUnitMachineRoom != null ? rawData.thisUnitMachineRoom : '', // 数据存储位置-机房类型-本单位机器机房-具体对象
+                outerUnitMachineRoomBox: rawData.outerUnitMachineRoom != '-1' && rawData.outerUnitMachineRoom != null ? true : false, // 数据存储位置-机房类型-外部单位机器机房
+                outerUnitMachineRoom: rawData.outerUnitMachineRoom != '-1' && rawData.outerUnitMachineRoom != null ? rawData.outerUnitMachineRoom : '', // 数据存储位置-机房类型-外部单位机器机房-具体对象
+                thirdPartyTrusteeshipMachineRoomBox: rawData.thirdPartyTrusteeshipMachineRoom != '-1' && rawData.thirdPartyTrusteeshipMachineRoom != null ? true : false, // 数据存储位置-机房类型-第三方托管机房
+                thirdPartyTrusteeshipMachineRoom: rawData.thirdPartyTrusteeshipMachineRoom != '-1' && rawData.thirdPartyTrusteeshipMachineRoom != null ? rawData.thirdPartyTrusteeshipMachineRoom : '', // 数据存储位置-机房类型-第三方托管机房-具体对象
+                domesticBox: rawData.domestic != '-1' && rawData.domestic != null ? true : false, // 数据存储位置-存储地域-境内
+                domestic: rawData.domestic != '-1' && rawData.domestic != null ? rawData.domestic : '', // 数据存储位置-存储地域-境内-具体对象
+                overseasBox: rawData.overseas != '-1' && rawData.overseas != null ? true : false, // 数据存储位置-存储地域-境外
+                overseas: rawData.overseas != '-1' && rawData.overseas != null ? rawData.overseas : '', // 数据存储位置-存储地域-境外-具体对象
                 dataSources: rawData.dataSources.length > 0 ? rawData.dataSources : [{ content: '' }],
                 dataflow: rawData.dataflow.length > 0 ? rawData.dataflow : [{ content: '' }],
             };

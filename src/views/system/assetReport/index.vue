@@ -148,39 +148,213 @@ export default {
       return html;
     },
 
-    // 生成表单内容HTML（对应页面展示结构）
+    // 生成表格与页面样式完全一致的表单HTML
     generateFormHtml(formData) {
-      // 基础数据信息部分
-      let basicInfo = `
-    <div class="section-block" style="margin-bottom: 20px;">
-      <h3 style="font-size: 16px; margin: 10px 0;">基础数据信息</h3>
-      <table style="width: 100%; border-collapse: collapse;">
-        <tr><td style="padding: 8px; border: 1px solid #eee; width: 20%;">数据名称</td><td style="padding: 8px; border: 1px solid #eee;">${formData.dataName || '-'}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #eee;">拟定数据级别</td><td style="padding: 8px; border: 1px solid #eee;">${formData.dataLevel === '1' ? '一般数据' : '重要及以上数据'}</td></tr>
-        <!-- 其他基础信息字段 -->
+      // 引入页面使用的主样式（从实际项目中复制关键CSS）
+      const baseStyles = `
+    <style>
+      .form-section { margin-bottom: 24px; padding: 16px; border-radius: 4px; background: #fff; }
+      .form-section-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px; padding-left: 8px; border-left: 3px solid #409eff; }
+      .form-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+      .form-table th, .form-table td { border: 1px solid #e0e0e0; padding: 12px 16px; text-align: left; }
+      .form-table th { background-color: #f5f7fa; font-weight: 500; width: 20%; }
+      .form-table td { width: 80%; }
+      .sub-table { margin-left: 20px; margin-top: 8px; width: calc(100% - 20px); }
+      .tag { display: inline-block; padding: 2px 8px; margin-right: 8px; border-radius: 4px; font-size: 12px; }
+      .tag-primary { background: #ecf5ff; color: #409eff; }
+      .list-item { margin-bottom: 8px; padding: 8px; border: 1px solid #f0f0f0; border-radius: 4px; }
+      .checkbox-group { display: flex; flex-wrap: wrap; gap: 16px; }
+      .checkbox-item { display: inline-flex; align-items: center; }
+      .checkbox-item::before { content: "☑️"; margin-right: 4px; }
+    </style>
+  `;
+
+      // 基础数据信息表格
+      const basicInfoTable = `
+    <div class="form-section">
+      <div class="form-section-title">基础数据信息</div>
+      <table class="form-table">
+        <tr>
+          <th>数据名称</th>
+          <td>${formData.dataName || '-'}</td>
+        </tr>
+        <tr>
+          <th>拟定数据级别</th>
+          <td>
+            <span class="tag tag-primary">${formData.dataLevel}</span>
+          </td>
+        </tr>
+        <tr>
+          <th>数据类别</th>
+          <td>${formData.dataType || '-'}</td>
+        </tr>
+        <tr>
+          <th>数据安全责任部门</th>
+          <td>${formData.deptName || '-'}</td>
+        </tr>
+        <tr>
+          <th>数据安全负责人</th>
+          <td>${formData.dataOwner || '-'}</td>
+        </tr>
+        <tr>
+          <th>个人信息涉及情况</th>
+          <td>
+            <div class="checkbox-group">
+              ${formData.sensitivePersonalData ? '<div class="checkbox-item">涉及敏感个人信息</div><br>' : ''}
+              ${formData.noPersonalData ? '<div class="checkbox-item">涉及未成年人的个人信息</div><br>' : ''}
+              ${formData.ordinaryPersonalData ? '<div class="checkbox-item">涉及一般个人信息</div><br>' : ''}
+              ${formData.personalData ? '<div class="checkbox-item">不涉及</div>' : ''}
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <th>数据总量</th>
+          <td>
+            数据总量：<span class="tag tag-primary">${formData.dataSize || '-'}</span><br>
+            涉及个人信息：<span class="tag tag-primary">${formData.piiCount || '-'}</span>
+          </td>
+        </tr>
+        <tr>
+          <th>数据月增长量</th>
+          <td>
+            <span class="tag tag-primary">${formData.monthAmountOfIncrease || '-'}</span>
+          </td>
+        </tr>
       </table>
     </div>
   `;
 
-      // 数据来源部分
-      let dataSource = `
-    <div class="section-block" style="margin-bottom: 20px;">
-      <h3 style="font-size: 16px; margin: 10px 0;">数据来源</h3>
-      <div style="padding: 8px; border: 1px solid #eee;">
-        <p>数据的产生方式/获取方式：</p>
-        <ul style="margin: 5px 0; padding-left: 20px;">
-          ${formData.systemGather ? '<li>系统采集</li>' : ''}
-          ${formData.systemProduction ? '<li>系统生产</li>' : ''}
-          <!-- 其他数据来源选项 -->
-        </ul>
-        ${formData.other ? `<p>其他：${formData.otherInput}</p>` : ''}
-      </div>
+      // 数据来源
+      const dataSourceTable = `
+    <div class="form-section">
+      <div class="form-section-title">数据来源</div>
+      <table class="form-table">
+        <tr>
+          <th>数据的产生方式/获取方式</th>
+          <td>
+            <div class="checkbox-group">
+              ${formData.systemGather ? '<div class="checkbox-item">系统采集</div><br>' : ''}
+              ${formData.systemProduction ? '<div class="checkbox-item">系统生产</div><br>' : ''}
+              ${formData.artificialFillIn ? '<div class="checkbox-item">人工填报</div><br>' : ''}
+              ${formData.dealBuy ? '<div class="checkbox-item">交换购买</div><br>' : ''}
+              ${formData.shareExchange ? '<div class="checkbox-item">共享交换</div><br>' : ''}
+              ${formData.other ? `<div class="checkbox-item">其他: ${formData.otherInput}</div>` : ''}
+            </div>
+          </td>
+        </tr>
+      </table>
     </div>
   `;
 
-      // 其他部分（数据流转、存储位置等）类似上述结构
+      // 单位间数据流转情况表格
+      // 数据来源表格
+      let dataSourcesHtml = '';
+      formData.dataSources.forEach((item, index) => {
+        dataSourcesHtml += `
+      <tr>
+        <th>来源 ${index + 1}</th>
+        <td>${item.content || '-'}</td>
+      </tr>
+    `;
+      });
+      // 数据流出表格
+      let dataflowHtml = '';
+      formData.dataflow.forEach((item, index) => {
+        dataflowHtml += `
+      <tr>
+        <th>流转节点 ${index + 1}</th>
+        <td>${item.content || '-'}</td>
+      </tr>
+    `;
+      });
+      const dataFlowTable = `
+        <div class="form-section">
+          <div class="form-section-title">单位间数据流转情况</div>
+          ${dataSourcesHtml ? `
+            <table class="form-table">
+              <tr><th colspan="2">数据来源单位</th></tr>
+              ${dataSourcesHtml}
+            </table>
+          ` : ''}
+        </div>
+        <div class="form-section">
+          ${dataflowHtml ? `
+            <table class="form-table">
+              <tr><th colspan="2">数据流出单位</th></tr>
+              ${dataflowHtml}
+            </table>
+          ` : ''}
+        </div>
+      `;
 
-      return basicInfo + dataSource + ''/* 其他部分 */;
+      // 与其他数据处理者的交互表格
+      const interactionTable = `
+    <div class="form-section">
+      <div class="form-section-title">与其他数据处理者的交互</div>
+      <table class="form-table">
+        <tr>
+          <th>交互类型</th>
+          <td>
+            <div class="checkbox-group">
+              ${formData.externalProvisionBox ? `<div class="checkbox-item">对外提供给: ${formData.externalProvision || '-'}</div><br>` : ''}
+              ${formData.entrustBox ? `<div class="checkbox-item">委托: ${formData.entrust || '-'}</div><br>` : ''}
+              ${formData.jointDisposalBox ? `<div class="checkbox-item">与....共同处理: ${formData.jointDisposal || '-'}</div><br>` : ''}
+              ${formData.noInteraction ? '<div class="checkbox-item">无交互</div>' : ''}
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  `;
+
+      // 数据存储位置表格（多层级结构）
+      const storageLocationTable = `
+    <div class="form-section">
+      <div class="form-section-title">数据存储位置</div>
+      <table class="form-table">
+        <tr>
+          <th>云类型</th>
+          <td>
+            <div class="checkbox-group">
+              ${formData.privateCloudBox ? `<div class="checkbox-item">私有云: ${formData.privateCloud || '-'}</div>` : ''}
+              ${formData.publicCloudBox ? `<div class="checkbox-item">公有云: ${formData.publicCloud || '-'}</div>` : ''}
+              ${formData.mixtureCloudBox ? `<div class="checkbox-item">混合云: ${formData.mixtureCloud || '-'}</div>` : ''}
+              ${formData.governmentCloudBox ? `<div class="checkbox-item">政务云: ${formData.governmentCloud || '-'}</div>` : ''}
+              ${formData.noCloudComputingPlatformBox ? `<div class="checkbox-item">非云计算平台: ${formData.noCloudComputingPlatform || '-'}</div>` : ''}
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <table class="form-table">
+        <tr>
+          <th>机房类型</th>
+          <td>
+            <div class="checkbox-group">
+              ${formData.thisUnitMachineRoomBox ? `<div class="checkbox-item">本单位机器机房: ${formData.thisUnitMachineRoom || '-'}</div>` : ''}
+              ${formData.outerUnitMachineRoomBox ? `<div class="checkbox-item">外部单位机器机房: ${formData.outerUnitMachineRoom || '-'}</div>` : ''}
+              ${formData.thirdPartyTrusteeshipMachineRoomBox ? `<div class="checkbox-item">第三方托管机房: ${formData.thirdPartyTrusteeshipMachineRoom || '-'}</div>` : ''}
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <table class="form-table">
+        <tr>
+          <th>存储地域</th>
+          <td>
+            <div class="checkbox-group">
+              ${formData.domesticBox ? `<div class="checkbox-item">境内: ${formData.domestic || '-'}</div>` : ''}
+              ${formData.overseasBox ? `<div class="checkbox-item">境外: ${formData.overseas || '-'}</div>` : ''}
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  `;
+
+      // 组合所有表格部分    
+      return baseStyles + basicInfoTable + dataSourceTable + dataFlowTable + interactionTable + storageLocationTable ;
     },
 
     // 导出为PDF
@@ -193,7 +367,7 @@ export default {
       // 配置html2pdf
       const opt = {
         margin: 10,
-        filename: '数据基线导出.pdf',
+        filename: '数据摸底调查表.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
