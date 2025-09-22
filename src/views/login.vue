@@ -100,6 +100,7 @@ import { encrypt, decrypt } from "@/utils/jsencrypt";
 // import { sendSmsCode } from "@/api/login";
 // 在script标签顶部添加导入
 import { getToken, setToken, setExpiresIn } from "@/utils/auth";
+// 1. 在data()中添加debounceTimeout变量
 export default {
   name: "Login",
   data() {
@@ -140,7 +141,8 @@ export default {
       smsDisabled: false,
       smsText: "获取验证码",
       smsCountdown: 60,
-      showPassword: false  // 新增：控制密码显示/隐藏的状态变量
+      showPassword: false,  // 新增：控制密码显示/隐藏的状态变量
+      debounceTimeout: null // 添加：用于防抖的定时器ID
     };
   },
   created() {
@@ -175,33 +177,37 @@ export default {
     },
     // 获取短信验证码（如需对接真实接口，可在此完善逻辑）
     getSmsCode() {
-      // 先验证手机号
-      this.$refs.loginForm.validateField("phone", (error) => {
-        if (!error) {
-          // 调用获取短信验证码接口
-          const params = {
-            phone: this.loginForm.phone
-          }
-          getPhoneCode(params).then(res => {
-            this.$message.success("验证码已发送至您的手机");
-            // 开始倒计时
-            this.smsDisabled = true;
-            this.smsText = `${this.smsCountdown}s后重新获取`;
-            const countdownTimer = setInterval(() => {
-              this.smsCountdown--;
+      // 清除之前的定时器，实现防抖
+      clearTimeout(this.debounceTimeout);
+      this.debounceTimeout = setTimeout(() => {
+        // 先验证手机号
+        this.$refs.loginForm.validateField("phone", (error) => {
+          if (!error) {
+            // 调用获取短信验证码接口
+            const params = {
+              phone: this.loginForm.phone
+            }
+            getPhoneCode(params).then(res => {
+              this.$message.success("验证码已发送至您的手机");
+              // 开始倒计时
+              this.smsDisabled = true;
               this.smsText = `${this.smsCountdown}s后重新获取`;
-              if (this.smsCountdown <= 0) {
-                clearInterval(countdownTimer);
-                this.smsDisabled = false;
-                this.smsText = "获取验证码";
-                this.smsCountdown = 60;
-              }
-            }, 1000);
-          }).catch(err => {
-            this.$message.error(err.message || "验证码发送失败");
-          });
-        }
-      });
+              const countdownTimer = setInterval(() => {
+                this.smsCountdown--;
+                this.smsText = `${this.smsCountdown}s后重新获取`;
+                if (this.smsCountdown <= 0) {
+                  clearInterval(countdownTimer);
+                  this.smsDisabled = false;
+                  this.smsText = "获取验证码";
+                  this.smsCountdown = 60;
+                }
+              }, 1000);
+            }).catch(err => {
+              this.$message.error(err.message || "验证码发送失败");
+            });
+          }
+        });
+      }, 300); // 设置300毫秒的防抖时间间隔
     },
     // 处理登录逻辑
     handleLogin() {
