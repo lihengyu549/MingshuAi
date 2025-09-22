@@ -35,15 +35,14 @@ module.exports = {
     port: port,
     open: true,
     proxy: {
-      "/dev-api/prod-api": {
+      "/dev-api": {
         // target: `http://dast123123.zp.jilj.top:25378`,
         // target: `http://192.168.2.196/`,
         // target: `https://192.168.2.174/`,
-        target: `http://192.168.7.84:8080/`,
-        // target: `http://117.134.9.113:8008/`,
+        target: `http://117.134.9.113:8008/`,
         // target: `http://sihx.hlg.d2w.cc:30977/`,
         changeOrigin: true,
-        pathRewrite:{'^/dev-api/prod-api':''}
+        pathRewrite:{'^/dev-api':''}
       },
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       // [process.env.VUE_APP_BASE_API]: {
