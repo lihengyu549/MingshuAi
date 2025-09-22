@@ -217,7 +217,11 @@
                 @selection-change="handleUpgradeSelectionChange">
                 <el-table-column type="selection" width="45"
                   :selectable="(row, index) => addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3" />
-                <el-table-column prop="ruleType" label="规则类型" width="180" />
+                <el-table-column prop="ruleType" label="规则类型" width="180">
+                  <template slot-scope="scope">
+                    {{ getRuleTypeLabel(scope.row.ruleType) }}
+                  </template>
+                </el-table-column>
                 <el-table-column prop="matchingCondition" label="匹配条件" min-width="180" />
                 <el-table-column prop="ruleContent" label="内容" min-width="180" />
                 <el-table-column prop="securityLevel" label="安全分级" min-width="180" />
@@ -254,7 +258,11 @@
                 @selection-change="handleDemotionSelectionChange">
                 <el-table-column type="selection" width="45"
                   :selectable="(row, index) => addOrEditDataRuls.demotionRule && addOrEdit.flag != 3" />
-                <el-table-column prop="ruleType" label="规则类型" width="180" />
+                <el-table-column prop="ruleType" label="规则类型" width="180">
+                  <template slot-scope="scope">
+                    {{ getRuleTypeLabel(scope.row.ruleType) }}
+                  </template>
+                </el-table-column>
                 <el-table-column prop="matchingCondition" label="匹配条件" min-width="180" />
                 <el-table-column prop="ruleContent" label="内容" min-width="180" />
                 <el-table-column prop="securityLevel" label="安全分级" min-width="180" />
@@ -562,6 +570,10 @@ export default {
     this.getSelectUserListAll()
   },
   methods: {
+    getRuleTypeLabel(ruleType) {
+      const option = this.options.find(item => item.value === ruleType);
+      return option ? option.label : '';
+    },
     /**
    * 打开新增规则弹窗
    * @param {String} type 规则类型：'upgrade'升级/'downgrade'降级
@@ -1537,5 +1549,4 @@ export default {
 .checkbox-item {
   margin-right: 0 !important;
 }
-
 </style>

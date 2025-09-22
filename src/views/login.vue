@@ -1,5 +1,14 @@
 <template>
   <div class="login">
+    <!-- 视频背景 -->
+    <div class="video-bg">
+      <video autoplay loop muted playsinline preload="auto">
+        <!-- 修改路径引用方式 -->
+        <source :src="require('@/assets/videos/loginBacMov.mp4')" type="video/mp4">
+      </video>
+      <!-- 视频遮罩层，增强文字可读性 -->
+      <div class="video-mask"></div>
+    </div>
     <!-- 登录容器 -->
     <div class="login-container">
       <!-- 登录标题 -->
@@ -7,7 +16,7 @@
       <p class="login-desc">请使用您的账号信息登录</p>
 
       <!-- 替换为Element UI的el-tabs组件 -->
-      <el-tabs v-model="loginType" class="login-tabs" tab-position="top" stretch="true">
+      <el-tabs v-model="loginType" class="login-tabs" tab-position="top" :stretch="true">
         <el-tab-pane label="账户密码登录" name="account"></el-tab-pane>
         <el-tab-pane label="手机号登录" name="phone"></el-tab-pane>
       </el-tabs>
@@ -211,8 +220,8 @@ export default {
           }
           // 调用登录接口（根据登录类型传参）
           const loginParams = this.loginType === "account"
-            ? { username: this.loginForm.username, password: this.loginForm.password }
-            : { phone: this.loginForm.phone, smsCode: this.loginForm.smsCode };
+            ? { username: this.loginForm.username, password: this.loginForm.password, type: '1' }
+            : { phone: this.loginForm.phone, smsCode: this.loginForm.smsCode, type: '2' };
           this.$store
             .dispatch("Login", loginParams)
             .then(() => {
@@ -234,14 +243,61 @@ export default {
 <style rel="stylesheet/scss" lang="scss" scoped>
 /* 登录页整体样式 */
 .login {
+  position: fixed; /* 改为fixed固定定位 */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #f5f7fa;
+  overflow: hidden;
+  /* 增加背景色作为视频加载前的过渡 */
+  background-color: #000000;
 }
 
-::v-deep.el-form{
+/* 视频背景样式 */
+.video-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; /* 确保在最底层 */
+}
+
+.video-bg video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* 保持视频比例并覆盖整个容器 */
+}
+
+/* 视频遮罩层，增强文字与背景的对比度 */
+.video-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  // background-color: rgba(0, 0, 0, 0.3);
+  // /* 半透明黑色遮罩 */
+}
+
+/* 登录容器样式 - 新增z-index确保在视频上方 */
+.login-container {
+  width: 400px;
+  padding: 40px 30px;
+  background-color: rgba(255, 255, 255, 0.9);
+  /* 增加背景透明度 */
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  /* 确保在视频上方 */
+}
+
+
+::v-deep.el-form {
   margin-bottom: 0;
 }
 
