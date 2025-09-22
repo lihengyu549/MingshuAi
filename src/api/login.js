@@ -59,3 +59,21 @@ export function getCodeImg() {
     timeout: 600000
   })
 }
+
+// 获取发送手机号验证码接口
+export function getPhoneCode(data) {
+  return request({
+    url: '/phoneCode',
+    method: 'get',
+    params: data
+  })
+}
+
+// 手机号登录接口
+export function loginByPhone(data) {
+  return request({
+    url: '/auth/loginByPhone',
+    method: 'post',
+    data: data
+  })
+}

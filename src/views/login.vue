@@ -93,12 +93,13 @@
 </template>
 
 <script>
-import { getCodeImg } from "@/api/login";
+import { getCodeImg, getPhoneCode, loginByPhone } from "@/api/login";
 import Cookies from "js-cookie";
 import { encrypt, decrypt } from "@/utils/jsencrypt";
 // 如需对接真实短信接口，可在此导入短信发送API
 // import { sendSmsCode } from "@/api/login";
-
+// 在script标签顶部添加导入
+import { getToken, setToken, setExpiresIn } from "@/utils/auth";
 export default {
   name: "Login",
   data() {
@@ -177,29 +178,28 @@ export default {
       // 先验证手机号
       this.$refs.loginForm.validateField("phone", (error) => {
         if (!error) {
-          // 模拟短信发送成功，开始倒计时
-          this.smsDisabled = true;
-          this.smsText = `${this.smsCountdown}s后重新获取`;
-          const countdownTimer = setInterval(() => {
-            this.smsCountdown--;
+          // 调用获取短信验证码接口
+          const params = {
+            phone: this.loginForm.phone
+          }
+          getPhoneCode(params).then(res => {
+            this.$message.success("验证码已发送至您的手机");
+            // 开始倒计时
+            this.smsDisabled = true;
             this.smsText = `${this.smsCountdown}s后重新获取`;
-            if (this.smsCountdown <= 0) {
-              clearInterval(countdownTimer);
-              this.smsDisabled = false;
-              this.smsText = "获取验证码";
-              this.smsCountdown = 60;
-            }
-          }, 1000);
-          // 真实场景下调用短信接口
-          // sendSmsCode(this.loginForm.phone).then(res => {
-          //   this.$message.success("验证码已发送至您的手机");
-          // }).catch(err => {
-          //   clearInterval(countdownTimer);
-          //   this.smsDisabled = false;
-          //   this.smsText = "获取验证码";
-          //   this.smsCountdown = 60;
-          //   this.$message.error(err.message || "验证码发送失败");
-          // });
+            const countdownTimer = setInterval(() => {
+              this.smsCountdown--;
+              this.smsText = `${this.smsCountdown}s后重新获取`;
+              if (this.smsCountdown <= 0) {
+                clearInterval(countdownTimer);
+                this.smsDisabled = false;
+                this.smsText = "获取验证码";
+                this.smsCountdown = 60;
+              }
+            }, 1000);
+          }).catch(err => {
+            this.$message.error(err.message || "验证码发送失败");
+          });
         }
       });
     },
@@ -208,8 +208,8 @@ export default {
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
           this.loading = true;
-          // 处理记住密码逻辑
-          if (this.loginForm.rememberMe) {
+          // 处理记住密码逻辑（仅针对账户密码登录）
+          if (this.loginForm.rememberMe && this.loginType === 'account') {
             Cookies.set("username", this.loginForm.username, { expires: 30 });
             Cookies.set("password", encrypt(this.loginForm.password), { expires: 30 });
             Cookies.set("rememberMe", this.loginForm.rememberMe, { expires: 30 });
@@ -218,21 +218,45 @@ export default {
             Cookies.remove("password");
             Cookies.remove("rememberMe");
           }
-          // 调用登录接口（根据登录类型传参）
-          const loginParams = this.loginType === "account"
-            ? { username: this.loginForm.username, password: this.loginForm.password, type: '1' }
-            : { phone: this.loginForm.phone, smsCode: this.loginForm.smsCode, type: '2' };
-          this.$store
-            .dispatch("Login", loginParams)
-            .then(() => {
-              this.$router.push({ path: this.redirect || "/" }).catch(() => { });
-            })
-            .catch(() => {
-              this.loading = false;
-              if (this.loginType === 'account') {
+          // 调用登录接口（根据登录类型选择对应接口）
+          if (this.loginType === "account") {
+            const loginParams = {
+              username: this.loginForm.username,
+              password: this.loginForm.password,
+              type: '1'
+            };
+            this.$store.dispatch("Login", loginParams)
+              .then(() => {
+                this.$router.push({ path: this.redirect || "/" }).catch(() => { });
+              })
+              .catch(() => {
+                this.loading = false;
                 this.getCode();
-              }
-            });
+              });
+          // 替换原来的手机号登录逻辑
+          } else {
+          // 手机号登录使用loginByPhone接口
+          const loginParams = {
+          phone: this.loginForm.phone,
+          code: this.loginForm.smsCode,
+          type: '2'
+          };
+          loginByPhone(loginParams).then(res => {
+          // 添加这部分代码，处理返回的token
+          let data = res.data;
+          setToken(data.access_token);
+          // 更新store中的token状态
+          this.$store.commit('SET_TOKEN', data.access_token);
+          setExpiresIn(data.expires_in);
+          this.$store.commit('SET_EXPIRES_IN', data.expires_in);
+          
+          // 然后再执行跳转
+          this.$router.push({ path: this.redirect || '/' }).catch(() => { });
+          }).catch(err => {
+          // this.$message.error(err.message || "登录失败");
+          this.loading = false;
+          });
+          }
         }
       });
     }
@@ -243,7 +267,8 @@ export default {
 <style rel="stylesheet/scss" lang="scss" scoped>
 /* 登录页整体样式 */
 .login {
-  position: fixed; /* 改为fixed固定定位 */
+  position: fixed;
+  /* 改为fixed固定定位 */
   top: 0;
   left: 0;
   width: 100%;
@@ -263,7 +288,8 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: -1; /* 确保在最底层 */
+  z-index: -1;
+  /* 确保在最底层 */
 }
 
 .video-bg video {
