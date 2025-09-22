@@ -75,12 +75,10 @@
         </el-form-item>
 
         <!-- 登录按钮 -->
-        <el-form-item class="login-btn-item" :label-width="0">
-          <el-button :loading="loading" type="primary" class="login-btn" @click.native.prevent="handleLogin">
-            登录
-          </el-button>
-        </el-form-item>
       </el-form>
+      <el-button :loading="loading" type="primary" class="login-btn" @click.native.prevent="handleLogin">
+        登录
+      </el-button>
     </div>
   </div>
 </template>
@@ -243,6 +241,10 @@ export default {
   background-color: #f5f7fa;
 }
 
+::v-deep.el-form{
+  margin-bottom: 0;
+}
+
 /* 登录容器样式 */
 .login-container {
   width: 400px;
@@ -279,7 +281,7 @@ export default {
 
 /* el-tabs样式调整（匹配原设计） */
 .login-tabs {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 /* 激活标签样式 */
