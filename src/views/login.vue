@@ -25,17 +25,19 @@
 
         <!-- 手机号输入（保留label和icon） -->
         <el-form-item prop="phone" label="手机号" v-if="loginType === 'phone'">
-          <el-input v-model="loginForm.phone" type="text" auto-complete="off" placeholder="请输入手机号"
-            class="login-input">
+          <el-input v-model="loginForm.phone" type="text" auto-complete="off" placeholder="请输入手机号" class="login-input">
             <svg-icon slot="prefix" icon-class="phone" class="el-input__icon input-icon" />
           </el-input>
         </el-form-item>
 
         <!-- 密码输入（保留icon和label） -->
         <el-form-item prop="password" label="密码" v-if="loginType === 'account'">
-          <el-input v-model="loginForm.password" type="password" auto-complete="off" placeholder="请输入密码"
-            class="login-input" @keyup.enter.native="handleLogin">
+          <el-input v-model="loginForm.password" :type="showPassword ? 'text' : 'password'" auto-complete="off"
+            placeholder="请输入密码" class="login-input" @keyup.enter.native="handleLogin">
             <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
+            <!-- 新增：小眼睛图标（后置） -->
+            <svg-icon slot="suffix" :icon-class="showPassword ? 'eye-open' : 'eye'"
+              class="el-input__icon input-icon" @click="showPassword = !showPassword" style="cursor: pointer" />
           </el-input>
         </el-form-item>
 
@@ -109,7 +111,8 @@ export default {
       // 短信验证码相关
       smsDisabled: false,
       smsText: "获取验证码",
-      smsCountdown: 60
+      smsCountdown: 60,
+      showPassword: false  // 新增：控制密码显示/隐藏的状态变量
     };
   },
   created() {
