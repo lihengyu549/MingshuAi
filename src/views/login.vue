@@ -36,10 +36,26 @@
             placeholder="请输入密码" class="login-input" @keyup.enter.native="handleLogin">
             <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
             <!-- 新增：小眼睛图标（后置） -->
-            <svg-icon slot="suffix" :icon-class="showPassword ? 'eye-open' : 'eye'"
-              class="el-input__icon input-icon" @click="showPassword = !showPassword" style="cursor: pointer" />
+            <svg-icon slot="suffix" :icon-class="showPassword ? 'eye-open' : 'eye'" class="el-input__icon input-icon"
+              @click="showPassword = !showPassword" style="cursor: pointer" />
           </el-input>
         </el-form-item>
+
+        <!-- <el-form-item prop="code" v-if="loginType === 'account'">
+          <el-row :gutter="8">
+            <el-col :span="16">
+              <el-input v-model="loginForm.code" auto-complete="off" placeholder="请输入验证码"
+                @keyup.enter.native="handleLogin">
+                <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon" />
+              </el-input>
+            </el-col>
+            <el-col :span="8">
+              <div class="login-code">
+                <img :src="codeUrl" @click="getCode" class="login-code-img" />
+              </div>
+            </el-col>
+          </el-row>
+        </el-form-item> -->
 
         <!-- 验证码输入（修复布局：用el-row/el-col替代flex，适配label-position="top"） -->
         <el-form-item prop="smsCode" label="验证码" v-if="loginType === 'phone'">
@@ -70,6 +86,7 @@
 </template>
 
 <script>
+import { getCodeImg } from "@/api/login";
 import Cookies from "js-cookie";
 import { encrypt, decrypt } from "@/utils/jsencrypt";
 // 如需对接真实短信接口，可在此导入短信发送API
@@ -79,6 +96,7 @@ export default {
   name: "Login",
   data() {
     return {
+      codeUrl: "",
       // 登录类型：account-账户密码登录，phone-手机号登录（与el-tabs的name对应）
       loginType: "account",
       // 登录表单数据
@@ -87,7 +105,8 @@ export default {
         password: "",
         phone: "",
         smsCode: "",
-        rememberMe: false
+        rememberMe: false,
+        // code: "",
       },
       // 登录表单验证规则
       loginRules: {
@@ -104,7 +123,8 @@ export default {
         smsCode: [
           { required: true, trigger: "blur", message: "请输入验证码" },
           { pattern: /^\d{6}$/, trigger: "blur", message: "请输入6位验证码" }
-        ]
+        ],
+        code: [{ required: true, trigger: "blur", message: "请输入验证码" }]
       },
       // 加载状态
       loading: false,
@@ -116,10 +136,21 @@ export default {
     };
   },
   created() {
+    // this.getCode();
     // 从Cookie中读取记住的登录信息
     this.getCookie();
   },
   methods: {
+    getCode() {
+      getCodeImg().then((res) => {
+        this.captchaEnabled =
+          res.captchaEnabled === undefined ? true : res.captchaEnabled;
+        if (this.captchaEnabled) {
+          this.codeUrl = "data:image/gif;base64," + res.img;
+          this.loginForm.uuid = res.uuid;
+        }
+      });
+    },
     // 从Cookie获取记住的登录信息
     getCookie() {
       const username = Cookies.get("username");
@@ -191,6 +222,9 @@ export default {
             })
             .catch(() => {
               this.loading = false;
+              if (this.loginType === 'account') {
+                this.getCode();
+              }
             });
         }
       });
@@ -233,6 +267,14 @@ export default {
   font-size: 14px;
   color: #86909c;
   text-align: center;
+}
+
+.login-code-img {
+  width: 100%;
+  height: 38px;
+  border-radius: 4px;
+  cursor: pointer;
+  object-fit: cover;
 }
 
 /* el-tabs样式调整（匹配原设计） */
