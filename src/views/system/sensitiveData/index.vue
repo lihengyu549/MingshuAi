@@ -60,7 +60,7 @@
             <el-card class="assessment-card risk-list-card" v-if="showRiskDetails">
                 <div slot="header" class="card-header list-header">
                     <div>
-                        <h3>敏感数据安全风险清单</h3>
+                        <h3><svg-icon icon-class="tag" style="margin-right: 5px;" />敏感数据安全风险清单</h3>
                         <span class="card-header-span">数据源：{{ currentDataSource.name }}</span>
                     </div>
                     <el-button type="text" icon="el-icon-close" @click="showRiskDetails = false" class="close-btn"
@@ -120,11 +120,14 @@
                         </div>
 
                         <el-table :data="category.fields" style="width: 100%; margin-top: 10px;" size="mini">
-                            <el-table-column prop="absolutePath" align="center" label="数据表名称" min-width="220"></el-table-column>
+                            <el-table-column prop="absolutePath" align="center" label="数据表名称"
+                                min-width="220"></el-table-column>
                             <el-table-column prop="comment" align="center" label="字段名称" width="130"></el-table-column>
                             <el-table-column prop="comment" align="center" label="字段注释" width="130"></el-table-column>
-                            <el-table-column prop="sampleValue" align="center" label="样本值" width="180"></el-table-column>
-                            <el-table-column prop="riskSuggestion" align="center" label="风险处置建议" width="160"></el-table-column>
+                            <el-table-column prop="sampleValue" align="center" label="样本值"
+                                width="180"></el-table-column>
+                            <el-table-column prop="riskSuggestion" align="center" label="风险处置建议"
+                                width="160"></el-table-column>
                             <!-- 是否脱敏列 - 下拉框 -->
                             <el-table-column prop="isDesensitized" label="是否脱敏" align="center" width="100">
                                 <template slot-scope="scope">
@@ -148,10 +151,8 @@
                             <el-table-column prop="isEncrypted" label="是否加密" align="center" width="100">
                                 <template slot-scope="scope">
                                     <div style="display: flex; align-items: center; justify-content: center;">
-                                        <i
-                                            :class="scope.row.isEncrypted ? 'el-icon-success' : 'el-icon-error'" 
-                                            style="margin-right: 5px;" 
-                                        />
+                                        <i :class="scope.row.isEncrypted ? 'el-icon-success' : 'el-icon-error'"
+                                            style="margin-right: 5px;" />
                                         {{ scope.row.isEncrypted ? '是' : '否' }}
                                     </div>
                                 </template>
@@ -164,21 +165,25 @@
             <!-- 卡片3：整改建议 -->
             <el-card class="assessment-card suggestions-card">
                 <div slot="header" class="card-header">
-                    <h3>整改建议</h3>
+                    <h3><svg-icon icon-class="chuizi" style="margin-right: 5px;" />整改建议</h3>
                     <span class="card-header-span">根据《信息安全技术 敏感个人信息处理规则》及数据敏感程度，建议按以下优先级实施防护措施：</span>
                 </div>
                 <div class="card-content">
                     <div class="suggestion-content">
                         <div class="priority-high">
                             <h4 class="red"><i class="el-icon-warning" style="margin-right: 5px;"></i><b>高优先级:</b></h4>
-                            <span><i class="el-icon-success red" style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
-                            <span><i class="el-icon-success red" style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
+                            <span><i class="el-icon-success red"
+                                    style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
+                            <span><i class="el-icon-success red"
+                                    style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
                         </div>
 
                         <div class="priority-high">
                             <h4 class="blue"><i class="el-icon-date" style="margin-right: 5px;"></i><b>长期措施:</b></h4>
-                            <span><i class="el-icon-success blue" style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
-                            <span><i class="el-icon-success blue" style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
+                            <span><i class="el-icon-success blue"
+                                    style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
+                            <span><i class="el-icon-success blue"
+                                    style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
                         </div>
                     </div>
                 </div>
@@ -187,20 +192,11 @@
             <!-- 卡片4：评估总结 -->
             <el-card class="assessment-card summary-card">
                 <div slot="header" class="card-header">
-                    <h3>评估总结</h3>
+                    <h3><svg-icon icon-class="flag" style="margin-right: 5px;" />评估总结</h3>
                 </div>
                 <div class="card-content">
                     <div class="summary-content">
                         <p>本次敏感数据安全风险评估共涉及8个核心业务系统，识别出32类敏感信息，其中：</p>
-
-                        <div class="summary-stats">
-                            <div class="stat-item">5级-核心数据：15类</div>
-                            <div class="stat-item">4级-重要数据：17类</div>
-                            <div class="stat-item">已防护数据：8类</div>
-                            <div class="stat-item">未防护数据：24类</div>
-                        </div>
-
-                        <p>评估发现，目前有24项敏感信息未实施有效的加密和脱敏保护，存在较高的数据安全风险。</p>
                     </div>
                 </div>
             </el-card>
@@ -539,7 +535,8 @@ export default {
     // background-color: #f5f7fa;
     // border-bottom: 1px solid #eaeaea;
 }
-.card-header-span{
+
+.card-header-span {
     font-size: 12px;
     color: #6e7481;
 }
@@ -564,13 +561,13 @@ export default {
 }
 
 .suggestions-card {
-    grid-column: 1;
-    grid-row: 3;
+    grid-column: 1 / 3; // 改为跨两列
+    grid-row: 3; // 放在第3行
 }
 
 .summary-card {
-    grid-column: 2;
-    grid-row: 3;
+    grid-column: 1 / 3; // 改为跨两列
+    grid-row: 4; // 放在第4行
 }
 
 .risk-level {
@@ -746,10 +743,12 @@ export default {
     gap: 8px; // 标签之间的间距
     align-items: center;
 }
-.red{
+
+.red {
     color: #ca3a31;
 }
-.blue{
+
+.blue {
     color: #4e80ee;
 }
 </style>
