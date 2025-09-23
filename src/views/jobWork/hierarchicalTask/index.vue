@@ -165,7 +165,8 @@
             </el-form-item>
             <el-form-item prop="dataRepetitionValue">
               <el-switch v-model="form.ifStartDataRepetition" active-text="样本重复率高于" @change="handleRepetitionChange" />
-              <el-input v-model="form.dataRepetitionValue" size="mini" style="width: 16%;margin-left:15px;" :disabled="!form.ifStartDataRepetition" oninput="value=value.replace(/[^\d]/g,'')" /> %
+              <el-input v-model="form.dataRepetitionValue" size="mini" style="width: 16%;margin-left:15px;"
+                :disabled="!form.ifStartDataRepetition" oninput="value=value.replace(/[^\d]/g,'')" /> %
               <el-tooltip class="item" effect="dark" content="样本重复率" placement="top-start">
                 <svg-icon icon-class="dengpao" style="margin-left:8px;" />
               </el-tooltip>
@@ -224,6 +225,43 @@
               </el-form-item>
             </el-col>
           </el-row> -->
+          <el-row>
+            <el-col :span="12">
+              <el-form-item>
+                <!-- 单选组容器：flex布局实现左右并列，无label -->
+                <el-radio-group v-model="form.classificationLogic" :disabled="!form.ifStartTask"
+                  class="classification-radio-group" @change="handleClassificationChange">
+                  <!-- 左侧：侧重于整表语义（默认选中label="1"） -->
+                  <el-radio label="1" class="classification-radio"
+                    :class="{ 'radio-checked': form.classificationLogic === '1' }">
+                    <div class="radio-content">
+                      <span class="radio-main-text">侧重于整表语义
+                        <!-- 双圆环容器：外层圆环 + 内层实心圆 -->
+                        <span class="checked-ring-container">
+                          <span class="outer-ring"></span> <!-- 外层细圆环 -->
+                          <span class="inner-dot"></span> <!-- 内层实心圆 -->
+                        </span>
+                      </span>
+                      <div class="radio-desc">通过将整表进行AI分析,对所有字段进行打标</div>
+                    </div>
+                  </el-radio>
+                  <el-radio label="2" class="classification-radio"
+                    :class="{ 'radio-checked': form.classificationLogic === '2' }">
+                    <div class="radio-content">
+                      <span class="radio-main-text">侧重于字段语义
+                        <!-- 双圆环容器：外层圆环 + 内层实心圆 -->
+                        <span class="checked-ring-container">
+                          <span class="outer-ring"></span> <!-- 外层细圆环 -->
+                          <span class="inner-dot"></span> <!-- 内层实心圆 -->
+                        </span>
+                      </span>
+                      <div class="radio-desc">通过字段上下文对每个字段单独进行AI分析</div>
+                    </div>
+                  </el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+          </el-row>
           <el-row>
             <el-col :span="12">
               <el-form-item>
@@ -505,6 +543,13 @@ export default {
     // }
   },
   methods: {
+    handleClassificationChange(val) {
+      this.form.classificationLogic = val;
+      // 可选：若需触发表单校验，可添加以下代码
+      // if (this.$refs.form) {
+      //   this.$refs.form.validateField('classificationLogic');
+      // }
+    },
     handleRepetitionChange() {
       // 当开关状态变化时，手动触发输入框的校验
       this.$refs.form.validateField('dataRepetitionValue');
@@ -1179,5 +1224,175 @@ input[aria-hidden=true] {
 .runType {
   display: flex;
   align-items: center;
+}
+
+/* 1. 单选组容器：左右并列，占满父容器宽度 */
+.classification-radio-group {
+  display: flex;
+  width: 100%;
+  gap: 20px;
+  /* 左右选项间距，可根据图调整 */
+  padding: 5px 0;
+}
+
+/* 2. 单个单选框：隐藏原生单选按钮，自定义选中态 */
+.classification-radio {
+  flex: 1;
+  /* 左右选项平分宽度 */
+  display: flex;
+  align-items: flex-start;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  /* 隐藏Element UI原生单选按钮 */
+}
+
+.classification-radio>>>.el-radio__input {
+  display: none;
+  /* 完全隐藏原生单选框 */
+}
+
+/* 3. 选中态样式：浅背景+左侧边框（参考图选中标识） */
+.radio-checked {
+  background-color: #e1f5fd;
+  /* 浅灰背景，可根据图微调色值 */
+  border: 1px solid #1890ff;
+  /* 左侧蓝色选中线，匹配Element主题色 */
+}
+
+/* 4. 单选框内容容器：文字垂直排列 */
+.radio-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* 主文本与描述文本间距 */
+}
+
+/* 5. 主文本样式：加粗、深色 */
+.radio-main-text {
+  font-size: 16px;
+  color: #333333;
+  /* 主文本深色，突出层级 */
+  line-height: 30px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 6. 描述文本样式：浅色、小号字体 */
+.radio-desc {
+  font-size: 14px;
+  color: #666666;
+  /* 描述文本浅色，次要层级 */
+  line-height: 1.4;
+  /* 优化多行文本可读性 */
+}
+
+/* 7. 禁用态样式：降低透明度，禁止鼠标指针 */
+.classification-radio-group[disabled] .radio-checked {
+  background-color: #fafafa;
+  border-left-color: #c0c4cc;
+}
+
+.classification-radio-group[disabled] .radio-checked .checked-circle {
+  background-color: #c0c4cc;
+  /* 禁用态灰色 */
+}
+
+.classification-radio-group[disabled] .radio-checked {
+  background-color: #fafafa;
+  /* 禁用时选中态背景变浅 */
+  border-left-color: #c0c4cc;
+  /* 禁用时选中线变灰 */
+}
+
+/* 新增：选中圆圈基础样式（默认隐藏） */
+.checked-circle {
+  display: none;
+  /* 未选中时隐藏 */
+  width: 12px;
+  /* 圆圈大小，可按需调整 */
+  height: 12px;
+  border-radius: 50%;
+  /* 圆形 */
+  background-color: #1890ff;
+  /* 蓝色，匹配Element主题色 */
+  margin-left: 8px;
+  /* 与主文本的间距，可按需调整 */
+  vertical-align: middle;
+  /* 与文本垂直居中对齐 */
+}
+
+/* 新增：选中状态时显示圆圈 */
+.radio-checked .checked-circle {
+  display: inline-block;
+  /* 选中时显示为行内元素 */
+}
+
+/* 新增：双圆环容器 - 控制位置居中 */
+.checked-ring-container {
+  display: none;
+  /* 未选中时隐藏 */
+  position: relative;
+  width: 14px;
+  /* 外层圆环直径，可调整 */
+  height: 14px;
+  margin-left: 8px;
+  /* 与文本间距 */
+  vertical-align: middle;
+  /* 与文本垂直居中 */
+}
+
+/* 新增：外层圆环样式 */
+.outer-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px solid #1890ff;
+  /* 圆环宽度+颜色 */
+  border-radius: 50%;
+  /* 圆形 */
+  box-sizing: border-box;
+  /* 确保边框不撑大容器 */
+}
+
+/* 新增：内层实心圆样式 */
+.inner-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  /* 内层圆大小，可调整 */
+  height: 6px;
+  border: 1px solid #1890ff;
+  /* 与外层圆环同色 */
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  /* 居中对齐 */
+}
+
+/* 新增：选中状态时显示双圆环 */
+.radio-checked .checked-ring-container {
+  display: inline-block;
+}
+
+/* 保留原禁用态样式，新增禁用时圆环变灰 */
+.classification-radio-group[disabled] .radio-checked {
+  background-color: #fafafa;
+  border-left-color: #c0c4cc;
+}
+
+/* 新增：禁用态双圆环颜色 */
+.classification-radio-group[disabled] .radio-checked .outer-ring {
+  border-color: #c0c4cc;
+}
+
+.classification-radio-group[disabled] .radio-checked .inner-dot {
+  background-color: #c0c4cc;
 }
 </style>
