@@ -1245,6 +1245,7 @@ input[aria-hidden=true] {
   border-radius: 4px;
   cursor: pointer;
   position: relative;
+  border: solid 1px #dcdfe6;
   /* 隐藏Element UI原生单选按钮 */
 }
 
