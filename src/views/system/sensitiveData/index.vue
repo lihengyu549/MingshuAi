@@ -26,7 +26,7 @@
             <el-card class="assessment-card data-source-card">
                 <div slot="header" class="card-header">
                     <h3><svg-icon icon-class="databaseSolid" style="margin-right: 5px;" />数据源列表</h3>
-                    <span>共 {{ dataSourceList.length }} 条数据,点击查看详细数据分类和风险情况</span>
+                    <span class="card-header-span">共 {{ dataSourceList.length }} 条数据,点击查看详细数据分类和风险情况</span>
                 </div>
 
                 <!-- 数据源表格 -->
@@ -59,7 +59,10 @@
             <!-- 卡片2：敏感数据安全风险清单（包含所有敏感信息） -->
             <el-card class="assessment-card risk-list-card" v-if="showRiskDetails">
                 <div slot="header" class="card-header list-header">
-                    <h3>敏感数据安全风险清单</h3>
+                    <div>
+                        <h3>敏感数据安全风险清单</h3>
+                        <span class="card-header-span">数据源：{{ currentDataSource.name }}</span>
+                    </div>
                     <el-button type="text" icon="el-icon-close" @click="showRiskDetails = false" class="close-btn"
                         size="mini"></el-button>
                 </div>
@@ -117,14 +120,42 @@
                         </div>
 
                         <el-table :data="category.fields" style="width: 100%; margin-top: 10px;" size="mini">
-                            <el-table-column prop="absolutePath" label="数据表名称" min-width="220"></el-table-column>
-                            <el-table-column prop="comment" label="字段名称" width="130"></el-table-column>
-                            <el-table-column prop="comment" label="字段注释" width="130"></el-table-column>
-                            <el-table-column prop="sampleValue" label="样本值" width="180"></el-table-column>
-                            <el-table-column prop="riskSuggestion" label="风险处置建议" width="160"></el-table-column>
-                            <el-table-column label="是否脱敏" width="100"></el-table-column>
-                            <el-table-column label="证明材料" width="130"></el-table-column>
-                            <el-table-column label="是否加密" width="100"></el-table-column>
+                            <el-table-column prop="absolutePath" align="center" label="数据表名称" min-width="220"></el-table-column>
+                            <el-table-column prop="comment" align="center" label="字段名称" width="130"></el-table-column>
+                            <el-table-column prop="comment" align="center" label="字段注释" width="130"></el-table-column>
+                            <el-table-column prop="sampleValue" align="center" label="样本值" width="180"></el-table-column>
+                            <el-table-column prop="riskSuggestion" align="center" label="风险处置建议" width="160"></el-table-column>
+                            <!-- 是否脱敏列 - 下拉框 -->
+                            <el-table-column prop="isDesensitized" label="是否脱敏" align="center" width="100">
+                                <template slot-scope="scope">
+                                    <el-select v-model="scope.row.isDesensitized" size="mini"
+                                        @change="handleDesensitizeChange(scope.row, scope.$index)" style="width: 100%;">
+                                        <el-option label="是" value="是"></el-option>
+                                        <el-option label="否" value="否"></el-option>
+                                    </el-select>
+                                </template>
+                            </el-table-column>
+                            <!-- 证明材料列 - 上传按钮 -->
+                            <el-table-column prop="proofMaterial" label="证明材料" align="center" width="130">
+                                <template slot-scope="scope">
+                                    <el-upload class="upload-btn" action="#"
+                                        :on-change="handleFileUpload(scope.row, scope.$index)" :auto-upload="true"
+                                        :show-file-list="false">
+                                        <el-button size="mini" type="text">上传</el-button>
+                                    </el-upload>
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="isEncrypted" label="是否加密" align="center" width="100">
+                                <template slot-scope="scope">
+                                    <div style="display: flex; align-items: center; justify-content: center;">
+                                        <i
+                                            :class="scope.row.isEncrypted ? 'el-icon-success' : 'el-icon-error'" 
+                                            style="margin-right: 5px;" 
+                                        />
+                                        {{ scope.row.isEncrypted ? '是' : '否' }}
+                                    </div>
+                                </template>
+                            </el-table-column>
                         </el-table>
                     </div>
                 </div>
@@ -134,8 +165,23 @@
             <el-card class="assessment-card suggestions-card">
                 <div slot="header" class="card-header">
                     <h3>整改建议</h3>
+                    <span class="card-header-span">根据《信息安全技术 敏感个人信息处理规则》及数据敏感程度，建议按以下优先级实施防护措施：</span>
                 </div>
-                <div v-html="rectificationSuggestions" class="card-content"></div>
+                <div class="card-content">
+                    <div class="suggestion-content">
+                        <div class="priority-high">
+                            <h4 class="red"><i class="el-icon-warning" style="margin-right: 5px;"></i><b>高优先级:</b></h4>
+                            <span><i class="el-icon-success red" style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
+                            <span><i class="el-icon-success red" style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
+                        </div>
+
+                        <div class="priority-high">
+                            <h4 class="blue"><i class="el-icon-date" style="margin-right: 5px;"></i><b>长期措施:</b></h4>
+                            <span><i class="el-icon-success blue" style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
+                            <span><i class="el-icon-success blue" style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
+                        </div>
+                    </div>
+                </div>
             </el-card>
 
             <!-- 卡片4：评估总结 -->
@@ -143,7 +189,20 @@
                 <div slot="header" class="card-header">
                     <h3>评估总结</h3>
                 </div>
-                <div v-html="assessmentSummary" class="card-content"></div>
+                <div class="card-content">
+                    <div class="summary-content">
+                        <p>本次敏感数据安全风险评估共涉及8个核心业务系统，识别出32类敏感信息，其中：</p>
+
+                        <div class="summary-stats">
+                            <div class="stat-item">5级-核心数据：15类</div>
+                            <div class="stat-item">4级-重要数据：17类</div>
+                            <div class="stat-item">已防护数据：8类</div>
+                            <div class="stat-item">未防护数据：24类</div>
+                        </div>
+
+                        <p>评估发现，目前有24项敏感信息未实施有效的加密和脱敏保护，存在较高的数据安全风险。</p>
+                    </div>
+                </div>
             </el-card>
         </div>
     </div>
@@ -209,6 +268,23 @@ export default {
         };
     },
     methods: {
+        // 处理脱敏状态变更
+        handleDesensitizeChange(row, index) {
+            console.log(`字段 ${row.absolutePath} 脱敏状态变更为: ${row.isDesensitized}`);
+            // 这里可以添加保存状态的逻辑
+        },
+
+        // 处理文件上传
+        handleFileUpload(row, index) {
+            return (file, fileList) => {
+                console.log(`为字段 ${row.absolutePath} 上传证明材料:`, file.name);
+                // 这里可以添加文件上传的逻辑
+                row.proofFiles.push({
+                    name: file.name,
+                    url: '#' // 实际项目中替换为文件的URL
+                });
+            };
+        },
         // 导出清单
         handleExport() {
             this.$message.success('正在导出所有数据源的风险清单...');
@@ -375,47 +451,7 @@ export default {
         }
     },
     computed: {
-        // 整改建议
-        rectificationSuggestions() {
-            return `
-        <div class="suggestion-content">
-          <p>根据《信息安全技术 敏感个人信息处理规则》及数据敏感程度，建议按以下优先级实施防护措施：</p>
-          
-          <div class="priority-high">
-            <h4>高优先级: 5级-核心数据加密与脱敏（30天内）</h4>
-            <ul>
-              <li>对所有身份证信息类、银行卡信息类实施AES-256加密存储</li>
-              <li>对手机号码、邮箱地址等敏感信息进行脱敏显示</li>
-            </ul>
-          </div>
-          
-          <div class="priority-medium">
-            <h4>中优先级: 4级-重要数据保护（60天内）</h4>
-            <ul>
-              <li>对家庭住址、工作单位等信息实施脱敏处理</li>
-            </ul>
-          </div>
-        </div>
-      `;
-        },
 
-        // 评估总结
-        assessmentSummary() {
-            return `
-        <div class="summary-content">
-          <p>本次敏感数据安全风险评估共涉及8个核心业务系统，识别出32类敏感信息，其中：</p>
-          
-          <div class="summary-stats">
-            <div class="stat-item">5级-核心数据：15类</div>
-            <div class="stat-item">4级-重要数据：17类</div>
-            <div class="stat-item">已防护数据：8类</div>
-            <div class="stat-item">未防护数据：24类</div>
-          </div>
-          
-          <p>评估发现，目前有24项敏感信息未实施有效的加密和脱敏保护，存在较高的数据安全风险。</p>
-        </div>
-      `;
-        }
     },
     mounted() {
         this.loadRiskDetails(1);
@@ -427,6 +463,7 @@ export default {
 ::v-deep .el-card {
     box-shadow: none;
 }
+
 /* 样式部分保持不变 */
 .form-label {
     font-weight: 600;
@@ -501,18 +538,18 @@ export default {
     padding: 12px 15px;
     // background-color: #f5f7fa;
     // border-bottom: 1px solid #eaeaea;
-
-    &>span {
-        font-size: 14px;
-        color: #6e7481;
-    }
+}
+.card-header-span{
+    font-size: 12px;
+    color: #6e7481;
 }
 
 .card-header h3 {
-    margin: 0;
     color: #333;
     font-size: 15px;
     font-weight: 600;
+    margin: 0;
+    margin-bottom: 10px;
 }
 
 /* 卡片布局设置 - 移除了手机号信息卡片 */
@@ -709,5 +746,10 @@ export default {
     gap: 8px; // 标签之间的间距
     align-items: center;
 }
-
+.red{
+    color: #ca3a31;
+}
+.blue{
+    color: #4e80ee;
+}
 </style>
