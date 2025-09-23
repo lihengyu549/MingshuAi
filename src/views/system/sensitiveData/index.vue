@@ -82,8 +82,11 @@
                 <div class="sensitive-categories">
                     <div class="category-item" v-for="category in filteredCategories" :key="category.id">
                         <div class="category-header">
-                            <div class="category-title">
+                            <!-- 修改分类标题布局 -->
+                            <div class="category-title-row">
                                 <h2 class="full-path">{{ category.fullPath }}</h2>
+                            </div>
+                            <div class="category-tags-row">
                                 <el-tag class="security-level"
                                     :style="{ backgroundColor: getRiskColor(category.securityLevel) }" size="mini">
                                     {{ category.securityLevelText }}
@@ -96,17 +99,17 @@
                         </div>
 
                         <div class="category-description">
-                            <strong>分类描述：</strong>
+                            <strong>分类描述：</strong><br>
                             <span>{{ category.description }}</span>
                         </div>
 
                         <div class="legal-basis">
-                            <strong>法规依据：</strong>
+                            <strong>法规依据：</strong><br>
                             <span>{{ category.legalBasis }}</span>
                         </div>
 
                         <div class="database-filter">
-                            <strong>涉及数据库：</strong>
+                            <strong>涉及数据库：</strong><br>
                             <el-tag v-for="db in category.databases" :key="db.id" @click="handleDatabaseFilter(db.id)"
                                 class="database-tag" size="mini">
                                 {{ db.name }}
@@ -114,7 +117,8 @@
                         </div>
 
                         <el-table :data="category.fields" style="width: 100%; margin-top: 10px;" size="mini">
-                            <el-table-column prop="absolutePath" label="字段绝对路径" width="220"></el-table-column>
+                            <el-table-column prop="absolutePath" label="数据表名称" min-width="220"></el-table-column>
+                            <el-table-column prop="comment" label="字段名称" width="130"></el-table-column>
                             <el-table-column prop="comment" label="字段注释" width="130"></el-table-column>
                             <el-table-column prop="sampleValue" label="样本值" width="180"></el-table-column>
                             <el-table-column prop="riskSuggestion" label="风险处置建议" width="160"></el-table-column>
@@ -253,7 +257,7 @@ export default {
                     ],
                     fields: [
                         {
-                            absolutePath: 'user_center.user_base_info.id_card_number',
+                            absolutePath: 'id_card_number',
                             comment: '公民身份证号码',
                             sampleValue: '110101199008101123',
                             riskSuggestion: '脱敏 加密',
@@ -262,7 +266,7 @@ export default {
                             isEncrypted: false
                         },
                         {
-                            absolutePath: 'user_center.user_base_info.full_name',
+                            absolutePath: 'full_name',
                             comment: '用户真实姓名',
                             sampleValue: '张三',
                             riskSuggestion: '脱敏',
@@ -285,7 +289,7 @@ export default {
                     ],
                     fields: [
                         {
-                            absolutePath: 'user_center.user_base_info.phone_number',
+                            absolutePath: 'phone_number',
                             comment: '手机号码',
                             sampleValue: '13800138000',
                             riskSuggestion: '脱敏 加密',
@@ -308,7 +312,7 @@ export default {
                     ],
                     fields: [
                         {
-                            absolutePath: 'payment_system.bank_card_info.card_number',
+                            absolutePath: 'card_number',
                             comment: '银行卡号',
                             sampleValue: '6222021234567890123',
                             riskSuggestion: '脱敏 加密',
@@ -420,6 +424,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+::v-deep .el-card {
+    box-shadow: none;
+}
 /* 样式部分保持不变 */
 .form-label {
     font-weight: 600;
@@ -480,7 +487,7 @@ export default {
 
 .assessment-card {
     border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+    // box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
 
@@ -492,8 +499,8 @@ export default {
 
 .card-header {
     padding: 12px 15px;
-    background-color: #f5f7fa;
-    border-bottom: 1px solid #eaeaea;
+    // background-color: #f5f7fa;
+    // border-bottom: 1px solid #eaeaea;
 
     &>span {
         font-size: 14px;
@@ -583,8 +590,8 @@ export default {
 .category-item {
     margin-bottom: 20px;
     padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
+    // background-color: #f9f9f9;
+    border-radius: 5px;
 }
 
 .category-title {
@@ -688,4 +695,19 @@ export default {
         margin-top: 8px;
     }
 }
+
+.category-header {
+    margin-bottom: 10px;
+}
+
+.category-title-row {
+    margin-bottom: 5px; // 标题行与标签行之间的间距
+}
+
+.category-tags-row {
+    display: flex;
+    gap: 8px; // 标签之间的间距
+    align-items: center;
+}
+
 </style>
