@@ -427,6 +427,11 @@ export default {
           width: "250"
         },
         {
+          label: "置信度分数",
+          prop: "confidenceScore",
+          width: "100"
+        },
+        {
           label: "置信度",
           prop: "confidenceLevel",
           width: "100"
