@@ -164,10 +164,10 @@
           <el-input v-model="resultForm.reasoningProcess" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             maxlength="500" placeholder="请输入推理过程"></el-input>
         </el-form-item>
-        <el-form-item label="审核建议" prop="auditRecommendation">
+        <!-- <el-form-item label="审核建议" prop="auditRecommendation">
           <el-input v-model="resultForm.auditRecommendation" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             maxlength="500" placeholder="请输入审核建议"></el-input>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="置信度" prop="confidenceLevel">
           <el-select v-model="resultForm.confidenceLevel" clearable>
             <el-option v-for="item in confidenceLevelList" :key="item.id" :label="item.name" :value="item.value">
