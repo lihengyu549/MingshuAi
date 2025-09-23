@@ -1252,6 +1252,9 @@ input[aria-hidden=true] {
   display: none;
   /* 完全隐藏原生单选框 */
 }
+.classification-radio>>>.el-radio__label {
+  padding: 0;
+}
 
 /* 3. 选中态样式：浅背景+左侧边框（参考图选中标识） */
 .radio-checked {
