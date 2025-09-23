@@ -171,7 +171,7 @@
                 <div class="card-content">
                     <div class="suggestion-content">
                         <div class="priority-high">
-                            <h4 class="red"><i class="el-icon-warning" style="margin-right: 5px;"></i><b>高优先级:</b></h4>
+                            <h4 class="red"><i class="el-icon-warning" style="margin-right: 5px;"></i><b>高优先级:（30天内）</b></h4>
                             <span><i class="el-icon-success red"
                                     style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
                             <span><i class="el-icon-success red"
@@ -179,7 +179,7 @@
                         </div>
 
                         <div class="priority-high">
-                            <h4 class="blue"><i class="el-icon-date" style="margin-right: 5px;"></i><b>长期措施:</b></h4>
+                            <h4 class="blue"><i class="el-icon-date" style="margin-right: 5px;"></i><b>长期措施（90天内）</b></h4>
                             <span><i class="el-icon-success blue"
                                     style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
                             <span><i class="el-icon-success blue"
