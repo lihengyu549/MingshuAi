@@ -6,13 +6,13 @@
             <div class="header-operations">
                 <!-- 所属标准下拉框 -->
                 <label class="form-label">所属标准</label>
-                <el-select v-model="queryParams.categoryId" placeholder="所属标准" class="standard-select" size="small">
+                <el-select v-model="categoryId" placeholder="所属标准" class="standard-select" size="small">
                     <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
                     </el-option>
                 </el-select>
 
                 <!-- 导出清单按钮 -->
-                <el-button icon="el-icon-download" @click="handleExport" size="small" class="export-btn">
+                <el-button icon="el-icon-download" @click="handleExport" s·ize="small" class="export-btn">
                     导出清单
                 </el-button>
             </div>
@@ -24,21 +24,26 @@
             <el-card class="assessment-card data-source-card">
                 <div slot="header" class="card-header">
                     <h3><svg-icon icon-class="databaseSolid" style="margin-right: 5px;" />数据源列表</h3>
-                    <span class="card-header-span">共 {{ dataSourceList.length }} 个数据源,点击查看详细数据分类和风险情况</span>
+                    <span class="card-header-span">共 {{ dataSourceList.length }} 个数据源，点击查看详细数据分类和风险情况</span>
                 </div>
 
                 <!-- 数据源表格 -->
                 <el-table :data="dataSourceList" stripe @row-click="handleDataSourceClick" style="width: 100%;"
                     size="small">
-                    <el-table-column prop="name" align="center" label="数据源名称" width="200"></el-table-column>
-                    <el-table-column prop="systemName" align="center" label="业务系统名称" min-width="200"></el-table-column>
-                    <el-table-column prop="categoryCount" align="center" label="敏感分类数" width="100"></el-table-column>
+                    <template slot="empty">
+                        <el-empty description="暂无数据"></el-empty>
+                    </template>
+                    <el-table-column prop="sourceName" align="center" label="数据源名称" width="200"></el-table-column>
+                    <el-table-column prop="businessName" align="center" label="业务系统名称" min-width="200"></el-table-column>
+                    <!-- <el-table-column prop="categoryCount" align="center" label="敏感分类数" width="100"></el-table-column> -->
                     <el-table-column align="center" label="风险统计" min-width="200">
                         <template slot-scope="scope">
                             <div class="risk-stats">
                                 <span class="risk-level"
-                                    :style="{ backgroundColor: getRiskColor(scope.row.highestRiskLevel) }">
-                                    {{ scope.row.riskText }}
+                                    v-for="(item,index) in scope.row.riskStatistics" 
+                                    :key="index"
+                                    :style="{ backgroundColor: getRiskColor(Number(item.securityLevelName[0])), marginRight: '5px' }">
+                                    {{ item.securityLevelName +' * '+ item.num }}
                                 </span>
                             </div>
                         </template>
@@ -60,7 +65,7 @@
                 <div slot="header" class="card-header list-header">
                     <div>
                         <h3><svg-icon icon-class="tag" style="margin-right: 5px;" />敏感数据安全风险清单</h3>
-                        <span class="card-header-span">数据源：{{ currentDataSource.name }}</span>
+                        <span class="card-header-span">数据源：{{ currentDataSource.sourceName }}</span>
                     </div>
                     <el-button type="text" icon="el-icon-close" @click="showRiskDetails = false" class="close-btn"
                         size="mini">关闭详情</el-button>
@@ -219,45 +224,12 @@
 </template>
 
 <script>
-import { getFrameworks } from "@/api/system/protectCategory";
+import { getFrameworks, listSensitiveDataRiskAssessmentReport } from "@/api/system/protectCategory";
 export default {
     name: 'SensitiveDataRiskAssessment',
     data() {
         return {
-            dataSourceList: [
-                {
-                    id: 1,
-                    name: '用户管理系统',
-                    systemName: 'CRM系统',
-                    categoryCount: 5,
-                    highestRiskLevel: 2,
-                    riskText: '2级-内部公开 * 2'
-                },
-                {
-                    id: 2,
-                    name: '订单管理系统',
-                    systemName: 'ERP系统',
-                    categoryCount: 8,
-                    highestRiskLevel: 5,
-                    riskText: '5级-核心数据 * 3'
-                },
-                {
-                    id: 3,
-                    name: '客户服务系统',
-                    systemName: '客服平台',
-                    categoryCount: 6,
-                    highestRiskLevel: 4,
-                    riskText: '4级-重要数据 * 3'
-                },
-                {
-                    id: 4,
-                    name: '人力资源系统',
-                    systemName: 'HRM系统',
-                    categoryCount: 7,
-                    highestRiskLevel: 3,
-                    riskText: '3级-机密数据 * 3'
-                }
-            ],
+            dataSourceList: [],
 
             filterTags: [
                 { label: '全部', value: 'all' },
@@ -268,9 +240,7 @@ export default {
                 { label: '未防护项', value: 'unprotected' },
                 { label: '已防护项', value: 'protected' }
             ],
-            queryParams: {
-                categoryId: 0,
-            },
+            categoryId: 0,
             treeOptions: [],
             activeFilter: 'all',
             searchKeyword: '',
@@ -281,15 +251,35 @@ export default {
             activeDatabaseId: null,
         };
     },
+    computed: {
+
+    },
+    created() {
+        this.gettreeOptionsList()
+    },
+    mounted() {
+        this.loadRiskDetails(1);
+    },
     methods: {
         gettreeOptionsList() {
             this.Loading = true
             getFrameworks().then((response) => {
                 this.treeOptions = response.data
                 if (response.data.length > 0) {
-                    this.queryParams.categoryId = response.data[0].id;
+                    this.categoryId = response.data[0].id;
                 }
+                this.getSensitiveDataList(response.data[0].id)
             });
+        },
+        // 敏感数据列表
+        getSensitiveDataList(categoryId) {
+            try {
+                listSensitiveDataRiskAssessmentReport({ categoryId: categoryId }).then((response) => {
+                    this.dataSourceList = response.data.dataSourceList;
+                });
+            } catch (error) {
+                console.error('获取敏感数据列表失败', error);
+            }
         },
         // 处理脱敏状态变更
         handleDesensitizeChange(row, index) {
@@ -482,15 +472,6 @@ export default {
             // 这里可以根据需要添加实际的过滤逻辑
         },
     },
-    computed: {
-
-    },
-    created() {
-        this.gettreeOptionsList()
-    },
-    mounted() {
-        this.loadRiskDetails(1);
-    }
 };
 </script>
 

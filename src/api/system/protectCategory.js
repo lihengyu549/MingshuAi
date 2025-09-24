@@ -395,3 +395,12 @@ export function listDataFeelBottomSurvey(params) {
     params: params,
   })
 }
+
+// 敏感数据接口
+export function listSensitiveDataRiskAssessmentReport(params) {
+  return request({
+    url: '/system/dashboard/listSensitiveDataRiskAssessmentReport',
+    method: 'get',
+    params: params,
+  })
+}
