@@ -6,11 +6,9 @@
             <div class="header-operations">
                 <!-- 所属标准下拉框 -->
                 <label class="form-label">所属标准</label>
-                <el-select v-model="selectedStandard" placeholder="所属标准" class="standard-select" size="small">
-                    <el-option label="国标-GB-0197" value="gb0197"></el-option>
-                    <el-option label="行业标准-HY-2023" value="hy2023"></el-option>
-                    <el-option label="企业标准-QY-001" value="qy001"></el-option>
-                    <el-option label="自定义标准" value="custom"></el-option>
+                <el-select v-model="queryParams.categoryId" placeholder="所属标准" class="standard-select" size="small">
+                    <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
+                    </el-option>
                 </el-select>
 
                 <!-- 导出清单按钮 -->
@@ -32,10 +30,10 @@
                 <!-- 数据源表格 -->
                 <el-table :data="dataSourceList" stripe @row-click="handleDataSourceClick" style="width: 100%;"
                     size="small">
-                    <el-table-column prop="name" align="center" label="数据源名称" min-width="200"></el-table-column>
+                    <el-table-column prop="name" align="center" label="数据源名称" width="200"></el-table-column>
                     <el-table-column prop="systemName" align="center" label="业务系统名称" min-width="200"></el-table-column>
                     <el-table-column prop="categoryCount" align="center" label="敏感分类数" width="100"></el-table-column>
-                    <el-table-column align="center" label="风险统计" width="200">
+                    <el-table-column align="center" label="风险统计" min-width="200">
                         <template slot-scope="scope">
                             <div class="risk-stats">
                                 <span class="risk-level"
@@ -112,7 +110,7 @@
                         <div class="legal-basis">
                             <p><strong>法规依据：</strong></p>
                             <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.legalBasis
-                            }}</span>
+                                }}</span>
                         </div>
 
                         <div class="database-filter">
@@ -221,11 +219,11 @@
 </template>
 
 <script>
+import { getFrameworks } from "@/api/system/protectCategory";
 export default {
     name: 'SensitiveDataRiskAssessment',
     data() {
         return {
-            selectedStandard: '', // 所属标准下拉框选中值
             dataSourceList: [
                 {
                     id: 1,
@@ -270,7 +268,10 @@ export default {
                 { label: '未防护项', value: 'unprotected' },
                 { label: '已防护项', value: 'protected' }
             ],
-
+            queryParams: {
+                categoryId: 0,
+            },
+            treeOptions: [],
             activeFilter: 'all',
             searchKeyword: '',
             showRiskDetails: false,
@@ -281,6 +282,15 @@ export default {
         };
     },
     methods: {
+        gettreeOptionsList() {
+            this.Loading = true
+            getFrameworks().then((response) => {
+                this.treeOptions = response.data
+                if (response.data.length > 0) {
+                    this.queryParams.categoryId = response.data[0].id;
+                }
+            });
+        },
         // 处理脱敏状态变更
         handleDesensitizeChange(row, index) {
             console.log(`字段 ${row.absolutePath} 脱敏状态变更为: ${row.isDesensitized}`);
@@ -475,6 +485,9 @@ export default {
     computed: {
 
     },
+    created() {
+        this.gettreeOptionsList()
+    },
     mounted() {
         this.loadRiskDetails(1);
     }
@@ -628,7 +641,8 @@ export default {
     gap: 6px;
 }
 
-.filter-tags .el-tag ,.database-tag {
+.filter-tags .el-tag,
+.database-tag {
     cursor: pointer;
     color: #232b38;
     background-color: #e5e7eb;
@@ -636,6 +650,7 @@ export default {
     border-radius: 15px;
     line-height: 28px;
 }
+
 .database-tag {
     margin-left: 5px;
 }
