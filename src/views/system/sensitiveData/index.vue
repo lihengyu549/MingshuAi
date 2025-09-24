@@ -26,7 +26,7 @@
             <el-card class="assessment-card data-source-card">
                 <div slot="header" class="card-header">
                     <h3><svg-icon icon-class="databaseSolid" style="margin-right: 5px;" />数据源列表</h3>
-                    <span class="card-header-span">共 {{ dataSourceList.length }} 条数据,点击查看详细数据分类和风险情况</span>
+                    <span class="card-header-span">共 {{ dataSourceList.length }} 个数据源,点击查看详细数据分类和风险情况</span>
                 </div>
 
                 <!-- 数据源表格 -->
@@ -49,6 +49,7 @@
                         <template slot-scope="scope">
                             <el-button type="text" @click.stop="handleViewDetails(scope.row)" class="view-details-btn"
                                 size="small">
+                                <i class="el-icon-view"></i>
                                 查看详情
                             </el-button>
                         </template>
@@ -64,7 +65,7 @@
                         <span class="card-header-span">数据源：{{ currentDataSource.name }}</span>
                     </div>
                     <el-button type="text" icon="el-icon-close" @click="showRiskDetails = false" class="close-btn"
-                        size="mini"></el-button>
+                        size="mini">关闭详情</el-button>
                 </div>
 
                 <!-- 筛选和搜索区域 -->
@@ -96,25 +97,28 @@
                                 </el-tag>
                                 <el-tag class="protection-status"
                                     :type="category.protectionStatus === '已防护' ? 'success' : 'warning'" size="mini">
-                                    {{ category.protectionStatus }}
+                                    <i
+                                        :class="category.protectionStatus === '已防护' ? 'el-icon-success' : 'el-icon-warning'"></i>{{
+                                            category.protectionStatus }}
                                 </el-tag>
                             </div>
                         </div>
 
                         <div class="category-description">
-                            <strong>分类描述：</strong><br>
+                            <p><strong>分类描述：</strong></p>
                             <span>{{ category.description }}</span>
                         </div>
 
                         <div class="legal-basis">
-                            <strong>法规依据：</strong><br>
-                            <span>{{ category.legalBasis }}</span>
+                            <p><strong>法规依据：</strong></p>
+                            <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.legalBasis
+                            }}</span>
                         </div>
 
                         <div class="database-filter">
-                            <strong>涉及数据库：</strong><br>
+                            <p><strong>涉及数据库：</strong></p>
                             <el-tag v-for="db in category.databases" :key="db.id" @click="handleDatabaseFilter(db.id)"
-                                class="database-tag" size="mini">
+                                :class="['database-tag', { 'active-tag': activeDatabaseId == db.id }]" size="medium">
                                 {{ db.name }}
                             </el-tag>
                         </div>
@@ -126,8 +130,18 @@
                             <el-table-column prop="comment" align="center" label="字段注释" width="130"></el-table-column>
                             <el-table-column prop="sampleValue" align="center" label="样本值"
                                 width="180"></el-table-column>
-                            <el-table-column prop="riskSuggestion" align="center" label="风险处置建议"
-                                width="160"></el-table-column>
+                            <el-table-column prop="riskSuggestion" align="center" label="风险处置建议" width="160">
+                                <template slot-scope="scope">
+                                    <div v-if="scope.row.riskSuggestion.length > 0">
+                                        <el-tag v-for="suggestion in scope.row.riskSuggestion" :key="suggestion"
+                                            class="risk-tag"
+                                            :class="{ 'tm-tag': suggestion === '脱敏', 'jm-tag': suggestion === '加密' }"
+                                            size="mini">
+                                            {{ suggestion }}
+                                        </el-tag>
+                                    </div>
+                                </template>
+                            </el-table-column>
                             <!-- 是否脱敏列 - 下拉框 -->
                             <el-table-column prop="isDesensitized" label="是否脱敏" align="center" width="100">
                                 <template slot-scope="scope">
@@ -144,7 +158,7 @@
                                     <el-upload class="upload-btn" action="#"
                                         :on-change="handleFileUpload(scope.row, scope.$index)" :auto-upload="true"
                                         :show-file-list="false">
-                                        <el-button size="mini" type="text">上传</el-button>
+                                        <el-button size="mini" icon="el-icon-upload" type="text">上传</el-button>
                                     </el-upload>
                                 </template>
                             </el-table-column>
@@ -171,7 +185,8 @@
                 <div class="card-content">
                     <div class="suggestion-content">
                         <div class="priority-high">
-                            <h4 class="red"><i class="el-icon-warning" style="margin-right: 5px;"></i><b>高优先级:（30天内）</b></h4>
+                            <h4 class="red"><i class="el-icon-warning" style="margin-right: 5px;"></i><b>高优先级:（30天内）</b>
+                            </h4>
                             <span><i class="el-icon-success red"
                                     style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
                             <span><i class="el-icon-success red"
@@ -179,7 +194,8 @@
                         </div>
 
                         <div class="priority-high">
-                            <h4 class="blue"><i class="el-icon-date" style="margin-right: 5px;"></i><b>长期措施（90天内）</b></h4>
+                            <h4 class="blue"><i class="el-icon-date" style="margin-right: 5px;"></i><b>长期措施（90天内）</b>
+                            </h4>
                             <span><i class="el-icon-success blue"
                                     style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
                             <span><i class="el-icon-success blue"
@@ -260,7 +276,8 @@ export default {
             showRiskDetails: false,
             currentDataSource: null,
             sensitiveCategories: [],
-            filteredCategories: []
+            filteredCategories: [],
+            activeDatabaseId: null,
         };
     },
     methods: {
@@ -332,7 +349,7 @@ export default {
                             absolutePath: 'id_card_number',
                             comment: '公民身份证号码',
                             sampleValue: '110101199008101123',
-                            riskSuggestion: '脱敏 加密',
+                            riskSuggestion: ['脱敏', '加密'],
                             isDesensitized: '否',
                             proofFiles: [],
                             isEncrypted: false
@@ -341,7 +358,7 @@ export default {
                             absolutePath: 'full_name',
                             comment: '用户真实姓名',
                             sampleValue: '张三',
-                            riskSuggestion: '脱敏',
+                            riskSuggestion: ['脱敏'],
                             isDesensitized: '否',
                             proofFiles: [],
                             isEncrypted: false
@@ -364,7 +381,7 @@ export default {
                             absolutePath: 'phone_number',
                             comment: '手机号码',
                             sampleValue: '13800138000',
-                            riskSuggestion: '脱敏 加密',
+                            riskSuggestion: ['脱敏', '加密'],
                             isDesensitized: '否',
                             proofFiles: [],
                             isEncrypted: false
@@ -387,7 +404,7 @@ export default {
                             absolutePath: 'card_number',
                             comment: '银行卡号',
                             sampleValue: '6222021234567890123',
-                            riskSuggestion: '脱敏 加密',
+                            riskSuggestion: ['脱敏', '加密'],
                             isDesensitized: '是',
                             proofFiles: [
                                 { name: '银行卡脱敏证明.png', url: '#' }
@@ -443,8 +460,17 @@ export default {
 
         // 数据库过滤
         handleDatabaseFilter(dbId) {
-            this.$message.info(`已筛选出数据库ID为 ${dbId} 的所有字段`);
-        }
+            // 切换选中状态
+            this.activeDatabaseId = this.activeDatabaseId == dbId ? null : dbId;
+
+            if (this.activeDatabaseId) {
+                this.$message.info(`已筛选出数据库ID为 ${dbId} 的所有字段`);
+            } else {
+                this.$message.info('已取消数据库筛选');
+            }
+
+            // 这里可以根据需要添加实际的过滤逻辑
+        },
     },
     computed: {
 
@@ -602,13 +628,16 @@ export default {
     gap: 6px;
 }
 
-.filter-tags .el-tag {
+.filter-tags .el-tag ,.database-tag {
     cursor: pointer;
     color: #232b38;
     background-color: #e5e7eb;
     border: none;
     border-radius: 15px;
     line-height: 28px;
+}
+.database-tag {
+    margin-left: 5px;
 }
 
 .active-tag {
@@ -655,13 +684,6 @@ export default {
     font-size: 13px;
 }
 
-.database-tag {
-    cursor: pointer;
-    background-color: #e8f4fd;
-    color: #409EFF;
-    border-color: #b3d8ff;
-    margin-right: 5px;
-}
 
 .card-content {
     line-height: 1.6;
@@ -750,5 +772,22 @@ export default {
 
 .blue {
     color: #4e80ee;
+}
+
+.risk-tag {
+    font-weight: 600;
+    border-radius: 5px;
+    margin-right: 5px;
+    border: none;
+}
+
+.tm-tag {
+    color: #263fa8;
+    background-color: #dee9fc;
+}
+
+.jm-tag {
+    color: #6326a2;
+    background-color: #f1e8fd;
 }
 </style>
