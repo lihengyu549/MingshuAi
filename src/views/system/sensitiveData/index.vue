@@ -298,6 +298,13 @@ export default {
                     this.$message.error('只能上传图片文件（JPG、PNG、GIF、BMP、WEBP）');
                     return false; // 阻止上传
                 }
+                
+                // 限制文件大小为5M
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (file.raw.size > maxSize) {
+                    this.$message.error('文件大小不能超过5MB');
+                    return false; // 阻止上传
+                }
 
                 // 初始化proofFiles数组（避免首次上传时出错）
                 if (!row.proofFiles) {
