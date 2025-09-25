@@ -413,3 +413,21 @@ export function getViewDetails(params) {
     params: params,
   })
 }
+
+// 修改是否脱敏接口
+export function changeIsMask(params) {
+  return request({
+    url: '/system/dashboard/changeIsMask',
+    method: 'post',
+    data: params,
+  })
+}
+
+// 上传证明材料的接口
+export function uploadEvidentiaryMaterialFile(params) {
+  return request({
+    url: '/system/dashboard/uploadEvidentiaryMaterialFile',
+    method: 'post',
+    data: params,
+  })
+}

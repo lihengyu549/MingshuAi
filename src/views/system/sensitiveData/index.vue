@@ -113,7 +113,7 @@
                         <div class="legal-basis">
                             <p><strong>法规依据：</strong></p>
                             <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.regulatoryBasis
-                            }}</span>
+                                }}</span>
                         </div>
 
                         <div class="database-filter">
@@ -160,9 +160,9 @@
                             <!-- 证明材料列 - 上传按钮 -->
                             <el-table-column prop="proofMaterial" label="证明材料" align="center" width="130">
                                 <template slot-scope="scope">
-                                    <el-upload class="upload-btn" action="#"
-                                        :on-change="handleFileUpload(scope.row, scope.$index)" :auto-upload="true"
-                                        :show-file-list="false">
+                                    <el-upload class="upload-btn" action="#" :auto-upload="false"
+                                        :before-upload="beforeUpload"
+                                        :on-change="handleFileUpload(scope.row, scope.$index)" :show-file-list="false">
                                         <el-button size="mini" icon="el-icon-upload" type="text">上传</el-button>
                                     </el-upload>
                                 </template>
@@ -226,7 +226,7 @@
 </template>
 
 <script>
-import { getFrameworks, listSensitiveDataRiskAssessmentReport, getViewDetails } from "@/api/system/protectCategory";
+import { getFrameworks, listSensitiveDataRiskAssessmentReport, getViewDetails, changeIsMask, uploadEvidentiaryMaterialFile } from "@/api/system/protectCategory";
 export default {
     name: 'SensitiveDataRiskAssessment',
     data() {
@@ -251,6 +251,7 @@ export default {
             sensitiveCategories: [],
             filteredCategories: [],
             activeDatabaseId: null,
+            datasourceId: null,
         };
     },
     computed: {
@@ -284,8 +285,26 @@ export default {
         },
         // 处理脱敏状态变更
         handleDesensitizeChange(row, index) {
-            console.log(`字段 ${row.absolutePath} 脱敏状态变更为: ${row.isDesensitized}`);
+            const params = {
+                fieldId: row.fieldId,
+                isMask: row.isMask
+            }
+            try {
+                changeIsMask(params).then((response) => {
+                    if (response.code === 200) {
+                        this.$message.success('脱敏状态更新成功');
+                        // 刷新列表数据
+                        this.loadRiskDetails(this.datasourceId);
+                    }
+                });
+            } catch (error) {
+                this.$message.error('更新脱敏状态失败');
+            }
             // 这里可以添加保存状态的逻辑
+        },
+        // 阻止默认上传行为
+        beforeUpload() {
+            return false;
         },
 
         // 处理文件上传
@@ -296,23 +315,39 @@ export default {
                 // 检查文件类型是否在允许列表中
                 if (!allowedTypes.includes(file.raw.type)) {
                     this.$message.error('只能上传图片文件（JPG、PNG、GIF、BMP、WEBP）');
-                    return false; // 阻止上传
+                    return false;
                 }
-                
+
                 // 限制文件大小为5M
                 const maxSize = 5 * 1024 * 1024; // 5MB
                 if (file.raw.size > maxSize) {
                     this.$message.error('文件大小不能超过5MB');
-                    return false; // 阻止上传
+                    return false;
                 }
 
-                // 初始化proofFiles数组（避免首次上传时出错）
-                if (!row.proofFiles) {
-                    row.proofFiles = [];
-                }
-                row.proofFiles.push({
-                    name: file.name,
-                    url: '#' // 实际项目中替换为文件的URL
+                // 创建FormData对象
+                const formData = new FormData();
+                formData.append('file', file.raw);
+                formData.append('fieldId', row.fieldId);
+
+                // 显示上传中状态
+                const loading = this.$loading({
+                    lock: true,
+                    text: '正在上传证明材料...',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                });
+
+                // 调用上传接口
+                uploadEvidentiaryMaterialFile(formData).then((response) => {
+                    loading.close();
+                    if (response.code === 200) {
+                        this.$message.success('证明材料上传成功');
+                        this.loadRiskDetails(this.datasourceId);
+                    }
+                }).catch(error => {
+                    loading.close();
+                    this.$message.error('证明材料上传失败，请稍后重试');
                 });
             };
         },
@@ -324,6 +359,7 @@ export default {
         // 查看详情
         handleViewDetails(row) {
             this.currentDataSource = row;
+            this.datasourceId = row.datasourceId;
             this.loadRiskDetails(row.datasourceId);
             this.showRiskDetails = true;
         },
