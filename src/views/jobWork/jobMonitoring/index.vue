@@ -20,8 +20,9 @@
       <div class="progress-info">
         <span>整体进度</span>
         <div class="custom-progress-container">
-          <el-progress :percentage="progressPercent ? progressPercent : 50" :format="progressFormat"
-            :status="statusIcon">
+          <el-progress
+            :percentage="progressPercent ? progressPercent : this.status === 'ERR' || this.status === 'PAUSED' ? 50 : this.status === 'COMPLETE' ? 100 : 0"
+            :format="progressFormat" :status="statusIcon">
           </el-progress>
         </div>
       </div>
@@ -188,7 +189,7 @@ export default {
       handler(newStatus) {
         const newTab = newStatus === 'RUNNING' ? 'realtime' : 'analysis';
         this.activeTab = newTab;
-        
+
         // 当tab变为analysis时调用getAnalysisLogs方法
         if (newTab === 'analysis') {
           this.getAnalysisLogs();
