@@ -6,7 +6,7 @@
             <div class="header-operations">
                 <!-- 所属标准下拉框 -->
                 <label class="form-label">所属标准</label>
-                <el-select v-model="categoryId" placeholder="所属标准" class="standard-select" size="small">
+                <el-select v-model="categoryId" placeholder="所属标准" class="standard-select" size="small" @change="handleCategoryChange">
                     <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
                     </el-option>
                 </el-select>
@@ -263,6 +263,9 @@ export default {
     mounted() {
     },
     methods: {
+        handleCategoryChange() {
+            this.getSensitiveDataList(this.categoryId)
+        },
         gettreeOptionsList() {
             this.Loading = true
             getFrameworks().then((response) => {
