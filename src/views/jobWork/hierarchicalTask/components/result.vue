@@ -103,7 +103,7 @@
       </el-popover>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
-    <el-table height="550px" class="tableBox" v-loading="loading" :key="checkedColumn.length" :data="proxysList"
+    <el-table class="tableBox" v-loading="loading" :key="checkedColumn.length" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="字段名" align="center" prop="fieldName" width="150" show-overflow-tooltip fixed />
