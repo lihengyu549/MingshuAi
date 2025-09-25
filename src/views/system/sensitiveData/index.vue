@@ -28,22 +28,20 @@
                 </div>
 
                 <!-- 数据源表格 -->
-                <el-table :data="dataSourceList" stripe style="width: 100%;"
-                    size="small">
+                <el-table :data="dataSourceList" stripe style="width: 100%;" size="small">
                     <template slot="empty">
                         <el-empty description="暂无数据"></el-empty>
                     </template>
                     <el-table-column prop="sourceName" align="center" label="数据源名称" width="200"></el-table-column>
-                    <el-table-column prop="businessName" align="center" label="业务系统名称" min-width="200"></el-table-column>
+                    <el-table-column prop="businessName" align="center" label="业务系统名称"
+                        min-width="200"></el-table-column>
                     <!-- <el-table-column prop="categoryCount" align="center" label="敏感分类数" width="100"></el-table-column> -->
                     <el-table-column align="center" label="风险统计" min-width="200">
                         <template slot-scope="scope">
                             <div class="risk-stats">
-                                <span class="risk-level"
-                                    v-for="(item,index) in scope.row.riskStatistics" 
-                                    :key="index"
+                                <span class="risk-level" v-for="(item, index) in scope.row.riskStatistics" :key="index"
                                     :style="{ backgroundColor: getRiskColor(Number(item.securityLevel)), marginRight: '5px' }">
-                                    {{ item.securityLevelName +' * '+ item.num }}
+                                    {{ item.securityLevelName + ' * ' + item.num }}
                                 </span>
                             </div>
                         </template>
@@ -120,23 +118,24 @@
 
                         <div class="database-filter">
                             <p><strong>涉及数据库：</strong></p>
-                            <el-tag v-for="(db, index) in category.databaseNameList" :key="index" @click="handleDatabaseFilter(db)"
+                            <el-tag v-for="(db, index) in category.databaseNameList" :key="index"
+                                @click="handleDatabaseFilter(db)"
                                 :class="['database-tag', { 'active-tag': activeDatabaseId == db }]" size="medium">
                                 {{ db }}
                             </el-tag>
                         </div>
 
                         <el-table :data="category.fields" style="width: 100%; margin-top: 10px;" size="mini">
-                            <el-table-column prop="absolutePath" align="center" label="数据表名称"
+                            <el-table-column prop="tableName" align="center" label="数据表名称"
                                 min-width="220"></el-table-column>
                             <el-table-column prop="fieldName" align="center" label="字段名称" width="130"></el-table-column>
-                            <el-table-column prop="fieldRemark" align="center" label="字段注释" width="130"></el-table-column>
-                            <el-table-column prop="sampleValue" align="center" label="样本值"
-                                width="180"></el-table-column>
-                            <el-table-column prop="riskSuggestion" align="center" label="风险处置建议" width="160">
+                            <el-table-column prop="fieldRemark" align="center" label="字段注释"
+                                width="130"></el-table-column>
+                            <el-table-column prop="dataValue" align="center" label="样本值" width="180"></el-table-column>
+                            <el-table-column prop="riskDisposeSuggest" align="center" label="风险处置建议" width="160">
                                 <template slot-scope="scope">
-                                    <div v-if="scope.row.riskSuggestion.length > 0">
-                                        <el-tag v-for="suggestion in scope.row.riskSuggestion" :key="suggestion"
+                                    <div v-if="scope.row.riskDisposeSuggest.length > 0">
+                                        <el-tag v-for="suggestion in scope.row.riskDisposeSuggest" :key="suggestion"
                                             class="risk-tag"
                                             :class="{ 'tm-tag': suggestion === '脱敏', 'jm-tag': suggestion === '加密' }"
                                             size="mini">
@@ -146,12 +145,12 @@
                                 </template>
                             </el-table-column>
                             <!-- 是否脱敏列 - 下拉框 -->
-                            <el-table-column prop="isDesensitized" label="是否脱敏" align="center" width="100">
+                            <el-table-column prop="isMask" label="是否脱敏" align="center" width="100">
                                 <template slot-scope="scope">
-                                    <el-select v-model="scope.row.isDesensitized" size="mini"
+                                    <el-select v-model="scope.row.isMask" size="mini"
                                         @change="handleDesensitizeChange(scope.row, scope.$index)" style="width: 100%;">
-                                        <el-option label="是" value="是"></el-option>
-                                        <el-option label="否" value="否"></el-option>
+                                        <el-option label="是" value="1"></el-option>
+                                        <el-option label="否" value="0"></el-option>
                                     </el-select>
                                 </template>
                             </el-table-column>
@@ -165,12 +164,12 @@
                                     </el-upload>
                                 </template>
                             </el-table-column>
-                            <el-table-column prop="isEncrypted" label="是否加密" align="center" width="100">
+                            <el-table-column prop="isEncrypt" label="是否加密" align="center" width="100">
                                 <template slot-scope="scope">
                                     <div style="display: flex; align-items: center; justify-content: center;">
-                                        <i :class="scope.row.isEncrypted ? 'el-icon-success' : 'el-icon-error'"
+                                        <i :class="scope.row.isEncrypt == '1' ? 'el-icon-success' : 'el-icon-error'"
                                             style="margin-right: 5px;" />
-                                        {{ scope.row.isEncrypted ? '是' : '否' }}
+                                        {{ scope.row.isEncrypt == '1' ? '是' : '否' }}
                                     </div>
                                 </template>
                             </el-table-column>
@@ -225,7 +224,6 @@
 
 <script>
 import { getFrameworks, listSensitiveDataRiskAssessmentReport, getViewDetails } from "@/api/system/protectCategory";
-import { index } from "d3";
 export default {
     name: 'SensitiveDataRiskAssessment',
     data() {
@@ -306,7 +304,6 @@ export default {
         // 查看详情
         handleViewDetails(row) {
             this.currentDataSource = row;
-            console.log('点击数据源', row);
             this.loadRiskDetails(row.datasourceId);
             this.showRiskDetails = true;
         },
@@ -327,13 +324,16 @@ export default {
         loadRiskDetails(dataSourceId) {
             try {
                 getViewDetails({ datasourceId: dataSourceId }).then((response) => {
+                    // 保存原始数据并初始化过滤结果
                     this.sensitiveCategories = response.data;
+                    this.filteredCategories = [...this.sensitiveCategories];
                 });
             } catch (error) {
                 console.error('获取风险详情失败', error);
+                // 错误处理：清空数据避免筛选异常
+                this.sensitiveCategories = [];
+                this.filteredCategories = [];
             }
-
-            this.filteredCategories = [...this.sensitiveCategories];
         },
 
         // 处理过滤
@@ -351,26 +351,37 @@ export default {
         filterCategories() {
             let result = [...this.sensitiveCategories];
 
+            // 搜索关键词过滤（使用实际存在的attachDataName字段）
             if (this.searchKeyword) {
                 const keyword = this.searchKeyword.toLowerCase();
                 result = result.filter(category =>
-                    category.fullPath.toLowerCase().includes(keyword) ||
-                    category.description.toLowerCase().includes(keyword)
+                    category.attachDataName?.toLowerCase().includes(keyword) ||
+                    category.attachDataDescribe?.toLowerCase().includes(keyword)
                 );
             }
 
+            // 风险等级过滤（匹配实际securityLevel数值）
             if (this.activeFilter === 'level5') {
-                result = result.filter(category => category.securityLevel === 5);
+                result = result.filter(category => category.securityLevel == 5);
             } else if (this.activeFilter === 'level4') {
-                result = result.filter(category => category.securityLevel === 4);
+                result = result.filter(category => category.securityLevel == 4);
             } else if (this.activeFilter === 'level3') {
-                result = result.filter(category => category.securityLevel === 3);
+                result = result.filter(category => category.securityLevel == 3);
             } else if (this.activeFilter === 'level2') {
-                result = result.filter(category => category.securityLevel === 2);
-            } else if (this.activeFilter === 'unprotected') {
-                result = result.filter(category => category.protectionStatus === '未防护');
+                result = result.filter(category => category.securityLevel == 2);
+            }
+            // 防护状态过滤（匹配实际protectionMeasure字段）
+            else if (this.activeFilter === 'unprotected') {
+                result = result.filter(category => category.protectionMeasure != '1');
             } else if (this.activeFilter === 'protected') {
-                result = result.filter(category => category.protectionStatus === '已防护');
+                result = result.filter(category => category.protectionMeasure == '1');
+            }
+
+            // 数据库筛选（如果有激活的数据库筛选条件）
+            if (this.activeDatabaseId) {
+                result = result.filter(category =>
+                    category.databaseNameList?.includes(this.activeDatabaseId)
+                );
             }
 
             this.filteredCategories = result;
