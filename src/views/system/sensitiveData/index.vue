@@ -28,7 +28,7 @@
                 </div>
 
                 <!-- 数据源表格 -->
-                <el-table :data="dataSourceList" stripe @row-click="handleDataSourceClick" style="width: 100%;"
+                <el-table :data="dataSourceList" stripe style="width: 100%;"
                     size="small">
                     <template slot="empty">
                         <el-empty description="暂无数据"></el-empty>
@@ -42,7 +42,7 @@
                                 <span class="risk-level"
                                     v-for="(item,index) in scope.row.riskStatistics" 
                                     :key="index"
-                                    :style="{ backgroundColor: getRiskColor(Number(item.securityLevelName[0])), marginRight: '5px' }">
+                                    :style="{ backgroundColor: getRiskColor(Number(item.securityLevel)), marginRight: '5px' }">
                                     {{ item.securityLevelName +' * '+ item.num }}
                                 </span>
                             </div>
@@ -91,46 +91,46 @@
                         <div class="category-header">
                             <!-- 修改分类标题布局 -->
                             <div class="category-title-row">
-                                <h2 class="full-path">{{ category.fullPath }}</h2>
+                                <h2 class="full-path">{{ category.attachDataName }}</h2>
                             </div>
                             <div class="category-tags-row">
                                 <el-tag class="security-level"
                                     :style="{ backgroundColor: getRiskColor(category.securityLevel) }" size="mini">
-                                    {{ category.securityLevelText }}
+                                    {{ category.securityLevelName }}
                                 </el-tag>
                                 <el-tag class="protection-status"
-                                    :type="category.protectionStatus === '已防护' ? 'success' : 'warning'" size="mini">
+                                    :type="category.protectionMeasure === '1' ? 'success' : 'warning'" size="mini">
                                     <i
-                                        :class="category.protectionStatus === '已防护' ? 'el-icon-success' : 'el-icon-warning'"></i>{{
-                                            category.protectionStatus }}
+                                        :class="category.protectionMeasure === '1' ? 'el-icon-success' : 'el-icon-warning'"></i>{{
+                                            category.protectionMeasure === '1' ? '已防护' : '未防护' }}
                                 </el-tag>
                             </div>
                         </div>
 
                         <div class="category-description">
                             <p><strong>分类描述：</strong></p>
-                            <span>{{ category.description }}</span>
+                            <span>{{ category.attachDataDescribe }}</span>
                         </div>
 
                         <div class="legal-basis">
                             <p><strong>法规依据：</strong></p>
-                            <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.legalBasis
+                            <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.regulatoryBasis
                                 }}</span>
                         </div>
 
                         <div class="database-filter">
                             <p><strong>涉及数据库：</strong></p>
-                            <el-tag v-for="db in category.databases" :key="db.id" @click="handleDatabaseFilter(db.id)"
-                                :class="['database-tag', { 'active-tag': activeDatabaseId == db.id }]" size="medium">
-                                {{ db.name }}
+                            <el-tag v-for="(db, index) in category.databaseNameList" :key="index" @click="handleDatabaseFilter(db)"
+                                :class="['database-tag', { 'active-tag': activeDatabaseId == db }]" size="medium">
+                                {{ db }}
                             </el-tag>
                         </div>
 
                         <el-table :data="category.fields" style="width: 100%; margin-top: 10px;" size="mini">
                             <el-table-column prop="absolutePath" align="center" label="数据表名称"
                                 min-width="220"></el-table-column>
-                            <el-table-column prop="comment" align="center" label="字段名称" width="130"></el-table-column>
-                            <el-table-column prop="comment" align="center" label="字段注释" width="130"></el-table-column>
+                            <el-table-column prop="fieldName" align="center" label="字段名称" width="130"></el-table-column>
+                            <el-table-column prop="fieldRemark" align="center" label="字段注释" width="130"></el-table-column>
                             <el-table-column prop="sampleValue" align="center" label="样本值"
                                 width="180"></el-table-column>
                             <el-table-column prop="riskSuggestion" align="center" label="风险处置建议" width="160">
@@ -224,7 +224,8 @@
 </template>
 
 <script>
-import { getFrameworks, listSensitiveDataRiskAssessmentReport } from "@/api/system/protectCategory";
+import { getFrameworks, listSensitiveDataRiskAssessmentReport, getViewDetails } from "@/api/system/protectCategory";
+import { index } from "d3";
 export default {
     name: 'SensitiveDataRiskAssessment',
     data() {
@@ -258,7 +259,6 @@ export default {
         this.gettreeOptionsList()
     },
     mounted() {
-        this.loadRiskDetails(1);
     },
     methods: {
         gettreeOptionsList() {
@@ -303,17 +303,11 @@ export default {
             this.$message.success('正在导出所有数据源的风险清单...');
         },
 
-        // 点击数据源行
-        handleDataSourceClick(row) {
-            this.currentDataSource = row;
-            this.loadRiskDetails(row.id);
-            this.showRiskDetails = true;
-        },
-
         // 查看详情
         handleViewDetails(row) {
             this.currentDataSource = row;
-            this.loadRiskDetails(row.id);
+            console.log('点击数据源', row);
+            this.loadRiskDetails(row.datasourceId);
             this.showRiskDetails = true;
         },
 
@@ -331,89 +325,13 @@ export default {
 
         // 加载风险详情数据
         loadRiskDetails(dataSourceId) {
-            this.sensitiveCategories = [
-                {
-                    id: 1,
-                    fullPath: '身份证信息',
-                    securityLevel: 5,
-                    securityLevelText: '5级-核心数据',
-                    protectionStatus: '未防护',
-                    description: '包含公民身份号码、姓名、性别、民族、出生日期等身份识别信息，属于敏感个人信息，泄露可能导致个人权益受到严重损害。',
-                    legalBasis: '国标-GB-0197，《个人信息保护法》第28条',
-                    databases: [
-                        { id: 1, name: '用户中心数据库' },
-                        { id: 2, name: '订单系统数据库' }
-                    ],
-                    fields: [
-                        {
-                            absolutePath: 'id_card_number',
-                            comment: '公民身份证号码',
-                            sampleValue: '110101199008101123',
-                            riskSuggestion: ['脱敏', '加密'],
-                            isDesensitized: '否',
-                            proofFiles: [],
-                            isEncrypted: false
-                        },
-                        {
-                            absolutePath: 'full_name',
-                            comment: '用户真实姓名',
-                            sampleValue: '张三',
-                            riskSuggestion: ['脱敏'],
-                            isDesensitized: '否',
-                            proofFiles: [],
-                            isEncrypted: false
-                        }
-                    ]
-                },
-                {
-                    id: 2,
-                    fullPath: '手机号码信息',
-                    securityLevel: 2,
-                    securityLevelText: '2级-内部公开',
-                    protectionStatus: '未防护',
-                    description: '包含用户手机号码、通话记录等通信信息，属于敏感个人信息，可能被用于诈骗等非法活动。',
-                    legalBasis: '国标-GB-0197，《个人信息保护法》第28条',
-                    databases: [
-                        { id: 1, name: '用户中心数据库' }
-                    ],
-                    fields: [
-                        {
-                            absolutePath: 'phone_number',
-                            comment: '手机号码',
-                            sampleValue: '13800138000',
-                            riskSuggestion: ['脱敏', '加密'],
-                            isDesensitized: '否',
-                            proofFiles: [],
-                            isEncrypted: false
-                        }
-                    ]
-                },
-                {
-                    id: 3,
-                    fullPath: '银行卡信息',
-                    securityLevel: 5,
-                    securityLevelText: '5级-核心数据',
-                    protectionStatus: '已防护',
-                    description: '包含银行卡号、开户行、卡片类型等金融信息，泄露可能导致财产损失。',
-                    legalBasis: '国标-GB-0197，《个人信息保护法》第28条',
-                    databases: [
-                        { id: 3, name: '支付系统数据库' }
-                    ],
-                    fields: [
-                        {
-                            absolutePath: 'card_number',
-                            comment: '银行卡号',
-                            sampleValue: '6222021234567890123',
-                            riskSuggestion: ['脱敏', '加密'],
-                            isDesensitized: '是',
-                            proofFiles: [
-                                { name: '银行卡脱敏证明.png', url: '#' }
-                            ],
-                            isEncrypted: true
-                        }
-                    ]
-                }
-            ];
+            try {
+                getViewDetails({ datasourceId: dataSourceId }).then((response) => {
+                    this.sensitiveCategories = response.data;
+                });
+            } catch (error) {
+                console.error('获取风险详情失败', error);
+            }
 
             this.filteredCategories = [...this.sensitiveCategories];
         },

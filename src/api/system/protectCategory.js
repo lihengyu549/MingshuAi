@@ -404,3 +404,12 @@ export function listSensitiveDataRiskAssessmentReport(params) {
     params: params,
   })
 }
+
+// 敏感数据查询 数据源详情接口
+export function getViewDetails(params) {
+  return request({
+    url: '/system/dashboard/getViewDetails',
+    method: 'get',
+    params: params,
+  })
+}
