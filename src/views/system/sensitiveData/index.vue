@@ -263,7 +263,8 @@ export default {
     mounted() {
     },
     methods: {
-        handleCategoryChange() {
+        handleCategoryChange(val) {
+            this.categoryId = val
             this.getSensitiveDataList(this.categoryId)
         },
         gettreeOptionsList() {
