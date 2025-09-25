@@ -80,7 +80,7 @@
                     </div>
 
                     <el-input placeholder="搜索数据分类..." v-model="searchKeyword" prefix-icon="el-icon-search"
-                        class="category-search" @input="handleSearch" size="small"></el-input>
+                        class="category-search" @input="handleSearch" size="small" clearable></el-input>
                 </div>
 
                 <!-- 敏感分类列表（包含所有分类，不再单独排除手机号信息） -->
@@ -113,7 +113,7 @@
                         <div class="legal-basis">
                             <p><strong>法规依据：</strong></p>
                             <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.regulatoryBasis
-                                }}</span>
+                            }}</span>
                         </div>
 
                         <div class="database-filter">
@@ -132,7 +132,10 @@
                             <el-table-column prop="fieldRemark" align="center" label="字段注释"
                                 width="130"></el-table-column>
                             <el-table-column prop="dataValue" align="center" label="样本值" width="180"></el-table-column>
-                            <el-table-column prop="riskDisposeSuggest" align="center" label="风险处置建议" width="160">
+                            <el-table-column prop="riskDisposeSuggest" label="风险处置建议" width="160">
+                                <template slot="header">
+                                    <div style="text-align: center;">建议防护措施</div>
+                                </template>
                                 <template slot-scope="scope">
                                     <div v-if="scope.row.riskDisposeSuggest.length > 0">
                                         <el-tag v-for="suggestion in scope.row.riskDisposeSuggest" :key="suggestion"
@@ -288,8 +291,18 @@ export default {
         // 处理文件上传
         handleFileUpload(row, index) {
             return (file, fileList) => {
-                console.log(`为字段 ${row.absolutePath} 上传证明材料:`, file.name);
-                // 这里可以添加文件上传的逻辑
+                // 定义允许的图片类型
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+                // 检查文件类型是否在允许列表中
+                if (!allowedTypes.includes(file.raw.type)) {
+                    this.$message.error('只能上传图片文件（JPG、PNG、GIF、BMP、WEBP）');
+                    return false; // 阻止上传
+                }
+
+                // 初始化proofFiles数组（避免首次上传时出错）
+                if (!row.proofFiles) {
+                    row.proofFiles = [];
+                }
                 row.proofFiles.push({
                     name: file.name,
                     url: '#' // 实际项目中替换为文件的URL
@@ -388,17 +401,32 @@ export default {
         },
 
         // 数据库过滤
-        handleDatabaseFilter(dbId) {
+        handleDatabaseFilter(dbName) {
             // 切换选中状态
-            this.activeDatabaseId = this.activeDatabaseId == dbId ? null : dbId;
+            this.activeDatabaseId = this.activeDatabaseId === dbName ? null : dbName;
 
             if (this.activeDatabaseId) {
-                this.$message.info(`已筛选出数据库ID为 ${dbId} 的所有字段`);
+                this.$message.info(`已筛选出数据库为 ${dbName} 的所有字段`);
             } else {
                 this.$message.info('已取消数据库筛选');
             }
 
-            // 这里可以根据需要添加实际的过滤逻辑
+            // 过滤分类及表格内容
+            this.filteredCategories = this.sensitiveCategories.map(category => {
+                // 筛选当前分类下属于目标数据库的字段
+                const filteredFields = this.activeDatabaseId
+                    ? category.fields.filter(field => field.databaseName === this.activeDatabaseId)
+                    : [...category.fields];
+
+                // 返回新的分类对象（保持其他属性不变，只更新fields）
+                return {
+                    ...category,
+                    fields: filteredFields
+                };
+            }).filter(category => {
+                // 过滤掉没有符合条件字段的分类
+                return category.fields.length > 0;
+            });
         },
     },
 };
