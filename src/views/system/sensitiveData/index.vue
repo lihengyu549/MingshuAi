@@ -6,7 +6,8 @@
             <div class="header-operations">
                 <!-- 所属标准下拉框 -->
                 <label class="form-label">所属标准</label>
-                <el-select v-model="categoryId" placeholder="所属标准" class="standard-select" size="small" @change="handleCategoryChange">
+                <el-select v-model="categoryId" placeholder="所属标准" class="standard-select" size="small"
+                    @change="handleCategoryChange">
                     <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
                     </el-option>
                 </el-select>
@@ -158,13 +159,24 @@
                                 </template>
                             </el-table-column>
                             <!-- 证明材料列 - 上传按钮 -->
-                            <el-table-column prop="proofMaterial" label="证明材料" align="center" width="130">
+                            <el-table-column prop="proofMaterial" label="证明材料" align="center" width="200">
                                 <template slot-scope="scope">
-                                    <el-upload class="upload-btn" action="#" :auto-upload="false"
-                                        :before-upload="beforeUpload"
-                                        :on-change="handleFileUpload(scope.row, scope.$index)" :show-file-list="false">
-                                        <el-button size="mini" icon="el-icon-upload" type="text">上传</el-button>
-                                    </el-upload>
+                                    <div class="proof-upload-container">
+                                        <el-upload class="upload-btn" action="#" :auto-upload="false"
+                                            :before-upload="beforeUpload"
+                                            :on-change="handleFileUpload(scope.row, scope.$index)"
+                                            :show-file-list="false">
+                                            <el-button size="mini" icon="el-icon-upload" type="text">
+                                                {{ scope.row.proofUrl ? '重新上传' : '上传' }}
+                                            </el-button>
+                                        </el-upload>
+
+                                        <!-- 新增缩略图展示区域 -->
+                                        <el-image v-if="proofUrlList.find(item => item.fieldId == scope.row.fieldId)"
+                                            :src="proofUrlList.find(item => item.fieldId == scope.row.fieldId).url"
+                                            :preview-src-list="[proofUrlList.find(item => item.fieldId == scope.row.fieldId).url]" class="proof-thumbnail"
+                                            fit="cover"></el-image>
+                                    </div>
                                 </template>
                             </el-table-column>
                             <el-table-column prop="isEncrypt" label="是否加密" align="center" width="100">
@@ -252,6 +264,7 @@ export default {
             filteredCategories: [],
             activeDatabaseId: null,
             datasourceId: null,
+            proofUrlList: [],
         };
     },
     computed: {
@@ -347,6 +360,11 @@ export default {
                     loading.close();
                     if (response.code === 200) {
                         this.$message.success('证明材料上传成功');
+                        // 保存图片URL用于预览
+                        this.proofUrlList.push({
+                            fieldId: row.fieldId,
+                            url: response.msg
+                        }); // 根据实际接口返回调整
                         this.loadRiskDetails(this.datasourceId);
                     }
                 }).catch(error => {
@@ -789,5 +807,30 @@ export default {
 .jm-tag {
     color: #6326a2;
     background-color: #f1e8fd;
+}
+
+/* 证明材料上传容器 - 使按钮和缩略图并排显示 */
+.proof-upload-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* 按钮和缩略图之间的间距 */
+    justify-content: center;
+    /* 水平居中对齐 */
+}
+
+/* 缩略图样式 */
+.proof-thumbnail {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    cursor: zoom-in;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+/* 鼠标悬停效果 */
+.proof-thumbnail:hover {
+    transform: scale(1.05);
 }
 </style>
