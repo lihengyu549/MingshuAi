@@ -1,6 +1,6 @@
 <template>
     <div class="dataBaseline" v-loading="Loading">
-        <el-select v-model="selectedValue" class="select-top" placeholder="请选择" @change="handleSelectChange">
+        <el-select v-model="selectedValue" class="select-top" placeholder="请选择" filterable @change="handleSelectChange">
             <el-option v-for="item in selectOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
         </el-select>
         <el-form slot="body" ref="dataBaselineForm" :model="dataBaselineForm" label-width="120px" label-position="top">
