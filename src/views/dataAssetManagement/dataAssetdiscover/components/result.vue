@@ -428,7 +428,7 @@ export default {
       let returnArr = this.$refs.scanContentTreeRef.returnArr
       let result = {}
       returnArr.forEach(element => {
-        if (element.checked || element.children.length > 0) {
+        if (element.checked && element.children.length > 0) {
           result[element.name] = [...element.children.filter(item => item.checked)]
         }
       });
@@ -437,7 +437,7 @@ export default {
       //   this.form.targetDatabase = this.form.targetDatabase.trim().replace(/^"|"$/g, '').split(',').filter(Boolean);
       // }
       returnArr.forEach((item) => {
-        if (item.checked || item.children.length > 0) {
+        if (item.checked && item.children.length > 0) {
           this.form.targetDatabase.push(item.name)
         }
       })
