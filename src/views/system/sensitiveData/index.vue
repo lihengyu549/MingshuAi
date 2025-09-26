@@ -114,7 +114,7 @@
                         <div class="legal-basis">
                             <p><strong>法规依据：</strong></p>
                             <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.regulatoryBasis
-                                }}</span>
+                            }}</span>
                         </div>
 
                         <div class="database-filter">
@@ -371,11 +371,21 @@ export default {
                     loading.close();
                     if (response.code === 200) {
                         this.$message.success('证明材料上传成功');
-                        // 保存图片URL用于预览
-                        this.proofUrlList.push({
-                            fieldId: row.fieldId,
-                            url: response.msg
-                        }); // 根据实际接口返回调整
+
+                        // 查找proofUrlList中是否已存在相同fieldId的条目
+                        const existingIndex = this.proofUrlList.findIndex(item => item.fieldId === row.fieldId);
+
+                        if (existingIndex !== -1) {
+                            // 如果存在，替换该条目的URL
+                            this.proofUrlList[existingIndex].url = response.msg;
+                        } else {
+                            // 如果不存在，添加新条目
+                            this.proofUrlList.push({
+                                fieldId: row.fieldId,
+                                url: response.msg
+                            });
+                        }
+
                         this.loadRiskDetails(this.datasourceId);
                     }
                 }).catch(error => {

@@ -4,7 +4,7 @@
       <div style="display: flex;justify-content: space-between;align-items: center;padding: 10px;">
         <div style="height: 36px;display: flex;">
           <span class="selectLabel">所属标准</span>
-          <el-select v-model="queryParams.categoryId" class="serachInput" placeholder="全部">
+          <el-select v-model="queryParams.categoryId" class="serachInput" filterable placeholder="全部">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
