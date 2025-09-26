@@ -114,7 +114,7 @@
                         <div class="legal-basis">
                             <p><strong>法规依据：</strong></p>
                             <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.regulatoryBasis
-                            }}</span>
+                                }}</span>
                         </div>
 
                         <div class="database-filter">
@@ -207,16 +207,19 @@
                             <span><i class="el-icon-success red"
                                     style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
                             <span><i class="el-icon-success red"
-                                    style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
+                                    style="margin-right: 5px;"></i>对xxx类、xxx类等敏感信息进行脱敏显示</span><br>
                         </div>
 
                         <div class="priority-high">
                             <h4 class="blue"><i class="el-icon-date" style="margin-right: 5px;"></i><b>长期措施（90天内）</b>
                             </h4>
                             <span><i class="el-icon-success blue"
-                                    style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
+                                    style="margin-right: 5px;"></i>部署数据安全管理平台，实现敏感数据自动识别和分类</span><br>
                             <span><i class="el-icon-success blue"
-                                    style="margin-right: 5px;"></i>对所有xxx类、xxx类实施AES-256加密存储</span><br>
+                                    style="margin-right: 5px;"></i>建立数据安全责任制，明确各部门数据保护职责</span><br>
+                            <span><i class="el-icon-success blue"
+                                    style="margin-right: 5px;"></i>定期开展数据安全培训，提高员工数据保护意识</span><br>
+                            <span><i class="el-icon-success blue" style="margin-right: 5px;"></i>制定数据泄露应急响应预案</span><br>
                         </div>
                     </div>
                 </div>
@@ -229,7 +232,12 @@
                 </div>
                 <div class="card-content">
                     <div class="summary-content">
-                        <p>本次敏感数据安全风险评估共涉及8个核心业务系统，识别出32类敏感信息，其中：</p>
+                        <p>本次敏感数据安全风险评估共涉及8个核心业务系统，识别出32类敏感信息，其中5级-核心数据15类，4级-重要数据17类。评估发现，目前有3项敏感信息未实施有效的加密和脱敏保护，存在较高的数据安全风险，不符合《xxxxx》的相关要求。
+
+                            主要问题包括：
+                            xxxx类、xxx类等4级-重要数据未进行脱敏展示
+                            部分系统中的5级-核心数据采用明文存储，未实施加密保护
+                            建议按照优先级尽快实施相应的防护措施。确保在90天内完成所有敏感信息的安全保护，符合相关法律法规要求。</p>
                     </div>
                 </div>
             </el-card>
