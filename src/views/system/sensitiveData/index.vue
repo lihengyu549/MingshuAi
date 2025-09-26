@@ -172,10 +172,10 @@
                                         </el-upload>
 
                                         <!-- 新增缩略图展示区域 -->
-                                        <el-image v-if="proofUrlList.find(item => item.fieldId == scope.row.fieldId)"
-                                            :src="proofUrlList.find(item => item.fieldId == scope.row.fieldId).url"
-                                            :preview-src-list="[proofUrlList.find(item => item.fieldId == scope.row.fieldId).url]" class="proof-thumbnail"
-                                            fit="cover"></el-image>
+                                        <el-image v-if="getProofUrl(scope.row.fieldId)"
+                                            :src="getProofUrl(scope.row.fieldId)"
+                                            :preview-src-list="[getProofUrl(scope.row.fieldId)]" class="proof-thumbnail"
+                                            fit="cover" @error="handleImageError(scope.row.fieldId)"></el-image>
                                     </div>
                                 </template>
                             </el-table-column>
@@ -276,6 +276,17 @@ export default {
     mounted() {
     },
     methods: {
+        // 获取图片URL的方法
+        getProofUrl(fieldId) {
+            const item = this.proofUrlList.find(item => item.fieldId === fieldId);
+            return item ? item.url : null;
+        },
+        // 图片加载失败处理
+        handleImageError(fieldId) {
+            this.$message.error('图片加载失败');
+            // 可以在这里移除无效的URL记录
+            this.proofUrlList = this.proofUrlList.filter(item => item.fieldId !== fieldId);
+        },
         handleCategoryChange(val) {
             this.categoryId = val
             this.getSensitiveDataList(this.categoryId)
@@ -823,14 +834,12 @@ export default {
 .proof-thumbnail {
     width: 40px;
     height: 40px;
-    border-radius: 4px;
-    cursor: zoom-in;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
-}
-
-/* 鼠标悬停效果 */
-.proof-thumbnail:hover {
-    transform: scale(1.05);
+    margin-left: 10px;
+    /* 与上传按钮保持距离 */
+    cursor: pointer;
+    /* 提示可点击查看大图 */
+    /* 移除可能的hover效果 */
+    transition: none;
+    transform: none !important;
 }
 </style>
