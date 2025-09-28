@@ -1,5 +1,5 @@
 <template>
-    <div class="sensitive-data-risk-assessment">
+    <div v-loading="loading" element-loading-text="拼命加载中..." class="sensitive-data-risk-assessment">
         <!-- 页面标题与操作区 -->
         <div class="page-header">
             <h2><b>敏感数据安全风险评估报告</b></h2>
@@ -273,6 +273,7 @@ export default {
             activeDatabaseId: null,
             datasourceId: null,
             proofUrlList: [],
+            loading: false,
         };
     },
     computed: {
@@ -429,14 +430,17 @@ export default {
 
         // 加载风险详情数据
         loadRiskDetails(dataSourceId) {
+            this.loading = true;
             try {
                 getViewDetails({ datasourceId: dataSourceId }).then((response) => {
                     // 保存原始数据并初始化过滤结果
                     this.sensitiveCategories = response.data;
                     this.filteredCategories = [...this.sensitiveCategories];
+                    this.loading = false;
                 });
             } catch (error) {
                 console.error('获取风险详情失败', error);
+                this.loading = false;
                 // 错误处理：清空数据避免筛选异常
                 this.sensitiveCategories = [];
                 this.filteredCategories = [];
