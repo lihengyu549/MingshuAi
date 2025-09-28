@@ -1073,8 +1073,7 @@ export default {
     },
     // 左侧树下拉选change事件
     treeOptionsSelectChange(val) {
-      this.resetQuery()
-      this.getProtectCategory(val)
+      this.getProtectCategory(val) 
     },
     gettreeOptionsList(id) {
       this.Loading = true
