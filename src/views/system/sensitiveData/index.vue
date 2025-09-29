@@ -72,25 +72,37 @@
 
                 <!-- 筛选和搜索区域 -->
                 <div class="filter-section">
-                    <el-input placeholder="搜索数据分类..." v-model="searchKeyword" prefix-icon="el-icon-search"
-                        class="category-search" @input="handleSearch" size="small" clearable></el-input>
-
-                    <!-- 风险等级筛选行 -->
-                    <div class="filter-tags level-filter">
-                        <el-tag v-for="tag in levelFilterTags" :key="tag.value"
-                            :class="{ 'active-tag': levelFilterValue === tag.value }"
-                            @click="toggleLevelFilter(tag.value)" size="medium">
-                            {{ tag.label }}
-                        </el-tag>
+                    <div class="filter-header">
+                        <span class="filter-label">筛选：</span>
+                        <el-input placeholder="搜索数据分类..." v-model="searchKeyword" prefix-icon="el-icon-search"
+                            class="category-search" @input="handleSearch" size="small" clearable></el-input>
                     </div>
 
-                    <!-- 防护状态筛选行 -->
-                    <div class="filter-tags status-filter">
-                        <el-tag v-for="tag in statusFilterTags" :key="tag.value"
-                            :class="{ 'active-tag': statusFilterValue === tag.value }"
-                            @click="toggleStatusFilter(tag.value)" size="medium">
-                            {{ tag.label }}
-                        </el-tag>
+                    <!-- 筛选标签容器 -->
+                    <div class="filter-tags-container">
+                        <!-- 风险等级筛选行 -->
+                        <div class="filter-group">
+                            <span class="filter-group-label">风险等级：</span>
+                            <div class="filter-tags level-filter">
+                                <el-tag v-for="tag in levelFilterTags" :key="tag.value"
+                                    :class="{ 'active-tag': levelFilterValue === tag.value }"
+                                    @click="toggleLevelFilter(tag.value)" size="medium">
+                                    {{ tag.label }}
+                                </el-tag>
+                            </div>
+                        </div>
+
+                        <!-- 防护状态筛选行 -->
+                        <div class="filter-group">
+                            <span class="filter-group-label">防护状态：</span>
+                            <div class="filter-tags status-filter">
+                                <el-tag v-for="tag in statusFilterTags" :key="tag.value"
+                                    :class="{ 'active-tag': statusFilterValue === tag.value }"
+                                    @click="toggleStatusFilter(tag.value)" size="medium">
+                                    {{ tag.label }}
+                                </el-tag>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -727,19 +739,47 @@ export default {
 }
 
 .filter-section {
-    display: flex;
-    flex-direction: column;
     margin: 15px 0;
+    padding: 12px 15px;
+    // background-color: #f9fafb;
+    // border-radius: 6px;
+    // border: 1px solid #f0f2f5;
+}
+
+.filter-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
     gap: 10px;
-    align-items: flex-start;
+}
+
+
+.filter-tags-container {
+    // display: flex;
+    // flex-wrap: wrap;
+    // gap: 15px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+}
+
+.filter-group-label,.filter-label {
+    font-weight: 600;
+    color: #4e5969;
+    white-space: nowrap;
+    font-size: 14px;
 }
 
 .filter-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    width: 100%;
 }
+
 
 .filter-tags .el-tag,
 .database-tag {
@@ -749,6 +789,12 @@ export default {
     border: none;
     border-radius: 15px;
     line-height: 28px;
+    transition: all 0.2s ease;
+}
+
+.filter-tags .el-tag:hover,
+.database-filter .el-tag:hover {
+    background-color: #d1d5db;
 }
 
 .database-tag {
@@ -761,8 +807,25 @@ export default {
 }
 
 .category-search {
-    width: 100%;
-    margin-top: 5px;
+    flex: 1;
+    min-width: 200px;
+}
+
+@media (max-width: 768px) {
+    .filter-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-tags-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .filter-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
 .category-item {
