@@ -124,7 +124,7 @@
                         <div class="legal-basis">
                             <p><strong>法规依据：</strong></p>
                             <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.regulatoryBasis
-                            }}</span>
+                                }}</span>
                         </div>
 
                         <div class="database-filter">
@@ -552,16 +552,29 @@ export default {
         handleDatabaseFilter(dbName) {
             // 切换选中状态
             this.activeDatabaseId = this.activeDatabaseId === dbName ? null : dbName;
-            // 重置页码为1
-            this.pagination.currentPage = 1;
 
             if (this.activeDatabaseId) {
+                // 筛选当前分类中字段所属数据库匹配的记录
+                this.filteredCategories = this.sensitiveCategories.map(category => {
+                    // 过滤字段列表，只保留匹配当前数据库名的字段
+                    const filteredFields = category.fields.filter(field =>
+                        field.databaseName === dbName
+                    );
+                    // 返回新的分类对象，保持其他属性不变，只更新fields
+                    return {
+                        ...category,
+                        fields: filteredFields
+                    };
+                }).filter(category =>
+                    // 过滤掉字段列表为空的分类
+                    category.fields.length > 0
+                );
                 this.$message.info(`已筛选出数据库为 ${dbName} 的所有字段`);
             } else {
+                // 取消筛选，恢复原始数据
+                this.filteredCategories = [...this.sensitiveCategories];
                 this.$message.info('已取消数据库筛选');
             }
-
-            this.loadRiskDetails(this.datasourceId);
         },
 
         // 分页大小改变
