@@ -274,7 +274,7 @@ export default {
                     const index = children.findIndex(d => d === data);
                     children.splice(index, 1);
                 }
-                // 关键修复：重置isAddingNode状态
+                // 重置isAddingNode状态
                 setTimeout(() => {
                     this.isAddingNode = false;
                 }, 3000);
