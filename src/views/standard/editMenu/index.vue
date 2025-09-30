@@ -275,7 +275,9 @@ export default {
                     children.splice(index, 1);
                 }
                 // 关键修复：重置isAddingNode状态
-                this.isAddingNode = false;
+                setTimeout(() => {
+                    this.isAddingNode = false;
+                }, 3000);
                 return;
             }
 
