@@ -50,7 +50,7 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
     <el-dialog :title="title" class="addMsg" v-loading="dialogLoading" :visible.sync="dialogDataShow" append-to-body
-      :close-on-click-modal="true">
+      :close-on-click-modal="false" width="700px">
       <el-form class="dialogForm" :rules="dialogDataRules" :model="dialogData" size="medium" ref="dialogData"
         :inline="true" label-width="110px" label-position="top">
         <el-form-item label="任务名称" prop="taskName">

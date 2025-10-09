@@ -85,7 +85,7 @@
       :limit.sync="queryParams.pageSize" @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
     <el-dialog class="custom-dialog" :title="title" v-loading="formLoading" :visible.sync="open" append-to-body
-      :close-on-click-modal="false">
+      :close-on-click-modal="false" width="700px">
       <el-form ref="addForm" :model="form" :rules="rules" label-width="auto" @submit.native.prevent class="importForm"
         label-position="top">
         <!-- <Title title="基本信息" /> -->

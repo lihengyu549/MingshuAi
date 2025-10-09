@@ -35,7 +35,7 @@
       @pagination="getList" />
     <!-- 添加apikeys -->
     <el-dialog class="addMsg" title="创建API Key" v-loading="formLoading" :visible.sync="dialogShow" append-to-body
-      :close-on-click-modal="false">
+      :close-on-click-modal="false" width="700px">
       <el-form :model="ApiForm" ref="ApiForm" size="small" label-width="auto" :rules="apiRules" label-position="top">
         <!-- <el-form-item label="标准名称" prop="categoryId">
           <el-select v-model="ApiForm.categoryId" class="serachInput" placeholder="全部" style="margin-right: 20px">

@@ -98,7 +98,7 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
-    <el-dialog class="addMsg" :title="title" :visible.sync="open" append-to-body :close-on-click-modal="false">
+    <el-dialog class="addMsg" :title="title" :visible.sync="open" append-to-body :close-on-click-modal="false" width="700px">
       <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent label-position="top">
         <el-row>
           <el-col :span="12">
@@ -185,7 +185,7 @@
       </div>
     </el-dialog>
     <el-dialog class="addMsg" :title="titleExcel" v-loading="importDataLoading" :visible.sync="importData.importShow"
-      append-to-body :close-on-click-modal="false">
+      append-to-body :close-on-click-modal="false" width="700px">
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px" label-position="top">
         <el-form-item label="数据源名称" prop="sourceName">

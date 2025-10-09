@@ -95,7 +95,7 @@
     </el-row>
     <!-- 新增编辑框 -->
     <el-dialog class="addMsg" :title="addOrEdit.title" v-loading="importDataLoading" :visible.sync="addOrEdit.show"
-      append-to-body :close-on-click-modal="addOrEdit.flag == 3">
+      append-to-body :close-on-click-modal="addOrEdit.flag == 3" width="700px">
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" label-position="top">
         <el-form-item label="规则名称" prop="ruleName">

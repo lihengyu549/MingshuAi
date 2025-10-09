@@ -71,7 +71,7 @@
 
     <!-- 新增编辑框 -->
     <el-dialog class="custom-dialog" :title="addOrEdit.title" v-loading="addOrEditLoading"
-      :visible.sync="addOrEdit.show" append-to-body :close-on-click-modal="false">
+      :visible.sync="addOrEdit.show" append-to-body :close-on-click-modal="false" width="700px">
       <el-form :model="addOrEditFormData" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules"
         ref="addOrEditForm" label-width="80px" label-position="top" class="dialog-form">
         <el-form-item label="任务名称" prop="taskName">
