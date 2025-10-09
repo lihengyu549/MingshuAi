@@ -204,12 +204,13 @@
           <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
           <el-upload ref="uploadRef" class="upload-demo" :limit="1" :file-list="importData.fileList"
             :auto-upload="false" :http-request="submitFormExcelFn" action="" accept=".xls,.xlsx,csv"
-            :show-file-list="false" :on-change="handleFileChange" :on-exceed="handleFileExceed">
+            :show-file-list="false" :on-change="handleFileChange" :on-exceed="handleFileExceed"
+            style="margin-left: 10px;">
             <el-button size="mini" type="primary" plain>选择文件</el-button>
           </el-upload>
         </el-form-item>
       </el-form>
-      <el-button style="margin-left: 100px;" size="small" type="text" @click="downloadFile" id="btnDownload"
+      <el-button size="small" type="text" @click="downloadFile" id="btnDownload"
         icon="el-icon-download">样例下载</el-button>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" plain @click="submitFormExcelFn">确 定</el-button>
