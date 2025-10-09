@@ -98,18 +98,23 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
-    <el-dialog class="addMsg" :title="title" :visible.sync="open" width="580px" append-to-body
-      :close-on-click-modal="false">
-      <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
-        <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
-          <el-select v-model="form.databaseType" placeholder="请选择数据库类型" @change="databaseTypeChange($event)">
-            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
-          <el-input v-model="form.sourceName" maxlength="50" placeholder="请输入数据源名称" />
-        </el-form-item>
+    <el-dialog class="addMsg" :title="title" :visible.sync="open" append-to-body :close-on-click-modal="false">
+      <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent label-position="top">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
+              <el-select v-model="form.databaseType" placeholder="请选择数据库类型" @change="databaseTypeChange($event)">
+                <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
+              <el-input v-model="form.sourceName" maxlength="50" placeholder="请输入数据源名称" />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="分类分级标准" prop="projectName" :rules="rules.projectName">
           <el-select v-model="form.projectName" :disabled="editIsFlag" placeholder="请输入分类分级框架" clearable
             @change="projectChangeEdit($event)">
@@ -122,20 +127,30 @@
           <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
           <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
         </el-form-item>
-
-        <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
-          <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
-        </el-form-item>
-
-        <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
-          <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
-        </el-form-item>
-        <el-form-item label="用户" prop="targetUserName" :rules="rules.targetUserName">
-          <el-input v-model="form.targetUserName" placeholder="请输入数据库用户名称" />
-        </el-form-item>
-        <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
-          <el-input v-model="form.targetUserPassword" show-password maxlegth="100" placeholder="请输入数据库密码" />
-        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
+              <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
+              <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="用户" prop="targetUserName" :rules="rules.targetUserName">
+              <el-input v-model="form.targetUserName" placeholder="请输入数据库用户名称" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
+              <el-input v-model="form.targetUserPassword" show-password maxlegth="100" placeholder="请输入数据库密码" />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item v-show="form.databaseType == 'ORACLE'" label="服务名" prop="connectionValue"
           :rules="rules.connectionValue()">
           <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput()" placeholder="请输入" />
@@ -169,10 +184,10 @@
         <el-button @click="scanContentCanlce">取消</el-button>
       </div>
     </el-dialog>
-    <el-dialog :title="titleExcel" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"
+    <el-dialog class="addMsg" :title="titleExcel" v-loading="importDataLoading" :visible.sync="importData.importShow"
       append-to-body :close-on-click-modal="false">
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
-        :inline="true" label-width="120px">
+        :inline="true" label-width="120px" label-position="top">
         <el-form-item label="数据源名称" prop="sourceName">
           <el-input v-model="importData.sourceName" maxlength="50" placeholder="请输入数据源名称"></el-input>
         </el-form-item>
@@ -185,14 +200,13 @@
         <el-form-item label="来源业务系统" prop="businessName">
           <el-input v-model="importData.businessName" maxlength="50" placeholder="请输入数据源名称"></el-input>
         </el-form-item>
-        <el-form-item label="导入文件" prop="importFile">
+        <el-form-item label="导入文件" prop="importFile" class="uploadClass">
           <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
-        </el-form-item>
-        <el-form-item class="uploadClass">
           <el-upload ref="uploadRef" class="upload-demo" :limit="1" :file-list="importData.fileList"
             :auto-upload="false" :http-request="submitFormExcelFn" action="" accept=".xls,.xlsx,csv"
-            :show-file-list="false" :on-change="handleFileChange" :on-exceed="handleFileExceed">
-            <el-button size="mini" type="primary">选择文件</el-button>
+            :show-file-list="false" :on-change="handleFileChange" :on-exceed="handleFileExceed"
+            style="margin-left: 10px;">
+            <el-button size="mini" type="primary" plain>选择文件</el-button>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -1030,6 +1044,26 @@ input[aria-hidden=true] {
   width: 237px;
 }
 
+.addMsg /deep/.el-dialog {
+  border-radius: 10px;
+}
+
+.addMsg /deep/.el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.addMsg /deep/.el-dialog__title {
+  font-weight: bold;
+}
+
+.addMsg /deep/.el-form-item__content {
+  padding-right: 15px;
+}
+
+.addMsg /deep/.el-dialog__body {
+  padding: 30px;
+}
+
 .addMsg /deep/ .el-dialog:not(.is-fullscreen) {
   margin-top: 10% !important;
 }
@@ -1069,11 +1103,11 @@ input[aria-hidden=true] {
 }
 
 .addMsg /deep/ .el-input {
-  width: 80%;
+  width: 100%;
 }
 
 .addMsg /deep/ .el-select {
-  width: 80%;
+  width: 100%;
 }
 
 .addMsg .el-select /deep/ .el-input {
@@ -1112,17 +1146,22 @@ input[aria-hidden=true] {
   margin-left: 263px
 }
 
+.importForm {
+  margin-bottom: 0;
+}
+
 .importForm /deep/ .el-form-item--medium {
-  width: 70%;
+  width: 100%;
 
 }
 
 .importForm /deep/ .el-form-item__content {
-  width: calc(100% - 145px);
+  width: 100%;
 }
 
-.uploadClass {
-  width: 20% !important;
+.uploadClass /deep/.el-form-item__content {
+  display: flex;
+  justify-content: space-between;
 }
 
 .addSelectClass /deep/ .el-select {
