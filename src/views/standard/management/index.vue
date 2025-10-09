@@ -42,9 +42,9 @@
             <svg-icon icon-class="dunpai-2" class="standard_icon"></svg-icon>
             <div class="title_text_area">
               <el-tooltip class="item" effect="dark" :content="item.categoryName" placement="top-start">
-                    <h3 class="category-title">{{ item.categoryName }}</h3>
-                  </el-tooltip>
-                  <div class="title_tags">
+                <h3 class="category-title">{{ item.categoryName }}</h3>
+              </el-tooltip>
+              <div class="title_tags">
                 <el-tag class="tag-item" size="small" type="primary">{{ item.standardTypeName }}</el-tag>
                 <el-tag class="tag-item" size="small" type="info">现行</el-tag>
                 <el-tag class="tag-item" size="small" type="info">{{ item.dataSource }}</el-tag>
@@ -70,8 +70,8 @@
         <div class="listBox_footer">
           <el-button type="text" size="small" @click="deleteFn(item)" :disabled="item.dataSource === '内置'"
             style="color: #d1d1da;"><i class="el-icon-delete"></i> 删除</el-button>
-          <el-button type="text" size="small" :disabled="item.dataSource === '内置'" @click="editFn(item)" style="color: #666580;"><i
-              class="el-icon-edit-outline"></i> 编辑</el-button>
+          <el-button type="text" size="small" :disabled="item.dataSource === '内置'" @click="editFn(item)"
+            style="color: #666580;"><i class="el-icon-edit-outline"></i> 编辑</el-button>
           <el-button type="text" size="small" @click="detailFn(item)" style="color: #666580;"><i
               class="el-icon-warning-outline"></i>
             查看详情</el-button>
@@ -84,10 +84,10 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :pageSizes="[8]"
       :limit.sync="queryParams.pageSize" @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
-    <Drawer :title="title" v-loading="formLoading" :visible.sync="open" size="40%" append-to-body
+    <el-dialog class="custom-dialog" :title="title" v-loading="formLoading" :visible.sync="open" append-to-body
       :close-on-click-modal="false">
-      <el-form slot="body" ref="addForm" :model="form" :rules="rules" label-width="auto" @submit.native.prevent
-        class="importForm" label-position="top">
+      <el-form ref="addForm" :model="form" :rules="rules" label-width="auto" @submit.native.prevent class="importForm"
+        label-position="top">
         <!-- <Title title="基本信息" /> -->
         <el-form-item label="标准名称" prop="categoryName" :rules="rules.tasksName">
           <el-input v-model="form.categoryName" maxlength="50" placeholder="请输入标准名称" />
@@ -142,7 +142,7 @@
           </el-col>
         </el-row>
       </el-form>
-      <div slot="footer" class="drawer-footer">
+      <div class="drawer-footer">
         <el-button style="margin-left: 15px;" size="small" type="text" @click="downloadFile" id="btnDownload"
           icon="el-icon-download">样例下载</el-button>
         <div slot="footer" class="dialog-footer">
@@ -150,7 +150,7 @@
           <el-button @click="closeFn">取消</el-button>
         </div>
       </div>
-    </Drawer>
+    </el-dialog>
     <!-- <el-dialog class="addMsg" :title="title" v-loading="formLoading" :visible.sync="open" width="580px" append-to-body
       :close-on-click-modal="false">
       <el-form ref="addForm" :model="form" :rules="rules" label-width="auto" @submit.native.prevent class="importForm">
@@ -354,7 +354,7 @@ export default {
       this.form.importFile = row.fileName
     },
     detailFn(row) {
-      this.$router.push({ path: '/standard/jobMonitorings', query: { id: row.id, dataSource:row.dataSource } })
+      this.$router.push({ path: '/standard/jobMonitorings', query: { id: row.id, dataSource: row.dataSource } })
     },
     deleteFn(row) {
       this.$confirm(`删除任务，将会删除数据源所关联的所有执行结果,确定删除吗`, '提示', {
@@ -554,6 +554,22 @@ input[aria-hidden=true] {
 
 .searchBtn /deep/ .el-form-item__content {
   margin-left: 263px
+}
+
+.custom-dialog /deep/.el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.custom-dialog /deep/.el-dialog__title {
+  font-weight: bold;
+}
+
+.custom-dialog /deep/.el-dialog__body {
+  padding: 30px 30px 0px;
+}
+
+.importForm{
+  margin-bottom: 0;
 }
 
 .importForm /deep/.el-form-item,
