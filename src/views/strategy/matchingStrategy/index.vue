@@ -94,10 +94,10 @@
       </el-col>
     </el-row>
     <!-- 新增编辑框 -->
-    <el-dialog :title="addOrEdit.title" v-loading="importDataLoading" :visible.sync="addOrEdit.show" width="700px"
+    <el-dialog class="addMsg" :title="addOrEdit.title" v-loading="importDataLoading" :visible.sync="addOrEdit.show"
       append-to-body :close-on-click-modal="addOrEdit.flag == 3">
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
-        label-width="120px" style="padding-right: 60px;">
+        label-width="120px" label-position="top">
         <el-form-item label="规则名称" prop="ruleName">
           <el-input v-model="addOrEditDataRuls.ruleName" :disabled="addOrEdit.flag == 3" maxlength="50"
             placeholder="请输入规则名称"></el-input>
@@ -122,11 +122,12 @@
           <span style="margin-left: 30px;font-size: 14px;"><i class="el-icon-warning"></i>
             设置与字段内容匹配的阈值</span>
         </el-form-item>
-        <el-form-item class="rulesContClass" label="规则内容" prop="ruleContent">
-          <div style="display: flex; justify-content: space-between; align-items: center;margin-bottom: 15px;">
-            <span style="color: rgb(188 188 188);font-size:15px;font-style: italic;">(匹配以下任意一条)</span>
+        <el-form-item class="rulesContClass" prop="ruleContent">
+          <template slot="label">
+            <span style="margin-right: 10px;">规则内容</span>
+            <span style="color: rgb(188 188 188);font-size:12px;font-style: italic;">(匹配以下任意一条)</span>
             <span class="addTextBtn" v-if="addOrEdit.flag !== 3" @click="rulesContAddFn">添加</span>
-          </div>
+          </template>
           <div class="forDiv">
             <div v-for="(item, index) in ruleContent" :key="index" style="margin-bottom: 15px;">
               <!-- 当识别方式为正则(3)时显示带建议的输入框 -->
@@ -142,7 +143,7 @@
               <el-input v-else v-model="item.name" :disabled="addOrEdit.flag == 3"
                 :placeholder="getInputPlaceholder()" />
               <span @click="delAddSelect(index)" v-if="addOrEdit.flag !== 3"
-                style="margin-left: 20px; color: red;">删除</span>
+                style="margin-left: 20px; color: red;cursor: pointer;">删除</span>
             </div>
           </div>
         </el-form-item>
@@ -755,6 +756,38 @@ export default {
   width: 237px;
 }
 
+.addMsg ::v-deep .el-input {
+  width: 100%;
+}
+
+.addMsg ::v-deep .el-select {
+  width: 100%;
+}
+
+.addMsg .el-select ::v-deep .el-input {
+  width: 100%;
+}
+
+.addMsg ::v-deep.el-dialog {
+  border-radius: 10px;
+}
+
+.addMsg ::v-deep.el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.addMsg ::v-deep.el-dialog__title {
+  font-weight: bold;
+}
+
+.addMsg ::v-deep.el-dialog__body {
+  padding: 30px;
+}
+
+.addMsg ::v-deep.el-form {
+  margin-bottom: 0;
+}
+
 .success {
   color: #67c23a;
 }
@@ -820,6 +853,7 @@ export default {
 }
 
 .rulesContClass /deep/ .el-form-item__label {
+  white-space: nowrap;
   width: 100%;
 }
 
@@ -834,6 +868,7 @@ export default {
 .addTextBtn {
   font-weight: 700;
   color: #1890ff;
+  float: inline-end;
 }
 
 .addTextBtn:hover {
