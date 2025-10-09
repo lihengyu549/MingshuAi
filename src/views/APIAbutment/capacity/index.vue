@@ -34,10 +34,9 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
     <!-- 添加apikeys -->
-    <el-dialog class="addMsg" title="创建API Key" v-loading="formLoading" :visible.sync="dialogShow" width="580px"
-      append-to-body :close-on-click-modal="false">
-      <el-form :model="ApiForm" ref="ApiForm" size="small" label-width="auto" :rules="apiRules"
-        style="margin-top: 30px; width: 600px;">
+    <el-dialog class="addMsg" title="创建API Key" v-loading="formLoading" :visible.sync="dialogShow" append-to-body
+      :close-on-click-modal="false">
+      <el-form :model="ApiForm" ref="ApiForm" size="small" label-width="auto" :rules="apiRules" label-position="top">
         <!-- <el-form-item label="标准名称" prop="categoryId">
           <el-select v-model="ApiForm.categoryId" class="serachInput" placeholder="全部" style="margin-right: 20px">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
@@ -493,17 +492,35 @@ export default {
   }
 }
 
-.tableBox {}
-
 .addMsg ::v-deep .el-input {
-  width: 80%;
+  width: 100%;
 }
 
 .addMsg ::v-deep .el-select {
-  width: 80%;
+  width: 100%;
 }
 
 .addMsg .el-select ::v-deep .el-input {
   width: 100%;
+}
+
+.addMsg ::v-deep.el-dialog {
+  border-radius: 10px;
+}
+
+.addMsg ::v-deep.el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.addMsg ::v-deep.el-dialog__title {
+  font-weight: bold;
+}
+
+.addMsg ::v-deep.el-dialog__body {
+  padding: 30px;
+}
+
+.addMsg ::v-deep.el-form {
+  margin-bottom: 0;
 }
 </style>
