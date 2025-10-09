@@ -49,39 +49,57 @@
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
-    <el-dialog :title="title" class="addMsg" v-loading="dialogLoading" :visible.sync="dialogDataShow" width="580px"
-      append-to-body :close-on-click-modal="true">
+    <el-dialog :title="title" class="addMsg" v-loading="dialogLoading" :visible.sync="dialogDataShow" append-to-body
+      :close-on-click-modal="true">
       <el-form class="dialogForm" :rules="dialogDataRules" :model="dialogData" size="medium" ref="dialogData"
-        :inline="true" label-width="110px">
+        :inline="true" label-width="110px" label-position="top">
         <el-form-item label="任务名称" prop="taskName">
           <el-input v-model="dialogData.taskName" placeholder="请输入任务名称"></el-input>
         </el-form-item>
-        <el-form-item label="推送类型" prop="pushType">
-          <el-select clearable v-model="dialogData.pushType" placeholder="请选择">
-            <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel" :value="item.dictValue">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="对接厂商" prop="provider">
-          <el-select clearable v-model="dialogData.provider" placeholder="请选择">
-            <el-option v-for="item in providerList" :key="item.dictValue" :label="item.dictLabel"
-              :value="item.dictValue">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="主机" prop="host">
-          <el-input v-model="dialogData.host" placeholder="请输入主机"></el-input>
-        </el-form-item>
-
-        <el-form-item label="端口" prop="port">
-          <el-input v-model="dialogData.port" placeholder="请输入端口"></el-input>
-        </el-form-item>
-        <el-form-item label="账号" prop="userName">
-          <el-input v-model="dialogData.userName" placeholder="请输入账号"></el-input>
-        </el-form-item>
-        <el-form-item label="密码" prop="passWord">
-          <el-input v-model="dialogData.passWord" show-password placeholder="请输入密码"></el-input>
-        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="推送类型" prop="pushType">
+              <el-select clearable v-model="dialogData.pushType" placeholder="请选择">
+                <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel"
+                  :value="item.dictValue">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="对接厂商" prop="provider">
+              <el-select clearable v-model="dialogData.provider" placeholder="请选择">
+                <el-option v-for="item in providerList" :key="item.dictValue" :label="item.dictLabel"
+                  :value="item.dictValue">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="主机" prop="host">
+              <el-input v-model="dialogData.host" placeholder="请输入主机"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="端口" prop="port">
+              <el-input v-model="dialogData.port" placeholder="请输入端口"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="账号" prop="userName">
+              <el-input v-model="dialogData.userName" placeholder="请输入账号"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="密码" prop="passWord">
+              <el-input v-model="dialogData.passWord" show-password placeholder="请输入密码"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="分类分级标准" prop="standardId">
           <el-select clearable v-model="dialogData.standardId" placeholder="请选择">
             <el-option v-for="item in standardList" :key="item.id" :label="item.categoryName" :value="item.id">
@@ -441,13 +459,12 @@ input[aria-hidden=true] {
 }
 
 .dialogForm .el-form-item {
-  width: 80%;
+  width: 100%;
 }
 
-.dialogForm .el-form-item /deep/ .el-form-item__label-wrap {}
-
 .dialogForm .el-form-item /deep/ .el-form-item__content {
-  width: 70%;
+  width: 100%;
+  padding-right: 15px;
 }
 
 .dialogForm .el-form-item /deep/ .el-select {
@@ -476,5 +493,37 @@ input[aria-hidden=true] {
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
   border-radius: 10px;
+}
+
+.addMsg ::v-deep .el-input {
+  width: 100%;
+}
+
+.addMsg ::v-deep .el-select {
+  width: 100%;
+}
+
+.addMsg .el-select ::v-deep .el-input {
+  width: 100%;
+}
+
+.addMsg ::v-deep.el-dialog {
+  border-radius: 10px;
+}
+
+.addMsg ::v-deep.el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.addMsg ::v-deep.el-dialog__title {
+  font-weight: bold;
+}
+
+.addMsg ::v-deep.el-dialog__body {
+  padding: 30px;
+}
+
+.addMsg ::v-deep.el-form {
+  margin-bottom: 0;
 }
 </style>
