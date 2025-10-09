@@ -556,6 +556,10 @@ input[aria-hidden=true] {
   margin-left: 263px
 }
 
+.custom-dialog /deep/.el-dialog {
+  border-radius: 10px;
+}
+
 .custom-dialog /deep/.el-dialog__header {
   border-bottom: 1px solid #e6e6e6;
 }
@@ -565,10 +569,10 @@ input[aria-hidden=true] {
 }
 
 .custom-dialog /deep/.el-dialog__body {
-  padding: 30px 30px 0px;
+  padding: 30px;
 }
 
-.importForm{
+.importForm {
   margin-bottom: 0;
 }
 

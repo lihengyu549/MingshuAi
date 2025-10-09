@@ -70,22 +70,21 @@
       @pagination="getList" />
 
     <!-- 新增编辑框 -->
-    <el-dialog :title="addOrEdit.title" v-loading="addOrEditLoading" :visible.sync="addOrEdit.show" width="700px"
-      append-to-body :close-on-click-modal="false">
+    <el-dialog class="custom-dialog" :title="addOrEdit.title" v-loading="addOrEditLoading"
+      :visible.sync="addOrEdit.show" append-to-body :close-on-click-modal="false">
       <el-form :model="addOrEditFormData" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules"
-        ref="addOrEditForm" label-width="80px" style="padding-right: 60px;">
+        ref="addOrEditForm" label-width="80px" label-position="top" class="dialog-form">
         <el-form-item label="任务名称" prop="taskName">
           <el-input v-model="addOrEditFormData.taskName" maxlength="50" placeholder="请输入任务名称"></el-input>
         </el-form-item>
         <el-form-item label="IP段" prop="ipScope">
           <el-input v-model="addOrEditFormData.ipScope" maxlength="50" placeholder="请输入单个IP或IP段"></el-input>
-          <div style="font-size: 12px; font-style: italic;">IP段示例：192.168.1.1-200，多个IP以英文逗号隔开</div>
         </el-form-item>
         <el-form-item label="指定端口" prop="ports">
           <el-input v-model="addOrEditFormData.ports" maxlength="50" placeholder="请输入端口或端口范围"></el-input>
           <div style="font-size: 12px; font-style: italic;">端口范围示例：0-65535，多个端口以英文逗号隔开</div>
         </el-form-item>
-        <el-form-item class="weekTimeClass" prop="scheduleType" label="周期">
+        <el-form-item label="周期" prop="scheduleType">
           <el-select v-model="addOrEditFormData.scheduleType" @change="scheduleTypeChange">
             <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
@@ -662,5 +661,29 @@ input[aria-hidden=true] {
   margin-bottom: 0px;
   /* padding: 0px; */
   /* display: none; */
+}
+
+.custom-dialog /deep/.el-dialog{
+  border-radius: 10px;
+}
+
+.custom-dialog /deep/.el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.custom-dialog /deep/.el-dialog__title {
+  font-weight: bold;
+}
+
+.custom-dialog /deep/.el-dialog__body {
+  padding: 30px;
+}
+
+.dialog-form /deep/.el-form-item__content {
+  padding-right: 15px;
+}
+
+.dialog-form /deep/.el-select--medium {
+  width: 100%;
 }
 </style>
