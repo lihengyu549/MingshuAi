@@ -136,7 +136,7 @@
                         <div class="legal-basis">
                             <p><strong>法规依据：</strong></p>
                             <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.regulatoryBasis
-                                }}</span>
+                            }}</span>
                         </div>
 
                         <div class="database-filter">
@@ -154,9 +154,8 @@
                             </template>
                             <el-table-column prop="tableName" align="center" label="数据表名称"
                                 min-width="220"></el-table-column>
-                            <el-table-column prop="fieldName" align="center" label="字段名称" width="130"></el-table-column>
                             <el-table-column prop="fieldRemark" align="center" label="字段注释"
-                                width="130"></el-table-column>
+                                show-overflow-tooltip></el-table-column>
                             <el-table-column prop="dataValue" align="center" label="样本值" width="180"></el-table-column>
                             <el-table-column prop="riskDisposeSuggest" label="风险处置建议" width="160">
                                 <template slot="header">
@@ -606,6 +605,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.sensitive-sensitive-data-risk-assessment {
+    padding: 40px;
+}
+
 ::v-deep .el-card {
     box-shadow: none;
 }
@@ -767,7 +770,8 @@ export default {
     padding: 5px 0;
 }
 
-.filter-group-label,.filter-label {
+.filter-group-label,
+.filter-label {
     font-weight: 600;
     color: #4e5969;
     white-space: nowrap;
