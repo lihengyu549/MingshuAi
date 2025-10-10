@@ -275,7 +275,7 @@ export default {
                 this.formData = {
                     name: data.categoryName || '',
                     categoryDescribe: data.categoryDescribe || '',
-                    coreTags: data.coreTags && data.coreTags !== '' ? data.coreTags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
+                    coreTags: data.coreTags && data.coreTags.length > 0 ? data.coreTags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
                     inputVisible: false,
                     inputValue: '',
                     parentId: data.parentId,
