@@ -31,7 +31,7 @@
         <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
           v-show="showSearch" label-width="auto">
           <el-form-item label="子类名称" prop="name">
-            <el-input v-model="queryParams.name" @input="inputSearch" placeholder="请输入子类名称" clearable
+            <el-input v-model="queryParams.name" @input="inputSearch" placeholder="请输入类名称" clearable
               @keyup.enter.native="handleQuery" />
           </el-form-item>
           <el-form-item label="确认防护措施" prop="confirmProtectMethod">
@@ -61,6 +61,10 @@
               <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
               </el-option>
             </el-select>
+          </el-form-item>
+          <el-form-item label="直属父类" prop="base_parent">
+            <el-input v-model="queryParams.base_parent" @input="inputSearch" placeholder="请输入父类名称" clearable
+              @keyup.enter.native="handleQuery" />
           </el-form-item>
         </el-form>
         <el-row :gutter="10" class="mb8">
@@ -114,7 +118,7 @@
           </el-table-column>
           <el-table-column label="来源" align="center" prop="dataSource">
           </el-table-column>
-          <el-table-column label="更新时间" align="center" prop="updateTime" />
+          <el-table-column label="直属父类" align="center" prop="base_parent" />
           <el-table-column label="操作" align="center" width="180">
             <template slot-scope="scope">
               <el-button type="text" size="medium"
@@ -166,13 +170,27 @@
             :disabled="addOrEdit.flag == 3" maxlength="500"
             placeholder="个人财产按 “有形 / 无形”“动产 / 不动产” 可分为四大类，每类财产的信息描述需包含独特维度"></el-input>
         </el-form-item>
-        <el-form-item class="addSelectClass" prop="minSecurityLevel" label="安全分级">
-          <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部" :disabled="addOrEdit.flag == 3">
-            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item class="addSelectClass" prop="minSecurityLevel" label="安全分级">
+              <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部" :disabled="addOrEdit.flag == 3">
+                <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item prop="attribute_type" label="属性类型">
+              <el-select v-model="addOrEditDataRuls.attribute_type" placeholder="全部" :disabled="addOrEdit.flag == 3">
+                <el-option v-for="item in dict.type.sys_attribute_type" :key="item.value" :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
         <Title title="安全防护"></Title>
         <el-form-item class="addSelectClass" prop="minSecurityLevel" label="建议防护措施">
           <el-select v-model="addOrEditDataRuls.minSecurityLevel" :disabled="true" placeholder="全部">
@@ -369,7 +387,7 @@ import { treeListI, getAttachData, attachStatus, nameTesting, getFrameworks, get
 export default {
   name: "ProtectTableField",
   components: { Treeselect },
-  dicts: ['sys_risk_level'],
+  dicts: ['sys_risk_level', 'sys_attribute_type'],
   data() {
     return {
       heightSmall: {
@@ -405,6 +423,9 @@ export default {
         ],
         minSecurityLevel: [
           { required: true, message: "请选择安全分级", trigger: "blur" },
+        ],
+        attribute_type: [
+          { required: true, message: "请选择属性类型", trigger: "blur" },
         ],
         dataOwner: [
           { required: true, message: "请选择数据持有者", trigger: "blur" },
@@ -466,6 +487,7 @@ export default {
         name: '',//子类名称
         dataSourceId: '',//来源
         levelId: [],//安全级别，
+        base_parent: '',//直属父类
         dataSource: '',
       },
       dataSource: '',
@@ -474,6 +496,7 @@ export default {
         attachData: '',
         categoryId: '',
         minSecurityLevel: null,
+        attribute_type: null,
         dataOwner: '',
         upgradeRule: '',
         demotionRule: '',
@@ -569,7 +592,7 @@ export default {
     this.getDictData()
     this.getSelectUserListAll()
   },
-  methods: {
+  methods: {  
     getRuleTypeLabel(ruleType) {
       const option = this.options.find(item => item.value === ruleType);
       return option ? option.label : '';
@@ -865,6 +888,7 @@ export default {
           attachData: this.addOrEditDataRuls.attachData,
           categoryId: this.addOrEditDataRuls.categoryId,
           minSecurityLevel: this.addOrEditDataRuls.minSecurityLevel,
+          attribute_type: this.addOrEditDataRuls.attribute_type,
           attachDescribe: this.addOrEditDataRuls.additional,
           featureLabel: this.tags.join(),
           confirmProtectMethod: this.addOrEditDataRuls.confirmProtectMethod.join(),
@@ -965,6 +989,7 @@ export default {
       this.addOrEditDataRuls.upgradeRule = row.upgradeRule == '1' ? true : false
       this.addOrEditDataRuls.demotionRule = row.demotionRule == '1' ? true : false
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
+      this.addOrEditDataRuls.attribute_type = row.attribute_type
       this.tags = row.featureLabel ? row.featureLabel.split(',') : []
       this.addOrEditDataRuls.confirmProtectMethod = Array.isArray(row.confirmProtectMethod)
         ? row.confirmProtectMethod
@@ -994,6 +1019,7 @@ export default {
       this.addOrEditDataRuls.demotionRule = row.demotionRule == '1' ? true : false
       this.addOrEditDataRuls.additional = row.attachDescribe
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
+      this.addOrEditDataRuls.attribute_type = row.attribute_type
       this.tags = row.featureLabel ? row.featureLabel.split(',') : []
       this.addNodeName = row.owner
       this.addOrEdit.show = true
@@ -1073,7 +1099,7 @@ export default {
     },
     // 左侧树下拉选change事件
     treeOptionsSelectChange(val) {
-      this.getProtectCategory(val) 
+      this.getProtectCategory(val)
     },
     gettreeOptionsList(id) {
       this.Loading = true
