@@ -118,7 +118,7 @@
           </el-table-column>
           <el-table-column label="来源" align="center" prop="dataSource">
           </el-table-column>
-          <el-table-column label="直属父类" align="center" prop="base_parent" />
+          <el-table-column label="直属父类" align="center" prop="base_parent" show-overflow-tooltip />
           <el-table-column label="操作" align="center" width="180">
             <template slot-scope="scope">
               <el-button type="text" size="medium"
@@ -181,8 +181,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item prop="attribute_type" label="属性类型">
-              <el-select v-model="addOrEditDataRuls.attribute_type" placeholder="全部" :disabled="addOrEdit.flag == 3">
+            <el-form-item prop="attributeType" label="属性类型">
+              <el-select v-model="addOrEditDataRuls.attributeType" placeholder="全部" :disabled="addOrEdit.flag == 3">
                 <el-option v-for="item in dict.type.sys_attribute_type" :key="item.value" :label="item.label"
                   :value="item.value">
                 </el-option>
@@ -424,7 +424,7 @@ export default {
         minSecurityLevel: [
           { required: true, message: "请选择安全分级", trigger: "blur" },
         ],
-        attribute_type: [
+        attributeType: [
           { required: true, message: "请选择属性类型", trigger: "blur" },
         ],
         dataOwner: [
@@ -496,7 +496,7 @@ export default {
         attachData: '',
         categoryId: '',
         minSecurityLevel: null,
-        attribute_type: null,
+        attributeType: null,
         dataOwner: '',
         upgradeRule: '',
         demotionRule: '',
@@ -888,7 +888,7 @@ export default {
           attachData: this.addOrEditDataRuls.attachData,
           categoryId: this.addOrEditDataRuls.categoryId,
           minSecurityLevel: this.addOrEditDataRuls.minSecurityLevel,
-          attribute_type: this.addOrEditDataRuls.attribute_type,
+          attributeType: this.addOrEditDataRuls.attributeType,
           attachDescribe: this.addOrEditDataRuls.additional,
           featureLabel: this.tags.join(),
           confirmProtectMethod: this.addOrEditDataRuls.confirmProtectMethod.join(),
@@ -989,7 +989,7 @@ export default {
       this.addOrEditDataRuls.upgradeRule = row.upgradeRule == '1' ? true : false
       this.addOrEditDataRuls.demotionRule = row.demotionRule == '1' ? true : false
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
-      this.addOrEditDataRuls.attribute_type = row.attribute_type
+      this.addOrEditDataRuls.attributeType = row.attributeType
       this.tags = row.featureLabel ? row.featureLabel.split(',') : []
       this.addOrEditDataRuls.confirmProtectMethod = Array.isArray(row.confirmProtectMethod)
         ? row.confirmProtectMethod
@@ -1019,7 +1019,7 @@ export default {
       this.addOrEditDataRuls.demotionRule = row.demotionRule == '1' ? true : false
       this.addOrEditDataRuls.additional = row.attachDescribe
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
-      this.addOrEditDataRuls.attribute_type = row.attribute_type
+      this.addOrEditDataRuls.attributeType = row.attributeType
       this.tags = row.featureLabel ? row.featureLabel.split(',') : []
       this.addNodeName = row.owner
       this.addOrEdit.show = true
