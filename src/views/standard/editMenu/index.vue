@@ -16,19 +16,17 @@
                 <!-- 控制全部展开/折叠 -->
                 <!-- 树节点内容保持不变 -->
                 <span class="custom-tree-node" slot-scope="{ node, data }">
-                    <span class="node-label" v-if="!data.addEdit" :title="node.label">{{ node.label }}</span>
-                    <el-input id="addNode" class="addNode" v-else v-model="nodeLabel"
-                        @blur="addEditNodeFn(node, data)"></el-input>
+                    <span class="node-label" :title="node.label">{{ node.label }}</span>
                     <span class="node-actions">
-                        <el-button type="text" v-show="!data.addEdit && data.nodeLayerIndex !== 3" size="mini"
-                            class="action-btn add-btn" @click.stop="() => append(data, node)">
+                        <el-button type="text" v-show="data.nodeLayerIndex !== 3" size="mini" class="action-btn add-btn"
+                            @click.stop="() => openAddEditDialog(data, 'add')">
                             增加
                         </el-button>
-                        <el-button type="text" v-show="!data.addEdit && data.nodeLayerIndex !== 0" size="mini"
-                            class="action-btn edit-btn" @click.stop="() => editNode(data)">
+                        <el-button type="text" v-show="data.nodeLayerIndex !== 0" size="mini"
+                            class="action-btn edit-btn" @click.stop="() => openAddEditDialog(data, 'edit')">
                             编辑
                         </el-button>
-                        <el-button type="text" v-show="!data.addEdit && data.nodeLayerIndex !== 0" size="mini"
+                        <el-button type="text" v-show="data.nodeLayerIndex !== 0" size="mini"
                             class="action-btn delete-btn" @click.stop="() => remove(node, data)">
                             删除
                         </el-button>
@@ -39,13 +37,51 @@
         <div class="page-actions">
             <el-button type="primary" plain @click="goBack">返回</el-button>
         </div>
+
+        <!-- 新增/编辑分类Dialog -->
+        <el-dialog class="edit-menu-dialog" title="编辑分类" :visible.sync="dialogVisible" width="500px"
+            :before-close="handleDialogClose" :close-on-click-modal="false">
+            <el-form ref="categoryForm" :model="formData" :rules="formRules" label-width="100px" class="category-form"
+                label-position="top">
+                <!-- 名称输入框 -->
+                <el-form-item label="名称" prop="name">
+                    <el-input v-model="formData.name" placeholder="请输入分类名称" maxlength="15" show-word-limit
+                        size="small"></el-input>
+                </el-form-item>
+
+                <!-- 描述输入框 -->
+                <el-form-item label="描述" prop="description">
+                    <el-input v-model="formData.description" placeholder="请输入分类描述（可选）" maxlength="255" show-word-limit
+                        type="textarea" rows="3" size="small"></el-input>
+                </el-form-item>
+
+                <!-- 特征标签组件 -->
+                <el-form-item label="特征标签" prop="tags">
+                    <el-tag v-for="(tag, index) in formData.tags" :key="index" closable :disable-transitions="false"
+                        @close="handleTagClose(index)">
+                        {{ tag }}
+                    </el-tag>
+                    <el-input v-if="formData.inputVisible" v-model="formData.inputValue" ref="tagInput" size="small"
+                        @blur="handleInputBlur" @keyup.enter="handleInputConfirm" placeholder="请输入标签"></el-input>
+                    <el-button v-else size="small" icon="el-icon-plus" @click="handleInputShow" type="text">
+                        新增
+                    </el-button>
+                    <div class="tag-count-tip" v-if="formData.tags.length > 0">
+                        已选择 {{ formData.tags.length }}/40 个标签
+                    </div>
+                </el-form-item>
+            </el-form>
+
+            <div slot="footer" class="dialog-footer">
+                <el-button size="small" type="primary" plain @click="submitAddEditForm">保存</el-button>
+                <el-button size="small" @click="dialogVisible = false">取消</el-button>
+            </div>
+        </el-dialog>
     </div>
 </template>
-
 <script>
 import { addCategory, updateCategory, deleteCategory } from "@/api/standard";
 import { treeListI } from "@/api/system/protectCategory";
-
 export default {
     name: "MenuEdit",
     data() {
@@ -57,7 +93,6 @@ export default {
             filteredCategoryList: [], // 用于搜索过滤后的列表
             currentNodeId: '', // 当前点击的节点ID
             topId: '', // 最上层节点ID
-            nodeLabel: '',
             defaultProps: {
                 children: "children",
                 label: "label"
@@ -65,7 +100,41 @@ export default {
             searchKeyword: '', // 搜索关键词
             isAllExpanded: false, // 控制全部展开/折叠状态
             isShowingWarning: false, // 控制未展开提示的显示频率
-            isAddingNode: false // 控制是否允许创建新节点（避免重复创建）
+
+            // 新增Dialog相关数据
+            dialogVisible: false, // Dialog显示状态
+            formType: 'add', // 表单类型：add-新增，edit-编辑
+            formData: {
+                name: '', // 分类名称
+                description: '', // 分类描述
+                tags: [], // 特征标签列表
+                inputVisible: false, // 标签输入框显示状态
+                inputValue: '', // 标签输入框值
+                parentId: '', // 父节点ID（新增时使用）
+                id: '' // 分类ID（编辑时使用）
+            },
+            // 表单校验规则
+            formRules: {
+                name: [
+                    { required: true, message: '请输入分类名称', trigger: 'blur' },
+                    { max: 15, message: '名称长度不能超过15个字符', trigger: 'blur' }
+                ],
+                description: [
+                    { max: 255, message: '描述长度不能超过255个字符', trigger: 'blur' }
+                ],
+                tags: [
+                    {
+                        validator: (rule, value, callback) => {
+                            if (value.length > 40) {
+                                callback(new Error('特征标签数量不能超过40个'));
+                            } else {
+                                callback();
+                            }
+                        },
+                        trigger: 'change'
+                    }
+                ]
+            }
         };
     },
     created() {
@@ -110,8 +179,6 @@ export default {
             }
             return null;
         },
-
-
         getTreeData(id) {
             this.treeLoading = true;
             let data = {
@@ -121,37 +188,33 @@ export default {
             treeListI(data).then((resp) => {
                 this.categoryList = resp.data;
                 this.yuanCategoryList = JSON.parse(JSON.stringify(resp.data));
-
                 if (this.categoryList.length > 0) {
                     let tempList = JSON.parse(JSON.stringify(this.categoryList));
                     for (let item of tempList) {
+                        // 假设接口返回的标签字段为tagList，若字段名不同需修改
+                        item.tags = item.tagList || [];
+                        item.description = item.description || '';
                         item.label = item.categoryName;
                     }
                     this.categoryList = this.handleTree(tempList, "id");
-                    console.log('this.categoryList', this.categoryList);
                     this.filteredCategoryList = [...this.categoryList]; // 初始化过滤列表
                 }
-
                 this.treeLoading = false;
             }).catch(() => {
                 this.treeLoading = false;
             });
         },
-
         handleTree(data, id = 'id', parentId = 'parentId', children = 'children') {
             const config = {
                 id: id,
                 parentId: parentId,
                 childrenList: children
             };
-
             const nodeIds = {};
             const tree = [];
-
             for (const node of data) {
                 nodeIds[node[config.id]] = node;
             }
-
             for (const node of data) {
                 const parent = nodeIds[node[config.parentId]];
                 if (parent) {
@@ -163,21 +226,19 @@ export default {
             }
             return tree;
         },
-
         handleNodeClick(data) {
-            if (!data.addEdit) {
-                this.currentNodeId = data.id;
-            }
+            this.currentNodeId = data.id;
         },
 
-        append(data, parentNode) {
-            // 检查是否已有正在编辑的节点，有则直接返回
-            if (this.isAddingNode) {
-                return;
-            }
-
-            if (!parentNode.expanded) {
-                // 限制未展开提示频率
+        // ---------------------- 新增/编辑Dialog相关方法 ----------------------
+        /**
+         * 打开新增/编辑Dialog
+         * @param {Object} data - 节点数据
+         * @param {String} type - 表单类型：add/edit
+         */
+        openAddEditDialog(data, type) {
+            // 新增时校验节点是否展开
+            if (type === 'add' && !this.$refs.tree.getNode(data.id).expanded) {
                 if (!this.isShowingWarning) {
                     this.$message({
                         type: 'warning',
@@ -191,185 +252,180 @@ export default {
                 return;
             }
 
-            // 检查当前节点下是否已有未完成的新增节点
-            if (data.children && data.children.some(item => item.addEdit)) {
-                return;
-            }
-
-            // 获取顶层节点id并赋值给topId
+            // 重置表单
+            this.$refs.categoryForm && this.$refs.categoryForm.resetFields();
+            this.formType = type;
+            this.formData.parentId = data.id;
             this.topId = this.findTopNodeId(data);
 
-            const newChild = {
-                id: '',
-                label: '',
-                children: [],
-                addEdit: true,
-                parentId: data.id,
-                nodeLayerIndex: data.nodeLayerIndex ? data.nodeLayerIndex + 1 : 1
-            };
-
-            if (!data.children) {
-                this.$set(data, 'children', []);
+            if (type === 'add') {
+                // 新增初始化
+                this.formData = {
+                    name: '',
+                    description: '',
+                    tags: [],
+                    inputVisible: false,
+                    inputValue: '',
+                    parentId: data.id,
+                    id: ''
+                };
+                this.dialogVisible = true;
+            } else {
+                // 编辑回显数据（假设接口返回字段：categoryName-名称，description-描述，tagList-标签）
+                this.formData = {
+                    name: data.categoryName || '',
+                    description: data.description || '',
+                    tags: [...(data.tagList || [])],
+                    inputVisible: false,
+                    inputValue: '',
+                    parentId: data.parentId,
+                    id: data.id
+                };
+                this.dialogVisible = true;
             }
 
-            data.children.push(newChild);
-            this.isAddingNode = true; // 标记为正在添加节点
-
+            // 确保Dialog渲染后再聚焦（如需）
             this.$nextTick(() => {
-                let addNodeInput = document.getElementById('addNode');
-                if (addNodeInput) {
-                    addNodeInput.focus();
-                }
+                this.$refs.categoryForm && this.$refs.categoryForm.$el.querySelector('input')?.focus();
             });
         },
 
-        async remove(node, data) {
-            this.$confirm(`确定删除当前节点及其下所有子节点吗？`, '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-            }).then(async () => {
+        /**
+         * 关闭Dialog前重置状态
+         */
+        handleDialogClose() {
+            this.dialogVisible = false;
+            setTimeout(() => {
+                this.$refs.categoryForm && this.$refs.categoryForm.resetFields();
+            }, 300);
+        },
+
+        // ---------------------- 特征标签相关方法 ----------------------
+        /**
+         * 显示标签输入框
+         */
+        handleInputShow() {
+            this.formData.inputVisible = true;
+            this.$nextTick(() => {
+                this.$refs.tagInput.focus();
+            });
+        },
+
+        /**
+         * 标签输入框失焦处理
+         */
+        handleInputBlur() {
+            if (this.formData.inputValue.trim()) {
+                this.handleInputConfirm();
+            } else {
+                this.formData.inputVisible = false;
+            }
+        },
+
+        /**
+         * 标签输入框确认（回车）
+         */
+        handleInputConfirm() {
+            const inputValue = this.formData.inputValue.trim();
+            if (inputValue && !this.formData.tags.includes(inputValue)) {
+                // 校验标签数量
+                if (this.formData.tags.length >= 40) {
+                    this.$message.warning('特征标签数量不能超过40个');
+                    return;
+                }
+                this.formData.tags.push(inputValue);
+            }
+            this.formData.inputValue = '';
+            this.formData.inputVisible = false;
+        },
+
+        /**
+         * 删除标签
+         * @param {Number} index - 标签索引
+         */
+        handleTagClose(index) {
+            this.formData.tags.splice(index, 1);
+        },
+
+        // ---------------------- 表单提交相关方法 ----------------------
+        /**
+         * 提交新增/编辑表单
+         */
+        async submitAddEditForm() {
+            // 表单校验
+            this.$refs.categoryForm.validate(async (isValid) => {
+                if (!isValid) return;
+
                 this.loading = true;
                 try {
-                    await deleteCategory({ id: data.id });
+                    // 构造接口参数（根据实际接口字段调整）
+                    const params = {
+                        categoryName: this.formData.name,
+                        description: this.formData.description,
+                        tagList: this.formData.tags,
+                        parentId: this.formData.parentId,
+                        topId: this.topId
+                    };
 
-                    const parent = node.parent;
-                    const children = parent.data.children || parent.data;
-                    const index = children.findIndex(d => d.id === data.id);
-                    children.splice(index, 1);
+                    if (this.formType === 'edit') {
+                        // 编辑：添加ID
+                        params.id = this.formData.id;
+                        await updateCategory(params);
+                        this.$message.success('更新成功');
+                    } else {
+                        // 新增
+                        await addCategory(params);
+                        this.$message.success('添加成功');
+                    }
 
-                    this.$message.success('删除成功');
+                    // 关闭Dialog并刷新树
+                    this.dialogVisible = false;
                     this.getTreeData(this.$route.query.id);
                 } catch (error) {
-                    this.$message.error('删除失败：' + (error.message || '未知错误'));
+                    this.$message.error('操作失败：' + (error.message || '未知错误'));
                 } finally {
                     this.loading = false;
                 }
             });
         },
 
-        editNode(data) {
-            // 获取顶层节点id并赋值给topId
-            this.topId = this.findTopNodeId(data);
-
-            this.nodeLabel = data.label || '';
-            this.$set(data, 'addEdit', true);
-            this.$nextTick(() => {
-                let addNodeInput = document.getElementById('addNode');
-                if (addNodeInput) {
-                    addNodeInput.focus();
-                }
-            });
-        },
-
-        async addEditNodeFn(node, data) {
-            if (!this.nodeLabel && data.addEdit) {
-                this.$message({
-                    type: 'warning',
-                    message: '节点名称不能为空',
-                });
-                if (!data.id) {
-                    const parent = node.parent;
-                    const children = parent.data.children || parent.data;
-                    const index = children.findIndex(d => d === data);
-                    children.splice(index, 1);
-                }
-                // 重置isAddingNode状态
-                setTimeout(() => {
-                    this.isAddingNode = false;
-                }, 3000);
-                return;
-            }
-
-            this.loading = true;
-            try {
-                this.$set(data, 'addEdit', false);
-                data.label = this.nodeLabel;
-                data.categoryName = this.nodeLabel;
-
-                this.nodeLabel = '';
-                const params = {
-                    categoryName: data.label,
-                    parentId: data.parentId,
-                    topId: this.topId
-                };
-
-                if (data.id) {
-                    params.id = data.id;
-                    await updateCategory(params);
-                    this.$message.success('更新成功');
-                } else {
-                    await addCategory(params);
-                    this.$message.success('添加成功');
-                }
-
-                this.getTreeData(this.$route.query.id);
-            } catch (error) {
-                this.$message.error('操作失败：' + (error.message || '未知错误'));
-            } finally {
-                this.loading = false;
-            }
-        },
-
-        // 新增搜索处理方法
+        // ---------------------- 原有方法保持不变 ----------------------
         handleSearch() {
             if (!this.searchKeyword.trim()) {
-                // 如果搜索关键词为空，显示所有节点
                 this.filteredCategoryList = [...this.categoryList];
                 return;
             }
-
-            // 深拷贝原始列表用于过滤操作，使用过滤函数获取结果
             const filtered = this.filterNodes(JSON.parse(JSON.stringify(this.categoryList)), this.searchKeyword.trim());
             this.filteredCategoryList = filtered;
         },
-
-        // 递归过滤节点
         filterNodes(nodes, keyword) {
             return nodes.filter(node => {
-                // 先判断当前节点是否匹配
                 const isNodeMatch = node.label && node.label.includes(keyword);
-
-                // 如果当前节点匹配，直接清空子节点并保留当前节点
                 if (isNodeMatch) {
-                    // 清空子节点，避免展示下级
-                    // node.children = [];
                     return true;
                 }
-
-                // 当前节点不匹配时，继续过滤子节点
                 if (node.children && node.children.length) {
                     node.children = this.filterNodes(node.children, keyword);
                 }
-
-                // 只有子节点有匹配项时才保留当前节点（用于展示路径）
                 const hasMatchedChildren = node.children && node.children.length > 0;
                 return hasMatchedChildren;
             });
         },
-
-        // 新增一键展开/折叠方法
         toggleExpandAll() {
             this.isAllExpanded = !this.isAllExpanded;
-            // 递归设置所有节点的展开状态
             this.setAllNodesExpanded(this.filteredCategoryList, this.isAllExpanded);
         },
-        // 递归设置节点展开状态
         setAllNodesExpanded(nodes, expanded) {
             nodes.forEach(node => {
-                // 通过节点的 $el 找到对应的树节点实例并设置展开状态
                 const treeNode = this.$refs.tree.getNode(node.id);
                 if (treeNode) {
                     treeNode.expanded = expanded;
                 }
-                // 递归处理子节点
                 if (node.children && node.children.length) {
                     this.setAllNodesExpanded(node.children, expanded);
                 }
             });
         },
-
-        // 获取所有节点ID用于全展开
         getAllNodeIds() {
             const ids = [];
             const collectIds = (nodes) => {
@@ -384,11 +440,32 @@ export default {
             };
             collectIds(this.categoryList);
             return ids;
+        },
+        async remove(node, data) {
+            this.$confirm(`确定删除当前节点及其下所有子节点吗？`, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(async () => {
+                this.loading = true;
+                try {
+                    await deleteCategory({ id: data.id });
+                    const parent = node.parent;
+                    const children = parent.data.children || parent.data;
+                    const index = children.findIndex(d => d.id === data.id);
+                    children.splice(index, 1);
+                    this.$message.success('删除成功');
+                    this.getTreeData(this.$route.query.id);
+                } catch (error) {
+                    this.$message.error('删除失败：' + (error.message || '未知错误'));
+                } finally {
+                    this.loading = false;
+                }
+            });
         }
     }
 };
 </script>
-
 <style scoped>
 /* 新增样式 */
 .tree-controls {
@@ -403,10 +480,25 @@ export default {
     width: 240px;
 }
 
-/* .expand-btn {
-    color: #26244ce0 !important;
-    padding: 0 12px;
-} */
+/* Dialog表单样式 */
+.category-form {
+    margin-bottom: 0;
+}
+
+.tag-count-tip {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #666;
+}
+
+.el-tag {
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+.dialog-footer {
+    text-align: right;
+}
 
 /* 原有样式保持不变 */
 .page-title {
@@ -488,22 +580,6 @@ export default {
     color: #1a1938 !important;
 }
 
-.addNode {
-    input {
-        height: 28px;
-        line-height: 28px;
-        width: 180px;
-        border-radius: 4px;
-        border-color: #dcdfe6;
-        transition: border-color 0.2s;
-    }
-
-    input:focus {
-        border-color: #26244ce0;
-        box-shadow: 0 0 0 2px rgba(38, 36, 76, 0.1);
-    }
-}
-
 ::v-deep .el-tree-node__content {
     height: 36px;
     align-items: center;
@@ -517,5 +593,20 @@ export default {
     background-color: #f0f0f5;
     color: #26244ce0;
     font-weight: 500;
+}
+
+.edit-menu-dialog /deep/.el-dialog__body {
+    padding: 30px;
+}
+
+.edit-menu-dialog /deep/.el-dialog__title {
+    font-weight: bold;
+}
+
+.edit-menu-dialog /deep/.el-dialog__header {
+    border-bottom: 1px solid #e6e6e6;
+}
+.edit-menu-dialog /deep/.el-dialog{
+  border-radius: 10px;
 }
 </style>
