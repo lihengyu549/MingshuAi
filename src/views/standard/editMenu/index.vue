@@ -271,7 +271,6 @@ export default {
                 };
                 this.dialogVisible = true;
             } else {
-                console.log('编辑回显数据', data);
                 // 编辑回显数据（假设接口返回字段：categoryName-名称，categoryDescribe-描述，coreTags-标签）
                 this.formData = {
                     name: data.categoryName || '',

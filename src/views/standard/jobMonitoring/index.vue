@@ -62,8 +62,8 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="直属父类" prop="base_parent">
-            <el-input v-model="queryParams.base_parent" @input="inputSearch" placeholder="请输入父类名称" clearable
+          <el-form-item label="直属父类" prop="baseParent">
+            <el-input v-model="queryParams.baseParent" @input="inputSearch" placeholder="请输入父类名称" clearable
               @keyup.enter.native="handleQuery" />
           </el-form-item>
         </el-form>
@@ -118,7 +118,7 @@
           </el-table-column>
           <el-table-column label="来源" align="center" prop="dataSource">
           </el-table-column>
-          <el-table-column label="直属父类" align="center" prop="base_parent" show-overflow-tooltip />
+          <el-table-column label="直属父类" align="center" prop="baseParent" show-overflow-tooltip />
           <el-table-column label="操作" align="center" width="180">
             <template slot-scope="scope">
               <el-button type="text" size="medium"
@@ -487,7 +487,7 @@ export default {
         name: '',//子类名称
         dataSourceId: '',//来源
         levelId: [],//安全级别，
-        base_parent: '',//直属父类
+        baseParent: '',//直属父类
         dataSource: '',
       },
       dataSource: '',
