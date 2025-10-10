@@ -50,14 +50,14 @@
                 </el-form-item>
 
                 <!-- 描述输入框 -->
-                <el-form-item label="描述" prop="description">
-                    <el-input v-model="formData.description" placeholder="请输入分类描述（可选）" maxlength="255" show-word-limit
-                        type="textarea" rows="3" size="small"></el-input>
+                <el-form-item label="描述" prop="categoryDescribe">
+                    <el-input v-model="formData.categoryDescribe" placeholder="请输入分类描述（可选）" maxlength="255"
+                        show-word-limit type="textarea" rows="3" size="small"></el-input>
                 </el-form-item>
 
                 <!-- 特征标签组件 -->
-                <el-form-item label="特征标签" prop="tags">
-                    <el-tag v-for="(tag, index) in formData.tags" :key="index" closable :disable-transitions="false"
+                <el-form-item label="特征标签" prop="coreTags">
+                    <el-tag v-for="(tag, index) in formData.coreTags" :key="index" closable :disable-transitions="false"
                         @close="handleTagClose(index)">
                         {{ tag }}
                     </el-tag>
@@ -66,8 +66,8 @@
                     <el-button v-else size="small" icon="el-icon-plus" @click="handleInputShow" type="text">
                         新增
                     </el-button>
-                    <div class="tag-count-tip" v-if="formData.tags.length > 0">
-                        已选择 {{ formData.tags.length }}/40 个标签
+                    <div class="tag-count-tip" v-if="formData.coreTags.length > 0">
+                        已选择 {{ formData.coreTags.length }}/40 个标签
                     </div>
                 </el-form-item>
             </el-form>
@@ -106,8 +106,8 @@ export default {
             formType: 'add', // 表单类型：add-新增，edit-编辑
             formData: {
                 name: '', // 分类名称
-                description: '', // 分类描述
-                tags: [], // 特征标签列表
+                categoryDescribe: '', // 分类描述
+                coreTags: [], // 特征标签列表
                 inputVisible: false, // 标签输入框显示状态
                 inputValue: '', // 标签输入框值
                 parentId: '', // 父节点ID（新增时使用）
@@ -119,10 +119,10 @@ export default {
                     { required: true, message: '请输入分类名称', trigger: 'blur' },
                     { max: 15, message: '名称长度不能超过15个字符', trigger: 'blur' }
                 ],
-                description: [
+                categoryDescribe: [
                     { max: 255, message: '描述长度不能超过255个字符', trigger: 'blur' }
                 ],
-                tags: [
+                coreTags: [
                     {
                         validator: (rule, value, callback) => {
                             if (value.length > 40) {
@@ -191,9 +191,9 @@ export default {
                 if (this.categoryList.length > 0) {
                     let tempList = JSON.parse(JSON.stringify(this.categoryList));
                     for (let item of tempList) {
-                        // 假设接口返回的标签字段为tagList，若字段名不同需修改
-                        item.tags = item.tagList || [];
-                        item.description = item.description || '';
+                        // 假设接口返回的标签字段为coreTags，若字段名不同需修改
+                        item.coreTags = item.coreTags || [];
+                        item.categoryDescribe = item.categoryDescribe || '';
                         item.label = item.categoryName;
                     }
                     this.categoryList = this.handleTree(tempList, "id");
@@ -262,8 +262,8 @@ export default {
                 // 新增初始化
                 this.formData = {
                     name: '',
-                    description: '',
-                    tags: [],
+                    categoryDescribe: '',
+                    coreTags: [],
                     inputVisible: false,
                     inputValue: '',
                     parentId: data.id,
@@ -271,11 +271,12 @@ export default {
                 };
                 this.dialogVisible = true;
             } else {
-                // 编辑回显数据（假设接口返回字段：categoryName-名称，description-描述，tagList-标签）
+                console.log('编辑回显数据', data);
+                // 编辑回显数据（假设接口返回字段：categoryName-名称，categoryDescribe-描述，coreTags-标签）
                 this.formData = {
                     name: data.categoryName || '',
-                    description: data.description || '',
-                    tags: [...(data.tagList || [])],
+                    categoryDescribe: data.categoryDescribe || '',
+                    coreTags: data.coreTags ? data.coreTags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
                     inputVisible: false,
                     inputValue: '',
                     parentId: data.parentId,
@@ -327,13 +328,13 @@ export default {
          */
         handleInputConfirm() {
             const inputValue = this.formData.inputValue.trim();
-            if (inputValue && !this.formData.tags.includes(inputValue)) {
+            if (inputValue && !this.formData.coreTags.includes(inputValue)) {
                 // 校验标签数量
-                if (this.formData.tags.length >= 40) {
+                if (this.formData.coreTags.length >= 40) {
                     this.$message.warning('特征标签数量不能超过40个');
                     return;
                 }
-                this.formData.tags.push(inputValue);
+                this.formData.coreTags.push(inputValue);
             }
             this.formData.inputValue = '';
             this.formData.inputVisible = false;
@@ -344,7 +345,7 @@ export default {
          * @param {Number} index - 标签索引
          */
         handleTagClose(index) {
-            this.formData.tags.splice(index, 1);
+            this.formData.coreTags.splice(index, 1);
         },
 
         // ---------------------- 表单提交相关方法 ----------------------
@@ -361,8 +362,8 @@ export default {
                     // 构造接口参数（根据实际接口字段调整）
                     const params = {
                         categoryName: this.formData.name,
-                        description: this.formData.description,
-                        tagList: this.formData.tags,
+                        categoryDescribe: this.formData.categoryDescribe,
+                        coreTags: this.formData.coreTags.join(','),
                         parentId: this.formData.parentId,
                         topId: this.topId
                     };
@@ -606,7 +607,8 @@ export default {
 .edit-menu-dialog /deep/.el-dialog__header {
     border-bottom: 1px solid #e6e6e6;
 }
-.edit-menu-dialog /deep/.el-dialog{
-  border-radius: 10px;
+
+.edit-menu-dialog /deep/.el-dialog {
+    border-radius: 10px;
 }
 </style>
