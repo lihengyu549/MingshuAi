@@ -324,7 +324,7 @@ export default {
     // 样例下载
     downloadFile() {
       const link = document.createElement('a');
-      link.href = '/file.xlsx'; // 替换为你的文件路径
+      link.href = '/fileNew.xlsx'; // 替换为你的文件路径
       link.download = '分类分级框架模板.xlsx'; // 设置下载后的文件名
       document.body.appendChild(link);
       link.click();

@@ -11,7 +11,7 @@ export function getStandardByList(data) {
 // 导入分类分级标准数据
 export function categoryImport(data) {
   return request({
-    url: '/system/category/import',
+    url: '/system/category/importNew',
     method: 'post',
     headers: {
       "Content-Type":"multipart/form-data; ",
