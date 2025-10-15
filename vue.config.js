@@ -28,6 +28,19 @@ module.exports = {
 
   // 如果你不需要生产环境的 source map，可以将其设置为 false 以加速生产环境构建。
   productionSourceMap: false,
+  
+  // 将transpileDependencies配置修改为包含更多相关依赖
+  transpileDependencies: [
+  // 包含html2pdf.js及其所有嵌套依赖
+  /[\\/]node_modules[\\/]html2pdf\.js[\\/]/,
+  // 包含jspdf及其所有嵌套依赖
+  /[\\/]node_modules[\\/]jspdf[\\/]/,
+  // 包含fast-png及其所有嵌套依赖
+  /[\\/]node_modules[\\/]fast-png[\\/]/,
+  // 特别包含iobuffer，因为错误直接指向它
+  /[\\/]node_modules[\\/]iobuffer[\\/]/
+],
+  
   // webpack-dev-server 相关配置
   devServer: {
     host: '0.0.0.0',
@@ -35,14 +48,15 @@ module.exports = {
     port: port,
     open: true,
     proxy: {
-      "/dev-api": {
+      "/dev-api/prod-api": {
         // target: `http://dast123123.zp.jilj.top:25378`,
         // target: `http://192.168.2.196/`,
         // target: `https://192.168.2.174/`,
-        target: `http://117.134.9.113:8008/`,
+        target: `http://192.168.7.84:8080/`,
+        // target: `http://117.134.9.113:8008/`,
         // target: `http://sihx.hlg.d2w.cc:30977/`,
         changeOrigin: true,
-        pathRewrite:{'^/dev-api':''}
+        pathRewrite: { '^/dev-api/prod-api': '' }
       },
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       // [process.env.VUE_APP_BASE_API]: {
@@ -88,10 +102,9 @@ module.exports = {
     ],
   },
   chainWebpack(config) {
+    // 移除chainWebpack内部的transpileDependencies配置
     config.plugins.delete('preload') // TODO: need test
     config.plugins.delete('prefetch') // TODO: need test
-
-    // set svg-sprite-loader
     config.module
       .rule('svg')
       .exclude.add(resolve('src/assets/icons'))
@@ -115,7 +128,7 @@ module.exports = {
             .plugin('ScriptExtHtmlWebpackPlugin')
             .after('html')
             .use('script-ext-html-webpack-plugin', [{
-            // `runtime` must same as runtimeChunk name. default is `runtime`
+              // `runtime` must same as runtimeChunk name. default is `runtime`
               inline: /runtime\..*\.js$/
             }])
             .end()
@@ -145,8 +158,8 @@ module.exports = {
             })
           config.optimization.runtimeChunk('single'),
           {
-             from: path.resolve(__dirname, './public/robots.txt'), //防爬虫文件
-             to: './' //到根目录下
+            from: path.resolve(__dirname, './public/robots.txt'), //防爬虫文件
+            to: './' //到根目录下
           }
         }
       )

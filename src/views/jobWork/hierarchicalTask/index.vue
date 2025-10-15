@@ -332,12 +332,12 @@
         <el-button @click="closeFn">取消</el-button>
       </div>
     </Drawer>
-    <Drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
+    <!-- <Drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
       size="100%" :before-close="handleClose">
       <template slot="body">
         <Result :treeOptions="treeOptions" :drawerData="drawerData" />
       </template>
-    </Drawer>
+    </Drawer> -->
   </div>
 </template>
 
@@ -886,6 +886,10 @@ export default {
       //   this.$message({ message: '当前状态为运行中，无法查看', type: 'warning' })
       //   return
       // }
+      this.$router.push({
+        path: '/viewResults',
+        query: { drawerData: row } 
+      })
       if (row.publishStatus == 0) {
         this.drawerData = row
         this.drawerShow = true
@@ -1253,6 +1257,7 @@ input[aria-hidden=true] {
   display: none;
   /* 完全隐藏原生单选框 */
 }
+
 .classification-radio>>>.el-radio__label {
   padding: 0;
 }
