@@ -92,6 +92,7 @@
                 <el-button @click="handleNext('0')">上一个</el-button>
                 <el-button @click="handleNext('1')">下一个</el-button>
                 <el-button type="primary" @click="handleManualConfirm">人工确认</el-button>
+                <el-button type="primary" @click="handleReturn">返回</el-button>
             </div>
 
             <el-card class="box-card" shadow="never" style="margin-top: 20px;">
@@ -440,6 +441,16 @@ export default {
                 });
             });
             
+        },
+        handleReturn() {
+            // 返回点击事件
+            this.$router.push({
+                path: '/viewResults',
+                query: {
+                    queryParams: this.$route.query.queryParams || {},
+                    drawerData: this.$route.query.drawerData || {}
+                }
+            });
         },
         handleModifyResult() {
             // 修改结果点击事件

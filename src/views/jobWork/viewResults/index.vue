@@ -556,25 +556,37 @@ export default {
   },
 
   created() {
-    console.log('drawerData', this.$route.query);
-    if (this.$route.query.drawerData && this.$route.query.drawerData.targetDatabase) {
-      const cleanedDatabase = this.$route.query.drawerData.targetDatabase.replace(/,$/, '');
-      this.surfaceList = cleanedDatabase.split(',')
+    // 缓存路由参数中的drawerData，减少重复访问
+    const drawerData = this.$route.query?.drawerData;
+    const queryParams = this.$route.query?.queryParams;
+    
+    if (drawerData) {
+      // 处理数据库列表
+      if (drawerData.targetDatabase && typeof drawerData.targetDatabase === 'string') {
+        const cleanedDatabase = drawerData.targetDatabase.replace(/,$/, '');
+        this.surfaceList = cleanedDatabase ? cleanedDatabase.split(',') : [];
+      }
+      
+      // 存储projectId到sessionStorage
+      if (drawerData.projectId) {
+        sessionStorage.setItem('projectId', String(drawerData.projectId));
+      }
+      
+      // 存储databaseId到sessionStorage
+      if (drawerData.id) {
+        sessionStorage.setItem('databaseId', String(drawerData.id));
+      }
     }
-    if (this.$route.query.drawerData.projectId) {
-      sessionStorage.setItem('projectId', this.$route.query.drawerData.projectId);
+    if (queryParams) {
+      this.queryParams = queryParams
     }
-    if (this.$route.query.drawerData.id) {
-      sessionStorage.setItem('databaseId', this.$route.query.drawerData.id);
-    }
-    this.getProtectCategory()
-    this.getPiiList()
-    this.checkedColumn = this.setList
-    this.checkAll = true
-    // this.queryParams.selectProjectName = "全部"
-    // this.queryParams.projectId = 0
+    
+    this.getProtectCategory();
+    this.getPiiList();
+    this.checkedColumn = this.setList;
+    this.checkAll = true;
     this.getList();
-    this.getListTableByProject()
+    this.getListTableByProject();
   },
   mounted() {
 
@@ -898,7 +910,7 @@ export default {
       console.log('row', row);
       this.$router.push({
         path: '/fixResults',
-        query: { row: row, categoryList: this.categoryList, queryParams: this.queryParams }
+        query: { row: row, categoryList: this.categoryList, queryParams: this.queryParams , drawerData: this.$route.query.drawerData}
       })
       this.addNodeName = ''
       this.piiNodeName = ''
