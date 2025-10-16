@@ -1012,6 +1012,7 @@ export default {
       })
     },
     scanContentEdit(row) {
+      console.log('row', row);
       if (row.isAddTasks == 1) {
         this.editIsFlag = true
       } else {
@@ -1039,6 +1040,9 @@ export default {
         this.title = "编辑数据库";
         this.open = true
         this.scanContentLoading = true
+        this.form.scheduleInterval = row.databaseProxysTimer.scheduleInterval
+        this.form.scheduleTime = row.databaseProxysTimer.scheduleTime
+        this.form.scheduleType = row.databaseProxysTimer.scheduleType
         getDatabaseAndTablesById(row.id).then(res => {
           this.scanContentLoading = false
           if (res.data && res.data.options && res.data.options.length) {
