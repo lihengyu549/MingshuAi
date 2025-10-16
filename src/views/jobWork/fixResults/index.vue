@@ -89,16 +89,16 @@
 
         <div class="right-section">
             <div class="top-buttons">
+                <el-button plain @click="handleReturn">返回</el-button>
                 <el-button @click="handleNext('0')">上一个</el-button>
                 <el-button @click="handleNext('1')">下一个</el-button>
-                <el-button type="primary" @click="handleManualConfirm">人工确认</el-button>
-                <el-button type="primary" @click="handleReturn">返回</el-button>
+                <el-button type="primary" plain @click="handleManualConfirm">人工确认</el-button>
             </div>
 
             <el-card class="box-card" shadow="never" style="margin-top: 20px;">
                 <Title title="人工审核" iconClass="seal"></Title>
                 <div class="audit-status">
-                    <span>待审核</span>
+                    <span>{{ row.confirm == '1' ? '已确认' : '未确认' }}</span>
                     <el-badge is-dot></el-badge>
                 </div>
                 <div class="info-container" style="margin-top: 20px;">
