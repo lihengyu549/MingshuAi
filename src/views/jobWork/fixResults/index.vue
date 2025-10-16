@@ -3,41 +3,37 @@
         <div class="left-section">
             <h3>{{ row.fieldName }}</h3>
             <el-card class="box-card" shadow="never">
-                <div slot="header" class="clearfix">
-                    <h4>基本信息</h4>
-                </div>
                 <el-form :model="row" label-width="120px">
                     <el-form-item label="字段注释：">
-                        <el-input v-model="row.fieldRemark" disabled></el-input>
+                        {{ row.fieldRemark }}
                     </el-form-item>
                     <el-form-item label="AI字段注释：">
-                        <el-input v-model="row.craftRemark" disabled></el-input>
+                        {{ row.craftRemark }}
                     </el-form-item>
-                    <el-form-item label="所属表名：">
-                        <el-input v-model="row.tableName" disabled></el-input>
+                    <el-form-item label="数据路径：">
+                        {{ row.businessName+ ' / ' + row.databaseName + ' / ' + row.tableName }}<br>
+                        {{ ' 表注释：' + row.tableRemark }}
                     </el-form-item>
                     <el-form-item label="AI表注释：">
-                        <el-input v-model="row.craftTableRemark" disabled></el-input>
+                        {{ row.craftTableRemark }}
                     </el-form-item>
                     <el-form-item label="所属库：">
-                        <el-input v-model="row.databaseName" disabled></el-input>
+                        {{ row.databaseName }}
                     </el-form-item>
                     <el-form-item label="样本抽样：">
                         <el-button type="text" @click="handleSampleView">查看</el-button>
                     </el-form-item>
                     <el-form-item label="属性类型：">
-                        <el-input v-model="row.attributeType" disabled></el-input>
+                        {{ row.attributeType }}
                     </el-form-item>
                     <el-form-item label="核心标签：">
-                        <el-tag v-for="tag in JSON.parse(row.coreTags)" :key="tag">{{ tag || '无' }}</el-tag>
+                        <el-tag v-for="tag in JSON.parse(row.coreTags)" :key="tag" style="margin-right: 5px;">{{ tag || '无' }}</el-tag>
                     </el-form-item>
                 </el-form>
             </el-card>
 
             <el-card class="box-card" shadow="never" style="margin-top: 20px;">
-                <div slot="header" class="clearfix">
-                    <h4>推理过程</h4>
-                </div>
+                <Title title="推理过程"></Title>
                 <el-table :data="row.inferenceProcessList" border style="width: 100%">
                     <el-table-column prop="name" label="名称" width="120"></el-table-column>
                     <el-table-column prop="value" label="当前置信度："></el-table-column>
@@ -82,7 +78,7 @@
                         <el-tag type="warning">{{ row.securityLevelName }}</el-tag>
                     </el-form-item>
                     <el-form-item label="综合置信度：">
-                        <el-progress :percentage="row.confidenceScore"></el-progress>
+                        <el-progress :percentage="Number(row.confidenceScore) * 100"></el-progress>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" @click="handleModifyResult">修改结果</el-button>
@@ -100,7 +96,7 @@
                 </div>
             </el-card>
         </div>
-        <el-dialog title="结果修改" :visible.sync="dialogVisible" width="400px">
+        <el-dialog class="addMsg" title="结果修改" :visible.sync="dialogVisible" width="700px">
             <el-form :model="form" label-width="80px">
                 <el-form-item label="分类" required>
                     <el-input v-model="form.classification" placeholder="请输入分类"></el-input>
@@ -123,10 +119,10 @@
 
 <script>
 export default {
-     dicts: ['sys_risk_level'],
+    dicts: ['sys_risk_level'],
     data() {
         return {
-            dialogVisible: true,
+            dialogVisible: false,
             form: {
                 classification: '业务-合同-客户信息',
                 securityLevel: '3级'
@@ -167,7 +163,7 @@ export default {
         },
         handleModifyResult() {
             // 修改结果点击事件
-            console.log('修改结果');
+            this.dialogVisible = true;
         }
     }
 };
@@ -206,5 +202,51 @@ export default {
 .ai-suggestion {
     padding: 20px;
     text-align: center;
+}
+
+.el-progress {
+    line-height: 2.3;
+}
+
+
+.addMsg /deep/.el-dialog {
+    border-radius: 10px;
+}
+
+.addMsg /deep/.el-dialog__header {
+    border-bottom: 1px solid #e6e6e6;
+}
+
+.addMsg /deep/.el-dialog__title {
+    font-weight: bold;
+}
+
+.addMsg /deep/.el-form-item__content {
+    padding-right: 15px;
+}
+.addMsg /deep/.el-select--mediu {
+    width: 100%;
+}
+
+.addMsg /deep/.el-dialog__body {
+    padding: 30px;
+}
+
+.addMsg /deep/ .el-dialog:not(.is-fullscreen) {
+    margin-top: 10% !important;
+}
+
+.addMsg /deep/ .el-dialog__body {
+    padding-bottom: 0;
+
+}
+
+.addMsg /deep/ .el-dialog__footer {
+    padding-bottom: 32px;
+
+}
+
+.addMsg /deep/ .el-form-item__label {
+    text-align: left;
 }
 </style>
