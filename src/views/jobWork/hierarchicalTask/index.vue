@@ -225,21 +225,18 @@
               </el-form-item>
             </el-col>
           </el-row> -->
-          <el-row>
+          <!-- <el-row>
             <el-col :span="12">
               <el-form-item>
-                <!-- 单选组容器：flex布局实现左右并列，无label -->
                 <el-radio-group v-model="form.classificationLogic" :disabled="!form.ifStartTask"
                   class="classification-radio-group" @change="handleClassificationChange">
-                  <!-- 左侧：侧重于整表语义（默认选中label="1"） -->
                   <el-radio label="1" class="classification-radio"
                     :class="{ 'radio-checked': form.classificationLogic === '1' }">
                     <div class="radio-content">
                       <span class="radio-main-text">侧重于整表语义
-                        <!-- 双圆环容器：外层圆环 + 内层实心圆 -->
                         <span class="checked-ring-container">
-                          <span class="outer-ring"></span> <!-- 外层细圆环 -->
-                          <span class="inner-dot"></span> <!-- 内层实心圆 -->
+                          <span class="outer-ring"></span> 
+                          <span class="inner-dot"></span> 
                         </span>
                       </span>
                       <div class="radio-desc">通过将整表进行AI分析,对所有字段进行打标</div>
@@ -249,10 +246,9 @@
                     :class="{ 'radio-checked': form.classificationLogic === '2' }">
                     <div class="radio-content">
                       <span class="radio-main-text">侧重于字段语义
-                        <!-- 双圆环容器：外层圆环 + 内层实心圆 -->
                         <span class="checked-ring-container">
-                          <span class="outer-ring"></span> <!-- 外层细圆环 -->
-                          <span class="inner-dot"></span> <!-- 内层实心圆 -->
+                          <span class="outer-ring"></span> 
+                          <span class="inner-dot"></span>
                         </span>
                       </span>
                       <div class="radio-desc">通过字段上下文对每个字段单独进行AI分析</div>
@@ -261,7 +257,7 @@
                 </el-radio-group>
               </el-form-item>
             </el-col>
-          </el-row>
+          </el-row> -->
           <el-row>
             <el-col :span="12">
               <el-form-item>
@@ -454,7 +450,7 @@ export default {
         classificationState: [],
         piiDetectionFlag: false,
         ifStartRuleMatching: false,
-        classificationLogic: '2',
+        classificationLogic: '3',
         ifStartDataNull: false,
         ifStartDataRepetition: false,
         dataRepetitionValue: '',
