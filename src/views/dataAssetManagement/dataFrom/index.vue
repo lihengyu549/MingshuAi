@@ -98,7 +98,8 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
-    <el-dialog class="addMsg" :title="title" :visible.sync="open" append-to-body :close-on-click-modal="false" width="700px">
+    <el-dialog class="addMsg" :title="title" :visible.sync="open" append-to-body :close-on-click-modal="false"
+      width="700px">
       <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent label-position="top">
         <el-row>
           <el-col :span="12">
@@ -169,6 +170,19 @@
             <el-tag style="position: absolute;top: 4px;left: 6px;">{{ form.tabelCheckedName ? form.tabelCheckedName :
               '点击选择扫描内容' }}</el-tag>
           </div>
+        </el-form-item>
+        <el-form-item label="周期" prop="scheduleType">
+          <el-select v-model="form.scheduleType" @change="scheduleTypeChange">
+            <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+          <el-select v-show="form.scheduleType == '2' || form.scheduleType == '3'" v-model="form.scheduleInterval">
+            <el-option v-for="item in weekList" :key="item" :label="item" :value="item">
+            </el-option>
+          </el-select>
+          <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
+            value-format='HH:mm' format="HH:mm" placeholder="任意时间点">
+          </el-time-picker>
         </el-form-item>
 
         <!-- <p>代理数据库信息</p>
@@ -297,6 +311,22 @@ export default {
           label: 'API'
         }
       ],
+      weekTimeList: [
+        {
+          value: '0',
+          label: '手动'
+        }, {
+          value: '1',
+          label: '每天'
+        }, {
+          value: '2',
+          label: '每周'
+        }, {
+          value: '3',
+          label: '每月'
+        }
+      ],
+      weekList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日',],
       databaseTypeList: [
         { name: "MYSQL", id: 0, value: "MYSQL", defaultPort: '3306' },
         { name: "SQL_SERVER", id: 1, value: "SQL_SERVER", defaultPort: '1433' },
@@ -373,6 +403,9 @@ export default {
         // targetUserName:'root',
         // targetUserPassword:'your_password',
         tables: {},
+        scheduleType: '',
+        scheduleInterval: '',
+        scheduleTime: '00:00',
       },
       connectionType: '1',
       titleExcel: '新增Excel文件',
@@ -421,6 +454,9 @@ export default {
           validator: this.tabelCheckedNameRules,
           trigger: 'blur'
         }],
+        scheduleType: [{ required: true, message: '请选择周期', trigger: 'blur' }],
+        scheduleInterval: [{ required: true, message: '请选择间隔', trigger: 'blur' }],
+        scheduleTime: [{ required: true, message: '请选择时间', trigger: 'blur' }],
         targetIp: [
           { required: true, message: "请输入数据库地址", trigger: "blur" },
           {
@@ -717,6 +753,9 @@ export default {
         //  protocolPort: null,
         projectId: null,
         // proxyStatus: "0"
+        scheduleType: '',
+        scheduleInterval: '',
+        scheduleTime: '00:00',
       };
       this.isServiesNameRequired = false
       this.resetForm("form");
@@ -837,6 +876,40 @@ export default {
       this.download('system/proxys/export', {
         ...this.queryParams
       }, `proxys_${new Date().getTime()}.xlsx`)
+    },
+    scheduleTypeChange(val) {
+      if (val == '3') {
+        // 获取当前月的天数
+        this.form.scheduleInterval = '1'
+        const daysInMonth = this.getDaysInCurrentMonth();
+        // 将天数转换为数组
+        this.weekList = this.createDaysArray(daysInMonth);
+      } else if (val == '2') {
+        this.form.scheduleInterval = '周一'
+        this.weekList = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      } else {
+        this.form.scheduleInterval = ''
+      }
+    },
+    getDaysInCurrentMonth() {
+      const now = new Date(); // 获取当前日期
+      const year = now.getFullYear(); // 当前年份
+      const month = now.getMonth(); // 当前月份（0-11，0表示1月）
+
+      // 创建下个月的第一天的日期对象
+      const firstDayNextMonth = new Date(year, month + 1, 1);
+      // 减去一天，得到当前月的最后一天
+      const lastDayCurrentMonth = new Date(firstDayNextMonth - 1);
+
+      // 返回当前月的天数
+      return lastDayCurrentMonth.getDate();
+    },
+    createDaysArray(days) {
+      const daysArray = [];
+      for (let i = 1; i <= days; i++) {
+        daysArray.push(i);
+      }
+      return daysArray;
     },
     deleteFn() {
       let dataS = this.$refs.tableRef.selection
