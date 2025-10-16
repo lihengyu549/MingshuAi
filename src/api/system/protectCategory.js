@@ -431,3 +431,12 @@ export function uploadEvidentiaryMaterialFile(params) {
     data: params,
   })
 }
+
+// 结果查看—上一个/下一个接口
+export function getProtectTableFieldById(data) {
+  return request({
+    url: `/system/protectTableField/selectLastOrNextById?pageNum=${data.pageNum}&pageSize=${data.pageSize}`,  
+    method: 'post',
+    data: data,
+  })
+}

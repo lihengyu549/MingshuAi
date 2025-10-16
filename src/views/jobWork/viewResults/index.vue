@@ -556,15 +556,15 @@ export default {
   },
 
   created() {
-    console.log('drawerData',this.$route.query);
+    console.log('drawerData', this.$route.query);
     if (this.$route.query.drawerData && this.$route.query.drawerData.targetDatabase) {
       const cleanedDatabase = this.$route.query.drawerData.targetDatabase.replace(/,$/, '');
       this.surfaceList = cleanedDatabase.split(',')
     }
-    if(this.$route.query.drawerData.projectId){
+    if (this.$route.query.drawerData.projectId) {
       sessionStorage.setItem('projectId', this.$route.query.drawerData.projectId);
     }
-    if(this.$route.query.drawerData.id){
+    if (this.$route.query.drawerData.id) {
       sessionStorage.setItem('databaseId', this.$route.query.drawerData.id);
     }
     this.getProtectCategory()
@@ -577,7 +577,7 @@ export default {
     this.getListTableByProject()
   },
   mounted() {
-    
+
   },
   methods: {
     handleSearch(val) {
@@ -895,9 +895,10 @@ export default {
       this.multiple = !selection.length
     },
     resultExdit(row) {
+      console.log('row', row);
       this.$router.push({
         path: '/fixResults',
-        query: { row: row } 
+        query: { row: row, categoryList: this.categoryList, queryParams: this.queryParams }
       })
       this.addNodeName = ''
       this.piiNodeName = ''
