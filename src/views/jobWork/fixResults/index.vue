@@ -2,7 +2,7 @@
     <div class="id-card-page" v-loading="loading">
         <div class="left-section">
             <h2>{{ row.id + ' ' + row.fieldName }}</h2>
-            <el-card class="box-card" shadow="never">
+            <el-card class="box-card" shadow="never" style="border: none;">
                 <div class="info-item">
                     <label class="info-label">字段注释：</label>
                     <div class="info-content">{{ row.fieldRemark }}</div>
@@ -47,43 +47,48 @@
                 </div>
             </el-card>
 
-            <el-card class="box-card" shadow="never" style="margin-top: 20px;">
-                <Title title="推理过程"></Title>
-                <el-table :data="row.inferenceProcessList" border style="width: 100%">
-                    <el-table-column prop="name" label="名称" width="120"></el-table-column>
-                    <el-table-column prop="value" label="当前置信度："></el-table-column>
-                    <el-table-column prop="text" label="推荐过程："></el-table-column>
-                </el-table>
+            <Title title="推理过程"></Title>
+            <el-card class="box-card" shadow="never" v-for="(item, index) in row.inferenceProcessList" :key="index"
+                style="margin-bottom: 20px;">
+                <template slot="header">
+                    <span class="header-name">{{ item.name }}</span>
+                    <span class="header-confidence">{{ '当前置信度：' + item.value * 100 + '%' }}</span>
+                </template>
+                <div class="info-item">
+                    <label class="info-label">推理过程：</label>
+                    <div class="info-content">{{ item.text }}</div>
+                </div>
+            </el-card>
 
-                <el-card class="box-card" shadow="never" style="margin-top: 20px;">
-                    <div slot="header" class="clearfix">
-                        <h4>最终定级：{{ row.securityLevel }} <el-tag size="small" type="primary" color="#ffc5e0"
-                                style="border-radius: 8px; float: inline-end; color: #dc478f;">就高原则</el-tag></h4>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">推理过程：</label>
-                        <div class="info-content">
-                            <template v-if="row.oldSecurityLevel || row.newSecurityLevel || row.piiLevel">
-                                分类级别为<el-tag size="small" type="primary" style="border-radius: 8px;">{{
-                                    row.oldSecurityLevel }}级</el-tag>，
-                                <template v-if="row.newSecurityLevel">
-                                    触发动态安全分级规则，分类级别调整为<el-tag size="small" type="success" style="border-radius: 8px;">{{
-                                        row.newSecurityLevel }}级</el-tag>
-                                </template>
-                                <template v-else>
-                                    未触发动态安全分级规则
-                                </template>。
-                                <template v-if="row.piiLevel">
-                                    个人信息识别结果为<el-tag size="small" type="info" style="border-radius: 8px;">{{
-                                        row.piiLevel }}级</el-tag>
-                                </template>
-                                <template v-else>
-                                    未开启个人信息识别
-                                </template>
+            <el-card class="box-card" shadow="never" style="margin-top: 20px;">
+                <template slot="header">
+                    <span class="header-name">最终定级：{{ row.securityLevel }}</span>
+                    <el-tag size="small" type="primary" color="#ffc5e0"
+                        style="border-radius: 8px; float: inline-end; color: #dc478f;">就高原则</el-tag>
+                </template>
+                <div class="info-item">
+                    <label class="info-label">推理过程：</label>
+                    <div class="info-content">
+                        <template v-if="row.oldSecurityLevel || row.newSecurityLevel || row.piiLevel">
+                            分类级别为<el-tag size="small" type="primary" style="border-radius: 8px;">{{
+                                row.oldSecurityLevel }}级</el-tag>，
+                            <template v-if="row.newSecurityLevel">
+                                触发动态安全分级规则，分类级别调整为<el-tag size="small" type="success" style="border-radius: 8px;">{{
+                                    row.newSecurityLevel }}级</el-tag>
                             </template>
-                        </div>
+                            <template v-else>
+                                未触发动态安全分级规则
+                            </template>。
+                            <template v-if="row.piiLevel">
+                                个人信息识别结果为<el-tag size="small" type="info" style="border-radius: 8px;">{{
+                                    row.piiLevel }}级</el-tag>
+                            </template>
+                            <template v-else>
+                                未开启个人信息识别
+                            </template>
+                        </template>
                     </div>
-                </el-card>
+                </div>
             </el-card>
         </div>
 
@@ -442,7 +447,7 @@ export default {
                     type: 'error'
                 });
             });
-            
+
         },
         handleReturn() {
             // 返回点击事件
@@ -503,17 +508,17 @@ export default {
 
 /* 信息项样式 */
 .info-item {
-    margin-bottom: 15px;
     display: flex;
     align-items: flex-start;
     justify-content: center;
+    align-items: center;
+    margin: 5px 0;
 }
 
 .info-label {
     width: 120px;
     font-weight: 500;
     text-align: left;
-
 }
 
 .info-content {
@@ -522,9 +527,9 @@ export default {
 
 .info-label,
 .info-content {
-    font-size: 14px;
+    font-size: 12px;
     line-height: 24px;
-    color: #303133;
+    color: #909399;
 }
 
 .addMsg /deep/.el-dialog {
@@ -572,5 +577,31 @@ export default {
 
 .addMsg /deep/ .el-select--medium {
     width: 100%;
+}
+
+.box-card {
+    border-radius: 5px;
+}
+
+.box-card /deep/ .el-card__header,
+.box-card /deep/ .el-card__body {
+    padding: 5px 10px;
+}
+
+.box-card /deep/ .el-card__header {
+    background-color: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.header-confidence {
+    font-size: 12px;
+    color: #909399;
 }
 </style>
