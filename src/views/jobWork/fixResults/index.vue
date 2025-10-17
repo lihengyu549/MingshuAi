@@ -1,7 +1,7 @@
 <template>
     <div class="id-card-page" v-loading="loading">
         <div class="left-section">
-            <h3>{{ row.fieldName }}</h3>
+            <h2>{{ row.id + ' ' + row.fieldName }}</h2>
             <el-card class="box-card" shadow="never">
                 <div class="info-item">
                     <label class="info-label">字段注释：</label>
@@ -395,6 +395,8 @@ export default {
                 if (res.code === 200 && res.data) {
                     // 更新数据
                     this.row = res.data;
+                    this.$route.query.queryParams.pageNum = res.data.pageNum;
+                    this.$route.query.queryParams.pageSize = res.data.pageSize;
                     this.loading = false;
                     // 安全地更新reasoningProcess
                     if (res.data.reasoningProcess !== undefined) {
