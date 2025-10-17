@@ -171,6 +171,10 @@
               '点击选择扫描内容' }}</el-tag>
           </div>
         </el-form-item>
+        <el-form-item>
+          <el-radio v-model="form.proceedOrOverwrite" label="0">全量覆盖</el-radio>
+          <el-radio v-model="form.proceedOrOverwrite" label="1">增量添加</el-radio>
+        </el-form-item>
         <el-form-item label="周期" prop="scheduleType">
           <el-select v-model="form.scheduleType" @change="scheduleTypeChange">
             <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
@@ -406,6 +410,7 @@ export default {
         scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '00:00',
+        proceedOrOverwrite: '0',
       },
       connectionType: '1',
       titleExcel: '新增Excel文件',
@@ -756,6 +761,7 @@ export default {
         scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '00:00',
+        proceedOrOverwrite: '0',
       };
       this.isServiesNameRequired = false
       this.resetForm("form");
@@ -1040,9 +1046,10 @@ export default {
         this.title = "编辑数据库";
         this.open = true
         this.scanContentLoading = true
-        this.form.scheduleInterval = row.databaseProxysTimer.scheduleInterval
-        this.form.scheduleTime = row.databaseProxysTimer.scheduleTime
-        this.form.scheduleType = row.databaseProxysTimer.scheduleType
+        this.form.scheduleInterval = row.databaseProxysTimer?.scheduleInterval || ''
+        this.form.scheduleTime = row.databaseProxysTimer?.scheduleTime || '00:00'
+        this.form.scheduleType = row.databaseProxysTimer?.scheduleType || '0'
+        this.form.proceedOrOverwrite = row.proceedOrOverwrite
         getDatabaseAndTablesById(row.id).then(res => {
           this.scanContentLoading = false
           if (res.data && res.data.options && res.data.options.length) {
