@@ -403,7 +403,7 @@ export default {
         // targetUserName:'root',
         // targetUserPassword:'your_password',
         tables: {},
-        scheduleType: '',
+        scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '00:00',
       },
@@ -753,7 +753,7 @@ export default {
         //  protocolPort: null,
         projectId: null,
         // proxyStatus: "0"
-        scheduleType: '',
+        scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '00:00',
       };
