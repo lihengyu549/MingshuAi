@@ -185,7 +185,7 @@
             </el-option>
           </el-select>
           <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
-            value-format='HH:mm' format="HH:mm" placeholder="任意时间点">
+            @input="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点">
           </el-time-picker>
         </el-form-item>
 
@@ -1016,6 +1016,12 @@ export default {
       }).catch(() => {
         // 用户取消操作，不做处理
       })
+    },
+    handleTimeChange(time) {
+      // 确保时间值正确更新到表单数据中
+      this.form.scheduleTime = time;
+      // 强制触发视图更新（解决可能的响应式问题）
+      this.$forceUpdate();
     },
     scanContentEdit(row) {
       console.log('row', row);
