@@ -102,6 +102,7 @@
         <el-button slot="reference">列设置</el-button>
       </el-popover>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
+       <el-button type="primary" plain size="medium" @click="handleBack" style="float: inline-end;">返回</el-button>
     </el-row>
     <el-table class="tableBox" v-loading="loading" :key="checkedColumn.length" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
@@ -559,19 +560,19 @@ export default {
     // 缓存路由参数中的drawerData，减少重复访问
     const drawerData = this.$route.query?.drawerData;
     const queryParams = this.$route.query?.queryParams;
-    
+
     if (drawerData) {
       // 处理数据库列表
       if (drawerData.targetDatabase && typeof drawerData.targetDatabase === 'string') {
         const cleanedDatabase = drawerData.targetDatabase.replace(/,$/, '');
         this.surfaceList = cleanedDatabase ? cleanedDatabase.split(',') : [];
       }
-      
+
       // 存储projectId到sessionStorage
       if (drawerData.projectId) {
         sessionStorage.setItem('projectId', String(drawerData.projectId));
       }
-      
+
       // 存储databaseId到sessionStorage
       if (drawerData.id) {
         sessionStorage.setItem('databaseId', String(drawerData.id));
@@ -580,7 +581,7 @@ export default {
     if (queryParams) {
       this.queryParams = queryParams
     }
-    
+
     this.getProtectCategory();
     this.getPiiList();
     this.checkedColumn = this.setList;
@@ -721,6 +722,15 @@ export default {
         .catch(err => {
           this.loading = false
         })
+    },
+    handleBack() {
+      this.$router.push({
+        path: '/hierarchicalTask',
+        query: {
+          drawerData: this.$route.query.drawerData,
+          queryParams: this.$route.query.queryParams
+        }
+      })
     },
     handleEcelFnClose() {
       this.loading = true
@@ -910,7 +920,7 @@ export default {
       console.log('row', row);
       this.$router.push({
         path: '/fixResults',
-        query: { row: row, categoryList: this.categoryList, queryParams: this.queryParams , drawerData: this.$route.query.drawerData}
+        query: { row: row, categoryList: this.categoryList, queryParams: this.queryParams, drawerData: this.$route.query.drawerData }
       })
       this.addNodeName = ''
       this.piiNodeName = ''

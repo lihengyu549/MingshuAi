@@ -551,6 +551,9 @@ export default {
     this.gettreeOptionsList()
     this.getList()
     this.getScanCompleteDataFn()
+    if (this.$route.query.queryParams) {
+      this.queryParams = this.$route.query.queryParams
+    }
   },
   mounted() {
   },
@@ -950,7 +953,7 @@ export default {
       // }
       this.$router.push({
         path: '/viewResults',
-        query: { drawerData: row }
+        query: { drawerData: row, queryParams:this.queryParams }
       })
       if (row.publishStatus == 0) {
         this.drawerData = row
