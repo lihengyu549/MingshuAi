@@ -26,8 +26,13 @@
                     <div class="info-item">
                         <label class="info-label">数据路径：</label>
                         <div class="info-content">
-                            {{ row.businessName + ' / ' + row.databaseName + ' / ' + row.tableName }}<br>
-                            {{ ' 表注释：' + row.tableRemark }}
+                            {{ row.businessName + ' / ' + row.databaseName + ' / ' + row.tableName }}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">表注释：</label>
+                        <div class="info-content">
+                            {{  row.tableRemark }}
                         </div>
                     </div>
                     <div class="info-item">
