@@ -1,141 +1,149 @@
 <template>
     <div class="id-card-page" v-loading="loading">
-        <div class="left-section">
+        <!-- 顶部标题和按钮区域 -->
+        <div class="top-section">
             <h2>{{ row.id + ' ' + row.fieldName }}</h2>
-            <el-card class="box-card" shadow="never" style="border: none;">
-                <div class="info-item">
-                    <label class="info-label">字段注释：</label>
-                    <div class="info-content">{{ row.fieldRemark }}</div>
-                </div>
-                <div class="info-item">
-                    <label class="info-label">AI字段注释：</label>
-                    <div class="info-content">{{ row.craftRemark }}</div>
-                </div>
-                <div class="info-item">
-                    <label class="info-label">数据路径：</label>
-                    <div class="info-content">
-                        {{ row.businessName + ' / ' + row.databaseName + ' / ' + row.tableName }}<br>
-                        {{ ' 表注释：' + row.tableRemark }}
-                    </div>
-                </div>
-                <div class="info-item">
-                    <label class="info-label">AI表注释：</label>
-                    <div class="info-content">{{ row.craftTableRemark }}</div>
-                </div>
-                <div class="info-item">
-                    <label class="info-label">所属库：</label>
-                    <div class="info-content">{{ row.databaseName }}</div>
-                </div>
-                <div class="info-item">
-                    <label class="info-label">样本抽样：</label>
-                    <div class="info-content">
-                        <el-button type="text" @click="handleSampleView">查看</el-button>
-                    </div>
-                </div>
-                <div class="info-item">
-                    <label class="info-label">属性类型：</label>
-                    <div class="info-content"><el-tag type="success" style="border-radius: 8px;">{{ row.attributeType
-                            }}</el-tag></div>
-                </div>
-                <div class="info-item">
-                    <label class="info-label">核心标签：</label>
-                    <div class="info-content">
-                        <el-tag v-for="tag in JSON.parse(row.coreTags)" :key="tag"
-                            style="margin-right: 5px; border-radius: 8px;">{{ tag ||
-                                '无' }}</el-tag>
-                    </div>
-                </div>
-            </el-card>
-
-            <Title title="推理过程"></Title>
-            <el-card class="box-card" shadow="never" v-for="(item, index) in row.inferenceProcessList" :key="index"
-                style="margin-bottom: 20px;">
-                <template slot="header">
-                    <span class="header-name">{{ item.name }}</span>
-                    <span class="header-confidence">{{ '当前置信度：' + item.value * 100 + '%' }}</span>
-                </template>
-                <div class="info-item">
-                    <label class="info-label">推理过程：</label>
-                    <div class="info-content">{{ item.text }}</div>
-                </div>
-            </el-card>
-
-            <el-card class="box-card" shadow="never" style="margin-top: 20px;">
-                <template slot="header">
-                    <span class="header-name">最终定级：{{ row.securityLevel }}</span>
-                    <el-tag size="small" type="primary" color="#ffc5e0"
-                        style="border-radius: 8px; float: inline-end; color: #dc478f;">就高原则</el-tag>
-                </template>
-                <div class="info-item">
-                    <label class="info-label">推理过程：</label>
-                    <div class="info-content">
-                        <template v-if="row.oldSecurityLevel || row.newSecurityLevel || row.piiLevel">
-                            分类级别为<el-tag size="small" type="primary" style="border-radius: 8px;">{{
-                                row.oldSecurityLevel }}级</el-tag>，
-                            <template v-if="row.newSecurityLevel">
-                                触发动态安全分级规则，分类级别调整为<el-tag size="small" type="success" style="border-radius: 8px;">{{
-                                    row.newSecurityLevel }}级</el-tag>
-                            </template>
-                            <template v-else>
-                                未触发动态安全分级规则
-                            </template>。
-                            <template v-if="row.piiLevel">
-                                个人信息识别结果为<el-tag size="small" type="info" style="border-radius: 8px;">{{
-                                    row.piiLevel }}级</el-tag>
-                            </template>
-                            <template v-else>
-                                未开启个人信息识别
-                            </template>
-                        </template>
-                    </div>
-                </div>
-            </el-card>
-        </div>
-
-        <div class="right-section">
             <div class="top-buttons">
                 <el-button plain @click="handleReturn">返回</el-button>
                 <el-button @click="handleNext('0')">上一个</el-button>
                 <el-button @click="handleNext('1')">下一个</el-button>
                 <el-button type="primary" plain @click="handleManualConfirm">人工确认</el-button>
             </div>
-
-            <el-card class="box-card" shadow="never" style="margin-top: 20px;">
-                <Title title="人工审核" iconClass="seal"></Title>
-                <div class="audit-status">
-                    <span>{{ row.confirm == '1' ? '已确认' : '未确认' }}</span>
-                    <el-badge is-dot></el-badge>
-                </div>
-                <div class="info-container" style="margin-top: 20px;">
-                    <div class="info-item">
-                        <label class="info-label">分类结果：</label>
-                        <div class="info-content">{{ row.categoryName }}</div>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">定级结果：</label>
-                        <div class="info-content">
-                            <el-tag type="warning">{{ row.securityLevelName }}</el-tag>
-                        </div>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">综合置信度：</label>
-                        <div class="info-content">
-                            <el-progress :percentage="Number(row.confidenceScore) * 100"></el-progress>
-                        </div>
-                    </div>
-                    <div class="info-item">
-                        <el-button type="primary" plain @click="handleModifyResult">修改结果</el-button>
-                    </div>
-                </div>
-            </el-card>
-
-            <el-card class="box-card" shadow="never" style="margin-top: 20px;">
-                <Title title="AI建议分类" iconClass="suggest"></Title>
-                <div class="ai-suggestion">
-                    <p style="text-align: center; margin-top: 10px;">暂无数据</p>
-                </div>
-            </el-card>
         </div>
+
+        <!-- 下方左右分栏区域 -->
+        <div class="content-section">
+            <div class="left-section">
+                <el-card class="box-card" shadow="never" style="border: none;">
+                    <div class="info-item">
+                        <label class="info-label">字段注释：</label>
+                        <div class="info-content">{{ row.fieldRemark }}</div>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">AI字段注释：</label>
+                        <div class="info-content">{{ row.craftRemark }}</div>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">数据路径：</label>
+                        <div class="info-content">
+                            {{ row.businessName + ' / ' + row.databaseName + ' / ' + row.tableName }}<br>
+                            {{ ' 表注释：' + row.tableRemark }}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">AI表注释：</label>
+                        <div class="info-content">{{ row.craftTableRemark }}</div>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">所属库：</label>
+                        <div class="info-content">{{ row.databaseName }}</div>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">样本抽样：</label>
+                        <div class="info-content">
+                            <el-button type="text" @click="handleSampleView">查看</el-button>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">属性类型：</label>
+                        <div class="info-content"><el-tag type="success" style="border-radius: 8px;">{{
+                            row.attributeType
+                                }}</el-tag></div>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">核心标签：</label>
+                        <div class="info-content">
+                            <el-tag v-for="tag in JSON.parse(row.coreTags)" :key="tag"
+                                style="margin-right: 5px; border-radius: 8px;">{{ tag ||
+                                    '无' }}</el-tag>
+                        </div>
+                    </div>
+                </el-card>
+
+                <Title title="推理过程"></Title>
+                <el-card class="box-card" shadow="never" v-for="(item, index) in row.inferenceProcessList" :key="index"
+                    style="margin-bottom: 20px;">
+                    <template slot="header">
+                        <span class="header-name">{{ item.name }}</span>
+                        <span class="header-confidence">{{ '当前置信度：' + item.value * 100 + '%' }}</span>
+                    </template>
+                    <div class="info-item">
+                        <label class="info-label">推理过程：</label>
+                        <div class="info-content">{{ item.text }}</div>
+                    </div>
+                </el-card>
+
+                <el-card class="box-card" shadow="never" style="margin-top: 20px;">
+                    <template slot="header">
+                        <span class="header-name">最终定级：{{ row.securityLevel }}</span>
+                        <el-tag size="small" type="primary" color="#ffc5e0"
+                            style="border-radius: 8px; float: inline-end; color: #dc478f;">就高原则</el-tag>
+                    </template>
+                    <div class="info-item">
+                        <label class="info-label">推理过程：</label>
+                        <div class="info-content">
+                            <template v-if="row.oldSecurityLevel || row.newSecurityLevel || row.piiLevel">
+                                分类级别为<el-tag size="small" type="primary" style="border-radius: 8px;">{{
+                                    row.oldSecurityLevel }}级</el-tag>，
+                                <template v-if="row.newSecurityLevel">
+                                    触发动态安全分级规则，分类级别调整为<el-tag size="small" type="success" style="border-radius: 8px;">{{
+                                        row.newSecurityLevel }}级</el-tag>
+                                </template>
+                                <template v-else>
+                                    未触发动态安全分级规则
+                                </template>。
+                                <template v-if="row.piiLevel">
+                                    个人信息识别结果为<el-tag size="small" type="info" style="border-radius: 8px;">{{
+                                        row.piiLevel }}级</el-tag>
+                                </template>
+                                <template v-else>
+                                    未开启个人信息识别
+                                </template>
+                            </template>
+                        </div>
+                    </div>
+                </el-card>
+            </div>
+
+            <div class="right-section">
+                <el-card class="box-card" shadow="never" style="border: none;">
+                    <Title title="人工审核" iconClass="seal"></Title>
+                    <div class="audit-status">
+                        <span>{{ row.confirm == '1' ? '已确认' : '未确认' }}</span>
+                        <el-badge is-dot></el-badge>
+                    </div>
+                    <div class="info-container" style="margin-top: 20px;">
+                        <div class="info-item">
+                            <label class="info-label">分类结果：</label>
+                            <div class="info-content">{{ row.categoryName }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label class="info-label">定级结果：</label>
+                            <div class="info-content">
+                                <el-tag type="warning">{{ row.securityLevelName }}</el-tag>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <label class="info-label">综合置信度：</label>
+                            <div class="info-content">
+                                <el-progress :percentage="Number(row.confidenceScore) * 100"></el-progress>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <el-button type="primary" plain @click="handleModifyResult">修改结果</el-button>
+                        </div>
+                    </div>
+                </el-card>
+
+                <el-card class="box-card" shadow="never" style="border: none;">
+                    <Title title="AI建议分类" iconClass="suggest"></Title>
+                    <div class="ai-suggestion">
+                        <p style="text-align: center; margin-top: 10px;">暂无数据</p>
+                    </div>
+                </el-card>
+            </div>
+        </div>
+
         <el-dialog class="addMsg" title="结果修改" :visible.sync="dialogVisible" width="700px">
             <el-form :model="resultForm" ref="resultForm" size="small" label-width="auto">
                 <el-form-item label="分类" class="addSelectClass">
@@ -469,9 +477,25 @@ export default {
 
 <style scoped>
 .id-card-page {
+    padding: 20px;
+}
+
+/* 顶部标题和按钮区域样式 */
+.top-section {
     display: flex;
     justify-content: space-between;
-    padding: 20px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.top-section h2 {
+    margin: 0;
+}
+
+/* 内容区域左右分栏 */
+.content-section {
+    display: flex;
+    justify-content: space-between;
 }
 
 .left-section {
@@ -484,7 +508,6 @@ export default {
 
 .top-buttons {
     display: flex;
-    justify-content: flex-end;
     gap: 10px;
 }
 
