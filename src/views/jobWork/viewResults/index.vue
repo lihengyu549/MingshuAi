@@ -401,11 +401,11 @@ export default {
           prop: "classificationReasons",
           width: "150"
         },
-        {
-          label: "推理过程",
-          prop: "reasoningProcess",
-          width: "250"
-        },
+        // {
+        //   label: "推理过程",
+        //   prop: "reasoningProcess",
+        //   width: "250"
+        // },
         {
           label: "个人信息识别",
           prop: "piiDetectionName",

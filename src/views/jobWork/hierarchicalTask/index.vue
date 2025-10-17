@@ -315,10 +315,17 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="执行周期" prop="executeCycle" :rules="rules.executeCycle">
-              <el-select v-model="executeCycle" clearable>
-                <el-option label="手动执行" value="1">
+              <el-select v-model="form.scheduleType" @change="scheduleTypeChange">
+                <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
+              <el-select v-show="form.scheduleType == '2' || form.scheduleType == '3'" v-model="form.scheduleInterval">
+                <el-option v-for="item in weekList" :key="item" :label="item" :value="item">
+                </el-option>
+              </el-select>
+              <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
+                value-format='HH:mm' format="HH:mm" placeholder="任意时间点">
+              </el-time-picker>
             </el-form-item>
           </el-col>
         </el-row>
@@ -439,6 +446,22 @@ export default {
         projectId: '',
 
       },
+      weekTimeList: [
+        {
+          value: '0',
+          label: '手动'
+        }, {
+          value: '1',
+          label: '每天'
+        }, {
+          value: '2',
+          label: '每周'
+        }, {
+          value: '3',
+          label: '每月'
+        }
+      ],
+      weekList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日',],
       // 表单参数
       form: {
         confidenceLevel: '',
@@ -461,6 +484,9 @@ export default {
         ifStartAiFill: false,
         ifStartTask: false,
         ifStartFeatureExtract: false,
+        scheduleType: '0',
+        scheduleInterval: '',
+        scheduleTime: '',
       },
       executeCycle: '1',
       // 表单校验
@@ -539,6 +565,40 @@ export default {
     // }
   },
   methods: {
+    scheduleTypeChange(val) {
+      if (val == '3') {
+        // 获取当前月的天数
+        this.form.scheduleInterval = '1'
+        const daysInMonth = this.getDaysInCurrentMonth();
+        // 将天数转换为数组
+        this.weekList = this.createDaysArray(daysInMonth);
+      } else if (val == '2') {
+        this.form.scheduleInterval = '周一'
+        this.weekList = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      } else {
+        this.form.scheduleInterval = ''
+      }
+    },
+    getDaysInCurrentMonth() {
+      const now = new Date(); // 获取当前日期
+      const year = now.getFullYear(); // 当前年份
+      const month = now.getMonth(); // 当前月份（0-11，0表示1月）
+
+      // 创建下个月的第一天的日期对象
+      const firstDayNextMonth = new Date(year, month + 1, 1);
+      // 减去一天，得到当前月的最后一天
+      const lastDayCurrentMonth = new Date(firstDayNextMonth - 1);
+
+      // 返回当前月的天数
+      return lastDayCurrentMonth.getDate();
+    },
+    createDaysArray(days) {
+      const daysArray = [];
+      for (let i = 1; i <= days; i++) {
+        daysArray.push(i);
+      }
+      return daysArray;
+    },
     handleClassificationChange(val) {
       this.form.classificationLogic = val;
       // 可选：若需触发表单校验，可添加以下代码
@@ -718,6 +778,9 @@ export default {
       this.$set(this.form, 'confidenceLevel', "0")
       this.$set(this.form, 'classificationLogic', "2")
       this.$set(this.form, 'confirm', "0")
+      this.$set(this.form, 'scheduleType', '0')
+      this.$set(this.form, 'scheduleInterval', '')
+      this.$set(this.form, 'scheduleTime', '')
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -759,6 +822,9 @@ export default {
       this.$set(this.form, 'ifConfigurationParameters', row.ifConfigurationParameters == "1");
       this.$set(this.form, 'ifTechnicalIdentifier', row.ifTechnicalIdentifier == "1");
       this.$set(this.form, 'ifRedundantFields', row.ifRedundantFields == "1");
+      this.$set(this.form, 'scheduleType', row.databaseProxysTimer.scheduleType);
+      this.$set(this.form, 'scheduleInterval', row.databaseProxysTimer.scheduleInterval);
+      this.$set(this.form, 'scheduleTime', row.databaseProxysTimer.scheduleTime);
       this.form.classificationState = row.classificationState.split(',').map(item => {
         return item
       })
@@ -884,7 +950,7 @@ export default {
       // }
       this.$router.push({
         path: '/viewResults',
-        query: { drawerData: row } 
+        query: { drawerData: row }
       })
       if (row.publishStatus == 0) {
         this.drawerData = row
