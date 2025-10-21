@@ -825,9 +825,16 @@ export default {
       this.$set(this.form, 'ifConfigurationParameters', row.ifConfigurationParameters == "1");
       this.$set(this.form, 'ifTechnicalIdentifier', row.ifTechnicalIdentifier == "1");
       this.$set(this.form, 'ifRedundantFields', row.ifRedundantFields == "1");
-      this.$set(this.form, 'scheduleType', row.databaseProxysTimer.scheduleType);
-      this.$set(this.form, 'scheduleInterval', row.databaseProxysTimer.scheduleInterval);
-      this.$set(this.form, 'scheduleTime', row.databaseProxysTimer.scheduleTime);
+      if (row.databaseProxysTimer) {
+        this.$set(this.form, 'scheduleType', row.databaseProxysTimer.scheduleType);
+        this.$set(this.form, 'scheduleInterval', row.databaseProxysTimer.scheduleInterval);
+        this.$set(this.form, 'scheduleTime', row.databaseProxysTimer.scheduleTime);
+      } else {
+        // 设置默认值
+        this.$set(this.form, 'scheduleType', '');
+        this.$set(this.form, 'scheduleInterval', '');
+        this.$set(this.form, 'scheduleTime', '');
+      }
       this.form.classificationState = row.classificationState.split(',').map(item => {
         return item
       })
