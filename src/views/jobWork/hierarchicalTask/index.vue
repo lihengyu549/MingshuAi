@@ -779,7 +779,7 @@ export default {
       this.form.projectName = ''
       this.$set(this.form, 'piiDetectionFlag', false)
       this.$set(this.form, 'confidenceLevel', "0")
-      this.$set(this.form, 'classificationLogic', "2")
+      this.$set(this.form, 'classificationLogic', "3")
       this.$set(this.form, 'confirm', "0")
       this.$set(this.form, 'scheduleType', '0')
       this.$set(this.form, 'scheduleInterval', '')

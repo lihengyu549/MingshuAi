@@ -101,6 +101,20 @@
               '点击选择扫描内容' }}</el-tag>
           </div>
         </el-form-item>
+        <el-form-item label="周期" prop="scheduleType">
+          <el-select v-model="form.scheduleType" @change="scheduleTypeChange">
+            <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+          <el-select v-show="form.scheduleType == '2' || form.scheduleType == '3'" v-model="form.scheduleInterval">
+            <el-option v-for="item in weekList" :key="item" :label="item" :value="item">
+            </el-option>
+          </el-select>
+          <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
+            @input="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点">
+          </el-time-picker>
+        </el-form-item>
+
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" plain @click="submitForm">确 定</el-button>
@@ -153,6 +167,22 @@ export default {
       scanContentLoading: false,
       treeCheckedData: [],//树节点已选中数据
       scanContentTreeData: [],//// 扫描配置树数据
+      weekTimeList: [
+        {
+          value: '0',
+          label: '手动'
+        }, {
+          value: '1',
+          label: '每天'
+        }, {
+          value: '2',
+          label: '每周'
+        }, {
+          value: '3',
+          label: '每月'
+        }
+      ],
+      weekList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日',],
       // 表单校验
       rules: {
         userPassword: [
@@ -195,6 +225,11 @@ export default {
         tabelCheckedName: [{
           required: true,
           validator: this.tabelCheckedNameRules,
+          trigger: 'blur'
+        }],
+        scheduleType: [{
+          required: true,
+          message: '请选择扫描周期',
           trigger: 'blur'
         }],
         targetIp: [
@@ -332,6 +367,9 @@ export default {
         targetPort: '',
         targetUserName: '',
         targetUserPassword: '',
+        scheduleType: '0',
+        scheduleInterval: '',
+        scheduleTime: '00:00',
       },
       addForm: {},
       importDataLoading: false,
@@ -377,6 +415,50 @@ export default {
   mounted() {
   },
   methods: {
+    // 周期类型变化
+    scheduleTypeChange(val) {
+      if (val == '3') {
+        // 获取当前月的天数
+        this.form.scheduleInterval = '1'
+        const daysInMonth = this.getDaysInCurrentMonth();
+        // 将天数转换为数组
+        this.weekList = this.createDaysArray(daysInMonth);
+      } else if (val == '2') {
+        this.form.scheduleInterval = '周一'
+        this.weekList = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      } else {
+        this.form.scheduleInterval = ''
+      }
+    },
+    createDaysArray(days) {
+      const daysArray = [];
+      for (let i = 1; i <= days; i++) {
+        daysArray.push(i);
+      }
+      return daysArray;
+    },
+    getDaysInCurrentMonth() {
+      const now = new Date(); // 获取当前日期
+      const year = now.getFullYear(); // 当前年份
+      const month = now.getMonth(); // 当前月份（0-11，0表示1月）
+
+      // 创建下个月的第一天的日期对象
+      const firstDayNextMonth = new Date(year, month + 1, 1);
+      // 减去一天，得到当前月的最后一天
+      const lastDayCurrentMonth = new Date(firstDayNextMonth - 1);
+
+      // 返回当前月的天数
+      return lastDayCurrentMonth.getDate();
+    },
+
+    // 时间变化处理
+    handleTimeChange(time) {
+      // 确保时间值正确更新到表单数据中
+      this.form.scheduleTime = time;
+      // 强制触发视图更新（解决可能的响应式问题）
+      this.$forceUpdate();
+    },
+
     // 自定义校验规则
     tabelCheckedNameRules(rule, value, callback) {
       callback();
@@ -629,6 +711,9 @@ export default {
       this.form.tabelCheckedName = row.tabelCheckedName || ''
       this.form.targetUserName = row.targetUserName || ''
       this.form.targetUserPassword = row.targetUserPassword || ''
+      this.form.scheduleType = row.databaseProxysTimer?.scheduleType || '0'
+      this.form.scheduleInterval = row.databaseProxysTimer?.scheduleInterval || ''
+      this.form.scheduleTime = row.databaseProxysTimer?.scheduleTime || '00:00'
       this.treeCheckedData = []
       this.open = true;
     },
