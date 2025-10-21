@@ -1,22 +1,18 @@
 <template>
     <div class="mindmap-container">
-        <div class="mindmap-wrapper">
+        <div class="mindmap-wrapper"> <!-- 容器样式优化 -->
             <!-- 根节点 -->
             <div v-if="rootVisible" class="node root-node" :style="{ left: rootLeft + 'px', top: rootTop + 'px' }">
                 <div class="node-content">{{ rootDisplayText }}</div>
             </div>
 
-            <!-- 连接线容器 -->
+            <!-- 连接线和子节点容器（保持不变） -->
             <div class="connections-container">
-                <!-- 使用唯一ID作为key -->
                 <div v-for="connection in displayedConnections" :key="connection.id">
                     <div class="connection-line" :style="connection.style"></div>
                 </div>
             </div>
-
-            <!-- 子节点容器 -->
             <div class="nodes-container">
-                <!-- 同样使用唯一ID作为key -->
                 <div v-for="node in displayedNodes" :key="node.id">
                     <div class="node child-node" :style="node.style" :class="node.levelClass">
                         <div class="node-content">{{ node.displayText }}</div>
@@ -35,39 +31,30 @@ export default {
     name: 'MindMap',
     data() {
         return {
-            // 根节点配置
-            rootLeft: 50,
-            rootTop: 200,
+            // 根节点位置调整（left从50→100，避免过左）
+            rootLeft: 100,
+            rootTop: 300, // 垂直居中更合理
             rootLabel: '设计一个新的智能家居产品',
             rootDisplayText: '',
             rootVisible: false,
 
-            // 节点和连接线数据（增加唯一ID）
             allNodes: [],
             allConnections: [],
             displayedNodes: [],
             displayedConnections: [],
-
-            // 动画状态控制
             currentTextIndex: 0,
             currentNodeIndex: 0
         }
     },
     mounted() {
-        // 重置ID计数器
         nodeId = 0
         connectionId = 0
-
-        // 初始化数据
         this.initData()
-        // 开始动画
         this.startAnimation()
     },
     methods: {
-        // 初始化思维导图数据
         initData() {
-            // 树形数据
-            const treeData = {
+            const treeData = { // 保持原数据结构
                 label: '智能家居产品',
                 children: [
                     { label: '用户需求', children: [] },
@@ -78,17 +65,23 @@ export default {
                             {
                                 label: '基于声控的智能家居产品',
                                 children: [
-                                    { label: '功能设计', children: [
-                                        { label: '语音识别', children: [] },
-                                        { label: '语音合成', children: [
-                                            { label: '自然语言处理', children: [] },
-                                            { label: '语音合成引擎', children: [
-                                                { label: '文本到语音转换', children: [] },
-                                                { label: '语音合成算法', children: [] }
-                                            ] }
-                                        ] },
-                                        { label: '智能控制', children: [] }
-                                    ] },
+                                    {
+                                        label: '功能设计', children: [
+                                            { label: '语音识别', children: [] },
+                                            {
+                                                label: '语音合成', children: [
+                                                    { label: '自然语言处理', children: [] },
+                                                    {
+                                                        label: '语音合成引擎', children: [
+                                                            { label: '文本到语音转换', children: [] },
+                                                            { label: '语音合成算法', children: [] }
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            { label: '智能控制', children: [] }
+                                        ]
+                                    },
                                     { label: '用户界面设计', children: [] },
                                     { label: '市场定位', children: [] }
                                 ]
@@ -101,43 +94,88 @@ export default {
             }
 
             this.rootLabel = treeData.label
-
-            // 解析树形结构生成节点和连接线
+            // 一级节点起始left调整（从250→200，避免过右）
             this.parseTreeData(
                 treeData.children,
-                1,  // 从第一级子节点开始
-                this.rootLeft + 250,  // 一级节点起始left位置
-                this.rootTop,         // 根节点top位置
-                this.rootTop + 25     // 根节点连接线起点（中心）
+                1,
+                this.rootLeft + 200, // 核心调整：减小一级节点起始left
+                this.rootTop,
+                this.rootTop + 25
             )
         },
 
-        // 解析树形数据
+        // 新增：递归计算节点总高度（含所有子节点）
+        calculateNodeTotalHeight(node, level) {
+            const levelConfig = [
+                { width: 100, height: 36, gap: 40 },
+                { width: 220, height: 36, gap: 30 },
+                { width: 120, height: 36, gap: 20 },
+                { width: 100, height: 32, gap: 15 },
+                { width: 100, height: 32, gap: 15 },
+                { width: 100, height: 32, gap: 15 }
+            ]
+            const config = levelConfig[level - 1]
+            if (!config) return 0
+
+            // 节点自身高度
+            let totalHeight = config.height
+
+            // 累加所有子节点的总高度（含子节点间隙）
+            if (node.children && node.children.length > 0) {
+                let childrenTotalHeight = 0
+                node.children.forEach((child, index) => {
+                    const childHeight = this.calculateNodeTotalHeight(child, level + 1)
+                    childrenTotalHeight += childHeight
+                    // 最后一个子节点不加间隙
+                    if (index < node.children.length - 1) {
+                        childrenTotalHeight += config.gap
+                    }
+                })
+                // 总高度取自身高度和子节点总高度的最大值（确保能容纳子节点）
+                totalHeight = Math.max(totalHeight, childrenTotalHeight)
+            }
+
+            return totalHeight
+        },
+
+        // 修改：基于总高度计算节点位置
         parseTreeData(children, level, startLeft, parentTop, connectY) {
             if (!children || children.length === 0) return
 
-            // 层级配置
             const levelConfig = [
-                { width: 100, height: 36, gap: 40, bgColor: '#409EFF', textColor: '#fff' }, // 1级节点（蓝色）
-                { width: 220, height: 36, gap: 30, bgColor: '#67C23A', textColor: '#fff' }, // 2级节点（绿色）
-                { width: 120, height: 36, gap: 20, bgColor: '#fff', border: '1px solid #ddd', textColor: '#333' },  // 3级节点
-                { width: 100, height: 32, gap: 15, bgColor: '#F56C6C', textColor: '#fff' },  // 4级节点（红色）
-                { width: 100, height: 32, gap: 15, bgColor: '#E6A23C', textColor: '#fff' },  // 5级节点（黄色）
-                { width: 100, height: 32, gap: 15, bgColor: '#909399', textColor: '#fff' }  // 6级节点（灰色）
+                { width: 100, height: 36, gap: 40, bgColor: '#409EFF', textColor: '#fff' },
+                { width: 220, height: 36, gap: 35, bgColor: '#67C23A', textColor: '#fff' },
+                { width: 120, height: 36, gap: 30, bgColor: '#fff', border: '1px solid #ddd', textColor: '#333' },
+                { width: 100, height: 32, gap: 30, bgColor: '#F56C6C', textColor: '#fff' },
+                { width: 100, height: 32, gap: 25, bgColor: '#E6A23C', textColor: '#fff' },
+                { width: 100, height: 32, gap: 20, bgColor: '#909399', textColor: '#fff' }
             ]
-
             const config = levelConfig[level - 1]
             if (!config) return
 
-            // 计算总高度和起始位置
-            const totalHeight = (config.height + config.gap) * children.length - config.gap
+            // 关键：计算每个子节点的总高度（含嵌套子节点）
+            const childHeights = children.map(child =>
+                this.calculateNodeTotalHeight(child, level + 1)
+            )
+
+            // 计算当前层级所有子节点的总占用高度（含间隙）
+            const totalHeight = childHeights.reduce((sum, height, index) => {
+                return sum + height + (index < children.length - 1 ? config.gap : 0)
+            }, 0)
+
+            // 起始位置垂直居中于父节点
             const startTop = parentTop - totalHeight / 2
+            let currentTop = startTop // 累加当前位置
 
-            // 处理每个子节点
             children.forEach((child, index) => {
-                const nodeTop = startTop + index * (config.height + config.gap)
+                const childTotalHeight = childHeights[index]
+                // 修复：叶子节点不需要垂直居中偏移
+                const isLeafNode = !child.children || child.children.length === 0
+                const nodeTop = isLeafNode
+                    ? currentTop
+                    : currentTop + (childTotalHeight - config.height) / 2
 
-                // 添加节点 - 增加唯一ID
+                // 添加节点
                 this.allNodes.push({
                     id: `node-${nodeId++}`,
                     label: child.label,
@@ -157,7 +195,7 @@ export default {
                     connectY: nodeTop + config.height / 2
                 })
 
-                // 添加连接线 - 增加唯一ID
+                // 添加连接线（保持逻辑，但位置基于动态计算的nodeTop）
                 const lineStartX = level === 1 ? this.rootLeft + 180 : startLeft - 120
                 const lineEndX = startLeft - 10
 
@@ -192,23 +230,27 @@ export default {
                     this.parseTreeData(
                         child.children,
                         level + 1,
-                        startLeft + config.width + 120,
+                        startLeft + config.width + 120, // 水平间距保持120px
                         nodeTop + config.height / 2,
                         nodeTop + config.height / 2
                     )
                 }
+
+                if (index < children.length - 1) {
+                    currentTop += isLeafNode ? config.height + config.gap : childTotalHeight + config.gap;
+                } else {
+                    currentTop += childTotalHeight;
+                }
             })
         },
 
-        // 开始动画
+        // 动画相关方法（保持不变）
         startAnimation() {
             setTimeout(() => {
                 this.rootVisible = true
                 this.animateRootText()
             }, 500)
         },
-
-        // 根节点文字动画
         animateRootText() {
             if (this.currentTextIndex < this.rootLabel.length) {
                 this.rootDisplayText = this.rootLabel.substring(0, this.currentTextIndex + 1)
@@ -219,20 +261,15 @@ export default {
                 setTimeout(this.animateNextNode, 1000)
             }
         },
-
-        // 逐个显示子节点
         animateNextNode() {
             if (this.currentNodeIndex < this.allNodes.length) {
                 const node = { ...this.allNodes[this.currentNodeIndex] }
                 this.displayedNodes.push(node)
-
                 this.addConnectionsForNode(this.currentNodeIndex)
                 this.animateNodeText(this.currentNodeIndex)
                 this.currentNodeIndex++
             }
         },
-
-        // 为节点添加连接线
         addConnectionsForNode(nodeIndex) {
             const start = nodeIndex * 2
             if (this.allConnections[start]) {
@@ -242,11 +279,8 @@ export default {
                 this.displayedConnections.push(this.allConnections[start + 1])
             }
         },
-
-        // 节点文字动画
         animateNodeText(nodeIndexInAll) {
             const node = this.displayedNodes[this.displayedNodes.length - 1]
-
             if (this.currentTextIndex < node.label.length) {
                 node.displayText = node.label.substring(0, this.currentTextIndex + 1)
                 this.currentTextIndex++
@@ -255,7 +289,7 @@ export default {
                 this.currentTextIndex = 0
                 setTimeout(this.animateNextNode, 300)
             }
-        }
+        },
     }
 }
 </script>
@@ -266,15 +300,21 @@ export default {
     overflow-x: auto;
     padding: 40px;
     background-color: #f9f9f9;
-    min-height: 500px;
+    min-height: 1600px;
+    /* 增加最小高度，避免垂直拥挤 */
 }
 
 .mindmap-wrapper {
     position: relative;
-    height: 400px;
-    min-width: 1600px;
+    height: auto;
+    /* 改为auto，适应内容高度 */
+    min-width: 1200px;
+    /* 减小最小宽度，避免一级节点超出 */
+    padding-bottom: 50px;
+    /* 增加底部 padding，防止末级节点被截断 */
 }
 
+/* 其他样式保持不变 */
 .node {
     position: absolute;
     display: flex;
