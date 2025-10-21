@@ -148,7 +148,10 @@ export default {
     },
     methods: {
         goBack() {
-            this.$router.go(-1);
+            this.$router.push({
+                path: 'standard/jobMonitoring',
+                query: this.$route.query.queryParams || {}
+            });
         },
         // 查找节点的最顶层祖先id
         findTopNodeId(node) {

@@ -30,6 +30,7 @@
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="managementImport">标准导入</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="push">跳转</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
@@ -291,7 +292,10 @@ export default {
   mounted() {
   },
   methods: {
-
+    // 跳转
+    push() {
+      this.$router.push({ path: '/standard/hierarchicalStructure' })
+    },
     // 自定义校验规则
     validateRuleContent(rule, value, callback) {
       if (this.form.importFile) {

@@ -40,7 +40,6 @@
     "axios": "0.24.0",
     "bootstrap-vue": "^2.23.1",
     "clipboard": "2.0.8",
-    "core-js": "^3.46.0",
     "d3": "^7.9.0",
     "echarts": "5.2.0",
     "echarts-wordcloud": "^2.1.0",
