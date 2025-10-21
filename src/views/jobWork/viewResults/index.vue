@@ -553,13 +553,14 @@ export default {
           { required: true, message: "请选择导入框架文件", trigger: "blur" },
         ],
       },
+      lastQueryParams: {}
     };
   },
 
   created() {
     // 缓存路由参数中的drawerData，减少重复访问
     const drawerData = this.$route.query?.drawerData;
-    const queryParams = this.$route.query?.queryParams;
+    this.lastQueryParams = this.$route.query?.queryParams;
 
     if (drawerData) {
       // 处理数据库列表
@@ -577,9 +578,6 @@ export default {
       if (drawerData.id) {
         sessionStorage.setItem('databaseId', String(drawerData.id));
       }
-    }
-    if (queryParams) {
-      this.queryParams = queryParams
     }
 
     this.getProtectCategory();
@@ -728,7 +726,7 @@ export default {
         path: '/hierarchicalTask',
         query: {
           drawerData: this.$route.query.drawerData,
-          queryParams: this.$route.query.queryParams
+          queryParams: this.lastQueryParams
         }
       })
     },
