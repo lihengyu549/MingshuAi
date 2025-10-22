@@ -831,7 +831,7 @@ export default {
         this.$set(this.form, 'scheduleTime', row.databaseProxysTimer.scheduleTime);
       } else {
         // 设置默认值
-        this.$set(this.form, 'scheduleType', '');
+        this.$set(this.form, 'scheduleType', '0');
         this.$set(this.form, 'scheduleInterval', '');
         this.$set(this.form, 'scheduleTime', '');
       }
