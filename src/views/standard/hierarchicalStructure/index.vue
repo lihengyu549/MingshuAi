@@ -27,6 +27,7 @@
 
 <script>
 import MindMap from "simple-mind-map";
+import "simple-mind-map/dist/simpleMindMap.esm.css";
 export default {
     name: "FlowChart",
     data() {
@@ -55,26 +56,36 @@ export default {
                     {
                         data: {
                             text: "子节点1",
-                            children: [
-                                {
-                                    data: {
-                                        text: "子节点1-1",
-                                    },
-                                },
-                            ],
                         },
+                        children: [
+                            {
+                                data: {
+                                    text: "分支节点1",
+                                },
+                            },
+                            {
+                                data: {
+                                    text: "分支节点2",
+                                },
+                            },
+                        ],
                     },
                     {
                         data: {
                             text: "子节点2",
-                            children: [
-                                {
-                                    data: {
-                                        text: "子节点2-1",
-                                    },
-                                },
-                            ],
                         },
+                        children: [
+                            {
+                                data: {
+                                    text: "分支节点3",
+                                },
+                            },
+                            {
+                                data: {
+                                    text: "分支节点4",
+                                },
+                            },
+                        ],
                     },
                 ],
             },
