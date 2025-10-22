@@ -492,8 +492,8 @@ export default {
                 this.resultFormNodeName = this.row.categoryName;
             }
             // 如果有个人信息识别信息，设置显示名称
-            if (this.row.piiLevelName) {
-                this.piiNodeName = this.row.piiLevelName;
+            if (this.row.piiDetection) {
+                this.piiNodeName = this.row.piiDetectionName;
             }
             this.dialogVisible = true;
         }
