@@ -32,7 +32,7 @@
                     <div class="info-item">
                         <label class="info-label">表注释：</label>
                         <div class="info-content">
-                            {{  row.tableRemark }}
+                            {{ row.tableRemark }}
                         </div>
                     </div>
                     <div class="info-item">
@@ -46,7 +46,17 @@
                     <div class="info-item">
                         <label class="info-label">样本抽样：</label>
                         <div class="info-content">
-                            <el-button type="text" @click="handleSampleView">查看</el-button>
+                            <el-tooltip placement="bottom" effect="light">
+                                <div slot="content">
+                                    <el-table :data="row.sampleList" height="250" border class="tableCla"
+                                        style="width: 100%">
+                                        <el-table-column type="index" label="序号" width="50" />
+                                        <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
+                                        </el-table-column>
+                                    </el-table>
+                                </div>
+                                <el-button size="mini" type="text">查看</el-button>
+                            </el-tooltip>
                         </div>
                     </div>
                     <div class="info-item">
@@ -169,7 +179,7 @@
                     </el-select>
                 </el-form-item>
                 <el-form-item label="个人信息识别" class="addSelectClass" prop="piiDetection">
-                    <el-select ref="piiSelectRef" v-model="piiNodeName">
+                    <el-select ref="piiSelectRef" v-model="piiNodeName" clearable>
                         <el-option style="height: 100%; padding: 0" value="">
                             <el-tree :data="piiList" :props="defaultProps" :expand-on-click-node="true"
                                 :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
@@ -388,10 +398,6 @@ export default {
             console.log('确认修改，分类：', this.resultFormNodeName, '，安全分级：', this.securityLevel);
             this.dialogVisible = false;
         },
-        handleSampleView() {
-            // 样本抽样查看点击事件
-            console.log('样本抽样查看');
-        },
         handleNext(lastOrNext) {
             // 上||下一个点击事件
             this.loading = true;
@@ -473,7 +479,22 @@ export default {
             });
         },
         handleModifyResult() {
-            // 修改结果点击事件
+            // 修改结果点击事件 - 将当前行数据复制到表单
+            this.resultForm = {
+                categoryId: this.row.categoryId || '',
+                securityLevel: this.row.securityLevel || '',
+                id: this.row.id || '',
+                piiDetection: this.row.piiDetection || '',
+                classificationLogic: ''
+            };
+            // 如果有分类信息，设置显示名称
+            if (this.row.categoryName) {
+                this.resultFormNodeName = this.row.categoryName;
+            }
+            // 如果有个人信息识别信息，设置显示名称
+            if (this.row.piiLevelName) {
+                this.piiNodeName = this.row.piiLevelName;
+            }
             this.dialogVisible = true;
         }
     }
