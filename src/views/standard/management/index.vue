@@ -358,7 +358,7 @@ export default {
       this.form.importFile = row.fileName
     },
     detailFn(row) {
-      this.$router.push({ path: '/standard/jobMonitorings', query: { id: row.id, dataSource: row.dataSource } })
+      this.$router.push({ path: '/standard/jobMonitoring', query: { id: row.id, dataSource: row.dataSource } })
     },
     deleteFn(row) {
       this.$confirm(`删除任务，将会删除数据源所关联的所有执行结果,确定删除吗`, '提示', {
