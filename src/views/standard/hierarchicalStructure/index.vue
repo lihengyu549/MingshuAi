@@ -56,7 +56,7 @@
 import MindMap from "simple-mind-map";
 import "simple-mind-map/dist/simpleMindMap.esm.css";
 import { generateStandard } from '@/api/system/proxys'
-import axios from 'axios' // 补充axios引入，原代码handleSave使用了axios
+import axios from 'axios'
 export default {
     name: "FlowChart",
     data() {
@@ -78,6 +78,8 @@ export default {
                 },
                 children: [],
             },
+            // 存储最新收到的完整数据
+            latestFullData: null,
             // 表单数据
             form: {
                 enterpriseName: '',
@@ -92,12 +94,18 @@ export default {
                 ]
             },
             // 状态变量
-            canGenerate: false, // 控制生成按钮是否可点击
-            canSave: false,     // 控制保存按钮是否可点击
-            canCancel: false,   // 控制取消按钮是否可点击
-            websocket: null,    // WebSocket实例
-            isGenerating: false, // 标记是否正在生成中
-            generateIcon: '',   // 生成按钮图标
+            canGenerate: false,
+            canSave: false,
+            canCancel: false,
+            websocket: null,
+            isGenerating: false,
+            generateIcon: '',
+            // 控制节点生成的状态
+            isGeneratingNodes: false,
+            nodeGenerationDelay: 100, // 节点生成间隔时间(ms)
+            batchUpdate: false,
+            updateQueue: [],
+            batchUpdateInterval: 100 // 批量更新间隔，可根据需要调整
         };
     },
     mounted() {
@@ -198,6 +206,12 @@ export default {
         },
 
         updateMindMapWithNewData(data) {
+            if (this.batchUpdate) {
+                // 如果处于批量更新模式，加入队列
+                this.updateQueue.push(data);
+                return;
+            }
+
             if (this.mindMap) {
                 this.mindMap.setData(data);
             } else {
@@ -209,23 +223,116 @@ export default {
             }
         },
 
-        // 处理WebSocket返回的增量数据
-        addMindMapData(data) {
-            if (data && data.data) {
-                data.data.uid = this.generateUniqueId();
+        // 递归比较并添加新节点
+        async compareAndAddNodes(targetParent, sourceNodes, level = 1) {
+            if (!sourceNodes || !sourceNodes.length) return;
 
-                if (data.isRoot) {
-                    this.fullData = data;
+            for (let i = 0; i < sourceNodes.length; i++) {
+                if (!this.isGenerating) break;
+
+                const sourceNode = sourceNodes[i];
+                // 改进：优先通过uid判断，没有uid再结合文本和其他关键属性
+                let existingNode = null;
+                if (targetParent.children) {
+                    existingNode = targetParent.children.find(child =>
+                        (child.data.uid && sourceNode.data.uid && child.data.uid === sourceNode.data.uid) ||
+                        (!child.data.uid && !sourceNode.data.uid && child.data.text === sourceNode.data.text)
+                    );
+                }
+
+                let newNode;
+                if (!existingNode) {
+                    newNode = {
+                        data: {
+                            ...sourceNode.data,
+                            // 保留原节点uid（如果有），增强唯一性
+                            uid: sourceNode.data.uid || this.generateUniqueId()
+                        },
+                        children: []
+                    };
+
+                    if (!targetParent.children) {
+                        targetParent.children = [];
+                    }
+                    targetParent.children.push(newNode);
+
+                    // 这里后续会修改更新方式
                     this.updateMindMapWithNewData(this.fullData);
+
+                    await new Promise(resolve => setTimeout(resolve, this.nodeGenerationDelay));
                 } else {
-                    this.addBranchNode(this.fullData, data);
-                    this.updateMindMapWithNewData(this.fullData);
+                    newNode = existingNode;
+                    // 同步更新已有节点的数据，避免数据不一致
+                    newNode.data = { ...newNode.data, ...sourceNode.data };
+                }
+
+                if (sourceNode.children && sourceNode.children.length) {
+                    await this.compareAndAddNodes(newNode, sourceNode.children, level + 1);
                 }
             }
         },
 
+        // 处理WebSocket返回的完整数据，实现逐级逐个节点生成
+        async processFullData(newData) {
+            this.latestFullData = newData;
+
+            if (this.isGeneratingNodes) {
+                return;
+            }
+
+            this.isGeneratingNodes = true;
+            // 开启批量更新模式
+            this.batchUpdate = true;
+            this.updateQueue = [];
+
+            try {
+                if (newData.data && newData.data.text) {
+                    this.fullData.data.text = newData.data.text;
+                }
+
+                await this.compareAndAddNodes(this.fullData, newData.children || []);
+
+                // 处理队列中的更新
+                if (this.updateQueue.length > 0) {
+                    // 使用最后一个更新作为最终状态
+                    const finalData = this.updateQueue[this.updateQueue.length - 1];
+                    if (this.mindMap) {
+                        this.mindMap.setData(finalData);
+                    }
+                }
+            } catch (error) {
+                console.error('处理节点生成时出错:', error);
+            } finally {
+                this.isGeneratingNodes = false;
+                this.batchUpdate = false;
+                this.updateQueue = [];
+                // 生成完成后清理可能的重复节点
+                this.cleanDuplicateNodes(this.fullData);
+                this.updateMindMapWithNewData(this.fullData);
+            }
+        },
+        cleanDuplicateNodes(node) {
+            if (!node.children || node.children.length === 0) return;
+
+            // 记录已存在的节点标识
+            const existingIds = new Set();
+            const uniqueChildren = [];
+
+            node.children.forEach(child => {
+                const identifier = child.data.uid || child.data.text;
+                if (!existingIds.has(identifier)) {
+                    existingIds.add(identifier);
+                    uniqueChildren.push(child);
+                    // 递归清理子节点
+                    this.cleanDuplicateNodes(child);
+                }
+            });
+
+            node.children = uniqueChildren;
+        },
+
+
         loadNodesByBranch(originalData, currentData, branchIndex) {
-            // 原有逻辑：根据分支索引加载节点
             if (!originalData.children || !currentData.children) return;
             if (branchIndex < originalData.children.length) {
                 const targetChild = originalData.children[branchIndex];
@@ -236,7 +343,6 @@ export default {
         },
 
         loadBranchRecursively(originalData, currentData, branchNode, level, onComplete) {
-            // 原有逻辑：递归加载分支节点
             if (!branchNode) return;
             currentData.data = { ...currentData.data, ...branchNode.data };
             currentData.data.uid = currentData.data.uid || this.generateUniqueId();
@@ -263,7 +369,6 @@ export default {
         },
 
         moveNodeToCenter(nodeUid) {
-            // 原有逻辑：将指定UID的节点移动到中心
             if (!nodeUid) return;
             const node = this.mindMap.renderer.findNodeByUid(nodeUid);
             if (node && this.mindMap.renderer.moveNodeToCenter) {
@@ -306,11 +411,10 @@ export default {
             this.hideMenu();
         },
 
-        // 生成按钮事件 - 修改根节点名称，同时发送请求和建立websocket连接（分开执行）
+        // 生成按钮事件
         async handleGenerate() {
             this.isGenerating = true;
-            this.generateIcon = ''; // 重置图标
-            // 禁用保存和取消按钮
+            this.generateIcon = '';
             this.canSave = false;
             this.canCancel = false;
 
@@ -319,7 +423,7 @@ export default {
             this.updateMindMapWithNewData(this.fullData);
 
             try {
-                // 1. 发送HTTP请求（单独处理）
+                // 发送HTTP请求
                 generateStandard({
                     enterpriseName: this.form.enterpriseName,
                     structureLevel: this.form.structureLevel
@@ -336,7 +440,7 @@ export default {
                     this.cleanupGeneration(false);
                 });
 
-                // 2. 建立WebSocket连接（单独处理，不等待请求完成）
+                // 建立WebSocket连接
                 new Promise(resolve => {
                     this.connectWebSocket(resolve);
                 }).catch(error => {
@@ -354,18 +458,14 @@ export default {
         // 清理生成状态的方法
         cleanupGeneration(isSuccess = false) {
             this.isGenerating = false;
+            this.isGeneratingNodes = false; // 停止节点生成
             if (isSuccess) {
-                // 生成成功，显示success图标
                 this.generateIcon = 'el-icon-success';
-                // 3秒后恢复默认状态
                 setTimeout(() => {
                     this.generateIcon = '';
                 }, 3000);
-                // 成功时不立即关闭连接，让WebSocket正常完成通信
             } else {
-                // 生成失败，清空图标
                 this.generateIcon = '';
-                // 失败时才关闭连接
                 if (this.websocket) {
                     this.websocket.close();
                     this.websocket = null;
@@ -376,13 +476,11 @@ export default {
         // 获取当前用户名的方法
         getUserName() {
             try {
-                // 从localStorage或sessionStorage中获取用户信息
                 const userInfo = localStorage.getItem('userInfo') || sessionStorage.getItem('userInfo');
                 if (userInfo) {
                     const user = JSON.parse(userInfo);
                     return user.username || user.userName || user.loginName || user.name;
                 }
-                // 或者从store中获取
                 if (this.$store && this.$store.getters && this.$store.getters.username) {
                     return this.$store.getters.username;
                 }
@@ -394,9 +492,7 @@ export default {
 
         // 建立WebSocket连接的方法
         connectWebSocket(resolve) {
-            // 获取当前用户名（从localStorage或sessionStorage中获取，这里假设用户名存储在token相关字段中）
-            const currentUser = this.getUserName() || 'admin'; // 默认为admin
-            // 从cookie获取Admin-Token
+            const currentUser = this.getUserName() || 'admin';
             const getCookie = (name) => {
                 const value = `; ${document.cookie}`;
                 const parts = value.split(`; ${name}=`);
@@ -404,11 +500,9 @@ export default {
                 return '';
             };
             const token = getCookie('Admin-Token');
-            // 处理token为空的情况，避免传递无效子协议
             const protocols = token ? [`${token}`] : [];
-            // 使用固定的WebSocket连接地址
             const currentUrl = new URL(window.location.href);
-            const hostName = currentUrl.hostname; // 只取主机名（IP或域名），不含端口
+            const hostName = currentUrl.hostname;
             const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}`; //本地
             // const wsUrl = `wss://${hostName}:443/system/generateWebSocket/${currentUser}`; // 线上
 
@@ -421,38 +515,34 @@ export default {
             this.websocket.onopen = () => {
                 console.log('WebSocket连接已建立');
                 this.$message.success('开始接收思维导图数据...');
-                resolve(); // 通知Promise连接已建立
+                resolve();
             };
 
             // 接收消息
             this.websocket.onmessage = (event) => {
                 try {
                     console.log('收到WebSocket数据:', event.data);
-                    // 正确解析JSON数据
                     const data = JSON.parse(event.data);
                     console.log('解析后的数据:', data);
 
-                    // 处理结束标识 - 这是特定信息，收到后关闭连接并启用按钮
+                    // 处理结束标识
                     if (data && data.isCompleted) {
                         this.$message.success('思维导图生成完成');
-                        // 生成成功，显示success图标并清理状态
                         this.cleanupGeneration(true);
-                        // 启用保存和取消按钮
                         this.canSave = true;
                         this.canCancel = true;
                         return;
                     }
 
-                    // 增量更新思维导图
+                    // 处理完整数据，实现逐级逐个节点生成
                     if (data) {
-                        this.addMindMapData(data);
+                        this.processFullData(data);
                     } else {
                         console.warn('收到空数据');
                     }
                 } catch (error) {
                     console.error('解析WebSocket数据出错:', error);
                     console.error('原始数据:', event.data);
-                    // 只显示错误，不关闭连接
                     this.$message.warning('数据格式可能不匹配，继续等待...');
                 }
             };
@@ -476,12 +566,11 @@ export default {
             };
         },
 
-        // 保存按钮事件 - 验证并提交表单
+        // 保存按钮事件
         handleSave() {
             this.$refs.form.validate(async (valid) => {
                 if (valid) {
                     try {
-                        // 发送保存请求（根据实际后端地址修改）
                         const response = await axios.post('/api/save-form', this.form);
 
                         if (response.data.success) {
@@ -505,12 +594,12 @@ export default {
             this.canGenerate = false;
             this.canSave = false;
             this.canCancel = false;
-            // 关闭WebSocket连接
             if (this.websocket) {
                 this.websocket.close();
                 this.websocket = null;
             }
             this.isGenerating = false;
+            this.isGeneratingNodes = false;
             // 重置思维导图
             this.fullData = {
                 data: {
