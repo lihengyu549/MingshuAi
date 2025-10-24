@@ -367,3 +367,12 @@ export function stopDataScan (params) {
     data: params
   })
 }
+
+// 生成标准分类分级
+export function generateStandard (params) {
+  return request({
+    url: '/system/category/generateStandard',
+    method: 'post',
+    data: params
+  })
+}
