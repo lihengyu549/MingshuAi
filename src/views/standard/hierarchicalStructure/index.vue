@@ -21,10 +21,10 @@
             </el-form>
             <div class="form-buttons">
                 <!-- 生成按钮添加禁用状态控制 -->
-                <el-button type="primary" @click="handleGenerate" :disabled="!canGenerate || isGenerating"
+                <el-button type="primary" plain @click="handleGenerate" :disabled="!canGenerate || isGenerating"
                     :loading="isGenerating" :icon="generateIcon">生成</el-button>
-                <el-button type="success" @click="handleSave" :disabled="!canSave">保存</el-button>
-                <el-button type="warning" @click="handleCancel" :disabled="!canCancel">取消</el-button>
+                <el-button type="success" plain @click="handleSave" :disabled="!canSave">保存</el-button>
+                <el-button type="warning" plain @click="handleCancel" :disabled="!canCancel">取消</el-button>
             </div>
         </div>
 
@@ -55,12 +55,13 @@
 <script>
 import MindMap from "simple-mind-map";
 import "simple-mind-map/dist/simpleMindMap.esm.css";
-import { generateStandard } from '@/api/system/proxys'
+import { generateStandard, saveGenerateStandard, cancelGenerateStandard } from '@/api/system/proxys'
 import axios from 'axios'
 export default {
     name: "FlowChart",
     data() {
         return {
+            generate: null,
             mindMap: null,
             // 右键菜单相关数据
             type: "",
@@ -102,7 +103,7 @@ export default {
             generateIcon: '',
             // 控制节点生成的状态
             isGeneratingNodes: false,
-            nodeGenerationDelay: 100, // 节点生成间隔时间(ms)
+            nodeGenerationDelay: 0, // 增加节点生成间隔时间，让用户能看清逐个生成的效果
             batchUpdate: false,
             updateQueue: [],
             batchUpdateInterval: 100 // 批量更新间隔，可根据需要调整
@@ -223,15 +224,16 @@ export default {
             }
         },
 
-        // 递归比较并添加新节点
+        // 递归比较并添加新节点 - 改进为严格按照层级顺序逐个生成
         async compareAndAddNodes(targetParent, sourceNodes, level = 1) {
-            if (!sourceNodes || !sourceNodes.length) return;
+            if (!sourceNodes || !sourceNodes.length || !this.isGenerating) return;
 
+            // 先处理当前层级的所有节点
             for (let i = 0; i < sourceNodes.length; i++) {
                 if (!this.isGenerating) break;
 
                 const sourceNode = sourceNodes[i];
-                // 改进：优先通过uid判断，没有uid再结合文本和其他关键属性
+                // 优先通过uid判断，没有uid再结合文本和其他关键属性
                 let existingNode = null;
                 if (targetParent.children) {
                     existingNode = targetParent.children.find(child =>
@@ -241,7 +243,10 @@ export default {
                 }
 
                 let newNode;
+                let isNewNode = false;
+
                 if (!existingNode) {
+                    isNewNode = true;
                     newNode = {
                         data: {
                             ...sourceNode.data,
@@ -256,9 +261,21 @@ export default {
                     }
                     targetParent.children.push(newNode);
 
-                    // 这里后续会修改更新方式
+                    // 更新思维导图
                     this.updateMindMapWithNewData(this.fullData);
 
+                    // 等待渲染完成
+                    await new Promise(resolve => setTimeout(resolve, 50));
+
+                    // 将新节点居中显示
+                    if (this.mindMap && this.mindMap.renderer) {
+                        const node = this.mindMap.renderer.findNodeByUid(newNode.data.uid);
+                        if (node && this.mindMap.renderer.moveNodeToCenter) {
+                            this.mindMap.renderer.moveNodeToCenter(node);
+                        }
+                    }
+
+                    // 等待动画完成
                     await new Promise(resolve => setTimeout(resolve, this.nodeGenerationDelay));
                 } else {
                     newNode = existingNode;
@@ -266,6 +283,7 @@ export default {
                     newNode.data = { ...newNode.data, ...sourceNode.data };
                 }
 
+                // 递归处理子节点，确保层级顺序
                 if (sourceNode.children && sourceNode.children.length) {
                     await this.compareAndAddNodes(newNode, sourceNode.children, level + 1);
                 }
@@ -281,34 +299,29 @@ export default {
             }
 
             this.isGeneratingNodes = true;
-            // 开启批量更新模式
-            this.batchUpdate = true;
+            // 关闭批量更新，确保逐个节点生成
+            this.batchUpdate = false;
             this.updateQueue = [];
 
             try {
                 if (newData.data && newData.data.text) {
                     this.fullData.data.text = newData.data.text;
+                    // 更新根节点并居中
+                    this.updateMindMapWithNewData(this.fullData);
+                    await new Promise(resolve => setTimeout(resolve, this.nodeGenerationDelay));
                 }
 
+                // 严格按照层级顺序生成节点
                 await this.compareAndAddNodes(this.fullData, newData.children || []);
 
-                // 处理队列中的更新
-                if (this.updateQueue.length > 0) {
-                    // 使用最后一个更新作为最终状态
-                    const finalData = this.updateQueue[this.updateQueue.length - 1];
-                    if (this.mindMap) {
-                        this.mindMap.setData(finalData);
-                    }
-                }
+                // 清理可能的重复节点
+                this.cleanDuplicateNodes(this.fullData);
+                this.updateMindMapWithNewData(this.fullData);
+
             } catch (error) {
                 console.error('处理节点生成时出错:', error);
             } finally {
                 this.isGeneratingNodes = false;
-                this.batchUpdate = false;
-                this.updateQueue = [];
-                // 生成完成后清理可能的重复节点
-                this.cleanDuplicateNodes(this.fullData);
-                this.updateMindMapWithNewData(this.fullData);
             }
         },
         cleanDuplicateNodes(node) {
@@ -428,6 +441,7 @@ export default {
                     enterpriseName: this.form.enterpriseName,
                     structureLevel: this.form.structureLevel
                 }).then(response => {
+                    this.generate = response.data;
                     if (response.code !== 200) {
                         this.$message.error('请求失败，状态码: ' + response.code);
                         this.cleanupGeneration(false);
@@ -503,8 +517,8 @@ export default {
             const protocols = token ? [`${token}`] : [];
             const currentUrl = new URL(window.location.href);
             const hostName = currentUrl.hostname;
-            const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}`; //本地
-            // const wsUrl = `wss://${hostName}:443/system/generateWebSocket/${currentUser}`; // 线上
+            const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.fullData.data.text}`; //本地
+            // const wsUrl = `wss://${hostName}:443/system/generateWebSocket/${currentUser}/${this.fullData.data.text}`; // 线上
 
             this.websocket = new WebSocket(
                 wsUrl,
@@ -522,6 +536,26 @@ export default {
             this.websocket.onmessage = (event) => {
                 try {
                     console.log('收到WebSocket数据:', event.data);
+                    
+                    // 检查返回值是否为'执行完成'
+                    if (event.data === '执行完成') {
+                        console.log('收到执行完成信号，准备关闭连接');
+                        this.$message.success('思维导图生成完成');
+                        
+                        // 恢复按钮状态
+                        this.cleanupGeneration(true);
+                        this.canSave = true;
+                        this.canCancel = true;
+                        this.isGeneratingNodes = false;
+                        
+                        // 关闭WebSocket连接
+                        if (this.websocket) {
+                            this.websocket.close();
+                            this.websocket = null;
+                        }
+                        return;
+                    }
+                    
                     const data = JSON.parse(event.data);
                     console.log('解析后的数据:', data);
 
@@ -571,7 +605,8 @@ export default {
             this.$refs.form.validate(async (valid) => {
                 if (valid) {
                     try {
-                        const response = await axios.post('/api/save-form', this.form);
+
+                        const response = await saveGenerateStandard({id: this.generate.id});
 
                         if (response.data.success) {
                             this.$message.success('保存成功');
@@ -589,8 +624,18 @@ export default {
             });
         },
 
-        handleCancel() {
-            this.$refs.form.resetFields();
+        async handleCancel() {
+            try {
+                const response = await cancelGenerateStandard({id: this.generate.id});
+                if (response.data.success) {
+                    this.$message.success('取消成功');
+                } else {
+                    this.$message.error('取消失败: ' + (response.data.message || '未知错误'));
+                }
+            } catch (error) {
+                console.error('取消请求出错:', error);
+                this.$message.error('取消失败，请重试');
+            }
             this.canGenerate = false;
             this.canSave = false;
             this.canCancel = false;

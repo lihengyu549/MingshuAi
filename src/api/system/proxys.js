@@ -376,3 +376,21 @@ export function generateStandard (params) {
     data: params
   })
 }
+
+//保存—AI生成标准接口
+export function saveGenerateStandard (params) {
+  return request({
+    url: '/system/category/saveGenerateStandard',
+    method: 'post',
+    data: params
+  })
+}
+
+//取消AI生成标准接口
+export function cancelGenerateStandard (params) {
+  return request({
+    url: '/system/category/cancelGenerateStandard',
+    method: 'post',
+    data: params
+  })
+}
