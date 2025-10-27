@@ -156,7 +156,7 @@ export default {
         };
     },
     mounted() {
-        // 初始化数据库列表，添加isActive属性用于高亮显示
+        // 初始化数据库列表，确保所有属性都是响应式的
         this.returnArr = this.scanContentTreeData.map(item => ({
             name: item.label,
             checked: false,
@@ -165,6 +165,11 @@ export default {
             children: [],
             isActive: false
         }));
+
+        // 处理treeCheckedData的回显 - 使用nextTick确保DOM更新后执行
+        this.$nextTick(() => {
+            this.handleTreeCheckedDataEcho();
+        });
     },
     computed: {
         // 完全选中的数据源数量
@@ -247,6 +252,121 @@ export default {
         }
     },
     methods: {
+        // 处理treeCheckedData的回显
+        async handleTreeCheckedDataEcho() {
+            console.log('处理treeCheckedData回显:', this.$props);
+            
+            // 检查treeCheckedData是否有值
+            if (!this.treeCheckedData || this.treeCheckedData.length === 0) {
+                return;
+            }
+
+            // 解析数据，按数据库分组
+            const dbTableMap = new Map();
+            this.treeCheckedData.forEach(item => {
+                const [databaseName, tableName] = item.split('-');
+                if (!dbTableMap.has(databaseName)) {
+                    dbTableMap.set(databaseName, new Set());
+                }
+                dbTableMap.get(databaseName).add(tableName);
+            });
+
+            // 找到需要处理的数据库
+            const databasesToProcess = [];
+            this.returnArr.forEach(db => {
+                if (dbTableMap.has(db.name)) {
+                    databasesToProcess.push(db);
+                }
+            });
+
+            // 批量加载所有需要的表数据
+            await Promise.all(databasesToProcess.map(db => 
+                this.fetchTableNamesForEcho(db.name)
+            ));
+
+            // 记录第一个选中或半选的数据库
+            let firstSelectedDatabase = null;
+
+            // 使用Vue的响应式更新方式设置状态
+            this.$set(this, 'returnArr', this.returnArr.map(db => {
+                const selectedTables = dbTableMap.get(db.name);
+                
+                // 如果这个数据库没有需要选中的表，保持原样
+                if (!selectedTables || db.children.length === 0) {
+                    return db;
+                }
+
+                // 创建新的数据库对象，确保响应式更新
+                const updatedDb = {
+                    ...db,
+                    children: db.children.map(table => ({
+                        ...table,
+                        checked: selectedTables.has(table.tableName)
+                    }))
+                };
+
+                // 计算选中状态
+                const checkedCount = updatedDb.children.filter(t => t.checked).length;
+                const totalCount = updatedDb.children.length;
+
+                // 设置正确的选中和半选状态
+                updatedDb.checked = checkedCount === totalCount;
+                updatedDb.isBanxuan = checkedCount > 0 && checkedCount < totalCount;
+
+                // 记录第一个有选中表的数据库
+                if (!firstSelectedDatabase && checkedCount > 0) {
+                    firstSelectedDatabase = updatedDb;
+                }
+
+                return updatedDb;
+            }));
+
+            // 默认展示第一个选中或半选的数据库
+            if (firstSelectedDatabase) {
+                // 使用Vue的方式更新状态
+                this.$set(this, 'returnArr', this.returnArr.map(db => ({
+                    ...db,
+                    isActive: db.name === firstSelectedDatabase.name
+                })));
+
+                // 设置中间列表数据
+                this.$set(this, 'checkListChildAll', [...firstSelectedDatabase.children]);
+                this.$set(this, 'serchListChildAll', [...firstSelectedDatabase.children]);
+                this.updateMiddleListCheckAllStatus();
+            }
+
+            // 更新所有相关状态
+            this.updateCheckList();
+            this.updateCheckAllStatus();
+        },
+        
+        // 为回显专门的fetchTableNames方法，避免覆盖状态
+        async fetchTableNamesForEcho(databaseName) {
+            const database = this.returnArr.find(ele => ele.name === databaseName);
+            if (!database) return;
+            
+            // 只在没有子表数据时才加载
+            if (!database.children || database.children.length === 0) {
+                // 请求表数据
+                this.databaseTableNameP.databaseName = databaseName;
+                const res = await getDatabaseTableNameList(this.databaseTableNameP);
+                
+                // 创建表数据
+                const tables = res.data.map(item => ({
+                    databaseName: item.databaseName,
+                    tableName: item.tableName,
+                    value: item.parentID,
+                    checked: false,
+                    schemaName: item.schemaName
+                }));
+                
+                // 使用Vue的方式更新，确保响应式
+                const updatedDb = { ...database, children: tables };
+                this.$set(this, 'returnArr', this.returnArr.map(db => 
+                    db.name === databaseName ? updatedDb : db
+                ));
+            }
+        },
         // 全选复选框事件
         handleCheckAllChange(checked) {
             this.isIndeterminate = false;
@@ -290,12 +410,37 @@ export default {
             // 为当前点击的数据库添加高亮状态
             item.isActive = true;
 
-            // 加载表数据
-            await this.fetchTableNames(item.name);
-
-            // 只展示当前库的表
+            // 找到对应的数据库对象
             const database = this.returnArr.find(ele => ele.name === item.name);
+            
+            // 检查是否需要加载表数据
+            if (database && (!database.children || database.children.length === 0)) {
+                // 保存当前的选中状态映射（如果有）
+                const checkedTablesMap = new Map();
+                if (database.children) {
+                    database.children.forEach(table => {
+                        if (table.checked) {
+                            checkedTablesMap.set(table.tableName, true);
+                        }
+                    });
+                }
+                
+                // 加载表数据
+                await this.fetchTableNames(item.name);
+                
+                // 恢复选中状态
+                if (database.children && checkedTablesMap.size > 0) {
+                    database.children.forEach(table => {
+                        if (checkedTablesMap.has(table.tableName)) {
+                            table.checked = true;
+                        }
+                    });
+                }
+            }
+
+            // 只展示当前库的表，确保表的选中状态正确保留
             if (database && database.children) {
+                // 直接使用children数组，保留其中的checked状态
                 this.checkListChildAll = [...database.children];
                 this.serchListChildAll = [...database.children];
                 this.updateMiddleListCheckAllStatus(); // 更新中间列表全选状态
@@ -341,7 +486,7 @@ export default {
             let database;
             if (item.databaseName != item.schemaName) {
                 database = this.returnArr.find(ele => ele.name === item.schemaName);
-            }else{
+            } else {
                 database = this.returnArr.find(ele => ele.name === item.databaseName);
             }
             // 获取该数据库下所有被选中的表
@@ -404,15 +549,18 @@ export default {
             // 请求表数据
             this.databaseTableNameP.databaseName = databaseName;
             const res = await getDatabaseTableNameList(this.databaseTableNameP);
+            
+            // 创建新的表数据数组
             const tables = res.data.map(item => ({
                 databaseName: item.databaseName,
                 tableName: item.tableName,
                 value: item.parentID,
-                checked: false,
+                checked: false, // 默认为未选中
                 schemaName: item.schemaName
             }));
 
             if (database) {
+                // 存储新的表数据
                 database.children = tables;
             }
         },
