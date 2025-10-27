@@ -19,10 +19,15 @@
                     </el-select>
                 </el-form-item>
             </el-form>
-            <div class="form-buttons">
-                <!-- 生成按钮添加禁用状态控制 -->
+            <div class="form-buttons top-buttons">
+                <!-- 生成和停止按钮放上面 -->
                 <el-button type="primary" plain @click="handleGenerate" :disabled="!canGenerate || isGenerating"
                     :loading="isGenerating" :icon="generateIcon">生成</el-button>
+                <el-button type="danger" plain @click="handleTermination" :disabled="!isGenerating"
+                    :loading="isTerminating">停止</el-button>
+            </div>
+            <div class="form-buttons bottom-buttons">
+                <!-- 保存和取消放最下方 -->
                 <el-button type="success" plain @click="handleSave" :disabled="!canSave">保存</el-button>
                 <el-button type="warning" plain @click="handleCancel" :disabled="!canCancel">取消</el-button>
             </div>
@@ -55,7 +60,7 @@
 <script>
 import MindMap from "simple-mind-map";
 import "simple-mind-map/dist/simpleMindMap.esm.css";
-import { generateStandard, saveGenerateStandard, cancelGenerateStandard } from '@/api/system/proxys'
+import { generateStandard, saveGenerateStandard, cancelGenerateStandard, terminationGenerateStandard } from '@/api/system/proxys'
 import axios from 'axios'
 export default {
     name: "FlowChart",
@@ -100,6 +105,7 @@ export default {
             canCancel: false,
             websocket: null,
             isGenerating: false,
+            isTerminating: false, // 新增停止按钮加载状态
             generateIcon: '',
             // 控制节点生成的状态
             isGeneratingNodes: false,
@@ -202,10 +208,6 @@ export default {
         }
     },
     methods: {
-        generateUniqueId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
-        },
-
         updateMindMapWithNewData(data) {
             if (this.batchUpdate) {
                 // 如果处于批量更新模式，加入队列
@@ -233,12 +235,11 @@ export default {
                 if (!this.isGenerating) break;
 
                 const sourceNode = sourceNodes[i];
-                // 优先通过uid判断，没有uid再结合文本和其他关键属性
+                // 优先通过uid判断
                 let existingNode = null;
-                if (targetParent.children) {
+                if (targetParent.children && sourceNode.data.uid) {
                     existingNode = targetParent.children.find(child =>
-                        (child.data.uid && sourceNode.data.uid && child.data.uid === sourceNode.data.uid) ||
-                        (!child.data.uid && !sourceNode.data.uid && child.data.text === sourceNode.data.text)
+                        child.data.uid === sourceNode.data.uid
                     );
                 }
 
@@ -249,9 +250,8 @@ export default {
                     isNewNode = true;
                     newNode = {
                         data: {
-                            ...sourceNode.data,
-                            // 保留原节点uid（如果有），增强唯一性
-                            uid: sourceNode.data.uid || this.generateUniqueId()
+                            ...sourceNode.data
+                            // 不再手动生成uid，使用后端返回的uid
                         },
                         children: []
                     };
@@ -268,8 +268,8 @@ export default {
                     await new Promise(resolve => setTimeout(resolve, 50));
 
                     // 将新节点居中显示
-                    if (this.mindMap && this.mindMap.renderer) {
-                        const node = this.mindMap.renderer.findNodeByUid(newNode.data.uid);
+                    if (this.mindMap && this.mindMap.renderer && sourceNode.data.uid) {
+                        const node = this.mindMap.renderer.findNodeByUid(sourceNode.data.uid);
                         if (node && this.mindMap.renderer.moveNodeToCenter) {
                             this.mindMap.renderer.moveNodeToCenter(node);
                         }
@@ -327,7 +327,7 @@ export default {
         cleanDuplicateNodes(node) {
             if (!node.children || node.children.length === 0) return;
 
-            // 记录已存在的节点标识
+            // 记录已存在的节点标识，使用uid
             const existingIds = new Set();
             const uniqueChildren = [];
 
@@ -350,7 +350,7 @@ export default {
             if (branchIndex < originalData.children.length) {
                 const targetChild = originalData.children[branchIndex];
                 const currentChild = currentData.children[branchIndex] || { data: { text: '新节点' }, children: [] };
-                currentChild.data.uid = targetChild.data.uid || this.generateUniqueId();
+                currentChild.data.uid = targetChild.data.uid; // 使用后端返回的uid
                 this.loadBranchRecursively(originalData, currentChild, targetChild, 1);
             }
         },
@@ -358,7 +358,8 @@ export default {
         loadBranchRecursively(originalData, currentData, branchNode, level, onComplete) {
             if (!branchNode) return;
             currentData.data = { ...currentData.data, ...branchNode.data };
-            currentData.data.uid = currentData.data.uid || this.generateUniqueId();
+            // 保留后端返回的uid
+            currentData.data.uid = branchNode.data.uid;
 
             if (branchNode.children && branchNode.children.length > 0) {
                 currentData.children = currentData.children || [];
@@ -469,6 +470,34 @@ export default {
             }
         },
 
+        // 停止按钮事件
+        async handleTermination() {
+            if (!this.generate || !this.generate.id) {
+                this.$message.warning('没有正在生成的任务');
+                return;
+            }
+
+            this.isTerminating = true;
+            try {
+                const response = await terminationGenerateStandard({ id: this.generate.id });
+                if (response.data.success) {
+                    this.$message.success('已发送停止请求');
+                    // 接口发送成功后立即断开websocket
+                    if (this.websocket) {
+                        this.websocket.close();
+                    }
+                } else {
+                    this.$message.error('停止请求失败: ' + (response.data.message || '未知错误'));
+                }
+            } catch (error) {
+                console.error('停止请求出错:', error);
+                this.$message.error('停止请求失败，请重试');
+            } finally {
+                this.isTerminating = false;
+                this.cleanupGeneration(false);
+            }
+        },
+
         // 清理生成状态的方法
         cleanupGeneration(isSuccess = false) {
             this.isGenerating = false;
@@ -536,18 +565,18 @@ export default {
             this.websocket.onmessage = (event) => {
                 try {
                     console.log('收到WebSocket数据:', event.data);
-                    
+
                     // 检查返回值是否为'执行完成'
                     if (event.data === '执行完成') {
                         console.log('收到执行完成信号，准备关闭连接');
                         this.$message.success('思维导图生成完成');
-                        
+
                         // 恢复按钮状态
                         this.cleanupGeneration(true);
                         this.canSave = true;
                         this.canCancel = true;
                         this.isGeneratingNodes = false;
-                        
+
                         // 关闭WebSocket连接
                         if (this.websocket) {
                             this.websocket.close();
@@ -555,7 +584,7 @@ export default {
                         }
                         return;
                     }
-                    
+
                     const data = JSON.parse(event.data);
                     console.log('解析后的数据:', data);
 
@@ -606,7 +635,7 @@ export default {
                 if (valid) {
                     try {
 
-                        const response = await saveGenerateStandard({id: this.generate.id});
+                        const response = await saveGenerateStandard({ id: this.generate.id });
 
                         if (response.data.success) {
                             this.$message.success('保存成功');
@@ -626,7 +655,7 @@ export default {
 
         async handleCancel() {
             try {
-                const response = await cancelGenerateStandard({id: this.generate.id});
+                const response = await cancelGenerateStandard({ id: this.generate.id });
                 if (response.data.success) {
                     this.$message.success('取消成功');
                 } else {
@@ -659,6 +688,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.flow-chart-container {
+    width: 100%;
+    height: 96vh;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+}
+
 #mindMapContainer {
     width: 100%;
     height: 100%;
@@ -670,13 +707,6 @@ export default {
     padding: 0;
 }
 
-.flow-chart-container {
-    width: 100%;
-    height: 100vh;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-}
 
 .main-content {
     flex: 1;
@@ -691,13 +721,23 @@ export default {
     height: 100%;
     box-sizing: border-box;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .form-buttons {
-    margin-top: 20px;
     display: flex;
     gap: 10px;
     justify-content: flex-end;
+}
+
+.top-buttons {
+    margin-top: 20px;
+}
+
+.bottom-buttons {
+    margin-top: auto;
+    margin-bottom: 20px;
 }
 
 .context-menu {

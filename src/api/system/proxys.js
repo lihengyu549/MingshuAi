@@ -394,3 +394,12 @@ export function cancelGenerateStandard (params) {
     data: params
   })
 }
+
+//终止—AI生成标准接口
+export function terminationGenerateStandard (params) {
+  return request({
+    url: '/system/category/terminationGenerateStandard',
+    method: 'post',
+    data: params
+  })
+}
