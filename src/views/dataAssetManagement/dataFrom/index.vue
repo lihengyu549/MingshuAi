@@ -1055,7 +1055,7 @@ export default {
         this.form.scheduleInterval = row.databaseProxysTimer?.scheduleInterval || ''
         this.form.scheduleTime = row.databaseProxysTimer?.scheduleTime || '00:00'
         this.form.scheduleType = row.databaseProxysTimer?.scheduleType || '0'
-        this.form.proceedOrOverwrite = row.proceedOrOverwrite
+        this.form.proceedOrOverwrite = row.proceedOrOverwrite || '0'
         getDatabaseAndTablesById(row.id).then(res => {
           this.scanContentLoading = false
           if (res.data && res.data.options && res.data.options.length) {
