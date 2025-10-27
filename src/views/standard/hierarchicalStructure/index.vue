@@ -480,14 +480,10 @@ export default {
             this.isTerminating = true;
             try {
                 const response = await terminationGenerateStandard({ id: this.generate.id });
-                if (response.data.success) {
-                    this.$message.success('已发送停止请求');
-                    // 接口发送成功后立即断开websocket
-                    if (this.websocket) {
-                        this.websocket.close();
-                    }
-                } else {
-                    this.$message.error('停止请求失败: ' + (response.data.message || '未知错误'));
+                this.$message.success('已发送停止请求');
+                // 接口发送成功后立即断开websocket
+                if (this.websocket) {
+                    this.websocket.close();
                 }
             } catch (error) {
                 console.error('停止请求出错:', error);
@@ -546,8 +542,8 @@ export default {
             const protocols = token ? [`${token}`] : [];
             const currentUrl = new URL(window.location.href);
             const hostName = currentUrl.hostname;
-            // const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
-            const wsUrl = `wss://${hostName}:443/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
+            const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
+            // const wsUrl = `wss://${hostName}:443/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
 
             this.websocket = new WebSocket(
                 wsUrl,
