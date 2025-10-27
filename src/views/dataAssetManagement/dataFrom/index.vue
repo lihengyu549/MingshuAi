@@ -894,7 +894,12 @@ export default {
         this.form.scheduleInterval = '周一'
         this.weekList = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
       } else {
+        // 对于手动(0)和每天(1)类型，清空scheduleInterval并重置weekList
         this.form.scheduleInterval = ''
+        // 重置为默认的星期数组，确保Vue响应式系统正确更新
+        this.weekList = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        // 强制更新视图
+        this.$forceUpdate()
       }
     },
     getDaysInCurrentMonth() {
