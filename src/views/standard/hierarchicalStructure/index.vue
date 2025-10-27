@@ -235,11 +235,17 @@ export default {
                 if (!this.isGenerating) break;
 
                 const sourceNode = sourceNodes[i];
+                // 确保sourceNode和sourceNode.data存在
+                if (!sourceNode || !sourceNode.data) {
+                    console.warn('跳过无效节点:', sourceNode);
+                    continue;
+                }
+                
                 // 优先通过uid判断
                 let existingNode = null;
                 if (targetParent.children && sourceNode.data.uid) {
                     existingNode = targetParent.children.find(child =>
-                        child.data.uid === sourceNode.data.uid
+                        child.data && child.data.uid === sourceNode.data.uid
                     );
                 }
 
@@ -269,9 +275,13 @@ export default {
 
                     // 将新节点居中显示
                     if (this.mindMap && this.mindMap.renderer && sourceNode.data.uid) {
-                        const node = this.mindMap.renderer.findNodeByUid(sourceNode.data.uid);
-                        if (node && this.mindMap.renderer.moveNodeToCenter) {
-                            this.mindMap.renderer.moveNodeToCenter(node);
+                        try {
+                            const node = this.mindMap.renderer.findNodeByUid(sourceNode.data.uid);
+                            if (node && this.mindMap.renderer.moveNodeToCenter) {
+                                this.mindMap.renderer.moveNodeToCenter(node);
+                            }
+                        } catch (error) {
+                            console.error('居中节点时出错:', error);
                         }
                     }
 
@@ -280,7 +290,11 @@ export default {
                 } else {
                     newNode = existingNode;
                     // 同步更新已有节点的数据，避免数据不一致
-                    newNode.data = { ...newNode.data, ...sourceNode.data };
+                    if (newNode.data) {
+                        newNode.data = { ...newNode.data, ...sourceNode.data };
+                    } else {
+                        newNode.data = { ...sourceNode.data };
+                    }
                 }
 
                 // 递归处理子节点，确保层级顺序
@@ -325,13 +339,20 @@ export default {
             }
         },
         cleanDuplicateNodes(node) {
-            if (!node.children || node.children.length === 0) return;
+            // 确保node存在
+            if (!node || !node.children || node.children.length === 0) return;
 
             // 记录已存在的节点标识，使用uid
             const existingIds = new Set();
             const uniqueChildren = [];
 
             node.children.forEach(child => {
+                // 确保child和child.data存在
+                if (!child || !child.data) {
+                    console.warn('跳过无效的子节点:', child);
+                    return;
+                }
+                
                 const identifier = child.data.uid || child.data.text;
                 if (!existingIds.has(identifier)) {
                     existingIds.add(identifier);
@@ -356,14 +377,23 @@ export default {
         },
 
         loadBranchRecursively(originalData, currentData, branchNode, level, onComplete) {
-            if (!branchNode) return;
-            currentData.data = { ...currentData.data, ...branchNode.data };
-            // 保留后端返回的uid
-            currentData.data.uid = branchNode.data.uid;
+            // 确保必要的参数存在
+            if (!branchNode || !currentData) return;
+            
+            // 确保数据对象存在
+            currentData.data = currentData.data || {};
+            if (branchNode.data) {
+                currentData.data = { ...currentData.data, ...branchNode.data };
+                // 仅当branchNode.data.uid存在时才设置
+                if (branchNode.data.uid) {
+                    currentData.data.uid = branchNode.data.uid;
+                }
+            }
 
             if (branchNode.children && branchNode.children.length > 0) {
                 currentData.children = currentData.children || [];
                 branchNode.children.forEach((child, index) => {
+                    // 确保子节点对象存在
                     currentData.children[index] = currentData.children[index] || { data: { text: '子节点' }, children: [] };
                     this.loadBranchRecursively(originalData, currentData.children[index], child, level + 1, onComplete);
                 });
