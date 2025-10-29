@@ -109,7 +109,7 @@ export default {
             generateIcon: '',
             // 控制节点生成的状态
             isGeneratingNodes: false,
-            nodeGenerationDelay: 0, // 增加节点生成间隔时间，让用户能看清逐个生成的效果
+            nodeGenerationDelay: 150, // 增加节点生成间隔时间，让用户能看清逐个生成的效果
             batchUpdate: false,
             updateQueue: [],
             batchUpdateInterval: 100 // 批量更新间隔，可根据需要调整
@@ -153,21 +153,12 @@ export default {
 
                 if (createdNodes.length > 0) {
                     const lastCreate = createdNodes[createdNodes.length - 1];
-                    const uid = lastCreate.data && lastCreate.data.data ? lastCreate.data.data.uid : null;
+                    // 现在使用节点名称而不是uid
+                    const nodeText = lastCreate.data && lastCreate.data.data && lastCreate.data.data.text ? lastCreate.data.data.text : null;
 
-                    if (uid) {
-                        setTimeout(() => {
-                            const node = this.mindMap.renderer && this.mindMap.renderer.findNodeByUid ?
-                                this.mindMap.renderer.findNodeByUid(uid) : null;
-
-                            if (node) {
-                                if (this.mindMap.renderer && this.mindMap.renderer.moveNodeToCenter) {
-                                    this.mindMap.renderer.moveNodeToCenter(node);
-                                }
-                            } else {
-                                this.waitUid = uid;
-                            }
-                        }, 100);
+                    if (nodeText) {
+                        console.log('节点已创建:', nodeText);
+                        // 移除使用uid的逻辑
                     }
                 }
             } catch (error) {
@@ -240,12 +231,12 @@ export default {
                     console.warn('跳过无效节点:', sourceNode);
                     continue;
                 }
-                
-                // 优先通过uid判断
+
+                // 仅通过节点名称(text)进行判断
                 let existingNode = null;
-                if (targetParent.children && sourceNode.data.uid) {
+                if (targetParent.children && sourceNode.data.text) {
                     existingNode = targetParent.children.find(child =>
-                        child.data && child.data.uid === sourceNode.data.uid
+                        child.data && child.data.text === sourceNode.data.text
                     );
                 }
 
@@ -257,7 +248,6 @@ export default {
                     newNode = {
                         data: {
                             ...sourceNode.data
-                            // 不再手动生成uid，使用后端返回的uid
                         },
                         children: []
                     };
@@ -273,17 +263,8 @@ export default {
                     // 等待渲染完成
                     await new Promise(resolve => setTimeout(resolve, 50));
 
-                    // 将新节点居中显示
-                    if (this.mindMap && this.mindMap.renderer && sourceNode.data.uid) {
-                        try {
-                            const node = this.mindMap.renderer.findNodeByUid(sourceNode.data.uid);
-                            if (node && this.mindMap.renderer.moveNodeToCenter) {
-                                this.mindMap.renderer.moveNodeToCenter(node);
-                            }
-                        } catch (error) {
-                            console.error('居中节点时出错:', error);
-                        }
-                    }
+                    // 将新节点居中显示 - 移除对uid的依赖
+                    console.log('新节点已添加:', sourceNode.data.text);
 
                     // 等待动画完成
                     await new Promise(resolve => setTimeout(resolve, this.nodeGenerationDelay));
@@ -342,8 +323,8 @@ export default {
             // 确保node存在
             if (!node || !node.children || node.children.length === 0) return;
 
-            // 记录已存在的节点标识，使用uid
-            const existingIds = new Set();
+            // 记录已存在的节点标识，现在优先使用节点名称(text)
+            const existingNames = new Set();
             const uniqueChildren = [];
 
             node.children.forEach(child => {
@@ -352,10 +333,10 @@ export default {
                     console.warn('跳过无效的子节点:', child);
                     return;
                 }
-                
-                const identifier = child.data.uid || child.data.text;
-                if (!existingIds.has(identifier)) {
-                    existingIds.add(identifier);
+
+                const identifier = child.data.text || '';
+                if (identifier && !existingNames.has(identifier)) {
+                    existingNames.add(identifier);
                     uniqueChildren.push(child);
                     // 递归清理子节点
                     this.cleanDuplicateNodes(child);
@@ -370,8 +351,13 @@ export default {
             if (!originalData.children || !currentData.children) return;
             if (branchIndex < originalData.children.length) {
                 const targetChild = originalData.children[branchIndex];
-                const currentChild = currentData.children[branchIndex] || { data: { text: '新节点' }, children: [] };
-                currentChild.data.uid = targetChild.data.uid; // 使用后端返回的uid
+                const currentChild = currentData.children[branchIndex] || {
+                    data: {
+                        text: targetChild.data && targetChild.data.text ? targetChild.data.text : '新节点'
+                    },
+                    children: []
+                };
+                // 不再直接设置uid，依赖loadBranchRecursively中的数据合并
                 this.loadBranchRecursively(originalData, currentChild, targetChild, 1);
             }
         },
@@ -379,22 +365,24 @@ export default {
         loadBranchRecursively(originalData, currentData, branchNode, level, onComplete) {
             // 确保必要的参数存在
             if (!branchNode || !currentData) return;
-            
+
             // 确保数据对象存在
             currentData.data = currentData.data || {};
             if (branchNode.data) {
+                // 复制所有数据，但不特别强调uid
                 currentData.data = { ...currentData.data, ...branchNode.data };
-                // 仅当branchNode.data.uid存在时才设置
-                if (branchNode.data.uid) {
-                    currentData.data.uid = branchNode.data.uid;
-                }
             }
 
             if (branchNode.children && branchNode.children.length > 0) {
                 currentData.children = currentData.children || [];
                 branchNode.children.forEach((child, index) => {
                     // 确保子节点对象存在
-                    currentData.children[index] = currentData.children[index] || { data: { text: '子节点' }, children: [] };
+                    currentData.children[index] = currentData.children[index] || {
+                        data: {
+                            text: child.data && child.data.text ? child.data.text : '子节点'
+                        },
+                        children: []
+                    };
                     this.loadBranchRecursively(originalData, currentData.children[index], child, level + 1, onComplete);
                 });
             }
@@ -412,11 +400,20 @@ export default {
             }
         },
 
-        moveNodeToCenter(nodeUid) {
-            if (!nodeUid) return;
-            const node = this.mindMap.renderer.findNodeByUid(nodeUid);
-            if (node && this.mindMap.renderer.moveNodeToCenter) {
-                this.mindMap.renderer.moveNodeToCenter(node);
+        moveNodeToCenter(nodeIdentifier) {
+            // 如果没有提供标识符，则直接返回
+            if (!nodeIdentifier) return;
+
+            try {
+                // 仍然尝试使用findNodeByUid方法，但添加错误处理
+                if (this.mindMap && this.mindMap.renderer && this.mindMap.renderer.findNodeByUid) {
+                    const node = this.mindMap.renderer.findNodeByUid(nodeIdentifier);
+                    if (node && this.mindMap.renderer.moveNodeToCenter) {
+                        this.mindMap.renderer.moveNodeToCenter(node);
+                    }
+                }
+            } catch (error) {
+                console.error('移动节点到中心时出错:', error);
             }
         },
 
