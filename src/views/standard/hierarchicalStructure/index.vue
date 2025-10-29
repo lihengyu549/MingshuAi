@@ -206,23 +206,77 @@ export default {
         if (this.websocket) {
             this.websocket.close();
         }
+        if (this.batchUpdateTimer) {
+            clearInterval(this.batchUpdateTimer);
+            this.batchUpdateTimer = null;
+        }
     },
     methods: {
+        // 初始化批量更新处理器
+        initBatchUpdateProcessor() {
+            // 清除已存在的定时器
+            if (this.batchUpdateTimer) {
+                clearInterval(this.batchUpdateTimer);
+            }
+
+            // 设置新的定时器来处理更新队列
+            this.batchUpdateTimer = setInterval(() => {
+                if (this.updateQueue.length > 0) {
+                    // 获取队列中的最新数据
+                    const latestData = this.updateQueue.pop();
+                    // 清空队列，只应用最新的更新
+                    this.updateQueue = [];
+
+                    // 应用更新
+                    if (this.mindMap) {
+                        // 使用requestAnimationFrame确保DOM更新更流畅
+                        requestAnimationFrame(() => {
+                            this.mindMap.setData(latestData);
+                        });
+                    }
+                }
+            }, this.batchUpdateInterval);
+        },
+
+        // 优化的思维导图更新方法，减少闪烁
         updateMindMapWithNewData(data) {
+            // 存储最新数据以供参考
+            this.latestFullData = data;
+
             if (this.batchUpdate) {
-                // 如果处于批量更新模式，加入队列
+                // 如果处于批量更新模式，加入队列并返回
                 this.updateQueue.push(data);
                 return;
             }
 
             if (this.mindMap) {
-                this.mindMap.setData(data);
+                // 使用requestAnimationFrame来优化渲染
+                requestAnimationFrame(() => {
+                    try {
+                        // 使用增量更新而非全量更新
+                        // 检查是否可以使用更细粒度的更新方法
+                        if (this.mindMap.updateData && typeof this.mindMap.updateData === 'function') {
+                            this.mindMap.updateData(data);
+                        } else {
+                            // 回退到setData方法，但尝试减少闪烁
+                            this.mindMap.setData(data);
+                        }
+                    } catch (error) {
+                        console.error('更新思维导图数据时出错:', error);
+                        // 出错时强制更新
+                        this.mindMap.setData(data);
+                    }
+                });
             } else {
+                // 初始化思维导图
                 this.mindMap = new MindMap({
                     el: document.getElementById("mindMapContainer"),
                     enableFreeDrag: true,
                     data: data,
                 });
+
+                // 初始化批量更新处理器
+                this.initBatchUpdateProcessor();
             }
         },
 
