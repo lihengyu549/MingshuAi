@@ -14,20 +14,17 @@
 
                 <el-form-item label="结构层级" prop="structureLevel">
                     <el-select v-model="form.structureLevel" placeholder="请选择结构层级">
-                        <!-- <el-option label="2级" value="2"></el-option> -->
                         <el-option label="3级" value="3"></el-option>
                     </el-select>
                 </el-form-item>
             </el-form>
             <div class="form-buttons top-buttons">
-                <!-- 生成和停止按钮放上面 -->
                 <el-button type="primary" plain @click="handleGenerate" :disabled="!canGenerate || isGenerating"
                     :loading="isGenerating" :icon="generateIcon">生成</el-button>
                 <el-button type="danger" plain @click="handleTermination" :disabled="!isGenerating"
                     :loading="isTerminating">停止</el-button>
             </div>
             <div class="form-buttons bottom-buttons">
-                <!-- 保存和取消放最下方 -->
                 <el-button type="success" plain @click="handleSave" :disabled="!canSave">保存</el-button>
                 <el-button type="warning" plain @click="handleCancel" :disabled="!canCancel">取消</el-button>
             </div>
@@ -105,14 +102,19 @@ export default {
             canCancel: false,
             websocket: null,
             isGenerating: false,
-            isTerminating: false, // 新增停止按钮加载状态
+            isTerminating: false,
             generateIcon: '',
             // 控制节点生成的状态
             isGeneratingNodes: false,
-            nodeGenerationDelay: 0, // 增加节点生成间隔时间，让用户能看清逐个生成的效果
+            nodeGenerationDelay: 500,
             batchUpdate: false,
             updateQueue: [],
-            batchUpdateInterval: 100 // 批量更新间隔，可根据需要调整
+            batchUpdateInterval: 100,
+            // 逐字显示相关变量
+            typingQueue: [], // 等待逐字显示的节点队列
+            currentTypingNode: null, // 当前正在逐字显示的节点
+            typingSpeed: 50, // 打字速度，毫秒/字
+            typingComplete: true // 标记当前是否有正在进行的打字动画
         };
     },
     mounted() {
@@ -280,7 +282,67 @@ export default {
             }
         },
 
-        // 递归比较并添加新节点 - 改进为严格按照层级顺序逐个生成
+        // 逐字显示节点文本
+        typeWriter(nodeData, fullText, currentLength = 0) {
+            if (!this.isGenerating) {
+                // 如果生成已停止，直接显示完整文本
+                nodeData.text = fullText;
+                this.updateMindMapWithNewData(this.fullData);
+                this.currentTypingNode = null;
+                this.processNextInTypingQueue();
+                return;
+            }
+
+            // 保存原始文本引用，用于恢复
+            if (!nodeData.originalText) {
+                nodeData.originalText = fullText;
+            }
+
+            // 显示当前长度的文本
+            nodeData.text = fullText.substring(0, currentLength + 1);
+            this.updateMindMapWithNewData(this.fullData);
+
+            // 如果还没显示完，继续显示下一个字符
+            if (currentLength + 1 < fullText.length) {
+                setTimeout(() => {
+                    this.typeWriter(nodeData, fullText, currentLength + 1);
+                }, this.typingSpeed);
+            } else {
+                // 显示完成，处理下一个节点
+                this.currentTypingNode = null;
+                // 短暂延迟后处理下一个节点，让用户看清当前节点
+                setTimeout(() => {
+                    this.processNextInTypingQueue();
+                }, 300);
+            }
+        },
+
+        // 处理打字队列中的下一个节点
+        processNextInTypingQueue() {
+            if (this.typingQueue.length > 0 && !this.currentTypingNode && this.isGenerating) {
+                const nextItem = this.typingQueue.shift();
+                this.currentTypingNode = nextItem.nodeData;
+
+                // 将节点居中显示
+                if (this.mindMap && this.mindMap.renderer && nextItem.uid) {
+                    try {
+                        const node = this.mindMap.renderer.findNodeByUid(nextItem.uid);
+                        if (node && this.mindMap.renderer.moveNodeToCenter) {
+                            this.mindMap.renderer.moveNodeToCenter(node);
+                        }
+                    } catch (error) {
+                        console.error('居中节点时出错:', error);
+                    }
+                }
+
+                // 开始逐字显示
+                this.typeWriter(nextItem.nodeData, nextItem.fullText);
+            } else if (this.typingQueue.length === 0) {
+                this.typingComplete = true;
+            }
+        },
+
+        // 递归比较并添加新节点 - 严格按照层级顺序逐个生成
         async compareAndAddNodes(targetParent, sourceNodes, level = 1) {
             if (!sourceNodes || !sourceNodes.length || !this.isGenerating) return;
 
@@ -308,10 +370,11 @@ export default {
 
                 if (!existingNode) {
                     isNewNode = true;
+                    // 创建新节点，先设置为空文本，等待逐字显示
                     newNode = {
                         data: {
-                            ...sourceNode.data
-                            // 不再手动生成uid，使用后端返回的uid
+                            ...sourceNode.data,
+                            text: "" // 先显示空文本
                         },
                         children: []
                     };
@@ -321,26 +384,35 @@ export default {
                     }
                     targetParent.children.push(newNode);
 
-                    // 更新思维导图
+                    // 更新思维导图，显示空节点
                     this.updateMindMapWithNewData(this.fullData);
+                    await new Promise(resolve => setTimeout(resolve, 100));
 
-                    // 等待渲染完成
-                    await new Promise(resolve => setTimeout(resolve, 50));
+                    // 将新节点加入打字队列
+                    this.typingQueue.push({
+                        nodeData: newNode.data,
+                        fullText: sourceNode.data.text || "新节点",
+                        uid: sourceNode.data.uid
+                    });
 
-                    // 将新节点居中显示
-                    if (this.mindMap && this.mindMap.renderer && sourceNode.data.uid) {
-                        try {
-                            const node = this.mindMap.renderer.findNodeByUid(sourceNode.data.uid);
-                            if (node && this.mindMap.renderer.moveNodeToCenter) {
-                                this.mindMap.renderer.moveNodeToCenter(node);
-                            }
-                        } catch (error) {
-                            console.error('居中节点时出错:', error);
-                        }
+                    // 如果当前没有正在打字的节点，立即开始处理队列
+                    if (this.typingComplete) {
+                        this.typingComplete = false;
+                        this.processNextInTypingQueue();
                     }
 
-                    // 等待动画完成
-                    await new Promise(resolve => setTimeout(resolve, this.nodeGenerationDelay));
+                    // 等待当前节点打字完成后再继续
+                    await new Promise(resolve => {
+                        const checkTypingComplete = () => {
+                            if (!this.currentTypingNode || this.currentTypingNode !== newNode.data) {
+                                resolve();
+                            } else {
+                                setTimeout(checkTypingComplete, 100);
+                            }
+                        };
+                        checkTypingComplete();
+                    });
+
                 } else {
                     newNode = existingNode;
                     // 同步更新已有节点的数据，避免数据不一致
@@ -372,14 +444,14 @@ export default {
             this.updateQueue = [];
 
             try {
+                // 根节点直接显示完整文本，不应用逐字效果
                 if (newData.data && newData.data.text) {
                     this.fullData.data.text = newData.data.text;
-                    // 更新根节点并居中
+                    this.fullData.data.uid = newData.data.uid || this.fullData.data.uid;
                     this.updateMindMapWithNewData(this.fullData);
-                    await new Promise(resolve => setTimeout(resolve, this.nodeGenerationDelay));
                 }
 
-                // 严格按照层级顺序生成节点
+                // 严格按照层级顺序生成子节点（应用逐字效果）
                 await this.compareAndAddNodes(this.fullData, newData.children || []);
 
                 // 清理可能的重复节点
@@ -390,6 +462,10 @@ export default {
                 console.error('处理节点生成时出错:', error);
             } finally {
                 this.isGeneratingNodes = false;
+                // 如果所有节点处理完但队列中还有未处理的，继续处理
+                if (this.typingQueue.length > 0) {
+                    this.processNextInTypingQueue();
+                }
             }
         },
         cleanDuplicateNodes(node) {
@@ -515,9 +591,13 @@ export default {
             this.generateIcon = '';
             this.canSave = false;
             this.canCancel = false;
+            // 清空打字队列
+            this.typingQueue = [];
+            this.currentTypingNode = null;
+            this.typingComplete = true;
 
-            // 将根节点名称改为企业名称
-            this.fullData.data.text = this.form.enterpriseName;
+            // 根节点直接显示完整文本，不做逐字处理
+            this.fullData.data.text = this.form.enterpriseName || "根节点";
             this.updateMindMapWithNewData(this.fullData);
 
             try {
@@ -754,6 +834,9 @@ export default {
             }
             this.isGenerating = false;
             this.isGeneratingNodes = false;
+            // 清空打字队列
+            this.typingQueue = [];
+            this.currentTypingNode = null;
             // 重置思维导图
             this.fullData = {
                 data: {
