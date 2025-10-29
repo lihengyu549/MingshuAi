@@ -264,7 +264,7 @@ export default {
                             this.mindMap.setData(data);
                         }
                     } catch (error) {
-                        console.error('更新思维导图数据时出错:', error);
+                        console.error('更新数据时出错:', error);
                         // 出错时强制更新
                         this.mindMap.setData(data);
                     }
@@ -717,7 +717,7 @@ export default {
             // 连接成功
             this.websocket.onopen = () => {
                 console.log('WebSocket连接已建立');
-                this.$message.success('开始接收思维导图数据...');
+                this.$message.success('开始接收数据...');
                 resolve();
             };
 
@@ -726,10 +726,10 @@ export default {
                 try {
                     console.log('收到WebSocket数据:', event.data);
 
-                    // 检查返回值是否为'执行完成'
-                    if (event.data === '执行完成') {
+                    // 检查返回值是否为'执行完成'或'执行完毕'
+                    if (event.data === '执行完成' || event.data === '执行完毕') {
                         console.log('收到执行完成信号，准备关闭连接');
-                        this.$message.success('思维导图生成完成');
+                        this.$message.success('执行完毕');
 
                         // 恢复按钮状态
                         this.cleanupGeneration(true);
@@ -750,7 +750,7 @@ export default {
 
                     // 处理结束标识
                     if (data && data.isCompleted) {
-                        this.$message.success('思维导图生成完成');
+                        this.$message.success('执行完毕');
                         this.cleanupGeneration(true);
                         this.canSave = true;
                         this.canCancel = true;
