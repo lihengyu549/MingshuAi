@@ -112,7 +112,8 @@ export default {
             nodeGenerationDelay: 0, // 增加节点生成间隔时间，让用户能看清逐个生成的效果
             batchUpdate: false,
             updateQueue: [],
-            batchUpdateInterval: 100 // 批量更新间隔，可根据需要调整
+            batchUpdateInterval: 100, // 批量更新间隔，可根据需要调整
+            lastCenteredNodeUid: null, // 记录最后居中的节点UID
         };
     },
     mounted() {
@@ -163,6 +164,7 @@ export default {
                             if (node) {
                                 if (this.mindMap.renderer && this.mindMap.renderer.moveNodeToCenter) {
                                     this.mindMap.renderer.moveNodeToCenter(node);
+                                    this.lastCenteredNodeUid = uid; // 记录最后居中的节点
                                 }
                             } else {
                                 this.waitUid = uid;
@@ -188,7 +190,14 @@ export default {
                     if (node) {
                         if (this.mindMap.renderer && this.mindMap.renderer.moveNodeToCenter) {
                             this.mindMap.renderer.moveNodeToCenter(node);
+                            this.lastCenteredNodeUid = uid; // 记录最后居中的节点
                         }
+                    }
+                } else if (this.lastCenteredNodeUid) {
+                    // 如果没有等待的节点但有最后居中的节点，保持在该节点
+                    const node = this.mindMap.renderer.findNodeByUid(this.lastCenteredNodeUid);
+                    if (node && this.mindMap.renderer.moveNodeToCenter) {
+                        this.mindMap.renderer.moveNodeToCenter(node);
                     }
                 }
             } catch (error) {
@@ -333,6 +342,7 @@ export default {
                             const node = this.mindMap.renderer.findNodeByUid(sourceNode.data.uid);
                             if (node && this.mindMap.renderer.moveNodeToCenter) {
                                 this.mindMap.renderer.moveNodeToCenter(node);
+                                this.lastCenteredNodeUid = sourceNode.data.uid; // 记录最后居中的节点
                             }
                         } catch (error) {
                             console.error('居中节点时出错:', error);
