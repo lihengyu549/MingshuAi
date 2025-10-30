@@ -49,9 +49,11 @@
                     </div>
                     <div class="info-item">
                         <label class="info-label">表主题词：</label>
-                        <div class="info-content"><el-tag type="success" style="border-radius: 8px;">{{
-                            row.tableTopic
-                                }}</el-tag></div>
+                        <div class="info-content">
+                            <el-tag v-for="tag in JSON.parse(row.tableTopic)" :key="tag"
+                                style="margin-right: 5px; border-radius: 8px;">{{ tag ||
+                                    '无' }}</el-tag>
+                        </div>
                     </div>
                     <!-- <div class="info-item">
                         <label class="info-label">所属库：</label>
