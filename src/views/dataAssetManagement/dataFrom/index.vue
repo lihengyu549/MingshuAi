@@ -129,7 +129,7 @@
           <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
         </el-form-item>
         <el-form-item label="来源业务系统描述" prop="businessComment" :rules="rules.businessComment">
-          <el-input type="textarea" v-model="form.businessComment" maxlength="50" show-word-limit
+          <el-input type="textarea" v-model="form.businessComment" maxlength="255" show-word-limit
             placeholder="请输入来源业务系统描述" />
         </el-form-item>
         <el-row>
@@ -223,7 +223,7 @@
           <el-input v-model="importData.businessName" maxlength="50" placeholder="请输入数据源名称"></el-input>
         </el-form-item>
         <el-form-item label="来源业务系统描述" prop="businessComment" :rules="importDataRules.businessComment">
-          <el-input type="textarea" v-model="importData.businessComment" maxlength="50" show-word-limit
+          <el-input type="textarea" v-model="importData.businessComment" maxlength="255" show-word-limit
             placeholder="请输入来源业务系统描述" />
         </el-form-item>
         <el-form-item label="导入文件" prop="importFile" class="uploadClass">
