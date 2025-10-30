@@ -50,7 +50,7 @@
                     <div class="info-item">
                         <label class="info-label">表主题词：</label>
                         <div class="info-content">
-                            <el-tag v-for="tag in JSON.parse(row.tableTopic)" :key="tag"
+                            <el-tag type="success" v-for="tag in JSON.parse(row.tableTopic)" :key="tag"
                                 style="margin-right: 5px; border-radius: 8px;">{{ tag ||
                                     '无' }}</el-tag>
                         </div>
