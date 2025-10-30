@@ -26,7 +26,7 @@
                     <div class="info-item">
                         <label class="info-label">字段主题词：</label>
                         <div class="info-content">
-                            <el-tag v-for="tag in JSON.parse(row.coreTags)" :key="tag"
+                            <el-tag v-for="tag in JSON.parse(row.fieldTopic)" :key="tag"
                                 style="margin-right: 5px; border-radius: 8px;">{{ tag ||
                                     '无' }}</el-tag>
                         </div>
@@ -45,12 +45,12 @@
                     </div>
                     <div class="info-item">
                         <label class="info-label">AI表注释：</label>
-                        <div class="info-content">{{ row.craftTableRemark }}</div>
+                        <div class="info-content">{{ row.tableCraftRemark }}</div>
                     </div>
                     <div class="info-item">
                         <label class="info-label">表主题词：</label>
                         <div class="info-content"><el-tag type="success" style="border-radius: 8px;">{{
-                            row.attributeType
+                            row.tableTopic
                                 }}</el-tag></div>
                     </div>
                     <!-- <div class="info-item">
@@ -90,7 +90,7 @@
 
                 <el-card class="box-card" shadow="never" style="margin-top: 20px;">
                     <template slot="header">
-                        <span class="header-name">最终定级：{{ row.securityLevel }}</span>
+                        <span class="header-name">最终定级：{{ row.securityLevelName }}</span>
                         <el-tag size="small" type="primary" color="#ffc5e0"
                             style="border-radius: 8px; float: inline-end; color: #dc478f;">就高原则</el-tag>
                     </template>
