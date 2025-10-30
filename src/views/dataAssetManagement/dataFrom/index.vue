@@ -128,6 +128,9 @@
           <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
           <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
         </el-form-item>
+        <el-form-item label="来源业务系统描述" prop="businessComment" :rules="rules.businessComment">
+          <el-input type="textarea" v-model="form.businessComment" maxlength="50" show-word-limit placeholder="请输入来源业务系统描述" />
+        </el-form-item>
         <el-row>
           <el-col :span="12">
             <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
@@ -482,6 +485,9 @@ export default {
           //   max: 5,
           //   message: "长度在 1 ~ 5 个字符",
           // },
+        ],
+        businessComment: [
+          { required: true, message: "请输入来源业务系统描述", trigger: "blur" },
         ],
       },
       importDataLoading: false,
@@ -1199,6 +1205,9 @@ input[aria-hidden=true] {
 }
 
 .addMsg /deep/ .el-input {
+  width: 100%;
+}
+.addMsg /deep/ .el-textarea {
   width: 100%;
 }
 
