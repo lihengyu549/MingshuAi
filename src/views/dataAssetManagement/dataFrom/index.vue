@@ -1059,6 +1059,7 @@ export default {
         this.importData.id = row.id
         this.importData.sourceName = row.sourceName
         this.importData.businessName = row.businessName
+        this.importData.businessComment = row.businessComment
         this.importData.importShow = true
       } else {
         this.form = JSON.parse(JSON.stringify(row))
