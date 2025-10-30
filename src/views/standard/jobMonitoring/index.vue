@@ -16,17 +16,12 @@
             node-key="id" highlight-current @node-click="handleNodeClick">
             <span class="custom-tree-node" slot-scope="{ node, data }">
               <span class="node-label" :title="node.label">{{ node.label }}</span>
-              <!-- 只在根节点显示齿轮按钮 -->
-              <!-- <el-button v-if="isRootNode(data)" type="text" size="large" icon="el-icon-setting"
-                @click.stop="goToMenuEdit(data)" style="color: #26244ce0;">
-              </el-button> -->
               <svg-icon icon-class="setting" v-if="isRootNode(data)"
                 @click.stop="dataSource != '内置' && goToMenuEdit(data)" />
             </span>
           </el-tree>
         </div>
       </el-col>
-      <!-- 用户数据部分保持不变 -->
       <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
           v-show="showSearch" label-width="auto">
@@ -86,11 +81,9 @@
           <el-table-column label="子类名称" align="center" prop="attachData" />
           <el-table-column label="安全分级" align="center" prop="securityLevelName" />
           <el-table-column label="建议防护措施" prop="protectMethodName" width="200">
-            <!-- 自定义标题样式 -->
             <template slot="header">
               <div style="text-align: center;">建议防护措施</div>
             </template>
-            <!-- 内容保持默认靠左 -->
             <template slot-scope="scope">
               <el-tag class="tagsBox custom-plain-tag" v-for="(item, index) in scope.row.protectMethodNameList"
                 :key="item + index" :style="{
@@ -210,26 +203,102 @@
         <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="特征标签" prop="tags">
           <div class="tagsClass" :style="tagsShow ? heightSmall : heightBig" style="width: 100%;">
             <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag + index" class="mx-1"
-              :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index)" style="margin: 0 10px;">
+              :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'tags')" style="margin: 0 10px;">
               {{ tag }}
             </el-tag>
             <el-input class="input-new-tag" v-if="inputVisible && countIs40" maxlength="10" v-model="inputValue"
-              ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
+              ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm('tags')"
+              @blur="handleInputConfirm('tags')">
             </el-input>
             <el-button v-if="!inputVisible && countIs40 && addOrEdit.flag != 3" class="button-new-tag" size="small"
-              @click="showInput">+ 新增</el-button>
+              @click="showInput('tags')">+ 新增</el-button>
           </div>
           <el-button class="button-new-tag" size="small" v-show="tags.length > 10" @click="tagsShow = !tagsShow">{{
             tagsShow ? '展开' : '收起' }}</el-button>
         </el-form-item>
+
+        <!-- 新增核心主题词 -->
+        <el-form-item class="addSelectClass AiStudesCont" label="核心主题词" prop="coreTopic">
+          <div class="tagsClass" :style="coreTopicShow ? heightSmall : heightBig" style="width: 100%;">
+            <el-tag v-for="(tag, index) in coreTopic" type="info" size="small" :key="tag + index" class="mx-1"
+              :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'coreTopic')" style="margin: 0 10px;">
+              {{ tag }}
+            </el-tag>
+            <el-input class="input-new-tag" v-if="coreTopicInputVisible && coreTopicCountIs40" maxlength="10"
+              v-model="coreTopicInputValue" ref="coreTopicSaveTagInput" size="small"
+              @keyup.enter.native="handleInputConfirm('coreTopic')" @blur="handleInputConfirm('coreTopic')">
+            </el-input>
+            <el-button v-if="!coreTopicInputVisible && coreTopicCountIs40 && addOrEdit.flag != 3" class="button-new-tag"
+              size="small" @click="showInput('coreTopic')">+ 新增</el-button>
+          </div>
+          <el-button class="button-new-tag" size="small" v-show="coreTopic.length > 10"
+            @click="coreTopicShow = !coreTopicShow">{{
+              coreTopicShow ? '展开' : '收起' }}</el-button>
+        </el-form-item>
+
+        <!-- 新增入口词 -->
+        <el-form-item class="addSelectClass AiStudesCont" label="入口词" prop="entryTerm">
+          <div class="tagsClass" :style="entryTermShow ? heightSmall : heightBig" style="width: 100%;">
+            <el-tag v-for="(tag, index) in entryTerm" type="info" size="small" :key="tag + index" class="mx-1"
+              :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'entryTerm')" style="margin: 0 10px;">
+              {{ tag }}
+            </el-tag>
+            <el-input class="input-new-tag" v-if="entryTermInputVisible && entryTermCountIs40" maxlength="10"
+              v-model="entryTermInputValue" ref="entryTermSaveTagInput" size="small"
+              @keyup.enter.native="handleInputConfirm('entryTerm')" @blur="handleInputConfirm('entryTerm')">
+            </el-input>
+            <el-button v-if="!entryTermInputVisible && entryTermCountIs40 && addOrEdit.flag != 3" class="button-new-tag"
+              size="small" @click="showInput('entryTerm')">+ 新增</el-button>
+          </div>
+          <el-button class="button-new-tag" size="small" v-show="entryTerm.length > 10"
+            @click="entryTermShow = !entryTermShow">{{
+              entryTermShow ? '展开' : '收起' }}</el-button>
+        </el-form-item>
+
+        <!-- 新增关联词 -->
+        <el-form-item class="addSelectClass AiStudesCont" label="关联词" prop="relatedTerms">
+          <div class="tagsClass" :style="relatedTermsShow ? heightSmall : heightBig" style="width: 100%;">
+            <el-tag v-for="(tag, index) in relatedTerms" type="info" size="small" :key="tag + index" class="mx-1"
+              :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'relatedTerms')" style="margin: 0 10px;">
+              {{ tag }}
+            </el-tag>
+            <el-input class="input-new-tag" v-if="relatedTermsInputVisible && relatedTermsCountIs40" maxlength="10"
+              v-model="relatedTermsInputValue" ref="relatedTermsSaveTagInput" size="small"
+              @keyup.enter.native="handleInputConfirm('relatedTerms')" @blur="handleInputConfirm('relatedTerms')">
+            </el-input>
+            <el-button v-if="!relatedTermsInputVisible && relatedTermsCountIs40 && addOrEdit.flag != 3"
+              class="button-new-tag" size="small" @click="showInput('relatedTerms')">+ 新增</el-button>
+          </div>
+          <el-button class="button-new-tag" size="small" v-show="relatedTerms.length > 10"
+            @click="relatedTermsShow = !relatedTermsShow">{{
+              relatedTermsShow ? '展开' : '收起' }}</el-button>
+        </el-form-item>
+
+        <!-- 新增反向参照 -->
+        <el-form-item class="addSelectClass AiStudesCont" label="反向参照" prop="reverseRef">
+          <div class="tagsClass" :style="reverseRefShow ? heightSmall : heightBig" style="width: 100%;">
+            <el-tag v-for="(tag, index) in reverseRef" type="info" size="small" :key="tag + index" class="mx-1"
+              :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'reverseRef')" style="margin: 0 10px;">
+              {{ tag }}
+            </el-tag>
+            <el-input class="input-new-tag" v-if="reverseRefInputVisible && reverseRefCountIs40" maxlength="10"
+              v-model="reverseRefInputValue" ref="reverseRefSaveTagInput" size="small"
+              @keyup.enter.native="handleInputConfirm('reverseRef')" @blur="handleInputConfirm('reverseRef')">
+            </el-input>
+            <el-button v-if="!reverseRefInputVisible && reverseRefCountIs40 && addOrEdit.flag != 3"
+              class="button-new-tag" size="small" @click="showInput('reverseRef')">+ 新增</el-button>
+          </div>
+          <el-button class="button-new-tag" size="small" v-show="reverseRef.length > 10"
+            @click="reverseRefShow = !reverseRefShow">{{
+              reverseRefShow ? '展开' : '收起' }}</el-button>
+        </el-form-item>
+
         <Title title="动态安全分级"></Title>
         <el-form-item label="" prop="">
-          <!-- 开关：绑定状态 + 变化事件 -->
           <el-switch v-model="addOrEditDataRuls.upgradeRule" @change="handleRuleSwitchChange('upgrade')"
             active-text="升级规则" :disabled="addOrEdit.flag == 3" />
           <div class="table-with-actions">
             <div class="table-container">
-              <!-- 升级规则表格：绑定假数据 + 开关控制禁用 + 加ref -->
               <el-table ref="upgradeList" style="margin-top: 10px; width: 100%" size="small"
                 :data="addOrEditDataRuls.upgradeList" :disabled="!addOrEditDataRuls.upgradeRule"
                 @selection-change="handleUpgradeSelectionChange">
@@ -251,12 +320,10 @@
               </div>
             </div>
             <div class="vertical-actions">
-              <!-- 加号按钮：绑定打开弹窗事件，传升级规则类型 -->
               <svg-icon icon-class="plus-circle"
                 @click="addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3 && handleOpenRuleDialog('upgrade')"
                 :disabled="!addOrEditDataRuls.upgradeRule || addOrEdit.flag == 3"
                 :style="{ cursor: addOrEditDataRuls.upgradeRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.upgradeRule ? 1 : 0.5 }" />
-              <!-- 删除按钮：绑定删除事件 + 开关控制样式 -->
               <svg-icon icon-class="删除"
                 @click="addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3 && handleDeleteRule('upgrade')"
                 :disabled="!addOrEditDataRuls.upgradeRule || addOrEdit.flag == 3"
@@ -265,12 +332,10 @@
           </div>
         </el-form-item>
         <el-form-item label="" prop="">
-          <!-- 开关：绑定状态 + 变化事件 -->
           <el-switch v-model="addOrEditDataRuls.demotionRule" @change="handleRuleSwitchChange('downgrade')"
             active-text="降级规则" :disabled="addOrEdit.flag == 3" />
           <div class="table-with-actions">
             <div class="table-container">
-              <!-- 降级规则表格：绑定假数据 + 开关控制禁用 + 加ref -->
               <el-table ref="demotionList" style="margin-top: 10px; width: 100%" size="small"
                 :data="addOrEditDataRuls.demotionList" :disabled="!addOrEditDataRuls.demotionRule"
                 @selection-change="handleDemotionSelectionChange">
@@ -285,8 +350,6 @@
                 <el-table-column prop="ruleContent" label="内容" min-width="180" />
                 <el-table-column prop="securityLevel" label="安全分级" min-width="180" />
               </el-table>
-
-              <!-- 还原样式的提示条 -->
               <div class="import-format-tip"
                 style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #f9f9f9; border: 1px solid #eee; border-radius: 4px;">
                 <i class="el-icon-warning-outline" type="info" />
@@ -294,12 +357,10 @@
               </div>
             </div>
             <div class="vertical-actions">
-              <!-- 加号按钮：绑定打开弹窗事件，传降级规则类型 -->
               <svg-icon icon-class="plus-circle"
                 @click="addOrEditDataRuls.demotionRule && addOrEdit.flag != 3 && handleOpenRuleDialog('downgrade')"
                 :disabled="!addOrEditDataRuls.demotionRule || addOrEdit.flag == 3"
                 :style="{ cursor: addOrEditDataRuls.demotionRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.demotionRule ? 1 : 0.5 }" />
-              <!-- 删除按钮：绑定删除事件 + 开关控制样式 -->
               <svg-icon icon-class="删除"
                 @click="addOrEditDataRuls.demotionRule && addOrEdit.flag != 3 && handleDeleteRule('downgrade')"
                 :disabled="!addOrEditDataRuls.demotionRule || addOrEdit.flag == 3"
@@ -319,7 +380,6 @@
       :close-on-click-modal="false" :show-close="false">
       <el-form :model="ruleForm" ref="ruleForm" label-width="100px" class="rule-dialog-form" size="medium"
         label-position="top" :rules="dialogRules">
-        <!-- 规则类型 -->
         <el-form-item label="规则类型" prop="ruleType">
           <el-select v-model="ruleForm.ruleType" name="ruleType" id="">
             <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
@@ -327,24 +387,19 @@
           </el-select>
         </el-form-item>
 
-        <!-- 匹配条件 - 根据规则类型动态展示 -->
         <el-form-item label="匹配条件" prop="matchType">
           <el-radio-group v-model="ruleForm.matchType"
             style="width: 220px; display: flex; justify-content: space-between">
-            <!-- 升级规则只显示大于 -->
             <el-radio label="greater" v-if="currentRuleType === 'upgrade'">大于等于</el-radio>
-            <!-- 降级规则只显示小于 -->
             <el-radio label="less" v-if="currentRuleType === 'downgrade'">小于等于</el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <!-- 内容 -->
         <el-form-item label="内容" prop="ruleContent">
           <el-input v-model="ruleForm.ruleContent" style="width: 220px" placeholder="请输入数值"
             oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
         </el-form-item>
 
-        <!-- 安全分级 -->
         <el-form-item label="安全分级" prop="securityLevel">
           <el-select v-model="ruleForm.securityLevel" style="width: 220px" placeholder="请选择">
             <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
@@ -362,7 +417,6 @@
         </el-form-item>
       </el-form>
 
-      <!-- 弹窗底部按钮：返回 + 保存 -->
       <div slot="footer" class="dialog-footer" style="justify-content: end; gap: 20px">
         <el-button type="primary" plain @click="handleSaveRule">保存</el-button>
         <el-button @click="ruleDialogVisible = false">返回</el-button>
@@ -398,12 +452,46 @@ export default {
         height: '180px',
         overflowY: 'auto'
       },
+      // 特征标签相关
       inputVisible: false,
-      countIs40: true,// 数量是否小于40
+      countIs40: true,
       tagsShow: false,
       inputValue: '',
+      tags: [],
+
+      // 核心主题词相关
+      coreTopic: [],
+      coreTopicInputVisible: false,
+      coreTopicInputValue: '',
+      coreTopicCountIs40: true,
+      coreTopicShow: false,
+
+      // 入口词相关
+      entryTerm: [],
+      entryTermInputVisible: false,
+      entryTermInputValue: '',
+      entryTermCountIs40: true,
+      entryTermShow: false,
+
+      // 关联词相关
+      relatedTerms: [],
+      relatedTermsInputVisible: false,
+      relatedTermsInputValue: '',
+      relatedTermsCountIs40: true,
+      relatedTermsShow: false,
+
+      // 反向参照相关
+      reverseRef: [],
+      reverseRefInputVisible: false,
+      reverseRefInputValue: '',
+      reverseRefCountIs40: true,
+      reverseRefShow: false,
+
+      // 核心关键词JSON字符串
+      coreKeyWords: '{"coreTopic":"","entryTerm":"","relatedTerms":"","reverseRef":""}',
+
       categoryName: '',
-      debounceTimeout: null,//防抖动
+      debounceTimeout: null,
       treeOptions: [],
       protectMethodIdList: [],
       confirmProtectMethodList: [],
@@ -413,7 +501,6 @@ export default {
         flag: 1,// 1新增 2编辑 3查看
       },
       treeLoading: false,
-      tags: [],
       // 表单校验
       addOrEditRules: {
         categoryId: [
@@ -435,6 +522,18 @@ export default {
         ],
         tags: [
           { validator: this.tagsRlues, trigger: 'blur', required: true, }
+        ],
+        coreTopic: [
+          { validator: this.tagsRlues, trigger: 'blur' }
+        ],
+        entryTerm: [
+          { validator: this.tagsRlues, trigger: 'blur' }
+        ],
+        relatedTerms: [
+          { validator: this.tagsRlues, trigger: 'blur' }
+        ],
+        reverseRef: [
+          { validator: this.tagsRlues, trigger: 'blur' }
         ]
       },
       dialogRules: {
@@ -539,13 +638,13 @@ export default {
       addNodeName: "",
 
       // 新增规则弹窗相关
-      ruleDialogVisible: false, // 弹窗显示状态
-      currentRuleType: '', // 标记当前是「升级」还是「降级」规则：'upgrade'/'downgrade'
-      ruleForm: { // 弹窗表单数据
-        matchType: 'greater', // 匹配类型：'greater'大于/'less'小于
+      ruleDialogVisible: false,
+      currentRuleType: '',
+      ruleForm: {
+        matchType: 'greater',
         ruleType: '1',
-        ruleContent: '', // 内容数值
-        securityLevel: '' // 安全分级
+        ruleContent: '',
+        securityLevel: ''
       },
       options: [
         {
@@ -553,10 +652,9 @@ export default {
           label: '数据量级'
         },
       ],
-      currentRuleType: '', // 记录当前是升级还是降级规则
-      currentBaseSecurityLevel: null, // 当前行的安全分级基准值
-      dataBaselineShow: false, // 数据摸底弹窗显示状态
-      dataBaselineLoading: false, // 数据摸底弹窗loading状态
+      currentBaseSecurityLevel: null,
+      dataBaselineShow: false,
+      dataBaselineLoading: false,
     };
   },
   watch: {
@@ -567,17 +665,35 @@ export default {
       deep: true,
       immediate: true,
       handler(val) {
-        if (val.length >= 40) {
-          this.countIs40 = false
-          this.$modal.msgWarning("学习内容最多定义40个标签");
-        } else {
-          this.countIs40 = true
-        }
-        if (val.length >= 10) {
-          this.tagsShow = false
-        } else {
-          this.tagsShow = true
-        }
+        this.handleTagChange(val, 'tags');
+      }
+    },
+    coreTopic: {
+      deep: true,
+      immediate: true,
+      handler(val) {
+        this.handleTagChange(val, 'coreTopic');
+      }
+    },
+    entryTerm: {
+      deep: true,
+      immediate: true,
+      handler(val) {
+        this.handleTagChange(val, 'entryTerm');
+      }
+    },
+    relatedTerms: {
+      deep: true,
+      immediate: true,
+      handler(val) {
+        this.handleTagChange(val, 'relatedTerms');
+      }
+    },
+    reverseRef: {
+      deep: true,
+      immediate: true,
+      handler(val) {
+        this.handleTagChange(val, 'reverseRef');
       }
     }
   },
@@ -592,7 +708,84 @@ export default {
     this.getDictData()
     this.getSelectUserListAll()
   },
-  methods: {  
+  methods: {
+    // 处理标签变化的通用方法
+    handleTagChange(val, type) {
+      if (val.length >= 40) {
+        this[`${type}CountIs40`] = false;
+        this.$modal.msgWarning(`${this.getTagName(type)}最多定义40个标签`);
+      } else {
+        this[`${type}CountIs40`] = true;
+      }
+      if (val.length >= 10) {
+        this[`${type}Show`] = false;
+      } else {
+        this[`${type}Show`] = true;
+      }
+    },
+
+    // 获取标签名称
+    getTagName(type) {
+      const tagNames = {
+        'tags': '特征标签',
+        'coreTopic': '核心主题词',
+        'entryTerm': '入口词',
+        'relatedTerms': '关联词',
+        'reverseRef': '反向参照'
+      };
+      return tagNames[type] || '';
+    },
+
+    // 显示输入框
+    showInput(type) {
+      this[`${type}InputVisible`] = true;
+      this.$nextTick(_ => {
+        this.$refs[`${type}SaveTagInput`].$refs.input.focus();
+      });
+    },
+
+    // 处理标签关闭
+    handleClose(tag, index, type) {
+      this[type].splice(index, 1);
+    },
+
+    // 处理输入确认
+    handleInputConfirm(type) {
+      const inputValue = this[`${type}InputValue`].trim();
+      if (inputValue) {
+        this[type].push(inputValue);
+      }
+      this[`${type}InputVisible`] = false;
+      this[`${type}InputValue`] = '';
+    },
+
+    // 解析coreKeyWords到各个标签数组
+    parseCoreKeyWords() {
+      try {
+        const coreKeyWordsObj = JSON.parse(this.coreKeyWords || '{"coreTopic":"","entryTerm":"","relatedTerms":"","reverseRef":""}');
+        this.coreTopic = coreKeyWordsObj.coreTopic ? coreKeyWordsObj.coreTopic.split(',') : [];
+        this.entryTerm = coreKeyWordsObj.entryTerm ? coreKeyWordsObj.entryTerm.split(',') : [];
+        this.relatedTerms = coreKeyWordsObj.relatedTerms ? coreKeyWordsObj.relatedTerms.split(',') : [];
+        this.reverseRef = coreKeyWordsObj.reverseRef ? coreKeyWordsObj.reverseRef.split(',') : [];
+      } catch (e) {
+        console.error('解析coreKeyWords失败:', e);
+        this.coreTopic = [];
+        this.entryTerm = [];
+        this.relatedTerms = [];
+        this.reverseRef = [];
+      }
+    },
+
+    // 将标签数组转换为coreKeyWords字符串
+    stringifyCoreKeyWords() {
+      this.coreKeyWords = JSON.stringify({
+        coreTopic: this.coreTopic.join(','),
+        entryTerm: this.entryTerm.join(','),
+        relatedTerms: this.relatedTerms.join(','),
+        reverseRef: this.reverseRef.join(',')
+      });
+    },
+
     getRuleTypeLabel(ruleType) {
       const option = this.options.find(item => item.value === ruleType);
       return option ? option.label : '';
@@ -603,10 +796,8 @@ export default {
    */
     handleOpenRuleDialog(type) {
       this.currentRuleType = type;
-      // 记录当前的安全分级作为基准值
       this.currentBaseSecurityLevel = this.addOrEditDataRuls.minSecurityLevel;
 
-      // 初始化表单
       this.ruleForm = {
         matchType: type === 'upgrade' ? 'greater' : 'less',
         ruleType: '1',
@@ -635,7 +826,6 @@ export default {
       this.$refs.ruleForm.validate(async (valid) => {
         if (!valid) return;
 
-        // 1. 先执行所有校验逻辑
         if (!this.ruleForm.ruleContent.trim()) {
           this.$message.warning('请输入数值');
           return;
@@ -646,11 +836,9 @@ export default {
           return;
         }
 
-        // 获取升级和降级规则的数值列表
         const upgradeValues = this.addOrEditDataRuls.upgradeList.map(item => Number(item.ruleContent));
         const demotionValues = this.addOrEditDataRuls.demotionList.map(item => Number(item.ruleContent));
 
-        // 升级规则校验：不能小于降级表格中的最大值
         if (this.currentRuleType === 'upgrade') {
           if (demotionValues.length > 0) {
             const maxDemotion = Math.max(...demotionValues);
@@ -661,7 +849,6 @@ export default {
           }
         }
 
-        // 降级规则校验：不能大于升级表格中的最小值
         if (this.currentRuleType === 'downgrade') {
           if (upgradeValues.length > 0) {
             const minUpgrade = Math.min(...upgradeValues);
@@ -672,11 +859,8 @@ export default {
           }
         }
 
-        // 2. 所有校验通过后，再执行保存逻辑
-        // 处理匹配条件文本
         const matchText = this.ruleForm.matchType === 'greater' ? '大于等于' : '小于等于';
 
-        // 构造表格所需数据格式
         const newRule = {
           ruleType: this.ruleForm.ruleType,
           matchingCondition: matchText,
@@ -684,14 +868,12 @@ export default {
           securityLevel: this.ruleForm.securityLevel
         };
 
-        // 根据规则类型插入对应表格
         if (this.currentRuleType === 'upgrade') {
           this.addOrEditDataRuls.upgradeList.push(newRule);
         } else if (this.currentRuleType === 'downgrade') {
           this.addOrEditDataRuls.demotionList.push(newRule);
         }
 
-        // 关闭弹窗并提示
         this.ruleDialogVisible = false;
         this.$message.success('规则新增成功');
       });
@@ -702,14 +884,12 @@ export default {
      * @param {String} type 规则类型：'upgrade'/'downgrade'
      */
     handleDeleteRule(type) {
-      // 开关关闭时禁止删除
       const isSwitchOpen = type === 'upgrade' ? this.addOrEditDataRuls.upgradeRule : this.addOrEditDataRuls.demotionRule;
       if (!isSwitchOpen) {
         this.$message.warning('请先打开对应规则的开关');
         return;
       }
 
-      // 获取选中的行
       const selection = type === 'upgrade' ? this.selectedUpgradeRows : this.selectedDemotionRows;
 
       if (selection.length === 0) {
@@ -717,31 +897,25 @@ export default {
         return;
       }
 
-      // 确认删除
       this.$confirm(`确定删除选中的 ${selection.length} 条规则吗？`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        // 获取要删除的规则内容（用于在原数组中查找）
         const contentsToDelete = selection.map(item => item.ruleContent);
 
-        // 过滤掉要删除的规则
         if (type === 'upgrade') {
           this.addOrEditDataRuls.upgradeList = this.addOrEditDataRuls.upgradeList.filter(
             item => !contentsToDelete.includes(item.ruleContent)
           );
-          // 清除选中状态
           this.selectedUpgradeRows = [];
         } else {
           this.addOrEditDataRuls.demotionList = this.addOrEditDataRuls.demotionList.filter(
             item => !contentsToDelete.includes(item.ruleContent)
           );
-          // 清除选中状态
           this.selectedDemotionRows = [];
         }
 
-        // 清除表格选中状态
         const tableRef = type === 'upgrade' ? 'upgradeList' : 'demotionList';
         if (this.$refs[tableRef]) {
           this.$refs[tableRef].clearSelection();
@@ -773,7 +947,6 @@ export default {
       const tableRef = type === 'upgrade' ? 'upgradeList' : 'demotionList';
       const isSwitchOpen = type === 'upgrade' ? this.addOrEditDataRuls.upgradeRule : this.addOrEditDataRuls.demotionRule;
 
-      // 开关关闭时清空表格选择
       if (!isSwitchOpen && this.$refs[tableRef]) {
         this.$refs[tableRef].clearSelection();
       }
@@ -841,25 +1014,6 @@ export default {
         callback();
       }
     },
-    showInput() {
-      this.inputVisible = true;
-      this.$nextTick(_ => {
-        this.$refs.saveTagInput.$refs.input.focus();
-      });
-    },
-
-    handleInputConfirm() {
-      let inputValue = this.inputValue;
-      if (inputValue) {
-        if (this.tags.includes(inputValue)) {
-          this.$message({ message: '该标签已存在', type: 'warning' })
-        } else {
-          this.tags.push(inputValue);
-        }
-      }
-      this.inputVisible = false;
-      this.inputValue = '';
-    },
     addFn() {
       this.addOrEdit.flag = 1
       this.addOrEdit.title = '新增'
@@ -880,9 +1034,15 @@ export default {
       this.tagsShow = true
       this.tags = []
       this.addNodeName = ''
+      // 清空新增的标签数组
+      this.coreTopic = [];
+      this.entryTerm = [];
+      this.relatedTerms = [];
+      this.reverseRef = [];
     },
     /** 新增确定方法 */
     async addSubmitForm() {
+      this.stringifyCoreKeyWords();
       this.$refs["addOrEdit"].validate(async (valid) => {
         let params = {
           attachData: this.addOrEditDataRuls.attachData,
@@ -897,7 +1057,8 @@ export default {
           upgradeRule: this.addOrEditDataRuls.upgradeRule ? '1' : '0',
           demotionRule: this.addOrEditDataRuls.demotionRule ? '1' : '0',
           upgradeList: this.addOrEditDataRuls.upgradeList,
-          demotionList: this.addOrEditDataRuls.demotionList
+          demotionList: this.addOrEditDataRuls.demotionList,
+          coreKeyWords: this.coreKeyWords // 添加核心关键词JSON字符串
         }
         if (valid) {
           this.importDataLoading = true
@@ -999,6 +1160,9 @@ export default {
       this.addNodeName = row.owner
       this.tagsShow = false
       this.$set(this.addOrEditDataRuls, 'additional', row.attachDescribe)
+      // 加载核心关键词并解析
+      this.coreKeyWords = row.coreKeyWords || '{"coreTopic":"","entryTerm":"","relatedTerms":"","reverseRef":""}';
+      this.parseCoreKeyWords();
       try {
         let query = {
           parentId: row.id
@@ -1025,6 +1189,9 @@ export default {
       this.addOrEdit.show = true
       this.addOrEdit.title = '查看'
       this.tagsShow = false
+      // 加载核心关键词并解析
+      this.coreKeyWords = row.coreKeyWords || '{"coreTopic":"","entryTerm":"","relatedTerms":"","reverseRef":""}';
+      this.parseCoreKeyWords();
       try {
         let query = {
           parentId: row.id
@@ -1118,10 +1285,6 @@ export default {
     },
     sonNameTestingFn(val) {
       this.addOrEditDataRuls.attachData = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-    },
-    // tags 关闭方法
-    handleClose(tag, index) {
-      this.tags.splice(index, 1);
     },
     // 修改过滤方法以支持最下级节点匹配
     filterNode(value, data) {
@@ -1301,12 +1464,10 @@ export default {
     // 数据摸底表单方法
     dataFn(row) {
       console.log('row', row);
-      // this.dataBaselineShow = true
       this.$router.push({
         path: '/dataMapping',
         query: { row: row }
       });
-      // this.dataBaselineForm = row
     },
   },
 };
