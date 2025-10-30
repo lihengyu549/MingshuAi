@@ -523,18 +523,18 @@ export default {
         tags: [
           { validator: this.tagsRlues, trigger: 'blur', required: true, }
         ],
-        coreTopic: [
-          { validator: this.tagsRlues, trigger: 'blur' }
-        ],
-        entryTerm: [
-          { validator: this.tagsRlues, trigger: 'blur' }
-        ],
-        relatedTerms: [
-          { validator: this.tagsRlues, trigger: 'blur' }
-        ],
-        reverseRef: [
-          { validator: this.tagsRlues, trigger: 'blur' }
-        ]
+        // coreTopic: [
+        //   { validator: this.tagsRlues, trigger: 'blur' }
+        // ],
+        // entryTerm: [
+        //   { validator: this.tagsRlues, trigger: 'blur' }
+        // ],
+        // relatedTerms: [
+        //   { validator: this.tagsRlues, trigger: 'blur' }
+        // ],
+        // reverseRef: [
+        //   { validator: this.tagsRlues, trigger: 'blur' }
+        // ]
       },
       dialogRules: {
         ruleType: [
@@ -738,9 +738,30 @@ export default {
 
     // 显示输入框
     showInput(type) {
-      this[`${type}InputVisible`] = true;
+      // 对于特征标签，需要特殊处理
+      if (type === 'tags') {
+        this.inputVisible = true;
+      } else {
+        this[`${type}InputVisible`] = true;
+      }
+      
+      // 使用this.$set确保响应式更新
+      if (type === 'tags') {
+        this.$set(this, 'inputVisible', true);
+      } else {
+        this.$set(this, `${type}InputVisible`, true);
+      }
+      
       this.$nextTick(_ => {
-        this.$refs[`${type}SaveTagInput`].$refs.input.focus();
+        // 获取正确的ref名称，特征标签使用特殊的ref名
+        const refName = type === 'tags' ? 'saveTagInput' : `${type}SaveTagInput`;
+        const inputRef = this.$refs[refName];
+        if (inputRef && inputRef.$refs && inputRef.$refs.input) {
+          inputRef.$refs.input.focus();
+        } else if (inputRef && inputRef.focus) {
+          // 兼容直接调用focus的情况
+          inputRef.focus();
+        }
       });
     },
 
@@ -751,12 +772,35 @@ export default {
 
     // 处理输入确认
     handleInputConfirm(type) {
-      const inputValue = this[`${type}InputValue`].trim();
-      if (inputValue) {
-        this[type].push(inputValue);
+      // 获取输入值，对特征标签进行特殊处理
+      let inputValue;
+      if (type === 'tags') {
+        inputValue = this.inputValue;
+      } else {
+        inputValue = this[`${type}InputValue`];
       }
-      this[`${type}InputVisible`] = false;
-      this[`${type}InputValue`] = '';
+      
+      // 添加空值检查，避免调用trim()时出错
+      const trimmedValue = inputValue ? inputValue.trim() : '';
+      
+      if (trimmedValue) {
+        this[type].push(trimmedValue);
+      }
+      
+      // 清空输入值并隐藏输入框，对特征标签进行特殊处理
+      if (type === 'tags') {
+        this.inputVisible = false;
+        this.inputValue = '';
+        // 确保响应式更新
+        this.$set(this, 'inputVisible', false);
+        this.$set(this, 'inputValue', '');
+      } else {
+        this[`${type}InputVisible`] = false;
+        this[`${type}InputValue`] = '';
+        // 确保响应式更新
+        this.$set(this, `${type}InputVisible`, false);
+        this.$set(this, `${type}InputValue`, '');
+      }
     },
 
     // 解析coreKeyWords到各个标签数组
