@@ -58,16 +58,80 @@
                 <!-- 特征标签组件 -->
                 <el-form-item label="特征标签" prop="coreTags">
                     <el-tag v-for="(tag, index) in formData.coreTags" :key="index" closable :disable-transitions="false"
-                        @close="handleTagClose(index)">
+                        @close="handleTagClose('coreTags', index)">
                         {{ tag }}
                     </el-tag>
-                    <el-input v-if="formData.inputVisible" v-model="formData.inputValue" ref="tagInput" size="small"
-                        @blur="handleInputBlur" @keyup.enter="handleInputConfirm" placeholder="请输入标签"></el-input>
-                    <el-button v-else size="small" icon="el-icon-plus" @click="handleInputShow" type="text">
+                    <el-input v-if="formData.coreTagsInputVisible" v-model="formData.coreTagsInputValue" ref="coreTagsInput" size="small"
+                        @blur="handleInputBlur('coreTags')" @keyup.enter="handleInputConfirm('coreTags')" placeholder="请输入标签"></el-input>
+                    <el-button v-else size="small" icon="el-icon-plus" @click="handleInputShow('coreTags')" type="text">
                         新增
                     </el-button>
                     <div class="tag-count-tip" v-if="formData.coreTags.length > 0">
                         已选择 {{ formData.coreTags.length }}/40 个标签
+                    </div>
+                </el-form-item>
+                
+                <!-- 核心主题词组件 -->
+                <el-form-item label="核心主题词" prop="coreTopic">
+                    <el-tag v-for="(tag, index) in formData.coreTopic" :key="index" closable :disable-transitions="false"
+                        @close="handleTagClose('coreTopic', index)">
+                        {{ tag }}
+                    </el-tag>
+                    <el-input v-if="formData.coreTopicInputVisible" v-model="formData.coreTopicInputValue" ref="coreTopicInput" size="small"
+                        @blur="handleInputBlur('coreTopic')" @keyup.enter="handleInputConfirm('coreTopic')" placeholder="请输入核心主题词"></el-input>
+                    <el-button v-else size="small" icon="el-icon-plus" @click="handleInputShow('coreTopic')" type="text">
+                        新增
+                    </el-button>
+                    <div class="tag-count-tip" v-if="formData.coreTopic.length > 0">
+                        已选择 {{ formData.coreTopic.length }}/40 个核心主题词
+                    </div>
+                </el-form-item>
+                
+                <!-- 入口词组件 -->
+                <el-form-item label="入口词" prop="entryTerm">
+                    <el-tag v-for="(tag, index) in formData.entryTerm" :key="index" closable :disable-transitions="false"
+                        @close="handleTagClose('entryTerm', index)">
+                        {{ tag }}
+                    </el-tag>
+                    <el-input v-if="formData.entryTermInputVisible" v-model="formData.entryTermInputValue" ref="entryTermInput" size="small"
+                        @blur="handleInputBlur('entryTerm')" @keyup.enter="handleInputConfirm('entryTerm')" placeholder="请输入入口词"></el-input>
+                    <el-button v-else size="small" icon="el-icon-plus" @click="handleInputShow('entryTerm')" type="text">
+                        新增
+                    </el-button>
+                    <div class="tag-count-tip" v-if="formData.entryTerm.length > 0">
+                        已选择 {{ formData.entryTerm.length }}/40 个入口词
+                    </div>
+                </el-form-item>
+                
+                <!-- 关联词组件 -->
+                <el-form-item label="关联词" prop="relatedTerms">
+                    <el-tag v-for="(tag, index) in formData.relatedTerms" :key="index" closable :disable-transitions="false"
+                        @close="handleTagClose('relatedTerms', index)">
+                        {{ tag }}
+                    </el-tag>
+                    <el-input v-if="formData.relatedTermsInputVisible" v-model="formData.relatedTermsInputValue" ref="relatedTermsInput" size="small"
+                        @blur="handleInputBlur('relatedTerms')" @keyup.enter="handleInputConfirm('relatedTerms')" placeholder="请输入关联词"></el-input>
+                    <el-button v-else size="small" icon="el-icon-plus" @click="handleInputShow('relatedTerms')" type="text">
+                        新增
+                    </el-button>
+                    <div class="tag-count-tip" v-if="formData.relatedTerms.length > 0">
+                        已选择 {{ formData.relatedTerms.length }}/40 个关联词
+                    </div>
+                </el-form-item>
+                
+                <!-- 反向参照组件 -->
+                <el-form-item label="反向参照" prop="reverseRef">
+                    <el-tag v-for="(tag, index) in formData.reverseRef" :key="index" closable :disable-transitions="false"
+                        @close="handleTagClose('reverseRef', index)">
+                        {{ tag }}
+                    </el-tag>
+                    <el-input v-if="formData.reverseRefInputVisible" v-model="formData.reverseRefInputValue" ref="reverseRefInput" size="small"
+                        @blur="handleInputBlur('reverseRef')" @keyup.enter="handleInputConfirm('reverseRef')" placeholder="请输入反向参照"></el-input>
+                    <el-button v-else size="small" icon="el-icon-plus" @click="handleInputShow('reverseRef')" type="text">
+                        新增
+                    </el-button>
+                    <div class="tag-count-tip" v-if="formData.reverseRef.length > 0">
+                        已选择 {{ formData.reverseRef.length }}/40 个反向参照
                     </div>
                 </el-form-item>
             </el-form>
@@ -108,8 +172,20 @@ export default {
                 name: '', // 分类名称
                 categoryDescribe: '', // 分类描述
                 coreTags: [], // 特征标签列表
-                inputVisible: false, // 标签输入框显示状态
-                inputValue: '', // 标签输入框值
+                coreTagsInputVisible: false, // 特征标签输入框显示状态
+                coreTagsInputValue: '', // 特征标签输入框值
+                coreTopic: [], // 核心主题词列表
+                coreTopicInputVisible: false, // 核心主题词输入框显示状态
+                coreTopicInputValue: '', // 核心主题词输入框值
+                entryTerm: [], // 入口词列表
+                entryTermInputVisible: false, // 入口词输入框显示状态
+                entryTermInputValue: '', // 入口词输入框值
+                relatedTerms: [], // 关联词列表
+                relatedTermsInputVisible: false, // 关联词输入框显示状态
+                relatedTermsInputValue: '', // 关联词输入框值
+                reverseRef: [], // 反向参照列表
+                reverseRefInputVisible: false, // 反向参照输入框显示状态
+                reverseRefInputValue: '', // 反向参照输入框值
                 parentId: '', // 父节点ID（新增时使用）
                 id: '' // 分类ID（编辑时使用）
             },
@@ -127,6 +203,54 @@ export default {
                         validator: (rule, value, callback) => {
                             if (value.length > 40) {
                                 callback(new Error('特征标签数量不能超过40个'));
+                            } else {
+                                callback();
+                            }
+                        },
+                        trigger: 'change'
+                    }
+                ],
+                coreTopic: [
+                    {
+                        validator: (rule, value, callback) => {
+                            if (value.length > 40) {
+                                callback(new Error('核心主题词数量不能超过40个'));
+                            } else {
+                                callback();
+                            }
+                        },
+                        trigger: 'change'
+                    }
+                ],
+                entryTerm: [
+                    {
+                        validator: (rule, value, callback) => {
+                            if (value.length > 40) {
+                                callback(new Error('入口词数量不能超过40个'));
+                            } else {
+                                callback();
+                            }
+                        },
+                        trigger: 'change'
+                    }
+                ],
+                relatedTerms: [
+                    {
+                        validator: (rule, value, callback) => {
+                            if (value.length > 40) {
+                                callback(new Error('关联词数量不能超过40个'));
+                            } else {
+                                callback();
+                            }
+                        },
+                        trigger: 'change'
+                    }
+                ],
+                reverseRef: [
+                    {
+                        validator: (rule, value, callback) => {
+                            if (value.length > 40) {
+                                callback(new Error('反向参照数量不能超过40个'));
                             } else {
                                 callback();
                             }
@@ -267,20 +391,70 @@ export default {
                     name: '',
                     categoryDescribe: '',
                     coreTags: [],
-                    inputVisible: false,
-                    inputValue: '',
+                    coreTagsInputVisible: false,
+                    coreTagsInputValue: '',
+                    coreTopic: [],
+                    coreTopicInputVisible: false,
+                    coreTopicInputValue: '',
+                    entryTerm: [],
+                    entryTermInputVisible: false,
+                    entryTermInputValue: '',
+                    relatedTerms: [],
+                    relatedTermsInputVisible: false,
+                    relatedTermsInputValue: '',
+                    reverseRef: [],
+                    reverseRefInputVisible: false,
+                    reverseRefInputValue: '',
                     parentId: data.id,
                     id: ''
                 };
                 this.dialogVisible = true;
             } else {
-                // 编辑回显数据（假设接口返回字段：categoryName-名称，categoryDescribe-描述，coreTags-标签）
+                // 编辑回显数据 - 从coreKeyWords解析四个字段
+                // 定义解析逗号分隔字符串的辅助函数
+                const parseCommaSeparated = (str) => {
+                    return str && typeof str === 'string' && str.length > 0 ? 
+                           str.split(',').map(tag => tag.trim()).filter(tag => tag) : 
+                           [];
+                };
+                
+                // 从coreKeyWords解析数据
+                let coreTopic = [];
+                let entryTerm = [];
+                let relatedTerms = [];
+                let reverseRef = [];
+                
+                if (data.coreKeyWords && typeof data.coreKeyWords === 'string') {
+                    try {
+                        const parsed = JSON.parse(data.coreKeyWords);
+                        // 确保每个字段都是逗号分隔的字符串格式
+                        coreTopic = parseCommaSeparated(parsed.coreTopic || '');
+                        entryTerm = parseCommaSeparated(parsed.entryTerm || '');
+                        relatedTerms = parseCommaSeparated(parsed.relatedTerms || '');
+                        reverseRef = parseCommaSeparated(parsed.reverseRef || '');
+                    } catch (e) {
+                        console.error('解析coreKeyWords失败:', e);
+                    }
+                }
+                
                 this.formData = {
                     name: data.categoryName || '',
                     categoryDescribe: data.categoryDescribe || '',
                     coreTags: data.coreTags && data.coreTags.length > 0 ? data.coreTags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
-                    inputVisible: false,
-                    inputValue: '',
+                    coreTagsInputVisible: false,
+                    coreTagsInputValue: '',
+                    coreTopic: coreTopic,
+                    coreTopicInputVisible: false,
+                    coreTopicInputValue: '',
+                    entryTerm: entryTerm,
+                    entryTermInputVisible: false,
+                    entryTermInputValue: '',
+                    relatedTerms: relatedTerms,
+                    relatedTermsInputVisible: false,
+                    relatedTermsInputValue: '',
+                    reverseRef: reverseRef,
+                    reverseRefInputVisible: false,
+                    reverseRefInputValue: '',
                     parentId: data.parentId,
                     id: data.id
                 };
@@ -303,51 +477,63 @@ export default {
             }, 300);
         },
 
-        // ---------------------- 特征标签相关方法 ----------------------
+        // ---------------------- 标签相关方法 ----------------------
         /**
          * 显示标签输入框
+         * @param {String} field - 字段名称
          */
-        handleInputShow() {
-            this.formData.inputVisible = true;
+        handleInputShow(field) {
+            this.formData[`${field}InputVisible`] = true;
             this.$nextTick(() => {
-                this.$refs.tagInput.focus();
+                this.$refs[`${field}Input`]?.focus();
             });
         },
 
         /**
          * 标签输入框失焦处理
+         * @param {String} field - 字段名称
          */
-        handleInputBlur() {
-            if (this.formData.inputValue.trim()) {
-                this.handleInputConfirm();
+        handleInputBlur(field) {
+            if (this.formData[`${field}InputValue`].trim()) {
+                this.handleInputConfirm(field);
             } else {
-                this.formData.inputVisible = false;
+                this.formData[`${field}InputVisible`] = false;
             }
         },
 
         /**
          * 标签输入框确认（回车）
+         * @param {String} field - 字段名称
          */
-        handleInputConfirm() {
-            const inputValue = this.formData.inputValue.trim();
-            if (inputValue && !this.formData.coreTags.includes(inputValue)) {
+        handleInputConfirm(field) {
+            const inputValue = this.formData[`${field}InputValue`].trim();
+            const fieldLabels = {
+                coreTags: '特征标签',
+                coreTopic: '核心主题词',
+                entryTerm: '入口词',
+                relatedTerms: '关联词',
+                reverseRef: '反向参照'
+            };
+            
+            if (inputValue && !this.formData[field].includes(inputValue)) {
                 // 校验标签数量
-                if (this.formData.coreTags.length >= 40) {
-                    this.$message.warning('特征标签数量不能超过40个');
+                if (this.formData[field].length >= 40) {
+                    this.$message.warning(`${fieldLabels[field]}数量不能超过40个`);
                     return;
                 }
-                this.formData.coreTags.push(inputValue);
+                this.formData[field].push(inputValue);
             }
-            this.formData.inputValue = '';
-            this.formData.inputVisible = false;
+            this.formData[`${field}InputValue`] = '';
+            this.formData[`${field}InputVisible`] = false;
         },
 
         /**
          * 删除标签
+         * @param {String} field - 字段名称
          * @param {Number} index - 标签索引
          */
-        handleTagClose(index) {
-            this.formData.coreTags.splice(index, 1);
+        handleTagClose(field, index) {
+            this.formData[field].splice(index, 1);
         },
 
         // ---------------------- 表单提交相关方法 ----------------------
@@ -361,11 +547,18 @@ export default {
 
                 this.loading = true;
                 try {
-                    // 构造接口参数（根据实际接口字段调整）
+                    // 构造接口参数 - 只保存coreKeyWords字段
                     const params = {
                         categoryName: this.formData.name,
                         categoryDescribe: this.formData.categoryDescribe,
                         coreTags: this.formData.coreTags.join(','),
+                        // 将四个字段合并为coreKeyWords，每个字段的值为逗号分隔的字符串
+                        coreKeyWords: JSON.stringify({
+                            coreTopic: this.formData.coreTopic.join(','),
+                            entryTerm: this.formData.entryTerm.join(','),
+                            relatedTerms: this.formData.relatedTerms.join(','),
+                            reverseRef: this.formData.reverseRef.join(',')
+                        }),
                         parentId: this.formData.parentId,
                         topId: this.topId
                     };
