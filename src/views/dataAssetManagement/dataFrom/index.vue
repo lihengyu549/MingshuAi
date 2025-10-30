@@ -129,7 +129,8 @@
           <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
         </el-form-item>
         <el-form-item label="来源业务系统描述" prop="businessComment" :rules="rules.businessComment">
-          <el-input type="textarea" v-model="form.businessComment" maxlength="50" show-word-limit placeholder="请输入来源业务系统描述" />
+          <el-input type="textarea" v-model="form.businessComment" maxlength="50" show-word-limit
+            placeholder="请输入来源业务系统描述" />
         </el-form-item>
         <el-row>
           <el-col :span="12">
@@ -220,6 +221,10 @@
         </el-form-item>
         <el-form-item label="来源业务系统" prop="businessName">
           <el-input v-model="importData.businessName" maxlength="50" placeholder="请输入数据源名称"></el-input>
+        </el-form-item>
+        <el-form-item label="来源业务系统描述" prop="businessComment" :rules="importDataRules.businessComment">
+          <el-input type="textarea" v-model="importData.businessComment" maxlength="50" show-word-limit
+            placeholder="请输入来源业务系统描述" />
         </el-form-item>
         <el-form-item label="导入文件" prop="importFile" class="uploadClass">
           <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
@@ -497,12 +502,16 @@ export default {
         categoryId: '',//框架名称
         importShow: false,
         businessName: '',
+        businessComment: '',
         sourceName: '',
       },
       isServiesNameRequired: false,
       debounceTimeout: null,
       // 表单校验
       importDataRules: {
+        businessComment: [
+          { required: true, message: "请输入来源业务系统描述", trigger: "blur" },
+        ],
         sourceName: [
           {
             required: true, message: "请输入数据源名称", trigger: "blur"
@@ -1207,6 +1216,7 @@ input[aria-hidden=true] {
 .addMsg /deep/ .el-input {
   width: 100%;
 }
+
 .addMsg /deep/ .el-textarea {
   width: 100%;
 }
