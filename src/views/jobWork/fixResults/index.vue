@@ -21,7 +21,15 @@
                     </div>
                     <div class="info-item">
                         <label class="info-label">AI字段注释：</label>
-                        <div class="info-content">{{ row.craftRemark }}</div>
+                        <div class="info-content">{{ row.tableCraftRemark }}</div>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">字段主题词：</label>
+                        <div class="info-content">
+                            <el-tag v-for="tag in JSON.parse(row.coreTags)" :key="tag"
+                                style="margin-right: 5px; border-radius: 8px;">{{ tag ||
+                                    '无' }}</el-tag>
+                        </div>
                     </div>
                     <div class="info-item">
                         <label class="info-label">数据路径：</label>
@@ -40,9 +48,15 @@
                         <div class="info-content">{{ row.craftTableRemark }}</div>
                     </div>
                     <div class="info-item">
+                        <label class="info-label">表主题词：</label>
+                        <div class="info-content"><el-tag type="success" style="border-radius: 8px;">{{
+                            row.attributeType
+                                }}</el-tag></div>
+                    </div>
+                    <!-- <div class="info-item">
                         <label class="info-label">所属库：</label>
                         <div class="info-content">{{ row.databaseName }}</div>
-                    </div>
+                    </div> -->
                     <div class="info-item">
                         <label class="info-label">样本抽样：</label>
                         <div class="info-content">
@@ -57,20 +71,6 @@
                                 </div>
                                 <el-button size="mini" type="text">查看</el-button>
                             </el-tooltip>
-                        </div>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">属性类型：</label>
-                        <div class="info-content"><el-tag type="success" style="border-radius: 8px;">{{
-                            row.attributeType
-                                }}</el-tag></div>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">核心标签：</label>
-                        <div class="info-content">
-                            <el-tag v-for="tag in JSON.parse(row.coreTags)" :key="tag"
-                                style="margin-right: 5px; border-radius: 8px;">{{ tag ||
-                                    '无' }}</el-tag>
                         </div>
                     </div>
                 </el-card>
