@@ -57,7 +57,7 @@
 <script>
 import MindMap from "simple-mind-map";
 import "simple-mind-map/dist/simpleMindMap.esm.css";
-import { generateStandard, saveGenerateStandard, cancelGenerateStandard, terminationGenerateStandard } from '@/api/system/proxys'
+import { generateStandard, saveGenerateStandard, cancelGenerateStandard, terminationGenerateStandard, getGenerateStandard } from '@/api/system/proxys'
 export default {
     name: "FlowChart",
     data() {

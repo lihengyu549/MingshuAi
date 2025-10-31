@@ -403,3 +403,11 @@ export function terminationGenerateStandard (params) {
     data: params
   })
 }
+// 查询整个树结构接口（包含叶子节点）
+export function getGenerateStandard (params) {
+  return request({
+    url: '/system/category/getGenerateStandard',
+    method: 'get',
+    params: params
+  })
+}
