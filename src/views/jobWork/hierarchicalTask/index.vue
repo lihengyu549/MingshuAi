@@ -381,9 +381,9 @@ export default {
         { name: "高", value: "2" },
       ],
       confirmList: [
-        { name: "全部", value: "0" },
-        { name: "未确认", value: "1" },
-        { name: "已确认", value: "2" },
+        { name: "全部", value: "-1" },
+        { name: "未确认", value: "0" },
+        { name: "已确认", value: "1" },
       ],
       dataYTpeList: [
         {
