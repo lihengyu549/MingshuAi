@@ -61,61 +61,63 @@ import { generateStandard, saveGenerateStandard, cancelGenerateStandard, termina
 export default {
     name: "FlowChart",
     data() {
-        return {
-            generate: null,
-            mindMap: null,
-            // 右键菜单相关数据
-            type: "",
-            currentNode: null,
-            left: 0,
-            top: 0,
-            show: false,
-            isRoot: false,
-            isFirst: false,
-            isLast: false,
-            waitUid: '',
-            fullData: {
-                data: {
-                    text: "根节点",
+            return {
+                generate: null,
+                mindMap: null,
+                // 右键菜单相关数据
+                type: "",
+                currentNode: null,
+                left: 0,
+                top: 0,
+                show: false,
+                isRoot: false,
+                isFirst: false,
+                isLast: false,
+                waitUid: '',
+                fullData: {
+                    data: {
+                        text: "根节点",
+                    },
+                    children: [],
                 },
-                children: [],
-            },
-            // 存储最新收到的完整数据
-            latestFullData: null,
-            // 表单数据
-            form: {
-                enterpriseName: '',
-                structureLevel: '3'
-            },
-            rules: {
-                enterpriseName: [
-                    { required: true, message: '请输入企业名称', trigger: 'blur' }
-                ],
-                structureLevel: [
-                    { required: true, message: '请选择结构层级', trigger: 'change' }
-                ]
-            },
-            // 状态变量
-            canGenerate: false,
-            canSave: false,
-            canCancel: false,
-            websocket: null,
-            isGenerating: false,
-            isTerminating: false,
-            generateIcon: '',
-            // 控制节点生成的状态
-            isGeneratingNodes: false,
-            nodeGenerationDelay: 500,
-            batchUpdate: false,
-            updateQueue: [],
-            batchUpdateInterval: 100,
-            // 逐字显示相关变量
-            typingQueue: [], // 等待逐字显示的节点队列
-            currentTypingNode: null, // 当前正在逐字显示的节点
-            typingSpeed: 50, // 打字速度，毫秒/字
-            typingComplete: true // 标记当前是否有正在进行的打字动画
-        };
-    },
+                // 存储最新收到的完整数据
+                latestFullData: null,
+                // 表单数据
+                form: {
+                    enterpriseName: '',
+                    structureLevel: '3'
+                },
+                rules: {
+                    enterpriseName: [
+                        { required: true, message: '请输入企业名称', trigger: 'blur' }
+                    ],
+                    structureLevel: [
+                        { required: true, message: '请选择结构层级', trigger: 'change' }
+                    ]
+                },
+                // 状态变量
+                canGenerate: false,
+                canSave: false,
+                canCancel: false,
+                websocket: null,
+                isGenerating: false,
+                isTerminating: false,
+                generateIcon: '',
+                // 控制节点生成的状态
+                isGeneratingNodes: false,
+                nodeGenerationDelay: 500,
+                batchUpdate: false,
+                updateQueue: [],
+                batchUpdateInterval: 100,
+                // 数据处理队列，用于存放待处理的WebSocket数据
+                dataProcessingQueue: [],
+                // 逐字显示相关变量
+                typingQueue: [], // 等待逐字显示的节点队列
+                currentTypingNode: null, // 当前正在逐字显示的节点
+                typingSpeed: 50, // 打字速度，毫秒/字
+                typingComplete: true // 标记当前是否有正在进行的打字动画
+            };
+        },
     mounted() {
         this.mindMap = new MindMap({
             el: document.getElementById("mindMapContainer"),
@@ -325,10 +327,13 @@ export default {
                 // 将节点居中显示
                 if (this.mindMap && this.mindMap.renderer && nextItem.uid) {
                     try {
-                        const node = this.mindMap.renderer.findNodeByUid(nextItem.uid);
-                        if (node && this.mindMap.renderer.moveNodeToCenter) {
-                            this.mindMap.renderer.moveNodeToCenter(node);
-                        }
+                        // 使用setTimeout确保节点已经渲染完成
+                        setTimeout(() => {
+                            const node = this.mindMap.renderer.findNodeByUid(nextItem.uid);
+                            if (node && this.mindMap.renderer.moveNodeToCenter) {
+                                this.mindMap.renderer.moveNodeToCenter(node);
+                            }
+                        }, 50);
                     } catch (error) {
                         console.error('居中节点时出错:', error);
                     }
@@ -338,6 +343,14 @@ export default {
                 this.typeWriter(nextItem.nodeData, nextItem.fullText);
             } else if (this.typingQueue.length === 0) {
                 this.typingComplete = true;
+                
+                // 打字队列为空时，检查是否有等待处理的数据
+                if (this.dataProcessingQueue.length > 0 && !this.isGeneratingNodes) {
+                    const nextData = this.dataProcessingQueue.shift();
+                    setTimeout(() => {
+                        this.processFullData(nextData);
+                    }, 100);
+                }
             }
         },
 
@@ -363,47 +376,56 @@ export default {
                         child.data && child.data.uid === sourceNode.data.uid
                     );
                 }
+                
+                // 如果没有uid或找不到，通过文本内容判断
+                if (!existingNode && targetParent.children) {
+                    existingNode = targetParent.children.find(child =>
+                        child.data && child.data.text === sourceNode.data.text && !sourceNode.data.uid
+                    );
+                }
+                
+                // 检查节点是否已经在打字队列中
+                const isInTypingQueue = this.typingQueue.some(item => item.nodeData === sourceNode.data || 
+                    (sourceNode.data.uid && item.uid === sourceNode.data.uid) ||
+                    (item.nodeData && item.nodeData.text === sourceNode.data.text && !sourceNode.data.uid));
 
                 let newNode;
-                let isNewNode = false;
-
                 if (!existingNode) {
-                    isNewNode = true;
-                    // 创建新节点，先设置为空文本，等待逐字显示
+                    // 创建新节点，初始文本为空，等待打字队列处理
                     newNode = {
-                        data: {
-                            ...sourceNode.data,
-                            text: "" // 先显示空文本
-                        },
+                        data: { ...sourceNode.data, text: "" },
                         children: []
                     };
-
+                    
+                    // 确保targetParent有children数组
                     if (!targetParent.children) {
                         targetParent.children = [];
                     }
+                    
+                    // 添加到父节点
                     targetParent.children.push(newNode);
-
-                    // 更新思维导图，显示空节点
                     this.updateMindMapWithNewData(this.fullData);
-                    await new Promise(resolve => setTimeout(resolve, 100));
-
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    
                     // 将新节点加入打字队列
                     this.typingQueue.push({
                         nodeData: newNode.data,
                         fullText: sourceNode.data.text || "新节点",
                         uid: sourceNode.data.uid
                     });
-
-                    // 如果当前没有正在打字的节点，立即开始处理队列
-                    if (this.typingComplete) {
-                        this.typingComplete = false;
+                    
+                    // 启动处理队列（确保当前节点开始处理）
+                    if (this.typingQueue.length === 1) {
                         this.processNextInTypingQueue();
                     }
 
-                    // 等待当前节点打字完成后再继续
+                    // 等待当前节点打字完成后再继续 - 更严格的检查
                     await new Promise(resolve => {
                         const checkTypingComplete = () => {
-                            if (!this.currentTypingNode || this.currentTypingNode !== newNode.data) {
+                            // 检查节点文本是否已完全显示
+                            if (!this.currentTypingNode || 
+                                this.currentTypingNode !== newNode.data || 
+                                (newNode.data.text && newNode.data.text === (sourceNode.data.text || "新节点"))) {
                                 resolve();
                             } else {
                                 setTimeout(checkTypingComplete, 100);
@@ -411,29 +433,97 @@ export default {
                         };
                         checkTypingComplete();
                     });
-
                 } else {
                     newNode = existingNode;
                     // 同步更新已有节点的数据，避免数据不一致
                     if (newNode.data) {
-                        newNode.data = { ...newNode.data, ...sourceNode.data };
+                        // 检查文本是否有变化，如果有变化且不在打字队列中，才更新
+                        if (newNode.data.text !== sourceNode.data.text && !isInTypingQueue) {
+                            // 确保新节点文本为空，等待打字队列处理
+                            newNode.data.text = "";
+                            this.updateMindMapWithNewData(this.fullData);
+                            await new Promise(resolve => setTimeout(resolve, 50));
+                             
+                            // 将节点加入打字队列进行逐字显示
+                            this.typingQueue.push({
+                                nodeData: newNode.data,
+                                fullText: sourceNode.data.text || "新节点",
+                                uid: sourceNode.data.uid
+                            });
+                             
+                            // 启动处理队列（确保当前节点开始处理）
+                            if (this.typingQueue.length === 1) {
+                                this.processNextInTypingQueue();
+                            }
+                            
+                            // 等待当前节点打字完成后再继续
+                            await new Promise(resolve => {
+                                const checkTypingComplete = () => {
+                                    if (!this.currentTypingNode || 
+                                        this.currentTypingNode !== newNode.data ||
+                                        (newNode.data.text && newNode.data.text === (sourceNode.data.text || "新节点"))) {
+                                        resolve();
+                                    } else {
+                                        setTimeout(checkTypingComplete, 100);
+                                    }
+                                };
+                                checkTypingComplete();
+                            });
+                        } else {
+                            // 只更新非文本属性
+                            const { text, ...otherProps } = sourceNode.data;
+                            newNode.data = { ...newNode.data, ...otherProps };
+                        }
                     } else {
-                        newNode.data = { ...sourceNode.data };
+                        // 对于没有data的节点，创建并加入打字队列
+                        newNode.data = { ...sourceNode.data, text: "" };
+                        this.updateMindMapWithNewData(this.fullData);
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                         
+                        this.typingQueue.push({
+                            nodeData: newNode.data,
+                            fullText: sourceNode.data.text || "新节点",
+                            uid: sourceNode.data.uid
+                        });
+                         
+                        // 启动处理队列（确保当前节点开始处理）
+                        if (this.typingQueue.length === 1) {
+                            this.processNextInTypingQueue();
+                        }
+                         
+                        // 等待当前节点打字完成后再继续
+                        await new Promise(resolve => {
+                            const checkTypingComplete = () => {
+                                if (!this.currentTypingNode || 
+                                    this.currentTypingNode !== newNode.data ||
+                                    (newNode.data.text && newNode.data.text === (sourceNode.data.text || "新节点"))) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkTypingComplete, 100);
+                                }
+                            };
+                            checkTypingComplete();
+                        });
                     }
                 }
 
                 // 递归处理子节点，确保层级顺序
-                if (sourceNode.children && sourceNode.children.length) {
+                // 只有当前节点完全处理完毕后才处理子节点
+                if (sourceNode.children && sourceNode.children.length && 
+                    newNode.data.text === (sourceNode.data.text || "新节点")) {
                     await this.compareAndAddNodes(newNode, sourceNode.children, level + 1);
                 }
             }
         },
 
-        // 处理WebSocket返回的完整数据，实现逐级逐个节点生成
+        // 处理WebSocket返回的完整数据，实现严格的层级顺序节点生成
         async processFullData(newData) {
             this.latestFullData = newData;
 
-            if (this.isGeneratingNodes) {
+            // 如果当前正在处理数据，将新数据加入队列，避免打断正在进行的动画
+            if (this.isGeneratingNodes || this.currentTypingNode || this.typingQueue.length > 0) {
+                // 只保留最新的数据，避免队列过长
+                this.dataProcessingQueue = [newData];
                 return;
             }
 
@@ -448,10 +538,15 @@ export default {
                     this.fullData.data.text = newData.data.text;
                     this.fullData.data.uid = newData.data.uid || this.fullData.data.uid;
                     this.updateMindMapWithNewData(this.fullData);
+                    // 短暂延迟确保根节点渲染完成
+                    await new Promise(resolve => setTimeout(resolve, 100));
                 }
 
                 // 严格按照层级顺序生成子节点（应用逐字效果）
                 await this.compareAndAddNodes(this.fullData, newData.children || []);
+
+                // 等待所有打字动画完成后再进行清理
+                await this.waitForAllTypingComplete();
 
                 // 清理可能的重复节点
                 this.cleanDuplicateNodes(this.fullData);
@@ -460,12 +555,112 @@ export default {
             } catch (error) {
                 console.error('处理节点生成时出错:', error);
             } finally {
-                this.isGeneratingNodes = false;
-                // 如果所有节点处理完但队列中还有未处理的，继续处理
-                if (this.typingQueue.length > 0) {
-                    this.processNextInTypingQueue();
-                }
+                // 确保所有打字动画完成后再处理下一批数据
+                const processNextBatch = async () => {
+                    // 先等待所有打字动画完成
+                    await this.waitForAllTypingComplete();
+                    
+                    this.isGeneratingNodes = false;
+                    
+                    // 如果队列中有数据，则继续处理
+                    if (this.dataProcessingQueue.length > 0) {
+                        const nextData = this.dataProcessingQueue.shift();
+                        // 短暂延迟后处理下一批数据，保持动画流畅
+                        setTimeout(() => {
+                            // 对队列中的所有数据都使用processFullData处理，保持逐字动画效果
+                            this.processFullData(nextData);
+                        }, 100);
+                    }
+                };
+                
+                // 启动下一批数据处理
+                processNextBatch();
             }
+        },
+        
+        // 等待所有打字动画完成
+        async waitForAllTypingComplete() {
+            return new Promise(resolve => {
+                const checkComplete = () => {
+                    if (this.typingQueue.length === 0 && !this.currentTypingNode) {
+                        resolve();
+                    } else {
+                        // 如果还有打字队列，确保它在处理中
+                        if (this.typingQueue.length > 0 && !this.currentTypingNode) {
+                            this.processNextInTypingQueue();
+                        }
+                        setTimeout(checkComplete, 100);
+                    }
+                };
+                checkComplete();
+            });
+        },
+        
+        // 直接更新完整数据，不触发打字动画
+        updateFullDataWithoutAnimation(newData) {
+            try {
+                // 根节点直接更新
+                if (newData.data && newData.data.text) {
+                    this.fullData.data.text = newData.data.text;
+                    this.fullData.data.uid = newData.data.uid || this.fullData.data.uid;
+                }
+                
+                // 递归更新子节点，直接显示完整文本
+                this.updateNodesWithoutAnimation(this.fullData, newData.children || []);
+                
+                // 清理重复节点
+                this.cleanDuplicateNodes(this.fullData);
+                
+                // 更新思维导图
+                this.updateMindMapWithNewData(this.fullData);
+                
+                // 继续处理队列中的下一批数据
+                if (this.dataProcessingQueue.length > 0) {
+                    const nextData = this.dataProcessingQueue.shift();
+                    setTimeout(() => {
+                        this.updateFullDataWithoutAnimation(nextData);
+                    }, 100);
+                }
+            } catch (error) {
+                console.error('直接更新数据时出错:', error);
+            }
+        },
+        
+        // 递归更新节点数据，不触发打字动画
+        updateNodesWithoutAnimation(targetParent, sourceNodes) {
+            if (!sourceNodes || !sourceNodes.length) return;
+            
+            // 确保目标父节点有children数组
+            if (!targetParent.children) {
+                targetParent.children = [];
+            }
+            
+            // 为sourceNodes中的每个节点创建或更新对应节点
+            sourceNodes.forEach(sourceNode => {
+                if (!sourceNode || !sourceNode.data) return;
+                
+                // 查找对应的目标节点
+                let targetNode = targetParent.children.find(child => 
+                    child.data && child.data.uid === sourceNode.data.uid
+                );
+                
+                if (!targetNode) {
+                    // 创建新节点，直接显示完整文本
+                    targetNode = {
+                        data: { ...sourceNode.data },
+                        children: []
+                    };
+                    targetParent.children.push(targetNode);
+                } else {
+                    // 更新已有节点的数据
+                    targetNode.data = { ...targetNode.data, ...sourceNode.data };
+                }
+                
+                // 递归处理子节点
+                if (sourceNode.children && sourceNode.children.length) {
+                    this.updateNodesWithoutAnimation(targetNode, sourceNode.children);
+                }
+            });
         },
         cleanDuplicateNodes(node) {
             // 确保node存在
@@ -705,8 +900,8 @@ export default {
             const protocols = token ? [`${token}`] : [];
             const currentUrl = new URL(window.location.href);
             const hostName = currentUrl.hostname;
-            // const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
-            const wsUrl = `wss://${hostName}:443/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
+            const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
+            // const wsUrl = `wss://${hostName}:443/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
 
             this.websocket = new WebSocket(
                 wsUrl,
