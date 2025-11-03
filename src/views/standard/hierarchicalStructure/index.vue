@@ -1055,10 +1055,13 @@ export default {
                 }
 
                 // 确保最后一次收到的完整数据被正确展示
-                // 检查是否有最新的完整数据并且当前没有正在处理的数据
-                if (this.latestFullData && !this.isGeneratingNodes && this.typingQueue.length === 0 && !this.currentTypingNode) {
+                if (this.latestFullData) {
                     console.log('处理最后一次收到的完整数据');
-                    // 直接更新数据，确保最后一批节点能够完全展示
+                    // 重置状态，确保最后一批数据能够处理
+                    this.isGeneratingNodes = false;
+                    this.typingQueue = [];
+                    this.currentTypingNode = null;
+                    // 直接更新数据，确保所有节点能够完全展示
                     this.updateFullDataWithoutAnimation(this.latestFullData);
                     this.$message.info('已展示最后一批数据');
                     this.canSave = true;
