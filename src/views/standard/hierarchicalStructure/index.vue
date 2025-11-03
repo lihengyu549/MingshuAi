@@ -621,6 +621,14 @@ export default {
         // 直接更新完整数据，不触发打字动画
         updateFullDataWithoutAnimation(newData) {
             try {
+                console.log('开始更新完整数据:', newData);
+                
+                // 确保新数据存在
+                if (!newData) {
+                    console.warn('尝试更新空数据');
+                    return;
+                }
+                
                 // 根节点直接更新
                 if (newData.data && newData.data.text) {
                     this.fullData.data.text = newData.data.text;
@@ -635,16 +643,22 @@ export default {
 
                 // 更新思维导图
                 this.updateMindMapWithNewData(this.fullData);
+                console.log('完整数据更新完成');
 
-                // 继续处理队列中的下一批数据
-                if (this.dataProcessingQueue.length > 0) {
-                    const nextData = this.dataProcessingQueue.shift();
-                    setTimeout(() => {
-                        this.updateFullDataWithoutAnimation(nextData);
-                    }, 100);
-                }
+                // 重置相关状态，防止干扰
+                this.isGeneratingNodes = false;
+                this.typingQueue = [];
+                this.currentTypingNode = null;
+                
+                // 清空处理队列，避免重复处理
+                this.dataProcessingQueue = [];
+                
             } catch (error) {
                 console.error('直接更新数据时出错:', error);
+                // 出错时也重置状态，确保系统可以继续运行
+                this.isGeneratingNodes = false;
+                this.typingQueue = [];
+                this.currentTypingNode = null;
             }
         },
 
@@ -1013,11 +1027,24 @@ export default {
                         this.canCancel = true;
                         this.isGeneratingNodes = false;
 
-                        // 关闭WebSocket连接
-                        if (this.websocket) {
-                            this.websocket.close();
-                            this.websocket = null;
+                        // 确保最后一次收到的完整数据被正确展示
+                        if (this.latestFullData) {
+                            console.log('在关闭前处理最后一次收到的完整数据');
+                            // 重置状态，确保最后一批数据能够处理
+                            this.typingQueue = [];
+                            this.currentTypingNode = null;
+                            // 直接更新数据，确保所有节点能够完全展示
+                            this.updateFullDataWithoutAnimation(this.latestFullData);
+                            this.$message.info('已展示所有节点数据');
                         }
+
+                        // 延迟关闭WebSocket连接，确保数据更新完成
+                        setTimeout(() => {
+                            if (this.websocket) {
+                                this.websocket.close();
+                                this.websocket = null;
+                            }
+                        }, 500);
                         return;
                     }
 
