@@ -160,9 +160,39 @@ export default {
         this.mindMap.on("node_click", this.hideMenu);
         this.mindMap.on("draw_click", this.hideMenu);
 
-        // 监听数据变化详情事件，获取新创建的节点
+        // 监听数据变化详情事件，获取新创建的节点以及监听生成结束后的用户操作
         this.mindMap.on('data_change_detail', (list) => {
             try {
+                // 仅当生成结束时才处理用户操作
+                if (!this.isGenerating && !this.isGeneratingNodes) {
+                    // 检查是否有创建、修改或删除操作
+                    const userOperations = list.filter(item => 
+                        item.action === 'create' || item.action === 'update' || item.action === 'delete'
+                    );
+                    
+                    if (userOperations.length > 0) {
+                        console.log('检测到生成结束后的用户节点操作:', userOperations);
+                        // 在这里添加您需要的处理逻辑
+                        userOperations.forEach(operation => {
+                            switch(operation.action) {
+                                case 'create':
+                                    console.log('用户创建了节点:', operation.data);
+                                    // 处理创建操作
+                                    break;
+                                case 'update':
+                                    console.log('用户修改了节点:', operation.data);
+                                    // 处理修改操作
+                                    break;
+                                case 'delete':
+                                    console.log('用户删除了节点:', operation.data);
+                                    // 处理删除操作
+                                    break;
+                            }
+                        });
+                    }
+                }
+                
+                // 保留原有的创建节点处理逻辑
                 const createdNodes = list.filter((item) => {
                     return item.action === 'create';
                 });
@@ -782,7 +812,23 @@ export default {
                 this.hideMenu();
                 return;
             }
-            this.mindMap.execCommand("INSERT_CHILD_NODE", this.currentNode);
+            
+            // 复制当前节点的所有属性，除了名字
+            if (this.currentNode && this.currentNode.data) {
+                // 创建新节点配置，复制原始节点的数据
+                const newNodeConfig = JSON.parse(JSON.stringify(this.currentNode.data));
+                // 清空名字，使用默认名称
+                newNodeConfig.text = "新节点";
+                
+                // 使用自定义配置插入子节点
+                this.mindMap.execCommand("INSERT_CHILD_NODE", this.currentNode, { 
+                    data: newNodeConfig 
+                });
+            } else {
+                // 回退到原始方法
+                this.mindMap.execCommand("INSERT_CHILD_NODE", this.currentNode);
+            }
+            
             this.hideMenu();
         },
 
@@ -792,7 +838,23 @@ export default {
                 this.hideMenu();
                 return;
             }
-            this.mindMap.execCommand("INSERT_NODE", this.currentNode);
+            
+            // 复制当前节点的所有属性，除了名字
+            if (this.currentNode && this.currentNode.data) {
+                // 创建新节点配置，复制原始节点的数据
+                const newNodeConfig = JSON.parse(JSON.stringify(this.currentNode.data));
+                // 清空名字，使用默认名称
+                newNodeConfig.text = "新节点";
+                
+                // 使用自定义配置插入节点
+                this.mindMap.execCommand("INSERT_NODE", this.currentNode, { 
+                    data: newNodeConfig 
+                });
+            } else {
+                // 回退到原始方法
+                this.mindMap.execCommand("INSERT_NODE", this.currentNode);
+            }
+            
             this.hideMenu();
         },
 
@@ -802,7 +864,23 @@ export default {
                 this.hideMenu();
                 return;
             }
-            this.mindMap.execCommand("INSERT_PARENT_NODE", this.currentNode);
+            
+            // 复制当前节点的所有属性，除了名字
+            if (this.currentNode && this.currentNode.data) {
+                // 创建新节点配置，复制原始节点的数据
+                const newNodeConfig = JSON.parse(JSON.stringify(this.currentNode.data));
+                // 清空名字，使用默认名称
+                newNodeConfig.text = "新节点";
+                
+                // 使用自定义配置插入父节点
+                this.mindMap.execCommand("INSERT_PARENT_NODE", this.currentNode, { 
+                    data: newNodeConfig 
+                });
+            } else {
+                // 回退到原始方法
+                this.mindMap.execCommand("INSERT_PARENT_NODE", this.currentNode);
+            }
+            
             this.hideMenu();
         },
 
