@@ -1042,8 +1042,8 @@ export default {
             const protocols = token ? [`${token}`] : [];
             const currentUrl = new URL(window.location.href);
             const hostName = currentUrl.hostname;
-            const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
-            // const wsUrl = `wss://${hostName}:443/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
+            // const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
+            const wsUrl = `wss://${hostName}:443/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
 
             this.websocket = new WebSocket(
                 wsUrl,
@@ -1156,13 +1156,32 @@ export default {
             this.$refs.form.validate(async (valid) => {
                 if (valid) {
                     try {
+                        // 获取思维导图的最新完整数据，确保包含手动添加的节点
+                        let saveData = this.latestFullData;
+                        
+                        // 尝试从mindMap获取最新数据，优先使用getFullData方法
+                        if (this.mindMap && typeof this.mindMap.getFullData === 'function') {
+                            saveData = this.mindMap.getFullData();
+                            console.log('从mindMap获取的完整数据:', saveData);
+                        } else if (this.mindMap && typeof this.mindMap.getData === 'function') {
+                            // 备选方案，使用getData方法
+                            saveData = this.mindMap.getData();
+                            console.log('从mindMap获取的数据:', saveData);
+                        } else if (!saveData) {
+                            // 如果没有最新数据，使用当前显示的fullData
+                            saveData = this.fullData;
+                            console.log('使用当前显示的fullData:', saveData);
+                        }
+                        
+                        console.log('准备保存的数据:', saveData);
+                        const response = await saveGenerateStandard({ id: this.generate.id, treeStructureData: saveData });
 
-                        const response = await saveGenerateStandard({ id: this.generate.id, treeStructureData: this.latestFullData });
-
-                        if (response.data.success) {
+                        if (response.code === 200) {
                             this.$message.success('保存成功');
+                            // 更新latestFullData为保存的数据，确保状态一致
+                            this.latestFullData = saveData;
                         } else {
-                            this.$message.error('保存失败: ' + (response.data.message || '未知错误'));
+                            this.$message.error('保存失败: ' + (response.message || '未知错误'));
                         }
                     } catch (error) {
                         console.error('保存请求出错:', error);
