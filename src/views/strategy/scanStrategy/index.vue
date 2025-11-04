@@ -32,6 +32,7 @@
         <div class="contBox" style="display: flex;justify-content: flex-start;align-items: center;">
           <span style="margin-right: 20px;height: 28.5px;">抽样数量</span>
           <el-radio-group v-model="allData.SampleExtraction.value">
+            <el-radio label="0">0</el-radio>
             <el-radio label="5">5</el-radio>
             <el-radio label="10">10</el-radio>
             <el-radio label="20">20</el-radio>
