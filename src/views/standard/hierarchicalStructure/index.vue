@@ -137,6 +137,8 @@ export default {
             this.top = e.clientY + 10;
             this.show = true;
             this.currentNode = node;
+            console.log(this.currentNode);
+            
 
             // 判断节点类型
             this.isRoot = node.isRoot;
@@ -806,7 +808,6 @@ export default {
         },
 
         insertChild() {
-            console.log("插入子节点");
             // 生成过程中的节点不可操作
             if (this.isGenerating || this.isGeneratingNodes) {
                 this.hideMenu();
@@ -814,19 +815,21 @@ export default {
             }
             
             // 复制当前节点的所有属性，除了名字
-            if (this.currentNode && this.currentNode.data) {
+            if (this.currentNode && this.currentNode.nodeData.data) {
                 // 创建新节点配置，复制原始节点的数据
-                const newNodeConfig = JSON.parse(JSON.stringify(this.currentNode.data));
+                const newNodeConfig = JSON.parse(JSON.stringify(this.currentNode.nodeData.data));
                 // 清空名字，使用默认名称
-                newNodeConfig.text = "新节点";
                 
                 // 使用自定义配置插入子节点
-                this.mindMap.execCommand("INSERT_CHILD_NODE", this.currentNode, { 
-                    data: newNodeConfig 
+                this.mindMap.execCommand("INSERT_CHILD_NODE", false , [], { 
+                    type: newNodeConfig.type,
+                    text: '新节点',
                 });
             } else {
                 // 回退到原始方法
-                this.mindMap.execCommand("INSERT_CHILD_NODE", this.currentNode);
+                this.mindMap.execCommand("INSERT_CHILD_NODE", false , [], {
+                    text: '新节点',
+                });
             }
             
             this.hideMenu();
@@ -840,19 +843,21 @@ export default {
             }
             
             // 复制当前节点的所有属性，除了名字
-            if (this.currentNode && this.currentNode.data) {
+            if (this.currentNode && this.currentNode.nodeData.data) {
                 // 创建新节点配置，复制原始节点的数据
-                const newNodeConfig = JSON.parse(JSON.stringify(this.currentNode.data));
+                const newNodeConfig = JSON.parse(JSON.stringify(this.currentNode.nodeData.data));
                 // 清空名字，使用默认名称
-                newNodeConfig.text = "新节点";
                 
                 // 使用自定义配置插入节点
-                this.mindMap.execCommand("INSERT_NODE", this.currentNode, { 
-                    data: newNodeConfig 
+                this.mindMap.execCommand("INSERT_NODE", false , [], { 
+                    type: newNodeConfig.type,
+                    text: '新节点',
                 });
             } else {
                 // 回退到原始方法
-                this.mindMap.execCommand("INSERT_NODE", this.currentNode);
+                this.mindMap.execCommand("INSERT_NODE", false , [], {
+                    text: '新节点',
+                });
             }
             
             this.hideMenu();
@@ -866,19 +871,21 @@ export default {
             }
             
             // 复制当前节点的所有属性，除了名字
-            if (this.currentNode && this.currentNode.data) {
+            if (this.currentNode && this.currentNode.nodeData.data) {
                 // 创建新节点配置，复制原始节点的数据
-                const newNodeConfig = JSON.parse(JSON.stringify(this.currentNode.data));
+                const newNodeConfig = JSON.parse(JSON.stringify(this.currentNode.nodeData.data));
                 // 清空名字，使用默认名称
-                newNodeConfig.text = "新节点";
                 
                 // 使用自定义配置插入父节点
-                this.mindMap.execCommand("INSERT_PARENT_NODE", this.currentNode, { 
-                    data: newNodeConfig 
+                this.mindMap.execCommand("INSERT_PARENT_NODE", false , [], { 
+                    type: newNodeConfig.type,
+                    text: '新节点',
                 });
             } else {
                 // 回退到原始方法
-                this.mindMap.execCommand("INSERT_PARENT_NODE", this.currentNode);
+                this.mindMap.execCommand("INSERT_PARENT_NODE", false , [], {
+                    text: '新节点',
+                });
             }
             
             this.hideMenu();
