@@ -128,13 +128,8 @@ export default {
         // 监听节点右键事件
         this.mindMap.on("node_contextmenu", (e, node) => {
             e.preventDefault();
-            // 生成过程中或uid包含'describe'和'security'的节点不显示右键菜单
-            const hasRestrictedUid = node?.data?.uid && (
-                node.data.uid.toLowerCase().includes('describe') || 
-                node.data.uid.toLowerCase().includes('security')
-            );
-            
-            if (this.isGenerating || this.isGeneratingNodes || hasRestrictedUid) {
+            // 生成过程中不显示右键菜单
+            if (this.isGenerating || this.isGeneratingNodes) {
                 return;
             }
             this.type = "node";
@@ -151,15 +146,11 @@ export default {
                 this.isLast = siblings[siblings.length - 1] === node;
             }
         });
-        //根节点、生成过程中任何节点以及uid包含'describe'和'security'的节点都不可操作
+        //根节点和生成过程中的节点不可操作
         this.mindMap.on("node_dblclick", node => {
-            // 判断是否是根节点、正在生成过程中，或者节点的uid包含'describe'或'security'
-            const hasRestrictedUid = node?.data?.uid && (
-                node.data.uid.toLowerCase().includes('describe') || 
-                node.data.uid.toLowerCase().includes('security')
-            );
+            // 判断是否是根节点或正在生成过程中
             
-            if (node?.isRoot || this.isGenerating || this.isGeneratingNodes || hasRestrictedUid) {
+            if (node?.isRoot || this.isGenerating || this.isGeneratingNodes) {
                 node.renderer.textEdit.hideEditTextBox(); // 隐藏文本编辑框（受限节点双击编辑操作失效）
                 return;
             }
@@ -786,13 +777,8 @@ export default {
 
         insertChild() {
             console.log("插入子节点");
-            // 生成过程中或uid包含'describe'和'security'的节点不可操作
-            const hasRestrictedUid = this.currentNode?.data?.uid && (
-                this.currentNode.data.uid.toLowerCase().includes('describe') || 
-                this.currentNode.data.uid.toLowerCase().includes('security')
-            );
-            
-            if (this.isGenerating || this.isGeneratingNodes || hasRestrictedUid) {
+            // 生成过程中的节点不可操作
+            if (this.isGenerating || this.isGeneratingNodes) {
                 this.hideMenu();
                 return;
             }
@@ -801,13 +787,8 @@ export default {
         },
 
         insertSibling() {
-            // 生成过程中或uid包含'describe'和'security'的节点不可操作
-            const hasRestrictedUid = this.currentNode?.data?.uid && (
-                this.currentNode.data.uid.toLowerCase().includes('describe') || 
-                this.currentNode.data.uid.toLowerCase().includes('security')
-            );
-            
-            if (this.isGenerating || this.isGeneratingNodes || hasRestrictedUid) {
+            // 生成过程中的节点不可操作
+            if (this.isGenerating || this.isGeneratingNodes) {
                 this.hideMenu();
                 return;
             }
@@ -816,13 +797,8 @@ export default {
         },
 
         insertParent() {
-            // 生成过程中或uid包含'describe'和'security'的节点不可操作
-            const hasRestrictedUid = this.currentNode?.data?.uid && (
-                this.currentNode.data.uid.toLowerCase().includes('describe') || 
-                this.currentNode.data.uid.toLowerCase().includes('security')
-            );
-            
-            if (this.isGenerating || this.isGeneratingNodes || hasRestrictedUid) {
+            // 生成过程中的节点不可操作
+            if (this.isGenerating || this.isGeneratingNodes) {
                 this.hideMenu();
                 return;
             }
@@ -831,13 +807,8 @@ export default {
         },
 
         deleteNode() {
-            // 生成过程中或uid包含'describe'和'security'的节点不可操作
-            const hasRestrictedUid = this.currentNode?.data?.uid && (
-                this.currentNode.data.uid.toLowerCase().includes('describe') || 
-                this.currentNode.data.uid.toLowerCase().includes('security')
-            );
-            
-            if (this.isGenerating || this.isGeneratingNodes || hasRestrictedUid) {
+            // 生成过程中的节点不可操作
+            if (this.isGenerating || this.isGeneratingNodes) {
                 this.hideMenu();
                 return;
             }
@@ -846,13 +817,8 @@ export default {
         },
 
         moveUp() {
-            // 生成过程中或uid包含'describe'和'security'的节点不可操作
-            const hasRestrictedUid = this.currentNode?.data?.uid && (
-                this.currentNode.data.uid.toLowerCase().includes('describe') || 
-                this.currentNode.data.uid.toLowerCase().includes('security')
-            );
-            
-            if (this.isGenerating || this.isGeneratingNodes || hasRestrictedUid) {
+            // 生成过程中的节点不可操作
+            if (this.isGenerating || this.isGeneratingNodes) {
                 this.hideMenu();
                 return;
             }
@@ -861,13 +827,8 @@ export default {
         },
 
         moveDown() {
-            // 生成过程中或uid包含'describe'和'security'的节点不可操作
-            const hasRestrictedUid = this.currentNode?.data?.uid && (
-                this.currentNode.data.uid.toLowerCase().includes('describe') || 
-                this.currentNode.data.uid.toLowerCase().includes('security')
-            );
-            
-            if (this.isGenerating || this.isGeneratingNodes || hasRestrictedUid) {
+            // 生成过程中的节点不可操作
+            if (this.isGenerating || this.isGeneratingNodes) {
                 this.hideMenu();
                 return;
             }
@@ -1069,7 +1030,6 @@ export default {
                 } catch (error) {
                     console.error('解析WebSocket数据出错:', error);
                     console.error('原始数据:', event.data);
-                    this.$message.warning('数据格式可能不匹配，继续等待...');
                 }
             };
 
@@ -1112,7 +1072,7 @@ export default {
                 if (valid) {
                     try {
 
-                        const response = await saveGenerateStandard({ id: this.generate.id });
+                        const response = await saveGenerateStandard({ id: this.generate.id, treeStructureData: this.latestFullData });
 
                         if (response.data.success) {
                             this.$message.success('保存成功');
