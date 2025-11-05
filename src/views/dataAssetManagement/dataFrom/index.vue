@@ -152,7 +152,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
-              <el-input v-model="form.targetUserPassword" show-password maxlegth="100" placeholder="请输入数据库密码" />
+              <el-input type="password" v-model="form.targetUserPassword" :show-password="passwordVisible" maxlength="100" placeholder="请输入数据库密码" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -289,6 +289,7 @@ export default {
       scanStateName: false,// 扫描中展示
       scanContentLoading: false,
       editIsFlag: false,
+      passwordVisible: true,
       treeOptions: [],
       scanStateBtnDisabled: false,// 扫描按钮禁用条件
       treeCheckedData: [],//树节点已选中数据
@@ -804,6 +805,7 @@ export default {
     /** 新增按钮操作 */
     handleAdd() {
       this.editIsFlag = false
+      this.passwordVisible = true
       this.showSucType = 0
       this.projectNameEdit = null
       this.connectionType = '1'
@@ -1049,6 +1051,7 @@ export default {
     },
     scanContentEdit(row) {
       console.log('row', row);
+      this.passwordVisible = false
       if (row.isAddTasks == 1) {
         this.editIsFlag = true
       } else {
