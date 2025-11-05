@@ -66,14 +66,14 @@
                         </el-button>
                     </el-form-item>
 
-                    <el-form-item v-if="currentModel.name == 'ollama'" label="模型特性">
+                    <!-- <el-form-item v-if="currentModel.name == 'ollama'" label="模型特性">
                         <el-switch v-model="currentModel.thinkingMode" active-color="#13ce66" class="model-switch"
                             inactive-color="#e9ecef" active-text="深度思考" style="margin-left: auto;"></el-switch>
                         <el-tooltip content="深度思考模式让模型在回答前进行推理分析，提供更详细的思考过程" placement="top"
                             transition="el-fade-in-linear">
                             <svg-icon icon-class="dengpao" style="margin-left: 10px;"></svg-icon>
                         </el-tooltip>
-                    </el-form-item>
+                    </el-form-item> -->
 
                     <el-form-item label="模型温度">
                         <div class="slider-container">
