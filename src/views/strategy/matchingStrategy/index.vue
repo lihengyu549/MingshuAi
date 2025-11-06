@@ -259,6 +259,18 @@ export default {
           value: '4',
           label: 'AI字段注释匹配'
         },
+        {
+          value: '5',
+          label: '表名匹配'
+        },
+        {
+          value: '6',
+          label: '表注释匹配'
+        },
+        {
+          value: '7',
+          label: 'AI表注释匹配'
+        },
       ],
       addOptions: [
         {
