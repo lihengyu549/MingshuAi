@@ -11,7 +11,13 @@
           <p><span>运行状态</span>：
             <el-tag :type="statusType">{{ statusName }}</el-tag>
           </p>
+          <!-- 失败原因展示，仅在任务失败时显示 -->
         </div>
+        <p v-if="status === 'ERR'" class="error-reason">
+          <span>失败原因</span>：
+          <span class="error-text">{{ errorReason || '未知错误' }}</span>
+        </p>
+
       </div>
     </el-card>
 
@@ -134,6 +140,7 @@ export default {
       runTime: '',
       status: '',
       statusName: '',
+      errorReason: '', // 存储任务失败原因
       // 进度条数据
       progressTotal: 0,
       progressCurrent: 0,
@@ -221,6 +228,7 @@ export default {
       this.tasksName = this.routeData.tasksName;
       this.status = this.routeData.maskComplete;
       this.statusName = this.routeData.stateName;
+      this.errorReason = this.routeData.errorReason;
       this.startTime = this.routeData.startTime;
       this.overTime = this.routeData.overTime;
       this.runTime = this.routeData.runTime;
@@ -285,6 +293,7 @@ export default {
           this.runTime = message?.runTime || this.runTime;
           this.status = message.status;
           this.statusName = message.statusName;
+          this.errorReason = message.status === 'ERR' ? message?.errorReason : '';
           this.startTime = message.startTime;
           this.overTime = message.overTime;
         } catch (e) {
@@ -539,12 +548,12 @@ export default {
   }
 }
 
-/* 空日志提示 */
-.empty-log {
-  text-align: center;
-  padding: 20px;
-  color: #909399;
-  font-size: 14px;
+.error-text,
+.error-reason {
+  color: #ff4949;
+  /* 红色，醒目显示 */
+  font-weight: bold;
+  margin: 0;
 }
 
 /* --------------- 分析日志样式（与实时日志统一）--------------- */
