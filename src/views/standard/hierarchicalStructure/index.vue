@@ -19,9 +19,9 @@
                 </el-form-item>
             </el-form>
             <div class="form-buttons top-buttons">
-                <el-button type="primary" plain @click="handleGenerate" :disabled="!canGenerate || isGenerating"
+                <el-button type="primary" plain @click="handleGenerate" :disabled="!canGenerate || isGenerating || generationCompleted"
                     :loading="isGenerating" :icon="generateIcon">生成</el-button>
-                <el-button type="danger" plain @click="handleTermination" :disabled="!isGenerating"
+                <el-button type="danger" plain @click="handleTermination" :disabled="!isGenerating || generationCompleted"
                     :loading="isTerminating">停止</el-button>
             </div>
             <div class="form-buttons bottom-buttons">
@@ -61,9 +61,11 @@ import { generateStandard, saveGenerateStandard, cancelGenerateStandard, termina
 export default {
     name: "FlowChart",
     data() {
-        return {
-            generate: null,
-            mindMap: null,
+            return {
+                // 生成状态标志
+                generationCompleted: false,
+                generate: null,
+                mindMap: null,
             // 右键菜单相关数据
             type: "",
             currentNode: null,
@@ -989,9 +991,11 @@ export default {
                 console.error('停止请求出错:', error);
                 this.$message.error('停止请求失败，请重试');
             } finally {
-                this.isTerminating = false;
-                this.cleanupGeneration(false);
-            }
+        this.isTerminating = false;
+        this.cleanupGeneration(false);
+        // 设置生成完成标志，使生成按钮不可再点击
+        this.generationCompleted = true;
+    }
         },
 
         // 清理生成状态的方法
@@ -1042,8 +1046,8 @@ export default {
             const protocols = token ? [`${token}`] : [];
             const currentUrl = new URL(window.location.href);
             const hostName = currentUrl.hostname;
-            // const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
-            const wsUrl = `wss://${hostName}:443/prod-api/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
+            const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
+            // const wsUrl = `wss://${hostName}:443/prod-api/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
 
             this.websocket = new WebSocket(
                 wsUrl,
@@ -1067,6 +1071,8 @@ export default {
                         console.log('收到执行完成信号，准备关闭连接');
                         this.$message.success('执行完毕');
 
+                        // 设置生成完成标志，使生成按钮不可再点击
+                        this.generationCompleted = true;
                         // 恢复按钮状态
                         this.cleanupGeneration(true);
                         this.canSave = true;
@@ -1099,6 +1105,8 @@ export default {
 
                     // 处理结束标识
                     if (data && data.isCompleted) {
+                        // 设置生成完成标志，使生成按钮不可再点击
+                        this.generationCompleted = true;
                         this.$message.success('执行完毕');
                         this.cleanupGeneration(true);
                         this.canSave = true;
