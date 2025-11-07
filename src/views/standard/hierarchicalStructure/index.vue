@@ -19,10 +19,11 @@
                 </el-form-item>
             </el-form>
             <div class="form-buttons top-buttons">
-                <el-button type="primary" plain @click="handleGenerate" :disabled="!canGenerate || isGenerating || generationCompleted"
-                    :loading="isGenerating" :icon="generateIcon">生成</el-button>
-                <el-button type="danger" plain @click="handleTermination" :disabled="!isGenerating || generationCompleted"
-                    :loading="isTerminating">停止</el-button>
+                <el-button type="primary" plain @click="handleGenerate"
+                    :disabled="!canGenerate || isGenerating || generationCompleted" :loading="isGenerating"
+                    :icon="generateIcon">生成</el-button>
+                <el-button type="danger" plain @click="handleTermination"
+                    :disabled="!isGenerating || generationCompleted" :loading="isTerminating">停止</el-button>
             </div>
             <div class="form-buttons bottom-buttons">
                 <el-button type="success" plain @click="handleSave" :disabled="!canSave">保存</el-button>
@@ -63,11 +64,11 @@ import { generateStandard, saveGenerateStandard, cancelGenerateStandard, termina
 export default {
     name: "FlowChart",
     data() {
-            return {
-                // 生成状态标志
-                generationCompleted: false,
-                generate: null,
-                mindMap: null,
+        return {
+            // 生成状态标志
+            generationCompleted: false,
+            generate: null,
+            mindMap: null,
             // 右键菜单相关数据
             type: "",
             currentNode: null,
@@ -125,8 +126,9 @@ export default {
     mounted() {
         this.mindMap = new MindMap({
             el: document.getElementById("mindMapContainer"),
-            enableFreeDrag: true,
             data: this.fullData,
+            // notShowExpandBtn: true, //是否隐藏展开按钮
+            isShowCreateChildBtnIcon: false, // 是否展示快捷添加子节点按钮
         });
 
         // 监听节点右键事件
@@ -141,8 +143,6 @@ export default {
             this.top = e.clientY + 10;
             this.show = true;
             this.currentNode = node;
-            console.log(this.currentNode);
-            
 
             // 判断节点类型
             this.isRoot = node.isRoot;
@@ -209,7 +209,7 @@ export default {
                     }
                 }
                 */
-                
+
                 // 保留原有的创建节点处理逻辑
                 const createdNodes = list.filter((item) => {
                     return item.action === 'create';
@@ -337,6 +337,7 @@ export default {
                     el: document.getElementById("mindMapContainer"),
                     enableFreeDrag: true,
                     data: data,
+                    enableKeyboard: false // 禁用所有键盘快捷键
                 });
 
                 // 初始化批量更新处理器
@@ -661,13 +662,13 @@ export default {
         updateFullDataWithoutAnimation(newData) {
             try {
                 console.log('开始更新完整数据:', newData);
-                
+
                 // 确保新数据存在
                 if (!newData) {
                     console.warn('尝试更新空数据');
                     return;
                 }
-                
+
                 // 根节点直接更新
                 if (newData.data && newData.data.text) {
                     this.fullData.data.text = newData.data.text;
@@ -688,10 +689,10 @@ export default {
                 this.isGeneratingNodes = false;
                 this.typingQueue = [];
                 this.currentTypingNode = null;
-                
+
                 // 清空处理队列，避免重复处理
                 this.dataProcessingQueue = [];
-                
+
             } catch (error) {
                 console.error('直接更新数据时出错:', error);
                 // 出错时也重置状态，确保系统可以继续运行
@@ -1020,11 +1021,11 @@ export default {
                 console.error('停止请求出错:', error);
                 this.$message.error('停止请求失败，请重试');
             } finally {
-        this.isTerminating = false;
-        this.cleanupGeneration(false);
-        // 设置生成完成标志，使生成按钮不可再点击
-        this.generationCompleted = true;
-    }
+                this.isTerminating = false;
+                this.cleanupGeneration(false);
+                // 设置生成完成标志，使生成按钮不可再点击
+                this.generationCompleted = true;
+            }
         },
 
         // 清理生成状态的方法
@@ -1195,7 +1196,7 @@ export default {
                     try {
                         // 获取思维导图的最新完整数据，确保包含手动添加的节点
                         let saveData = this.latestFullData;
-                        
+
                         // 尝试从mindMap获取最新数据，优先使用getFullData方法
                         if (this.mindMap && typeof this.mindMap.getFullData === 'function') {
                             saveData = this.mindMap.getFullData();
@@ -1209,7 +1210,7 @@ export default {
                             saveData = this.fullData;
                             console.log('使用当前显示的fullData:', saveData);
                         }
-                        
+
                         console.log('准备保存的数据:', saveData);
                         const response = await saveGenerateStandard({ id: this.generate.id, treeStructureData: saveData });
 
