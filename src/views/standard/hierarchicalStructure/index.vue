@@ -30,7 +30,8 @@
             </div>
         </div>
 
-        <!-- 右键菜单 -->
+        <!-- 右键菜单 (已禁用) -->
+        <!-- 
         <div class="context-menu" v-show="show" :style="{ left: left + 'px', top: top + 'px' }">
             <div class="menu-item" @click="insertChild" v-if="type === 'node'">
                 插入子节点
@@ -51,6 +52,7 @@
                 下移节点
             </div>
         </div>
+        -->
     </div>
 </template>
 
@@ -150,6 +152,8 @@ export default {
                 this.isLast = siblings[siblings.length - 1] === node;
             }
         });
+        // 所有节点双击编辑功能已暂时禁用
+        /*
         //根节点和生成过程中的节点不可操作
         this.mindMap.on("node_dblclick", node => {
             // 判断是否是根节点或正在生成过程中
@@ -159,14 +163,23 @@ export default {
                 return;
             }
         })
+        */
+        this.mindMap.on("node_dblclick", node => {
+            if (node && node.renderer && node.renderer.textEdit) {
+                node.renderer.textEdit.hideEditTextBox(); // 隐藏文本编辑框，禁用所有节点的编辑功能
+            }
+            return;
+        })
 
         // 点击其他区域隐藏菜单
         this.mindMap.on("node_click", this.hideMenu);
         this.mindMap.on("draw_click", this.hideMenu);
 
-        // 监听数据变化详情事件，获取新创建的节点以及监听生成结束后的用户操作
+        // 监听数据变化详情事件，但禁用用户操作处理
         this.mindMap.on('data_change_detail', (list) => {
             try {
+                // 用户操作已暂时禁用，不处理任何用户的创建、修改或删除操作
+                /*
                 // 仅当生成结束时才处理用户操作
                 if (!this.isGenerating && !this.isGeneratingNodes) {
                     // 检查是否有创建、修改或删除操作
@@ -195,6 +208,7 @@ export default {
                         });
                     }
                 }
+                */
                 
                 // 保留原有的创建节点处理逻辑
                 const createdNodes = list.filter((item) => {
@@ -810,6 +824,8 @@ export default {
         },
 
         insertChild() {
+            // 节点操作功能已暂时禁用
+            /*
             // 生成过程中的节点不可操作
             if (this.isGenerating || this.isGeneratingNodes) {
                 this.hideMenu();
@@ -833,11 +849,13 @@ export default {
                     text: '新节点',
                 });
             }
-            
+            */
             this.hideMenu();
         },
 
         insertSibling() {
+            // 节点操作功能已暂时禁用
+            /*
             // 生成过程中的节点不可操作
             if (this.isGenerating || this.isGeneratingNodes) {
                 this.hideMenu();
@@ -861,11 +879,13 @@ export default {
                     text: '新节点',
                 });
             }
-            
+            */
             this.hideMenu();
         },
 
         insertParent() {
+            // 节点操作功能已暂时禁用
+            /*
             // 生成过程中的节点不可操作
             if (this.isGenerating || this.isGeneratingNodes) {
                 this.hideMenu();
@@ -889,37 +909,46 @@ export default {
                     text: '新节点',
                 });
             }
-            
+            */
             this.hideMenu();
         },
 
         deleteNode() {
+            // 节点操作功能已暂时禁用
+            /*
             // 生成过程中的节点不可操作
             if (this.isGenerating || this.isGeneratingNodes) {
                 this.hideMenu();
                 return;
             }
             this.mindMap.execCommand("REMOVE_NODE", this.currentNode);
+            */
             this.hideMenu();
         },
 
         moveUp() {
+            // 节点操作功能已暂时禁用
+            /*
             // 生成过程中的节点不可操作
             if (this.isGenerating || this.isGeneratingNodes) {
                 this.hideMenu();
                 return;
             }
             this.mindMap.execCommand("UP_NODE", this.currentNode);
+            */
             this.hideMenu();
         },
 
         moveDown() {
+            // 节点操作功能已暂时禁用
+            /*
             // 生成过程中的节点不可操作
             if (this.isGenerating || this.isGeneratingNodes) {
                 this.hideMenu();
                 return;
             }
             this.mindMap.execCommand("DOWN_NODE", this.currentNode);
+            */
             this.hideMenu();
         },
 
