@@ -154,9 +154,16 @@
 
                 <el-card class="box-card" shadow="never" style="border: none;">
                     <Title title="AI建议分类" iconClass="suggest"></Title>
-                    <div class="ai-suggestion">
-                        <p style="text-align: center; margin-top: 10px;">暂无数据</p>
-                    </div>
+                    <el-card style="padding: 20px; line-height: 1.8; border-radius: 10px; background-color: rgb(249 249 250);" shadow="never">
+                        <h4 style="margin: 0 0 15px 0; font-size: 14px; font-weight: bold;"><svg-icon icon-class="dot" style="margin-right: 5px;"/>任务调度与运维执行</h4>
+                        <p style="margin: 0 0 15px 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
+                            聚焦于云管系统中任务调度的全流程执行与自动化运维操作,涵盖任务编排、作业步骤、状态日志、失败重试及依赖关系管理,支撑资源编排与运维自动化。
+                        </p>
+                        <h5 style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold;"><svg-icon icon-class="star-hollow" style="margin-right: 5px;"/>推荐理由:</h5>
+                        <p style="margin: 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
+                            该字段涉及任务调度执行的全过程记录与分析,属于数字化管理中基础设施运维与自动化执行的具体操作层面,与"数字化规划计划管理"(侧重规划与架构)及"数字化项目管理"(侧重项目治理与流程)存在明显语义区分,符合互斥性要求。
+                        </p>
+                    </el-card>
                 </el-card>
             </div>
         </div>
@@ -546,11 +553,6 @@ export default {
 
 .audit-status .el-badge {
     margin-left: 5px;
-}
-
-.ai-suggestion {
-    padding: 20px;
-    text-align: center;
 }
 
 .el-progress {

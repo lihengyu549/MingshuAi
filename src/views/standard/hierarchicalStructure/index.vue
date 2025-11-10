@@ -1218,6 +1218,8 @@ export default {
                             this.$message.success('保存成功');
                             // 更新latestFullData为保存的数据，确保状态一致
                             this.latestFullData = saveData;
+                            // 保存成功后跳转到管理页面
+                            this.$router.push({ path: '/standard/jobMonitoring', query: { id: this.generate.id } });
                         } else {
                             this.$message.error('保存失败: ' + (response.message || '未知错误'));
                         }
