@@ -310,6 +310,14 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <Title title="AI建议分类" />
+        <el-row>
+          <el-col :span="12">
+            <el-form-item prop="id" :rules="rules.id">
+              <el-switch v-model="form.ifStartAiClassifySuggest" active-text="是否启用" />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
         <Title title="调度周期" />
         <el-row>
@@ -484,6 +492,7 @@ export default {
         ifStartAiFill: false,
         ifStartTask: false,
         ifStartFeatureExtract: false,
+        ifStartAiClassifySuggest: false,
         scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '',
@@ -822,6 +831,7 @@ export default {
       this.$set(this.form, 'piiDetectionFlag', row.piiDetectionFlag == "1");
       this.$set(this.form, 'ifStartRuleMatching', row.ifStartRuleMatching == "1");
       this.$set(this.form, 'ifStartFeatureExtract', row.ifStartFeatureExtract == "1");
+      this.$set(this.form, 'ifStartAiClassifySuggest', row.ifStartAiClassifySuggest == "1");
       this.$set(this.form, 'ifConfigurationParameters', row.ifConfigurationParameters == "1");
       this.$set(this.form, 'ifTechnicalIdentifier', row.ifTechnicalIdentifier == "1");
       this.$set(this.form, 'ifRedundantFields', row.ifRedundantFields == "1");
@@ -863,6 +873,7 @@ export default {
             piiDetectionFlag: this.form.piiDetectionFlag ? '1' : '0',
             ifStartRuleMatching: this.form.ifStartRuleMatching ? '1' : '0',
             ifStartFeatureExtract: this.form.ifStartFeatureExtract ? '1' : '0',
+            ifStartAiClassifySuggest: this.form.ifStartAiClassifySuggest ? '1' : '0',
             ifConfigurationParameters: this.form.ifConfigurationParameters ? '1' : '0',
             ifTechnicalIdentifier: this.form.ifTechnicalIdentifier ? '1' : '0',
             ifRedundantFields: this.form.ifRedundantFields ? '1' : '0',
