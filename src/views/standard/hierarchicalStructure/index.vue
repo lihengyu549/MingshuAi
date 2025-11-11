@@ -1,33 +1,76 @@
 <template>
-    <div class="flow-chart-container">
-        <div class="main-content">
-            <div id="mindMapContainer">
+    <div class="app-container">
+        <!-- 首屏输入区域 -->
+        <div class="input-section" :class="{ 'fade-out': !showInputSection }">
+            <div class="input-tip"><img :src="$store.state.user.projectData.img"
+                    class="sidebar-logo" />请您输入需要定制分类标准的企业名称。</div>
+            <div style="width: 50%;border: 1px solid rgb(230 232 238);border-radius: 10px;padding: 10px;">
+                <el-input v-model="form.enterpriseName" class="enterprise-name-input" placeholder="给 MingShu 发送消息"
+                    :class="{ 'input-focus': isInputFocused }" @focus="isInputFocused = true"
+                    @blur="isInputFocused = false" clearable></el-input>
+                <el-button type="primary" @click="handleSend" :disabled="!form.enterpriseName.trim() || isSending"
+                    :loading="isSending" size="small" class="send-btn">
+                    <i class="el-icon-top" v-if="!isSending"></i>
+                </el-button>
             </div>
         </div>
 
-        <!-- 右侧表单 -->
-        <div class="form-container">
-            <el-form ref="form" :model="form" label-width="80px" :rules="rules">
-                <el-form-item label="企业名称" prop="enterpriseName">
-                    <el-input v-model="form.enterpriseName"></el-input>
-                </el-form-item>
-
-                <el-form-item label="结构层级" prop="structureLevel">
-                    <el-select v-model="form.structureLevel" placeholder="请选择结构层级">
-                        <el-option label="3级" value="3"></el-option>
-                    </el-select>
-                </el-form-item>
-            </el-form>
-            <div class="form-buttons top-buttons">
-                <el-button type="primary" plain @click="handleGenerate"
-                    :disabled="!canGenerate || isGenerating || generationCompleted" :loading="isGenerating"
-                    :icon="generateIcon">生成</el-button>
-                <el-button type="danger" plain @click="handleTermination"
-                    :disabled="!isGenerating || generationCompleted" :loading="isTerminating">停止</el-button>
+        <!-- 生成后区域（左侧画布+右侧聊天框） -->
+        <div class="flow-chart-container" :class="{ 'fade-in': showChatSection }">
+            <div class="main-content">
+                <div id="mindMapContainer">
+                </div>
             </div>
-            <div class="form-buttons bottom-buttons">
-                <el-button type="success" plain @click="handleSave" :disabled="!canSave">保存</el-button>
-                <el-button type="warning" plain @click="handleCancel" :disabled="!canCancel">取消</el-button>
+            <!-- 右侧聊天框（替代原表单） -->
+            <div class="chat-container">
+                <!-- 聊天记录区域 -->
+                <div class="chat-messages" ref="chatScroll">
+                    <!-- 聊天消息项 -->
+                    <div v-for="(msg, index) in chatMessages" :key="index" :class="['chat-item', msg.type]">
+                        <div class="chat-avatar">
+                            <!-- 左侧(AI/系统)使用项目logo -->
+                            <img v-if="msg.type !== 'user'" :src="$store.state.user.projectData.img"
+                                class="avatar-img" />
+                            <!-- 右侧(用户)使用用户头像 -->
+                            <img v-else :src="$store.state.user.avatar" class="avatar-img" />
+                        </div>
+                        <div class="chat-bubble">
+                            {{ msg.content }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 输入框和嵌入按钮 -->
+                <div class="chat-input-container">
+                    <el-input v-model="chatInput" placeholder="给MingShu发送指令"
+                        :disabled="isGenerating || generationCompleted" @keyup.enter.native="sendChatMessage"
+                        style="position: relative;">
+                        <!-- 正在生成时显示停止按钮 -->
+                        <template v-if="isGenerating" slot="append">
+                            <el-button type="danger" circle @click="handleTermination"
+                                :disabled="!isGenerating || generationCompleted" :loading="isTerminating" size="small">
+                                <i class="el-icon-switch-button"></i>
+                            </el-button>
+                        </template>
+
+                        <!-- 生成完成后显示保存和取消按钮 -->
+                        <template v-else-if="!isGenerating && generationCompleted" slot="append">
+                            <el-button type="success" circle @click="handleSave" :disabled="!canSave" size="small">
+                                <i class="el-icon-folder-checked"></i>
+                            </el-button>
+                            <el-button type="warning" circle @click="handleCancel" :disabled="!canCancel" size="small">
+                                <i class="el-icon-back"></i>
+                            </el-button>
+                        </template>
+
+                        <!-- 正常情况下显示发送按钮 -->
+                        <template v-else-if="chatInput.trim()" slot="append">
+                            <el-button type="primary" circle @click="sendChatMessage" size="small">
+                                <i class="el-icon-arrow-up"></i>
+                            </el-button>
+                        </template>
+                    </el-input>
+                </div>
             </div>
         </div>
 
@@ -65,6 +108,11 @@ export default {
     name: "FlowChart",
     data() {
         return {
+            // 页面显示状态
+            showInputSection: true,
+            showChatSection: false,
+            isInputFocused: false,
+
             // 生成状态标志
             generationCompleted: false,
             generate: null,
@@ -107,6 +155,7 @@ export default {
             websocket: null,
             isGenerating: false,
             isTerminating: false,
+            isSending: false,
             generateIcon: '',
             // 控制节点生成的状态
             isGeneratingNodes: false,
@@ -120,7 +169,12 @@ export default {
             typingQueue: [], // 等待逐字显示的节点队列
             currentTypingNode: null, // 当前正在逐字显示的节点
             typingSpeed: 50, // 打字速度，毫秒/字
-            typingComplete: true // 标记当前是否有正在进行的打字动画
+            typingComplete: true, // 标记当前是否有正在进行的打字动画
+
+            // 聊天相关变量
+            chatMessages: [],
+            chatInput: '',
+            enterpriseNameValid: false
         };
     },
     mounted() {
@@ -953,78 +1007,145 @@ export default {
             this.hideMenu();
         },
 
-        // 生成按钮事件
-        async handleGenerate() {
+        // 首屏发送按钮事件
+        async handleSend() {
+            if (!this.form.enterpriseName.trim() || this.isSending) {
+                return;
+            }
+
+            // 设置发送中状态，防止重复点击
+            this.isSending = true;
+            this.addChatMessage('ai', '请您输入需要定制分类标准的企业名称');
+            // 添加用户输入的企业名称到聊天记录
+            this.addChatMessage('user', this.form.enterpriseName);
+
+            try {
+                // 发送HTTP请求验证企业名称
+                const response = await generateStandard({
+                    enterpriseName: this.form.enterpriseName,
+                    structureLevel: this.form.structureLevel
+                });
+
+                if (response.code === 200) {
+                    this.generate = response.data;
+                    this.enterpriseNameValid = true;
+
+                    // 添加系统反馈
+                    this.addChatMessage('ai', '用户输入的企业名称正确有效，继续生成分类分级标准');
+                    this.addChatMessage('ai', `正在生成${this.form.enterpriseName}企业数据分类分级标准，请稍等 ⌛`);
+
+                    // 切换到聊天界面
+                    this.switchToChatView();
+
+                    // 开始生成过程
+                    this.startGeneration();
+                } else {
+                    // 企业名称无效
+                    this.enterpriseNameValid = false;
+                    this.addChatMessage('ai', `错误: ${response.msg || '用户输入的企业名称无效，请重新输入正确有效的企业名称。'}`);
+                    // 清空输入框
+                    this.form.enterpriseName = '';
+                }
+            } catch (error) {
+                console.error('验证企业名称出错:', error);
+                this.addChatMessage('ai', '系统繁忙，请稍后重试。');
+            } finally {
+                // 无论成功失败，都重置发送状态
+                this.isSending = false;
+            }
+        },
+
+        // 切换到聊天视图
+        switchToChatView() {
+            this.showInputSection = false;
+            setTimeout(() => {
+                this.showChatSection = true;
+                // 根节点直接显示完整文本
+                this.fullData.data.text = this.form.enterpriseName || "根节点";
+                this.updateMindMapWithNewData(this.fullData);
+            }, 300);
+        },
+
+        // 开始生成过程
+        startGeneration() {
             this.isGenerating = true;
-            this.generateIcon = '';
             this.canSave = false;
             this.canCancel = false;
+
             // 清空打字队列
             this.typingQueue = [];
             this.currentTypingNode = null;
             this.typingComplete = true;
 
-            // 根节点直接显示完整文本，不做逐字处理
-            this.fullData.data.text = this.form.enterpriseName || "根节点";
-            this.updateMindMapWithNewData(this.fullData);
+            // 建立WebSocket连接
+            new Promise(resolve => {
+                this.connectWebSocket(resolve);
+            }).catch(error => {
+                console.error('WebSocket连接出错:', error);
+                this.addChatMessage('ai', '数据连接失败，请重试。');
+            });
+        },
 
-            try {
-                // 发送HTTP请求
-                generateStandard({
-                    enterpriseName: this.form.enterpriseName,
-                    structureLevel: this.form.structureLevel
-                }).then(response => {
-                    this.generate = response.data;
-                    if (response.code !== 200) {
-                        this.$message.error('请求失败，状态码: ' + response.code);
-                        this.cleanupGeneration(false);
-                    } else {
-                        this.$message.success('生成请求已发送，正在生成数据...');
-                    }
-                }).catch(error => {
-                    console.error('生成请求出错:', error);
-                    this.$message.error('生成请求失败，请重试');
-                    this.cleanupGeneration(false);
-                });
+        // 添加聊天消息
+        addChatMessage(type, content) {
+            this.chatMessages.push({
+                type: type,  // 'user' 或 'ai'
+                content: content,
+                time: new Date()
+            });
+        },
 
-                // 建立WebSocket连接
-                new Promise(resolve => {
-                    this.connectWebSocket(resolve);
-                }).catch(error => {
-                    console.error('WebSocket连接出错:', error);
-                    this.$message.error('WebSocket连接失败');
-                });
-
-            } catch (error) {
-                console.error('生成过程出错:', error);
-                this.$message.error('生成失败，请重试');
-                this.cleanupGeneration();
+        // 发送聊天消息
+        sendChatMessage() {
+            if (!this.chatInput.trim() || this.isGenerating || this.generationCompleted) {
+                return;
             }
+
+            const message = this.chatInput.trim();
+            this.addChatMessage('user', message);
+            this.chatInput = '';
+
+            // 这里可以添加对用户指令的处理逻辑
+            this.addChatMessage('ai', '收到指令，正在处理...');
+        },
+
+        // 滚动聊天记录到底部
+        scrollToBottom() {
+            if (this.$refs.chatScroll) {
+                this.$refs.chatScroll.scrollTop = this.$refs.chatScroll.scrollHeight;
+            }
+        },
+
+        // 生成按钮事件（保留用于兼容）
+        async handleGenerate() {
+            this.handleSend();
         },
 
         // 停止按钮事件
         async handleTermination() {
             if (!this.generate || !this.generate.id) {
-                this.$message.warning('没有正在生成的任务');
+                this.addChatMessage('ai', '没有正在生成的任务');
                 return;
             }
 
             this.isTerminating = true;
             try {
                 const response = await terminationGenerateStandard({ id: this.generate.id });
-                this.$message.success('已发送停止请求');
+                this.addChatMessage('ai', '生成分类分级任务已停止。');
                 // 接口发送成功后立即断开websocket
                 if (this.websocket) {
                     this.websocket.close();
                 }
             } catch (error) {
                 console.error('停止请求出错:', error);
-                this.$message.error('停止请求失败，请重试');
+                this.addChatMessage('ai', '停止请求失败，请重试');
             } finally {
                 this.isTerminating = false;
                 this.cleanupGeneration(false);
-                // 设置生成完成标志，使生成按钮不可再点击
+                // 设置生成完成标志
                 this.generationCompleted = true;
+                this.canSave = true;
+                this.canCancel = true;
             }
         },
 
@@ -1076,8 +1197,8 @@ export default {
             const protocols = token ? [`${token}`] : [];
             const currentUrl = new URL(window.location.href);
             const hostName = currentUrl.hostname;
-            const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
-            // const wsUrl = `wss://${hostName}:443/prod-api/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
+            // const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
+            const wsUrl = `wss://${hostName}:443/prod-api/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
 
             this.websocket = new WebSocket(
                 wsUrl,
@@ -1095,11 +1216,19 @@ export default {
             this.websocket.onmessage = (event) => {
                 try {
                     console.log('收到WebSocket数据:', event.data);
+                    const data = JSON.parse(event.data);
 
                     // 检查返回值是否为'执行完成'或'执行完毕'
-                    if (event.data === '执行完成' || event.data === '执行完毕') {
-                        console.log('收到执行完成信号，准备关闭连接');
-                        this.$message.success('执行完毕');
+                    // 检查是否执行完成（WebSocket消息或数据标记）
+                    if (data && data.isCompleted) {
+                        // 对于data.isCompleted类型的完成消息，添加AI聊天消息
+                        if (data && data.isCompleted && data.text) {
+                            this.addChatMessage('ai', data.text);
+                        } else {
+                            // 对于WebSocket文本完成消息，显示成功提示
+                            console.log('收到执行完成信号，准备关闭连接');
+                            this.$message.success('执行完毕');
+                        }
 
                         // 设置生成完成标志，使生成按钮不可再点击
                         this.generationCompleted = true;
@@ -1130,19 +1259,6 @@ export default {
                         return;
                     }
 
-                    const data = JSON.parse(event.data);
-                    console.log('解析后的数据:', data);
-
-                    // 处理结束标识
-                    if (data && data.isCompleted) {
-                        // 设置生成完成标志，使生成按钮不可再点击
-                        this.generationCompleted = true;
-                        this.$message.success('执行完毕');
-                        this.cleanupGeneration(true);
-                        this.canSave = true;
-                        this.canCancel = true;
-                        return;
-                    }
 
                     // 处理完整数据，实现逐级逐个节点生成
                     if (data) {
@@ -1173,7 +1289,6 @@ export default {
                     this.currentTypingNode = null;
                     // 直接更新数据，确保所有节点能够完全展示
                     this.updateFullDataWithoutAnimation(this.latestFullData);
-                    this.$message.info('已展示最后一批数据');
                     this.canSave = true;
                     this.canCancel = true;
                 }
@@ -1238,48 +1353,122 @@ export default {
             try {
                 const response = await cancelGenerateStandard({ id: this.generate.id });
                 if (response.data.success) {
-                    this.$message.success('取消成功');
+                    this.addChatMessage('ai', '操作已取消');
                 } else {
-                    this.$message.error('取消失败: ' + (response.data.message || '未知错误'));
+                    this.addChatMessage('ai', '取消失败: ' + (response.data.message || '未知错误'));
                 }
             } catch (error) {
                 console.error('取消请求出错:', error);
-                this.$message.error('取消失败，请重试');
+                this.addChatMessage('ai', '取消失败，请重试');
             }
-            this.canGenerate = false;
-            this.canSave = false;
-            this.canCancel = false;
-            if (this.websocket) {
-                this.websocket.close();
-                this.websocket = null;
-            }
-            this.isGenerating = false;
-            this.isGeneratingNodes = false;
-            // 清空打字队列
-            this.typingQueue = [];
-            this.currentTypingNode = null;
-            // 重置思维导图
-            this.fullData = {
-                data: {
-                    text: "根节点",
-                },
-                children: [],
-            };
-            this.updateMindMapWithNewData(this.fullData);
+
+            // 重置状态，返回到首屏
+            this.resetToInitialState();
+        },
+
+        // 重置到初始状态
+        resetToInitialState() {
+            this.showChatSection = false;
+            setTimeout(() => {
+                this.showInputSection = true;
+                this.chatMessages = [];
+                this.canGenerate = false;
+                this.canSave = false;
+                this.canCancel = false;
+                this.generationCompleted = false;
+                this.enterpriseNameValid = false;
+
+                if (this.websocket) {
+                    this.websocket.close();
+                    this.websocket = null;
+                }
+
+                this.isGenerating = false;
+                this.isGeneratingNodes = false;
+
+                // 清空打字队列
+                this.typingQueue = [];
+                this.currentTypingNode = null;
+
+                // 清空表单
+                this.form.enterpriseName = '';
+
+                // 重置思维导图
+                this.fullData = {
+                    data: {
+                        text: "根节点",
+                    },
+                    children: [],
+                };
+
+                this.updateMindMapWithNewData(this.fullData);
+            }, 300);
         }
     },
 };
 </script>
 
 <style lang="scss" scoped>
-.flow-chart-container {
+.app-container {
     width: 100%;
     height: 96vh;
     position: relative;
     overflow: hidden;
-    display: flex;
+    padding: 0;
 }
 
+/* 首屏输入区域样式 */
+.input-section {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff;
+    transition: opacity 0.3s ease-out;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+}
+
+.input-section.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.input-tip {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-logo {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+}
+
+/* 主容器样式 */
+.flow-chart-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+}
+
+.flow-chart-container.fade-in {
+    opacity: 1;
+}
+
+/* 思维导图容器样式 */
 #mindMapContainer {
     width: 100%;
     height: 100%;
@@ -1291,39 +1480,147 @@ export default {
     padding: 0;
 }
 
-
 .main-content {
     flex: 1;
     overflow: hidden;
+    border-right: 1px solid #e5e5e5;
 }
 
-.form-container {
-    width: 300px;
-    padding: 20px;
-    border-left: 1px solid #e5e5e5;
-    background-color: #fff;
+/* 聊天容器样式 */
+.chat-container {
+    width: 360px;
     height: 100%;
-    box-sizing: border-box;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
+    background-color: #ffffff;
 }
 
-.form-buttons {
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.chat-item {
+    display: flex;
+    margin-bottom: 20px;
+    align-items: flex-start;
+}
+
+/* 用户消息样式 */
+.chat-item.user {
+    justify-content: flex-end;
+}
+
+.chat-item.user .chat-bubble {
+    order: -1;
+    margin-right: 8px;
+}
+
+/* AI消息样式 */
+.chat-item.ai {
+    justify-content: flex-start;
+}
+
+.chat-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin: 0 8px;
+    border: 2px solid #e5e5e5;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.chat-bubble {
+    padding: 10px 15px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.5;
+    max-width: 70%;
+}
+
+.chat-item.user .chat-bubble {
+    background-color: #64b5f6;
+    color: #fff;
+    border-top-right-radius: 4px;
+}
+
+.chat-item.ai .chat-bubble {
+    background-color: #f5f5f5;
+    color: #333;
+    border-top-left-radius: 4px;
+}
+
+/* 聊天区域按钮样式 */
+.chat-buttons {
+    padding: 15px 20px;
+    border-top: 1px solid #e5e5e5;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.stop-btn {
+    width: 100%;
+}
+
+.enterprise-name-input::v-deep .el-input__inner {
+    border: none;
+}
+
+.send-btn {
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+    min-width: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    float: inline-end;
+}
+
+.bottom-buttons {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
 }
 
-.top-buttons {
-    margin-top: 20px;
+/* 聊天输入框样式 */
+.chat-input-container {
+    padding: 15px 20px;
 }
 
-.bottom-buttons {
-    margin-top: auto;
-    margin-bottom: 20px;
+.chat-input-container::v-deep .el-input__inner {
+    border-radius: 15px 0px 0px 15px;
+    height: 36px;
+    border-right: none;
 }
 
+.chat-input-container::v-deep .el-input-group__append {
+    border-radius: 0px 15px 15px 0px;
+    border-left: none;
+}
+
+.chat-input-container .el-input__append .el-button {
+    margin: 0 0 0 5px;
+    height: 28px;
+    width: 28px;
+    padding: 0;
+}
+
+/* 右键菜单样式保留 */
 .context-menu {
     position: fixed;
     background: #fff;
