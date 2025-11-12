@@ -150,7 +150,7 @@
           </el-col>
         </el-row>
 
-        <Title title="脏数据过滤" />
+        <!-- <Title title="脏数据过滤" /> -->
         <!-- <el-form-item label="分类分级标准" prop="projectName" :rules="rules.projectName">
           <el-select v-model="form.projectName" :disabled="editIsFlag" placeholder="请选择分类分级标准" clearable
             @change="projectChangeEdit($event)">
@@ -158,7 +158,7 @@
             </el-option>
           </el-select>
         </el-form-item> -->
-        <el-row>
+        <!-- <el-row>
           <el-col :span="12">
             <el-form-item>
               <el-switch v-model="form.ifStartDataNull" active-text="样本全部为空" />
@@ -195,9 +195,9 @@
               </el-tooltip>
             </el-form-item>
           </el-col>
-        </el-row>
+        </el-row> -->
 
-        <Title title="注释填充" />
+        <!-- <Title title="注释填充" />
         <el-row>
           <el-col :span="12">
             <el-form-item>
@@ -205,26 +205,26 @@
                 :disabled="form.maskComplete == 'RUNNING' || form.maskComplete == 'PAUSED'" />
             </el-form-item>
           </el-col>
-        </el-row>
+        </el-row> -->
 
-        <Title title="分类任务" />
-        <el-row>
+        <!-- <Title title="分类任务" /> -->
+        <!-- <el-row>
           <el-col :span="12">
             <el-form-item>
               <el-switch v-model="form.ifStartTask" active-text="是否启用"
                 :disabled="form.maskComplete == 'RUNNING' || form.maskComplete == 'PAUSED'" />
             </el-form-item>
           </el-col>
-        </el-row>
-        <div style="padding-left: 40px;">
-          <!-- <el-row>
+        </el-row> -->
+        <!-- <div style="padding-left: 40px;">
+          <el-row>
             <el-col :span="12">
               <el-form-item label="分类逻辑" prop="classificationLogic" :rules="rules.classificationLogic">
                 <el-radio v-model="form.classificationLogic" label="1" :disabled="!form.ifStartTask">基于表</el-radio>
                 <el-radio v-model="form.classificationLogic" label="2" :disabled="!form.ifStartTask">基于字段</el-radio>
               </el-form-item>
             </el-col>
-          </el-row> -->
+          </el-row>
           <el-row>
             <el-col :span="12">
               <el-form-item>
@@ -267,28 +267,46 @@
               </el-form-item>
             </el-col>
           </el-row>
-        </div>
-
-        <Title title="样本特征提取" />
+        </div> -->
+        <Title title="执行范围与周期" />
         <el-row>
           <el-col :span="12">
-            <el-form-item prop="id" :rules="rules.id">
-              <el-switch v-model="form.ifStartFeatureExtract" active-text="是否启用" />
+            <el-form-item label="分类状态">
+              <el-select v-model="form.classificationState" multiple clearable placeholder="请选择内容">
+                <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
+                  :value="item.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="归类原因">
+              <el-select v-model="form.classificationReasons" multiple clearable placeholder="请选择内容">
+                <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
+                  :value="item.value" />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
-        <Title title="AI建议分类" />
         <el-row>
           <el-col :span="12">
-            <el-form-item prop="id" :rules="rules.id">
-              <el-switch v-model="form.ifStartAiClassifySuggest" active-text="是否启用" />
+            <el-form-item label="置信度" prop="confidenceLevel" :rules="rules.confidenceLevel">
+              <el-select v-model="form.confidenceLevel">
+                <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="确认状态" prop="confirm" :rules="rules.confirm">
+              <el-select v-model="form.confirm" placeholder="全部">
+                <el-option v-for="item in confirmList" :key="item.value" :label="item.name" :value="item.value">
+                </el-option>
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
-
-        <Title title="调度周期" />
         <el-row>
-          <el-col :span="12">
+          <el-col :span="24">
             <el-form-item label="执行周期" prop="executeCycle" :rules="rules.executeCycle">
               <el-select v-model="form.scheduleType" @change="scheduleTypeChange">
                 <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
@@ -305,71 +323,81 @@
           </el-col>
         </el-row>
 
+        <!-- <Title title="样本特征提取" />
+        <el-row>
+          <el-col :span="12">
+            <el-form-item prop="id" :rules="rules.id">
+              <el-switch v-model="form.ifStartFeatureExtract" active-text="是否启用" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <Title title="AI建议分类" />
+        <el-row>
+          <el-col :span="12">
+            <el-form-item prop="id" :rules="rules.id">
+              <el-switch v-model="form.ifStartAiClassifySuggest" active-text="是否启用" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <Title title="调度周期" /> -->
+
         <!-- 启用功能 -->
         <Title title="启用功能" />
         <div class="feature-container">
           <div class="feature-grid">
-            <div class="feature-item" :class="{ highlight: form.semanticFill }" @click="toggleFeature('semanticFill')">
+            <div class="feature-item" :class="{ highlight: form.ifStartAiFill }" @click="toggleFeature('ifStartAiFill')">
               <div class="feature-content">
                 <div class="feature-title">语义填充</div>
                 <div class="feature-desc">结合字段/表上下文信息填充业务语义</div>
-                <el-checkbox v-model="form.semanticFill" class="checkbox-right round-checkbox"
+                <el-checkbox v-model="form.ifStartAiFill" class="checkbox-right round-checkbox"
                   @click.stop></el-checkbox>
               </div>
             </div>
-            <div class="feature-item" :class="{ highlight: form.noiseFilter }" @click="toggleFeature('noiseFilter')">
+            <div class="feature-item" :class="{ highlight: form.ifStartDirtyDataFilter }" @click="toggleFeature('ifStartDirtyDataFilter')">
               <div class="feature-content">
                 <div class="feature-title">噪音数据过滤</div>
                 <div class="feature-desc">识别并过滤无效干扰数据，保障数据分类质量</div>
-                <el-checkbox v-model="form.noiseFilter" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.ifStartDirtyDataFilter" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
               </div>
             </div>
-            <div class="feature-item" :class="{ highlight: form.ruleMatching }" @click="toggleFeature('ruleMatching')">
+            <div class="feature-item" :class="{ highlight: form.ifStartRuleMatching }" @click="toggleFeature('ifStartRuleMatching')">
               <div class="feature-content">
                 <div class="feature-title">匹配规则引擎</div>
                 <div class="feature-desc">通过关键字和正则对数据进行精准匹配</div>
-                <el-checkbox v-model="form.ruleMatching" class="checkbox-right round-checkbox"
+                <el-checkbox v-model="form.ifStartRuleMatching" class="checkbox-right round-checkbox"
                   @click.stop></el-checkbox>
               </div>
             </div>
-            <div class="feature-item" :class="{ highlight: form.piiDetection }" @click="toggleFeature('piiDetection')">
+            <div class="feature-item" :class="{ highlight: form.piiDetectionFlag }" @click="toggleFeature('piiDetectionFlag')">
               <div class="feature-content">
                 <div class="feature-title">个人信息识别</div>
                 <div class="feature-desc">智能识别姓名、身份证号等个人敏感信息</div>
-                <el-checkbox v-model="form.piiDetection" class="checkbox-right round-checkbox"
+                <el-checkbox v-model="form.piiDetectionFlag" class="checkbox-right round-checkbox"
                   @click.stop></el-checkbox>
               </div>
             </div>
-            <div class="feature-item" :class="{ highlight: form.aiTagging }" @click="toggleFeature('aiTagging')">
+            <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
               <div class="feature-content">
                 <div class="feature-title">AI分类打标</div>
                 <div class="feature-desc">结合学理上下文对数据进行智能打标</div>
-                <el-checkbox v-model="form.aiTagging" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
               </div>
             </div>
-            <div class="feature-item" :class="{ highlight: form.aiSuggestion }" @click="toggleFeature('aiSuggestion')">
+            <div class="feature-item" :class="{ highlight: form.ifStartAiClassifySuggest }" @click="toggleFeature('ifStartAiClassifySuggest')">
               <div class="feature-content">
                 <div class="feature-title">AI分类建议</div>
                 <div class="feature-desc">对未匹配因子的字段，提供智能建议</div>
-                <el-checkbox v-model="form.aiSuggestion" class="checkbox-right round-checkbox"
+                <el-checkbox v-model="form.ifStartAiClassifySuggest" class="checkbox-right round-checkbox"
                   @click.stop></el-checkbox>
               </div>
             </div>
-            <div class="feature-item" :class="{ highlight: form.featureExtraction }"
-              @click="toggleFeature('featureExtraction')">
+            <div class="feature-item" :class="{ highlight: form.ifStartFeatureExtract }"
+              @click="toggleFeature('ifStartFeatureExtract')">
               <div class="feature-content">
                 <div class="feature-title">样本特征提取</div>
                 <div class="feature-desc">从数据样本中提取关键特征</div>
-                <el-checkbox v-model="form.featureExtraction" class="checkbox-right round-checkbox"
-                  @click.stop></el-checkbox>
-              </div>
-            </div>
-            <div class="feature-item" :class="{ highlight: form.selectedEffect }"
-              @click="toggleFeature('selectedEffect')">
-              <div class="feature-content">
-                <div class="feature-title">选中效果</div>
-                <div class="feature-desc">开启此项功能后可进行实验化</div>
-                <el-checkbox v-model="form.selectedEffect" class="checkbox-right round-checkbox"
+                <el-checkbox v-model="form.ifStartFeatureExtract" class="checkbox-right round-checkbox"
                   @click.stop></el-checkbox>
               </div>
             </div>
@@ -412,7 +440,7 @@ import { path } from "d3";
 import { color } from "echarts";
 export default {
   name: "hierarchicalTask",
-  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_executing_state'],
+  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_classification_reasons', 'sys_executing_state'],
   components: { Result },
   data() {
     return {
@@ -518,6 +546,7 @@ export default {
         tasksName: '',
         id: '',
         classificationState: [],
+        classificationReasons: [], // 归类原因
         piiDetectionFlag: false,
         ifStartRuleMatching: false,
         classificationLogic: '3',
@@ -532,18 +561,11 @@ export default {
         ifStartTask: false,
         ifStartFeatureExtract: false,
         ifStartAiClassifySuggest: false,
+        ifStartDirtyDataFilter: false,
         scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '',
-        // 启用功能多选框状态
-        semanticFill: false,
-        noiseFilter: false,
-        ruleMatching: false,
-        piiDetection: false,
-        aiTagging: false,
-        aiSuggestion: false,
-        featureExtraction: false,
-        selectedEffect: false
+
       },
       executeCycle: '1',
       // 表单校验
@@ -879,6 +901,7 @@ export default {
       this.$set(this.form, 'ifStartDataShort', row.ifStartDataShort == "1");
       this.$set(this.form, 'ifStartDataRepetition', row.ifStartDataRepetition == "1");
       this.$set(this.form, 'ifStartAiFill', row.ifStartAiFill == "1");
+      this.$set(this.form, 'ifStartDirtyDataFilter', row.ifStartDirtyDataFilter == "1");
       this.$set(this.form, 'ifStartTask', row.ifStartTask == "1");
       this.$set(this.form, 'piiDetectionFlag', row.piiDetectionFlag == "1");
       this.$set(this.form, 'ifStartRuleMatching', row.ifStartRuleMatching == "1");
@@ -903,6 +926,12 @@ export default {
       if (row.classificationState == '0') {
         this.form.classificationState = []
       }
+      this.form.classificationReasons = row.classificationReasons.split(',').map(item => {
+        return item
+      })
+      if (row.classificationReasons == '0') {
+        this.form.classificationReasons = []
+      }
       this.open = true;
       this.editIsFlag = true;
       this.title = "编辑任务";
@@ -921,6 +950,7 @@ export default {
             ifStartDataShort: this.form.ifStartDataShort ? '1' : '0',
             ifStartDataRepetition: this.form.ifStartDataRepetition ? '1' : '0',
             ifStartAiFill: this.form.ifStartAiFill ? '1' : '0',
+            ifStartDirtyDataFilter: this.form.ifStartDirtyDataFilter ? '1' : '0',
             ifStartTask: this.form.ifStartTask ? '1' : '0',
             piiDetectionFlag: this.form.piiDetectionFlag ? '1' : '0',
             ifStartRuleMatching: this.form.ifStartRuleMatching ? '1' : '0',
@@ -930,6 +960,7 @@ export default {
             ifTechnicalIdentifier: this.form.ifTechnicalIdentifier ? '1' : '0',
             ifRedundantFields: this.form.ifRedundantFields ? '1' : '0',
             classificationState: this.form.classificationState ? this.form.classificationState.join(',') : '0',
+            classificationReasons: this.form.classificationReasons ? this.form.classificationReasons.join(',') : '0',
 
           }
           if (this.form.isAddTasks === '1') {
