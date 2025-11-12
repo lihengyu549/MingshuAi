@@ -306,14 +306,15 @@
         </el-row>
 
         <!-- 启用功能 -->
-         <Title title="启用功能" />
+        <Title title="启用功能" />
         <div class="feature-container">
           <div class="feature-grid">
             <div class="feature-item" :class="{ highlight: form.semanticFill }" @click="toggleFeature('semanticFill')">
               <div class="feature-content">
                 <div class="feature-title">语义填充</div>
                 <div class="feature-desc">结合字段/表上下文信息填充业务语义</div>
-                <el-checkbox v-model="form.semanticFill" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.semanticFill" class="checkbox-right round-checkbox"
+                  @click.stop></el-checkbox>
               </div>
             </div>
             <div class="feature-item" :class="{ highlight: form.noiseFilter }" @click="toggleFeature('noiseFilter')">
@@ -327,14 +328,16 @@
               <div class="feature-content">
                 <div class="feature-title">匹配规则引擎</div>
                 <div class="feature-desc">通过关键字和正则对数据进行精准匹配</div>
-                <el-checkbox v-model="form.ruleMatching" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.ruleMatching" class="checkbox-right round-checkbox"
+                  @click.stop></el-checkbox>
               </div>
             </div>
             <div class="feature-item" :class="{ highlight: form.piiDetection }" @click="toggleFeature('piiDetection')">
               <div class="feature-content">
                 <div class="feature-title">个人信息识别</div>
                 <div class="feature-desc">智能识别姓名、身份证号等个人敏感信息</div>
-                <el-checkbox v-model="form.piiDetection" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.piiDetection" class="checkbox-right round-checkbox"
+                  @click.stop></el-checkbox>
               </div>
             </div>
             <div class="feature-item" :class="{ highlight: form.aiTagging }" @click="toggleFeature('aiTagging')">
@@ -348,7 +351,8 @@
               <div class="feature-content">
                 <div class="feature-title">AI分类建议</div>
                 <div class="feature-desc">对未匹配因子的字段，提供智能建议</div>
-                <el-checkbox v-model="form.aiSuggestion" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.aiSuggestion" class="checkbox-right round-checkbox"
+                  @click.stop></el-checkbox>
               </div>
             </div>
             <div class="feature-item" :class="{ highlight: form.featureExtraction }"
@@ -356,7 +360,8 @@
               <div class="feature-content">
                 <div class="feature-title">样本特征提取</div>
                 <div class="feature-desc">从数据样本中提取关键特征</div>
-                <el-checkbox v-model="form.featureExtraction" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.featureExtraction" class="checkbox-right round-checkbox"
+                  @click.stop></el-checkbox>
               </div>
             </div>
             <div class="feature-item" :class="{ highlight: form.selectedEffect }"
@@ -364,7 +369,8 @@
               <div class="feature-content">
                 <div class="feature-title">选中效果</div>
                 <div class="feature-desc">开启此项功能后可进行实验化</div>
-                <el-checkbox v-model="form.selectedEffect" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.selectedEffect" class="checkbox-right round-checkbox"
+                  @click.stop></el-checkbox>
               </div>
             </div>
           </div>
@@ -1578,16 +1584,17 @@ input[aria-hidden=true] {
     height: 18px;
     border: 1px solid #dcdfe6;
   }
-  
+
   & .el-checkbox__inner::after {
-    display: none; /* 隐藏勾选符号 */
+    display: none;
+    /* 隐藏勾选符号 */
   }
-  
+
   & .el-checkbox__input.is-checked .el-checkbox__inner {
     background-color: #409eff;
     border-color: #409eff;
   }
-  
+
   /* 选中状态下显示实心圆而不是勾选 */
   & .el-checkbox__input.is-checked .el-checkbox__inner::before {
     content: '';
