@@ -346,7 +346,8 @@
         <Title title="启用功能" />
         <div class="feature-container">
           <div class="feature-grid">
-            <div class="feature-item" :class="{ highlight: form.ifStartAiFill }" @click="toggleFeature('ifStartAiFill')">
+            <div class="feature-item" :class="{ highlight: form.ifStartAiFill }"
+              @click="toggleFeature('ifStartAiFill')">
               <div class="feature-content">
                 <div class="feature-title">语义填充</div>
                 <div class="feature-desc">结合字段/表上下文信息填充业务语义</div>
@@ -354,14 +355,17 @@
                   @click.stop></el-checkbox>
               </div>
             </div>
-            <div class="feature-item" :class="{ highlight: form.ifStartDirtyDataFilter }" @click="toggleFeature('ifStartDirtyDataFilter')">
+            <div class="feature-item" :class="{ highlight: form.ifStartDirtyDataFilter }"
+              @click="toggleFeature('ifStartDirtyDataFilter')">
               <div class="feature-content">
                 <div class="feature-title">噪音数据过滤</div>
                 <div class="feature-desc">识别并过滤无效干扰数据，保障数据分类质量</div>
-                <el-checkbox v-model="form.ifStartDirtyDataFilter" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.ifStartDirtyDataFilter" class="checkbox-right round-checkbox"
+                  @click.stop></el-checkbox>
               </div>
             </div>
-            <div class="feature-item" :class="{ highlight: form.ifStartRuleMatching }" @click="toggleFeature('ifStartRuleMatching')">
+            <div class="feature-item" :class="{ highlight: form.ifStartRuleMatching }"
+              @click="toggleFeature('ifStartRuleMatching')">
               <div class="feature-content">
                 <div class="feature-title">匹配规则引擎</div>
                 <div class="feature-desc">通过关键字和正则对数据进行精准匹配</div>
@@ -369,7 +373,8 @@
                   @click.stop></el-checkbox>
               </div>
             </div>
-            <div class="feature-item" :class="{ highlight: form.piiDetectionFlag }" @click="toggleFeature('piiDetectionFlag')">
+            <div class="feature-item" :class="{ highlight: form.piiDetectionFlag }"
+              @click="toggleFeature('piiDetectionFlag')">
               <div class="feature-content">
                 <div class="feature-title">个人信息识别</div>
                 <div class="feature-desc">智能识别姓名、身份证号等个人敏感信息</div>
@@ -384,7 +389,8 @@
                 <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
               </div>
             </div>
-            <div class="feature-item" :class="{ highlight: form.ifStartAiClassifySuggest }" @click="toggleFeature('ifStartAiClassifySuggest')">
+            <div class="feature-item" :class="{ highlight: form.ifStartAiClassifySuggest }"
+              @click="toggleFeature('ifStartAiClassifySuggest')">
               <div class="feature-content">
                 <div class="feature-title">AI分类建议</div>
                 <div class="feature-desc">对未匹配因子的字段，提供智能建议</div>
@@ -920,17 +926,19 @@ export default {
         this.$set(this.form, 'scheduleInterval', '');
         this.$set(this.form, 'scheduleTime', '');
       }
-      this.form.classificationState = row.classificationState.split(',').map(item => {
-        return item
-      })
-      if (row.classificationState == '0') {
+      if (row.classificationState == '0' || row.classificationReasons == null) {
         this.form.classificationState = []
+      } else {
+        this.form.classificationState = row.classificationState.split(',').map(item => {
+          return item
+        })
       }
-      this.form.classificationReasons = row.classificationReasons.split(',').map(item => {
-        return item
-      })
-      if (row.classificationReasons == '0') {
+      if (row.classificationReasons == '0' || row.classificationReasons == null) {
         this.form.classificationReasons = []
+      }else{
+        this.form.classificationReasons = row.classificationReasons.split(',').map(item => {
+          return item
+        })
       }
       this.open = true;
       this.editIsFlag = true;
