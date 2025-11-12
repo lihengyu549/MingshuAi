@@ -1,30 +1,47 @@
 <template>
   <div class="app-container">
     <el-card class="card-box" v-loading="cardLoading">
-      <!-- <div>
+      <div>
         <h4 class="title">
-          <div class="blue-circle"></div><span>脏数据识别</span>
+          <div class="blue-circle"></div><span>噪音数据过滤</span>
         </h4>
-        <div class="contBox" style="display: flex;justify-content: flex-start;align-items: center;">
-          <div style="width: 20%; display: flex; justify-content: flex-start;align-items: center;">
-            <el-switch v-model="allData.DirtyData.DirtyData1.state" active-color="#009dff"
-              inactive-color="#e0e0e0"></el-switch>
-            <div style="margin-left: 15px;">{{ allData.DirtyData.DirtyData1.label }}</div>
-          </div>
-          <div style="width: 20%; display: flex; justify-content: flex-start;align-items: center;">
-            <el-switch v-model="allData.DirtyData.DirtyData2.state" active-color="#009dff"
-              inactive-color="#e0e0e0"></el-switch>
-            <div style="margin-left: 15px;">{{ allData.DirtyData.DirtyData2.label }}</div>
-          </div>
-          <div style="width: 20%; display: flex; justify-content: flex-start;align-items: center;">
-            <el-switch v-model="allData.DirtyData.DirtyData3.state" active-color="#009dff"
-              inactive-color="#e0e0e0"></el-switch>
-            <div style="margin:0 15px;">{{ allData.DirtyData.DirtyData3.label }}</div>
-            <el-input :disabled="!allData.DirtyData.DirtyData3.state" v-model="allData.DirtyData.DirtyData3.value"
-              style="width: 20%;"></el-input>
-          </div>
+        <div class="contBox">
+          <el-row>
+            <el-col :span="12">
+              <el-switch v-model="allData.DirtyData.DirtyData1.state" active-color="#009dff" inactive-color="#e0e0e0"
+                :active-text="allData.DirtyData.DirtyData1.label"></el-switch>
+            </el-col>
+            <el-col :span="12">
+              <el-switch v-model="allData.DirtyData.DirtyData2.state" active-color="#009dff" inactive-color="#e0e0e0"
+                :active-text="allData.DirtyData.DirtyData2.label"></el-switch>
+            </el-col>
+          </el-row>
+          <el-row style="display: flex; align-items: center;">
+            <el-col :span="12">
+              <el-switch v-model="allData.DirtyData.DirtyData3.state" active-color="#009dff" inactive-color="#e0e0e0"
+                :active-text="allData.DirtyData.DirtyData3.label">
+              </el-switch>
+              <el-input v-model="allData.DirtyData.DirtyData3.value" size="mini"
+                :disabled="!allData.DirtyData.DirtyData3.state" style="width: 20%;margin-left: 10px;"
+                @input="handleDirtyDataInput"></el-input>
+            </el-col>
+            <el-col :span="12">
+              <el-switch v-model="allData.DirtyData.DirtyData4.state" active-color="#009dff" inactive-color="#e0e0e0"
+                :active-text="allData.DirtyData.DirtyData4.label"></el-switch>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-switch v-model="allData.DirtyData.DirtyData5.state" active-color="#009dff" inactive-color="#e0e0e0"
+                :active-text="allData.DirtyData.DirtyData5.label"></el-switch>
+            </el-col>
+            <el-col :span="12">
+              <el-switch v-model="allData.DirtyData.DirtyData6.state" active-color="#009dff" inactive-color="#e0e0e0"
+                :active-text="allData.DirtyData.DirtyData6.label"></el-switch>
+            </el-col>
+          </el-row>
         </div>
-      </div> -->
+      </div>
       <div>
         <h4 class="title">
           <div class="blue-circle"></div><span>样本抽取</span>
@@ -61,8 +78,7 @@
             <span>
               安全分级大于等于
               <el-select v-model="allData.SensitiveData.value" placeholder="请选择">
-                <el-option v-for="item in sys_risk_levelList" :key="item" :label="item"
-                  :value="item">
+                <el-option v-for="item in sys_risk_levelList" :key="item" :label="item" :value="item">
                 </el-option>
               </el-select>
               的数据定义敏感数据
@@ -90,16 +106,20 @@ export default {
       value2: true,
       value3: true,
       radio: 20,
-      sys_risk_levelList:['1','2','3','4','5'],
+      sys_risk_levelList: ['1', '2', '3', '4', '5'],
       allData: {
         DirtyData: {
           DirtyData1: {},
           DirtyData2: {},
           DirtyData3: {},
+          DirtyData4: {},
+          DirtyData5: {},
+          DirtyData6: {},
         },
-        SensitiveData:{},
+        SensitiveData: {},
         SampleExtraction: {},
         DataTableQualityScore: {},
+        // 噪音数据过滤
       },
       cardLoading: false,
     };
@@ -121,6 +141,51 @@ export default {
         });
       }
     },
+    // 处理DirtyData3输入
+    handleDirtyDataInput() {
+      let value = this.allData.DirtyData.DirtyData3.value;
+      // 只保留数字和百分号
+      value = value.replace(/[^0-9%]/g, '');
+      // 确保百分号只在最后一位
+      if (value.indexOf('%') > -1 && value.indexOf('%') < value.length - 1) {
+        value = value.replace(/%/g, '');
+      }
+      // 提取数字部分
+      const numPart = value.replace('%', '');
+      // 确保数字部分不超过100
+      if (numPart && parseInt(numPart) > 100) {
+        value = '100';
+      }
+      // 确保以百分号结尾
+      if (numPart && !value.endsWith('%')) {
+        value = value + '%';
+      }
+      this.allData.DirtyData.DirtyData3.value = value;
+    },
+    // 验证DirtyData3输入格式
+    dirtyDataValueValidate() {
+      // 只有当开关打开时才需要验证
+      if (this.allData.DirtyData.DirtyData3.state) {
+        const value = this.allData.DirtyData.DirtyData3.value;
+        if (!value) {
+          this.$message({
+            message: '请输入数值',
+            type: 'warning'
+          });
+          return false;
+        }
+        // 验证格式：数字(0-100)+必须的百分号
+        const regex = /^(100|[1-9]?[0-9])(%)$/;
+        if (!regex.test(value)) {
+          this.$message({
+            message: '此位置不规则，请输入0-100的数字加上%',
+            type: 'warning'
+          });
+          return false;
+        }
+      }
+      return true;
+    },
     getlistData() {
       listByTacticsQueryUrl('sys_scan_tactics').then(res => {
         this.cardLoading = true
@@ -131,6 +196,10 @@ export default {
       })
     },
     submit() {
+      // 验证DirtyData3输入格式
+      if (!this.dirtyDataValueValidate()) {
+        return;
+      }
       updateByTactics(this.allData).then(res => {
         if (res.code == 200) {
           this.$message({
@@ -202,5 +271,10 @@ export default {
   position: absolute;
   right: 37px;
   bottom: 24px;
+}
+
+.el-row {
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 </style>
