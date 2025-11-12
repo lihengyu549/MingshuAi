@@ -154,16 +154,32 @@
 
                 <el-card class="box-card" shadow="never" style="border: none;">
                     <Title title="AI建议分类" iconClass="suggest"></Title>
-                    <el-card style="padding: 20px; line-height: 1.8; border-radius: 10px; background-color: rgb(249 249 250);" shadow="never">
-                        <h4 style="margin: 0 0 15px 0; font-size: 14px; font-weight: bold;"><svg-icon icon-class="dot" style="margin-right: 5px;"/>{{ row.suggestClassifyJson.categoryName }}</h4>
-                        <p style="margin: 0 0 15px 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
+                    <template v-if="row.suggestClassifyJson">
+                    <el-card
+                        style="padding: 20px; line-height: 1.8; border-radius: 10px; background-color: rgb(249 249 250);"
+                        shadow="never">
+                        <h4 style="margin: 0 0 15px 0; font-size: 14px; font-weight: bold;"><svg-icon icon-class="dot"
+                                style="margin-right: 5px;" />{{ row.suggestClassifyJson.categoryName }}</h4>
+                        <p
+                            style="margin: 0 0 15px 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
                             {{ row.suggestClassifyJson.categoryDescription }}
                         </p>
-                        <h5 style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold;"><svg-icon icon-class="star-hollow" style="margin-right: 5px;"/>推荐理由:</h5>
+                        <h5 style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold;"><svg-icon
+                                icon-class="star-hollow" style="margin-right: 5px;" />推荐理由:</h5>
                         <p style="margin: 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
                             {{ row.suggestClassifyJson.createReason }}
                         </p>
                     </el-card>
+                    </template>
+                    <template v-else>
+                        <div style="text-align: center; padding: 40px 20px; background-color: rgb(249 249 250); border-radius: 10px;">
+                            <div style="margin-bottom: 15px; color: #c0c4cc;">
+                                <svg-icon icon-class="info" style="font-size: 32px;" />
+                            </div>
+                            <p style="font-size: 14px; color: #606266; margin: 0;">暂无AI建议分类结果</p>
+                            <p style="font-size: 12px; color: #909399; margin-top: 8px;">该数据暂无可用的AI分类建议</p>
+                        </div>
+                    </template>
                 </el-card>
             </div>
         </div>
