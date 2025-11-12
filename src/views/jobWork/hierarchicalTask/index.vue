@@ -225,39 +225,6 @@
               </el-form-item>
             </el-col>
           </el-row> -->
-          <!-- <el-row>
-            <el-col :span="12">
-              <el-form-item>
-                <el-radio-group v-model="form.classificationLogic" :disabled="!form.ifStartTask"
-                  class="classification-radio-group" @change="handleClassificationChange">
-                  <el-radio label="1" class="classification-radio"
-                    :class="{ 'radio-checked': form.classificationLogic === '1' }">
-                    <div class="radio-content">
-                      <span class="radio-main-text">侧重于整表语义
-                        <span class="checked-ring-container">
-                          <span class="outer-ring"></span> 
-                          <span class="inner-dot"></span> 
-                        </span>
-                      </span>
-                      <div class="radio-desc">通过将整表进行AI分析,对所有字段进行打标</div>
-                    </div>
-                  </el-radio>
-                  <el-radio label="2" class="classification-radio"
-                    :class="{ 'radio-checked': form.classificationLogic === '2' }">
-                    <div class="radio-content">
-                      <span class="radio-main-text">侧重于字段语义
-                        <span class="checked-ring-container">
-                          <span class="outer-ring"></span> 
-                          <span class="inner-dot"></span>
-                        </span>
-                      </span>
-                      <div class="radio-desc">通过字段上下文对每个字段单独进行AI分析</div>
-                    </div>
-                  </el-radio>
-                </el-radio-group>
-              </el-form-item>
-            </el-col>
-          </el-row> -->
           <el-row>
             <el-col :span="12">
               <el-form-item>
@@ -337,6 +304,72 @@
             </el-form-item>
           </el-col>
         </el-row>
+
+        <!-- 启用功能 -->
+         <Title title="启用功能" />
+        <div class="feature-container">
+          <div class="feature-grid">
+            <div class="feature-item" :class="{ highlight: form.semanticFill }" @click="toggleFeature('semanticFill')">
+              <div class="feature-content">
+                <div class="feature-title">语义填充</div>
+                <div class="feature-desc">结合字段/表上下文信息填充业务语义</div>
+                <el-checkbox v-model="form.semanticFill" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+              </div>
+            </div>
+            <div class="feature-item" :class="{ highlight: form.noiseFilter }" @click="toggleFeature('noiseFilter')">
+              <div class="feature-content">
+                <div class="feature-title">噪音数据过滤</div>
+                <div class="feature-desc">识别并过滤无效干扰数据，保障数据分类质量</div>
+                <el-checkbox v-model="form.noiseFilter" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+              </div>
+            </div>
+            <div class="feature-item" :class="{ highlight: form.ruleMatching }" @click="toggleFeature('ruleMatching')">
+              <div class="feature-content">
+                <div class="feature-title">匹配规则引擎</div>
+                <div class="feature-desc">通过关键字和正则对数据进行精准匹配</div>
+                <el-checkbox v-model="form.ruleMatching" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+              </div>
+            </div>
+            <div class="feature-item" :class="{ highlight: form.piiDetection }" @click="toggleFeature('piiDetection')">
+              <div class="feature-content">
+                <div class="feature-title">个人信息识别</div>
+                <div class="feature-desc">智能识别姓名、身份证号等个人敏感信息</div>
+                <el-checkbox v-model="form.piiDetection" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+              </div>
+            </div>
+            <div class="feature-item" :class="{ highlight: form.aiTagging }" @click="toggleFeature('aiTagging')">
+              <div class="feature-content">
+                <div class="feature-title">AI分类打标</div>
+                <div class="feature-desc">结合学理上下文对数据进行智能打标</div>
+                <el-checkbox v-model="form.aiTagging" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+              </div>
+            </div>
+            <div class="feature-item" :class="{ highlight: form.aiSuggestion }" @click="toggleFeature('aiSuggestion')">
+              <div class="feature-content">
+                <div class="feature-title">AI分类建议</div>
+                <div class="feature-desc">对未匹配因子的字段，提供智能建议</div>
+                <el-checkbox v-model="form.aiSuggestion" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+              </div>
+            </div>
+            <div class="feature-item" :class="{ highlight: form.featureExtraction }"
+              @click="toggleFeature('featureExtraction')">
+              <div class="feature-content">
+                <div class="feature-title">样本特征提取</div>
+                <div class="feature-desc">从数据样本中提取关键特征</div>
+                <el-checkbox v-model="form.featureExtraction" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+              </div>
+            </div>
+            <div class="feature-item" :class="{ highlight: form.selectedEffect }"
+              @click="toggleFeature('selectedEffect')">
+              <div class="feature-content">
+                <div class="feature-title">选中效果</div>
+                <div class="feature-desc">开启此项功能后可进行实验化</div>
+                <el-checkbox v-model="form.selectedEffect" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </el-form>
       <div slot="footer" class="dialog-footer" style="display: flex;justify-content: flex-end;">
         <el-button type="primary" plain @click="submitForm">确 定</el-button>
@@ -496,6 +529,15 @@ export default {
         scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '',
+        // 启用功能多选框状态
+        semanticFill: false,
+        noiseFilter: false,
+        ruleMatching: false,
+        piiDetection: false,
+        aiTagging: false,
+        aiSuggestion: false,
+        featureExtraction: false,
+        selectedEffect: false
       },
       executeCycle: '1',
       // 表单校验
@@ -577,6 +619,10 @@ export default {
     // }
   },
   methods: {
+    // 处理启用功能模块选中方法
+    toggleFeature(featureName) {
+      this.$set(this.form, featureName, !this.form[featureName]);
+    },
     scheduleTypeChange(val) {
       if (val == '3') {
         // 获取当前月的天数
@@ -971,7 +1017,7 @@ export default {
       // }
       this.$router.push({
         path: '/viewResults',
-        query: { drawerData: row, queryParams:this.queryParams }
+        query: { drawerData: row, queryParams: this.queryParams }
       })
       if (row.publishStatus == 0) {
         this.drawerData = row
@@ -1486,5 +1532,125 @@ input[aria-hidden=true] {
 
 .classification-radio-group[disabled] .radio-checked .inner-dot {
   background-color: #c0c4cc;
+}
+
+.feature-container {
+  margin-bottom: 20px;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.feature-item {
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 16px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.feature-item:hover {
+  border-color: #409eff;
+}
+
+.feature-item.highlight {
+  background-color: #ecf5ff;
+  border-color: #409eff;
+}
+
+.feature-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  padding-right: 30px;
+  /* 为右侧的勾选框留出空间 */
+}
+
+/* 圆形复选框样式 */
+.round-checkbox {
+  & .el-checkbox__inner {
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #dcdfe6;
+  }
+  
+  & .el-checkbox__inner::after {
+    display: none; /* 隐藏勾选符号 */
+  }
+  
+  & .el-checkbox__input.is-checked .el-checkbox__inner {
+    background-color: #409eff;
+    border-color: #409eff;
+  }
+  
+  /* 选中状态下显示实心圆而不是勾选 */
+  & .el-checkbox__input.is-checked .el-checkbox__inner::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    border-radius: 50%;
+    display: block;
+  }
+}
+
+.feature-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.feature-desc {
+  font-size: 14px;
+  color: #606266;
+  line-height: 1.5;
+}
+
+.checkbox-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+}
+
+.checkbox-right .el-checkbox__input {
+  margin: 0;
+}
+
+/* 自定义勾选框样式 */
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: #409eff;
+  border-color: #409eff;
+}
+
+.el-checkbox__inner {
+  border-radius: 4px;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #dcdfe6;
+  transition: all 0.3s;
+}
+
+.el-checkbox__input:hover .el-checkbox__inner {
+  border-color: #409eff;
+}
+
+/* 高亮样式调整 */
+.feature-item.highlight {
+  background-color: #ecf5ff;
+  border-color: #409eff;
+}
+
+.feature-item.highlight .feature-title {
+  color: #409eff;
 }
 </style>
