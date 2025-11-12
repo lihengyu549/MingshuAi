@@ -56,7 +56,7 @@
                 </el-form-item>
 
                 <!-- 特征标签组件 -->
-                <el-form-item label="特征标签" prop="coreTags">
+                <el-form-item label="主题词表" prop="coreTags">
                     <el-tag v-for="(tag, index) in formData.coreTags" :key="index" closable :disable-transitions="false"
                         @close="handleTagClose('coreTags', index)">
                         {{ tag }}
@@ -72,7 +72,7 @@
                 </el-form-item>
                 
                 <!-- 核心主题词组件 -->
-                <el-form-item label="核心主题词" prop="coreTopic">
+                <!-- <el-form-item label="核心主题词" prop="coreTopic">
                     <el-tag v-for="(tag, index) in formData.coreTopic" :key="index" closable :disable-transitions="false"
                         @close="handleTagClose('coreTopic', index)">
                         {{ tag }}
@@ -85,10 +85,10 @@
                     <div class="tag-count-tip" v-if="formData.coreTopic.length > 0">
                         已选择 {{ formData.coreTopic.length }}/40 个核心主题词
                     </div>
-                </el-form-item>
+                </el-form-item> -->
                 
                 <!-- 入口词组件 -->
-                <el-form-item label="入口词" prop="entryTerm">
+                <!-- <el-form-item label="入口词" prop="entryTerm">
                     <el-tag v-for="(tag, index) in formData.entryTerm" :key="index" closable :disable-transitions="false"
                         @close="handleTagClose('entryTerm', index)">
                         {{ tag }}
@@ -101,10 +101,10 @@
                     <div class="tag-count-tip" v-if="formData.entryTerm.length > 0">
                         已选择 {{ formData.entryTerm.length }}/40 个入口词
                     </div>
-                </el-form-item>
+                </el-form-item> -->
                 
                 <!-- 关联词组件 -->
-                <el-form-item label="关联词" prop="relatedTerms">
+                <!-- <el-form-item label="关联词" prop="relatedTerms">
                     <el-tag v-for="(tag, index) in formData.relatedTerms" :key="index" closable :disable-transitions="false"
                         @close="handleTagClose('relatedTerms', index)">
                         {{ tag }}
@@ -117,10 +117,10 @@
                     <div class="tag-count-tip" v-if="formData.relatedTerms.length > 0">
                         已选择 {{ formData.relatedTerms.length }}/40 个关联词
                     </div>
-                </el-form-item>
+                </el-form-item> -->
                 
                 <!-- 反向参照组件 -->
-                <el-form-item label="反向参照" prop="reverseRef">
+                <!-- <el-form-item label="反向参照" prop="reverseRef">
                     <el-tag v-for="(tag, index) in formData.reverseRef" :key="index" closable :disable-transitions="false"
                         @close="handleTagClose('reverseRef', index)">
                         {{ tag }}
@@ -133,7 +133,7 @@
                     <div class="tag-count-tip" v-if="formData.reverseRef.length > 0">
                         已选择 {{ formData.reverseRef.length }}/40 个反向参照
                     </div>
-                </el-form-item>
+                </el-form-item> -->
             </el-form>
 
             <div slot="footer" class="dialog-footer">

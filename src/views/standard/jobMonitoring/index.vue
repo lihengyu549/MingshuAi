@@ -200,7 +200,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="特征标签" prop="tags">
+        <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="主题词表" prop="tags">
           <div class="tagsClass" :style="tagsShow ? heightSmall : heightBig" style="width: 100%;">
             <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag + index" class="mx-1"
               :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'tags')" style="margin: 0 10px;">
@@ -218,7 +218,7 @@
         </el-form-item>
 
         <!-- 新增核心主题词 -->
-        <el-form-item class="addSelectClass AiStudesCont" label="核心主题词" prop="coreTopic">
+        <!-- <el-form-item class="addSelectClass AiStudesCont" label="核心主题词" prop="coreTopic">
           <div class="tagsClass" :style="coreTopicShow ? heightSmall : heightBig" style="width: 100%;">
             <el-tag v-for="(tag, index) in coreTopic" type="info" size="small" :key="tag + index" class="mx-1"
               :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'coreTopic')" style="margin: 0 10px;">
@@ -234,10 +234,10 @@
           <el-button class="button-new-tag" size="small" v-show="coreTopic.length > 10"
             @click="coreTopicShow = !coreTopicShow">{{
               coreTopicShow ? '展开' : '收起' }}</el-button>
-        </el-form-item>
+        </el-form-item> -->
 
         <!-- 新增入口词 -->
-        <el-form-item class="addSelectClass AiStudesCont" label="入口词" prop="entryTerm">
+        <!-- <el-form-item class="addSelectClass AiStudesCont" label="入口词" prop="entryTerm">
           <div class="tagsClass" :style="entryTermShow ? heightSmall : heightBig" style="width: 100%;">
             <el-tag v-for="(tag, index) in entryTerm" type="info" size="small" :key="tag + index" class="mx-1"
               :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'entryTerm')" style="margin: 0 10px;">
@@ -253,10 +253,10 @@
           <el-button class="button-new-tag" size="small" v-show="entryTerm.length > 10"
             @click="entryTermShow = !entryTermShow">{{
               entryTermShow ? '展开' : '收起' }}</el-button>
-        </el-form-item>
+        </el-form-item> -->
 
         <!-- 新增关联词 -->
-        <el-form-item class="addSelectClass AiStudesCont" label="关联词" prop="relatedTerms">
+        <!-- <el-form-item class="addSelectClass AiStudesCont" label="关联词" prop="relatedTerms">
           <div class="tagsClass" :style="relatedTermsShow ? heightSmall : heightBig" style="width: 100%;">
             <el-tag v-for="(tag, index) in relatedTerms" type="info" size="small" :key="tag + index" class="mx-1"
               :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'relatedTerms')" style="margin: 0 10px;">
@@ -272,10 +272,10 @@
           <el-button class="button-new-tag" size="small" v-show="relatedTerms.length > 10"
             @click="relatedTermsShow = !relatedTermsShow">{{
               relatedTermsShow ? '展开' : '收起' }}</el-button>
-        </el-form-item>
+        </el-form-item> -->
 
         <!-- 新增反向参照 -->
-        <el-form-item class="addSelectClass AiStudesCont" label="反向参照" prop="reverseRef">
+        <!-- <el-form-item class="addSelectClass AiStudesCont" label="反向参照" prop="reverseRef">
           <div class="tagsClass" :style="reverseRefShow ? heightSmall : heightBig" style="width: 100%;">
             <el-tag v-for="(tag, index) in reverseRef" type="info" size="small" :key="tag + index" class="mx-1"
               :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'reverseRef')" style="margin: 0 10px;">
@@ -291,7 +291,7 @@
           <el-button class="button-new-tag" size="small" v-show="reverseRef.length > 10"
             @click="reverseRefShow = !reverseRefShow">{{
               reverseRefShow ? '展开' : '收起' }}</el-button>
-        </el-form-item>
+        </el-form-item> -->
 
         <Title title="动态安全分级"></Title>
         <el-form-item label="" prop="">
