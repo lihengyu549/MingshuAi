@@ -36,6 +36,9 @@
                         </div>
                         <div class="chat-bubble">
                             {{ msg.content }}
+                            <template v-if="msg.content.includes('请稍等') && isGenerating">
+                                <svg-icon iconClass="loading" style="width: 20px; height: 20px; margin-left: 5px; animation: spin 1s linear infinite;" />
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -1032,7 +1035,7 @@ export default {
 
                     // 添加系统反馈
                     this.addChatMessage('ai', '用户输入的企业名称正确有效，继续生成分类分级标准');
-                    this.addChatMessage('ai', `正在生成${this.form.enterpriseName}企业数据分类分级标准，请稍等 ⌛`);
+                    this.addChatMessage('ai', `正在生成${this.form.enterpriseName}企业数据分类分级标准，请稍等`);
 
                     // 切换到聊天界面
                     this.switchToChatView();
@@ -1641,4 +1644,9 @@ export default {
         }
     }
 }
+    /* 旋转动画关键帧 */
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
 </style>
