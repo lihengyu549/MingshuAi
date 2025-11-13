@@ -13,7 +13,7 @@
         <div class="head-container" v-loading="treeLoading">
           <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox :expand-on-click-node="false"
             :filter-node-method="filterNode" ref="tree" node-key="id" @check="treeCheck"
-            :highlightCurrent="isHighlight" />
+            :highlightCurrent="isHighlight" :render-content="renderContent" />
         </div>
       </el-col>
       <!--用户数据-->
@@ -275,6 +275,30 @@ export default {
       const g = parseInt(hex.slice(3, 5), 16);
       const b = parseInt(hex.slice(5, 7), 16);
       return `${r}, ${g}, ${b}`;
+    },
+    /**
+     * 自定义树节点渲染，为不同层级节点添加不同的SVG图标
+     * 第一层：sysBusiness，第二层：database1，第三层：table1
+     */
+    renderContent(h, { node, data }) {
+      // 根据节点层级确定图标类型
+      let iconClass = 'sysBusiness'; // 默认第一层图标
+      if (node.level === 2) {
+        iconClass = 'database1'; // 第二层图标
+      } else if (node.level === 3) {
+        iconClass = 'table1'; // 第三层图标
+      }
+      
+      return h('span', { class: 'custom-tree-node' }, [
+        h('svg-icon', { 
+          class: 'tree-node-icon',
+          attrs: { 
+            iconClass: iconClass 
+          },
+          style: { marginRight: '8px' }
+        }),
+        h('span', { class: 'tree-node-label' }, node.label)
+      ]);
     },
     async init() {
       if (this.$route.params && this.$route.params.id) {
@@ -956,5 +980,26 @@ Authorization:Bearer ${this.Token}`
 /* 去除默认hover样式干扰 */
 ::v-deep .custom-plain-tag:hover {
   background-color: rgba(var(--tag-rgb), 0.15) !important;
+}
+
+/* 自定义树节点样式 */
+.custom-tree-node {
+  display: flex;
+  align-items: center;
+  height: 24px;
+  line-height: 24px;
+}
+
+.tree-node-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+
+.tree-node-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
