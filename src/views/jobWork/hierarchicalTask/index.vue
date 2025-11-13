@@ -144,9 +144,9 @@
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
+            <el-form-item label="分类分级框架" prop="projectId" :rules="rules.projectId">
               <!-- <el-input v-model="form.projectName" :disabled="true" /> -->
-              <el-select clearable v-model="form.projectName" filterable placeholder="请选择分类分级框架">
+              <el-select clearable v-model="form.projectId" filterable placeholder="请选择分类分级框架">
                 <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
                 </el-option>
               </el-select>
@@ -586,7 +586,7 @@ export default {
         id: [
           { required: true, message: "数据源名称不能为空", trigger: "blur" },
         ],
-        projectName: [
+        projectId: [
           { required: true, message: "分类分级框架不能为空", trigger: "blur" },
         ],
         classificationLogic: [{
@@ -848,9 +848,9 @@ export default {
     },
 
     projectChangeEdit(e) {
-      this.form.projectName = this.databaseTypeList.find(item => item.id == e).projectName
-      this.form.projectId = e
-      this.$forceUpdate()
+      // this.form.projectName = this.databaseTypeList.find(item => item.id == e).projectName
+      // this.form.projectId = e
+      // this.$forceUpdate()
     },
     /** 查询数据库代理列表 */
     getList() {
@@ -873,7 +873,7 @@ export default {
       this.$set(this.form, 'piiDetectionFlag', false)
       this.$set(this.form, 'confidenceLevel', "0")
       this.$set(this.form, 'classificationLogic', "3")
-      this.$set(this.form, 'confirm', "0")
+      this.$set(this.form, 'confirm', "-1")
       this.$set(this.form, 'scheduleType', '0')
       this.$set(this.form, 'scheduleInterval', '')
       this.$set(this.form, 'scheduleTime', '')
