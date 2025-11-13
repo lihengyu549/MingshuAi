@@ -29,7 +29,8 @@
           <el-tree class="treeBox" style="overflow-y: auto;height: 785px;" :data="categoryList" :props="defaultProps"
             :default-expanded-keys="[treeID]" :current-node-key="treeID" :expand-on-click-node="false"
             :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current show-checkbox
-            :check-strictly="false" :default-checked-keys="defaultCheckedKeys" @check="handleTreeCheck" />
+            :check-strictly="false" :default-checked-keys="defaultCheckedKeys" @check="handleTreeCheck"
+            :render-content="renderContent" />
         </div>
       </el-col>
       <!--用户数据-->
@@ -68,7 +69,10 @@
           <div v-for="(item, index) in dataAll" v-loading="loading" :key="index" class="table-info-card">
             <!-- 头部区域：表名 + 字段信息按钮 -->
             <div class="card-header">
-              <h3 class="table-name">{{ item.tableName }}</h3>
+              <h3 class="table-name">
+                <svg-icon icon-class="table1" style="margin-right: 5px;" />
+                {{ item.tableName }}
+              </h3>
               <button class="field-info-btn" @click="fieldInformationFn(item)">
                 <i class="el-icon-warning-outline" style="margin-right: 5px;"></i>字段信息
               </button>
@@ -495,6 +499,25 @@ export default {
         }
       }
       return null;
+    },
+    
+    /**
+     * 自定义树节点渲染，为父节点和子节点添加不同的SVG图标
+     */
+    renderContent(h, { node, data }) {
+      // 判断是否为父节点（有children属性且长度大于0）
+      const isParentNode = data.children && data.children.length > 0;
+      
+      return h('span', { class: 'custom-tree-node' }, [
+        h('svg-icon', { 
+          class: 'tree-node-icon',
+          attrs: { 
+            iconClass: isParentNode ? 'sysBusiness' : 'database1' 
+          },
+          style: { marginRight: '8px' }
+        }),
+        h('span', { class: 'tree-node-label' }, node.label)
+      ]);
     },
 
     /**
