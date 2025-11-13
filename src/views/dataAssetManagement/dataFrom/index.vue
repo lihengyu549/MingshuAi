@@ -18,12 +18,12 @@
           @keyup.enter.native="handleQuery" />
       </el-form-item>
 
-      <el-form-item label="分类分级标准" prop="projectId">
+      <!-- <el-form-item label="分类分级标准" prop="projectId">
         <el-select clearable v-model="queryParams.projectId" filterable @change="inputSearch" placeholder="请选择分类分级标准">
           <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
           </el-option>
         </el-select>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="主机信息" prop="targetIpPort">
         <el-input v-model="queryParams.targetIpPort" @input="inputSearch" placeholder="请输入主机信息" clearable
           @keyup.enter.native="handleQuery" />
@@ -40,10 +40,10 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">新增数据库</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">数据库</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleEcelFn">新增Excel文件</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleEcelFn">Excel文件</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
@@ -70,7 +70,7 @@
         </template>
       </el-table-column>
       <el-table-column label="来源业务系统" align="center" prop="businessName" />
-      <el-table-column label="分类分级标准" align="center" prop="projectName" />
+      <!-- <el-table-column label="分类分级标准" align="center" prop="projectName" /> -->
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
           <div style="display: flex; align-items: center;justify-content: center;">
@@ -116,13 +116,13 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="分类分级标准" prop="projectName" :rules="rules.projectName">
+        <!-- <el-form-item label="分类分级标准" prop="projectName" :rules="rules.projectName">
           <el-select v-model="form.projectName" :disabled="editIsFlag" placeholder="请输入分类分级框架" clearable
             @change="projectChangeEdit($event)">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
           <!-- @input="businessNameFn(form.businessName)" -->
           <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
@@ -214,12 +214,12 @@
         <el-form-item label="数据源名称" prop="sourceName">
           <el-input v-model="importData.sourceName" maxlength="50" placeholder="请输入数据源名称"></el-input>
         </el-form-item>
-        <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
+        <!-- <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
           <el-select v-model="importData.categoryId" :disabled="editIsFlag" class="serachInput" placeholder="全部">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="来源业务系统" prop="businessName">
           <el-input v-model="importData.businessName" maxlength="50" placeholder="请输入数据源名称"></el-input>
         </el-form-item>

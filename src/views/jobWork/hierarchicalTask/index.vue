@@ -145,7 +145,11 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
-              <el-input v-model="form.projectName" :disabled="true" />
+              <!-- <el-input v-model="form.projectName" :disabled="true" /> -->
+              <el-select clearable v-model="form.projectName" filterable placeholder="请选择分类分级框架">
+                <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
+                </el-option>
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -935,7 +939,7 @@ export default {
       }
       if (row.classificationReasons == '0' || row.classificationReasons == null) {
         this.form.classificationReasons = []
-      }else{
+      } else {
         this.form.classificationReasons = row.classificationReasons.split(',').map(item => {
           return item
         })
