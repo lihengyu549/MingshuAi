@@ -24,20 +24,32 @@
               <el-input v-model="allData.DirtyData.DirtyData3.value" size="mini"
                 :disabled="!allData.DirtyData.DirtyData3.state" style="width: 20%;margin-left: 10px;"
                 @input="handleDirtyDataInput"></el-input>
+              <el-tooltip class="item" effect="dark" content="样本重复率" placement="top-start">
+                <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+              </el-tooltip>
             </el-col>
             <el-col :span="12">
               <el-switch v-model="allData.DirtyData.DirtyData4.state" active-color="#009dff" inactive-color="#e0e0e0"
                 :active-text="allData.DirtyData.DirtyData4.label"></el-switch>
+                <el-tooltip class="item" effect="dark" content="包含主键，外键，编码方式等" placement="top-start">
+                <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+              </el-tooltip>
             </el-col>
           </el-row>
           <el-row>
             <el-col :span="12">
               <el-switch v-model="allData.DirtyData.DirtyData5.state" active-color="#009dff" inactive-color="#e0e0e0"
                 :active-text="allData.DirtyData.DirtyData5.label"></el-switch>
+                <el-tooltip class="item" effect="dark" content="包含前端配置，系统参数等" placement="top-start">
+                <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+              </el-tooltip>
             </el-col>
             <el-col :span="12">
               <el-switch v-model="allData.DirtyData.DirtyData6.state" active-color="#009dff" inactive-color="#e0e0e0"
                 :active-text="allData.DirtyData.DirtyData6.label"></el-switch>
+                <el-tooltip class="item" effect="dark" content="包含备份字段，自定义字段等" placement="top-start">
+                <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+              </el-tooltip>
             </el-col>
           </el-row>
         </div>
