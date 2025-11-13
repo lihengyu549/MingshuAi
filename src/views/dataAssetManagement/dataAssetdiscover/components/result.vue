@@ -121,7 +121,7 @@
         <el-button @click="cancleFn">取消</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="扫描配置" class="scanContentBox" v-loading="scanContentLoading" :visible.sync="scanContentShow"
+    <el-dialog title="扫描配置" class="addMsg" v-loading="scanContentLoading" :visible.sync="scanContentShow"
       width="950px" append-to-body :close-on-click-modal="false">
       <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData"
         :scanContentTreeData="scanContentTreeData" :databaseTableNameParama="databaseTableNameParama"
