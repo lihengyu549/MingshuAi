@@ -67,20 +67,31 @@
           <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
           <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
         </el-form-item>
-        <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
-          <el-input v-model="form.targetIp" placeholder="请输入主机IP地址" />
-        </el-form-item>
-
-        <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
-          <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
-        </el-form-item>
-        <el-form-item label="用户" prop="targetUserName" :rules="rules.targetUserName">
-          <el-input v-model="form.targetUserName" autocomplete="new-password" placeholder="请输入数据库用户名称" />
-        </el-form-item>
-        <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
-          <el-input v-model="form.targetUserPassword" autocomplete="new-password" show-password maxlegth="100"
-            placeholder="请输入数据库密码" />
-        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
+              <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
+              <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="用户" prop="targetUserName" :rules="rules.targetUserName">
+              <el-input v-model="form.targetUserName" placeholder="请输入数据库用户名称" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
+              <el-input type="password" v-model="form.targetUserPassword" :show-password="passwordVisible"
+                maxlength="100" placeholder="请输入数据库密码" />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item v-show="form.databaseType == 'ORACLE'" label="服务名" prop="connectionValue"
           :rules="rules.connectionValue()">
           <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput(form.connectionValue)"
@@ -121,8 +132,8 @@
         <el-button @click="cancleFn">取消</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="扫描配置" class="addMsg" v-loading="scanContentLoading" :visible.sync="scanContentShow"
-      width="950px" append-to-body :close-on-click-modal="false">
+    <el-dialog title="扫描配置" class="addMsg" v-loading="scanContentLoading" :visible.sync="scanContentShow" width="950px"
+      append-to-body :close-on-click-modal="false">
       <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData"
         :scanContentTreeData="scanContentTreeData" :databaseTableNameParama="databaseTableNameParama"
         ref="scanContentTreeRef" />
