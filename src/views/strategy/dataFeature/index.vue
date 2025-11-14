@@ -37,11 +37,11 @@
                 <el-empty description="暂无数据"></el-empty>
             </template>
             <el-table-column type="selection" align="center" width="45" />
-            <el-table-column prop="featureName" align="center" label="特征名称" width="160" />
-            <el-table-column prop="featureTypeName" align="center" label="特征类型" width="100" />
-            <el-table-column prop="featureSourceName" align="center" label="来源" width="120" />
-            <el-table-column prop="featureDescribe" align="center" label="描述" min-width="200" />
-            <el-table-column prop="updateTime" align="center" label="更新时间" width="160" />
+            <el-table-column prop="featureName" align="center" label="特征名称" width="160" show-overflow-tooltip />
+            <el-table-column prop="featureTypeName" align="center" label="特征类型" width="100" show-overflow-tooltip />
+            <el-table-column prop="featureSourceName" align="center" label="来源" width="120" show-overflow-tooltip />
+            <el-table-column prop="featureDescribe" align="center" label="描述" min-width="200" show-overflow-tooltip />
+            <el-table-column prop="updateTime" align="center" label="更新时间" width="160" show-overflow-tooltip />
             <el-table-column align="center" label="操作" width="120" fixed="right">
                 <template slot-scope="scope">
                     <el-button type="text" size="small" @click="handleView(scope.row)">查看</el-button>

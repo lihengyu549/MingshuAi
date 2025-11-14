@@ -55,20 +55,20 @@
         <el-empty description="暂无数据"></el-empty>
       </template>
       <el-table-column type="selection" width="60" align="center" :selectable="selectableFn" />
-      <el-table-column label="任务名称" align="center" prop="tasksName">
+      <el-table-column label="任务名称" align="center" prop="tasksName" show-overflow-tooltip>
         <template slot-scope="scope">
           <span class="btnText" @click="handleUpdate(scope.row)">{{ scope.row.tasksName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="数据源" align="center" prop="sourceName" />
-      <el-table-column label="来源业务系统" align="center" prop="businessName" />
-      <el-table-column label="分类分级标准" align="center" prop="projectName" />
+      <el-table-column label="数据源" align="center" prop="sourceName" show-overflow-tooltip />
+      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
+      <el-table-column label="分类分级标准" align="center" prop="projectName" show-overflow-tooltip />
       <!-- <el-table-column label="AI分析引擎" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.aiAnalyticsEngine == 1 ? '快速响应' : '深度思考' }}</span>
         </template>
       </el-table-column> -->
-      <el-table-column label="任务字段数" align="center" prop="fieldCount" />
+      <el-table-column label="任务字段数" align="center" prop="fieldCount" show-overflow-tooltip />
       <el-table-column label="执行状态" align="center" width="120" prop="maskComplete">
         <template slot-scope="scope">
           <div class="runType">
@@ -86,7 +86,7 @@
             '已发布' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="更新时间" align="center" prop="updateTime" />
+      <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
       <el-table-column label="任务操作" align="center" width="200" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <div class="iconBtnBox">

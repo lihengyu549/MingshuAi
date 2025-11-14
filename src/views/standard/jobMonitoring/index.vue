@@ -78,8 +78,8 @@
           </template>
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
-          <el-table-column label="子类名称" align="center" prop="attachData" />
-          <el-table-column label="安全分级" align="center" prop="securityLevelName" />
+          <el-table-column label="子类名称" align="center" prop="attachData" show-overflow-tooltip />
+          <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
           <el-table-column label="建议防护措施" prop="protectMethodName" width="200">
             <template slot="header">
               <div style="text-align: center;">建议防护措施</div>
@@ -94,7 +94,7 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="数据持有者" align="center" prop="dataOwner" />
+          <el-table-column label="数据持有者" align="center" prop="dataOwner" show-overflow-tooltip />
           <el-table-column label="确认防护措施" prop="confirmProtectMethod" width="200">
             <template slot="header">
               <div style="text-align: center;">确认防护措施</div>
@@ -109,8 +109,7 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="来源" align="center" prop="dataSource">
-          </el-table-column>
+          <el-table-column label="来源" align="center" prop="dataSource" show-overflow-tooltip />
           <el-table-column label="直属父类" align="center" prop="baseParent" show-overflow-tooltip />
           <el-table-column label="操作" align="center" width="180">
             <template slot-scope="scope">

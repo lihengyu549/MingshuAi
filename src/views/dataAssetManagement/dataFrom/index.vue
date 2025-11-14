@@ -56,20 +56,20 @@
         <el-empty description="暂无数据"></el-empty>
       </template>
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="数据源名称" align="center" prop="sourceName" />
+      <el-table-column label="数据源名称" align="center" prop="sourceName" show-overflow-tooltip />
 
-      <el-table-column label="主机信息" align="center" prop="targetIpPort">
+      <el-table-column label="主机信息" align="center" prop="targetIpPort" show-overflow-tooltip>
         <template slot-scope="scope">
           <span>{{ scope.row.targetIpPort }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="数据源类型" align="center" prop="databaseType">
+      <el-table-column label="数据源类型" align="center" prop="databaseType" show-overflow-tooltip>
         <template slot-scope="scope">
           <span> {{ databaseTypeMsg(scope.row.databaseType) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="来源业务系统" align="center" prop="businessName" />
+      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip  />
       <!-- <el-table-column label="分类分级标准" align="center" prop="projectName" /> -->
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
@@ -80,10 +80,10 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="耗时(毫秒)" align="center" prop="scanTime" />
-      <el-table-column label="更新时间" align="center" prop="updateTime" />
-      <el-table-column label="表数量" align="center" prop="tableCount" />
-      <el-table-column label="字段数量" align="center" prop="fieldCount" />
+      <el-table-column label="耗时(毫秒)" align="center" prop="scanTime" show-overflow-tooltip />
+      <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
+      <el-table-column label="表数量" align="center" prop="tableCount" show-overflow-tooltip />
+      <el-table-column label="字段数量" align="center" prop="fieldCount" show-overflow-tooltip />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"

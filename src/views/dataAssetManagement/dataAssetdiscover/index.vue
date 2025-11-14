@@ -34,21 +34,21 @@
         <el-empty description="暂无数据"></el-empty>
       </template>
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="任务名称" align="center" prop="taskName" />
-      <el-table-column label="IP段" align="center" prop="ipScope">
+      <el-table-column label="任务名称" align="center" prop="taskName" show-overflow-tooltip />
+      <el-table-column label="IP段" align="center" prop="ipScope" show-overflow-tooltip>
         <template slot-scope="scope">
           <span>{{ scope.row.ipScope }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="指定端口" align="center" prop="ports" />
-      <el-table-column label="周期" align="center" prop="scheduleType">
+      <el-table-column label="指定端口" align="center" prop="ports" show-overflow-tooltip />
+      <el-table-column label="周期" align="center" prop="scheduleType" show-overflow-tooltip>
         <template slot-scope="scope">
           <span>{{ scope.row.scheduleType == '0' ? '手动' : scope.row.scheduleType == '1' ? '每天' : scope.row.scheduleType
             == '2' ? '每周' : scope.row.scheduleType == '3' ? '每月' : '' }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="服务数" align="center" prop="servicesNum" />
-      <el-table-column label="状态" align="center" prop="taskState">
+      <el-table-column label="服务数" align="center" prop="servicesNum" show-overflow-tooltip />
+      <el-table-column label="状态" align="center" prop="taskState" show-overflow-tooltip>
         <template slot-scope="scope">
           <div style="display: flex; align-items: center;justify-content: center;">
             <img style="display: block; width: 20px;margin-right: 10px;"
@@ -57,7 +57,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="更新时间" align="center" prop="updateTime" />
+      <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
