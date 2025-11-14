@@ -562,23 +562,34 @@ export default {
   created() {
     // 缓存路由参数中的drawerData，减少重复访问
     const drawerData = this.$route.query?.drawerData;
-    this.lastQueryParams = this.$route.query?.queryParams;
+    const queryParams = this.$route.query?.queryParams;
+    
+    // 如果有查询参数，赋值给查询表单
+    if (queryParams) {
+      // 确保queryParams是对象类型
+      const params = typeof queryParams === 'string' ? JSON.parse(queryParams) : queryParams;
+      this.queryParams = { ...this.queryParams, ...params };
+      this.lastQueryParams = params;
+    }
 
     if (drawerData) {
+      // 确保drawerData是对象类型
+      const drawerDataObj = typeof drawerData === 'string' ? JSON.parse(drawerData) : drawerData;
+      
       // 处理数据库列表
-      if (drawerData.targetDatabase && typeof drawerData.targetDatabase === 'string') {
-        const cleanedDatabase = drawerData.targetDatabase.replace(/,$/, '');
+      if (drawerDataObj.targetDatabase && typeof drawerDataObj.targetDatabase === 'string') {
+        const cleanedDatabase = drawerDataObj.targetDatabase.replace(/,$/, '');
         this.surfaceList = cleanedDatabase ? cleanedDatabase.split(',') : [];
       }
 
       // 存储projectId到sessionStorage
-      if (drawerData.projectId) {
-        sessionStorage.setItem('projectId', String(drawerData.projectId));
+      if (drawerDataObj.projectId) {
+        sessionStorage.setItem('projectId', String(drawerDataObj.projectId));
       }
 
       // 存储databaseId到sessionStorage
-      if (drawerData.id) {
-        sessionStorage.setItem('databaseId', String(drawerData.id));
+      if (drawerDataObj.id) {
+        sessionStorage.setItem('databaseId', String(drawerDataObj.id));
       }
     }
 

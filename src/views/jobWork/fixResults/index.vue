@@ -495,11 +495,15 @@ export default {
         },
         handleReturn() {
             // 返回点击事件
+            // 确保参数正确序列化，避免对象引用问题
+            const queryParams = this.$route.query.queryParams;
+            const drawerData = this.$route.query.drawerData;
+            
             this.$router.push({
                 path: '/viewResults',
                 query: {
-                    queryParams: this.$route.query.queryParams || {},
-                    drawerData: this.$route.query.drawerData || {}
+                    queryParams: typeof queryParams === 'string' ? queryParams : JSON.stringify(queryParams || {}),
+                    drawerData: typeof drawerData === 'string' ? drawerData : JSON.stringify(drawerData || {})
                 }
             });
         },
