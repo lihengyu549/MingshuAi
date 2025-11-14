@@ -393,7 +393,7 @@
                 <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
               </div>
             </div>
-            <div class="feature-item" :class="{ highlight: form.ifStartAiClassifySuggest }"
+            <!-- <div class="feature-item" :class="{ highlight: form.ifStartAiClassifySuggest }"
               @click="toggleFeature('ifStartAiClassifySuggest')">
               <div class="feature-content">
                 <div class="feature-title">AI分类建议</div>
@@ -401,7 +401,7 @@
                 <el-checkbox v-model="form.ifStartAiClassifySuggest" class="checkbox-right round-checkbox"
                   @click.stop></el-checkbox>
               </div>
-            </div>
+            </div> -->
             <div class="feature-item" :class="{ highlight: form.ifStartFeatureExtract }"
               @click="toggleFeature('ifStartFeatureExtract')">
               <div class="feature-content">
