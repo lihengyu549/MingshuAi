@@ -23,7 +23,7 @@
         </div>
       </el-col>
       <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
+        <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="false"
           v-show="showSearch" label-width="auto">
           <el-form-item label="子类名称" prop="name">
             <el-input v-model="queryParams.name" @input="inputSearch" placeholder="请输入类名称" clearable

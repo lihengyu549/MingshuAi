@@ -18,7 +18,7 @@
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
+        <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="false"
           v-show="showSearch" label-width="90px">
           <el-form-item label="规则名称" prop="ruleName">
             <el-input v-model="queryParams.ruleName" @input="inputSearch" placeholder="请输入规则名称" clearable
@@ -820,6 +820,13 @@ export default {
     height: 28px !important;
     line-height: 28px !important;
   }
+}
+
+.yuanDataClass {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .yuanDataClass /deep/ .el-form-item {

@@ -35,10 +35,11 @@
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="true"
+        <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="false"
           label-width="100px">
           <el-form-item label="表名" prop="tableName">
-            <el-select v-model="queryParams.tableName" @change="selectProjectIdChange" filterable placeholder="全部" clearable>
+            <el-select v-model="queryParams.tableName" @change="selectProjectIdChange" filterable placeholder="全部"
+              clearable>
               <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.tableId">
               </el-option>
             </el-select>
@@ -52,7 +53,8 @@
             </el-select>
           </el-form-item>
           <el-form-item label="样本特征提取" prop="featureExtractionStatus">
-            <el-select v-model="queryParams.featureExtractionStatus" @change="selectProjectIdChange" placeholder="全部" clearable>
+            <el-select v-model="queryParams.featureExtractionStatus" @change="selectProjectIdChange" placeholder="全部"
+              clearable>
               <el-option label="未开始" value="1"></el-option>
               <el-option label="成功" value="2"></el-option>
               <el-option label="失败" value="3"></el-option>
@@ -500,19 +502,19 @@ export default {
       }
       return null;
     },
-    
+
     /**
      * 自定义树节点渲染，为父节点和子节点添加不同的SVG图标
      */
     renderContent(h, { node, data }) {
       // 判断是否为父节点（有children属性且长度大于0）
       const isParentNode = data.children && data.children.length > 0;
-      
+
       return h('span', { class: 'custom-tree-node' }, [
-        h('svg-icon', { 
+        h('svg-icon', {
           class: 'tree-node-icon',
-          attrs: { 
-            iconClass: isParentNode ? 'sysBusiness' : 'database1' 
+          attrs: {
+            iconClass: isParentNode ? 'sysBusiness' : 'database1'
           },
           style: { marginRight: '8px' }
         }),
@@ -1246,6 +1248,13 @@ export default {
   font-size: 18px;
   color: black;
   font-weight: bold;
+}
+
+.yuanDataClass {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .yuanDataClass /deep/ .el-form-item {

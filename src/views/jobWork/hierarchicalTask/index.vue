@@ -1,6 +1,6 @@
 <template>
   <div class="app-container" v-loading="mainLoading">
-    <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small" :inline="true"
+    <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small" :inline="false"
       label-width="auto">
       <el-form-item label="任务名称" prop="tasksName">
         <el-input v-model="queryParams.tasksName" @input="inputSearch" placeholder="请输入数据源名称" clearable
