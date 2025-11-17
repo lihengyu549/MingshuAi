@@ -1165,7 +1165,7 @@ export default {
         return
       }
       row.stateName = this.stateMsg(row.maskComplete)
-      this.$router.push({ path: '/jobMonitoring', query: row })
+      this.$router.push({ path: '/jobMonitoring', query: row, queryParams: this.queryParams })
     },
   }
 };

@@ -151,7 +151,8 @@ export default {
       // 分析日志
       analysisLogs: {},
       // 添加 activeTab 数据属性
-      activeTab: 'analysis' // 默认显示分析标签页
+      activeTab: 'analysis', // 默认显示分析标签页
+      queryParams: this.$route.query || {},
     };
   },
   computed: {
@@ -335,9 +336,12 @@ export default {
     handleRefresh() {
       this.getAnalysisLogs();
     },
-    // 返回上一页
+    // 返回任务列表页面
     handleReturn() {
-      this.$router.back();
+      this.$router.push({
+        path: '/hierarchicalTask',
+        query: this.queryParams || {}
+      });
     },
     // 时间格式化
     formatTime(date) {
