@@ -73,6 +73,10 @@
           </el-option>
         </el-select>
       </el-form-item>
+      <el-form-item label="样本特征" prop="regularExpression">
+        <el-input v-model="queryParams.regularExpression" @input="inputSearch" placeholder="请输入样本特征" clearable
+          @keyup.enter.native="handleQuery" />
+      </el-form-item>
       <el-form-item label=" " class="searchBtn">
         <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
       </el-form-item>
