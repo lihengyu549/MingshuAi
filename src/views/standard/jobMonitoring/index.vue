@@ -78,7 +78,7 @@
           </template>
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
-          <el-table-column label="子类名称" align="center" prop="attachData" show-overflow-tooltip />
+          <el-table-column label="子类名称" align="left" width="140" prop="attachData" show-overflow-tooltip />
           <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
           <el-table-column label="建议防护措施" prop="protectMethodName" width="200">
             <template slot="header">

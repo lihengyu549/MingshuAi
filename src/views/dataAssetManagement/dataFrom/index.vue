@@ -56,7 +56,7 @@
         <el-empty description="暂无数据"></el-empty>
       </template>
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="数据源名称" align="center" prop="sourceName" show-overflow-tooltip />
+      <el-table-column label="数据源名称" align="left" width="140" prop="sourceName" show-overflow-tooltip />
 
       <el-table-column label="主机信息" align="center" prop="targetIpPort" show-overflow-tooltip>
         <template slot-scope="scope">
