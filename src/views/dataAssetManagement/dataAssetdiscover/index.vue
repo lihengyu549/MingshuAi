@@ -34,7 +34,7 @@
         <el-empty description="暂无数据"></el-empty>
       </template>
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="任务名称" align="center" prop="taskName" show-overflow-tooltip />
+      <el-table-column label="任务名称" align="left" width="140" prop="taskName" show-overflow-tooltip />
       <el-table-column label="IP段" align="center" prop="ipScope" show-overflow-tooltip>
         <template slot-scope="scope">
           <span>{{ scope.row.ipScope }}</span>
