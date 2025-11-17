@@ -133,13 +133,19 @@
       <template>
         <el-table-column v-for="item in checkedColumn" :label="item.label"
           :align="item.label == '分类' ? 'left' : 'center'" :prop="item.prop" :width="item.width" show-overflow-tooltip>
-          <template v-if="item.label == '分类'" slot-scope="scope">
-            <el-tag :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '脏数据' ? 'info' : 'primary'">{{ scope.row.categoryName }}</el-tag>
-          </template>
-          <template v-if="item.label == '安全分级'" slot-scope="scope">
-            <el-tag :style="{ backgroundColor: getRiskColor(Number(scope.row.securityLevel)),color:'#fff' }">
-              {{ scope.row.securityLevelName }}
-            </el-tag>
+          <template slot-scope="scope">
+            <!-- 分类不再展示，直接显示原始值 -->
+            <template v-if="item.label == '安全分级'">
+              <el-tag :style="{ backgroundColor: getRiskColor(Number(scope.row.securityLevel)),color:'#fff' }">
+                {{ scope.row.securityLevelName }}
+              </el-tag>
+            </template>
+            <template v-else-if="item.label == '分类'">
+              <el-tag :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '脏数据' ? 'info' : 'primary'">{{ scope.row.categoryName }}</el-tag>
+            </template>
+            <template v-else>
+              {{ scope.row[item.prop] }}
+            </template>
           </template>
         </el-table-column>
       </template>
