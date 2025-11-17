@@ -473,7 +473,7 @@ export default {
         },
         {
           label: "样本特征",
-          prop: "featureData",
+          prop: "regularExpression",
           width: "150"
 
         }
