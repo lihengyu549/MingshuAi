@@ -69,7 +69,7 @@
           <span> {{ databaseTypeMsg(scope.row.databaseType) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip  />
+      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
       <!-- <el-table-column label="分类分级标准" align="center" prop="projectName" /> -->
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
@@ -152,20 +152,21 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
-              <el-input type="password" v-model="form.targetUserPassword" :show-password="passwordVisible" maxlength="100" placeholder="请输入数据库密码" />
+              <el-input type="password" v-model="form.targetUserPassword" :show-password="passwordVisible"
+                maxlength="100" placeholder="请输入数据库密码" />
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item v-show="form.databaseType == 'ORACLE'" label="服务名" prop="connectionValue"
-          :rules="rules.connectionValue()">
+        <el-form-item v-show="form.databaseType == 'ORACLE' || form.databaseType == 'OCEAN_BASE_ORACLE'" label="服务名"
+          prop="connectionValue" :rules="rules.connectionValue()">
           <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput()" placeholder="请输入" />
         </el-form-item>
-        <el-form-item v-show="form.databaseType == 'ORACLE'" label="连接方式">
+        <el-form-item v-show="form.databaseType == 'ORACLE' || form.databaseType == 'OCEAN_BASE_ORACLE'" label="连接方式">
           <el-radio v-model="connectionType" label="0">SID</el-radio>
           <el-radio v-model="connectionType" label="1">Service Name</el-radio>
         </el-form-item>
-        <el-form-item v-show="form.databaseType != 'ORACLE'" label="实例名/库名" prop="examplesName"
-          :rules="rules.examplesName()">
+        <el-form-item v-show="form.databaseType != 'ORACLE' && form.databaseType != 'OCEAN_BASE_ORACLE'" label="实例名/库名"
+          prop="examplesName" :rules="rules.examplesName()">
           <el-input v-model="form.examplesName" placeholder="请输入实例名/库名" />
         </el-form-item>
         <el-form-item label="扫描内容" prop="tabelCheckedName">
@@ -189,8 +190,7 @@
             </el-option>
           </el-select>
           <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
-            @change="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点"
-            :append-to-body="true">
+            @change="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点" :append-to-body="true">
           </el-time-picker>
         </el-form-item>
 
@@ -249,8 +249,8 @@
       <Result :treeOptions="treeOptions" :drawerData="drawerData" />
     </el-drawer>
 
-    <el-dialog title="扫描配置" class="addMsg" v-loading="scanContentLoading" :visible.sync="scanContentShow"
-      width="950px" append-to-body :close-on-click-modal="false">
+    <el-dialog title="扫描配置" class="addMsg" v-loading="scanContentLoading" :visible.sync="scanContentShow" width="950px"
+      append-to-body :close-on-click-modal="false">
       <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData"
         :scanContentTreeData="scanContentTreeData" :databaseTableNameParama="databaseTableNameParama"
         ref="scanContentTreeRef" />
@@ -348,6 +348,10 @@ export default {
         { name: "POSTGRESQL", id: 3, value: "POSTGRESQL", defaultPort: '5432' },
         { name: "DM", id: 4, value: "DM", defaultPort: '5236' },
         { name: "GREENPLUM", id: 5, value: "GREENPLUM", defaultPort: '5432' },
+        { name: "OCEAN_BASE_MYSQL", id: 6, value: "OCEAN_BASE_MYSQL", defaultPort: '3306' },  //mq
+        { name: "OCEAN_BASE_ORACLE", id: 7, value: "OCEAN_BASE_ORACLE", defaultPort: '1521' },  //oracle
+        { name: "KING_BASE", id: 8, value: "KING_BASE", defaultPort: '54321' }, // pg
+        { name: "MARIA_DB", id: 9, value: "MARIA_DB", defaultPort: '3306' },    //mq
       ],
       publishStatus: [
         {
@@ -452,7 +456,7 @@ export default {
         ],
         examplesName: () => {
           return [{
-            required: ['SQL_SERVER', 'POSTGRESQL', 'GREENPLUM'].includes(this.form.databaseType),
+            required: ['SQL_SERVER', 'POSTGRESQL', 'GREENPLUM', 'KING_BASE'].includes(this.form.databaseType),
             message: '请输入',
             trigger: 'blur'
           }]
@@ -549,7 +553,8 @@ export default {
       callback();
     },
     databaseTypeChange(e) {
-      if (e == 'ORACLE') {
+      // ORACLE和OCEAN_BASE_ORACLE需要服务名
+      if (e == 'ORACLE' || e == 'OCEAN_BASE_ORACLE') {
         this.isServiesNameRequired = true
       } else {
         this.isServiesNameRequired = false
