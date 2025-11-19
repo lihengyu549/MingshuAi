@@ -75,7 +75,8 @@
           </el-table-column>
           <el-table-column label="子类名称" align="left" width="140" prop="attachData" show-overflow-tooltip>
             <template slot-scope="scope">
-              <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />{{ scope.row.attachData }}
+              <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />{{ scope.row.attachData
+              }}
             </template>
           </el-table-column>
           <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
@@ -216,7 +217,7 @@
         </el-form-item>
 
         <!-- 新增核心主题词 -->
-        <!-- <el-form-item class="addSelectClass AiStudesCont" label="核心主题词" prop="coreTopic">
+        <el-form-item class="addSelectClass AiStudesCont" label="核心主题词" prop="coreTopic">
           <div class="tagsClass" :style="coreTopicShow ? heightSmall : heightBig" style="width: 100%;">
             <el-tag v-for="(tag, index) in coreTopic" type="info" size="small" :key="tag + index" class="mx-1"
               :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'coreTopic')" style="margin: 0 10px;">
@@ -232,10 +233,10 @@
           <el-button class="button-new-tag" size="small" v-show="coreTopic.length > 10"
             @click="coreTopicShow = !coreTopicShow">{{
               coreTopicShow ? '展开' : '收起' }}</el-button>
-        </el-form-item> -->
+        </el-form-item>
 
         <!-- 新增入口词 -->
-        <!-- <el-form-item class="addSelectClass AiStudesCont" label="入口词" prop="entryTerm">
+        <el-form-item class="addSelectClass AiStudesCont" label="入口词" prop="entryTerm">
           <div class="tagsClass" :style="entryTermShow ? heightSmall : heightBig" style="width: 100%;">
             <el-tag v-for="(tag, index) in entryTerm" type="info" size="small" :key="tag + index" class="mx-1"
               :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'entryTerm')" style="margin: 0 10px;">
@@ -251,10 +252,10 @@
           <el-button class="button-new-tag" size="small" v-show="entryTerm.length > 10"
             @click="entryTermShow = !entryTermShow">{{
               entryTermShow ? '展开' : '收起' }}</el-button>
-        </el-form-item> -->
+        </el-form-item>
 
         <!-- 新增关联词 -->
-        <!-- <el-form-item class="addSelectClass AiStudesCont" label="关联词" prop="relatedTerms">
+        <el-form-item class="addSelectClass AiStudesCont" label="关联词" prop="relatedTerms">
           <div class="tagsClass" :style="relatedTermsShow ? heightSmall : heightBig" style="width: 100%;">
             <el-tag v-for="(tag, index) in relatedTerms" type="info" size="small" :key="tag + index" class="mx-1"
               :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'relatedTerms')" style="margin: 0 10px;">
@@ -270,10 +271,10 @@
           <el-button class="button-new-tag" size="small" v-show="relatedTerms.length > 10"
             @click="relatedTermsShow = !relatedTermsShow">{{
               relatedTermsShow ? '展开' : '收起' }}</el-button>
-        </el-form-item> -->
+        </el-form-item>
 
         <!-- 新增反向参照 -->
-        <!-- <el-form-item class="addSelectClass AiStudesCont" label="反向参照" prop="reverseRef">
+        <el-form-item class="addSelectClass AiStudesCont" label="反向参照" prop="reverseRef">
           <div class="tagsClass" :style="reverseRefShow ? heightSmall : heightBig" style="width: 100%;">
             <el-tag v-for="(tag, index) in reverseRef" type="info" size="small" :key="tag + index" class="mx-1"
               :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'reverseRef')" style="margin: 0 10px;">
@@ -289,7 +290,7 @@
           <el-button class="button-new-tag" size="small" v-show="reverseRef.length > 10"
             @click="reverseRefShow = !reverseRefShow">{{
               reverseRefShow ? '展开' : '收起' }}</el-button>
-        </el-form-item> -->
+        </el-form-item>
 
         <Title title="动态安全分级"></Title>
         <el-form-item label="" prop="">
@@ -742,14 +743,14 @@ export default {
       } else {
         this[`${type}InputVisible`] = true;
       }
-      
+
       // 使用this.$set确保响应式更新
       if (type === 'tags') {
         this.$set(this, 'inputVisible', true);
       } else {
         this.$set(this, `${type}InputVisible`, true);
       }
-      
+
       this.$nextTick(_ => {
         // 获取正确的ref名称，特征标签使用特殊的ref名
         const refName = type === 'tags' ? 'saveTagInput' : `${type}SaveTagInput`;
@@ -777,14 +778,14 @@ export default {
       } else {
         inputValue = this[`${type}InputValue`];
       }
-      
+
       // 添加空值检查，避免调用trim()时出错
       const trimmedValue = inputValue ? inputValue.trim() : '';
-      
+
       if (trimmedValue) {
         this[type].push(trimmedValue);
       }
-      
+
       // 清空输入值并隐藏输入框，对特征标签进行特殊处理
       if (type === 'tags') {
         this.inputVisible = false;
@@ -994,27 +995,46 @@ export default {
       }
     },
 
+    goToMenuEdit(data) {
+      this.$router.push({
+        path: '/editMenu',
+        query: { id: data.id }
+      });
+    },
+
 
     // 判断是否为根节点
     isRootNode(data) {
       return data.parentId === 0 || !data.parentId;
     },
-    
+
     // 自定义树节点渲染
     renderContent(h, { node, data }) {
       // 判断是否为根节点
       const isRoot = this.isRootNode(data);
       // 获取节点层级（1:根节点，2:第二层，3:第三层）
       const level = node.level;
-      // 根据节点层级和展开状态确定图标
+
       let iconClass = '';
+      let iconStyle = {};
+
       if (isRoot) {
+        // L1根节点：灰蓝色
         iconClass = 'dunpai-2';
-      } else if (level === 2 || level === 3) {
-        // 第二层和第三层节点根据展开状态显示不同图标
+        iconStyle = { marginRight: '8px', color: '#606266' };
+      } else if (level === 2) {
+        // L2第二层：橙色
         iconClass = node.expanded ? 'openFile' : 'closeFile';
+        iconStyle = { marginRight: '8px', color: '#FF9800' };
+      } else if (level === 3) {
+        // L3第三层：红/橙色
+        iconClass = node.expanded ? 'openFile' : 'closeFile';
+        iconStyle = { marginRight: '8px', color: '#FF6B6B' };
       }
-      
+
+      // 获取面包屑路径
+      const breadcrumb = this.getBreadcrumbPath(data);
+
       // 创建基础节点内容数组
       const nodeContent = [
         h('svg-icon', {
@@ -1022,11 +1042,11 @@ export default {
           attrs: {
             iconClass: iconClass
           },
-          style: { marginRight: '8px' }
+          style: iconStyle
         }),
         h('span', { class: 'node-label', attrs: { title: node.label } }, node.label)
       ];
-      
+
       // 只对根节点添加setting图标，并确保它在最右侧
       if (isRoot && this.dataSource != '内置') {
         nodeContent.push(
@@ -1043,19 +1063,59 @@ export default {
           })
         );
       }
-      
-      return h('span', { 
+
+      const mainNode = h('span', {
         class: 'custom-tree-node',
         style: { display: 'flex', alignItems: 'center', width: '100%' }
       }, nodeContent);
+
+      if (!isRoot && breadcrumb) {
+        return h('div', {
+          class: 'tree-node-wrapper',
+          style: { display: 'flex', flexDirection: 'column', width: '100%', minHeight: '56px', paddingBottom: '8px' }
+        }, [
+          mainNode,
+          h('div', {
+            class: 'node-breadcrumb',
+            style: {
+              fontSize: '12px',
+              color: '#909399',
+              marginTop: '6px',
+              marginLeft: '28px',
+              lineHeight: '1.4'
+            }
+          }, breadcrumb)
+        ]);
+      }
+
+      return mainNode;
     },
 
-    // 跳转到菜单编辑页面
-    goToMenuEdit(data) {
-      this.$router.push({
-        path: '/editMenu',
-        query: { id: data.id }
-      });
+    getBreadcrumbPath(node) {
+      if (!node || !node.categoryName) return '';
+
+      // 获取从根到当前节点的完整路径
+      const pathArray = this.getNodePath(this.categoryList, node.id);
+      if (pathArray.length > 0) {
+        // 返回包含根节点在内的完整路径
+        return pathArray.join(' > ');
+      }
+      return '';
+    },
+
+    getNodePath(tree, nodeId, path = []) {
+      for (const node of tree) {
+        if (node.id === nodeId) {
+          return [...path, node.categoryName];
+        }
+        if (node.children && node.children.length > 0) {
+          const result = this.getNodePath(node.children, nodeId, [...path, node.categoryName]);
+          if (result.length > 0) {
+            return result;
+          }
+        }
+      }
+      return [];
     },
 
     //  字典数据
@@ -1731,6 +1791,27 @@ export default {
   }
 }
 
+/* Add tree node height and padding adjustments */
+::v-deep .el-tree-node__content {
+  height: auto;
+  min-height: 28px;
+  line-height: 1.5;
+  padding: 4px 0 !important;
+}
+
+::v-deep .el-tree-node {
+  padding: 0;
+}
+
+/* Ensure tree node wrapper has proper spacing */
+.tree-node-wrapper {
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding-bottom: 8px;
+}
+
 .node-label {
   white-space: nowrap;
   overflow: hidden;
@@ -1744,6 +1825,14 @@ export default {
   align-items: center;
   justify-content: space-between;
   width: 100%;
+}
+
+/* 新增面包屑导航样式 */
+.node-breadcrumb {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 6px;
+  line-height: 1.4;
 }
 
 /* 表格与按钮组容器 */
@@ -1826,5 +1915,13 @@ export default {
 
 .checkbox-item {
   margin-right: 0 !important;
+}
+
+/* 新增面包屑导航样式 */
+.node-breadcrumb {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 6px;
+  line-height: 1.4;
 }
 </style>
