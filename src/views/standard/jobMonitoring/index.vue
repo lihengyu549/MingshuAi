@@ -13,12 +13,7 @@
           <el-input v-model="filterName" placeholder="搜索树节点..." clearable size="mini" style="margin-bottom: 20px;" />
           <el-tree :indent="8" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
             :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
-            node-key="id" highlight-current @node-click="handleNodeClick">
-            <span class="custom-tree-node" slot-scope="{ node, data }">
-              <span class="node-label" :title="node.label">{{ node.label }}</span>
-              <svg-icon icon-class="setting" v-if="isRootNode(data)"
-                @click.stop="dataSource != '内置' && goToMenuEdit(data)" />
-            </span>
+            node-key="id" highlight-current @node-click="handleNodeClick" :render-content="renderContent">
           </el-tree>
         </div>
       </el-col>
@@ -78,7 +73,11 @@
           </template>
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
-          <el-table-column label="子类名称" align="left" width="140" prop="attachData" show-overflow-tooltip />
+          <el-table-column label="子类名称" align="left" width="140" prop="attachData" show-overflow-tooltip>
+            <template slot-scope="scope">
+              <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />{{ scope.row.attachData }}
+            </template>
+          </el-table-column>
           <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
           <el-table-column label="建议防护措施" prop="protectMethodName" width="200">
             <template slot="header">
@@ -999,6 +998,56 @@ export default {
     // 判断是否为根节点
     isRootNode(data) {
       return data.parentId === 0 || !data.parentId;
+    },
+    
+    // 自定义树节点渲染
+    renderContent(h, { node, data }) {
+      // 判断是否为根节点
+      const isRoot = this.isRootNode(data);
+      // 获取节点层级（1:根节点，2:第二层，3:第三层）
+      const level = node.level;
+      // 根据节点层级和展开状态确定图标
+      let iconClass = '';
+      if (isRoot) {
+        iconClass = 'dunpai-2';
+      } else if (level === 2 || level === 3) {
+        // 第二层和第三层节点根据展开状态显示不同图标
+        iconClass = node.expanded ? 'openFile' : 'closeFile';
+      }
+      
+      // 创建基础节点内容数组
+      const nodeContent = [
+        h('svg-icon', {
+          class: 'tree-node-icon',
+          attrs: {
+            iconClass: iconClass
+          },
+          style: { marginRight: '8px' }
+        }),
+        h('span', { class: 'node-label', attrs: { title: node.label } }, node.label)
+      ];
+      
+      // 只对根节点添加setting图标，并确保它在最右侧
+      if (isRoot && this.dataSource != '内置') {
+        nodeContent.push(
+          h('span', { style: { flexGrow: 1 } }), // 填充元素，将setting图标推到最右侧
+          h('svg-icon', {
+            attrs: { iconClass: 'setting' },
+            style: { marginLeft: '8px', cursor: 'pointer' },
+            on: {
+              click: (e) => {
+                e.stopPropagation();
+                this.goToMenuEdit(data);
+              }
+            }
+          })
+        );
+      }
+      
+      return h('span', { 
+        class: 'custom-tree-node',
+        style: { display: 'flex', alignItems: 'center', width: '100%' }
+      }, nodeContent);
     },
 
     // 跳转到菜单编辑页面

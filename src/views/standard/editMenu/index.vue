@@ -14,9 +14,17 @@
                 :default-expanded-keys="[currentNodeId]" :current-node-key="currentNodeId" :expand-on-click-node="false"
                 ref="tree" node-key="id" highlight-current @node-click="handleNodeClick" :expanded="isAllExpanded">
                 <!-- 控制全部展开/折叠 -->
-                <!-- 树节点内容保持不变 -->
+                div
                 <span class="custom-tree-node" slot-scope="{ node, data }">
-                    <span class="node-label" :title="node.label">{{ node.label }}</span>
+                    <!-- 根据节点层级和展开状态显示不同图标 -->
+                    <div>
+                        <svg-icon v-if="node.level === 1" class="tree-node-icon" icon-class="dunpai-2"
+                            style="margin-right: 8px" />
+                        <svg-icon v-else-if="node.level === 2 || node.level === 3" class="tree-node-icon"
+                            :icon-class="node.expanded ? 'openFile' : 'closeFile'" style="margin-right: 8px" />
+                        <span class="node-label" :title="node.label">{{ node.label }}</span>
+                    </div>
+
                     <span class="node-actions">
                         <el-button type="text" v-show="data.nodeLayerIndex !== 3" size="mini" class="action-btn add-btn"
                             @click.stop="() => openAddEditDialog(data, 'add')">
@@ -61,8 +69,9 @@
                         @close="handleTagClose('coreTags', index)">
                         {{ tag }}
                     </el-tag>
-                    <el-input v-if="formData.coreTagsInputVisible" v-model="formData.coreTagsInputValue" ref="coreTagsInput" size="small"
-                        @blur="handleInputBlur('coreTags')" @keyup.enter="handleInputConfirm('coreTags')" placeholder="请输入标签"></el-input>
+                    <el-input v-if="formData.coreTagsInputVisible" v-model="formData.coreTagsInputValue"
+                        ref="coreTagsInput" size="small" @blur="handleInputBlur('coreTags')"
+                        @keyup.enter="handleInputConfirm('coreTags')" placeholder="请输入标签"></el-input>
                     <el-button v-else size="small" icon="el-icon-plus" @click="handleInputShow('coreTags')" type="text">
                         新增
                     </el-button>
@@ -70,7 +79,7 @@
                         已选择 {{ formData.coreTags.length }}/40 个标签
                     </div>
                 </el-form-item>
-                
+
                 <!-- 核心主题词组件 -->
                 <!-- <el-form-item label="核心主题词" prop="coreTopic">
                     <el-tag v-for="(tag, index) in formData.coreTopic" :key="index" closable :disable-transitions="false"
@@ -86,7 +95,7 @@
                         已选择 {{ formData.coreTopic.length }}/40 个核心主题词
                     </div>
                 </el-form-item> -->
-                
+
                 <!-- 入口词组件 -->
                 <!-- <el-form-item label="入口词" prop="entryTerm">
                     <el-tag v-for="(tag, index) in formData.entryTerm" :key="index" closable :disable-transitions="false"
@@ -102,7 +111,7 @@
                         已选择 {{ formData.entryTerm.length }}/40 个入口词
                     </div>
                 </el-form-item> -->
-                
+
                 <!-- 关联词组件 -->
                 <!-- <el-form-item label="关联词" prop="relatedTerms">
                     <el-tag v-for="(tag, index) in formData.relatedTerms" :key="index" closable :disable-transitions="false"
@@ -118,7 +127,7 @@
                         已选择 {{ formData.relatedTerms.length }}/40 个关联词
                     </div>
                 </el-form-item> -->
-                
+
                 <!-- 反向参照组件 -->
                 <!-- <el-form-item label="反向参照" prop="reverseRef">
                     <el-tag v-for="(tag, index) in formData.reverseRef" :key="index" closable :disable-transitions="false"
@@ -413,17 +422,17 @@ export default {
                 // 编辑回显数据 - 从coreKeyWords解析四个字段
                 // 定义解析逗号分隔字符串的辅助函数
                 const parseCommaSeparated = (str) => {
-                    return str && typeof str === 'string' && str.length > 0 ? 
-                           str.split(',').map(tag => tag.trim()).filter(tag => tag) : 
-                           [];
+                    return str && typeof str === 'string' && str.length > 0 ?
+                        str.split(',').map(tag => tag.trim()).filter(tag => tag) :
+                        [];
                 };
-                
+
                 // 从coreKeyWords解析数据
                 let coreTopic = [];
                 let entryTerm = [];
                 let relatedTerms = [];
                 let reverseRef = [];
-                
+
                 if (data.coreKeyWords && typeof data.coreKeyWords === 'string') {
                     try {
                         const parsed = JSON.parse(data.coreKeyWords);
@@ -436,7 +445,7 @@ export default {
                         console.error('解析coreKeyWords失败:', e);
                     }
                 }
-                
+
                 this.formData = {
                     name: data.categoryName || '',
                     categoryDescribe: data.categoryDescribe || '',
@@ -514,7 +523,7 @@ export default {
                 relatedTerms: '关联词',
                 reverseRef: '反向参照'
             };
-            
+
             if (inputValue && !this.formData[field].includes(inputValue)) {
                 // 校验标签数量
                 if (this.formData[field].length >= 40) {

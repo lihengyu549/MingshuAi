@@ -57,7 +57,7 @@
       <el-table-column type="selection" width="60" align="center" :selectable="selectableFn" />
       <el-table-column label="任务名称" width="140" align="left" prop="tasksName" show-overflow-tooltip>
         <template slot-scope="scope">
-          <span class="btnText" @click="handleUpdate(scope.row)">{{ scope.row.tasksName }}</span>
+          <span class="btnText" @click="handleUpdate(scope.row)"><i class="el-icon-edit"></i>{{ scope.row.tasksName }}</span>
         </template>
       </el-table-column>
       <el-table-column label="数据源" width="140" align="left" prop="sourceName" show-overflow-tooltip>
