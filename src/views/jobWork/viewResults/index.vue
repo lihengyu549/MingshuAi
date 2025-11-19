@@ -412,6 +412,16 @@ export default {
           width: "150"
         },
         {
+          label: "字段类型",
+          prop: "fieldType",
+          width: "200"
+        },
+        {
+          label: "AI字段注释",
+          prop: "craftRemark",
+          width: "200"
+        },
+        {
           label: "表注释",
           prop: "tableRemark",
           width: "200"
