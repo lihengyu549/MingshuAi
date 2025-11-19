@@ -81,13 +81,13 @@
                 <div class="fenleifenji">
                     <div class="main_body_02">
                         <div class="titleBox_echarts">
-                            <div class="title">脏数据清洗比例</div>
+                            <div class="title">噪音数据过滤比例</div>
                         </div>
                         <div id="funnelEcharts" class="leftEchartsBox"></div>
                     </div>
                     <div class="main_body_02">
                         <div class="titleBox_echarts">
-                            <div class="title">AI数据填充概况</div>
+                            <div class="title">AI语义填充概况</div>
                         </div>
                         <el-card class="box-card">
                             <div style="height: 80px; font-weight: 600;font-size: 18px;">字段注释覆盖情况</div>
@@ -99,7 +99,7 @@
                                         allData.fieldRemarkCoverage.oldAnnotationProportion : '' }}</span>
                                 </div>
                                 <div>
-                                    <div>AI填充注释数量></div>
+                                    <div>AI语义填充数量></div>
                                     <span style="font-weight: 600;">{{ allData.fieldRemarkCoverage &&
                                         allData.fieldRemarkCoverage.AIAnnotationNum ?
                                         allData.fieldRemarkCoverage.AIAnnotationNum : '' }}</span>

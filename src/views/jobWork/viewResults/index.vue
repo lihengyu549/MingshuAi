@@ -141,7 +141,7 @@
               </el-tag>
             </template>
             <template v-else-if="item.label == '分类'">
-              <el-tag :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '脏数据' ? 'info' : 'primary'">{{ scope.row.categoryName }}</el-tag>
+              <el-tag :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '噪音数据' ? 'info' : 'primary'">{{ scope.row.categoryName }}</el-tag>
             </template>
             <template v-else>
               {{ scope.row[item.prop] }}

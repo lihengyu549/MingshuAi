@@ -44,7 +44,7 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="注释填充" prop="paddingStatus">
+          <el-form-item label="语义填充" prop="paddingStatus">
             <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange" placeholder="全部" clearable>
               <el-option label="未开始" value="1"></el-option>
               <el-option label="成功" value="2"></el-option>
@@ -168,7 +168,7 @@
                   </div>
                 </div>
                 <div class="col">
-                  <div class="label">注释填充</div>
+                  <div class="label">语义填充</div>
                   <el-tag
                     :type="item.paddingStatus == '未开始' ? 'info' : item.paddingStatus == '成功' ? 'success' : item.paddingStatus == '失败' ? 'danger' : item.paddingStatus == '执行中' ? 'primary' : 'info'"
                     class="status-tag" :title="item.paddingStatus">

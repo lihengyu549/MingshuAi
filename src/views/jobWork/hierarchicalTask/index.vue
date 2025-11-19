@@ -400,8 +400,8 @@
             </div>
             <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
               <div class="feature-content">
-                <div class="feature-title">AI分类打标</div>
-                <div class="feature-desc">结合学理上下文对数据进行智能打标</div>
+                <div class="feature-title">分类打标</div>
+                <div class="feature-desc">结合字段上下文对数据进行智能打标</div>
                 <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
               </div>
             </div>
