@@ -66,7 +66,7 @@
 
       <el-table-column label="数据源类型" align="center" prop="databaseType" show-overflow-tooltip>
         <template slot-scope="scope">
-          <span> {{ databaseTypeMsg(scope.row.databaseType) }}</span>
+          <span> <svg-icon :icon-class="databaseTypeIcon(databaseTypeMsg(scope.row.databaseType))" style="font-size: 16px; margin-right: 5px;" /> {{ databaseTypeMsg(scope.row.databaseType) }}</span>
         </template>
       </el-table-column>
       <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip  />
@@ -603,6 +603,18 @@ export default {
         }
       }
       return msg || '未知来源'
+    },
+    databaseTypeIcon(val){
+      if (val == 'Excel') {
+        return 'excel'
+      }else if (val == 'API') {
+        return 'api'
+      }else if (val == 'MYSQL') {
+        return 'mysql'
+      }else {
+        return 'unknow'
+      }
+      
     },
     businessNameFn(val) {
       this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")

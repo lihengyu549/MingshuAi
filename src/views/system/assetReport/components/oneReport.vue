@@ -122,7 +122,7 @@
                 </div>
                 <div class="main_body">
                     <div class="titleBox_echarts">
-                        <div class="title">数据分类分布(可下钻)</div>
+                        <div class="title">数据分类分布</div>
                     </div>
                     <el-breadcrumb style="margin-top: 20px;margin-left: 20px;" separator-class="el-icon-arrow-right">
                         <el-breadcrumb-item @click.native="goBack(item, index)" class="breadcrumbItem"
