@@ -75,8 +75,7 @@
           </el-table-column>
           <el-table-column label="子类名称" align="left" width="140" prop="attachData" show-overflow-tooltip>
             <template slot-scope="scope">
-              <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />{{ scope.row.attachData
-              }}
+              <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />{{ scope.row.attachData }}
             </template>
           </el-table-column>
           <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
@@ -743,14 +742,14 @@ export default {
       } else {
         this[`${type}InputVisible`] = true;
       }
-
+      
       // 使用this.$set确保响应式更新
       if (type === 'tags') {
         this.$set(this, 'inputVisible', true);
       } else {
         this.$set(this, `${type}InputVisible`, true);
       }
-
+      
       this.$nextTick(_ => {
         // 获取正确的ref名称，特征标签使用特殊的ref名
         const refName = type === 'tags' ? 'saveTagInput' : `${type}SaveTagInput`;
@@ -778,14 +777,14 @@ export default {
       } else {
         inputValue = this[`${type}InputValue`];
       }
-
+      
       // 添加空值检查，避免调用trim()时出错
       const trimmedValue = inputValue ? inputValue.trim() : '';
-
+      
       if (trimmedValue) {
         this[type].push(trimmedValue);
       }
-
+      
       // 清空输入值并隐藏输入框，对特征标签进行特殊处理
       if (type === 'tags') {
         this.inputVisible = false;
@@ -995,20 +994,7 @@ export default {
       }
     },
 
-    goToMenuEdit(data) {
-      this.$router.push({
-        path: '/editMenu',
-        query: { id: data.id }
-      });
-    },
 
-
-    // 判断是否为根节点
-    isRootNode(data) {
-      return data.parentId === 0 || !data.parentId;
-    },
-
-    // 自定义树节点渲染
     renderContent(h, { node, data }) {
       // 判断是否为根节点
       const isRoot = this.isRootNode(data);
@@ -1017,25 +1003,33 @@ export default {
 
       let iconClass = '';
       let iconStyle = {};
+      let levelLabel = '';
 
       if (isRoot) {
         // L1根节点：灰蓝色
         iconClass = 'dunpai-2';
-        iconStyle = { marginRight: '8px', color: '#606266' };
+        iconStyle = { marginRight: '8px', color: '#606266', fontSize: '16px', minWidth: '16px', display: 'flex', alignItems: 'center' };
+        levelLabel = ' L1';
       } else if (level === 2) {
         // L2第二层：橙色
         iconClass = node.expanded ? 'openFile' : 'closeFile';
-        iconStyle = { marginRight: '8px', color: '#FF9800' };
+        iconStyle = { marginRight: '8px', color: '#FF9800', fontSize: '16px', minWidth: '16px', display: 'flex', alignItems: 'center' };
+        levelLabel = ' L2';
       } else if (level === 3) {
         // L3第三层：红/橙色
         iconClass = node.expanded ? 'openFile' : 'closeFile';
-        iconStyle = { marginRight: '8px', color: '#FF6B6B' };
+        iconStyle = { marginRight: '8px', color: '#FF6B6B', fontSize: '16px', minWidth: '16px', display: 'flex', alignItems: 'center' };
+        levelLabel = ' L3';
+      } else if (level > 3) {
+        // 更深层级
+        iconClass = node.expanded ? 'openFile' : 'closeFile';
+        iconStyle = { marginRight: '8px', color: '#FF6B6B', fontSize: '16px', minWidth: '16px', display: 'flex', alignItems: 'center' };
+        levelLabel = ` L${level}`;
       }
 
       // 获取面包屑路径
       const breadcrumb = this.getBreadcrumbPath(data);
 
-      // 创建基础节点内容数组
       const nodeContent = [
         h('svg-icon', {
           class: 'tree-node-icon',
@@ -1044,7 +1038,8 @@ export default {
           },
           style: iconStyle
         }),
-        h('span', { class: 'node-label', attrs: { title: node.label } }, node.label)
+        h('span', { class: 'node-label', attrs: { title: node.label } }, node.label),
+        h('span', { class: 'node-level', style: { color: iconStyle.color, marginLeft: '4px', fontWeight: '500' } }, levelLabel)
       ];
 
       // 只对根节点添加setting图标，并确保它在最右侧
@@ -1066,13 +1061,25 @@ export default {
 
       const mainNode = h('span', {
         class: 'custom-tree-node',
-        style: { display: 'flex', alignItems: 'center', width: '100%' }
+        style: { 
+          display: 'flex', 
+          alignItems: 'center',
+          width: '100%',
+          paddingRight: '8px',
+          borderRadius: level > 1 ? '6px' : '0',
+          transition: 'background-color 0.2s'
+        }
       }, nodeContent);
 
       if (!isRoot && breadcrumb) {
         return h('div', {
           class: 'tree-node-wrapper',
-          style: { display: 'flex', flexDirection: 'column', width: '100%', minHeight: '56px', paddingBottom: '8px' }
+          style: { 
+            display: 'flex', 
+            flexDirection: 'column', 
+            width: '100%',
+            marginLeft: level === 2 ? '16px' : (level === 3 ? '32px' : '0')
+          }
         }, [
           mainNode,
           h('div', {
@@ -1080,42 +1087,24 @@ export default {
             style: {
               fontSize: '12px',
               color: '#909399',
-              marginTop: '6px',
-              marginLeft: '28px',
+              marginTop: '4px',
               lineHeight: '1.4'
             }
           }, breadcrumb)
         ]);
       }
 
-      return mainNode;
+      return h('div', {
+        class: 'tree-node-main',
+        style: {
+          marginLeft: level === 2 ? '16px' : (level === 3 ? '32px' : '0')
+        }
+      }, [mainNode]);
     },
 
-    getBreadcrumbPath(node) {
-      if (!node || !node.categoryName) return '';
-
-      // 获取从根到当前节点的完整路径
-      const pathArray = this.getNodePath(this.categoryList, node.id);
-      if (pathArray.length > 0) {
-        // 返回包含根节点在内的完整路径
-        return pathArray.join(' > ');
-      }
-      return '';
-    },
-
-    getNodePath(tree, nodeId, path = []) {
-      for (const node of tree) {
-        if (node.id === nodeId) {
-          return [...path, node.categoryName];
-        }
-        if (node.children && node.children.length > 0) {
-          const result = this.getNodePath(node.children, nodeId, [...path, node.categoryName]);
-          if (result.length > 0) {
-            return result;
-          }
-        }
-      }
-      return [];
+    //判断是否为根节点
+    isRootNode(data) {
+      return data.parentId === 0 || !data.parentId;
     },
 
     //  字典数据
@@ -1309,7 +1298,6 @@ export default {
         : (row.confirmProtectMethod ? row.confirmProtectMethod.split(',') : []);
       this.addOrEdit.show = true
       this.addOrEdit.title = '编辑'
-      this.addNodeName = row.owner
       this.tagsShow = false
       this.$set(this.addOrEditDataRuls, 'additional', row.attachDescribe)
       // 加载核心关键词并解析
@@ -1621,6 +1609,35 @@ export default {
         query: { row: row }
       });
     },
+    // Helper function to get the path from the root to a given node
+    getNodePath(tree, nodeId, path = []) {
+      if (!Array.isArray(tree)) {
+        return [];
+      }
+      for (const node of tree) {
+        const currentPath = [...path, node]; // Add current node to path
+        if (node.id === nodeId) {
+          return currentPath.map(n => n.categoryName); // Return the path of category names
+        }
+        if (node.children && node.children.length > 0) {
+          const foundPath = this.getNodePath(node.children, nodeId, currentPath);
+          if (foundPath.length > 0) {
+            return foundPath;
+          }
+        }
+      }
+      return []; // Node not found
+    },
+    getBreadcrumbPath(node) {
+      if (!node || !node.categoryName) return '';
+
+      // 获取从根到当前节点的完整路径
+      const pathArray = this.getNodePath(this.categoryList, node.id);
+      if (pathArray.length > 1) {
+        return pathArray.slice(1).join(' > ');
+      }
+      return '';
+    },
   },
 };
 </script>
@@ -1796,16 +1813,25 @@ export default {
   height: auto;
   min-height: 28px;
   line-height: 1.5;
-  padding: 4px 0 !important;
+  padding: 0 !important;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node.is-current > .el-tree-node__content {
+  background-color: #e8f4ff !important;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node__content:hover {
+  background-color: #eef4fc !important;
+  border-radius: 10px;
 }
 
 ::v-deep .el-tree-node {
   padding: 0;
 }
 
-/* Ensure tree node wrapper has proper spacing */
 .tree-node-wrapper {
-  min-height: 56px;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -1817,17 +1843,23 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 120px;
-  line-height: 28px;
+  line-height: 24px;
+}
+
+.node-level {
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .custom-tree-node {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   width: 100%;
+  border-radius: 6px;
+  transition: background-color 0.2s;
 }
 
-/* 新增面包屑导航样式 */
 .node-breadcrumb {
   font-size: 12px;
   color: #909399;
@@ -1835,93 +1867,7 @@ export default {
   line-height: 1.4;
 }
 
-/* 表格与按钮组容器 */
-.table-with-actions {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  justify-content: space-evenly;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
-/* 右侧竖排按钮组样式 */
-.vertical-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 20px;
-  font-size: 20px;
-}
-
-/* 按钮提示样式 */
-.vertical-actions .el-button {
-  position: relative;
-}
-
-.vertical-actions .el-button:hover::after {
-  content: attr(tooltip);
-  position: absolute;
-  right: 30px;
-  white-space: nowrap;
-  background: #333;
-  color: #fff;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-.table-container {
-  width: 100%;
-}
-
-.addRuler /deep/.el-dialog__header {
-  padding: 20px;
-  background-color: rgb(230, 242, 255);
-  font-weight: 600;
-}
-
-.addRuler /deep/ .el-input--medium,
-.el-select {
-  width: 100% !important;
-}
-
-/* 新增规则弹窗表单样式 */
-.rule-dialog-form {
-  margin: 20px;
-}
-
-.rule-dialog-form /deep/ .el-form-item {
-  margin-bottom: 25px;
-}
-
-/* 弹窗按钮样式调整 */
-.rule-dialog-form /deep/ .el-radio {
-  margin-right: 30px;
-}
-
-.dialog-footer {
-  padding: 15px 0;
-}
-
-.checkbox-two-per-line {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.checkbox-item {
-  margin-right: 0 !important;
-}
-
-/* 新增面包屑导航样式 */
-.node-breadcrumb {
-  font-size: 12px;
-  color: #909399;
-  margin-top: 6px;
-  line-height: 1.4;
+.tree-node-main {
+  margin-left: 0px; /* Default margin for L1 */
 }
 </style>
