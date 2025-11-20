@@ -315,7 +315,6 @@ export default {
                 this.dialogVisible = false
                 this.resultFormNodeName = ''
                 this.resetForm('resultForm')
-                this.getList()
                 this.updataLoading = false
             })
                 .catch(err => {
