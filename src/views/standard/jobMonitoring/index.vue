@@ -75,7 +75,8 @@
           </el-table-column>
           <el-table-column label="子类名称" align="left" width="140" prop="attachData" show-overflow-tooltip>
             <template slot-scope="scope">
-              <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />{{ scope.row.attachData }}
+              <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />{{ scope.row.attachData
+              }}
             </template>
           </el-table-column>
           <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
@@ -742,14 +743,14 @@ export default {
       } else {
         this[`${type}InputVisible`] = true;
       }
-      
+
       // 使用this.$set确保响应式更新
       if (type === 'tags') {
         this.$set(this, 'inputVisible', true);
       } else {
         this.$set(this, `${type}InputVisible`, true);
       }
-      
+
       this.$nextTick(_ => {
         // 获取正确的ref名称，特征标签使用特殊的ref名
         const refName = type === 'tags' ? 'saveTagInput' : `${type}SaveTagInput`;
@@ -777,14 +778,14 @@ export default {
       } else {
         inputValue = this[`${type}InputValue`];
       }
-      
+
       // 添加空值检查，避免调用trim()时出错
       const trimmedValue = inputValue ? inputValue.trim() : '';
-      
+
       if (trimmedValue) {
         this[type].push(trimmedValue);
       }
-      
+
       // 清空输入值并隐藏输入框，对特征标签进行特殊处理
       if (type === 'tags') {
         this.inputVisible = false;
@@ -1061,8 +1062,8 @@ export default {
 
       const mainNode = h('span', {
         class: 'custom-tree-node',
-        style: { 
-          display: 'flex', 
+        style: {
+          display: 'flex',
           alignItems: 'center',
           width: '100%',
           paddingRight: '8px',
@@ -1074,9 +1075,9 @@ export default {
       if (!isRoot && breadcrumb) {
         return h('div', {
           class: 'tree-node-wrapper',
-          style: { 
-            display: 'flex', 
-            flexDirection: 'column', 
+          style: {
+            display: 'flex',
+            flexDirection: 'column',
             width: '100%',
             marginLeft: level === 2 ? '16px' : (level === 3 ? '32px' : '0')
           }
@@ -1100,6 +1101,13 @@ export default {
           marginLeft: level === 2 ? '16px' : (level === 3 ? '32px' : '0')
         }
       }, [mainNode]);
+    },
+    
+    goToMenuEdit(data) {
+      this.$router.push({
+        path: '/editMenu',
+        query: { id: data.id }
+      });
     },
 
     //判断是否为根节点
@@ -1817,7 +1825,7 @@ export default {
   border-radius: 10px;
 }
 
-::v-deep .el-tree-node.is-current > .el-tree-node__content {
+::v-deep .el-tree-node.is-current>.el-tree-node__content {
   background-color: #e8f4ff !important;
   border-radius: 10px;
 }
@@ -1868,6 +1876,7 @@ export default {
 }
 
 .tree-node-main {
-  margin-left: 0px; /* Default margin for L1 */
+  margin-left: 0px;
+  /* Default margin for L1 */
 }
 </style>
