@@ -265,8 +265,9 @@ export default {
         };
     },
     created() {
-        this.getPiiList()
-    },
+    this.getPiiList()
+    // 页面加载时，当前查询条件不需要从任何地方恢复，因为这个页面主要展示单个数据详情
+  },
     methods: {
         getPiiList(key) {
             this.treeLoading = true
@@ -494,15 +495,12 @@ export default {
         },
         handleReturn() {
             // 返回点击事件
-            // 确保参数正确序列化，避免对象引用问题
-            const queryParams = this.$route.query.queryParams;
-            const drawerData = this.$route.query.drawerData;
-            
+            // 返回到viewResults时，直接返回即可，不需要携带查询参数
+            // 因为viewResults会从sessionStorage中恢复自己的查询条件
             this.$router.push({
                 path: '/viewResults',
                 query: {
-                    queryParams: typeof queryParams === 'string' ? queryParams : JSON.stringify(queryParams || {}),
-                    drawerData: typeof drawerData === 'string' ? drawerData : JSON.stringify(drawerData || {})
+                    drawerData: this.$route.query.drawerData
                 }
             });
         },

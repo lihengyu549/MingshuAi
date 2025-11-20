@@ -608,9 +608,22 @@ export default {
   created() {
     // 缓存路由参数中的drawerData，减少重复访问
     const drawerData = this.$route.query?.drawerData;
-    const queryParams = this.$route.query?.queryParams;
-    // 如果有查询参数，赋值给查询表单
-    if (queryParams) {
+    let queryParams = this.$route.query?.queryParams;
+    
+    // 页面加载时优先检查sessionStorage中是否有保存的查询条件（从fixResults返回的情况）
+    const savedParams = sessionStorage.getItem('viewResults_queryParams');
+    if (savedParams) {
+      try {
+        const parsedParams = JSON.parse(savedParams);
+        this.queryParams = { ...this.queryParams, ...parsedParams };
+        this.lastQueryParams = parsedParams;
+        // 清除保存的参数，避免重复使用
+        sessionStorage.removeItem('viewResults_queryParams');
+      } catch (e) {
+        console.error('解析保存的查询条件失败:', e);
+      }
+    } else if (queryParams) {
+      // 如果没有sessionStorage中的参数，再检查路由参数
       // 确保queryParams是对象类型
       const params = typeof queryParams === 'string' ? JSON.parse(queryParams) : queryParams;
       this.queryParams = { ...this.queryParams, ...params };
@@ -797,11 +810,12 @@ export default {
         })
     },
     handleBack() {
+      // 返回到hierarchicalTask时，根据需求，不需要保留viewResults的查询条件
+      // 直接返回，不携带查询参数
       this.$router.push({
         path: '/hierarchicalTask',
         query: {
-          drawerData: this.$route.query.drawerData,
-          queryParams: this.lastQueryParams
+          drawerData: this.$route.query.drawerData
         }
       })
     },
@@ -991,6 +1005,10 @@ export default {
     },
     resultExdit(row) {
       console.log('row', row);
+      // 保存当前页面的查询条件到sessionStorage
+      sessionStorage.setItem('viewResults_queryParams', JSON.stringify(this.queryParams));
+      // 记录跳转来源为viewResults，用于fixResults页面返回时判断
+      sessionStorage.setItem('prevPage', 'viewResults');
       this.$router.push({
         path: '/fixResults',
         query: { row: row, categoryList: this.categoryList, queryParams: this.queryParams, drawerData: this.$route.query.drawerData }

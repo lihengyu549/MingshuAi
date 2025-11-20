@@ -650,11 +650,20 @@ export default {
 
   created() {
     this.gettreeOptionsList()
-    this.getList()
-    this.getScanCompleteDataFn()
-    if (this.$route.query.queryParams) {
+    // 页面加载时优先检查sessionStorage中是否有保存的查询条件（从viewResults返回的情况）
+    const savedParams = sessionStorage.getItem('hierarchicalTask_queryParams');
+    if (savedParams) {
+      try {
+        this.queryParams = JSON.parse(savedParams);
+      } catch (e) {
+        console.error('解析保存的查询条件失败:', e);
+      }
+    } else if (this.$route.query.queryParams) {
+      // 如果没有sessionStorage中的参数，再检查路由参数
       this.queryParams = this.$route.query.queryParams
     }
+    this.getList()
+    this.getScanCompleteDataFn()
   },
   mounted() {
   },
@@ -1076,6 +1085,10 @@ export default {
       //   this.$message({ message: '当前状态为运行中，无法查看', type: 'warning' })
       //   return
       // }
+      // 保存当前页面的查询条件到sessionStorage
+      sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(this.queryParams));
+      // 记录跳转来源为hierarchicalTask，用于viewResults页面返回时判断
+      sessionStorage.setItem('prevPage', 'hierarchicalTask');
       this.$router.push({
         path: '/viewResults',
         query: { drawerData: row, queryParams: this.queryParams }
