@@ -123,8 +123,10 @@
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="字段名" align="left" prop="fieldName" width="150" show-overflow-tooltip>
         <template slot-scope="scope">
-          <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;"><i class="el-icon-edit"></i>{{ scope.row.fieldName
-          }}</span>
+          <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
+            <svg-icon icon-class="text" style="font-size: 14px; margin-right: 5px;" />
+            {{ scope.row.fieldName
+            }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip /> -->
@@ -136,12 +138,14 @@
           <template slot-scope="scope">
             <!-- 分类不再展示，直接显示原始值 -->
             <template v-if="item.label == '安全分级'">
-              <el-tag :style="{ backgroundColor: getRiskColor(Number(scope.row.securityLevel)),color:'#fff' }">
+              <el-tag :style="{ backgroundColor: getRiskColor(Number(scope.row.securityLevel)), color: '#fff' }">
                 {{ scope.row.securityLevelName }}
               </el-tag>
             </template>
             <template v-else-if="item.label == '分类'">
-              <el-tag :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '噪音数据' ? 'info' : 'primary'">{{ scope.row.categoryName }}</el-tag>
+              <el-tag
+                :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '噪音数据' ? 'info' : 'primary'">{{
+                  scope.row.categoryName }}</el-tag>
             </template>
             <template v-else>
               {{ scope.row[item.prop] }}
@@ -647,17 +651,17 @@ export default {
 
   },
   methods: {
-        // 获取风险等级颜色
-        getRiskColor(level) {
-            const colors = {
-                5: '#F56C6C', // 深红色
-                4: '#FF9800', // 橙红色
-                3: '#FB8C00', // 橙色
-                2: '#FFC107', // 黄色
-                1: '#4CAF50'  // 绿色
-            };
-            return colors[level] || '#9E9E9E';
-        },
+    // 获取风险等级颜色
+    getRiskColor(level) {
+      const colors = {
+        5: '#F56C6C', // 深红色
+        4: '#FF9800', // 橙红色
+        3: '#FB8C00', // 橙色
+        2: '#FFC107', // 黄色
+        1: '#4CAF50'  // 绿色
+      };
+      return colors[level] || '#9E9E9E';
+    },
     // 切换筛选条件的显示/隐藏
     toggleFilters() {
       this.showMoreFilters = !this.showMoreFilters;

@@ -56,7 +56,11 @@
         <el-empty description="暂无数据"></el-empty>
       </template>
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="数据源名称" align="left" width="140" prop="sourceName" show-overflow-tooltip />
+      <el-table-column label="数据源名称" align="left" width="140" prop="sourceName" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span> <svg-icon :icon-class="databaseTypeIcon(databaseTypeMsg(scope.row.databaseType))" style="font-size: 14px; margin-right: 5px;" /> {{ scope.row.sourceName }}</span>
+        </template>
+      </el-table-column>
 
       <el-table-column label="主机信息" align="center" prop="targetIpPort" show-overflow-tooltip>
         <template slot-scope="scope">
@@ -66,7 +70,7 @@
 
       <el-table-column label="数据源类型" align="center" prop="databaseType" show-overflow-tooltip>
         <template slot-scope="scope">
-          <span> <svg-icon :icon-class="databaseTypeIcon(databaseTypeMsg(scope.row.databaseType))" style="font-size: 16px; margin-right: 5px;" /> {{ databaseTypeMsg(scope.row.databaseType) }}</span>
+          <span>{{ databaseTypeMsg(scope.row.databaseType) }}</span>
         </template>
       </el-table-column>
       <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip  />
@@ -606,13 +610,13 @@ export default {
     },
     databaseTypeIcon(val){
       if (val == 'Excel') {
-        return 'excel'
+        return 'excel-o'
       }else if (val == 'API') {
-        return 'api'
+        return 'api-o'
       }else if (val == 'MYSQL') {
-        return 'mysql'
+        return 'mysql-o'
       }else {
-        return 'unknow'
+        return 'unknow-o'
       }
       
     },
