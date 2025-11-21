@@ -1002,21 +1002,22 @@ export default {
       // 获取节点层级（1:根节点，2-6:对应不同层级）
       const level = node.level;
 
-      // 使用sensitiveData中的颜色方案
+      // 使用sensitiveData中的颜色方案（根节点不算等级，从二级开始算L1-L5）
       const levelColors = {
         1: '#4CAF50',  // 绿色 - L1
         2: '#FFC107',  // 黄色 - L2
         3: '#FB8C00',  // 橙色 - L3
         4: '#FF9800',  // 橙红色 - L4
-        5: '#F56C6C',  // 深红色 - L5
-        6: '#D32F2F'   // 更深红色 - L6（扩展）
+        5: '#F56C6C'   // 深红色 - L5
       };
 
       let iconClass = '';
       let iconStyle = {};
-      let levelLabel = ` L${level}`;
-      // 获取当前层级的颜色
-      const currentColor = levelColors[level] || levelColors[6];
+      // 计算显示的等级：非根节点从L1开始（level-1），根节点不显示等级
+      const displayLevel = isRoot ? 0 : level - 1;
+      let levelLabel = displayLevel > 0 ? ` L${displayLevel}` : '';
+      // 获取当前层级的颜色：根节点使用默认颜色，非根节点从L1开始计算
+      const currentColor = isRoot ? '#4CAF50' : (levelColors[displayLevel] || levelColors[5]);
 
       if (isRoot) {
         // L1根节点
@@ -1034,8 +1035,8 @@ export default {
       // 右侧元素（设置图标）
       const rightElements = [];
       
-      // 对所有层级添加setting图标
-      if (this.dataSource != '内置' && level == 1) {
+      // 对所有层级添加setting图标（根节点）
+      if (this.dataSource != '内置' && isRoot) {
         rightElements.push(
           h('svg-icon', {
             attrs: { iconClass: 'setting' },
