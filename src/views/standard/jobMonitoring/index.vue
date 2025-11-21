@@ -11,7 +11,7 @@
         </div>
         <div class="head-container" v-loading="treeLoading">
           <el-input v-model="filterName" placeholder="搜索树节点..." clearable size="mini" style="margin-bottom: 20px;" />
-          <el-tree :indent="8" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
+          <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
             :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
             node-key="id" highlight-current @node-click="handleNodeClick" :render-content="renderContent">
           </el-tree>
@@ -999,57 +999,47 @@ export default {
     renderContent(h, { node, data }) {
       // 判断是否为根节点
       const isRoot = this.isRootNode(data);
-      // 获取节点层级（1:根节点，2:第二层，3:第三层）
+      // 获取节点层级（1:根节点，2-6:对应不同层级）
       const level = node.level;
+
+      // 使用sensitiveData中的颜色方案
+      const levelColors = {
+        1: '#4CAF50',  // 绿色 - L1
+        2: '#FFC107',  // 黄色 - L2
+        3: '#FB8C00',  // 橙色 - L3
+        4: '#FF9800',  // 橙红色 - L4
+        5: '#F56C6C',  // 深红色 - L5
+        6: '#D32F2F'   // 更深红色 - L6（扩展）
+      };
 
       let iconClass = '';
       let iconStyle = {};
-      let levelLabel = '';
+      let levelLabel = ` L${level}`;
+      // 获取当前层级的颜色
+      const currentColor = levelColors[level] || levelColors[6];
 
       if (isRoot) {
-        // L1根节点：灰蓝色
+        // L1根节点
         iconClass = 'dunpai-2';
-        iconStyle = { marginRight: '8px', color: '#606266', fontSize: '16px', minWidth: '16px', display: 'flex', alignItems: 'center' };
-        levelLabel = ' L1';
-      } else if (level === 2) {
-        // L2第二层：橙色
+        iconStyle = { color: currentColor, fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+      } else {
+        // 二级及以下节点
         iconClass = node.expanded ? 'openFile' : 'closeFile';
-        iconStyle = { marginRight: '8px', color: '#FF9800', fontSize: '16px', minWidth: '16px', display: 'flex', alignItems: 'center' };
-        levelLabel = ' L2';
-      } else if (level === 3) {
-        // L3第三层：红/橙色
-        iconClass = node.expanded ? 'openFile' : 'closeFile';
-        iconStyle = { marginRight: '8px', color: '#FF6B6B', fontSize: '16px', minWidth: '16px', display: 'flex', alignItems: 'center' };
-        levelLabel = ' L3';
-      } else if (level > 3) {
-        // 更深层级
-        iconClass = node.expanded ? 'openFile' : 'closeFile';
-        iconStyle = { marginRight: '8px', color: '#FF6B6B', fontSize: '16px', minWidth: '16px', display: 'flex', alignItems: 'center' };
-        levelLabel = ` L${level}`;
+        iconStyle = { color: currentColor, fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
       }
 
       // 获取面包屑路径
       const breadcrumb = this.getBreadcrumbPath(data);
 
-      const nodeContent = [
-        h('svg-icon', {
-          class: 'tree-node-icon',
-          attrs: {
-            iconClass: iconClass
-          },
-          style: iconStyle
-        }),
-        h('span', { class: 'node-label', attrs: { title: node.label } }, node.label),
-        h('span', { class: 'node-level', style: { color: iconStyle.color, marginLeft: '4px', fontWeight: '500' } }, levelLabel)
-      ];
-
-      // 只对根节点添加setting图标，并确保它在最右侧
-      if (isRoot && this.dataSource != '内置') {
-        nodeContent.push(
-          h('span', { style: { flexGrow: 1 } }), // 填充元素，将setting图标推到最右侧
+      // 右侧元素（设置图标）
+      const rightElements = [];
+      
+      // 对所有层级添加setting图标
+      if (this.dataSource != '内置' && level == 1) {
+        rightElements.push(
           h('svg-icon', {
             attrs: { iconClass: 'setting' },
-            style: { marginLeft: '8px', cursor: 'pointer' },
+            style: { cursor: 'pointer' },
             on: {
               click: (e) => {
                 e.stopPropagation();
@@ -1060,47 +1050,55 @@ export default {
         );
       }
 
+      const nodeContent = [
+        h('span', { class: 'node-label', attrs: { title: node.label } }, node.label)
+      ];
+      
+      // 非根节点才显示等级标签
+      if (!isRoot) {
+        nodeContent.push(
+          h('span', { 
+            class: 'node-level', 
+            style: { 
+              color: currentColor, 
+              fontWeight: '500',
+              marginLeft: '8px'
+            } 
+          }, levelLabel)
+        );
+      }
+      
+      // 添加填充元素和右侧元素
+      nodeContent.push(
+        h('span', { style: { flexGrow: 1 } }), // 填充元素，将右侧元素推到最右侧
+        ...rightElements
+      );
+
+      // 所有节点图标都放在前面
+      nodeContent.unshift(
+        h('svg-icon', {
+          class: 'tree-node-icon',
+          attrs: {
+            iconClass: iconClass
+          },
+          style: { ...iconStyle, marginRight: '8px' }
+        })
+      );
+
       const mainNode = h('span', {
         class: 'custom-tree-node',
         style: {
           display: 'flex',
           alignItems: 'center',
           width: '100%',
-          paddingRight: '8px',
+          paddingTop: '10px',
+          paddingBottom: '10px',
           borderRadius: level > 1 ? '6px' : '0',
           transition: 'background-color 0.2s'
         }
       }, nodeContent);
 
-      if (!isRoot && breadcrumb) {
-        return h('div', {
-          class: 'tree-node-wrapper',
-          style: {
-            display: 'flex',
-            flexDirection: 'column',
-            width: '100%',
-            marginLeft: level === 2 ? '16px' : (level === 3 ? '32px' : '0')
-          }
-        }, [
-          mainNode,
-          h('div', {
-            class: 'node-breadcrumb',
-            style: {
-              fontSize: '12px',
-              color: '#909399',
-              marginTop: '4px',
-              lineHeight: '1.4'
-            }
-          }, breadcrumb)
-        ]);
-      }
-
-      return h('div', {
-        class: 'tree-node-main',
-        style: {
-          marginLeft: level === 2 ? '16px' : (level === 3 ? '32px' : '0')
-        }
-      }, [mainNode]);
+      return mainNode;
     },
     
     goToMenuEdit(data) {
@@ -1546,8 +1544,8 @@ export default {
           for (let item of tempList) {
             item.label = item.categoryName
           }
-          this.categoryList = this.handleTree(tempList, "id")
-          this.categoryListEdit = this.handleTree(tempList, "id")
+          this.categoryList = this.handleTree(tempList, "id", "parentId")
+          this.categoryListEdit = this.handleTree(tempList, "id", "parentId")
         }
         this.Loading = false
         this.treeLoading = false
@@ -1821,7 +1819,6 @@ export default {
   height: auto;
   min-height: 28px;
   line-height: 1.5;
-  padding: 0 !important;
   border-radius: 10px;
 }
 
