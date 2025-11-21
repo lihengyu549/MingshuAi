@@ -114,7 +114,7 @@
           <el-table-column label="操作" align="center" width="180">
             <template slot-scope="scope">
               <el-button type="text" size="medium"
-                :disabled="(scope.row.dataSource === '内置' || scope.row.dataOwner !== $store.state.user.name) && !$store.state.user.roles.includes('ROLE_ADMIN')"
+                :disabled="(scope.row.dataSource === '内置' || scope.row.dataOwner !== $store.state.user.name) && !$store.state.user.roles.includes('admin')"
                 @click="editFn(scope.row)">编辑</el-button>
               <el-button type="text" size="medium" @click="lookFn(scope.row)">查看</el-button>
               <el-button type="text" size="medium" @click="dataFn(scope.row)">数据摸底</el-button>
