@@ -936,9 +936,8 @@ export default {
         this.$message.warning('请先选择需要修改的记录')
         return
       }
-      
       // 获取选中的ID数组
-      const selectedIds = selection.map(row => row.tableFieldId)
+      const selectedIds = selection.map(row => row.id)
       // 设置到表单中
       this.resultForm.selectedIds = selectedIds
       
