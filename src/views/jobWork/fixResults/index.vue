@@ -17,18 +17,18 @@
                 <el-card class="box-card" shadow="never" style="border: none;">
                     <div class="info-item">
                         <label class="info-label">字段注释：</label>
-                        <div class="info-content">{{ row.fieldRemark }}</div>
+                        <div class="info-content">{{ row.fieldRemark || '--' }}</div>
                     </div>
                     <div class="info-item">
                         <label class="info-label">AI字段注释：</label>
-                        <div class="info-content">{{ row.craftRemark }}</div>
+                        <div class="info-content">{{ row.craftRemark || '--' }}</div>
                     </div>
                     <div class="info-item">
                         <label class="info-label">字段主题词：</label>
                         <div class="info-content">
                             <el-tag v-for="tag in JSON.parse(row.fieldTopic)" :key="tag"
                                 style="margin-right: 5px; border-radius: 8px;">{{ tag ||
-                                    '无' }}</el-tag>
+                                    '--' }}</el-tag>
                         </div>
                     </div>
                     <div class="info-item">
@@ -40,19 +40,19 @@
                     <div class="info-item">
                         <label class="info-label">表注释：</label>
                         <div class="info-content">
-                            {{ row.tableRemark }}
+                            {{ row.tableRemark || '--' }}
                         </div>
                     </div>
                     <div class="info-item">
                         <label class="info-label">AI表注释：</label>
-                        <div class="info-content">{{ row.tableCraftRemark }}</div>
+                        <div class="info-content">{{ row.tableCraftRemark || '--' }}</div>
                     </div>
                     <div class="info-item">
                         <label class="info-label">表主题词：</label>
                         <div class="info-content">
                             <el-tag type="success" v-for="tag in JSON.parse(row.tableTopic)" :key="tag"
                                 style="margin-right: 5px; border-radius: 8px;">{{ tag ||
-                                    '无' }}</el-tag>
+                                    '--' }}</el-tag>
                         </div>
                     </div>
                     <!-- <div class="info-item">
@@ -73,6 +73,14 @@
                                 </div>
                                 <el-button size="mini" type="text">查看</el-button>
                             </el-tooltip>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">样本特征：</label>
+                        <div class="info-content">
+                            <el-tag type="info" style="margin-right: 5px; border-radius: 8px;">{{ row.regularExpression
+                                ||
+                                '--' }}</el-tag>
                         </div>
                     </div>
                 </el-card>
@@ -132,12 +140,12 @@
                     <div class="info-container" style="margin-top: 20px;">
                         <div class="info-item">
                             <label class="info-label">分类结果：</label>
-                            <div class="info-content">{{ row.categoryName }}</div>
+                            <div class="info-content">{{ row.categoryName || '--' }}</div>
                         </div>
                         <div class="info-item">
                             <label class="info-label">定级结果：</label>
                             <div class="info-content">
-                                <el-tag type="warning">{{ row.securityLevelName }}</el-tag>
+                                <el-tag type="warning">{{ row.securityLevelName || '--' }}</el-tag>
                             </div>
                         </div>
                         <div class="info-item">
@@ -145,6 +153,10 @@
                             <div class="info-content">
                                 <el-progress :percentage="Number(row.confidenceScore) * 100"></el-progress>
                             </div>
+                        </div>
+                        <div class="info-item">
+                            <label class="info-label">个人信息识别：</label>
+                            <div class="info-content">{{ row.piiDetectionName || '--' }}</div>
                         </div>
                         <div class="info-item">
                             <el-button type="primary" plain @click="handleModifyResult">修改结果</el-button>
@@ -155,24 +167,26 @@
                 <el-card class="box-card" shadow="never" style="border: none;">
                     <Title title="AI建议分类" iconClass="suggest"></Title>
                     <template v-if="row.suggestClassifyJson">
-                    <el-card
-                        style="padding: 20px; line-height: 1.8; border-radius: 10px; background-color: rgb(249 249 250);"
-                        shadow="never">
-                        <h4 style="margin: 0 0 15px 0; font-size: 14px; font-weight: bold;"><svg-icon icon-class="dot"
-                                style="margin-right: 5px;" />{{ row.suggestClassifyJson.categoryName }}</h4>
-                        <p
-                            style="margin: 0 0 15px 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
-                            {{ row.suggestClassifyJson.categoryDescription }}
-                        </p>
-                        <h5 style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold;"><svg-icon
-                                icon-class="star-hollow" style="margin-right: 5px;" />推荐理由:</h5>
-                        <p style="margin: 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
-                            {{ row.suggestClassifyJson.createReason }}
-                        </p>
-                    </el-card>
+                        <el-card
+                            style="padding: 20px; line-height: 1.8; border-radius: 10px; background-color: rgb(249 249 250);"
+                            shadow="never">
+                            <h4 style="margin: 0 0 15px 0; font-size: 14px; font-weight: bold;"><svg-icon
+                                    icon-class="dot" style="margin-right: 5px;" />{{
+                                        row.suggestClassifyJson.categoryName }}</h4>
+                            <p
+                                style="margin: 0 0 15px 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
+                                {{ row.suggestClassifyJson.categoryDescription }}
+                            </p>
+                            <h5 style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold;"><svg-icon
+                                    icon-class="star-hollow" style="margin-right: 5px;" />推荐理由:</h5>
+                            <p style="margin: 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
+                                {{ row.suggestClassifyJson.createReason }}
+                            </p>
+                        </el-card>
                     </template>
                     <template v-else>
-                        <div style="text-align: center; padding: 40px 20px; background-color: rgb(249 249 250); border-radius: 10px;">
+                        <div
+                            style="text-align: center; padding: 40px 20px; background-color: rgb(249 249 250); border-radius: 10px;">
                             <div style="margin-bottom: 15px; color: #c0c4cc;">
                                 <svg-icon icon-class="info" style="font-size: 32px;" />
                             </div>
@@ -265,9 +279,9 @@ export default {
         };
     },
     created() {
-    this.getPiiList()
-    // 页面加载时，当前查询条件不需要从任何地方恢复，因为这个页面主要展示单个数据详情
-  },
+        this.getPiiList()
+        // 页面加载时，当前查询条件不需要从任何地方恢复，因为这个页面主要展示单个数据详情
+    },
     methods: {
         getPiiList(key) {
             this.treeLoading = true
