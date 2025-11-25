@@ -298,7 +298,7 @@ export default {
             console.log('resultForm', this.row);
             let params = {
                 reasoningProcess: this.resultForm.reasoningProcess,
-                tableFieldId: this.row.id,
+                tableFieldIds: [this.row.id],
                 categoryId: this.resultForm.categoryId,
                 securityLevel: this.resultForm.securityLevel,
                 auditRecommendation: this.resultForm.auditRecommendation,

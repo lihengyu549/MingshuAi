@@ -90,18 +90,36 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-aim" size="medium" @click="handleAdd">确认勾选项</el-button>
+        <el-dropdown trigger="click">
+          <el-button type="primary" plain size="medium">确认结果<i
+              class="el-icon-arrow-down el-icon--right"></i></el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item @click.native="handleAdd">
+              <i class="el-icon-aim"></i> 确认勾选项
+            </el-dropdown-item>
+            <el-dropdown-item @click.native="handleEcelFn">
+              <i class="el-icon-more"></i> 确认过滤项
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-more" size="medium" @click="handleEcelFn">确认过滤项</el-button>
+        <el-dropdown trigger="click">
+          <el-button type="primary" plain size="medium">取消操作<i
+              class="el-icon-arrow-down el-icon--right"></i></el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item @click.native="handleAddFnClose">
+              <i class="el-icon-refresh-left"></i> 取消勾选项
+            </el-dropdown-item>
+            <el-dropdown-item @click.native="handleEcelFnClose">
+              <i class="el-icon-magic-stick"></i> 取消过滤项
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-refresh-left" size="medium"
-          @click="handleAddFnClose">取消勾选项</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-magic-stick" size="medium"
-          @click="handleEcelFnClose">取消过滤项</el-button>
+        <el-button type="primary" plain size="medium" @click="handleBatchFix"
+          style="float: inline-end;">批量修改</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
       <el-button type="primary" plain size="medium" @click="handleBack" style="float: inline-end;">返回</el-button>
@@ -178,8 +196,8 @@
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
-    <el-dialog title="结果修改" v-loading="updataLoading" :visible.sync="deleteVisible" width="650px"
-      style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
+    <el-dialog title="结果修改" class="addMsg" :visible.sync="deleteVisible" width="700px" append-to-body
+      :close-on-click-modal="false">
       <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
         <el-form-item label="分类" class="addSelectClass">
           <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable :filter-method="handleSearch">
@@ -197,20 +215,20 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="推理过程" prop="reasoningProcess">
+        <!-- <el-form-item label="推理过程" prop="reasoningProcess">
           <el-input v-model="resultForm.reasoningProcess" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             maxlength="500" placeholder="请输入推理过程"></el-input>
-        </el-form-item>
+        </el-form-item> -->
         <!-- <el-form-item label="审核建议" prop="auditRecommendation">
           <el-input v-model="resultForm.auditRecommendation" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             maxlength="500" placeholder="请输入审核建议"></el-input>
         </el-form-item> -->
-        <el-form-item label="置信度" prop="confidenceLevel">
+        <!-- <el-form-item label="置信度" prop="confidenceLevel">
           <el-select v-model="resultForm.confidenceLevel" clearable>
             <el-option v-for="item in confidenceLevelList" :key="item.id" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="个人信息识别" class="addSelectClass" prop="piiDetection">
           <el-select ref="piiSelectRef" v-model="piiNodeName">
             <el-option style="height: 100%; padding: 0" value="">
@@ -220,10 +238,10 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="识别方式" prop="detectionProcess">
+        <!-- <el-form-item label="识别方式" prop="detectionProcess">
           <el-input v-model="resultForm.detectionProcess" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             maxlength="500" placeholder="请输入识别方式"></el-input>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <template #footer>
         <span>
@@ -304,6 +322,7 @@ export default {
         id: '',
         piiDetection: '',
         classificationLogic: '',
+        selectedIds: null,
       },
       tableData: [],
       addOptions: [
@@ -609,7 +628,7 @@ export default {
     // 缓存路由参数中的drawerData，减少重复访问
     const drawerData = this.$route.query?.drawerData;
     let queryParams = this.$route.query?.queryParams;
-    
+
     // 页面加载时优先检查sessionStorage中是否有保存的查询条件（从fixResults返回的情况）
     const savedParams = sessionStorage.getItem('viewResults_queryParams');
     if (savedParams) {
@@ -909,11 +928,38 @@ export default {
       this.inputSearch()
       this.getListTableByProject()
     },
+    handleBatchFix() {
+      // 使用表格ref直接获取选中的数据
+      const selection = this.$refs.tableRef.selection
+      // 检查是否有选中的数据
+      if (!selection || selection.length === 0) {
+        this.$message.warning('请先选择需要修改的记录')
+        return
+      }
+      
+      // 获取选中的ID数组
+      const selectedIds = selection.map(row => row.tableFieldId)
+      // 设置到表单中
+      this.resultForm.selectedIds = selectedIds
+      
+      // 为分类下拉框设置默认选中第一项
+      if (this.categoryList && this.categoryList.length > 0) {
+        this.resultFormNodeName = this.categoryList[0].categoryName;
+      }
+      
+      // 为安全分级下拉框设置默认选中第一项
+      if (this.dict && this.dict.type && this.dict.type.sys_risk_level && this.dict.type.sys_risk_level.length > 0) {
+        this.resultForm.securityLevel = this.dict.type.sys_risk_level[0].value;
+      }
+      
+      this.deleteVisible = true
+    },
     updataResultFn() {
       this.updataLoading = true
       let params = {
         reasoningProcess: this.resultForm.reasoningProcess,
-        tableFieldId: this.resultForm.tableFieldId,
+        // 传递数组格式的tableFieldIds
+        tableFieldIds: this.resultForm.selectedIds || [this.resultForm.tableFieldId],
         categoryId: this.resultForm.categoryId,
         securityLevel: this.resultForm.securityLevel,
         auditRecommendation: this.resultForm.auditRecommendation,
@@ -931,6 +977,7 @@ export default {
         this.deleteVisible = false
         this.resultFormNodeName = ''
         this.resetForm('resultForm')
+        this.resultForm.selectedIds = null
         this.getList()
         this.updataLoading = false
       })
@@ -942,6 +989,7 @@ export default {
       this.deleteVisible = false
       this.resultFormNodeName = ''
       this.resetForm('resultForm')
+      this.resultForm.selectedIds = null
     },
     messsucc(res, flag) {
       this.$message.success(`${res.msg},${flag}${res.data}个`)
@@ -1019,7 +1067,17 @@ export default {
       this.resultForm.tableFieldId = row.id
       this.piiNodeName = row.piiDetectionName
       this.resultForm.confidenceLevel = row.confidenceLevel == '高' ? '2' : '1'
-      this.resultFormNodeName = row.categoryName
+      
+      // 为分类下拉框设置默认选中第一项（如果没有已有值）
+      if (!this.resultFormNodeName && this.categoryList && this.categoryList.length > 0) {
+        this.resultFormNodeName = this.categoryList[0].id;
+      }
+      
+      // 为安全分级下拉框设置默认选中第一项（如果没有已有值）
+      if (!this.resultForm.securityLevel && this.dict && this.dict.type && this.dict.type.sys_risk_level && this.dict.type.sys_risk_level.length > 0) {
+        this.resultForm.securityLevel = this.dict.type.sys_risk_level[0].value;
+      }
+      
       this.deleteVisible = true
     },
     addHandleNodeCheck(node, checkData) {
@@ -1270,8 +1328,51 @@ export default {
 }
 </style>
 <style scoped>
-.addMsg /deep/ .el-input--medium {
-  width: 237px;
+.addMsg /deep/.el-dialog {
+  border-radius: 10px;
+}
+
+.addMsg /deep/.el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.addMsg /deep/.el-dialog__title {
+  font-weight: bold;
+}
+
+.addMsg /deep/.el-form-item__content {
+  padding-right: 15px;
+}
+
+.addMsg /deep/.el-select--medium,
+.addMsg /deep/.el-select--small {
+  width: 100%;
+}
+
+.addMsg /deep/.el-dialog__body {
+  padding: 30px;
+}
+
+.addMsg /deep/ .el-dialog:not(.is-fullscreen) {
+  margin-top: 10% !important;
+}
+
+.addMsg /deep/ .el-dialog__body {
+  padding-bottom: 0;
+
+}
+
+.addMsg /deep/ .el-dialog__footer {
+  padding-bottom: 32px;
+
+}
+
+.addMsg /deep/ .el-form-item__label {
+  text-align: left;
+}
+
+.addMsg /deep/ .el-select--medium {
+  width: 100%;
 }
 
 .tableBox {
