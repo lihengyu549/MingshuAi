@@ -718,8 +718,8 @@ Authorization:Bearer ${this.Token}`
               }
               
               // 修复错误引用：将item改为ele
-              if (newEle.protectMethodName) {
-                newEle.protectMethodNameList = newEle.protectMethodName.split(',');
+              if (newEle.protectMethod) {
+                newEle.protectMethodNameList = newEle.protectMethod.split(',');
               }
               
               return newEle;
