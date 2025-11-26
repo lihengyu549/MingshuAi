@@ -48,6 +48,9 @@
         <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除任务</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
+      <el-col :span="1.5" style="float: inline-end;">
+        <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="handleQuery">刷新</el-button>
+      </el-col>
     </el-row>
     <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
@@ -57,7 +60,8 @@
       <el-table-column type="selection" width="60" align="center" :selectable="selectableFn" />
       <el-table-column label="任务名称" width="140" align="left" prop="tasksName" show-overflow-tooltip>
         <template slot-scope="scope">
-          <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon icon-class="jobs" style="font-size: 16px; margin-right: 5px;" />{{ scope.row.tasksName }}</span>
+          <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon icon-class="jobs"
+              style="font-size: 16px; margin-right: 5px;" />{{ scope.row.tasksName }}</span>
         </template>
       </el-table-column>
       <el-table-column label="数据源" width="140" align="left" prop="sourceName" show-overflow-tooltip>
