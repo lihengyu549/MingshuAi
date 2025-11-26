@@ -439,6 +439,7 @@ export default {
         },
         handleNext(lastOrNext) {
             // 上||下一个点击事件
+            // 参数说明：0-上一个，1-下一个，2-当前
             this.loading = true;
             const queryParams = this.$route.query.queryParams || {};
             const params = {
@@ -448,10 +449,12 @@ export default {
                 id: this.row?.id || '',
                 lastOrNext: lastOrNext || '0'
             };
+            
             getProtectTableFieldById(params).then(res => {
                 // 检查res对象是否存在
                 if (!res) {
                     console.error('API返回数据格式异常');
+                    this.loading = false;
                     return;
                 }
 
@@ -460,23 +463,54 @@ export default {
                     this.row = res.data;
                     this.$route.query.queryParams.pageNum = res.data.pageNum;
                     this.$route.query.queryParams.pageSize = res.data.pageSize;
-                    this.loading = false;
+                    
                     // 安全地更新reasoningProcess
                     if (res.data.reasoningProcess !== undefined) {
                         this.resultForm.reasoningProcess = res.data.reasoningProcess;
                     }
+                    
+                    // 根据操作类型显示不同的消息
+                    if (lastOrNext === '0') {
+                        this.$message({
+                            message: '已切换到上一个结果',
+                            type: 'success'
+                        });
+                    } else if (lastOrNext === '1') {
+                        this.$message({
+                            message: '已切换到下一个结果',
+                            type: 'success'
+                        });
+                    } else if (lastOrNext === '2') {
+                        this.$message({
+                            message: '已刷新当前结果',
+                            type: 'success'
+                        });
+                    }
                 } else {
-                    // 使用模板字符串简化消息逻辑
-                    const message = lastOrNext === '1' ? '没有下一个结果 !' : '没有上一个结果 !';
+                    // 根据操作类型显示不同的错误消息
+                    let message;
+                    switch (lastOrNext) {
+                        case '0':
+                            message = '没有上一个结果！';
+                            break;
+                        case '1':
+                            message = '没有下一个结果！';
+                            break;
+                        case '2':
+                            message = '无法获取当前结果数据！';
+                            break;
+                        default:
+                            message = '操作失败，请重试！';
+                    }
                     this.$message({
                         message: message,
                         type: 'warning'
                     });
                 }
                 this.loading = false;
-            }).catch(error => {
+            }).catch(() => {
                 this.loading = false;
-                // 添加错误处理
+                // 统一错误处理
                 this.$message({
                     message: '数据加载失败，请稍后重试',
                     type: 'error'
