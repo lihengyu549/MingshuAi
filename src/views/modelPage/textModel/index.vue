@@ -453,14 +453,17 @@ export default {
     gap: 8px;
 }
 
+/deep/.el-switch__label * {
+    line-height: 2;
+    font-size: 12px;
+}
 
 /deep/.inner-text-switch .el-switch__label.el-switch__label--left {
     position: absolute;
     left: 8px;
-    top: -3px;
+    top: -2px;
     width: 100%;
     height: 100%;
-    font-size: 14px;
     color: #bdb5b5;
     text-align: center;
     z-index: 1;
@@ -474,10 +477,9 @@ export default {
 /deep/.inner-text-switch .el-switch__label.el-switch__label--right {
     position: absolute;
     left: -18px;
-    top: -3px;
+    top: -2px;
     width: 100%;
     height: 100%;
-    font-size: 14px;
     color: #fff;
     text-align: center;
     z-index: 1;
