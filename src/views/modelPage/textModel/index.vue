@@ -357,6 +357,7 @@ export default {
 .model-config-page {
     padding: 40px;
     background-color: #fff;
+    width: 100%;
     height: 100vh;
     box-shadow: none;
 }
