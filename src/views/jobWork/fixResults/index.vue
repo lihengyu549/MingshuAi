@@ -322,6 +322,7 @@ export default {
             }
             updateFiledRule(params).then(res => {
                 if (res.code == 200) {
+                    this.row = res.data;
                     this.$message({
                         message: res.msg,
                         type: 'success'
@@ -335,7 +336,7 @@ export default {
                 .catch(err => {
                     this.dialogVisible = false
                 })
-            this.handleNext('2')
+            // this.handleNext('2')
         },
         updataResultCanelFn() {
             this.dialogVisible = false
