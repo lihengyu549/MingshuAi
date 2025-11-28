@@ -1103,8 +1103,19 @@ export default {
       // 展示根节点名称（用逗号分隔）
       this.addNodeName = Array.from(rootNodeNames).join(',');
 
-      // 保持原有逻辑：收集叶子节点ID作为查询参数
-      this.queryParams.categoryIds = checkedLeafNodes.map(item => item.id).join();
+      // 收集叶子节点及其所有祖先节点的ID
+      const allCategoryIds = new Set();
+      checkedLeafNodes.forEach(leafNode => {
+        // 添加叶子节点自身
+        allCategoryIds.add(leafNode.id);
+        
+        // 递归收集所有祖先节点（包括父节点、爷节点等）
+        const ancestors = this.findAllAncestors(this.categoryList, leafNode.id);
+        ancestors.forEach(ancestorId => allCategoryIds.add(ancestorId));
+      });
+
+      // 更新查询参数，包含叶子节点和所有祖先节点ID
+      this.queryParams.categoryIds = Array.from(allCategoryIds).join(',');
       this.getList();
     },
     // 查找节点对应的根节点
@@ -1135,6 +1146,43 @@ export default {
         currentNode = parentNode;
       }
       return currentNode;
+    },
+
+    // 查找节点的所有祖先节点ID（父节点、爷节点等）
+    findAllAncestors(tree, nodeId) {
+      const ancestors = [];
+      
+      // 递归查找节点本身
+      const findNode = (nodes, id) => {
+        for (const node of nodes) {
+          if (node.id === id) {
+            return node;
+          }
+          if (node.children && node.children.length) {
+            const found = findNode(node.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      // 先找到当前节点
+      const currentNode = findNode(tree, nodeId);
+      if (!currentNode) return ancestors;
+
+      // 向上追溯所有祖先节点
+      let parentId = currentNode.parentId;
+      while (parentId) {
+        const parentNode = findNode(tree, parentId);
+        if (parentNode) {
+          ancestors.push(parentNode.id);
+          parentId = parentNode.parentId;
+        } else {
+          break; // 如果找不到父节点，停止循环
+        }
+      }
+
+      return ancestors;
     },
     piiHandleNodeCheck(node, checkData) {
       const parentLabels = this.findParentLabelsById(this.piiList, node.id);
