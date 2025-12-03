@@ -67,7 +67,7 @@
                         </template>
 
                         <!-- 正常情况下显示发送按钮 -->
-                        <template v-else-if="chatInput.trim()" slot="append">
+                        <template v-else slot="append">
                             <el-button type="primary" circle @click="sendChatMessage" size="small">
                                 <i class="el-icon-arrow-up"></i>
                             </el-button>
