@@ -650,8 +650,8 @@ export default {
         },
         // 获取当前处理中的步骤索引
         currentStepIndex() {
-            const idx = this.processingSteps.findIndex(s => s.status === 'processing');
-            return idx >= 0 ? idx : this.processingSteps.findIndex(s => s.status === 'pending');
+            const idx = this.processingSteps?.findIndex(s => s.status === 'processing');
+            return idx >= 0 ? idx : this.processingSteps?.findIndex(s => s.status === 'pending');
         },
     },
     watch: {
@@ -732,8 +732,8 @@ export default {
             const currentUrl = new URL(window.location.href);
             const hostName = currentUrl.hostname;
             this.socket = new WebSocket(
-                `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`, // 线上
-                // `ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
+                // `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`, // 线上
+                `ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
                 protocols  // 只有当token存在时才传递子协议
             );
             this.socket.onopen = () => {
@@ -748,7 +748,7 @@ export default {
                 try {
                     const message = JSON.parse(event.data);
                     // 添加空值判断，只推送非空内容
-                    if (message.realtimeLogs.text && message.realtimeLogs.text.trim() !== '') {
+                    if (message.realtimeLogs && message.realtimeLogs.text.trim() !== '') {
                         this.realtimeLogs.push({ text: message.realtimeLogs?.text });
                     }
                     this.scrollToBottom();
@@ -777,7 +777,7 @@ export default {
                         }
                     }
                     // 处理步骤更新
-                    this.processingSteps = message.processingSteps;
+                    this.processingSteps = message.processingSteps ? message.processingSteps : this.processingSteps;
                     // 当是语义填充时，获取语义填充的内容
                     if (message.processingSteps && message.processingSteps.length > 0) {
                         let semanticFill = message.processingSteps.find(step => step.name === '语义填充') //语义填充
