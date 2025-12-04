@@ -707,7 +707,7 @@ export default {
             });
         },
         initTaskInfo() {
-            this.tasksName = this.routeData.maskName || '未知任务';
+            this.tasksName = this.routeData.tasksName || '未知任务';
             this.startTime = this.routeData.startTime || '';
             this.overTime = this.routeData.overTime || '';
             this.runTime = this.routeData.runTime || '';
