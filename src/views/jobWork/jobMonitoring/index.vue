@@ -749,7 +749,7 @@ export default {
                     const message = JSON.parse(event.data);
                     // 添加空值判断，只推送非空内容
                     if (message.realtimeLogs.text && message.realtimeLogs.text.trim() !== '') {
-                        this.realtimeLogs.push({ text: message.realtimeLogs.text });
+                        this.realtimeLogs.push({ text: message.realtimeLogs?.text });
                     }
                     this.scrollToBottom();
                     // 任务信息更新
