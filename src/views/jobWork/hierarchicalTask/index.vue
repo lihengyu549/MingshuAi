@@ -48,6 +48,9 @@
         <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除任务</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
+      <el-col :span="1.5" style="float: inline-end;">
+        <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="handleQuery">刷新</el-button>
+      </el-col>
     </el-row>
     <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
@@ -57,7 +60,8 @@
       <el-table-column type="selection" width="60" align="center" :selectable="selectableFn" />
       <el-table-column label="任务名称" width="140" align="left" prop="tasksName" show-overflow-tooltip>
         <template slot-scope="scope">
-          <span class="btnText" @click="handleUpdate(scope.row)">{{ scope.row.tasksName }}</span>
+          <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon icon-class="jobs"
+              style="font-size: 16px; margin-right: 5px;" />{{ scope.row.tasksName }}</span>
         </template>
       </el-table-column>
       <el-table-column label="数据源" width="140" align="left" prop="sourceName" show-overflow-tooltip>
@@ -400,8 +404,8 @@
             </div>
             <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
               <div class="feature-content">
-                <div class="feature-title">AI分类打标</div>
-                <div class="feature-desc">结合学理上下文对数据进行智能打标</div>
+                <div class="feature-title">分类打标</div>
+                <div class="feature-desc">结合字段上下文对数据进行智能打标</div>
                 <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
               </div>
             </div>
@@ -650,11 +654,20 @@ export default {
 
   created() {
     this.gettreeOptionsList()
-    this.getList()
-    this.getScanCompleteDataFn()
-    if (this.$route.query.queryParams) {
+    // 页面加载时优先检查sessionStorage中是否有保存的查询条件（从viewResults返回的情况）
+    const savedParams = sessionStorage.getItem('hierarchicalTask_queryParams');
+    if (savedParams) {
+      try {
+        this.queryParams = JSON.parse(savedParams);
+      } catch (e) {
+        console.error('解析保存的查询条件失败:', e);
+      }
+    } else if (this.$route.query.queryParams) {
+      // 如果没有sessionStorage中的参数，再检查路由参数
       this.queryParams = this.$route.query.queryParams
     }
+    this.getList()
+    this.getScanCompleteDataFn()
   },
   mounted() {
   },
@@ -1076,6 +1089,10 @@ export default {
       //   this.$message({ message: '当前状态为运行中，无法查看', type: 'warning' })
       //   return
       // }
+      // 保存当前页面的查询条件到sessionStorage
+      sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(this.queryParams));
+      // 记录跳转来源为hierarchicalTask，用于viewResults页面返回时判断
+      sessionStorage.setItem('prevPage', 'hierarchicalTask');
       this.$router.push({
         path: '/viewResults',
         query: { drawerData: row, queryParams: this.queryParams }

@@ -17,18 +17,18 @@
                 <el-card class="box-card" shadow="never" style="border: none;">
                     <div class="info-item">
                         <label class="info-label">字段注释：</label>
-                        <div class="info-content">{{ row.fieldRemark }}</div>
+                        <div class="info-content">{{ row.fieldRemark || '--' }}</div>
                     </div>
                     <div class="info-item">
                         <label class="info-label">AI字段注释：</label>
-                        <div class="info-content">{{ row.craftRemark }}</div>
+                        <div class="info-content">{{ row.craftRemark || '--' }}</div>
                     </div>
                     <div class="info-item">
                         <label class="info-label">字段主题词：</label>
                         <div class="info-content">
                             <el-tag v-for="tag in JSON.parse(row.fieldTopic)" :key="tag"
                                 style="margin-right: 5px; border-radius: 8px;">{{ tag ||
-                                    '无' }}</el-tag>
+                                    '--' }}</el-tag>
                         </div>
                     </div>
                     <div class="info-item">
@@ -40,19 +40,19 @@
                     <div class="info-item">
                         <label class="info-label">表注释：</label>
                         <div class="info-content">
-                            {{ row.tableRemark }}
+                            {{ row.tableRemark || '--' }}
                         </div>
                     </div>
                     <div class="info-item">
                         <label class="info-label">AI表注释：</label>
-                        <div class="info-content">{{ row.tableCraftRemark }}</div>
+                        <div class="info-content">{{ row.tableCraftRemark || '--' }}</div>
                     </div>
                     <div class="info-item">
                         <label class="info-label">表主题词：</label>
                         <div class="info-content">
                             <el-tag type="success" v-for="tag in JSON.parse(row.tableTopic)" :key="tag"
                                 style="margin-right: 5px; border-radius: 8px;">{{ tag ||
-                                    '无' }}</el-tag>
+                                    '--' }}</el-tag>
                         </div>
                     </div>
                     <!-- <div class="info-item">
@@ -73,6 +73,14 @@
                                 </div>
                                 <el-button size="mini" type="text">查看</el-button>
                             </el-tooltip>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <label class="info-label">样本特征：</label>
+                        <div class="info-content">
+                            <el-tag type="info" style="margin-right: 5px; border-radius: 8px;">{{ row.regularExpression
+                                ||
+                                '--' }}</el-tag>
                         </div>
                     </div>
                 </el-card>
@@ -132,12 +140,12 @@
                     <div class="info-container" style="margin-top: 20px;">
                         <div class="info-item">
                             <label class="info-label">分类结果：</label>
-                            <div class="info-content">{{ row.categoryName }}</div>
+                            <div class="info-content">{{ row.categoryName || '--' }}</div>
                         </div>
                         <div class="info-item">
                             <label class="info-label">定级结果：</label>
                             <div class="info-content">
-                                <el-tag type="warning">{{ row.securityLevelName }}</el-tag>
+                                <el-tag type="warning">{{ row.securityLevelName || '--' }}</el-tag>
                             </div>
                         </div>
                         <div class="info-item">
@@ -145,6 +153,10 @@
                             <div class="info-content">
                                 <el-progress :percentage="Number(row.confidenceScore) * 100"></el-progress>
                             </div>
+                        </div>
+                        <div class="info-item">
+                            <label class="info-label">个人信息识别：</label>
+                            <div class="info-content">{{ row.piiDetectionName || '--' }}</div>
                         </div>
                         <div class="info-item">
                             <el-button type="primary" plain @click="handleModifyResult">修改结果</el-button>
@@ -155,24 +167,26 @@
                 <el-card class="box-card" shadow="never" style="border: none;">
                     <Title title="AI建议分类" iconClass="suggest"></Title>
                     <template v-if="row.suggestClassifyJson">
-                    <el-card
-                        style="padding: 20px; line-height: 1.8; border-radius: 10px; background-color: rgb(249 249 250);"
-                        shadow="never">
-                        <h4 style="margin: 0 0 15px 0; font-size: 14px; font-weight: bold;"><svg-icon icon-class="dot"
-                                style="margin-right: 5px;" />{{ row.suggestClassifyJson.categoryName }}</h4>
-                        <p
-                            style="margin: 0 0 15px 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
-                            {{ row.suggestClassifyJson.categoryDescription }}
-                        </p>
-                        <h5 style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold;"><svg-icon
-                                icon-class="star-hollow" style="margin-right: 5px;" />推荐理由:</h5>
-                        <p style="margin: 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
-                            {{ row.suggestClassifyJson.createReason }}
-                        </p>
-                    </el-card>
+                        <el-card
+                            style="padding: 20px; line-height: 1.8; border-radius: 10px; background-color: rgb(249 249 250);"
+                            shadow="never">
+                            <h4 style="margin: 0 0 15px 0; font-size: 14px; font-weight: bold;"><svg-icon
+                                    icon-class="dot" style="margin-right: 5px;" />{{
+                                        row.suggestClassifyJson.categoryName }}</h4>
+                            <p
+                                style="margin: 0 0 15px 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
+                                {{ row.suggestClassifyJson.categoryDescription }}
+                            </p>
+                            <h5 style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold;"><svg-icon
+                                    icon-class="star-hollow" style="margin-right: 5px;" />推荐理由:</h5>
+                            <p style="margin: 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
+                                {{ row.suggestClassifyJson.createReason }}
+                            </p>
+                        </el-card>
                     </template>
                     <template v-else>
-                        <div style="text-align: center; padding: 40px 20px; background-color: rgb(249 249 250); border-radius: 10px;">
+                        <div
+                            style="text-align: center; padding: 40px 20px; background-color: rgb(249 249 250); border-radius: 10px;">
                             <div style="margin-bottom: 15px; color: #c0c4cc;">
                                 <svg-icon icon-class="info" style="font-size: 32px;" />
                             </div>
@@ -266,6 +280,7 @@ export default {
     },
     created() {
         this.getPiiList()
+        // 页面加载时，当前查询条件不需要从任何地方恢复，因为这个页面主要展示单个数据详情
     },
     methods: {
         getPiiList(key) {
@@ -297,7 +312,7 @@ export default {
             console.log('resultForm', this.row);
             let params = {
                 reasoningProcess: this.resultForm.reasoningProcess,
-                tableFieldId: this.row.id,
+                tableFieldIds: [this.row.id],
                 categoryId: this.resultForm.categoryId,
                 securityLevel: this.resultForm.securityLevel,
                 auditRecommendation: this.resultForm.auditRecommendation,
@@ -307,6 +322,7 @@ export default {
             }
             updateFiledRule(params).then(res => {
                 if (res.code == 200) {
+                    this.row = res.data;
                     this.$message({
                         message: res.msg,
                         type: 'success'
@@ -315,13 +331,12 @@ export default {
                 this.dialogVisible = false
                 this.resultFormNodeName = ''
                 this.resetForm('resultForm')
-                this.getList()
                 this.updataLoading = false
             })
                 .catch(err => {
                     this.dialogVisible = false
                 })
-            this.handleNext('2')
+            // this.handleNext('2')
         },
         updataResultCanelFn() {
             this.dialogVisible = false
@@ -425,6 +440,7 @@ export default {
         },
         handleNext(lastOrNext) {
             // 上||下一个点击事件
+            // 参数说明：0-上一个，1-下一个，2-当前
             this.loading = true;
             const queryParams = this.$route.query.queryParams || {};
             const params = {
@@ -434,10 +450,12 @@ export default {
                 id: this.row?.id || '',
                 lastOrNext: lastOrNext || '0'
             };
+            
             getProtectTableFieldById(params).then(res => {
                 // 检查res对象是否存在
                 if (!res) {
                     console.error('API返回数据格式异常');
+                    this.loading = false;
                     return;
                 }
 
@@ -446,23 +464,54 @@ export default {
                     this.row = res.data;
                     this.$route.query.queryParams.pageNum = res.data.pageNum;
                     this.$route.query.queryParams.pageSize = res.data.pageSize;
-                    this.loading = false;
+                    
                     // 安全地更新reasoningProcess
                     if (res.data.reasoningProcess !== undefined) {
                         this.resultForm.reasoningProcess = res.data.reasoningProcess;
                     }
+                    
+                    // 根据操作类型显示不同的消息
+                    if (lastOrNext === '0') {
+                        this.$message({
+                            message: '已切换到上一个结果',
+                            type: 'success'
+                        });
+                    } else if (lastOrNext === '1') {
+                        this.$message({
+                            message: '已切换到下一个结果',
+                            type: 'success'
+                        });
+                    } else if (lastOrNext === '2') {
+                        this.$message({
+                            message: '已刷新当前结果',
+                            type: 'success'
+                        });
+                    }
                 } else {
-                    // 使用模板字符串简化消息逻辑
-                    const message = lastOrNext === '1' ? '没有下一个结果 !' : '没有上一个结果 !';
+                    // 根据操作类型显示不同的错误消息
+                    let message;
+                    switch (lastOrNext) {
+                        case '0':
+                            message = '没有上一个结果！';
+                            break;
+                        case '1':
+                            message = '没有下一个结果！';
+                            break;
+                        case '2':
+                            message = '无法获取当前结果数据！';
+                            break;
+                        default:
+                            message = '操作失败，请重试！';
+                    }
                     this.$message({
                         message: message,
                         type: 'warning'
                     });
                 }
                 this.loading = false;
-            }).catch(error => {
+            }).catch(() => {
                 this.loading = false;
-                // 添加错误处理
+                // 统一错误处理
                 this.$message({
                     message: '数据加载失败，请稍后重试',
                     type: 'error'
@@ -495,15 +544,12 @@ export default {
         },
         handleReturn() {
             // 返回点击事件
-            // 确保参数正确序列化，避免对象引用问题
-            const queryParams = this.$route.query.queryParams;
-            const drawerData = this.$route.query.drawerData;
-            
+            // 返回到viewResults时，直接返回即可，不需要携带查询参数
+            // 因为viewResults会从sessionStorage中恢复自己的查询条件
             this.$router.push({
                 path: '/viewResults',
                 query: {
-                    queryParams: typeof queryParams === 'string' ? queryParams : JSON.stringify(queryParams || {}),
-                    drawerData: typeof drawerData === 'string' ? drawerData : JSON.stringify(drawerData || {})
+                    drawerData: this.$route.query.drawerData
                 }
             });
         },

@@ -90,18 +90,36 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-aim" size="medium" @click="handleAdd">确认勾选项</el-button>
+        <el-dropdown trigger="click">
+          <el-button type="primary" plain size="medium">确认结果<i
+              class="el-icon-arrow-down el-icon--right"></i></el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item @click.native="handleAdd">
+              <i class="el-icon-aim"></i> 确认勾选项
+            </el-dropdown-item>
+            <el-dropdown-item @click.native="handleEcelFn">
+              <i class="el-icon-more"></i> 确认过滤项
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-more" size="medium" @click="handleEcelFn">确认过滤项</el-button>
+        <el-dropdown trigger="click">
+          <el-button type="primary" plain size="medium">取消操作<i
+              class="el-icon-arrow-down el-icon--right"></i></el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item @click.native="handleAddFnClose">
+              <i class="el-icon-refresh-left"></i> 取消勾选项
+            </el-dropdown-item>
+            <el-dropdown-item @click.native="handleEcelFnClose">
+              <i class="el-icon-magic-stick"></i> 取消过滤项
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-refresh-left" size="medium"
-          @click="handleAddFnClose">取消勾选项</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-magic-stick" size="medium"
-          @click="handleEcelFnClose">取消过滤项</el-button>
+        <el-button type="primary" plain size="medium" @click="handleBatchFix"
+          style="float: inline-end;">批量修改</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
       <el-button type="primary" plain size="medium" @click="handleBack" style="float: inline-end;">返回</el-button>
@@ -123,8 +141,10 @@
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="字段名" align="left" prop="fieldName" width="150" show-overflow-tooltip>
         <template slot-scope="scope">
-          <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;"><i class="el-icon-edit"></i>{{ scope.row.fieldName
-          }}</span>
+          <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
+            <svg-icon icon-class="text" style="font-size: 14px; margin-right: 5px;" />
+            {{ scope.row.fieldName
+            }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip /> -->
@@ -136,12 +156,14 @@
           <template slot-scope="scope">
             <!-- 分类不再展示，直接显示原始值 -->
             <template v-if="item.label == '安全分级'">
-              <el-tag :style="{ backgroundColor: getRiskColor(Number(scope.row.securityLevel)),color:'#fff' }">
+              <el-tag :style="{ backgroundColor: getRiskColor(Number(scope.row.securityLevel)), color: '#fff' }">
                 {{ scope.row.securityLevelName }}
               </el-tag>
             </template>
             <template v-else-if="item.label == '分类'">
-              <el-tag :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '脏数据' ? 'info' : 'primary'">{{ scope.row.categoryName }}</el-tag>
+              <el-tag
+                :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '噪音数据' ? 'info' : 'primary'">{{
+                  scope.row.categoryName }}</el-tag>
             </template>
             <template v-else>
               {{ scope.row[item.prop] }}
@@ -174,8 +196,8 @@
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
-    <el-dialog title="结果修改" v-loading="updataLoading" :visible.sync="deleteVisible" width="650px"
-      style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
+    <el-dialog title="结果修改" class="addMsg" :visible.sync="deleteVisible" width="700px" append-to-body
+      :close-on-click-modal="false">
       <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
         <el-form-item label="分类" class="addSelectClass">
           <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable :filter-method="handleSearch">
@@ -193,20 +215,20 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="推理过程" prop="reasoningProcess">
+        <!-- <el-form-item label="推理过程" prop="reasoningProcess">
           <el-input v-model="resultForm.reasoningProcess" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             maxlength="500" placeholder="请输入推理过程"></el-input>
-        </el-form-item>
+        </el-form-item> -->
         <!-- <el-form-item label="审核建议" prop="auditRecommendation">
           <el-input v-model="resultForm.auditRecommendation" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             maxlength="500" placeholder="请输入审核建议"></el-input>
         </el-form-item> -->
-        <el-form-item label="置信度" prop="confidenceLevel">
+        <!-- <el-form-item label="置信度" prop="confidenceLevel">
           <el-select v-model="resultForm.confidenceLevel" clearable>
             <el-option v-for="item in confidenceLevelList" :key="item.id" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="个人信息识别" class="addSelectClass" prop="piiDetection">
           <el-select ref="piiSelectRef" v-model="piiNodeName">
             <el-option style="height: 100%; padding: 0" value="">
@@ -216,10 +238,10 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="识别方式" prop="detectionProcess">
+        <!-- <el-form-item label="识别方式" prop="detectionProcess">
           <el-input v-model="resultForm.detectionProcess" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             maxlength="500" placeholder="请输入识别方式"></el-input>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <template #footer>
         <span>
@@ -300,6 +322,7 @@ export default {
         id: '',
         piiDetection: '',
         classificationLogic: '',
+        selectedIds: null,
       },
       tableData: [],
       addOptions: [
@@ -410,6 +433,16 @@ export default {
           label: "所属表",
           prop: "tableName",
           width: "150"
+        },
+        {
+          label: "字段类型",
+          prop: "fieldType",
+          width: "200"
+        },
+        {
+          label: "AI字段注释",
+          prop: "craftRemark",
+          width: "200"
         },
         {
           label: "表注释",
@@ -594,9 +627,22 @@ export default {
   created() {
     // 缓存路由参数中的drawerData，减少重复访问
     const drawerData = this.$route.query?.drawerData;
-    const queryParams = this.$route.query?.queryParams;
-    // 如果有查询参数，赋值给查询表单
-    if (queryParams) {
+    let queryParams = this.$route.query?.queryParams;
+
+    // 页面加载时优先检查sessionStorage中是否有保存的查询条件（从fixResults返回的情况）
+    const savedParams = sessionStorage.getItem('viewResults_queryParams');
+    if (savedParams) {
+      try {
+        const parsedParams = JSON.parse(savedParams);
+        this.queryParams = { ...this.queryParams, ...parsedParams };
+        this.lastQueryParams = parsedParams;
+        // 清除保存的参数，避免重复使用
+        sessionStorage.removeItem('viewResults_queryParams');
+      } catch (e) {
+        console.error('解析保存的查询条件失败:', e);
+      }
+    } else if (queryParams) {
+      // 如果没有sessionStorage中的参数，再检查路由参数
       // 确保queryParams是对象类型
       const params = typeof queryParams === 'string' ? JSON.parse(queryParams) : queryParams;
       this.queryParams = { ...this.queryParams, ...params };
@@ -637,17 +683,17 @@ export default {
 
   },
   methods: {
-        // 获取风险等级颜色
-        getRiskColor(level) {
-            const colors = {
-                5: '#F56C6C', // 深红色
-                4: '#FF9800', // 橙红色
-                3: '#FB8C00', // 橙色
-                2: '#FFC107', // 黄色
-                1: '#4CAF50'  // 绿色
-            };
-            return colors[level] || '#9E9E9E';
-        },
+    // 获取风险等级颜色
+    getRiskColor(level) {
+      const colors = {
+        5: '#F56C6C', // 深红色
+        4: '#FF9800', // 橙红色
+        3: '#FB8C00', // 橙色
+        2: '#FFC107', // 黄色
+        1: '#4CAF50'  // 绿色
+      };
+      return colors[level] || '#9E9E9E';
+    },
     // 切换筛选条件的显示/隐藏
     toggleFilters() {
       this.showMoreFilters = !this.showMoreFilters;
@@ -783,11 +829,12 @@ export default {
         })
     },
     handleBack() {
+      // 返回到hierarchicalTask时，根据需求，不需要保留viewResults的查询条件
+      // 直接返回，不携带查询参数
       this.$router.push({
         path: '/hierarchicalTask',
         query: {
-          drawerData: this.$route.query.drawerData,
-          queryParams: this.lastQueryParams
+          drawerData: this.$route.query.drawerData
         }
       })
     },
@@ -881,11 +928,37 @@ export default {
       this.inputSearch()
       this.getListTableByProject()
     },
+    handleBatchFix() {
+      // 使用表格ref直接获取选中的数据
+      const selection = this.$refs.tableRef.selection
+      // 检查是否有选中的数据
+      if (!selection || selection.length === 0) {
+        this.$message.warning('请先选择需要修改的记录')
+        return
+      }
+      // 获取选中的ID数组
+      const selectedIds = selection.map(row => row.id)
+      // 设置到表单中
+      this.resultForm.selectedIds = selectedIds
+      
+      // 为分类下拉框设置默认选中第一项
+      if (this.categoryList && this.categoryList.length > 0) {
+        this.resultFormNodeName = this.categoryList[0].categoryName;
+      }
+      
+      // 为安全分级下拉框设置默认选中第一项
+      if (this.dict && this.dict.type && this.dict.type.sys_risk_level && this.dict.type.sys_risk_level.length > 0) {
+        this.resultForm.securityLevel = this.dict.type.sys_risk_level[0].value;
+      }
+      
+      this.deleteVisible = true
+    },
     updataResultFn() {
       this.updataLoading = true
       let params = {
         reasoningProcess: this.resultForm.reasoningProcess,
-        tableFieldId: this.resultForm.tableFieldId,
+        // 传递数组格式的tableFieldIds
+        tableFieldIds: this.resultForm.selectedIds || [this.resultForm.tableFieldId],
         categoryId: this.resultForm.categoryId,
         securityLevel: this.resultForm.securityLevel,
         auditRecommendation: this.resultForm.auditRecommendation,
@@ -903,6 +976,7 @@ export default {
         this.deleteVisible = false
         this.resultFormNodeName = ''
         this.resetForm('resultForm')
+        this.resultForm.selectedIds = null
         this.getList()
         this.updataLoading = false
       })
@@ -914,6 +988,7 @@ export default {
       this.deleteVisible = false
       this.resultFormNodeName = ''
       this.resetForm('resultForm')
+      this.resultForm.selectedIds = null
     },
     messsucc(res, flag) {
       this.$message.success(`${res.msg},${flag}${res.data}个`)
@@ -977,6 +1052,10 @@ export default {
     },
     resultExdit(row) {
       console.log('row', row);
+      // 保存当前页面的查询条件到sessionStorage
+      sessionStorage.setItem('viewResults_queryParams', JSON.stringify(this.queryParams));
+      // 记录跳转来源为viewResults，用于fixResults页面返回时判断
+      sessionStorage.setItem('prevPage', 'viewResults');
       this.$router.push({
         path: '/fixResults',
         query: { row: row, categoryList: this.categoryList, queryParams: this.queryParams, drawerData: this.$route.query.drawerData }
@@ -987,7 +1066,17 @@ export default {
       this.resultForm.tableFieldId = row.id
       this.piiNodeName = row.piiDetectionName
       this.resultForm.confidenceLevel = row.confidenceLevel == '高' ? '2' : '1'
-      this.resultFormNodeName = row.categoryName
+      
+      // 为分类下拉框设置默认选中第一项（如果没有已有值）
+      if (!this.resultFormNodeName && this.categoryList && this.categoryList.length > 0) {
+        this.resultFormNodeName = this.categoryList[0].id;
+      }
+      
+      // 为安全分级下拉框设置默认选中第一项（如果没有已有值）
+      if (!this.resultForm.securityLevel && this.dict && this.dict.type && this.dict.type.sys_risk_level && this.dict.type.sys_risk_level.length > 0) {
+        this.resultForm.securityLevel = this.dict.type.sys_risk_level[0].value;
+      }
+      
       this.deleteVisible = true
     },
     addHandleNodeCheck(node, checkData) {
@@ -1014,8 +1103,19 @@ export default {
       // 展示根节点名称（用逗号分隔）
       this.addNodeName = Array.from(rootNodeNames).join(',');
 
-      // 保持原有逻辑：收集叶子节点ID作为查询参数
-      this.queryParams.categoryIds = checkedLeafNodes.map(item => item.id).join();
+      // 收集叶子节点及其所有祖先节点的ID
+      const allCategoryIds = new Set();
+      checkedLeafNodes.forEach(leafNode => {
+        // 添加叶子节点自身
+        allCategoryIds.add(leafNode.id);
+        
+        // 递归收集所有祖先节点（包括父节点、爷节点等）
+        const ancestors = this.findAllAncestors(this.categoryList, leafNode.id);
+        ancestors.forEach(ancestorId => allCategoryIds.add(ancestorId));
+      });
+
+      // 更新查询参数，包含叶子节点和所有祖先节点ID
+      this.queryParams.categoryIds = Array.from(allCategoryIds).join(',');
       this.getList();
     },
     // 查找节点对应的根节点
@@ -1046,6 +1146,43 @@ export default {
         currentNode = parentNode;
       }
       return currentNode;
+    },
+
+    // 查找节点的所有祖先节点ID（父节点、爷节点等）
+    findAllAncestors(tree, nodeId) {
+      const ancestors = [];
+      
+      // 递归查找节点本身
+      const findNode = (nodes, id) => {
+        for (const node of nodes) {
+          if (node.id === id) {
+            return node;
+          }
+          if (node.children && node.children.length) {
+            const found = findNode(node.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      // 先找到当前节点
+      const currentNode = findNode(tree, nodeId);
+      if (!currentNode) return ancestors;
+
+      // 向上追溯所有祖先节点
+      let parentId = currentNode.parentId;
+      while (parentId) {
+        const parentNode = findNode(tree, parentId);
+        if (parentNode) {
+          ancestors.push(parentNode.id);
+          parentId = parentNode.parentId;
+        } else {
+          break; // 如果找不到父节点，停止循环
+        }
+      }
+
+      return ancestors;
     },
     piiHandleNodeCheck(node, checkData) {
       const parentLabels = this.findParentLabelsById(this.piiList, node.id);
@@ -1238,8 +1375,51 @@ export default {
 }
 </style>
 <style scoped>
-.addMsg /deep/ .el-input--medium {
-  width: 237px;
+.addMsg /deep/.el-dialog {
+  border-radius: 10px;
+}
+
+.addMsg /deep/.el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.addMsg /deep/.el-dialog__title {
+  font-weight: bold;
+}
+
+.addMsg /deep/.el-form-item__content {
+  padding-right: 15px;
+}
+
+.addMsg /deep/.el-select--medium,
+.addMsg /deep/.el-select--small {
+  width: 100%;
+}
+
+.addMsg /deep/.el-dialog__body {
+  padding: 30px;
+}
+
+.addMsg /deep/ .el-dialog:not(.is-fullscreen) {
+  margin-top: 10% !important;
+}
+
+.addMsg /deep/ .el-dialog__body {
+  padding-bottom: 0;
+
+}
+
+.addMsg /deep/ .el-dialog__footer {
+  padding-bottom: 32px;
+
+}
+
+.addMsg /deep/ .el-form-item__label {
+  text-align: left;
+}
+
+.addMsg /deep/ .el-select--medium {
+  width: 100%;
 }
 
 .tableBox {

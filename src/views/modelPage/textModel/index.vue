@@ -21,7 +21,7 @@
                     <el-menu-item v-for="model in filteredModels" :key="model.name" :index="model.name"
                         :style="{ backgroundColor: activeModel === model.id ? '#eaf1ff' : '' }">
                         <svg-icon
-                            :icon-class="model.label == 'Ollama' ? 'Ollama' : model.label == '阿里云百炼' ? 'alybl' : 'deepseek'"
+                            :icon-class="model.label == 'Ollama' ? 'Ollama' : model.label == '阿里云百炼' ? 'alybl' : model.label == 'Deepseek深度求索' ? 'deepseek' : 'lingqi'"
                             style="margin-right: 10px;"></svg-icon>
                         <span>{{ model.label }}</span>
                         <!-- 左侧菜单开关 - 调整为内部显示ON/OFF -->
@@ -36,7 +36,7 @@
             <div class="right-content">
                 <div class="content-header">
                     <svg-icon
-                        :icon-class="currentModel.label == 'Ollama' ? 'Ollama' : currentModel.label == '阿里云百炼' ? 'alybl' : 'deepseek'"
+                        :icon-class="currentModel.label == 'Ollama' ? 'Ollama' : currentModel.label == '阿里云百炼' ? 'alybl' : currentModel.label == 'Deepseek深度求索' ? 'deepseek' : 'lingqi'"
                         style="margin-right: 10px;"></svg-icon>
                     <span>{{ currentModel.label || '请选择模型' }}</span>
                     <!-- 右侧主开关 - 调整为内部显示ON/OFF -->
@@ -50,7 +50,7 @@
                     <el-form-item label="接口地址">
                         <el-input v-model="currentModel.apiUrl" placeholder="请输入接口地址" style="width: 100%;"></el-input>
                     </el-form-item>
-                    <el-form-item v-if="currentModel.name == 'aliyun' || currentModel.name == 'deepseek'" label="API密钥">
+                    <el-form-item v-if="currentModel.name == 'aliyun' || currentModel.name == 'deepseek' || currentModel.name == 'lingqi'" label="API密钥">
                         <el-input v-model="currentModel.apiKey" placeholder="请输入API密钥" type="password"
                             style="width: 100%;"></el-input>
                     </el-form-item>
@@ -357,6 +357,7 @@ export default {
 .model-config-page {
     padding: 40px;
     background-color: #fff;
+    width: 100%;
     height: 100vh;
     box-shadow: none;
 }
@@ -452,14 +453,17 @@ export default {
     gap: 8px;
 }
 
+/deep/.el-switch__label * {
+    line-height: 2;
+    font-size: 12px;
+}
 
 /deep/.inner-text-switch .el-switch__label.el-switch__label--left {
     position: absolute;
     left: 8px;
-    top: -3px;
+    top: -2px;
     width: 100%;
     height: 100%;
-    font-size: 14px;
     color: #bdb5b5;
     text-align: center;
     z-index: 1;
@@ -473,10 +477,9 @@ export default {
 /deep/.inner-text-switch .el-switch__label.el-switch__label--right {
     position: absolute;
     left: -18px;
-    top: -3px;
+    top: -2px;
     width: 100%;
     height: 100%;
-    font-size: 14px;
     color: #fff;
     text-align: center;
     z-index: 1;

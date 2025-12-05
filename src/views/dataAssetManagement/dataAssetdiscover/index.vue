@@ -34,7 +34,13 @@
         <el-empty description="暂无数据"></el-empty>
       </template>
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="任务名称" align="left" width="140" prop="taskName" show-overflow-tooltip />
+      <el-table-column label="任务名称" align="left" width="140" prop="taskName" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <svg-icon icon-class="jobs"
+              style="font-size: 16px; margin-right: 5px;" />
+          {{ scope.row.taskName }}
+        </template>
+      </el-table-column>
       <el-table-column label="IP段" align="center" prop="ipScope" show-overflow-tooltip>
         <template slot-scope="scope">
           <span>{{ scope.row.ipScope }}</span>
@@ -663,7 +669,7 @@ input[aria-hidden=true] {
   /* display: none; */
 }
 
-.custom-dialog /deep/.el-dialog{
+.custom-dialog /deep/.el-dialog {
   border-radius: 10px;
 }
 

@@ -150,20 +150,21 @@ export default {
 
   dicts: ['sys_risk_level'],
   data() {
-    return {
-      importData: {
-        importFile: '', // 导入魔板文件名
-        fileList: [],//导入模板的文件数据
-        categoryName: '',//框架名称
-        importShow: false,
-      },
-      isHighlight: false,
-      apiDialogLoading: false,
-      apiDialogShow: false,
-      debounceTimeout: null,//防抖动
-      treeOptions: [],
-      treeLoading: false,
-      treeID: '',
+        return {
+          importData: {
+            importFile: '', // 导入魔板文件名
+            fileList: [],//导入模板的文件数据
+            categoryName: '',//框架名称
+            importShow: false,
+          },
+          isHighlight: false,
+          apiDialogLoading: false,
+          apiDialogShow: false,
+          debounceTimeout: null,//防抖动
+          changeTimeout: null, // 用于下拉选择防抖的定时器
+          treeOptions: [],
+          treeLoading: false,
+          treeID: '',
       textarea2: '',
       // 查询参数
       queryParams: {
@@ -396,16 +397,45 @@ Authorization:Bearer ${this.Token}`
         this.$message({ message: '请选择至少一条数据', type: 'warning' })
       }
     },
-    // 左侧树下拉选change事件
+    // 左侧树下拉选change事件 - 添加防抖处理
     treeOptionsSelectChange(val) {
-      this.queryParams.pageNum = 1
-      this.queryParams.pageSize = 10
-      this.resetQuery()
-      this.routeDataShow = false
-      this.httpDemo()
-      this.getProtectCategory(val)
-      this.getProtectCategoryQuery(val)
-      this.getPiiList(val)
+      // 清除之前的定时器
+      if (this.changeTimeout) {
+        clearTimeout(this.changeTimeout);
+      }
+      
+      // 设置新的定时器，延迟执行，避免频繁切换导致性能问题
+      this.changeTimeout = setTimeout(() => {
+        this.queryParams.pageNum = 1
+        this.queryParams.pageSize = 10
+        this.resetQuery()
+        this.routeDataShow = false
+        this.httpDemo()
+        
+        // 使用Promise.all协调多个异步请求，确保数据加载完成后再更新界面
+        Promise.all([
+          this.getProtectCategoryAsync(val),
+          this.getProtectCategoryQueryAsync(val),
+          this.getPiiListAsync(val)
+        ]).then(() => {
+          // 所有请求完成后再获取列表数据
+          if (this.dataCategoryList.length > 0) {
+            this.$nextTick(() => {
+              this.selectAllFirstLevelNodes(this.dataCategoryList)
+              this.getList()
+            });
+          } else {
+            this.treeIds = []
+            this.getList()
+          }
+          this.Loading = false
+          this.treeLoading = false
+        }).catch(error => {
+          console.error('数据加载失败:', error)
+          this.Loading = false
+          this.treeLoading = false
+        });
+      }, 300); // 300ms防抖延迟
     },
     gettreeOptionsList() {
       this.Loading = true
@@ -607,44 +637,47 @@ Authorization:Bearer ${this.Token}`
       this.treeID = treeList.map(item => item.id).join()
       this.treeIds = treeList.map(item => item.id)
     },
+    // 返回Promise的异步版本
+    getProtectCategoryAsync(key) {
+      return new Promise((resolve, reject) => {
+        this.treeLoading = true
+        let data = {
+          projectId: key,
+        };
+        getDatabaseList(data).then((resp) => {
+          this.dataCategoryList = resp.data
+          if (resp.data.length > 0) {
+            let tempList = JSON.parse(JSON.stringify(this.dataCategoryList))
+            for (let item of tempList) {
+              item.label = item.categoryName
+            }
+            this.dataCategoryList = this.handleTree(tempList, "id")
+            this.categoryListEdit = this.handleTree(tempList, "id")
+          }
+          resolve(resp.data)
+        }).catch(error => {
+          console.error('获取保护分类失败:', error)
+          reject(error)
+        });
+      });
+    },
+    
+    // 保留原方法以兼容其他调用
     getProtectCategory(key) {
-      this.treeLoading = true
-      let data = {
-        projectId: key,
-      };
-      getDatabaseList(data).then((resp) => {
-        this.dataCategoryList = resp.data
-        if (resp.data.length == 0) {
+      this.getProtectCategoryAsync(key).then(data => {
+        if (data.length == 0) {
           this.Loading = false
           this.treeIds = []
           this.getList()
         } else {
-          // for (let index in resp.data) {
-          //   if (resp.data[index].parentId === 0) {
-          //     this.dataCategoryList.splice(index, 1)
-          //     break
-          //   }
-          // }
-          // this.dataCategoryList.unshift({
-          //   ancestors: "0",
-          //   categoryDescribe: "",
-          //   categoryName: "全部",
-          //   id: 1340,
-          //   minSecurityLevel: -1,
-          //   nodeLayerIndex: 1,
-          //   parentId: 0,
-          // })
-          this.$nextTick(function () {
+          this.$nextTick(() => {
             this.selectAllFirstLevelNodes(this.dataCategoryList)
             this.getList()
           });
-          let tempList = JSON.parse(JSON.stringify(this.dataCategoryList))
-          for (let item of tempList) {
-            item.label = item.categoryName
-          }
-          this.dataCategoryList = this.handleTree(tempList, "id")
-          this.categoryListEdit = this.handleTree(tempList, "id")
         }
+        this.Loading = false
+        this.treeLoading = false
+      }).catch(() => {
         this.Loading = false
         this.treeLoading = false
       });
@@ -665,16 +698,51 @@ Authorization:Bearer ${this.Token}`
         piiDetection: this.queryParams.piiDetection
       }
       listByPublished(params).then((response) => {
-        if (response.code == 200 && response.rows) {
-          this.protectTableFieldList = response.rows || [];
-          this.protectTableFieldList.forEach(ele => {
-            ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
-            if (ele.protectMethodName) {
-            item.protectMethodNameList = item.protectMethodName.split(',');
+        try {
+          if (response.code == 200 && response.rows) {
+            // 确保数组安全
+            const rows = response.rows || [];
+            
+            // 使用map创建新数组，避免直接修改原数据
+            this.protectTableFieldList = rows.map(ele => {
+              const newEle = { ...ele };
+              
+              // 安全处理sampleData解析
+              if (newEle.sampleData) {
+                try {
+                  newEle.sampleList = JSON.parse(newEle.sampleData).map(item => ({ value: item }));
+                } catch (e) {
+                  newEle.sampleList = [];
+                  console.warn('解析样本数据失败:', e);
+                }
+              }
+              
+              // 修复错误引用：将item改为ele
+              if (newEle.protectMethod) {
+                newEle.protectMethodNameList = newEle.protectMethod.split(',');
+              }
+              
+              return newEle;
+            });
+            
+            this.total = response.total || 0;
+          } else {
+            // 重置为空数组，避免显示错误数据
+            this.protectTableFieldList = [];
+            this.total = 0;
           }
-          })
-          this.total = response.total;
+        } catch (error) {
+          console.error('处理列表数据时发生错误:', error);
+          this.protectTableFieldList = [];
+          this.total = 0;
+        } finally {
+          // 确保在任何情况下都关闭loading
+          this.loading = false;
         }
+      }).catch(error => {
+        console.error('获取列表数据失败:', error);
+        this.protectTableFieldList = [];
+        this.total = 0;
         this.loading = false;
       });
     },
@@ -740,49 +808,77 @@ Authorization:Bearer ${this.Token}`
         this.$message.error('导出失败，请稍后再试');
       }
     },
-    getPiiList(key) {
-      let data = {
-        parentId: 1,
-        needSub: 1,
-        ifAddUnclassified: 2,
-      };
-      treeListI(data).then((resp) => {
-        this.piiList = resp.data
-        this.yuanCategoryList = resp.data
-        if (resp.data.length == 0) {
-          this.Loading = false
-        } else {
-          let tempList = JSON.parse(JSON.stringify(this.piiList))
-          for (let item of tempList) {
-            item.label = item.categoryName
+    // 返回Promise的异步版本
+    getPiiListAsync(key) {
+      return new Promise((resolve, reject) => {
+        let data = {
+          parentId: 1,
+          needSub: 1,
+          ifAddUnclassified: 2,
+        };
+        treeListI(data).then((resp) => {
+          this.piiList = resp.data
+          this.yuanCategoryList = resp.data
+          if (resp.data.length > 0) {
+            let tempList = JSON.parse(JSON.stringify(this.piiList))
+            for (let item of tempList) {
+              item.label = item.categoryName
+            }
+            this.piiList = this.handleTree(tempList, "id")
+            this.categoryListEdit = this.handleTree(tempList, "id")
           }
-          this.piiList = this.handleTree(tempList, "id",)
-          this.categoryListEdit = this.handleTree(tempList, "id")
-        }
+          resolve(resp.data)
+        }).catch(error => {
+          console.error('获取PII列表失败:', error)
+          reject(error)
+        });
+      });
+    },
+    
+    // 保留原方法以兼容其他调用
+    getPiiList(key) {
+      this.getPiiListAsync(key).then(() => {
+        this.Loading = false
+        this.treeLoading = false
+      }).catch(() => {
         this.Loading = false
         this.treeLoading = false
       });
     },
-    getProtectCategoryQuery(key) {
-      this.treeLoading = true
-      let data = {
-        parentId: key,
-        needSub: 1,
-        ifAddUnclassified: 1,
-      };
-      treeListI(data).then((resp) => {
-        this.categoryList = resp.data
-        this.yuanCategoryList = resp.data
-        if (resp.data.length == 0) {
-          this.Loading = false
-        } else {
-          let tempList = JSON.parse(JSON.stringify(this.categoryList))
-          for (let item of tempList) {
-            item.label = item.categoryName
+    // 返回Promise的异步版本
+    getProtectCategoryQueryAsync(key) {
+      return new Promise((resolve, reject) => {
+        this.treeLoading = true
+        let data = {
+          parentId: key,
+          needSub: 1,
+          ifAddUnclassified: 1,
+        };
+        treeListI(data).then((resp) => {
+          this.categoryList = resp.data
+          this.yuanCategoryList = resp.data
+          if (resp.data.length > 0) {
+            let tempList = JSON.parse(JSON.stringify(this.categoryList))
+            for (let item of tempList) {
+              item.label = item.categoryName
+            }
+            this.categoryList = this.handleTree(tempList, "id")
+            this.categoryListEdit = this.handleTree(tempList, "id")
           }
-          this.categoryList = this.handleTree(tempList, "id",)
-          this.categoryListEdit = this.handleTree(tempList, "id")
-        }
+          resolve(resp.data)
+        }).catch(error => {
+          console.error('获取保护分类查询数据失败:', error)
+          reject(error)
+        });
+      });
+    },
+    
+    // 保留原方法以兼容其他调用
+    getProtectCategoryQuery(key) {
+      this.getProtectCategoryQueryAsync(key).then(() => {
+        this.Loading = false
+        this.treeLoading = false
+      }).catch(() => {
         this.Loading = false
         this.treeLoading = false
       });

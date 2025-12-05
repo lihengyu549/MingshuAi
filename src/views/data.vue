@@ -29,7 +29,7 @@
 
         <div class="main_body">
           <div class="titleBox_echarts">
-            <div class="title">脏数据清洗</div>
+            <div class="title">噪音数据过滤</div>
           </div>
           <div id="funnelEcharts" class="leftEchartsBox"></div>
         </div>

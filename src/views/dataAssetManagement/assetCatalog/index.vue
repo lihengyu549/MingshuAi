@@ -38,13 +38,11 @@
         <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="false"
           label-width="100px">
           <el-form-item label="表名" prop="tableName">
-            <el-select v-model="queryParams.tableName" @change="selectProjectIdChange" filterable placeholder="全部"
-              clearable>
-              <el-option v-for="item in tableNameList" :key="item.tableId" :label="item.label" :value="item.tableId">
-              </el-option>
-            </el-select>
+            <el-input v-model="queryParams.tableName" placeholder="请输入表名搜索" @input="handleInputChange" clearable>
+              <i slot="prefix" class="el-input__icon el-icon-search"></i>
+            </el-input>
           </el-form-item>
-          <el-form-item label="注释填充" prop="paddingStatus">
+          <el-form-item label="语义填充" prop="paddingStatus">
             <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange" placeholder="全部" clearable>
               <el-option label="未开始" value="1"></el-option>
               <el-option label="成功" value="2"></el-option>
@@ -168,7 +166,7 @@
                   </div>
                 </div>
                 <div class="col">
-                  <div class="label">注释填充</div>
+                  <div class="label">语义填充</div>
                   <el-tag
                     :type="item.paddingStatus == '未开始' ? 'info' : item.paddingStatus == '成功' ? 'success' : item.paddingStatus == '失败' ? 'danger' : item.paddingStatus == '执行中' ? 'primary' : 'info'"
                     class="status-tag" :title="item.paddingStatus">
@@ -242,7 +240,7 @@
             <span>{{ scope.row.oldFieldRemark }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="AI字段注释（可编辑）" align="center" prop="aiFieldRemark" min-width="200" show-overflow-tooltip>
+        <el-table-column label="AI字段注释" align="center" prop="aiFieldRemark" min-width="200" show-overflow-tooltip>
           <template slot-scope="scope">
             <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, 'aiFieldRemark')">{{
               scope.row.aiFieldRemark }}</span>
@@ -317,6 +315,7 @@ export default {
       loading: false,
       total: 10,
       tableNameList: [],
+      inputTimer: null,
       filedRowData: {},// 字段信息用来记录目录的rowdata
       dataAll: [
       ],
@@ -974,6 +973,13 @@ export default {
       console.log('queryParams', this.queryParams);
       this.handleQuery()
     },
+    // 处理input输入事件，添加防抖
+    handleInputChange() {
+      clearTimeout(this.inputTimer);
+      this.inputTimer = setTimeout(() => {
+        this.handleQuery();
+      }, 500); // 500毫秒防抖
+    },
     // 左侧树数据
     getProtectCategory() {
       this.treeLoading = true;
@@ -996,7 +1002,7 @@ export default {
           });
         }
         this.treeLoading = false;
-        this.getSelectTableNamesFn();
+        // this.getSelectTableNamesFn();
       });
     },
     /**

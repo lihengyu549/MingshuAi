@@ -37,7 +37,13 @@
                 <el-empty description="暂无数据"></el-empty>
             </template>
             <el-table-column type="selection" align="center" width="45" />
-            <el-table-column prop="featureName" align="center" label="特征名称" width="160" show-overflow-tooltip />
+            <el-table-column prop="featureName" label="特征名称" width="160"
+                show-overflow-tooltip>
+            <template slot-scope="scope">
+                <svg-icon icon-class="zhiwen" style="font-size: 16px; margin-right: 5px;" />
+                {{ scope.row.featureName }}
+            </template>
+            </el-table-column>
             <el-table-column prop="featureTypeName" align="center" label="特征类型" width="100" show-overflow-tooltip />
             <el-table-column prop="featureSourceName" align="center" label="来源" width="120" show-overflow-tooltip />
             <el-table-column prop="featureDescribe" align="center" label="描述" min-width="200" show-overflow-tooltip />
@@ -909,14 +915,14 @@ export default {
                                     // 全部处理完成后更新分页
                                     this.mappingPagination.total = this.form.mappingList.length;
                                     this.mappingPagination.currentPage = 1; // 重置到第一页
-                                    
+
                                     // 显示导入结果提示
                                     let message = `成功导入${uniqueData.length}条数据`;
                                     if (duplicateCount > 0) {
                                         message += `，跳过了${duplicateCount}条重复数据`;
                                     }
                                     this.$message.success(message);
-                                    
+
                                     // 数据处理完成，设置加载状态为false
                                     this.drawerLoading = false;
                                 }

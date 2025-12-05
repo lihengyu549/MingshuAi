@@ -33,7 +33,13 @@
         <el-empty description="暂无数据"></el-empty>
       </template>
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="任务名称" align="center" prop="taskName" width="150" show-overflow-tooltip />
+      <el-table-column label="任务名称" prop="taskName" width="150" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <svg-icon icon-class="jobs"
+              style="font-size: 16px; margin-right: 5px;" />
+          {{ scope.row.taskName }}
+        </template>
+      </el-table-column>
       <el-table-column label="对接厂商" align="center" prop="providerName" width="150" show-overflow-tooltip />
       <el-table-column label="推送类型" align="center" prop="pushTypeName" width="150" show-overflow-tooltip />
       <el-table-column label="发布数据源名称" align="center" prop="sourceName" width="250" show-overflow-tooltip />

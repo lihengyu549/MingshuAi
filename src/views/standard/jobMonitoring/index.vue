@@ -11,14 +11,9 @@
         </div>
         <div class="head-container" v-loading="treeLoading">
           <el-input v-model="filterName" placeholder="搜索树节点..." clearable size="mini" style="margin-bottom: 20px;" />
-          <el-tree :indent="8" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
+          <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
             :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
-            node-key="id" highlight-current @node-click="handleNodeClick">
-            <span class="custom-tree-node" slot-scope="{ node, data }">
-              <span class="node-label" :title="node.label">{{ node.label }}</span>
-              <svg-icon icon-class="setting" v-if="isRootNode(data)"
-                @click.stop="dataSource != '内置' && goToMenuEdit(data)" />
-            </span>
+            node-key="id" highlight-current @node-click="handleNodeClick" :render-content="renderContent">
           </el-tree>
         </div>
       </el-col>
@@ -78,7 +73,12 @@
           </template>
           <el-table-column type="selection" width="60" align="center">
           </el-table-column>
-          <el-table-column label="子类名称" align="left" width="140" prop="attachData" show-overflow-tooltip />
+          <el-table-column label="子类名称" align="left" width="140" prop="attachData" show-overflow-tooltip>
+            <template slot-scope="scope">
+              <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />{{ scope.row.attachData
+              }}
+            </template>
+          </el-table-column>
           <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
           <el-table-column label="建议防护措施" prop="protectMethodName" width="200">
             <template slot="header">
@@ -114,7 +114,7 @@
           <el-table-column label="操作" align="center" width="180">
             <template slot-scope="scope">
               <el-button type="text" size="medium"
-                :disabled="(scope.row.dataSource === '内置' || scope.row.dataOwner !== $store.state.user.name) && !$store.state.user.roles.includes('ROLE_ADMIN')"
+                :disabled="(scope.row.dataSource === '内置' || scope.row.dataOwner !== $store.state.user.name) && !$store.state.user.roles.includes('admin')"
                 @click="editFn(scope.row)">编辑</el-button>
               <el-button type="text" size="medium" @click="lookFn(scope.row)">查看</el-button>
               <el-button type="text" size="medium" @click="dataFn(scope.row)">数据摸底</el-button>
@@ -163,7 +163,7 @@
             placeholder="个人财产按 “有形 / 无形”“动产 / 不动产” 可分为四大类，每类财产的信息描述需包含独特维度"></el-input>
         </el-form-item>
         <el-row>
-          <el-col :span="12">
+          <el-col :span="24">
             <el-form-item class="addSelectClass" prop="minSecurityLevel" label="安全分级">
               <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部" :disabled="addOrEdit.flag == 3">
                 <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
@@ -172,7 +172,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <!-- <el-col :span="12">
             <el-form-item prop="attributeType" label="属性类型">
               <el-select v-model="addOrEditDataRuls.attributeType" placeholder="全部" :disabled="addOrEdit.flag == 3">
                 <el-option v-for="item in dict.type.sys_attribute_type" :key="item.value" :label="item.label"
@@ -180,7 +180,7 @@
                 </el-option>
               </el-select>
             </el-form-item>
-          </el-col>
+          </el-col> -->
         </el-row>
 
         <Title title="安全防护"></Title>
@@ -743,14 +743,14 @@ export default {
       } else {
         this[`${type}InputVisible`] = true;
       }
-      
+
       // 使用this.$set确保响应式更新
       if (type === 'tags') {
         this.$set(this, 'inputVisible', true);
       } else {
         this.$set(this, `${type}InputVisible`, true);
       }
-      
+
       this.$nextTick(_ => {
         // 获取正确的ref名称，特征标签使用特殊的ref名
         const refName = type === 'tags' ? 'saveTagInput' : `${type}SaveTagInput`;
@@ -778,14 +778,14 @@ export default {
       } else {
         inputValue = this[`${type}InputValue`];
       }
-      
+
       // 添加空值检查，避免调用trim()时出错
       const trimmedValue = inputValue ? inputValue.trim() : '';
-      
+
       if (trimmedValue) {
         this[type].push(trimmedValue);
       }
-      
+
       // 清空输入值并隐藏输入框，对特征标签进行特殊处理
       if (type === 'tags') {
         this.inputVisible = false;
@@ -996,17 +996,122 @@ export default {
     },
 
 
-    // 判断是否为根节点
-    isRootNode(data) {
-      return data.parentId === 0 || !data.parentId;
-    },
+    renderContent(h, { node, data }) {
+      // 判断是否为根节点
+      const isRoot = this.isRootNode(data);
+      // 获取节点层级（1:根节点，2-6:对应不同层级）
+      const level = node.level;
 
-    // 跳转到菜单编辑页面
+      // 使用sensitiveData中的颜色方案（根节点不算等级，从二级开始算L1-L5）
+      const levelColors = {
+        1: '#4CAF50',  // 绿色 - L1
+        2: '#FFC107',  // 黄色 - L2
+        3: '#FB8C00',  // 橙色 - L3
+        4: '#FF9800',  // 橙红色 - L4
+        5: '#F56C6C'   // 深红色 - L5
+      };
+
+      let iconClass = '';
+      let iconStyle = {};
+      // 计算显示的等级：非根节点从L1开始（level-1），根节点不显示等级
+      const displayLevel = isRoot ? 0 : level - 1;
+      let levelLabel = displayLevel > 0 ? ` L${displayLevel}` : '';
+      // 获取当前层级的颜色：根节点使用默认颜色，非根节点从L1开始计算
+      const currentColor = isRoot ? '#4CAF50' : (levelColors[displayLevel] || levelColors[5]);
+
+      if (isRoot) {
+        // L1根节点
+        iconClass = 'dunpai-2';
+        iconStyle = { color: currentColor, fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+      } else {
+        // 二级及以下节点
+        iconClass = node.expanded ? 'openFile' : 'closeFile';
+        iconStyle = { color: currentColor, fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+      }
+
+      // 获取面包屑路径
+      const breadcrumb = this.getBreadcrumbPath(data);
+
+      // 右侧元素（设置图标）
+      const rightElements = [];
+      
+      // 对所有层级添加setting图标（根节点）
+      if (this.dataSource != '内置' && isRoot) {
+        rightElements.push(
+          h('svg-icon', {
+            attrs: { iconClass: 'setting' },
+            style: { cursor: 'pointer' },
+            on: {
+              click: (e) => {
+                e.stopPropagation();
+                this.goToMenuEdit(data);
+              }
+            }
+          })
+        );
+      }
+
+      const nodeContent = [
+        h('span', { class: 'node-label', attrs: { title: node.label } }, node.label)
+      ];
+      
+      // 非根节点才显示等级标签
+      if (!isRoot) {
+        nodeContent.push(
+          h('span', { 
+            class: 'node-level', 
+            style: { 
+              color: currentColor, 
+              fontWeight: '500',
+              marginLeft: '8px'
+            } 
+          }, levelLabel)
+        );
+      }
+      
+      // 添加填充元素和右侧元素
+      nodeContent.push(
+        h('span', { style: { flexGrow: 1 } }), // 填充元素，将右侧元素推到最右侧
+        ...rightElements
+      );
+
+      // 所有节点图标都放在前面
+      nodeContent.unshift(
+        h('svg-icon', {
+          class: 'tree-node-icon',
+          attrs: {
+            iconClass: iconClass
+          },
+          style: { ...iconStyle, marginRight: '8px' }
+        })
+      );
+
+      const mainNode = h('span', {
+        class: 'custom-tree-node',
+        style: {
+          display: 'flex',
+          alignItems: 'center',
+          width: '100%',
+          paddingTop: '10px',
+          paddingBottom: '10px',
+          borderRadius: level > 1 ? '6px' : '0',
+          transition: 'background-color 0.2s'
+        }
+      }, nodeContent);
+
+      return mainNode;
+    },
+    
     goToMenuEdit(data) {
       this.$router.push({
         path: '/editMenu',
         query: { id: data.id }
       });
+    },
+
+    //判断是否为根节点
+    isRootNode(data) {
+      return data.parentId === 0 || !data.parentId;
     },
 
     //  字典数据
@@ -1200,7 +1305,6 @@ export default {
         : (row.confirmProtectMethod ? row.confirmProtectMethod.split(',') : []);
       this.addOrEdit.show = true
       this.addOrEdit.title = '编辑'
-      this.addNodeName = row.owner
       this.tagsShow = false
       this.$set(this.addOrEditDataRuls, 'additional', row.attachDescribe)
       // 加载核心关键词并解析
@@ -1441,8 +1545,8 @@ export default {
           for (let item of tempList) {
             item.label = item.categoryName
           }
-          this.categoryList = this.handleTree(tempList, "id")
-          this.categoryListEdit = this.handleTree(tempList, "id")
+          this.categoryList = this.handleTree(tempList, "id", "parentId")
+          this.categoryListEdit = this.handleTree(tempList, "id", "parentId")
         }
         this.Loading = false
         this.treeLoading = false
@@ -1511,6 +1615,35 @@ export default {
         path: '/dataMapping',
         query: { row: row }
       });
+    },
+    // Helper function to get the path from the root to a given node
+    getNodePath(tree, nodeId, path = []) {
+      if (!Array.isArray(tree)) {
+        return [];
+      }
+      for (const node of tree) {
+        const currentPath = [...path, node]; // Add current node to path
+        if (node.id === nodeId) {
+          return currentPath.map(n => n.categoryName); // Return the path of category names
+        }
+        if (node.children && node.children.length > 0) {
+          const foundPath = this.getNodePath(node.children, nodeId, currentPath);
+          if (foundPath.length > 0) {
+            return foundPath;
+          }
+        }
+      }
+      return []; // Node not found
+    },
+    getBreadcrumbPath(node) {
+      if (!node || !node.categoryName) return '';
+
+      // 获取从根到当前节点的完整路径
+      const pathArray = this.getNodePath(this.categoryList, node.id);
+      if (pathArray.length > 1) {
+        return pathArray.slice(1).join(' > ');
+      }
+      return '';
     },
   },
 };
@@ -1682,100 +1815,66 @@ export default {
   }
 }
 
+/* Add tree node height and padding adjustments */
+::v-deep .el-tree-node__content {
+  height: auto;
+  min-height: 28px;
+  line-height: 1.5;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node.is-current>.el-tree-node__content {
+  background-color: #e8f4ff !important;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node__content:hover {
+  background-color: #eef4fc !important;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node {
+  padding: 0;
+}
+
+.tree-node-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding-bottom: 8px;
+}
+
 .node-label {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 120px;
-  line-height: 28px;
+  line-height: 24px;
+}
+
+.node-level {
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .custom-tree-node {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   width: 100%;
+  border-radius: 6px;
+  transition: background-color 0.2s;
 }
 
-/* 表格与按钮组容器 */
-.table-with-actions {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  justify-content: space-evenly;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
-/* 右侧竖排按钮组样式 */
-.vertical-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 20px;
-  font-size: 20px;
-}
-
-/* 按钮提示样式 */
-.vertical-actions .el-button {
-  position: relative;
-}
-
-.vertical-actions .el-button:hover::after {
-  content: attr(tooltip);
-  position: absolute;
-  right: 30px;
-  white-space: nowrap;
-  background: #333;
-  color: #fff;
-  padding: 2px 8px;
-  border-radius: 4px;
+.node-breadcrumb {
   font-size: 12px;
+  color: #909399;
+  margin-top: 6px;
+  line-height: 1.4;
 }
 
-.table-container {
-  width: 100%;
-}
-
-.addRuler /deep/.el-dialog__header {
-  padding: 20px;
-  background-color: rgb(230, 242, 255);
-  font-weight: 600;
-}
-
-.addRuler /deep/ .el-input--medium,
-.el-select {
-  width: 100% !important;
-}
-
-/* 新增规则弹窗表单样式 */
-.rule-dialog-form {
-  margin: 20px;
-}
-
-.rule-dialog-form /deep/ .el-form-item {
-  margin-bottom: 25px;
-}
-
-/* 弹窗按钮样式调整 */
-.rule-dialog-form /deep/ .el-radio {
-  margin-right: 30px;
-}
-
-.dialog-footer {
-  padding: 15px 0;
-}
-
-.checkbox-two-per-line {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.checkbox-item {
-  margin-right: 0 !important;
+.tree-node-main {
+  margin-left: 0px;
+  /* Default margin for L1 */
 }
 </style>
