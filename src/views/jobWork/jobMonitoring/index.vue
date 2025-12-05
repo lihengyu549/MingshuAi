@@ -899,9 +899,9 @@ export default {
         getLabelByKey(key) {
             const labelMap = {
                 dirtyDataNum: '噪音数据过滤字段数量',
+                classification: '分类情况',
+                aiNoteFilling: '语义填充情况',
                 classificationNum: '命中匹配规则字段数量',
-                aiNoteFillingNum: '语义填充情况',
-                classificationNum: '分类情况',
                 featureDataNum: '样本特征提取数量'
             };
             return labelMap[key] || key;
