@@ -125,8 +125,7 @@
                                                 <div class="typewriter-line">
                                                     <span ref="typewriterText" class="typewriter-text">{{
                                                         displayedTypewriterText }}</span>
-                                                    <span class="typewriter-cursor" :class="{ blink: cursorBlink }"
-                                                        :style="{ left: cursorX + 'px' }"></span>
+                                                    <span class="typewriter-cursor" :class="{ blink: cursorBlink }"></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -565,7 +564,6 @@ export default {
             displayedTypewriterText: '',  // 打字机效果显示的文本
             typewriterIndex: 0,           // 当前打字位置
             cursorBlink: true,
-            cursorX: 0,
             // 匹配规则数据
             leftNodes: [
                 { label: '字段A', matched: true },
@@ -732,8 +730,8 @@ export default {
             const currentUrl = new URL(window.location.href);
             const hostName = currentUrl.hostname;
             this.socket = new WebSocket(
-                `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`, // 线上
-                // `ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
+                // `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`, // 线上
+                `ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
                 protocols  // 只有当token存在时才传递子协议
             );
             this.socket.onopen = () => {
@@ -1086,10 +1084,7 @@ export default {
                 if (this.typewriterIndex < this.typewriterText.length) {
                     this.displayedTypewriterText += this.typewriterText[this.typewriterIndex];
                     this.typewriterIndex++;
-                    this.$nextTick(() => {
-                        const el = this.$refs.typewriterText;
-                        if (el) this.cursorX = el.offsetWidth;
-                    });
+                    // 移除光标位置计算，让光标自然跟随文本
                 } else {
                     // 打字完成后，等待一段时间再重新开始
                     clearInterval(this.semanticInterval);
@@ -1115,7 +1110,6 @@ export default {
             // 重置状态并重新开始
             this.displayedTypewriterText = '';
             this.typewriterIndex = 0;
-            this.cursorX = 0;
             // 延迟一小段时间再开始，让用户能看到文本清空
             setTimeout(() => {
                 if (this.currentStepIndex === 1 && this.activeTab === 'ai-vision') {
@@ -2038,11 +2032,12 @@ export default {
     max-width: 720px;
     text-align: left;
     min-height: 50px;
+    word-wrap: break-word;
+    word-break: break-all;
 }
 
 .typewriter-text {
-    display: inline-block;
-    white-space: nowrap;
+    display: inline;
     background: linear-gradient(90deg, #0ea5e9, #6366f1, #22c55e);
     -webkit-background-clip: text;
     background-clip: text;
@@ -2050,13 +2045,13 @@ export default {
 }
 
 .typewriter-cursor {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
+    display: inline-block;
+    vertical-align: middle;
     width: 2px;
     height: 1.2em;
     background: #6366f1;
     box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+    margin-left: 2px;
 }
 
 .typewriter-cursor.blink {
