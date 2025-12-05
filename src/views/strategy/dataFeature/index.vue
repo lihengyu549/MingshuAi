@@ -628,21 +628,13 @@ export default {
         },
         // 取消按钮处理
         handleCancel() {
-            this.$confirm('确定要取消吗？未保存的数据将丢失。')
-                .then(_ => {
-                    this.clearUploadedData();
-                    this.drawerVisible = false;
-                })
-                .catch(_ => { })
+            this.clearUploadedData();
+            this.drawerVisible = false;
         },
         // 抽屉关闭前的处理
         handleDrawerClose(done) {
-            this.$confirm('确定要关闭吗？未保存的数据将丢失。')
-                .then(_ => {
-                    this.clearUploadedData();
-                    done();
-                })
-                .catch(_ => { })
+            this.clearUploadedData();
+            done();
         },
         // 清空上传的数据
         clearUploadedData() {
