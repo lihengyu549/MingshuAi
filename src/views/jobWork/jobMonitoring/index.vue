@@ -87,7 +87,7 @@
                     <div class="progress-header">
                         <span class="progress-label">整体进度</span>
                         <span class="progress-text">{{ progressCurrent }}/{{ progressTotal }} ({{ progressPercent
-                            }}%)</span>
+                        }}%)</span>
                     </div>
                     <div class="custom-progress-container">
                         <el-progress
@@ -125,7 +125,8 @@
                                                 <div class="typewriter-line">
                                                     <span ref="typewriterText" class="typewriter-text">{{
                                                         displayedTypewriterText }}</span>
-                                                    <span class="typewriter-cursor" :class="{ blink: cursorBlink }"></span>
+                                                    <span class="typewriter-cursor"
+                                                        :class="{ blink: cursorBlink }"></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -156,7 +157,7 @@
                                                         <circle :cx="80" :cy="50 + idx * 60" r="20" class="node-circle"
                                                             :class="{ active: node.matched }" />
                                                         <text :x="80" :y="55 + idx * 60" class="node-text">{{ node.label
-                                                            }}</text>
+                                                        }}</text>
                                                     </g>
                                                 </g>
                                                 <!-- 右侧规则节点 -->
@@ -402,10 +403,10 @@
                                                     </foreignObject>
                                                     <!-- 将标签移动到盒子右上角位置 -->
                                                     <g v-if="box.stamped" class="stamp-label">
-                                                        <rect :x="box.x + 50" y="275" width="60" height="24" fill="#fff"
+                                                        <rect :x="box.x + 100" y="195" width="60" height="24" fill="#fff"
                                                             stroke="#ef4444" stroke-width="2" rx="3"
                                                             :transform="`rotate(-12, ${box.x + 80}, 277)`" />
-                                                        <text :x="box.x + 80" y="292" text-anchor="middle"
+                                                        <text :x="box.x + 130" y="212" text-anchor="middle"
                                                             fill="#ef4444" font-size="10" font-weight="800"
                                                             :transform="`rotate(-12, ${box.x + 80}, 277)`">
                                                             {{ truncateLabel(box.label) }}
@@ -542,10 +543,12 @@ export default {
             realtimeLogs: [],
             socket: null,
             socketConnected: false,
+            // WebSocket错误提示标志
+            showSocketError: true,
             // 分析日志
             analysisLogs: {},
             // 标签页
-            activeTab: 'analysis',
+            activeTab: '',
             queryParams: this.$route.query || {},
             currentTableName: '',
             prevTableName: '',
@@ -655,7 +658,7 @@ export default {
     watch: {
         status: {
             handler(newStatus) {
-                const newTab = newStatus === 'RUNNING' ? 'realtime' : 'analysis';
+                const newTab = newStatus === 'RUNNING' ? 'ai-vision' : 'analysis';
                 this.activeTab = newTab;
                 if (newTab === 'analysis') {
                     this.getAnalysisLogs();
@@ -730,8 +733,8 @@ export default {
             const currentUrl = new URL(window.location.href);
             const hostName = currentUrl.hostname;
             this.socket = new WebSocket(
-                // `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`, // 线上
-                `ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
+                `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`, // 线上
+                // `ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
                 protocols  // 只有当token存在时才传递子协议
             );
             this.socket.onopen = () => {
@@ -823,12 +826,18 @@ export default {
                 console.log('WebSocket连接断开:', event.reason);
                 this.socketConnected = false;
                 if (!event.wasClean) {
+                    // 只在首次连接失败时显示错误提示
+                    if (this.showSocketError) {
+                        this.$message.error('日志连接异常，请刷新页面重试');
+                        this.showSocketError = false;
+                    }
                     setTimeout(() => this.initWebSocket(), 3000);
                 }
             };
             this.socket.onerror = (error) => {
                 console.error('WebSocket错误:', error);
-                this.$message.error('日志连接异常，请刷新页面重试');
+                // 只记录日志，不重复显示错误提示
+                // 错误提示会在onclose中统一处理
             };
         },
         rotateTable(newTableName) {
@@ -889,12 +898,11 @@ export default {
         },
         getLabelByKey(key) {
             const labelMap = {
-                noiseFilterCount: '噪音过滤',
-                semanticFillCount: '语义填充',
-                ruleMatchCount: '规则匹配',
-                aiLabelCount: 'AI分类',
-                piiRecognitionCount: '个人信息识别',
-                featureExtractCount: '特征提取'
+                dirtyDataNum: '噪音数据过滤字段数量',
+                classificationNum: '命中匹配规则字段数量',
+                aiNoteFillingNum: '语义填充情况',
+                classificationNum: '分类情况',
+                featureDataNum: '样本特征提取数量'
             };
             return labelMap[key] || key;
         },
@@ -2356,7 +2364,7 @@ export default {
     animation: stampAppear 0.3s ease forwards;
 }
 
-@keyframes stampAppear {
+/* @keyframes stampAppear {
     0% {
         opacity: 0;
         transform: scale(0.5) rotate(-12deg);
@@ -2366,7 +2374,7 @@ export default {
         opacity: 1;
         transform: scale(1) rotate(-12deg);
     }
-}
+} */
 
 /* 步骤5: 个人信息扫描样式 */
 .personal-scan {
