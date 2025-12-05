@@ -87,7 +87,7 @@
                     <div class="progress-header">
                         <span class="progress-label">整体进度</span>
                         <span class="progress-text">{{ progressCurrent }}/{{ progressTotal }} ({{ progressPercent
-                            }}%)</span>
+                        }}%)</span>
                     </div>
                     <div class="custom-progress-container">
                         <el-progress
@@ -125,8 +125,8 @@
                                                 <div class="typewriter-line">
                                                     <span ref="typewriterText" class="typewriter-text">{{
                                                         displayedTypewriterText }}</span>
-                                                    <span class="typewriter-cursor" :class="{ blink: cursorBlink }"
-                                                        :style="{ left: cursorX + 'px' }"></span>
+                                                    <span class="typewriter-cursor"
+                                                        :class="{ blink: cursorBlink }"></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -157,7 +157,7 @@
                                                         <circle :cx="80" :cy="50 + idx * 60" r="20" class="node-circle"
                                                             :class="{ active: node.matched }" />
                                                         <text :x="80" :y="55 + idx * 60" class="node-text">{{ node.label
-                                                            }}</text>
+                                                        }}</text>
                                                     </g>
                                                 </g>
                                                 <!-- 右侧规则节点 -->
@@ -403,10 +403,10 @@
                                                     </foreignObject>
                                                     <!-- 将标签移动到盒子右上角位置 -->
                                                     <g v-if="box.stamped" class="stamp-label">
-                                                        <rect :x="box.x + 50" y="275" width="60" height="24" fill="#fff"
+                                                        <rect :x="box.x + 100" y="195" width="60" height="24" fill="#fff"
                                                             stroke="#ef4444" stroke-width="2" rx="3"
                                                             :transform="`rotate(-12, ${box.x + 80}, 277)`" />
-                                                        <text :x="box.x + 80" y="292" text-anchor="middle"
+                                                        <text :x="box.x + 130" y="212" text-anchor="middle"
                                                             fill="#ef4444" font-size="10" font-weight="800"
                                                             :transform="`rotate(-12, ${box.x + 80}, 277)`">
                                                             {{ truncateLabel(box.label) }}
@@ -543,10 +543,12 @@ export default {
             realtimeLogs: [],
             socket: null,
             socketConnected: false,
+            // WebSocket错误提示标志
+            showSocketError: true,
             // 分析日志
             analysisLogs: {},
             // 标签页
-            activeTab: 'analysis',
+            activeTab: '',
             queryParams: this.$route.query || {},
             currentTableName: '',
             prevTableName: '',
@@ -565,7 +567,6 @@ export default {
             displayedTypewriterText: '',  // 打字机效果显示的文本
             typewriterIndex: 0,           // 当前打字位置
             cursorBlink: true,
-            cursorX: 0,
             // 匹配规则数据
             leftNodes: [
                 { label: '字段A', matched: true },
@@ -657,7 +658,7 @@ export default {
     watch: {
         status: {
             handler(newStatus) {
-                const newTab = newStatus === 'RUNNING' ? 'realtime' : 'analysis';
+                const newTab = newStatus === 'RUNNING' ? 'ai-vision' : 'analysis';
                 this.activeTab = newTab;
                 if (newTab === 'analysis') {
                     this.getAnalysisLogs();
@@ -825,12 +826,18 @@ export default {
                 console.log('WebSocket连接断开:', event.reason);
                 this.socketConnected = false;
                 if (!event.wasClean) {
+                    // 只在首次连接失败时显示错误提示
+                    if (this.showSocketError) {
+                        this.$message.error('日志连接异常，请刷新页面重试');
+                        this.showSocketError = false;
+                    }
                     setTimeout(() => this.initWebSocket(), 3000);
                 }
             };
             this.socket.onerror = (error) => {
                 console.error('WebSocket错误:', error);
-                this.$message.error('日志连接异常，请刷新页面重试');
+                // 只记录日志，不重复显示错误提示
+                // 错误提示会在onclose中统一处理
             };
         },
         rotateTable(newTableName) {
@@ -891,12 +898,11 @@ export default {
         },
         getLabelByKey(key) {
             const labelMap = {
-                noiseFilterCount: '噪音过滤',
-                semanticFillCount: '语义填充',
-                ruleMatchCount: '规则匹配',
-                aiLabelCount: 'AI分类',
-                piiRecognitionCount: '个人信息识别',
-                featureExtractCount: '特征提取'
+                dirtyDataNum: '噪音数据过滤字段数量',
+                classification: '分类情况',
+                aiNoteFilling: '语义填充情况',
+                classificationNum: '命中匹配规则字段数量',
+                featureDataNum: '样本特征提取数量'
             };
             return labelMap[key] || key;
         },
@@ -1086,10 +1092,7 @@ export default {
                 if (this.typewriterIndex < this.typewriterText.length) {
                     this.displayedTypewriterText += this.typewriterText[this.typewriterIndex];
                     this.typewriterIndex++;
-                    this.$nextTick(() => {
-                        const el = this.$refs.typewriterText;
-                        if (el) this.cursorX = el.offsetWidth;
-                    });
+                    // 移除光标位置计算，让光标自然跟随文本
                 } else {
                     // 打字完成后，等待一段时间再重新开始
                     clearInterval(this.semanticInterval);
@@ -1115,7 +1118,6 @@ export default {
             // 重置状态并重新开始
             this.displayedTypewriterText = '';
             this.typewriterIndex = 0;
-            this.cursorX = 0;
             // 延迟一小段时间再开始，让用户能看到文本清空
             setTimeout(() => {
                 if (this.currentStepIndex === 1 && this.activeTab === 'ai-vision') {
@@ -2038,11 +2040,12 @@ export default {
     max-width: 720px;
     text-align: left;
     min-height: 50px;
+    word-wrap: break-word;
+    word-break: break-all;
 }
 
 .typewriter-text {
-    display: inline-block;
-    white-space: nowrap;
+    display: inline;
     background: linear-gradient(90deg, #0ea5e9, #6366f1, #22c55e);
     -webkit-background-clip: text;
     background-clip: text;
@@ -2050,13 +2053,13 @@ export default {
 }
 
 .typewriter-cursor {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
+    display: inline-block;
+    vertical-align: middle;
     width: 2px;
     height: 1.2em;
     background: #6366f1;
     box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+    margin-left: 2px;
 }
 
 .typewriter-cursor.blink {
@@ -2361,7 +2364,7 @@ export default {
     animation: stampAppear 0.3s ease forwards;
 }
 
-@keyframes stampAppear {
+/* @keyframes stampAppear {
     0% {
         opacity: 0;
         transform: scale(0.5) rotate(-12deg);
@@ -2371,7 +2374,7 @@ export default {
         opacity: 1;
         transform: scale(1) rotate(-12deg);
     }
-}
+} */
 
 /* 步骤5: 个人信息扫描样式 */
 .personal-scan {
