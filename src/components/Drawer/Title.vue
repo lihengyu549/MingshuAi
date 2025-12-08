@@ -3,6 +3,7 @@
     <div class="basic-info-title">
       <svg-icon v-if="iconClass != ''" :icon-class="iconClass"></svg-icon>
       {{ label }}
+      <slot></slot>
     </div>
     <el-divider style="margin: 10px 0;"></el-divider>
   </div>
