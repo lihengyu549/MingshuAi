@@ -318,7 +318,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="确认状态" prop="confirm" :rules="rules.confirm">
-              <el-select v-model="form.confirm" placeholder="全部">
+              <el-select v-model="form.confirm" placeholder="全部" clearable>
                 <el-option v-for="item in confirmList" :key="item.value" :label="item.name" :value="item.value">
                 </el-option>
               </el-select>
