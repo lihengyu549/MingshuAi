@@ -55,3 +55,46 @@ export function testConnection(data) {
     })
 }
 
+// 获取数据集列表
+export function getDataSetList(queryParams) {
+    return request({
+        url: '/system/dataSet/getDataSetList',
+        method: 'get',
+        params: queryParams
+    })
+}
+
+// 新增下拉内容
+export function getDatabasesProxyByIssue() {
+    return request({
+        url: '/system/dataSet/getDatabasesProxyByIssue',
+        method: 'get'
+    })
+}
+
+// 新增数据集
+export function addDataSet(data) {
+    return request({
+        url: '/system/dataSet/addDataSet',
+        method: 'post',
+        data: data
+    })
+}
+
+// 更新数据集
+export function updateDataSet(data) {
+    return request({
+        url: '/system/dataSet/updateDataSet',
+        method: 'post',
+        data: data
+    })
+}
+
+// 批量删除数据集
+export function deleteDataSetByIds(data) {
+    return request({
+        url: '/system/dataSet/deleteDataSetByIds',
+        method: 'post',
+        data: data
+    })
+}

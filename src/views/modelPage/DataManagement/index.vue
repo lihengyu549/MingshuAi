@@ -2,20 +2,20 @@
     <div class="app-container" v-loading="mainLoading">
         <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
             :inline="true" label-width="auto">
-            <el-form-item label="数据集名称" prop="taskName">
-                <el-input v-model="queryParams.taskName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+            <el-form-item label="数据集名称" prop="dataSetName">
+                <el-input v-model="queryParams.dataSetName" @input="inputSearch" placeholder="请输入数据集名称" clearable
                     @keyup.enter.native="handleQuery" />
             </el-form-item>
-            <el-form-item label="数据集类型" prop="pushType">
-                <el-select clearable v-model="queryParams.pushType" @change="inputSearch" placeholder="请选择数据库类型">
-                    <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel"
-                        :value="item.dictValue">
+            <el-form-item label="数据集类型" prop="dataSetType">
+                <el-select clearable v-model="queryParams.dataSetType" @change="inputSearch" placeholder="请选择数据集类型">
+                    <el-option v-for="item in dict.type.sys_data_set" :key="item.value" :label="item.label"
+                        :value="item.value">
                     </el-option>
                 </el-select>
             </el-form-item>
-            <el-form-item class="searchBtn" label-width="0">
-                <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
-            </el-form-item>
+            <!-- <el-form-item class="searchBtn" label-width="0"> -->
+            <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
+            <!-- </el-form-item> -->
         </el-form>
         <el-row :gutter="10" class="mb8">
             <el-col :span="1.5">
@@ -31,17 +31,19 @@
                 <el-empty description="暂无数据"></el-empty>
             </template>
             <el-table-column type="selection" width="60" align="center" />
-            <el-table-column label="数据集名称" prop="taskName" align="center" width="250" show-overflow-tooltip>
+            <el-table-column label="数据集名称" prop="dataSetName" align="center" width="300" show-overflow-tooltip>
                 <template slot-scope="scope">
-                    <svg-icon icon-class="dataset" style="font-size: 16px; margin-right: 5px;" />
-                    {{ scope.row.taskName }}
+                    <span @click="handleEdit(scope.row)" style="cursor: pointer; color: #409eff;">
+                        <svg-icon icon-class="dataset" style="font-size: 16px; margin-right: 5px;" />
+                        {{ scope.row.dataSetName }}
+                    </span>
                 </template>
             </el-table-column>
-            <el-table-column label="数据集类型" align="center" prop="pushTypeName" width="250" show-overflow-tooltip />
-            <el-table-column label="数据量" align="center" prop="sourceName" width="250" show-overflow-tooltip />
+            <el-table-column label="数据集类型" align="center" prop="dataSetType" width="300" show-overflow-tooltip />
+            <el-table-column label="数据量" align="center" prop="dataSize" width="300" show-overflow-tooltip />
             <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
                 <template slot-scope="scope">
-                    <el-button size="mini" type="text" @click="handleEdit(scope.row)">查看</el-button>
+                    <el-button size="mini" type="text" @click="handlePreview(scope.row)">查看</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -53,27 +55,27 @@
                 :inline="true" label-width="110px" label-position="top">
                 <el-row>
                     <el-col :span="12">
-                        <el-form-item label="数据集名称" prop="taskName">
-                            <el-input v-model="dialogData.taskName" placeholder="请输入数据集名称"
+                        <el-form-item label="数据集名称" prop="dataSetName">
+                            <el-input v-model="dialogData.dataSetName" placeholder="请输入数据集名称"
                                 :disabled="isViewMode"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="数据集类型" prop="pushType">
-                            <el-select clearable v-model="dialogData.pushType" placeholder="请选择数据集类型"
+                        <el-form-item label="数据集类型" prop="dataSetType">
+                            <el-select clearable v-model="dialogData.dataSetType" placeholder="请选择数据集类型"
                                 :disabled="isViewMode">
-                                <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel"
-                                    :value="item.dictValue">
+                                <el-option v-for="item in dict.type.sys_data_set" :key="item.value" :label="item.label"
+                                    :value="item.value">
                                 </el-option>
                             </el-select>
                         </el-form-item>
                     </el-col>
                 </el-row>
-                <el-form-item label="选择内容" prop="sourceName">
-                    <el-select v-model="dialogData.sourceName" multiple clearable filterable placeholder="请选择内容"
+                <el-form-item label="选择内容" prop="dataContent">
+                    <el-select v-model="dialogData.dataContent" multiple clearable filterable placeholder="请选择内容"
                         :disabled="isViewMode">
-                        <el-option v-for="item in sourceContentList" :key="item.value" :label="item.label"
-                            :value="item.value"></el-option>
+                        <el-option v-for="item in sourceContentList" :key="item.id" :label="item.tasksName"
+                            :value="item.id"></el-option>
                     </el-select>
                 </el-form-item>
             </el-form>
@@ -87,19 +89,11 @@
 </template>
 
 <script>
-// 导入API接口（请根据实际接口文件路径修改）
-// import {
-//   getResultPushList,    // 获取数据集列表
-//   addResultPush,        // 新增数据集
-//   updateResultPush,     // 更新数据集
-//   deleteResultPush,     // 删除数据集
-//   pushResult,           // 推送数据集
-//   getStandardList,      // 获取分类分级标准列表
-//   listByDataType        // 获取字典数据列表
-// } from "@/api/system/modelPage";
+import { getDataSetList, getDatabasesProxyByIssue, addDataSet, updateDataSet, deleteDataSetByIds } from "@/api/system/modelPage";
 
 export default {
     name: "DataManagement",
+    dicts: ['sys_data_set'],
     data() {
         return {
             // 遮罩层
@@ -124,26 +118,26 @@ export default {
             queryParams: {
                 pageNum: 1,
                 pageSize: 10,
-                pushType: '',
-                taskName: '',
+                dataSetType: '',
+                dataSetName: '',
             },
             // 表单数据
             dialogData: {
-                taskName: '',       // 数据集名称
-                pushType: '',       // 数据集类型（字典表维护）
-                sourceName: []      // 选择内容（多选）
+                dataSetName: '',       // 数据集名称
+                dataSetType: '',       // 数据集类型（字典表维护）
+                dataContent: []      // 选择内容（多选）
             },
             // 防抖定时器
             debounceTimeout: null,
             // 表单校验规则
             dialogDataRules: {
-                taskName: [
+                dataSetName: [
                     { required: true, message: "请输入数据集名称", trigger: "blur" }
                 ],
-                pushType: [
+                dataSetType: [
                     { required: true, message: "请选择数据集类型", trigger: "blur" }
                 ],
-                provider: [
+                dataContent: [
                     { required: true, message: "请选择内容", trigger: "blur" }
                 ],
             },
@@ -157,72 +151,28 @@ export default {
     computed: {
     },
     created() {
-        // 初始化数据
-        this.getDictDataFn();
-        this.getStandardListFn();
-        this.getSourceContentListFn();
+
     },
     mounted() {
         this.getList();
+        this.getDatabasesProxyByIssueFn();
     },
     methods: {
-
-
-        /**
-         * 获取字典数据
-         * 接口对接位置：请在下方调用实际接口
-         */
-        getDictDataFn() {
-            // 接口调用示例（请替换为实际接口）
-            /*
-            // 获取对接厂商字典
-            listByDataType({ type: 'sys_provider_type' }).then(res => {
-                this.providerList = res.data;
-            });
-            // 获取推送类型字典
-            listByDataType({ type: 'sys_push_type' }).then(res => {
-                this.pushList = res.data;
-            });
-            */
-        },
-
-        /**
-         * 获取分类分级标准列表
-         * 接口对接位置：请在下方调用实际接口
-         */
-        getStandardListFn() {
-            // 接口调用示例（请替换为实际接口）
-            /*
-            getStandardList().then(res => {
-                this.standardList = res.data.map(item => {
-                    return { ...item, categoryName: item.categoryName, id: item.id + '' }
-                });
-            });
-            */
-        },
-
         /**
          * 获取选择内容列表
          * 接口对接位置：请在下方调用实际接口
          */
-        getSourceContentListFn() {
+        getDatabasesProxyByIssueFn() {
             // 接口调用示例（请替换为实际接口）
-            /*
             // 获取选择内容列表接口
-            getSourceContentList().then(res => {
-                this.sourceContentList = res.data;
-            });
-            */
+            try {
+                getDatabasesProxyByIssue().then(res => {
+                    this.sourceContentList = res.data;
+                });
+            } catch (error) {
+                console.log('error', error);
+            }
 
-            // 模拟数据（测试用，实际对接时删除）
-            this.sourceContentList = [
-                { value: 'content1', label: '内容1' },
-                { value: 'content2', label: '内容2' },
-                { value: 'content3', label: '内容3' },
-                { value: 'content4', label: '内容4' },
-                { value: 'content5', label: '内容5' },
-                { value: 'content6', label: '内容6' },
-            ];
         },
 
         // 关闭新增/编辑/查看对话框
@@ -246,19 +196,19 @@ export default {
         getList() {
             this.loading = true;
             // 接口调用示例（请替换为实际接口）
-            /*
-            getResultPushList(this.queryParams).then(res => {
-                this.proxysList = res.data.rows;
-                this.total = res.data.total;
-                this.loading = false;
-            });
-            */
-            // 模拟数据（测试用，实际对接时删除）
-            setTimeout(() => {
-                this.proxysList = [];
-                this.total = 0;
-                this.loading = false;
-            }, 500);
+            try {
+                getDataSetList(this.queryParams).then(res => {
+                    if (res.code === 200) {
+                        this.proxysList = res.data.records;
+                        this.total = res.data.total;
+                        this.queryParams.pageNum = res.data.pages;
+                        this.queryParams.pageSize = res.data.size;
+                        this.loading = false;
+                    }
+                });
+            } catch (error) {
+                console.log('error', error);
+            }
         },
 
         /** 搜索按钮操作 */
@@ -286,8 +236,16 @@ export default {
             this.isViewMode = false;
         },
 
-        /** 查看按钮操作 */
+        // 编辑按钮操作
         handleEdit(row) {
+            this.dialogData = JSON.parse(JSON.stringify(row));
+            this.dialogDataShow = true;
+            this.title = "编辑数据集";
+            this.isViewMode = false;
+        },
+
+        /** 查看按钮操作 */
+        handlePreview(row) {
             this.dialogData = JSON.parse(JSON.stringify(row));
             this.dialogDataShow = true;
             this.title = "查看数据集";
@@ -304,24 +262,20 @@ export default {
                     this.dialogLoading = true;
 
                     let data = {
-                        ...this.dialogData
+                        datasetName: this.dialogData.dataSetName,
+                        datasetType: this.dialogData.dataSetType,
+                        databaseProxyListId: this.dialogData.dataContent
                     };
-
                     try {
                         // 根据是否有ID判断是新增还是编辑
                         if (this.dialogData.id) {
                             // 更新数据集
-                            /*
-                            await updateResultPush(data);
-                            this.$modal.msgSuccess("修改成功");
-                            */
+                            data.id = this.dialogData.id;
+                            await updateDataSet(data);
                             this.$message.success("修改成功");
                         } else {
                             // 新增数据集
-                            /*
-                            await addResultPush(data);
-                            this.$modal.msgSuccess("新增成功");
-                            */
+                            await addDataSet(data);
                             this.$message.success("新增成功");
                         }
 
@@ -352,14 +306,11 @@ export default {
                 type: 'warning'
             }).then(() => {
                 // 接口调用示例（请替换为实际接口）
-                /*
-                deleteResultPush({ ids: this.ids }).then(res => {
+                deleteDataSetByIds({ ids: this.ids }).then(res => {
                     if (res.code === 200) {
-                        this.$message.success(res.msg);
                         this.getList();
                     }
                 });
-                */
                 // 模拟删除（测试用，实际对接时删除）
                 this.$message.success('删除成功');
                 this.getList();
