@@ -93,7 +93,7 @@
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
             :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">开始扫描</el-button>
           <el-button size="mini" type="text" @click="stopScan(scope.row)"
-            :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">终止扫描</el-button>
+            :disabled="scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">终止扫描</el-button>
           <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
             @click="scanContentEdit(scope.row)">编辑</el-button>
         </template>
