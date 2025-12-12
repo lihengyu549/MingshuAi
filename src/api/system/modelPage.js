@@ -98,3 +98,74 @@ export function deleteDataSetByIds(data) {
         data: data
     })
 }
+
+// 获取模型列表
+export function getModelDrillList(queryParams) {
+    return request({
+        url: '/system/modelDrill/getModelDrillList',
+        method: 'get',
+        params: queryParams
+    })
+}
+
+// 获取模型钻取详情
+export function getModelDrillById(id) {
+    return request({
+        url: '/system/modelDrill/getModelDrillById',
+        method: 'get',
+        params: { id }
+    })
+}
+
+// 新增模型钻取
+export function addModelDrill(data) {
+    return request({
+        url: '/system/modelDrill/addModelDrill',
+        method: 'post',
+        data: data
+    })
+}
+
+// 更新模型钻取
+export function updateModelDrill(data) {
+    return request({
+        url: '/system/modelDrill/updateModelDrill',
+        method: 'post',
+        data: data
+    })
+}
+
+// 批量删除模型钻取
+export function deleteModelDrillByIds(data) {
+    return request({
+        url: '/system/modelDrill/deleteModelDrillByIds',
+        method: 'post',
+        data: data
+    })
+}
+
+// 开启模型钻取
+export function startDrillById(id) {
+    return request({
+        url: '/system/modelDrill/startDrillById',
+        method: 'post',
+        data: { id }
+    })
+}
+
+// 获取所有数据集列表
+export function getDataSetListByAll() {
+    return request({
+        url: '/system/dataSet/getDataSetListByAll',
+        method: 'get',
+    })
+}
+
+// 终止模型钻取
+export function finishDrillById(id) {
+    return request({
+        url: '/system/modelDrill/finishDrillById',
+        method: 'post',
+        data: { id }
+    })
+}

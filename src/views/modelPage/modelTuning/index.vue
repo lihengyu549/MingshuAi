@@ -2,26 +2,26 @@
     <div class="app-container" v-loading="mainLoading">
         <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
             :inline="true" label-width="auto">
-            <el-form-item label="任务名称" prop="taskName">
-                <el-input v-model="queryParams.taskName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+            <el-form-item label="任务名称" prop="modelTaskName">
+                <el-input v-model="queryParams.modelTaskName" @input="inputSearch" placeholder="请输入数据源名称" clearable
                     @keyup.enter.native="handleQuery" />
             </el-form-item>
-            <el-form-item label="训练状态 " prop="pushType">
-                <el-select clearable v-model="queryParams.pushType" @change="inputSearch" placeholder="请选择数据库类型">
-                    <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel"
-                        :value="item.dictValue">
+            <el-form-item label="训练状态 " prop="modelTrainingStatus">
+                <el-select clearable v-model="queryParams.modelTrainingStatus" @change="inputSearch"
+                    placeholder="请选择训练状态">
+                    <el-option v-for="item in dict.type.sys_model_drill" :key="item.value" :label="item.label"
+                        :value="item.value">
                     </el-option>
                 </el-select>
             </el-form-item>
-            <el-form-item label="数据集 " prop="pushType">
-                <el-select clearable v-model="queryParams.pushType" @change="inputSearch" placeholder="请选择数据库类型">
-                    <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel"
-                        :value="item.dictValue">
+            <el-form-item label="数据集 " prop="dataSetId">
+                <el-select clearable v-model="queryParams.dataSetId" @change="inputSearch" placeholder="请选择数据集">
+                    <el-option v-for="item in dataSetList" :key="item.id" :label="item.dataSetName" :value="item.id">
                     </el-option>
                 </el-select>
             </el-form-item>
             <!-- <el-form-item class="searchBtn" label-width="0"> -->
-                <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
+            <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
             <!-- </el-form-item> -->
         </el-form>
         <el-row :gutter="10" class="mb8">
@@ -38,21 +38,27 @@
                 <el-empty description="暂无数据"></el-empty>
             </template>
             <el-table-column type="selection" width="60" align="center" />
-            <el-table-column label="任务名称" prop="taskName" align="center" width="150" show-overflow-tooltip>
+            <el-table-column label="任务名称" prop="modelTaskName" align="center" width="200" show-overflow-tooltip>
                 <template slot-scope="scope">
-                    <svg-icon icon-class="dataset" style="font-size: 16px; margin-right: 5px;" />
-                    {{ scope.row.taskName }}
+                    <span @click="handleEdit(scope.row)" style="cursor: pointer; color: #409eff;">
+                        <svg-icon icon-class="dataset" style="font-size: 16px; margin-right: 5px;" />
+                        {{ scope.row.modelTaskName }}
+                    </span>
                 </template>
             </el-table-column>
-            <el-table-column label="基座类型" align="center" prop="pushTypeName" width="150" show-overflow-tooltip />
-            <el-table-column label="训练方法" align="center" prop="pushTypeName" width="150" show-overflow-tooltip />
-            <el-table-column label="训练状态" align="center" prop="pushTypeName" width="150" show-overflow-tooltip />
-            <el-table-column label="数据集" align="center" prop="sourceName" width="150" show-overflow-tooltip />
-            <el-table-column label="产出模型名称" align="center" prop="sourceName" width="300" show-overflow-tooltip />
-            <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
+            <el-table-column label="基座类型" align="center" prop="modelBase" width="150" show-overflow-tooltip />
+            <el-table-column label="训练方法" align="center" prop="modelTrainingMethod" width="150" show-overflow-tooltip />
+            <el-table-column label="训练状态" align="center" prop="modelTrainingStatusName" width="150" show-overflow-tooltip />
+            <el-table-column label="数据集" align="center" prop="dataSetId" width="150" show-overflow-tooltip>
                 <template slot-scope="scope">
-                    <el-button size="mini" type="text" @click="handleEdit(scope.row)">开始训练</el-button>
-                    <el-button size="mini" type="text" @click="handleEdit(scope.row)">终止训练 </el-button>
+                    {{ scope.row.dataSet ? scope.row.dataSet.dataSetName : '-' }}
+                </template>
+            </el-table-column>
+            <el-table-column label="产出模型名称" align="center" prop="modelOutputName" width="300" show-overflow-tooltip />
+            <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="200">
+                <template slot-scope="scope">
+                    <el-button size="mini" type="text" @click="startTraining(scope.row)" :disabled="scope.row.modelTrainingStatus == '2'">开始训练</el-button>
+                    <el-button size="mini" type="text" @click="stopTraining(scope.row)" :disabled="scope.row.modelTrainingStatus != '2'">终止训练</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -65,57 +71,80 @@
                 <Title title="基本信息" />
                 <el-row>
                     <el-col :span="12">
-                        <el-form-item label="任务名称" prop="taskName">
-                            <el-input v-model="dialogData.taskName" placeholder="请输入数据集名称"
+                        <el-form-item label="任务名称" prop="modelTaskName">
+                            <el-input v-model="dialogData.modelTaskName" placeholder="请输入任务名称"
                                 :disabled="isViewMode"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="训练方式" prop="pushType">
-                            <el-select clearable v-model="dialogData.pushType" placeholder="请选择数据集类型"
+                        <el-form-item label="训练方式" prop="modelTrainingMethod">
+                            <el-select clearable v-model="dialogData.modelTrainingMethod" placeholder="请选择训练方式"
                                 :disabled="isViewMode">
-                                <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel"
+                                <el-option label="SFT微调训练" value="1"></el-option>
+                                <!-- <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel"
                                     :value="item.dictValue">
-                                </el-option>
+                                </el-option> -->
+
                             </el-select>
                         </el-form-item>
                     </el-col>
                 </el-row>
                 <el-row>
                     <el-col :span="12">
-                        <el-form-item label="基座模型" prop="pushType">
-                            <el-select clearable v-model="dialogData.pushType" placeholder="请选择数据集类型"
+                        <el-form-item label="基座模型" prop="modelBase">
+                            <el-select clearable v-model="dialogData.modelBase" placeholder="请选择基座模型"
                                 :disabled="isViewMode">
-                                <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel"
+                                <!-- <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel"
                                     :value="item.dictValue">
-                                </el-option>
+                                </el-option> -->
+                                <el-option label="qwen3-4b-fp16_202511271132_baed6c00" value="1"></el-option>
                             </el-select>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="训练数据集" prop="taskName">
-                            <el-input v-model="dialogData.taskName" placeholder="请输入数据集名称"
-                                :disabled="isViewMode"></el-input>
+                        <el-form-item label="训练数据集" prop="modelDataSetId">
+                            <el-select clearable v-model="dialogData.modelDataSetId" placeholder="请选择训练数据集"
+                                :disabled="isViewMode">
+                                <el-option v-for="item in dataSetList" :key="item.id" :label="item.dataSetName"
+                                    :value="item.id">
+                                </el-option>
+                            </el-select>
                         </el-form-item>
                     </el-col>
                 </el-row>
-                <el-form-item label="模型导出名称" prop="taskName">
-                    <el-input v-model="dialogData.taskName" placeholder="请输入数据集名称" :disabled="isViewMode"></el-input>
+                <el-form-item label="模型导出名称" prop="modelOutputName">
+                    <el-input v-model="dialogData.modelOutputName" placeholder="请输入模型导出名称"
+                        :disabled="isViewMode"></el-input>
                 </el-form-item>
                 <Title title="参数配置">
                     <el-button type="text" icon="el-icon-refresh-right" size="mini" style="float: inline-end;"
                         @click="resetParam">恢复默认配置</el-button>
                 </Title>
-                <el-form-item prop="paramList">
-                    <el-table :data="dialogData.paramList" style="width: 100%">
+                <el-form-item prop="modelParameterConfigJson">
+                    <el-table :data="dialogData.modelParameterConfigJson" style="width: 100%">
                         <template slot="empty">
                             <el-empty description="暂无数据"></el-empty>
                         </template>
                         <el-table-column label="参数名称" prop="paramName" align="center" width="150"
                             show-overflow-tooltip />
-                        <el-table-column label="配置" prop="paramValue" align="center" width="150"
-                            show-overflow-tooltip />
-                        <el-table-column label="说明" prop="paramValue" align="center" min-width="150"
+                        <el-table-column label="配置" prop="paramValue" align="center" width="150">
+                            <template slot-scope="scope">
+                                <!-- 根据参数类型动态渲染输入组件 -->
+                                <el-select v-if="scope.row.type === 'select'" v-model="scope.row.paramValue" 
+                                    placeholder="请选择配置" :disabled="isViewMode" style="width: 100%;">
+                                    <el-option 
+                                        v-for="option in scope.row.options" 
+                                        :key="option.value" 
+                                        :label="option.label" 
+                                        :value="option.value">
+                                    </el-option>
+                                </el-select>
+                                <el-input v-else v-model="scope.row.paramValue" 
+                                    placeholder="请输入配置" 
+                                    :disabled="isViewMode"></el-input>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="说明" prop="paramDesc" align="center" min-width="150"
                             show-overflow-tooltip />
                     </el-table>
                 </el-form-item>
@@ -129,25 +158,28 @@
 </template>
 
 <script>
-// 导入API接口（请根据实际接口文件路径修改）
-// import {
-//   getResultPushList,    // 获取数据集列表
-//   addResultPush,        // 新增数据集
-//   updateResultPush,     // 更新数据集
-//   deleteResultPush,     // 删除数据集
-//   pushResult,           // 推送数据集
-//   getStandardList,      // 获取分类分级标准列表
-//   listByDataType        // 获取字典数据列表
-// } from "@/api/system/modelPage";
+// 导入API接口
+import {
+    getModelDrillList,    // 获取模型列表
+    getModelDrillById,    // 获取模型钻取详情
+    addModelDrill,        // 新增模型钻取
+    updateModelDrill,     // 更新模型钻取
+    deleteModelDrillByIds, // 批量删除模型钻取
+    startDrillById,        // 开启训练
+    finishDrillById,       // 终止训练
+    getDataSetListByAll    // 获取所有数据集列表
+} from "@/api/system/modelPage";
 
 export default {
     name: "ModelTuning",
+    dicts: ['sys_model_drill'],
     data() {
         return {
             // 遮罩层
             loading: false,
             mainLoading: false,
             dialogLoading: false,
+            dataSetList: [],    // 所有数据集列表
             // 选中数组
             ids: [],
             // 显示搜索条件
@@ -166,111 +198,85 @@ export default {
             queryParams: {
                 pageNum: 1,
                 pageSize: 10,
-                pushType: '',
-                taskName: '',
+                modelTaskName: '',
+                modelTrainingStatus: '',
+                dataSetId: '',
             },
             // 表单数据
             dialogData: {
-                taskName: '',       // 数据集名称
-                pushType: '',       // 数据集类型（字典表维护）
-                sourceName: []      // 选择内容（多选）
+                modelTaskName: '',       // 数据集名称
+                modelTrainingMethod: '',       // 数据集类型（字典表维护）
+                modelBase: '',     // 选择内容（多选）
+                modelDataSetId: '',     // 选择内容（多选）
+                modelOutputName: '',     // 选择内容（多选）
+                modelParameterConfigJson: [] // 参数配置
             },
             // 防抖定时器
             debounceTimeout: null,
             // 表单校验规则
             dialogDataRules: {
-                taskName: [
-                    { required: true, message: "请输入数据集名称", trigger: "blur" }
+                modelTaskName: [
+                    { required: true, message: "请输入任务名称", trigger: "blur" }
                 ],
-                pushType: [
-                    { required: true, message: "请选择数据集类型", trigger: "blur" }
+                modelTrainingMethod: [
+                    { required: true, message: "请选择训练方式", trigger: "blur" }
                 ],
-                provider: [
-                    { required: true, message: "请选择内容", trigger: "blur" }
+                modelBase: [    
+                    { required: true, message: "请选择基座模型", trigger: "blur" }
+                ],
+                modelDataSetId: [
+                    { required: true, message: "请选择训练数据集", trigger: "blur" }
+                ],
+                modelOutputName: [
+                    { required: true, message: "请输入模型导出名称", trigger: "blur" }
                 ],
             },
             // 数据字典列表
             providerList: [],   // 对接厂商列表
             pushList: [],       // 推送类型列表
             standardList: [],   // 分类分级标准列表
-            sourceContentList: [], // 选择内容列表
+            defaultParamList: [
+                { paramName: "batch_size", paramValue: "8", paramDesc: "批次大小，代表模型训练过程中，模型更新模型参数的数据步长", type: "input" },
+                { paramName: "learning_rate", paramValue: "5e-5", paramDesc: "学习率，代表每次更新数据的增量参数权重，学习率数值越大参数更新越快，可能导致模型训练不稳定", type: "input" },
+                {
+                    paramName: "lr_scheduler_type", paramValue: "1", paramDesc: "学习率调整策略，选择不同的学习率策略，动态地改变模型在训练过程中的学习率", type: "select", options: [
+                        { label: "linear", value: "1" },
+                    ]
+                },
+                { paramName: "max_length", paramValue: "512", paramDesc: "序列长度，单个训练数据样本的最大长度，超出配置长度将丢弃", type: "input" },
+                { paramName: "weight_decay", paramValue: "1", paramDesc: "权重衰减，用于在优化过程中对模型参数施加L2正则化，防止过拟合", type: "input" }
+            ]
         };
     },
     computed: {
     },
     created() {
-        // 初始化数据
-        this.getDictDataFn();
-        this.getStandardListFn();
-        this.getSourceContentListFn();
     },
     mounted() {
         this.getList();
+        this.getDataSetListByAllFn();
     },
     methods: {
+        /**
+         * 获取所有数据集列表
+         */
+        getDataSetListByAllFn() {
+            getDataSetListByAll().then(res => {
+                if (res.code === 200) {
+                    this.dataSetList = res.data;
+                }
+            }).catch(error => {
+                console.error("获取所有数据集列表失败:", error);
+            });
+        },
         /**
          * 新增参数
          */
         resetParam() {
-            this.dialogData.paramList = this.defaultParamList;
+            // 使用Vue.set或展开运算符确保响应式更新
+            this.dialogData.modelParameterConfigJson = JSON.parse(JSON.stringify(this.defaultParamList));
         },
 
-        /**
-         * 获取字典数据
-         * 接口对接位置：请在下方调用实际接口
-         */
-        getDictDataFn() {
-            // 接口调用示例（请替换为实际接口）
-            /*
-            // 获取对接厂商字典
-            listByDataType({ type: 'sys_provider_type' }).then(res => {
-                this.providerList = res.data;
-            });
-            // 获取推送类型字典
-            listByDataType({ type: 'sys_push_type' }).then(res => {
-                this.pushList = res.data;
-            });
-            */
-        },
-
-        /**
-         * 获取分类分级标准列表
-         * 接口对接位置：请在下方调用实际接口
-         */
-        getStandardListFn() {
-            // 接口调用示例（请替换为实际接口）
-            /*
-            getStandardList().then(res => {
-                this.standardList = res.data.map(item => {
-                    return { ...item, categoryName: item.categoryName, id: item.id + '' }
-                });
-            });
-            */
-        },
-
-        /**
-         * 获取选择内容列表
-         * 接口对接位置：请在下方调用实际接口
-         */
-        getSourceContentListFn() {
-            // 接口调用示例（请替换为实际接口）
-            /*
-            // 获取选择内容列表接口
-            getSourceContentList().then(res => {
-                this.sourceContentList = res.data;
-            });
-            */
-
-            // 模拟数据（测试用，实际对接时删除）
-            this.sourceContentList = [
-                { value: 'content1', label: '内容1' },
-                { value: 'content2', label: '内容2' },
-                { value: 'content3', label: '内容3' },
-                { value: 'content4', label: '内容4' },
-                { value: 'content5', label: '内容5' },
-                { value: 'content6', label: '内容6' },
-            ];
-        },
 
         // 关闭新增/编辑/查看对话框
         importcancel() {
@@ -287,25 +293,23 @@ export default {
         },
 
         /**
-         * 查询数据集列表
-         * 接口对接位置：请在下方调用实际接口
+         * 查询模型列表
          */
         getList() {
             this.loading = true;
-            // 接口调用示例（请替换为实际接口）
-            /*
-            getResultPushList(this.queryParams).then(res => {
-                this.proxysList = res.data.rows;
-                this.total = res.data.total;
+            // 调用获取模型列表接口
+            getModelDrillList(this.queryParams).then(res => {
+                if (res.code === 200) {
+                    this.proxysList = res.data.records;
+                    this.total = res.data.total;
+                    this.queryParams.pageNum = res.data.pages;
+                    this.queryParams.pageSize = res.data.size;
+                }
+                this.loading = false;
+            }).catch(error => {
+                console.error("获取模型列表失败:", error);
                 this.loading = false;
             });
-            */
-            // 模拟数据（测试用，实际对接时删除）
-            setTimeout(() => {
-                this.proxysList = [];
-                this.total = 0;
-                this.loading = false;
-            }, 500);
         },
 
         /** 搜索按钮操作 */
@@ -328,22 +332,89 @@ export default {
         /** 新增按钮操作 */
         handleAdd() {
             this.resetAddData();
+            this.resetParam();
             this.dialogDataShow = true;
             this.title = "新增数据集";
             this.isViewMode = false;
         },
-
-        /** 查看按钮操作 */
+        
+        /** 编辑按钮操作 */
         handleEdit(row) {
+            this.resetAddData();
+            // 复制行数据到对话框数据
             this.dialogData = JSON.parse(JSON.stringify(row));
+            // 确保modelParameterConfigJson存在且为数组
+            if (!this.dialogData.modelParameterConfigJson) {
+                this.dialogData.modelParameterConfigJson = [];
+            }
+            this.dialogDataShow = true;
+            this.title = "编辑数据集";
+            this.isViewMode = false;
+        },
+        
+        /** 查看按钮操作 */
+        handleView(row) {
+            this.resetAddData();
+            // 复制行数据到对话框数据
+            this.dialogData = JSON.parse(JSON.stringify(row));
+            // 确保modelParameterConfigJson存在且为数组
+            if (!this.dialogData.modelParameterConfigJson) {
+                this.dialogData.modelParameterConfigJson = [];
+            }
             this.dialogDataShow = true;
             this.title = "查看数据集";
             this.isViewMode = true;
         },
 
+        /** 开始训练按钮操作 */
+        startTraining(row) {
+            this.$confirm(`确定开始训练任务"${row.modelTaskName}"吗？`, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                startDrillById(row.id).then(res => {
+                    if (res.code === 200) {
+                        this.$message.success("开始训练成功");
+                        this.getList();
+                    } else {
+                        this.$message.error("开始训练失败：" + res.msg);
+                    }
+                }).catch(error => {
+                    console.error("开始训练失败:", error);
+                    this.$message.error("开始训练失败");
+                });
+            }).catch(() => {
+                // 取消操作
+            });
+        },
+
+        /** 终止训练按钮操作 */
+        stopTraining(row) {
+            this.$confirm(`确定终止训练任务"${row.modelTaskName}"吗？`, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                // 调用终止训练接口
+                finishDrillById(row.id).then(res => {
+                    if (res.code === 200) {
+                        this.$message.success("终止训练成功");
+                        this.getList();
+                    } else {
+                        this.$message.error("终止训练失败：" + res.msg);
+                    }
+                }).catch(error => {
+                    console.error("终止训练失败:", error);
+                    this.$message.error("终止训练失败");
+                }); 
+            }).catch(() => {
+                // 取消操作
+            });
+        },
+
         /**
          * 表单提交
-         * 接口对接位置：请在下方调用实际接口
          */
         async submitFormFn() {
             this.$refs["dialogData"].validate(async valid => {
@@ -357,18 +428,12 @@ export default {
                     try {
                         // 根据是否有ID判断是新增还是编辑
                         if (this.dialogData.id) {
-                            // 更新数据集
-                            /*
-                            await updateResultPush(data);
-                            this.$modal.msgSuccess("修改成功");
-                            */
+                            // 更新模型
+                            await updateModelDrill(data);
                             this.$message.success("修改成功");
                         } else {
-                            // 新增数据集
-                            /*
-                            await addResultPush(data);
-                            this.$modal.msgSuccess("新增成功");
-                            */
+                            // 新增模型
+                            await addModelDrill(data);
                             this.$message.success("新增成功");
                         }
 
@@ -376,6 +441,7 @@ export default {
                         this.getList();
                     } catch (error) {
                         console.error("操作失败:", error);
+                        this.$message.error("操作失败");
                     } finally {
                         this.dialogLoading = false;
                     }
@@ -384,8 +450,7 @@ export default {
         },
 
         /**
-         * 删除数据集
-         * 接口对接位置：请在下方调用实际接口
+         * 删除模型
          */
         deleteFn() {
             if (this.ids.length === 0) {
@@ -393,23 +458,23 @@ export default {
                 return;
             }
 
-            this.$confirm(`确定删除选中的${this.ids.length}条数据集吗？`, '提示', {
+            this.$confirm(`确定删除选中的${this.ids.length}条模型吗？`, '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                // 接口调用示例（请替换为实际接口）
-                /*
-                deleteResultPush({ ids: this.ids }).then(res => {
+                // 调用批量删除接口
+                deleteModelDrillByIds({ ids: this.ids }).then(res => {
                     if (res.code === 200) {
-                        this.$message.success(res.msg);
+                        this.$message.success(res.msg || '删除成功');
                         this.getList();
+                    } else {
+                        this.$message.error(res.msg || '删除失败');
                     }
+                }).catch(error => {
+                    console.error("删除模型失败:", error);
+                    this.$message.error("删除失败");
                 });
-                */
-                // 模拟删除（测试用，实际对接时删除）
-                this.$message.success('删除成功');
-                this.getList();
             }).catch(() => {
                 // 取消删除操作
             });
@@ -420,9 +485,12 @@ export default {
          */
         resetAddData() {
             this.dialogData = {
-                taskName: '',
-                pushType: '',
-                sourceName: [],
+                modelTaskName: '',
+                modelTrainingMethod: '',
+                modelBase: '',
+                modelDataSetId: '',
+                modelOutputName: '',
+                modelParameterConfigJson: [],
                 id: ''
             };
             // 重置表单验证
