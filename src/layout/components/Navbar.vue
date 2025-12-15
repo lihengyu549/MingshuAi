@@ -111,9 +111,6 @@ export default {
   },
   mounted () {
   },
-  watch () { 
-
-  },
   methods: {
     toggleSideBar () {
       if(this.$store.state.app.sidebar.opened){
@@ -155,7 +152,7 @@ export default {
   height: 50px;
   overflow: hidden;
   position: relative;
-  background: #f9fafd;
+  background: #ffffff;
   padding-right: 3%;
   // box-shadow: 0 1px 4px rgba(0,21,41,.08);
 

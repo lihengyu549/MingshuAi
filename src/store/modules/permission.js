@@ -39,12 +39,16 @@ const permission = {
           const sidebarRoutes = filterAsyncRouter(sdata)
           const rewriteRoutes = filterAsyncRouter(rdata, false, true)
           const asyncRoutes = filterDynamicRoutes(dynamicRoutes);
+          
+          const categorizedSidebarRoutes = categorizeRoutes(sidebarRoutes)
+          const categorizedRewriteRoutes = categorizeRoutes(rewriteRoutes)
+          
           rewriteRoutes.push({ path: '*', redirect: '/404', hidden: true })
           router.addRoutes(asyncRoutes);
-          commit('SET_ROUTES', rewriteRoutes)
-          commit('SET_SIDEBAR_ROUTERS', constantRoutes.concat(sidebarRoutes))
-          commit('SET_DEFAULT_ROUTES', sidebarRoutes)
-          commit('SET_TOPBAR_ROUTES', sidebarRoutes)
+          commit('SET_ROUTES', categorizedRewriteRoutes)
+          commit('SET_SIDEBAR_ROUTERS', constantRoutes.concat(categorizedSidebarRoutes))
+          commit('SET_DEFAULT_ROUTES', categorizedSidebarRoutes)
+          commit('SET_TOPBAR_ROUTES', categorizedSidebarRoutes)
           resolve(rewriteRoutes)
         })
       })
@@ -78,6 +82,162 @@ function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
     }
     return true
   })
+}
+
+// 将路由分为核心功能和系统管理两部分
+function categorizeRoutes(routes) {
+  // 检查是否已经存在系统管理或核心功能的根节点
+  const hasSystemRoot = routes.some(route => 
+    route.path === '/system' || 
+    (route.meta && route.meta.title === '系统管理')
+  )
+  
+  // 如果已经存在系统管理根节点，添加分类标记并创建核心功能分组
+   if (hasSystemRoot) {
+     const result = []
+     const coreFunctions = []
+     const processedRoutes = new Set() // 用于跟踪已处理的路由
+     
+     // 分离核心功能路由
+     routes.forEach((route, index) => {
+       // 判断是否为系统管理路由（根据路径或其他标识）
+       const isSystemManagement = route.path && (
+         route.path.startsWith('/system/') || 
+         route.path.startsWith('/monitor/') ||
+         route.path.startsWith('/tool/') ||
+         route.path.startsWith('/jobWork/')
+       )
+       
+       // 核心业务功能路径判断
+       const isCoreBusiness = route.path && (
+         route.path.startsWith('/dataAssetManagement/') ||
+         route.path.startsWith('/standard/') ||
+         route.path.startsWith('/strategy/') ||
+         route.path.startsWith('/APIAbutment/') ||
+         route.path.startsWith('/hierarchicalTask/')
+       )
+       
+       // 检查标题中的关键词，但要排除数据资产相关的
+       const titleContainsSystemKeywords = route.meta && route.meta.title && (
+         (route.meta.title.includes('系统') && !route.meta.title.includes('数据资产')) ||
+         (route.meta.title.includes('管理') && !route.meta.title.includes('数据资产') && !route.meta.title.includes('标准')) ||
+         route.meta.title.includes('监控') ||
+         route.meta.title.includes('工具')
+       )
+       
+       const finalIsSystemManagement = !isCoreBusiness && (isSystemManagement || titleContainsSystemKeywords)
+       
+       if (!finalIsSystemManagement && !(route.path === '/system' || (route.meta && route.meta.title === '系统管理'))) {
+         coreFunctions.push(route)
+         processedRoutes.add(index)
+       }
+     })
+     
+     // 添加核心功能分组
+     if (coreFunctions.length > 0) {
+       result.push({
+         path: '/core-functions-category',
+         component: Layout,
+         meta: { 
+           title: '核心功能', 
+           icon: '',
+           type: 'category'
+         },
+         children: coreFunctions,
+         alwaysShow: true
+       })
+     }
+     
+     // 处理系统管理根节点和未处理的路由
+     routes.forEach((route, index) => {
+       if (route.path === '/system' || (route.meta && route.meta.title === '系统管理')) {
+         result.push({
+           ...route,
+           meta: {
+             ...route.meta,
+             type: 'category'
+           }
+         })
+       } else if (!processedRoutes.has(index)) {
+         result.push(route)
+       }
+     })
+     
+     return result
+   }
+  
+  // 原有的分类逻辑（当不存在系统管理根节点时）
+  const coreFunctions = []
+  const systemManagement = []
+  
+  routes.forEach(route => {
+    // 判断是否为系统管理路由（根据路径或其他标识）
+    const isSystemManagement = route.path && (
+      route.path.startsWith('/system/') || 
+      route.path.startsWith('/monitor/') ||
+      route.path.startsWith('/tool/') ||
+      route.path.startsWith('/jobWork/')
+    )
+    
+    // 核心业务功能路径判断
+    const isCoreBusiness = route.path && (
+      route.path.startsWith('/dataAssetManagement/') ||
+      route.path.startsWith('/standard/') ||
+      route.path.startsWith('/strategy/') ||
+      route.path.startsWith('/APIAbutment/') ||
+      route.path.startsWith('/hierarchicalTask/')
+    )
+    
+    // 检查标题中的关键词，但要排除数据资产相关的
+    const titleContainsSystemKeywords = route.meta && route.meta.title && (
+      (route.meta.title.includes('系统') && !route.meta.title.includes('数据资产')) ||
+      (route.meta.title.includes('管理') && !route.meta.title.includes('数据资产') && !route.meta.title.includes('标准')) ||
+      route.meta.title.includes('监控') ||
+      route.meta.title.includes('工具')
+    )
+    
+    const finalIsSystemManagement = !isCoreBusiness && (isSystemManagement || titleContainsSystemKeywords)
+    
+    if (finalIsSystemManagement) {
+      systemManagement.push(route)
+    } else {
+      coreFunctions.push(route)
+    }
+  })
+  
+  const categorizedRoutes = []
+  
+  // 添加核心功能分组
+  if (coreFunctions.length > 0) {
+    categorizedRoutes.push({
+      path: '/core-functions',
+      component: Layout,
+      meta: { 
+        title: '核心功能', 
+        icon: '',
+        type: 'category'
+      },
+      children: coreFunctions,
+      alwaysShow: true
+    })
+  }
+  
+  // 添加系统管理分组
+  if (systemManagement.length > 0) {
+    categorizedRoutes.push({
+      path: '/system-management',
+      component: Layout,
+      meta: { 
+        title: '系统管理', 
+        icon: '',
+        type: 'category'
+      },
+      children: systemManagement,
+      alwaysShow: true
+    })
+  }
+  
+  return categorizedRoutes.length > 0 ? categorizedRoutes : routes
 }
 
 function filterChildren(childrenMap, lastRouter = false) {

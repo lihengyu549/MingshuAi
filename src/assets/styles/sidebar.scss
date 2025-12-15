@@ -77,13 +77,17 @@
       overflow: hidden !important;
       text-overflow: ellipsis !important;
       white-space: nowrap !important;
+      height: 40px !important; /* 降低菜单项高度 */
+      line-height: 40px !important; /* 调整行高匹配新高度 */
+      padding-top: 0 !important; /* 移除顶部内边距 */
+      padding-bottom: 0 !important; /* 移除底部内边距 */
     }
 
     // menu hover
     .submenu-title-noDropdown,
     .el-submenu__title {
       &:hover {
-        background-color: rgba(0, 0, 0, 0.06) !important;
+        background-color: $base-menu-hover-background !important;
         border-radius: $base-menu-border-radius !important; // 添加圆角样式
         // margin: 0 10px; // 添加边距让圆角效果更明显
       }
@@ -99,6 +103,11 @@
       // margin: 0 10px; // 可选：添加边距让圆角效果更明显
     }
 
+    // 首页菜单项特殊样式 - 添加上下边距
+    .el-menu-item.home-menu-item {
+      margin: 20px 0 0 0 !important;
+    }
+
     & .theme-dark .is-active>.el-submenu__title {
       color: $base-menu-color-active !important;
     }
@@ -106,9 +115,13 @@
     & .nest-menu .el-submenu>.el-submenu__title,
     & .el-submenu .el-menu-item {
       min-width: $base-sidebar-width !important;
+      height: 36px !important; /* 子菜单项高度稍微小一点 */
+      line-height: 36px !important; /* 调整行高匹配新高度 */
+      padding-top: 0 !important; /* 移除顶部内边距 */
+      padding-bottom: 0 !important; /* 移除底部内边距 */
 
       &:hover {
-        background-color: rgba(0, 0, 0, 0.06) !important;
+        background-color: $base-menu-hover-background !important;
         border-radius: $base-menu-border-radius !important; // 添加圆角样式
         // margin: 0 10px; // 添加边距让圆角效果更明显
       }
@@ -217,9 +230,14 @@
 
   .nest-menu .el-submenu>.el-submenu__title,
   .el-menu-item {
+    height: 36px !important; /* 垂直菜单项高度 */
+    line-height: 36px !important; /* 调整行高匹配新高度 */
+    padding-top: 0 !important; /* 移除顶部内边距 */
+    padding-bottom: 0 !important; /* 移除底部内边距 */
+    
     &:hover {
       // you can use $subMenuHover
-      background-color: rgba(0, 0, 0, 0.06) !important;
+      background-color: $base-menu-hover-background !important;
       border-radius: $base-menu-border-radius !important; // 添加圆角样式
       margin: 0 10px; // 添加边距让圆角效果更明显
     }

@@ -1310,7 +1310,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  background-color: #f9fafd;
+  background-color: #ffffff;
 
 }
 

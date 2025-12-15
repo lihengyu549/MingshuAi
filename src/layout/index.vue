@@ -66,7 +66,7 @@ export default {
   @import "~@/assets/styles/mixin.scss";
   @import "~@/assets/styles/variables.scss";
   .main-container{
-    background-color: #f9fafd;
+    background-color: #ffffff;
   }
   .app-wrapper {
     @include clearfix;

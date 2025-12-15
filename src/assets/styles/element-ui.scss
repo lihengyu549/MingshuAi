@@ -156,3 +156,20 @@ line-height: 33px;
   color: #26244ce0 !important;
 }
 
+// 降低Element UI菜单项高度
+.el-menu-item, 
+.el-submenu__title {
+  height: 40px !important;
+  line-height: 40px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+// 子菜单项高度稍微小一点
+.el-submenu .el-menu-item {
+  height: 36px !important;
+  line-height: 36px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+

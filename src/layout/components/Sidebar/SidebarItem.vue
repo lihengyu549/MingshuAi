@@ -1,21 +1,36 @@
 <template>
   <div v-if="!item.hidden">
-    <template
-      v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
-      <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path, onlyOneChild.query)">
-        <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{ 'submenu-title-noDropdown': !isNest }">
-          <item :icon="onlyOneChild.meta.icon || (item.meta && item.meta.icon)" :title="onlyOneChild.meta.title" />
-        </el-menu-item>
-      </app-link>
+    <!-- 分类标题 -->
+    <template v-if="item.meta && item.meta.type === 'category'">
+      <div class="menu-category">
+        <span class="category-title">{{ item.meta.title }}</span>
+        <i class="el-icon-caret-bottom category-title" style="float: inline-end;"></i>
+      </div>
+      <div class="category-children">
+        <sidebar-item v-for="(child, index) in item.children" :key="child.path + '-' + index" :is-nest="false" :item="child"
+          :base-path="resolvePath(child.path)" />
+      </div>
     </template>
-
-    <el-submenu v-else ref="subMenu" :index="resolvePath(item.path)" popper-append-to-body>
-      <template slot="title">
-        <item v-if="item.meta" :icon="item.meta && item.meta.icon" :title="item.meta.title" />
+    
+    <template v-else>
+      <!-- 普通路由处理 -->
+      <template
+        v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
+        <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path, onlyOneChild.query)">
+          <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="[{ 'submenu-title-noDropdown': !isNest }, { 'home-menu-item': onlyOneChild.meta.title === '首页' }]">
+            <item :icon="onlyOneChild.meta.icon || (item.meta && item.meta.icon)" :title="onlyOneChild.meta.title" />
+          </el-menu-item>
+        </app-link>
       </template>
-      <sidebar-item v-for="child in item.children" :key="child.path" :is-nest="true" :item="child"
-        :base-path="resolvePath(child.path)" class="nest-menu" />
-    </el-submenu>
+
+      <el-submenu v-else ref="subMenu" :index="resolvePath(item.path)" popper-append-to-body>
+        <template slot="title">
+          <item v-if="item.meta" :icon="item.meta && item.meta.icon" :title="item.meta.title" />
+        </template>
+        <sidebar-item v-for="(child, index) in item.children" :key="child.path + '-nest-' + index" :is-nest="true" :item="child"
+          :base-path="resolvePath(child.path)" class="nest-menu" />
+      </el-submenu>
+    </template>
   </div>
 </template>
 
@@ -94,6 +109,30 @@ export default {
 }
 </script>
 <style scoped>
+.menu-category {
+  padding: 20px 20px 8px 20px; /* 增加上边距从12px到20px */
+}
+
+.menu-category:first-child {
+  padding-top: 30px; /* 第一个分类标题上边距更大一些 */
+}
+
+.category-title {
+  font-size: 12px;
+  color: #909399;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.category-children {
+  padding: 0 10px;
+}
+
+.category-children .nest-menu {
+  padding-left: 0;
+}
+
 .nest-menu /deep/ a {
   text-decoration: none;
 }

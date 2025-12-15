@@ -14,16 +14,17 @@ $base-menu-border-radius: 10px; // 可根据需要调整圆角大小
 // 默认菜单主题风格
 $base-menu-color: #26244ce0; // 菜单文字颜色（黑色）
 $base-menu-color-active: #26244ce0; // 选中菜单文字颜色（黑色）
-$base-menu-background: #f9fafd; // 菜单背景色改为#f9fafd
-$base-menu-active-background: #f0f0f0; // 选中菜单背景色（浅灰色） - 新增
+$base-menu-background: #ffffff; // 菜单背景色改为纯白色
+$base-menu-active-background: #eff6ff; // 选中菜单背景色（浅蓝色） - 修改
+$base-menu-hover-background: #f5f9ff; // 菜单悬浮背景色（更浅的蓝色） - 新增
 $base-logo-title-color: #26244ce0; // Logo标题颜色改为黑色以适应白色背景
 
 $base-menu-light-color: #26244ce0; // 浅色主题下菜单文字颜色（黑色）
-$base-menu-light-background: #f9fafd; // 浅色主题下菜单背景色（#f9fafd）
+$base-menu-light-background: #ffffff; // 浅色主题下菜单背景色（纯白色）
 $base-logo-light-title-color: #001529;
 
 $base-sub-menu-background: #ffffff; // 子菜单背景色改为白色
-$base-sub-menu-hover: #f5f5f5; // 子菜单悬停背景色（浅灰色）
+$base-sub-menu-hover: #f5f9ff; // 子菜单悬停背景色（更浅的蓝色）
 
 // 自定义暗色菜单风格
 /**
@@ -54,5 +55,7 @@ $base-sidebar-width: 200px;
   subMenuHover: $base-sub-menu-hover;
   sideBarWidth: $base-sidebar-width;
   logoTitleColor: $base-logo-title-color;
-  logoLightTitleColor: $base-logo-light-title-color
+  logoLightTitleColor: $base-logo-light-title-color;
+  menuActiveBackground: $base-menu-active-background;
+  menuHoverBackground: $base-menu-hover-background;
 }
