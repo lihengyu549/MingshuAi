@@ -50,6 +50,10 @@
               </el-option>
             </el-select>
           </el-form-item>
+          <el-form-item label="表名" prop="tableName">
+            <el-input v-model="queryParams.tableName" clearable @input="inputSearch" placeholder="请输入表名"
+              @keyup.enter.native="handleQuery" />
+          </el-form-item>
           <!-- <el-form-item> -->
           <!-- <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button> -->
           <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
@@ -175,6 +179,7 @@ export default {
         securityLevel: [],//安全级别
         businessName: '',
         piiDetection: '',//个人信息识别
+        tableName: '',//表名
       },
       projectId: '',
       apiDialogLoading: false,
@@ -240,7 +245,8 @@ export default {
       textarea: ``,
       copyable: { copyText: '复制', copiedText: '复制成功' },
       routeDataShow: false,
-      treeIds: []
+      treeIds: [],
+      databaseNames: [] // 新增：存储选中的数据库名称
     };
   },
   watch: {
@@ -426,6 +432,7 @@ Authorization:Bearer ${this.Token}`
             });
           } else {
             this.treeIds = []
+            this.databaseNames = [] // 清空数据库名称数组
             this.getList()
           }
           this.Loading = false
@@ -544,15 +551,18 @@ Authorization:Bearer ${this.Token}`
       let list = this.$refs.tree.getCheckedNodes()
       let treeList = []
       if (list.length > 0) {
-        treeList = list.filter(item => item.level === 2)
+        treeList = list.filter(item => item.level === 1)
         this.treeID = treeList.map(item => item.id).join()
         this.treeIds = treeList.map(item => item.id)
+        // 收集选中的数据库名称，优先使用databaseName字段，如果没有则使用categoryName或name字段
+        this.databaseNames = treeList.map(item => item.name ).filter(name => name)
         this.handleQuery();
       } else {
         this.protectTableFieldList = []
         this.queryParams.pageNum = 1
         this.queryParams.pageSize = 10
         this.total = 0
+        this.databaseNames = []
       }
     },
 
@@ -633,9 +643,11 @@ Authorization:Bearer ${this.Token}`
       this.$refs.tree.setCheckedNodes(data);
       let treeList = []
       let list = this.$refs.tree.getCheckedNodes()
-      treeList = list.filter(item => item.level === 2)
+      treeList = list.filter(item => item.level === 1 && item.id && item.id !== '')
       this.treeID = treeList.map(item => item.id).join()
       this.treeIds = treeList.map(item => item.id)
+      // 收集选中的数据库名称，优先使用databaseName字段，如果没有则使用categoryName或name字段
+      this.databaseNames = treeList.map(item => item.databaseName || item.categoryName || item.name || '').filter(name => name)
     },
     // 返回Promise的异步版本
     getProtectCategoryAsync(key) {
@@ -668,6 +680,7 @@ Authorization:Bearer ${this.Token}`
         if (data.length == 0) {
           this.Loading = false
           this.treeIds = []
+          this.databaseNames = [] // 清空数据库名称数组
           this.getList()
         } else {
           this.$nextTick(() => {
@@ -686,7 +699,8 @@ Authorization:Bearer ${this.Token}`
       this.loading = true;
       let params = {
         // tableIds: this.treeID,
-        tableIds: this.treeIds,
+        // tableIds: this.treeIds, // 不再使用tableIds，改为使用databaseNames
+        databaseNames: this.databaseNames, // 使用数据库名称数组
         projectId: this.projectId,
         securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel : null,
         // securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : null,
@@ -695,7 +709,8 @@ Authorization:Bearer ${this.Token}`
         pageSize: this.queryParams.pageSize,
         // categoryId: this.queryParams.categoryId
         categoryIds: this.queryParams.categoryId,
-        piiDetection: this.queryParams.piiDetection
+        piiDetection: this.queryParams.piiDetection,
+        tableName: this.queryParams.tableName,
       }
       listByPublished(params).then((response) => {
         try {
