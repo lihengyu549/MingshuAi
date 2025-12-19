@@ -39,7 +39,8 @@
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="avatar" class="user-avatar">
+          <!-- <img :src="avatar" class="user-avatar"> -->
+          <img :src="$store.state.user.projectData.img" class="user-avatar" />
           <div class="user">用户名</div>
           <i class="el-icon-caret-bottom" />
         </div>
@@ -155,7 +156,7 @@ export default {
   height: 50px;
   overflow: hidden;
   position: relative;
-  background: #f9fafd;
+  background: #ffffff;
   padding-right: 3%;
   // box-shadow: 0 1px 4px rgba(0,21,41,.08);
 
@@ -245,7 +246,7 @@ export default {
           cursor: pointer;
           position: absolute;
           right: -20px;
-          top: 25px;
+          top: 15px;
           font-size: 12px;
 
         }
