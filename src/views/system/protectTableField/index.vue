@@ -784,7 +784,8 @@ Authorization:Bearer ${this.Token}`
       try {
         this.loading = true;
         const params = {
-          tableIds: this.treeIds,
+          // tableIds: this.treeIds,
+          databaseNames: this.databaseNames, // 使用数据库名称数组
           projectId: this.projectId,
           securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel : null,
           // securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : null,
