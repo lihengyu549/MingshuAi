@@ -188,3 +188,41 @@ export function queryApisI (data) {
     loading: true,
   })
 }
+
+// 查看所有导出记录 
+export function listAll () {
+  return request({
+    url: '/system/exportFileInfo/listAll',
+    method: 'get',
+    loading: true,
+  })
+}
+
+// 下载文件接口
+export function downloadById (data) {
+  return request({
+    url: '/system/exportFileInfo/downloadById',
+    method: 'post',
+    data: data,
+    responseType: 'blob' //响应数据格式配置
+  })
+}
+
+// 删除文件接口
+export function removeById (data) {
+  return request({
+    url: '/system/exportFileInfo/removeById',
+    method: 'post',
+    data: data,
+    responseType: 'blob' //响应数据格式配置
+  })
+}
+
+// 删除所有文件接口
+export function removeByAll (data) {
+  return request({
+    url: '/system/exportFileInfo/removeByAll',
+    method: 'post',
+    responseType: 'blob' //响应数据格式配置
+  })
+}
