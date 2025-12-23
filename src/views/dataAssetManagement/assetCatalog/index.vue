@@ -481,6 +481,14 @@ export default {
         ],
         saveAsDefault: false
       },
+      // 初始默认配置（固定不变，用于恢复初始配置）
+      initialDefaultColumns: [
+        "databaseName",
+        "businessName", 
+        "tableName",
+        "tableRemark",
+        "fieldNum"
+      ],
     };
   },
   watch: {
@@ -655,14 +663,14 @@ export default {
         const savedColumns = localStorage.getItem('assetCatalogExportDefaultColumns');
         const defaultColumns = savedColumns ? JSON.parse(savedColumns) : [];
 
-        // 如果没有保存的配置，则默认选中所有列
+        // 如果有保存的配置，使用保存的配置，否则使用初始默认配置
         let finalSelectedColumns = [];
         if (savedColumns && defaultColumns.length > 0) {
           // 有保存的配置，使用保存的配置
           finalSelectedColumns = defaultColumns;
         } else {
-          // 没有保存的配置，默认选中所有列
-          finalSelectedColumns = this.exportColumnDialog.allColumns.map(item => item.value);
+          // 没有保存的配置，使用初始默认配置
+          finalSelectedColumns = [...this.initialDefaultColumns];
         }
 
         // 设置选中的列为最终配置
@@ -671,8 +679,8 @@ export default {
       } catch (error) {
         console.error('获取导出列配置失败:', error);
         this.$message.warning('获取导出列配置失败，使用默认配置');
-        // 出错时使用所有列作为默认选中的列
-        this.exportColumnDialog.selectedColumns = this.exportColumnDialog.allColumns.map(item => item.value);
+        // 出错时使用初始默认配置
+        this.exportColumnDialog.selectedColumns = [...this.initialDefaultColumns];
       } finally {
         this.exportColumnDialog.loading = false;
       }
@@ -690,7 +698,7 @@ export default {
     },
 
     restoreInitialConfig() {
-      this.exportColumnDialog.selectedColumns = this.exportColumnDialog.allColumns.map(item => item.value);
+      this.exportColumnDialog.selectedColumns = [...this.initialDefaultColumns];
       this.exportColumnDialog.saveAsDefault = false;
       this.$message.success('已恢复初始配置');
     },

@@ -378,17 +378,17 @@ export default {
       },
       // 初始默认配置（固定不变，用于恢复初始配置）
       initialDefaultColumns: [
-        '字段名',
-        '字段注释',
-        '来源业务系统',
-        '所属库',
-        '所属表',
-        '分类',
-        '归类原因',
-        '个人信息识别',
-        '安全分级',
-        '建议防护措施',
-        '样本'
+        "fieldName",
+        "fieldRemark",
+        "businessName",
+        "databaseName",
+        "tableName",
+        "categoryName",
+        "classificationReasons",
+        "piiDetectionName",
+        "securityLevelName",
+        "protectMethod",
+        "sampleData",
       ],
     };
   },
