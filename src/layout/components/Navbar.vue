@@ -66,7 +66,6 @@
         </el-dropdown>
 
       </template>
-
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
           <img :src="$store.state.user.projectData.img" class="user-avatar" />

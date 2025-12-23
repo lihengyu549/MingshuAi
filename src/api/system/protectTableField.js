@@ -31,7 +31,7 @@ export function exportReport (data) {
     url: `/system/protectTableField/exportReport`,
     method: 'post',
     data: data,
-    responseType: 'blob' //响应数据格式配置
+    // responseType: 'blob' //响应数据格式配置
   })
 }
 // --------------------------------
