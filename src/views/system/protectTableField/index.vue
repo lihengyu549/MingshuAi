@@ -1020,7 +1020,8 @@ Authorization:Bearer ${this.Token}`
           pageNum: this.queryParams.pageNum,
           pageSize: this.queryParams.pageSize,
           categoryId: this.queryParams.categoryId,
-          columnList: this.exportColumnDialog.selectedColumns
+          columnList: this.exportColumnDialog.selectedColumns,
+          saveAsDefault: this.exportColumnDialog.saveAsDefault
         };
         await exportReport(params);
         // if (res.type != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {

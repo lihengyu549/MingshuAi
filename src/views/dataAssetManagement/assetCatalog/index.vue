@@ -741,7 +741,8 @@ export default {
           paddingStatus: this.queryParams.paddingStatus,
           featureExtractionStatus: this.queryParams.featureExtractionStatus,
           databaseList: allChildrenData,
-          columnList: this.exportColumnDialog.selectedColumns
+          columnList: this.exportColumnDialog.selectedColumns,
+          saveAsDefault: this.exportColumnDialog.saveAsDefault
         };
 
         // 调用导出接口，注意需要指定responseType为blob
