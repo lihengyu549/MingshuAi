@@ -290,6 +290,36 @@
       <Pagination v-show="drawerTotal > 0" :total="drawerTotal" :page.sync="drawerQueryParams.pageNum"
         :limit.sync="drawerQueryParams.pageSize" @pagination="handleDrawerPagination" style="margin-top: 15px;" />
     </el-drawer>
+
+    <!-- 导出列配置弹窗 -->
+    <el-dialog title="调整导出列" :visible.sync="exportColumnDialog.visible" width="760px"
+      custom-class="export-column-dialog-wrapper" @close="cancelExport">
+      <div slot="title" class="dialog-header">
+        <div class="title-bar"></div>
+        <span class="title-text"><b>调整导出列</b></span>
+      </div>
+
+      <div v-loading="exportColumnDialog.loading" class="export-column-dialog">
+        <div class="column-options">
+          <div v-for="column in exportColumnDialog.allColumns" :key="column.value"
+            :class="['column-btn', { active: exportColumnDialog.selectedColumns.includes(column.value) }]"
+            @click="toggleExportColumn(column)">
+            {{ column.label }}
+          </div>
+        </div>
+
+        <div class="dialog-footer-custom">
+          <div class="footer-left">
+            <el-checkbox v-model="exportColumnDialog.saveAsDefault">保存为默认配置</el-checkbox>
+            <a class="restore-link" @click="restoreInitialConfig"><i class="el-icon-refresh-right"></i>恢复初始</a>
+          </div>
+          <div class="footer-right">
+            <el-button @click="cancelExport">取消</el-button>
+            <el-button type="primary" plain @click="confirmExport">确定</el-button>
+          </div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -369,6 +399,88 @@ export default {
       isTreeAllChecked: false, // 全选框的勾选状态（双向绑定）
       selectedTreeNodeIds: [], // 存储所有勾选的节点ID（用于导出和状态判断）
       defaultCheckedKeys: [], // 树初始化时默认勾选的节点ID（可空）
+
+      // 导出列配置相关数据
+      exportColumnDialog: {
+        visible: false,
+        loading: false,
+        selectedColumns: [], // 当前选中的导出列
+        allColumns: [
+          {
+            "label": "数据库",
+            "value": "databaseName"
+          },
+          {
+            "label": "表名",
+            "value": "tableName"
+          },
+          {
+            "label": "表注释",
+            "value": "tableRemark"
+          },
+          {
+            "label": "数据大小",
+            "value": "dataSize"
+          },
+          {
+            "label": "数据量级",
+            "value": "dataMagnitude"
+          },
+          {
+            "label": "数据质量评分",
+            "value": "dataQualityScore"
+          },
+          {
+            "label": "AI表注释",
+            "value": "aiTableRemark"
+          },
+          {
+            "label": "数据源名称",
+            "value": "dataSourceName"
+          },
+          {
+            "label": "分类分级标准",
+            "value": "categoryName"
+          },
+          {
+            "label": "来源业务系统",
+            "value": "businessName"
+          },
+          {
+            "label": "所属库名",
+            "value": "affiliationDatabaseName"
+          },
+          {
+            "label": "表分类",
+            "value": "tableClassify"
+          },
+          {
+            "label": "表分级",
+            "value": "tableLevel"
+          },
+          {
+            "label": "个人信息条数",
+            "value": "personalInformationNum"
+          },
+          {
+            "label": "未成年人信息条数",
+            "value": "nonagePersonalInformationNum"
+          },
+          {
+            "label": "字段数量",
+            "value": "fieldNum"
+          },
+          {
+            "label": "注释填充",
+            "value": "annotationFill"
+          },
+          {
+            "label": "样本特征提取",
+            "value": "featureExtractionStatus"
+          }
+        ],
+        saveAsDefault: false
+      },
     };
   },
   watch: {
@@ -529,67 +641,143 @@ export default {
         this.$message.warning("请先勾选要导出的节点");
         return;
       }
-      console.log('this.selectedTreeNodeIds', this.selectedTreeNodeIds);
 
-      const selectedNodes = this.selectedTreeNodeIds
-        .map(id => this.findNodeById(this.categoryList, id))
-        .filter(Boolean); // 过滤无效节点
+      // 打开导出列配置弹窗
+      this.showExportColumnDialog();
+    },
 
-      // 1.2 提取所有选中节点的子节点，组成数组
-      const allChildrenData = selectedNodes.reduce((acc, node) => {
-        // 只收集存在的子节点
-        if (node.children && node.children.length > 0) {
-          acc.push(...node.children);
+    async showExportColumnDialog() {
+      this.exportColumnDialog.visible = true;
+      this.exportColumnDialog.loading = true;
+
+      try {
+        // 尝试从localStorage获取用户保存的默认配置
+        const savedColumns = localStorage.getItem('assetCatalogExportDefaultColumns');
+        const defaultColumns = savedColumns ? JSON.parse(savedColumns) : [];
+
+        // 如果没有保存的配置，则默认选中所有列
+        let finalSelectedColumns = [];
+        if (savedColumns && defaultColumns.length > 0) {
+          // 有保存的配置，使用保存的配置
+          finalSelectedColumns = defaultColumns;
+        } else {
+          // 没有保存的配置，默认选中所有列
+          finalSelectedColumns = this.exportColumnDialog.allColumns.map(item => item.value);
         }
-        return acc;
-      }, []);
 
-      this.loading = true;
-      // 构造请求参数
-      const params = {
-        tableNam: this.queryParams.tableName,
-        paddingStatus: this.queryParams.paddingStatus,
-        featureExtractionStatus: this.queryParams.featureExtractionStatus,
-        databaseList: allChildrenData,
-      };
+        // 设置选中的列为最终配置
+        this.exportColumnDialog.selectedColumns = [...finalSelectedColumns];
 
+      } catch (error) {
+        console.error('获取导出列配置失败:', error);
+        this.$message.warning('获取导出列配置失败，使用默认配置');
+        // 出错时使用所有列作为默认选中的列
+        this.exportColumnDialog.selectedColumns = this.exportColumnDialog.allColumns.map(item => item.value);
+      } finally {
+        this.exportColumnDialog.loading = false;
+      }
+    },
 
-      // 调用导出接口，注意需要指定responseType为blob
-      propertyCatalogueExport(params)
-        .then(res => {
-          this.loading = false;
+    toggleExportColumn(column) {
+      const index = this.exportColumnDialog.selectedColumns.indexOf(column.value);
+      if (index > -1) {
+        this.exportColumnDialog.selectedColumns.splice(index, 1);
+      } else {
+        this.exportColumnDialog.selectedColumns.push(column.value);
+      }
+      // 强制更新，确保UI同步
+      this.$forceUpdate();
+    },
 
-          // 处理文件流
-          const blob = new Blob([res], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-          // 创建一个URL对象
-          const url = window.URL.createObjectURL(blob);
-          // 创建一个a标签并设置href属性
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = '资产目录.xlsx'; // 设置下载后的文件名
-          // 将a标签添加到DOM中
-          document.body.appendChild(link);
-          // 触发点击事件
-          link.click();
-          // 移除a标签
-          document.body.removeChild(link);
-          // 释放URL对象
-          window.URL.revokeObjectURL(url);
-          this.loading = false;
-          this.$message.success('导出成功');
-        })
-        .catch(error => {
-          this.loading = false;
-          this.$message.error('导出失败: ' + (error.message || '未知错误'));
-        });
+    restoreInitialConfig() {
+      this.exportColumnDialog.selectedColumns = this.exportColumnDialog.allColumns.map(item => item.value);
+      this.exportColumnDialog.saveAsDefault = false;
+      this.$message.success('已恢复初始配置');
+    },
+
+    cancelExport() {
+      this.exportColumnDialog.visible = false;
+      this.exportColumnDialog.saveAsDefault = false;
+    },
+
+    async confirmExport() {
+      if (this.exportColumnDialog.selectedColumns.length === 0) {
+        this.$message.warning('请至少选择一个导出列');
+        return;
+      }
+
+      // 如果勾选了"保存为默认配置"，则保存到localStorage
+      if (this.exportColumnDialog.saveAsDefault) {
+        localStorage.setItem('assetCatalogExportDefaultColumns', JSON.stringify(this.exportColumnDialog.selectedColumns));
+        this.$message.success('已保存为默认配置');
+      }
+
+      // 关闭弹窗
+      this.exportColumnDialog.visible = false;
+
+      // 执行导出操作
+      await this.performExport();
+    },
+
+    async performExport() {
+      try {
+        this.loading = true;
+
+        const selectedNodes = this.selectedTreeNodeIds
+          .map(id => this.findNodeById(this.categoryList, id))
+          .filter(Boolean); // 过滤无效节点
+
+        // 提取所有选中节点的子节点，组成数组
+        const allChildrenData = selectedNodes.reduce((acc, node) => {
+          if (node.children && node.children.length > 0) {
+            acc.push(...node.children);
+          }
+          return acc;
+        }, []);
+
+        // 构造请求参数
+        const params = {
+          tableName: this.queryParams.tableName,
+          paddingStatus: this.queryParams.paddingStatus,
+          featureExtractionStatus: this.queryParams.featureExtractionStatus,
+          databaseList: allChildrenData,
+          columnList: this.exportColumnDialog.selectedColumns
+        };
+
+        // 调用导出接口，注意需要指定responseType为blob
+        await propertyCatalogueExport(params);
+
+        //  if (res.type != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        //    this.$message.error('导出失败');
+        //    this.getList();
+        //    return;
+        //  }
+
+        //  // 创建一个Blob对象
+        //  const blob = new Blob([res], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        //  const url = window.URL.createObjectURL(blob);
+        //  const link = document.createElement('a');
+        //  link.href = url;
+        //  link.download = '资产目录.xlsx';
+        //  document.body.appendChild(link);
+        //  link.click();
+        //  document.body.removeChild(link);
+        //  window.URL.revokeObjectURL(url);
+        this.loading = false;
+        this.$message.success('导出成功');
+
+      } catch (error) {
+        this.loading = false;
+        this.$message.error('导出失败，请稍后再试');
+      }
     },
 
     /**
      * 工具方法：根据选中的ID数组，筛选出对应的节点完整数据
      * @param {Array} treeData - 树数据源
      * @param {Array} checkedIds - 选中的节点ID数组
-     * @returns {Array} 选中节点的完整数据
-     */
+    * @returns {Array} 选中节点的完整数据
+    */
     getCheckedNodeData(checkedNodes) {
       const checkedData = [];
       if (!Array.isArray(checkedNodes)) return checkedData;
@@ -1095,7 +1283,7 @@ export default {
       this.resetForm("queryParams");
       this.handleQuery();
     },
-  },
+  }
 };
 </script>
 <style>
@@ -1495,5 +1683,91 @@ export default {
 
 .table-info-card::-webkit-scrollbar-track {
   border-radius: 10px;
+}
+
+/* 导出列配置弹窗样式 */
+/deep/.export-column-dialog-wrapper {
+  border-radius: 10px;
+}
+
+.export-column-dialog-wrapper .dialog-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.export-column-dialog-wrapper .dialog-header .title-bar {
+  width: 4px;
+  height: 16px;
+  background: #1890ff;
+  margin-right: 8px;
+}
+
+.export-column-dialog-wrapper .dialog-header .title-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.export-column-dialog-wrapper .column-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.export-column-dialog-wrapper .column-btn {
+  padding: 8px 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.export-column-dialog-wrapper .column-btn:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+.export-column-dialog-wrapper .column-btn.active {
+  border-color: #1890ff;
+  background: #e6f7ff;
+  color: #1890ff;
+}
+
+.export-column-dialog-wrapper .dialog-footer-custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.export-column-dialog-wrapper .footer-left {
+  display: flex;
+  align-items: center;
+}
+
+.export-column-dialog-wrapper .footer-right {
+  display: flex;
+  align-items: center;
+}
+
+.export-column-dialog-wrapper .restore-link {
+  margin-left: 16px;
+  color: #1890ff;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.export-column-dialog-wrapper .restore-link:hover {
+  color: #40a9ff;
 }
 </style>

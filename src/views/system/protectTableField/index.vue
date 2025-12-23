@@ -1022,7 +1022,7 @@ Authorization:Bearer ${this.Token}`
           categoryId: this.queryParams.categoryId,
           columnList: this.exportColumnDialog.selectedColumns
         };
-        const res = await exportReport(params);
+        await exportReport(params);
         // if (res.type != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
         //   this.$message.error('导出失败')
         //   this.getList()
@@ -1375,7 +1375,6 @@ Authorization:Bearer ${this.Token}`
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 20px;
-  min-height: 200px;
 }
 
 .export-column-dialog-wrapper .column-btn {
