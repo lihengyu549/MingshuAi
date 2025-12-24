@@ -23,12 +23,20 @@
         </app-link>
       </template>
 
+      <template v-else-if="item.meta && item.meta.hideChildrenInNavbar">
+        <app-link v-if="item.children && item.children.length > 0" :to="resolvePath(item.children[0].path)">
+          <el-menu-item :index="resolvePath(item.children[0].path)" :class="[{ 'submenu-title-noDropdown': !isNest }]">
+            <item :icon="item.meta.icon" :title="item.meta.title" />
+          </el-menu-item>
+        </app-link>
+      </template>
+
       <el-submenu v-else ref="subMenu" :index="resolvePath(item.path)" popper-append-to-body>
         <template slot="title">
           <item v-if="item.meta" :icon="item.meta && item.meta.icon" :title="item.meta.title" />
         </template>
         <sidebar-item v-for="(child, index) in item.children" :key="child.path + '-nest-' + index" :is-nest="true" :item="child"
-          :base-path="resolvePath(child.path)" class="nest-menu" />
+          :base-path="resolvePath(item.path) + '/' + child.path" class="nest-menu" />
       </el-submenu>
     </template>
   </div>

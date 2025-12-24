@@ -128,7 +128,9 @@ function categorizeRoutes(routes) {
        const finalIsSystemManagement = !isCoreBusiness && (isSystemManagement || titleContainsSystemKeywords)
        
        if (!finalIsSystemManagement && !(route.path === '/system' || (route.meta && route.meta.title === '系统管理'))) {
-         coreFunctions.push(route)
+         // 为核心功能路由添加 hideChildrenInNavbar 标记，用于L型菜单展示
+         const routeWithFlag = addHideChildrenFlag(route)
+         coreFunctions.push(routeWithFlag)
          processedRoutes.add(index)
        }
      })
@@ -201,7 +203,9 @@ function categorizeRoutes(routes) {
     if (finalIsSystemManagement) {
       systemManagement.push(route)
     } else {
-      coreFunctions.push(route)
+      // 为核心功能路由添加 hideChildrenInNavbar 标记，用于L型菜单展示
+      const routeWithFlag = addHideChildrenFlag(route)
+      coreFunctions.push(routeWithFlag)
     }
   })
   
@@ -238,6 +242,27 @@ function categorizeRoutes(routes) {
   }
   
   return categorizedRoutes.length > 0 ? categorizedRoutes : routes
+}
+
+// 为路由添加 hideChildrenInNavbar 标记，用于L型菜单展示
+function addHideChildrenFlag(route) {
+  if (route.children && route.children.length > 0) {
+    return {
+      ...route,
+      meta: {
+        ...route.meta,
+        hideChildrenInNavbar: true
+      },
+      children: route.children.map(child => ({
+        ...child,
+        meta: {
+          ...child.meta,
+          parentPath: route.path
+        }
+      }))
+    }
+  }
+  return route
 }
 
 function filterChildren(childrenMap, lastRouter = false) {

@@ -1,6 +1,17 @@
 <template>
   <div class="navbar">
     <top-nav id="topmenu-container" class="topmenu-container" v-if="topNav" />
+    
+    <div class="navbar-children" v-if="navbarChildren.length > 0">
+      <router-link
+        v-for="item in navbarChildren"
+        :key="item.path"
+        :class="['navbar-child-item', isActive(item) ? 'active' : '']"
+        :to="{ path: item.path, query: item.query, fullPath: item.fullPath }"
+      >
+        {{ item.meta ? item.meta.title : item.title }}
+      </router-link>
+    </div>
 
     <div class="right-menu">
       <!-- 添加近期导出记录按钮和下拉菜单 -->
@@ -110,7 +121,8 @@ export default {
     ...mapGetters([
       'sidebar',
       'avatar',
-      'device'
+      'device',
+      'sidebarRouters'
     ]),
     setting: {
       get() {
@@ -127,14 +139,85 @@ export default {
       get() {
         return this.$store.state.settings.topNav
       },
+    },
+    navbarChildren() {
+      return this.$store.state.tagsView.navbarChildren || []
+    }
+  },
+  watch: {
+    $route() {
+      this.updateNavbarChildren()
     }
   },
   mounted() {
-  },
-  watch() {
-
+    this.updateNavbarChildren()
   },
   methods: {
+    isActive(route) {
+      return route.path === this.$route.path
+    },
+    updateNavbarChildren() {
+      const currentPath = this.$route.path
+      const sidebarRouters = this.sidebarRouters
+      
+      for (const route of sidebarRouters) {
+        const result = this.findNavbarChildren(route, currentPath)
+        if (result) {
+          this.$store.dispatch('tagsView/setNavbarChildren', result)
+          return
+        }
+      }
+      this.$store.dispatch('tagsView/clearNavbarChildren')
+    },
+    findNavbarChildren(route, currentPath, parentPath = '') {
+      if (!route || !route.children) return null
+      
+      const fullParentPath = parentPath
+      
+      for (const child of route.children) {
+        if (!child) continue
+        
+        const childPath = child.path.startsWith('/') ? child.path : '/' + child.path
+        let fullChildPath
+        if (fullParentPath) {
+          if (fullParentPath.endsWith('/')) {
+            fullChildPath = fullParentPath + child.path
+          } else {
+            fullChildPath = fullParentPath + '/' + child.path
+          }
+        } else {
+          fullChildPath = childPath
+        }
+        
+        if (child.children && child.children.length > 0) {
+          if (child.meta && child.meta.hideChildrenInNavbar) {
+            const childHasGrandchildren = child.children.some(grandChild => grandChild.children && grandChild.children.length > 0)
+            if (childHasGrandchildren) {
+              const grandChild = child.children.find(gc => gc.children && gc.children.length > 0)
+              if (grandChild) {
+                const grandChildPath = fullChildPath + '/' + grandChild.path
+                if (currentPath === grandChildPath || currentPath.startsWith(grandChildPath + '/')) {
+                  return grandChild.children
+                }
+              }
+            }
+            
+            if (currentPath === fullChildPath || currentPath.startsWith(fullChildPath + '/')) {
+              return child.children
+            }
+          }
+          const nestedResult = this.findNavbarChildren(child, currentPath, fullChildPath)
+          if (nestedResult) return nestedResult
+        }
+        
+        if (fullChildPath === currentPath) {
+          if (route.meta && route.meta.hideChildrenInNavbar && child.children) {
+            return child.children
+          }
+        }
+      }
+      return null
+    },
     async logout() {
       this.$confirm('确定注销并退出系统吗？', '提示', {
         confirmButtonText: '确定',
@@ -225,6 +308,39 @@ export default {
   position: relative;
   background: #ffffff;
   padding-right: 3%;
+  
+  .navbar-children {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    background-color: #f5f7fa;
+    padding: 0 20px;
+    
+    .navbar-child-item {
+      display: inline-flex;
+      align-items: center;
+      height: 100%;
+      padding: 0 15px;
+      color: #606266;
+      font-size: 14px;
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+      cursor: pointer;
+      
+      &:hover {
+        color: #409EFF;
+      }
+      
+      &.active {
+        color: #409EFF;
+        border-bottom-color: #409EFF;
+        background-color: rgba(64, 158, 255, 0.1);
+      }
+    }
+  }
   
   .export-records-btn {
     overflow: visible !important;

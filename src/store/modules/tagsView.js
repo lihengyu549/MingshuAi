@@ -1,7 +1,8 @@
 const state = {
   visitedViews: [],
   cachedViews: [],
-  iframeViews: []
+  iframeViews: [],
+  navbarChildren: []
 }
 
 const mutations = {
@@ -42,6 +43,12 @@ const mutations = {
   DEL_CACHED_VIEW: (state, view) => {
     const index = state.cachedViews.indexOf(view.name)
     index > -1 && state.cachedViews.splice(index, 1)
+  },
+  SET_NAVBAR_CHILDREN: (state, children) => {
+    state.navbarChildren = children
+  },
+  CLEAR_NAVBAR_CHILDREN: (state) => {
+    state.navbarChildren = []
   },
 
   DEL_OTHERS_VISITED_VIEWS: (state, view) => {
@@ -218,6 +225,12 @@ const actions = {
       resolve([...state.visitedViews])
     })
   },
+  setNavbarChildren({ commit }, children) {
+    commit('SET_NAVBAR_CHILDREN', children)
+  },
+  clearNavbarChildren({ commit }) {
+    commit('CLEAR_NAVBAR_CHILDREN')
+  }
 }
 
 export default {
