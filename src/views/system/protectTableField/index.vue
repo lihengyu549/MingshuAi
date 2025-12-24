@@ -12,8 +12,8 @@
         </div>
         <div class="head-container" v-loading="treeLoading">
           <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox :expand-on-click-node="false"
-            :filter-node-method="filterNode" ref="tree" node-key="id" @check="treeCheck"
-            :highlightCurrent="isHighlight" :render-content="renderContent" />
+            :filter-node-method="filterNode" ref="tree" node-key="id" @check="treeCheck" :highlightCurrent="isHighlight"
+            :render-content="renderContent" />
         </div>
       </el-col>
       <!--用户数据-->
@@ -138,6 +138,35 @@
         <el-button @click="apiCancel">取 消</el-button>
       </div>
     </el-dialog>
+    <!-- 导出列配置弹窗 -->
+    <el-dialog :visible.sync="exportColumnDialog.visible" width="760px" append-to-body :close-on-click-modal="false"
+      custom-class="export-column-dialog-wrapper" @close="cancelExport">
+      <div slot="title" class="dialog-header">
+        <div class="title-bar"></div>
+        <span class="title-text"><b>调整导出列</b></span>
+      </div>
+
+      <div v-loading="exportColumnDialog.loading" class="export-column-dialog">
+        <div class="column-options">
+          <div v-for="column in exportColumnDialog.allColumns" :key="column.value"
+            :class="['column-btn', { active: exportColumnDialog.selectedColumns.includes(column.value) }]"
+            @click="toggleExportColumn(column)">
+            {{ column.label }}
+          </div>
+        </div>
+
+        <div class="dialog-footer-custom">
+          <div class="footer-left">
+            <el-checkbox v-model="exportColumnDialog.saveAsDefault">保存为默认配置</el-checkbox>
+            <a class="restore-link" @click="restoreInitialConfig"><i class="el-icon-refresh-right"></i>恢复初始</a>
+          </div>
+          <div class="footer-right">
+            <el-button @click="cancelExport">取消</el-button>
+            <el-button type="primary" plain @click="confirmExport">确定</el-button>
+          </div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -148,27 +177,30 @@ import { getFrameworks, treeListI, } from "@/api/system/protectCategory";
 import Cookies from "js-cookie";
 import 'vue-json-viewer/style.css'
 import router from "@/router";
+import { attachStatus, forceLogout } from "@/api/system/protectTableField"; // Declare the variables here
+import dict from "@/utils/dict";
+
 export default {
   name: "ProtectTableField",
   components: { Treeselect },
 
-  dicts: ['sys_risk_level'],
+  dicts: ['sys_risk_level', 'sys_export_column'],
   data() {
-        return {
-          importData: {
-            importFile: '', // 导入魔板文件名
-            fileList: [],//导入模板的文件数据
-            categoryName: '',//框架名称
-            importShow: false,
-          },
-          isHighlight: false,
-          apiDialogLoading: false,
-          apiDialogShow: false,
-          debounceTimeout: null,//防抖动
-          changeTimeout: null, // 用于下拉选择防抖的定时器
-          treeOptions: [],
-          treeLoading: false,
-          treeID: '',
+    return {
+      importData: {
+        importFile: '', // 导入魔板文件名
+        fileList: [],//导入模板的文件数据
+        categoryName: '',//框架名称
+        importShow: false,
+      },
+      isHighlight: false,
+      apiDialogLoading: false,
+      apiDialogShow: false,
+      debounceTimeout: null,//防抖动
+      changeTimeout: null, // 用于下拉选择防抖的定时器
+      treeOptions: [],
+      treeLoading: false,
+      treeID: '',
       textarea2: '',
       // 查询参数
       queryParams: {
@@ -246,7 +278,118 @@ export default {
       copyable: { copyText: '复制', copiedText: '复制成功' },
       routeDataShow: false,
       treeIds: [],
-      databaseNames: [] // 新增：存储选中的数据库名称
+      databaseNames: [], // 新增：存储选中的数据库名称
+      // 导出列配置相关数据
+      exportColumnDialog: {
+        visible: false,
+        loading: false,
+        selectedColumns: [], // 当前选中的导出列
+        allColumns: [
+          {
+            "label": "字段名",
+            "value": "fieldName"
+          },
+          {
+            "label": "字段类型",
+            "value": "fieldType"
+          },
+          {
+            "label": "字段注释",
+            "value": "fieldRemark"
+          },
+          {
+            "label": "AI字段注释",
+            "value": "craftRemark"
+          },
+          {
+            "label": "来源业务系统",
+            "value": "businessName"
+          },
+          {
+            "label": "所属库",
+            "value": "databaseName"
+          },
+          {
+            "label": "所属表",
+            "value": "tableName"
+          },
+          {
+            "label": "表注释",
+            "value": "tableRemark"
+          },
+          {
+            "label": "AI表注释",
+            "value": "tableCraftRemark"
+          },
+          {
+            "label": "分类",
+            "value": "categoryName"
+          },
+          {
+            "label": "分类状态",
+            "value": "classificationStateName"
+          },
+          {
+            "label": "归类原因",
+            "value": "classificationReasons"
+          },
+          {
+            "label": "推理过程",
+            "value": "reasoningProcess"
+          },
+          {
+            "label": "个人信息识别",
+            "value": "piiDetectionName"
+          },
+          {
+            "label": "识别过程",
+            "value": "detectionProcess"
+          },
+          {
+            "label": "置信度",
+            "value": "confidenceLevel"
+          },
+          {
+            "label": "置信度分数",
+            "value": "confidenceScore"
+          },
+          {
+            "label": "安全级别",
+            "value": "securityLevelName"
+          },
+          {
+            "label": "敏感数据",
+            "value": "sensitiveDataName"
+          },
+          {
+            "label": "样本",
+            "value": "sampleData"
+          },
+          {
+            "label": "人工确认状态",
+            "value": "confirmName"
+          },
+          {
+            "label": "样本特征",
+            "value": "regularExpression"
+          }
+        ], // 所有可选的导出列
+        saveAsDefault: false, // 是否保存为默认配置
+      },
+      // 初始默认配置（固定不变，用于恢复初始配置）
+      initialDefaultColumns: [
+        "fieldName",
+        "fieldRemark",
+        "businessName",
+        "databaseName",
+        "tableName",
+        "categoryName",
+        "classificationReasons",
+        "piiDetectionName",
+        "securityLevelName",
+        "protectMethod",
+        "sampleData",
+      ],
     };
   },
   watch: {
@@ -295,12 +438,12 @@ export default {
       } else if (node.level === 3) {
         iconClass = 'table1'; // 第三层图标
       }
-      
+
       return h('span', { class: 'custom-tree-node' }, [
-        h('svg-icon', { 
+        h('svg-icon', {
           class: 'tree-node-icon',
-          attrs: { 
-            iconClass: iconClass 
+          attrs: {
+            iconClass: iconClass
           },
           style: { marginRight: '8px' }
         }),
@@ -409,7 +552,7 @@ Authorization:Bearer ${this.Token}`
       if (this.changeTimeout) {
         clearTimeout(this.changeTimeout);
       }
-      
+
       // 设置新的定时器，延迟执行，避免频繁切换导致性能问题
       this.changeTimeout = setTimeout(() => {
         this.queryParams.pageNum = 1
@@ -417,7 +560,7 @@ Authorization:Bearer ${this.Token}`
         this.resetQuery()
         this.routeDataShow = false
         this.httpDemo()
-        
+
         // 使用Promise.all协调多个异步请求，确保数据加载完成后再更新界面
         Promise.all([
           this.getProtectCategoryAsync(val),
@@ -555,7 +698,7 @@ Authorization:Bearer ${this.Token}`
         this.treeID = treeList.map(item => item.id).join()
         this.treeIds = treeList.map(item => item.id)
         // 收集选中的数据库名称，优先使用databaseName字段，如果没有则使用categoryName或name字段
-        this.databaseNames = treeList.map(item => item.name ).filter(name => name)
+        this.databaseNames = treeList.map(item => item.name).filter(name => name)
         this.handleQuery();
       } else {
         this.protectTableFieldList = []
@@ -673,7 +816,7 @@ Authorization:Bearer ${this.Token}`
         });
       });
     },
-    
+
     // 保留原方法以兼容其他调用
     getProtectCategory(key) {
       this.getProtectCategoryAsync(key).then(data => {
@@ -717,11 +860,11 @@ Authorization:Bearer ${this.Token}`
           if (response.code == 200 && response.rows) {
             // 确保数组安全
             const rows = response.rows || [];
-            
+
             // 使用map创建新数组，避免直接修改原数据
             this.protectTableFieldList = rows.map(ele => {
               const newEle = { ...ele };
-              
+
               // 安全处理sampleData解析
               if (newEle.sampleData) {
                 try {
@@ -731,15 +874,15 @@ Authorization:Bearer ${this.Token}`
                   console.warn('解析样本数据失败:', e);
                 }
               }
-              
+
               // 修复错误引用：将item改为ele
               if (newEle.protectMethod) {
                 newEle.protectMethodNameList = newEle.protectMethod.split(',');
               }
-              
+
               return newEle;
             });
-            
+
             this.total = response.total || 0;
           } else {
             // 重置为空数组，避免显示错误数据
@@ -781,40 +924,128 @@ Authorization:Bearer ${this.Token}`
       this.handleQuery();
     },
     async downloadFile() {
+      this.openExportColumnDialog();
+    },
+    async openExportColumnDialog() {
+      this.exportColumnDialog.visible = true;
+      this.exportColumnDialog.loading = true;
+
+      try {
+        // 尝试从localStorage获取用户保存的默认配置
+        const savedColumns = localStorage.getItem('exportDefaultColumns');
+        const defaultColumns = savedColumns ? JSON.parse(savedColumns) : [];
+
+        // 从字典中获取未选中的列配置（fieldType,craftRemark格式，分割成数组）
+        const dictColumns = this.dict.type['sys_export_column'].filter(item => item.value == 1)[0].raw.remark.split(',').map(item => item.trim());
+
+        // 获取所有可选的导出列（label和value的组合）
+        const allColumns = this.exportColumnDialog.allColumns;
+
+        // 如果没有保存的配置，则根据字典反转计算选中的列
+        // 字典中的值代表未选中项，所以选中的应该是allColumns中不在字典数组里的那些
+        let finalSelectedColumns = [];
+        if (savedColumns) {
+          // 有保存的配置，使用保存的配置
+          finalSelectedColumns = defaultColumns;
+        } else {
+          // 没有保存的配置，从allColumns中排除字典中的未选中项
+          finalSelectedColumns = allColumns
+            .map(item => item.value)
+            .filter(value => !dictColumns.includes(value));
+        }
+
+        // 设置选中的列为最终配置
+        this.exportColumnDialog.selectedColumns = [...finalSelectedColumns];
+
+      } catch (error) {
+        console.error('获取导出列配置失败:', error);
+        this.$message.warning('获取导出列配置失败，使用默认配置');
+        // 出错时使用空数组作为默认选中的列
+        this.exportColumnDialog.selectedColumns = [];
+      } finally {
+        this.exportColumnDialog.loading = false;
+      }
+    },
+
+    toggleExportColumn(column) {
+      const index = this.exportColumnDialog.selectedColumns.indexOf(column.value);
+      if (index > -1) {
+        this.exportColumnDialog.selectedColumns.splice(index, 1);
+      } else {
+        this.exportColumnDialog.selectedColumns.push(column.value);
+      }
+      // 强制更新，确保UI同步
+      this.$forceUpdate();
+    },
+
+    restoreInitialConfig() {
+      this.exportColumnDialog.selectedColumns = [...this.initialDefaultColumns];
+      this.exportColumnDialog.saveAsDefault = false;
+      this.$message.success('已恢复初始配置');
+    },
+
+    async confirmExport() {
+      if (this.exportColumnDialog.selectedColumns.length === 0) {
+        this.$message.warning('请至少选择一个导出列');
+        return;
+      }
+
+      // 如果勾选了"保存为默认配置"，则保存到localStorage
+      if (this.exportColumnDialog.saveAsDefault) {
+        localStorage.setItem('exportDefaultColumns', JSON.stringify(this.exportColumnDialog.selectedColumns));
+        this.$message.success('已保存为默认配置');
+      }
+
+      // 关闭弹窗
+      this.exportColumnDialog.visible = false;
+
+      // 执行导出操作
+      await this.performExport();
+    },
+
+    cancelExport() {
+      this.exportColumnDialog.visible = false;
+      this.exportColumnDialog.saveAsDefault = false;
+    },
+
+    async performExport() {
       try {
         this.loading = true;
         const params = {
-          tableIds: this.treeIds,
+          databaseNames: this.databaseNames,
           projectId: this.projectId,
           securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel : null,
           // securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : null,
           businessName: this.queryParams.businessName,
           pageNum: this.queryParams.pageNum,
           pageSize: this.queryParams.pageSize,
-          categoryId: this.queryParams.categoryId
+          categoryId: this.queryParams.categoryId,
+          columnList: this.exportColumnDialog.selectedColumns,
+          saveAsDefault: this.exportColumnDialog.saveAsDefault
         };
-        const res = await exportReport(params);
-        if (res.type != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-          this.$message.error('导出失败')
-          this.getList()
-          return
-        }
-        // 创建一个Blob对象
-        const blob = new Blob([res], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        // 创建一个URL对象
-        const url = window.URL.createObjectURL(blob);
-        // 创建一个a标签并设置href属性
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = '数据资产目录.xlsx'; // 设置下载后的文件名
-        // 将a标签添加到DOM中
-        document.body.appendChild(link);
-        // 触发点击事件
-        link.click();
-        // 移除a标签
-        document.body.removeChild(link);
-        // 释放URL对象
-        window.URL.revokeObjectURL(url);
+        await exportReport(params);
+        // if (res.type != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        //   this.$message.error('导出失败')
+        //   this.getList()
+        //   return
+        // }
+        // // 创建一个Blob对象
+        // const blob = new Blob([res], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        // // 创建一个URL对象
+        // const url = window.URL.createObjectURL(blob);
+        // // 创建一个a标签并设置href属性
+        // const link = document.createElement('a');
+        // link.href = url;
+        // link.download = '数据资产目录.xlsx';
+        // document.body.appendChild(link);
+        // // 触发点击事件
+        // link.click();
+        // // 移除a标签
+        // document.body.removeChild(link);
+        // // 释放URL对象
+        // window.URL.revokeObjectURL(url);
+        // this.loading = false;
+        this.getList()
         this.loading = false;
         this.$message.success('导出成功');
 
@@ -849,7 +1080,7 @@ Authorization:Bearer ${this.Token}`
         });
       });
     },
-    
+
     // 保留原方法以兼容其他调用
     getPiiList(key) {
       this.getPiiListAsync(key).then(() => {
@@ -887,7 +1118,7 @@ Authorization:Bearer ${this.Token}`
         });
       });
     },
-    
+
     // 保留原方法以兼容其他调用
     getProtectCategoryQuery(key) {
       this.getProtectCategoryQueryAsync(key).then(() => {
@@ -1112,5 +1343,93 @@ Authorization:Bearer ${this.Token}`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 添加导出列配置弹窗样式 */
+/deep/.export-column-dialog-wrapper {
+  border-radius: 10px;
+}
+
+.export-column-dialog-wrapper .dialog-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.export-column-dialog-wrapper .dialog-header .title-bar {
+  width: 4px;
+  height: 16px;
+  background: #1890ff;
+  margin-right: 8px;
+}
+
+.export-column-dialog-wrapper .dialog-header .title-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.export-column-dialog-wrapper .column-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.export-column-dialog-wrapper .column-btn {
+  padding: 8px 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.export-column-dialog-wrapper .column-btn:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+.export-column-dialog-wrapper .column-btn.active {
+  border-color: #1890ff;
+  background: #e6f7ff;
+  color: #1890ff;
+}
+
+.export-column-dialog-wrapper .dialog-footer-custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.export-column-dialog-wrapper .footer-left {
+  display: flex;
+  align-items: center;
+}
+
+.export-column-dialog-wrapper .footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.export-column-dialog-wrapper .restore-link {
+  color: #1890ff;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  margin-left: 12px;
+}
+
+.export-column-dialog-wrapper .restore-link:hover {
+  color: #40a9ff;
+  text-decoration: underline;
 }
 </style>
