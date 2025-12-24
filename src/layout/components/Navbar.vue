@@ -346,8 +346,8 @@ export default {
 }
 
 /* 导出记录下拉菜单样式 */
-::v-deep .export-dropdown-menu {
-  width: 740px;
+.export-dropdown-menu {
+  width: 500px;
   padding: 0;
   border-radius: 10px;
 
