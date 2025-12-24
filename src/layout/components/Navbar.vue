@@ -1,12 +1,8 @@
 <template>
   <div class="navbar">
-    <hamburger id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container"
-      @toggleClick="toggleSideBar" />
-
-    <breadcrumb id="breadcrumb-container" class="breadcrumb-container" v-if="!topNav" />
     <top-nav id="topmenu-container" class="topmenu-container" v-if="topNav" />
 
-    <div class="right-menu" :style="right">
+    <div class="right-menu">
       <!-- 添加近期导出记录按钮和下拉菜单 -->
       <template v-if="device !== 'mobile'">
         <!-- 导出记录下拉菜单 -->
@@ -87,9 +83,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import Breadcrumb from '@/components/Breadcrumb'
 import TopNav from '@/components/TopNav'
-import Hamburger from '@/components/Hamburger'
 import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
@@ -100,15 +94,12 @@ import { listAll, downloadById } from "@/api/system/protectTableField"; // 临�
 export default {
   data() {
     return {
-      right: 'right: 11%;',
       loading: false,
       exportRecords: []
     }
   },
   components: {
-    Breadcrumb,
     TopNav,
-    Hamburger,
     Screenfull,
     SizeSelect,
     Search,
@@ -144,14 +135,6 @@ export default {
 
   },
   methods: {
-    toggleSideBar() {
-      if (this.$store.state.app.sidebar.opened) {
-        this.right = 'right: 4%;'
-      } else {
-        this.right = 'right: 11%;'
-      }
-      this.$store.dispatch('app/toggleSideBar')
-    },
     async logout() {
       this.$confirm('确定注销并退出系统吗？', '提示', {
         confirmButtonText: '确定',
@@ -239,27 +222,12 @@ export default {
   z-index: 1000;
   width: 100%;
   height: 50px;
-  overflow: hidden;
   position: relative;
   background: #ffffff;
-  background: #ffffff;
   padding-right: 3%;
-
-  .hamburger-container {
-    line-height: 46px;
-    height: 100%;
-    float: left;
-    cursor: pointer;
-    transition: background .3s;
-    -webkit-tap-highlight-color: transparent;
-
-    &:hover {
-      background: rgba(0, 0, 0, .025)
-    }
-  }
-
-  .breadcrumb-container {
-    float: left;
+  
+  .export-records-btn {
+    overflow: visible !important;
   }
 
   .topmenu-container {
