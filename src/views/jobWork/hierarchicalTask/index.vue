@@ -290,6 +290,17 @@
         </div> -->
         <Title title="执行范围与周期" />
         <el-row>
+          <el-col :span="24">
+            <el-form-item label="语义填充状态">
+              <el-select v-model="form.paddingStatus" multiple clearable placeholder="请选择内容">
+                <el-option label="未开始" value="1" />
+                <el-option label="成功" value="2" />
+                <el-option label="失败" value="3" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
           <el-col :span="12">
             <el-form-item label="分类状态">
               <el-select v-model="form.classificationState" multiple clearable placeholder="请选择内容">
@@ -573,6 +584,7 @@ export default {
         id: '',
         classificationState: [],
         classificationReasons: [], // 归类原因
+        paddingStatus: [], // 语义填充状态
         piiDetectionFlag: false,
         ifStartRuleMatching: false,
         classificationLogic: '3',
@@ -962,6 +974,13 @@ export default {
           return item
         })
       }
+      if (row.paddingStatus == '0' || row.paddingStatus == null) {
+        this.form.paddingStatus = []
+      } else {
+        this.form.paddingStatus = row.paddingStatus.split(',').map(item => {
+          return item
+        })
+      }
       if (row.classificationReasons == '0' || row.classificationReasons == null) {
         this.form.classificationReasons = []
       } else {
@@ -997,6 +1016,7 @@ export default {
             ifTechnicalIdentifier: this.form.ifTechnicalIdentifier ? '1' : '0',
             ifRedundantFields: this.form.ifRedundantFields ? '1' : '0',
             classificationState: this.form.classificationState ? this.form.classificationState.join(',') : '0',
+            paddingStatus: this.form.paddingStatus ? this.form.paddingStatus.join(',') : '0',
             classificationReasons: this.form.classificationReasons ? this.form.classificationReasons.join(',') : '0',
 
           }

@@ -264,7 +264,7 @@ export function propertyCatalogueExport(data) {
     url: '/system/protectTableField/propertyCatalogueExport',
     method: 'post',
     data: data,
-    responseType: 'blob' //响应数据格式配置
+    // responseType: 'blob' //响应数据格式配置
   })
 }
 
