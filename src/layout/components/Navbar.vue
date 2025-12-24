@@ -210,7 +210,7 @@ export default {
           if (nestedResult) return nestedResult
         }
         
-        if (fullChildPath === currentPath) {
+        if (currentPath === fullChildPath || currentPath.startsWith(fullChildPath + '/')) {
           if (route.meta && route.meta.hideChildrenInNavbar && child.children) {
             return child.children
           }

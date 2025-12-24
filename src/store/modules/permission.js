@@ -153,15 +153,32 @@ function categorizeRoutes(routes) {
      // 处理系统管理根节点和未处理的路由
      routes.forEach((route, index) => {
        if (route.path === '/system' || (route.meta && route.meta.title === '系统管理')) {
+         // 为系统管理根节点创建新的结构，子菜单添加 hideChildrenInNavbar 标记
+         const processedChildren = route.children ? route.children.map(child => {
+           const childPath = child.path.startsWith('/') ? child.path : '/' + child.path
+           const fullPath = route.path === '/' ? childPath : route.path + childPath
+           return {
+             ...child,
+             path: fullPath,
+             meta: child.children && child.children.length > 0 ? {
+               ...child.meta,
+               hideChildrenInNavbar: true
+             } : child.meta
+           }
+         }) : []
+         
          result.push({
            ...route,
            meta: {
              ...route.meta,
              type: 'category'
-           }
+           },
+           children: processedChildren,
+           alwaysShow: true
          })
        } else if (!processedRoutes.has(index)) {
-         result.push(route)
+         const routeWithFlag = addHideChildrenFlag(route)
+         result.push(routeWithFlag)
        }
      })
      
