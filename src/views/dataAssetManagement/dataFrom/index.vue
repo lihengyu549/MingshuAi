@@ -58,7 +58,10 @@
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="数据源名称" align="left" width="140" prop="sourceName" show-overflow-tooltip>
         <template slot-scope="scope">
-          <span> <svg-icon :icon-class="databaseTypeIcon(databaseTypeMsg(scope.row.databaseType))" style="font-size: 14px; margin-right: 5px;" /> {{ scope.row.sourceName }}</span>
+          <span class="source-name" @click="scanContentEdit(scope.row)">
+            <svg-icon :icon-class="databaseTypeIcon(databaseTypeMsg(scope.row.databaseType))" style="font-size: 14px; margin-right: 5px;" />
+            {{ scope.row.sourceName }}
+          </span>
         </template>
       </el-table-column>
 
@@ -95,8 +98,6 @@
             :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">开始扫描</el-button>
           <el-button size="mini" type="text" @click="stopScan(scope.row)"
             :disabled="scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">终止扫描</el-button>
-          <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
-            @click="scanContentEdit(scope.row)">编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -1321,5 +1322,10 @@ input[aria-hidden=true] {
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
   border-radius: 10px;
+}
+
+.source-name {
+  cursor: pointer;
+  color: #409EFF;
 }
 </style>
