@@ -86,6 +86,7 @@
       </el-table-column>
       <el-table-column label="耗时(毫秒)" align="center" prop="scanTime" show-overflow-tooltip />
       <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
+      <el-table-column label="数据质量评估" align="center" prop="dataScore" show-overflow-tooltip />
       <el-table-column label="表数量" align="center" prop="tableCount" show-overflow-tooltip />
       <el-table-column label="字段数量" align="center" prop="fieldCount" show-overflow-tooltip />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
