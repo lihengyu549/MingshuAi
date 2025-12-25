@@ -990,17 +990,20 @@ Authorization:Bearer ${this.Token}`
         return;
       }
 
-      // 如果勾选了"保存为默认配置"，则保存到localStorage
-      if (this.exportColumnDialog.saveAsDefault) {
-        localStorage.setItem('exportDefaultColumns', JSON.stringify(this.exportColumnDialog.selectedColumns));
-        this.$message.success('已保存为默认配置');
+      if (this.exportColumnDialog.loading) return;
+      this.exportColumnDialog.loading = true;
+
+      try {
+        if (this.exportColumnDialog.saveAsDefault) {
+          localStorage.setItem('exportDefaultColumns', JSON.stringify(this.exportColumnDialog.selectedColumns));
+          this.$message.success('已保存为默认配置');
+        }
+
+        this.exportColumnDialog.visible = false;
+        await this.performExport();
+      } finally {
+        this.exportColumnDialog.loading = false;
       }
-
-      // 关闭弹窗
-      this.exportColumnDialog.visible = false;
-
-      // 执行导出操作
-      await this.performExport();
     },
 
     cancelExport() {
