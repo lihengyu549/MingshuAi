@@ -58,7 +58,11 @@
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="数据源名称" align="left" width="140" prop="sourceName" show-overflow-tooltip>
         <template slot-scope="scope">
-          <span> <svg-icon :icon-class="databaseTypeIcon(databaseTypeMsg(scope.row.databaseType))" style="font-size: 14px; margin-right: 5px;" /> {{ scope.row.sourceName }}</span>
+          <span class="source-name" @click="scanContentEdit(scope.row)">
+            <svg-icon :icon-class="databaseTypeIcon(databaseTypeMsg(scope.row.databaseType))"
+              style="font-size: 14px; margin-right: 5px;" />
+            {{ scope.row.sourceName }}
+          </span>
         </template>
       </el-table-column>
 
@@ -73,7 +77,7 @@
           <span>{{ databaseTypeMsg(scope.row.databaseType) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip  />
+      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
       <!-- <el-table-column label="分类分级标准" align="center" prop="projectName" /> -->
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
@@ -86,16 +90,36 @@
       </el-table-column>
       <el-table-column label="耗时(毫秒)" align="center" prop="scanTime" show-overflow-tooltip />
       <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
+      <el-table-column label="数据质量评估" align="center" prop="dataScore" show-overflow-tooltip />
       <el-table-column label="表数量" align="center" prop="tableCount" show-overflow-tooltip />
       <el-table-column label="字段数量" align="center" prop="fieldCount" show-overflow-tooltip />
+      <el-table-column label="数据字典" align="center" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span>{{ scope.row.feature && scope.row.feature.featureName || '-' }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
             :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">开始扫描</el-button>
           <el-button size="mini" type="text" @click="stopScan(scope.row)"
             :disabled="scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">终止扫描</el-button>
-          <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
-            @click="scanContentEdit(scope.row)">编辑</el-button>
+          <!-- 添加关联数据字典按钮和下拉菜单 -->
+          <el-dropdown trigger="click" @command="handleDictionaryCommand"
+            @click.native="handleDropdownClick(scope.row)">
+            <el-button size="mini" type="text">
+              关联数据字典
+            </el-button>
+            <el-dropdown-menu slot="dropdown" class="dictionary-dropdown-menu">
+              <el-dropdown-item v-for="item in dictionaryList" :key="item.id"
+                :command="{ action: 'link', row: scope.row, dictionary: item }">
+                <div class="dictionary-menu-item">
+                  <span>{{ item.featureName }}</span>
+                  <svg-icon iconClass="lightning" style="font-size: 14px;" />
+                </div>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </template>
       </el-table-column>
     </el-table>
@@ -156,7 +180,8 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
-              <el-input type="password" v-model="form.targetUserPassword" :show-password="passwordVisible" maxlength="100" placeholder="请输入数据库密码" />
+              <el-input type="password" v-model="form.targetUserPassword" :show-password="passwordVisible"
+                maxlength="100" placeholder="请输入数据库密码" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -193,8 +218,7 @@
             </el-option>
           </el-select>
           <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
-            @change="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点"
-            :append-to-body="true">
+            @change="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点" :append-to-body="true">
           </el-time-picker>
         </el-form-item>
 
@@ -253,8 +277,8 @@
       <Result :treeOptions="treeOptions" :drawerData="drawerData" />
     </el-drawer>
 
-    <el-dialog title="扫描配置" class="addMsg" v-loading="scanContentLoading" :visible.sync="scanContentShow"
-      width="950px" append-to-body :close-on-click-modal="false">
+    <el-dialog title="扫描配置" class="addMsg" v-loading="scanContentLoading" :visible.sync="scanContentShow" width="950px"
+      append-to-body :close-on-click-modal="false">
       <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData"
         :scanContentTreeData="scanContentTreeData" :databaseTableNameParama="databaseTableNameParama"
         ref="scanContentTreeRef" />
@@ -280,9 +304,7 @@ import {
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import TableSelector from './components/TableSelector.vue'
-import Vue from 'vue';
-import { js } from "js-beautify";
-import { index, timeThursdays } from "d3";
+import { getFeatureSelect, relevancyDataDict } from "@/api/system/IndustryExperience";
 export default {
   name: "Proxys",
   components: { Result, TableSelector, },
@@ -538,6 +560,8 @@ export default {
         ],
       },
       tabelCheckedName: '',
+      dictionaryList: [], // 数据字典列表
+      currentRow: null, // 当前操作的行数据
     };
   },
   computed: {
@@ -608,17 +632,17 @@ export default {
       }
       return msg || '未知来源'
     },
-    databaseTypeIcon(val){
+    databaseTypeIcon(val) {
       if (val == 'Excel') {
         return 'excel-o'
-      }else if (val == 'API') {
+      } else if (val == 'API') {
         return 'api-o'
-      }else if (val == 'MYSQL') {
+      } else if (val == 'MYSQL') {
         return 'mysql-o'
-      }else {
+      } else {
         return 'unknow-o'
       }
-      
+
     },
     businessNameFn(val) {
       this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
@@ -1154,27 +1178,116 @@ export default {
         }
       });
       this.form.targetDatabase = []
-      // if(typeof this.form.targetDatabase == 'string'){
-      //   this.form.targetDatabase = this.form.targetDatabase.trim().replace(/^"|"$/g, '').split(',').filter(Boolean);
-      // }
       returnArr.forEach((item) => {
         if ((item.checked || item.isBanxuan) && item.children.length > 0) {
           this.form.targetDatabase.push(item.name)
         }
       })
       this.form.tables = result
-      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedTableCount}张表`  //共${this.$refs.scanContentTreeRef.fieldCount}个字段
+      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedTableCount}张表`
       this.scanContentShow = false
+    },
+    // 点击下拉按钮
+    handleDropdownClick(row) {
+      this.currentRow = row;
+      this.getDictionaryList();
+    },
+
+    // 处理下拉菜单命令
+    handleDictionaryCommand(command) {
+      const data = {
+        id: this.currentRow.id,
+        featureId: command.dictionary.id,
+        isBindingFeature: true
+      }
+      relevancyDataDict(data).then(res => {
+        if (res.code == 200) {
+          this.$message.success(res.msg || '关联数据字典成功')
+          this.getList()
+        }
+      })
+    },
+
+    // 获取数据字典列表
+    async getDictionaryList() {
+      try {
+        const refResponse = await getFeatureSelect({ featureType: '3' }); // 自定义接口，需实际实现
+        this.dictionaryList = refResponse.data;
+
+      } catch (error) {
+        this.$message.error('获取数据字典列表失败');
+        this.dictionaryList = [];
+      }
     },
   }
 };
 </script>
-<style>
-input[aria-hidden=true] {
-  display: none !important;
+<style scope>
+.app-container .el-dialog__wrapper .addMsg .el-dialog .el-dialog__body {
+  padding-bottom: 0 !important;
 }
-</style>
-<style scoped>
+
+.app-container .el-dialog__wrapper .addMsg .el-dialog .el-dialog__footer {
+  padding-bottom: 32px !important;
+}
+
+.app-container .el-dialog__wrapper .addMsg .el-form-item {
+  margin-bottom: 20px !important;
+}
+
+.app-container .el-dialog__wrapper .addMsg .el-form-item__label {
+  line-height: 20px !important;
+}
+
+.app-container .el-dialog__wrapper .addMsg .el-form-item .el-form-item__content {
+  line-height: 20px !important;
+}
+
+.app-container .el-dialog__wrapper .addMsg .el-input__inner,
+.app-container .el-dialog__wrapper .addMsg .el-textarea__inner,
+.app-container .el-dialog__wrapper .addMsg .el-select .el-input__inner {
+  height: 36px !important;
+}
+
+.app-container .el-dialog__wrapper .addMsg .el-form--label-top .el-form-item__label {
+  padding: 0 !important;
+  margin-bottom: 8px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #303133 !important;
+  line-height: 14px !important;
+}
+
+.app-container .el-dialog__wrapper .addMsg .el-select .el-select__tags>span>input.el-input__inner {
+  height: 30px !important;
+}
+
+.app-container .el-dialog__wrapper .addMsg .el-checkbox {
+  margin-left: 0px !important;
+}
+
+.app-container .el-dialog__wrapper .addMsg .el-dialog__body .el-row {
+  margin-left: -15px !important;
+  margin-right: -15px !important;
+}
+
+.app-container .el-dialog__wrapper .addMsg .el-dialog__body .el-row .el-col-12 {
+  padding-left: 15px !important;
+  padding-right: 15px !important;
+}
+
+.app-container .el-dialog__wrapper .addMsg .el-dialog__body .el-col-12 .el-form-item {
+  margin-bottom: 0 !important;
+}
+
+.app-container .el-dialog__wrapper .addMsg .el-dialog__body .el-col-12 .el-form-item .el-form-item__content {
+  width: 100% !important;
+}
+
+.app-container .el-dialog__wrapper .addMsg .el-dialog__body .el-col-12 .el-form-item .el-input__inner {
+  width: 100% !important;
+}
+
 .addMsg /deep/ .el-input--medium {
   width: 237px;
 }
@@ -1205,12 +1318,10 @@ input[aria-hidden=true] {
 
 .addMsg /deep/ .el-dialog__body {
   padding-bottom: 0;
-
 }
 
 .addMsg /deep/ .el-dialog__footer {
   padding-bottom: 32px;
-
 }
 
 .addMsg /deep/ .el-form-item__label {
@@ -1291,7 +1402,6 @@ input[aria-hidden=true] {
 
 .importForm /deep/ .el-form-item--medium {
   width: 100%;
-
 }
 
 .importForm /deep/ .el-form-item__content {
@@ -1320,5 +1430,22 @@ input[aria-hidden=true] {
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
   border-radius: 10px;
+}
+
+.source-name {
+  cursor: pointer;
+  color: #409EFF;
+}
+
+/* 关联数据字典下拉菜单 */
+.dictionary-dropdown-menu {
+  width: 150px;
+  border-radius: 10px;
+}
+
+.dictionary-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 </style>

@@ -63,3 +63,13 @@ export function addExperienceQuote(data) {
         data: data
     })
 }
+
+
+// 关联数据字典接口
+export function relevancyDataDict(data) {
+    return request({
+        url: '/system/proxy/relevancyDataDict',
+        method: 'post',
+        data: data
+    })
+}
