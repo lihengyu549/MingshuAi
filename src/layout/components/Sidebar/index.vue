@@ -37,9 +37,13 @@ export default {
         activeMenu() {
             const route = this.$route;
             const { meta, path } = route;
-            // if set path, the sidebar will highlight the path you set
             if (meta.activeMenu) {
                 return meta.activeMenu;
+            }
+            const pathWithoutQuery = path.split('?')[0];
+            const result = this.findActiveIndex(this.sidebarRouters, pathWithoutQuery);
+            if (result) {
+                return result;
             }
             return path;
         },
@@ -51,6 +55,63 @@ export default {
         },
         isCollapse() {
             return !this.sidebar.opened;
+        }
+    },
+    methods: {
+        findActiveIndex(routes, currentPath, parentPath = '') {
+            const segments = currentPath.split('/').filter(s => s);
+            if (segments.length === 0) {
+                return null;
+            }
+
+            for (let i = segments.length; i >= 1; i--) {
+                const pathToMatch = '/' + segments.slice(0, i).join('/');
+                const parentPathBuilt = '/' + segments.slice(i).join('/');
+                const result = this.findActiveIndexRecursive(routes, pathToMatch, parentPathBuilt);
+                if (result) {
+                    return result;
+                }
+            }
+
+            return null;
+        },
+        findActiveIndexRecursive(routes, currentPath, parentPath = '') {
+            for (const route of routes) {
+                if (!route || route.hidden) continue;
+
+                if (route.meta && route.meta.type === 'category') {
+                    const childResult = this.findActiveIndexRecursive(route.children, currentPath, '');
+                    if (childResult) return childResult;
+                    continue;
+                }
+
+                let fullRoutePath;
+                if (route.path.startsWith('/')) {
+                    fullRoutePath = parentPath ? parentPath + route.path : route.path;
+                } else {
+                    fullRoutePath = parentPath ? parentPath + '/' + route.path : '/' + route.path;
+                }
+
+                if (route.children && route.children.length > 0) {
+                    if (route.meta && route.meta.hideChildrenInNavbar) {
+                        const firstChild = route.children[0];
+                        let firstChildPath;
+                        if (firstChild.path.startsWith('/')) {
+                            firstChildPath = fullRoutePath + firstChild.path;
+                        } else {
+                            firstChildPath = fullRoutePath + '/' + firstChild.path;
+                        }
+
+                        if (currentPath === firstChildPath || currentPath.startsWith(fullRoutePath + '/')) {
+                            return firstChildPath;
+                        }
+                    } else {
+                        const childResult = this.findActiveIndexRecursive(route.children, currentPath, fullRoutePath);
+                        if (childResult) return childResult;
+                    }
+                }
+            }
+            return null;
         }
     }
 };
