@@ -231,7 +231,7 @@
         </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="submitForm">确 定</el-button>
+        <el-button type="primary" plain @click="submitForm" :loading="submitLoading">确 定</el-button>
         <el-button @click="scanContentCanlce">取消</el-button>
       </div>
     </el-dialog>
@@ -332,6 +332,7 @@ export default {
       markingVisible: false,
       addUserId: 0,
       mainLoading: false,
+      submitLoading: false,
       imgSrc: {
         'ERR': require('@/assets/stateImg/stateDanger.png'),
         'COMPLETE': require('@/assets/stateImg/stateSuess.png'),
@@ -855,6 +856,8 @@ export default {
     },
     /** 提交按钮 */
     async submitForm() {
+      if (this.submitLoading) return;
+      this.submitLoading = true;
       this.$refs["form"].validate(async valid => {
         let data = JSON.parse(JSON.stringify(this.form))
         delete data.projectName
@@ -871,13 +874,16 @@ export default {
         console.log(data);
         if (!this.editIsFlag && !data.tables) {
           this.$message({ message: '请选择扫描内容', type: 'warning' })
+          this.submitLoading = false;
           return
         } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
           this.$message({ message: '请选择扫描内容', type: 'warning' })
+          this.submitLoading = false;
           return
         }
         if (valid) {
           if (!await this.getNameTestingFn()) {
+            this.submitLoading = false;
             return
           }
           if (this.form.id != null) {
@@ -886,14 +892,22 @@ export default {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
+              this.submitLoading = false;
+            }).catch(() => {
+              this.submitLoading = false;
             });
           } else {
             saveDatabaseAndTables(data).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
+              this.submitLoading = false;
+            }).catch(() => {
+              this.submitLoading = false;
             });
           }
+        } else {
+          this.submitLoading = false;
         }
       });
     },
