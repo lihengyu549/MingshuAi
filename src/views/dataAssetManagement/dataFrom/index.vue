@@ -101,9 +101,11 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
-            :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">开始扫描</el-button>
+            :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API' || btnLoading"
+            :loading="btnLoading">开始扫描</el-button>
           <el-button size="mini" type="text" @click="stopScan(scope.row)"
-            :disabled="scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">终止扫描</el-button>
+            :disabled="scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API' || btnLoading"
+            :loading="btnLoading">终止扫描</el-button>
           <!-- 添加关联数据字典按钮和下拉菜单 -->
           <el-dropdown trigger="click" @command="handleDictionaryCommand"
             @click.native="handleDropdownClick(scope.row)">
@@ -333,6 +335,7 @@ export default {
       addUserId: 0,
       mainLoading: false,
       submitLoading: false,
+      btnLoading: false,
       imgSrc: {
         'ERR': require('@/assets/stateImg/stateDanger.png'),
         'COMPLETE': require('@/assets/stateImg/stateSuess.png'),
@@ -1047,53 +1050,53 @@ export default {
       }
     },
     scanStateClickFn(row) {
+      if (this.btnLoading) return;
       if (row.scanState == 'COMPLETE') {
         this.$confirm(`再次扫描将会覆盖之前的所有扫描结果，确定继续吗？`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.loading = true
+          this.btnLoading = true;
           dataSacn({ proxyIds: row.id }).then(async res => {
-            // this.scanStateName = false
             await this.getList()
+          }).catch(() => {
+            this.$message.error('扫描失败')
           }).finally(() => {
-            this.loading = false
+            this.btnLoading = false;
           })
         })
           .catch(() => {
             this.getList()
           })
       } else {
-        this.loading = true
+        this.btnLoading = true;
         dataSacn({ proxyIds: row.id }).then(async res => {
-          // this.scanStateName = false
           await this.getList()
+        }).catch(() => {
+          this.$message.error('扫描失败')
         }).finally(() => {
-          this.loading = false
+          this.btnLoading = false;
         })
-          .catch(() => {
-            this.getList()
-          })
       }
     },
     stopScan(row) {
+      if (this.btnLoading) return;
       this.$confirm(`确定要终止"${row.sourceName}"的扫描任务吗？`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.loading = true
+        this.btnLoading = true;
         stopDataScan({ proxyIds: row.id }).then(async res => {
           this.$message.success(res.msg || '终止扫描成功')
           await this.getList()
         }).catch(() => {
           this.$message.error('终止扫描失败')
         }).finally(() => {
-          this.loading = false
+          this.btnLoading = false;
         })
       }).catch(() => {
-        // 用户取消操作，不做处理
       })
     },
     handleTimeChange(time) {
