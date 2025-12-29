@@ -215,12 +215,12 @@
             <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
-          <el-select v-show="form.scheduleType == '2' || form.scheduleType == '3'" v-model="form.scheduleInterval">
+          <el-select v-show="form.scheduleType == '2' || form.scheduleType == '3'" v-model="form.scheduleInterval" @change="handleIntervalChange">
             <el-option v-for="item in weekList" :key="item" :label="item" :value="item">
             </el-option>
           </el-select>
           <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
-            @change="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点" :append-to-body="true">
+            @input="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点" :append-to-body="true">
           </el-time-picker>
         </el-form-item>
 
@@ -1100,11 +1100,14 @@ export default {
       })
     },
     handleTimeChange(time) {
-      // 确保时间值正确更新到表单数据中
-      this.$nextTick(() => {
-        this.form.scheduleTime = time;
-      });
-      // 移除$forceUpdate()，避免引起不必要的视图重绘
+      if (time) {
+        this.form.scheduleTime = time
+      }
+      this.$forceUpdate()
+    },
+    handleIntervalChange(val) {
+      this.form.scheduleInterval = val
+      this.$forceUpdate()
     },
     scanContentEdit(row) {
       console.log('row', row);
