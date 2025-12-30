@@ -1184,6 +1184,9 @@ export default {
           } else {
             this.scanContentTreeData = res.data
             this.scanContentShow = true
+            if (this.title == "添加数据库") {
+              this.treeCheckedData = ['0']
+            }
           }
         }
       })
