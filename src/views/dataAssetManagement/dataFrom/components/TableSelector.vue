@@ -525,8 +525,9 @@ export default {
 
         // 搜索表名
         inputSearch(val) {
+            const lowerVal = val.toLowerCase();
             this.checkListChildAll = this.serchListChildAll.filter(item =>
-                item.tableName.includes(val)
+                item.tableName.toLowerCase().includes(lowerVal)
             );
             this.updateMiddleListCheckAllStatus();
         },
