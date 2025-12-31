@@ -487,13 +487,6 @@ export default {
         onAllTypingComplete() {
             console.log('所有打字动画已完成');
 
-            // 设置生成完成标志
-            this.generationCompleted = true;
-            this.isGenerating = false;
-            this.isGeneratingNodes = false;
-            this.canSave = true;
-            this.canCancel = true;
-
             // 关闭WebSocket连接
             if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
                 this.isExpectedClose = true;
@@ -501,7 +494,17 @@ export default {
                 this.websocket = null;
             }
 
+            // 先显示完成消息
             this.$message.success('生成完成');
+
+            // 延迟显示按钮，确保动画完整展示完毕后再出现按钮
+            setTimeout(() => {
+                this.generationCompleted = true;
+                this.isGenerating = false;
+                this.isGeneratingNodes = false;
+                this.canSave = true;
+                this.canCancel = true;
+            }, 500);
         },
 
         // 递归比较并添加新节点 - 严格按照层级顺序逐个生成
@@ -1290,18 +1293,24 @@ export default {
                         // 如果没有正在进行的打字任务，直接更新数据
                         if (this.typingQueue.length === 0 && !this.currentTypingNode && !this.isGeneratingNodes) {
                             this.updateFullDataWithoutAnimation(this.latestFullData);
-                            this.generationCompleted = true;
-                            this.isGenerating = false;
-                            this.canSave = true;
-                            this.canCancel = true;
+                            // 延迟显示按钮，确保动画完整展示完毕后再出现按钮
+                            setTimeout(() => {
+                                this.generationCompleted = true;
+                                this.isGenerating = false;
+                                this.canSave = true;
+                                this.canCancel = true;
+                            }, 500);
                         }
                         // 否则让打字机继续执行完成
                     } else {
                         // 没有数据，直接结束
                         this.isGenerating = false;
-                        this.generationCompleted = true;
-                        this.canSave = true;
-                        this.canCancel = true;
+                        // 延迟显示按钮，确保动画完整展示完毕后再出现按钮
+                        setTimeout(() => {
+                            this.generationCompleted = true;
+                            this.canSave = true;
+                            this.canCancel = true;
+                        }, 500);
                     }
                 }
             };

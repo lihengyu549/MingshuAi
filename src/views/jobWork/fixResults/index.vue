@@ -199,10 +199,10 @@
         </div>
 
         <el-dialog class="addMsg" title="结果修改" :visible.sync="dialogVisible" width="700px">
-            <el-form :model="resultForm" ref="resultForm" size="small" label-width="auto">
+            <el-form :model="resultForm" ref="resultForm" size="small" label-width="auto" label-position="top">
                 <el-form-item label="分类" class="addSelectClass">
                     <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable
-                        :filter-method="handleSearch">
+                        :filter-method="handleSearch" clearable @focus="clearResultFilter">
                         <el-option style="height: 100%; padding: 0" value="">
                             <el-tree :data="categoryList" :props="defaultProps" filterable :expand-on-click-node="true"
                                 :filter-node-method="filterNode" ref="treeSelectSec" node-key="id" highlight-current
@@ -432,6 +432,9 @@ export default {
         },
         handleSearch(val) {
             this.$refs.treeSelectSec.filter(val);
+        },
+        clearResultFilter() {
+            this.$refs.treeSelectSec.filter('');
         },
         handleConfirm() {
             // 点击确认后的逻辑，比如提交表单数据等

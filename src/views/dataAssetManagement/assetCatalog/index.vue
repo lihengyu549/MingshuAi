@@ -82,7 +82,8 @@
             <div class="card-content">
               <!-- 第一行：4 列 -->
               <div class="row row-1">
-                <div class="col col-4">
+                <!-- CHANGE: 添加点击事件打开评估详情弹窗 -->
+                <div class="col col-4" @click="showScoreDialog(item)" style="cursor: pointer;">
                   <div class="label">数据质量评分</div>
                   <div class="value" :title="item.score || '--'">{{ item.score ? item.score : '--' }}</div>
                   <svg-icon icon-class="xingxing" class="info-icon" />
@@ -320,6 +321,64 @@
         </div>
       </div>
     </el-dialog>
+
+    <!-- 新增评估详情弹窗 -->
+    <el-dialog title="评估详情" :visible.sync="scoreDialog.visible" width="740px" custom-class="score-detail-dialog"
+      :close-on-click-modal="false">
+
+      <div slot="title" class="score-dialog-title">
+        <span class="title-text">评估详情</span>
+        <el-tag type="primary" style="border-radius: 10px;"><b>满分 100</b></el-tag>
+      </div>
+
+      <div class="score-content">
+        <!-- 字段注释 -->
+        <div class="score-item">
+          <div class="max-score">60</div>
+          <div class="score-detail">
+            <div class="detail-title">字段注释</div>
+            <div class="detail-desc">有效的字段注释（注释中包含中英文字符，并非完全乱码）</div>
+          </div>
+          <div class="actual-score">{{ scoreDialog.data.fieldCommentActual }}<span class="score-unit">分</span></div>
+        </div>
+
+        <!-- 表注释 -->
+        <div class="score-item">
+          <div class="max-score">5</div>
+          <div class="score-detail">
+            <div class="detail-title">表注释</div>
+            <div class="detail-desc">有效的表注释（注释中包含中英文字符，并非完全乱码）</div>
+          </div>
+          <div class="actual-score">{{ scoreDialog.data.tableCommentActual }}<span class="score-unit">分</span></div>
+        </div>
+
+        <!-- 命名规范 -->
+        <div class="score-item">
+          <div class="max-score">30</div>
+          <div class="score-detail">
+            <div class="detail-title">命名规范</div>
+            <div class="detail-desc">字段的命名方式规范</div>
+          </div>
+          <div class="actual-score">{{ scoreDialog.data.namingActual }}<span class="score-unit">分</span></div>
+        </div>
+
+        <!-- 结构唯一性 -->
+        <div class="score-item">
+          <div class="max-score">5</div>
+          <div class="score-detail">
+            <div class="detail-title">结构唯一性</div>
+            <div class="detail-desc">与库中其他的表结构不重复</div>
+          </div>
+          <div class="actual-score">{{ scoreDialog.data.uniquenessActual }}<span class="score-unit">分</span></div>
+        </div>
+      </div>
+
+      <!-- 底部总分 -->
+      <div class="score-footer">
+        <span class="footer-label">当前总分</span>
+        <span class="footer-score">{{ scoreDialog.data.totalScore }}</span>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -484,11 +543,21 @@ export default {
       // 初始默认配置（固定不变，用于恢复初始配置）
       initialDefaultColumns: [
         "databaseName",
-        "businessName", 
+        "businessName",
         "tableName",
         "tableRemark",
         "fieldNum"
       ],
+      scoreDialog: {
+        visible: false,
+        data: {
+          fieldCommentActual: 52,
+          tableCommentActual: 5,
+          namingActual: 28,
+          uniquenessActual: 5,
+          totalScore: 90
+        }
+      },
     };
   },
   watch: {
@@ -714,17 +783,20 @@ export default {
         return;
       }
 
-      // 如果勾选了"保存为默认配置"，则保存到localStorage
-      if (this.exportColumnDialog.saveAsDefault) {
-        localStorage.setItem('assetCatalogExportDefaultColumns', JSON.stringify(this.exportColumnDialog.selectedColumns));
-        this.$message.success('已保存为默认配置');
+      if (this.exportColumnDialog.loading) return;
+      this.exportColumnDialog.loading = true;
+
+      try {
+        if (this.exportColumnDialog.saveAsDefault) {
+          localStorage.setItem('assetCatalogExportDefaultColumns', JSON.stringify(this.exportColumnDialog.selectedColumns));
+          this.$message.success('已保存为默认配置');
+        }
+
+        this.exportColumnDialog.visible = false;
+        await this.performExport();
+      } finally {
+        this.exportColumnDialog.loading = false;
       }
-
-      // 关闭弹窗
-      this.exportColumnDialog.visible = false;
-
-      // 执行导出操作
-      await this.performExport();
     },
 
     async performExport() {
@@ -1292,6 +1364,27 @@ export default {
       this.resetForm("queryParams");
       this.handleQuery();
     },
+    showScoreDialog(item) {
+      let scoreData = {
+        fieldCommentActual: 0,
+        tableCommentActual: 0,
+        namingActual: 0,
+        uniquenessActual: 0,
+        totalScore: item.score || 0
+      };
+      if (item.scoreJson) {
+        const scoreJson = JSON.parse(item.scoreJson);
+        scoreData = {
+          fieldCommentActual: scoreJson.validScore || 0,
+          tableCommentActual: scoreJson.validTableScore || 0,
+          namingActual: scoreJson.normScore || 0,
+          uniquenessActual: scoreJson.structureScore || 0,
+          totalScore: item.score || 0
+        };
+      }
+      this.scoreDialog.data = scoreData;
+      this.scoreDialog.visible = true;
+    },
   }
 };
 </script>
@@ -1311,23 +1404,23 @@ export default {
   border-radius: 10px;
 }
 </style>
-<style scoped>
-.el-drawer__wrapper /deep/ .el-drawer__body::-webkit-scrollbar {
+<style lang="scss" scoped>
+.el-drawer__wrapper ::v-deep .el-drawer__body::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-.el-drawer__wrapper /deep/ .el-drawer__body::-webkit-scrollbar-thumb {
+.el-drawer__wrapper ::v-deep .el-drawer__body::-webkit-scrollbar-thumb {
   background-color: #0003;
   border-radius: 10px;
   transition: all .2s ease-in-out;
 }
 
-.el-drawer__wrapper /deep/ .el-drawer__body::-webkit-scrollbar-track {
+.el-drawer__wrapper ::v-deep .el-drawer__body::-webkit-scrollbar-track {
   border-radius: 10px;
 }
 
-.el-drawer__wrapper /deep/.el-drawer__body {
+.el-drawer__wrapper ::v-deep .el-drawer__body {
   padding: 0 20px 10px 20px;
 }
 
@@ -1337,11 +1430,11 @@ export default {
   margin-left: 10px;
 }
 
-.mian_box_item /deep/ .el-card {
+.mian_box_item ::v-deep .el-card {
   box-shadow: none;
 }
 
-.addMsg /deep/ .el-input--medium {
+.addMsg ::v-deep .el-input--medium {
   width: 237px;
 }
 
@@ -1359,7 +1452,7 @@ export default {
   color: #f56c6c;
 }
 
-.el-tree-node /deep/ .el-tree-node {
+.el-tree-node ::v-deep .el-tree-node {
   display: none;
 }
 
@@ -1397,7 +1490,7 @@ export default {
   text-overflow: ellipsis;
 }
 
-.box-card /deep/ .el-card__body {
+.box-card ::v-deep .el-card__body {
   padding: 0;
 }
 
@@ -1441,13 +1534,13 @@ export default {
   line-height: 20px;
 }
 
-/deep/.el-drawer__header {
+::v-deep .el-drawer__header {
   padding-bottom: 20px;
   margin-bottom: 0;
   background-color: rgb(230, 242, 255);
 }
 
-/deep/.el-drawer__header> :first-child {
+::v-deep .el-drawer__header> :first-child {
   font-size: 18px;
   color: black;
   font-weight: bold;
@@ -1460,19 +1553,19 @@ export default {
   flex-wrap: wrap;
 }
 
-.yuanDataClass /deep/ .el-form-item {
+.yuanDataClass ::v-deep .el-form-item {
   width: 30%;
 }
 
-.yuanDataClass /deep/ .el-form-item__label {
+.yuanDataClass ::v-deep .el-form-item__label {
   width: 25%;
 }
 
-.yuanDataClass /deep/ .el-form-item__content {
+.yuanDataClass ::v-deep .el-form-item__content {
   width: 75%;
 }
 
-.yuanDataClass /deep/ .el-select {
+.yuanDataClass ::v-deep .el-select {
   width: 100%;
 }
 
@@ -1483,7 +1576,7 @@ export default {
 }
 
 /* 优化：树复选框与文字的间距（避免拥挤） */
-.treeBox /deep/ .el-tree-node__content .el-checkbox {
+.treeBox ::v-deep .el-tree-node__content .el-checkbox {
   margin-right: 7px;
 }
 
@@ -1695,7 +1788,7 @@ export default {
 }
 
 /* 导出列配置弹窗样式 */
-/deep/.export-column-dialog-wrapper {
+::v-deep .export-column-dialog-wrapper {
   border-radius: 10px;
 }
 
@@ -1778,5 +1871,135 @@ export default {
 
 .export-column-dialog-wrapper .restore-link:hover {
   color: #40a9ff;
+}
+
+/* 新增评分详情弹窗样式 */
+::v-deep .score-detail-dialog {
+  border-radius: 8px;
+
+  .el-dialog__header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e8e8e8;
+  }
+
+  .el-dialog__body {
+    padding: 0;
+  }
+
+  .el-dialog__headerbtn {
+    top: 24px;
+    right: 24px;
+    font-size: 18px;
+
+    .el-dialog__close {
+      color: #999;
+      font-weight: 400;
+
+      &:hover {
+        color: #333;
+      }
+    }
+  }
+}
+
+.score-dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .title-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+}
+
+.score-content {
+  padding: 24px;
+}
+
+.score-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  background: #f7f8fa;
+  border-radius: 8px;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .max-score {
+    flex-shrink: 0;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e6f4ff;
+    border-radius: 8px;
+    font-size: 28px;
+    font-weight: 600;
+    color: #1890ff;
+  }
+
+  .score-detail {
+    flex: 1;
+
+    .detail-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+
+    .detail-desc {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.5;
+    }
+  }
+
+  .actual-score {
+    flex-shrink: 0;
+    min-width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f9f4;
+    border-radius: 8px;
+    font-size: 28px;
+    font-weight: 600;
+    color: #52c41a;
+
+    .score-unit {
+      font-size: 14px;
+      margin-left: 4px;
+    }
+  }
+}
+
+.score-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-top: 1px solid #e8e8e8;
+
+  .footer-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #464545;
+  }
+
+  .footer-score {
+    font-size: 36px;
+    font-weight: 600;
+    color: #1890ff;
+  }
 }
 </style>
