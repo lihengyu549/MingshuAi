@@ -27,7 +27,7 @@
                         <!-- 左侧菜单开关 - 调整为内部显示ON/OFF -->
                         <el-switch v-model="model.enabled" active-color="#13ce66" inactive-color="#e9ecef"
                             active-text="ON" inactive-text="OFF" class="inner-text-switch" style="margin-left: auto;"
-                            @change="handleModelSwitch(model)" :disabled="model.enabled"></el-switch>
+                            @change="handleModelSwitch(model)"></el-switch>
                     </el-menu-item>
                 </el-menu>
             </div>
@@ -39,10 +39,9 @@
                         :icon-class="currentModel.label == 'Ollama' ? 'Ollama' : currentModel.label == '阿里云百炼' ? 'alybl' : currentModel.label == 'Deepseek深度求索' ? 'deepseek' : 'lingqi'"
                         style="margin-right: 10px;"></svg-icon>
                     <span>{{ currentModel.label || '请选择模型' }}</span>
-                    <!-- 右侧主开关 - 调整为内部显示ON/OFF -->
+                    <!-- 右侧主开关 - 调整为内部显示ON/OFF，右侧开关只读展示 -->
                     <el-switch v-model="currentModel.enabled" active-color="#13ce66" inactive-color="#e9ecef"
-                        class="inner-text-switch" style="margin-left: auto;"
-                        @change="handleMainSwitchChange"></el-switch>
+                        class="inner-text-switch" style="margin-left: auto;" disabled></el-switch>
                 </div>
 
                 <!-- 表单内容 -->
@@ -195,7 +194,6 @@ export default {
                     id: src.data.id,
                     label: src.data.label,
                     name: src.data.provider,
-                    // enabled: src.data.status == '1' ? true : false,
                     apiUrl: src.data.aiAddress,
                     apiKey: src.data.apiKey,
                     thinkingMode: src.data.thinkingMode == 'true' ? true : false,
@@ -206,30 +204,24 @@ export default {
                 });
             }
             this.activeModel = val;
-        },
-        // 处理模型开关变化
-        async handleModelSwitch(model) {
-            if (model.enabled) {
-                // 请求接口
-                let src = await onOffAiConfig(model.id)
-                if (src.code != 200) {
-                    this.$message.warning(src.data);
-                }
-                this.init()
-                // 当当前模型开关开启时，关闭其他模型的开关
-                // this.models.forEach(m => {
-                //     if (m.id !== model.id) {
-                //         m.enabled = false;
-                //     }
-                // });
-            } else {
-                // 阻止关闭已开启的开关
-                model.enabled = true;
+            const selectedModel = this.models.find(m => m.name === val);
+            if (selectedModel && !selectedModel.enabled) {
+                this.models.forEach(m => m.enabled = false);
+                selectedModel.enabled = true;
+                await onOffAiConfig(selectedModel.id);
             }
         },
-        // 处理主开关变化
-        handleMainSwitchChange(enabled) {
-            this.currentModel.enabled = enabled;
+        // 处理模型开关变化 - 互斥逻辑
+        handleModelSwitch(model) {
+            if (model.enabled) {
+                this.models.forEach(m => {
+                    if (m.id !== model.id) {
+                        m.enabled = false;
+                    }
+                });
+            } else {
+                model.enabled = true;
+            }
         },
         // 刷新模型列表
         async refreshModelList(id) {
@@ -339,6 +331,7 @@ export default {
                 temperature: this.currentModel.temperature,
                 timeOut: this.currentModel.timeout
             }
+            await onOffAiConfig(this.currentModel.id)
             await updateAiConfigById(response)
             this.init()
             this.$message.success('配置保存成功');
