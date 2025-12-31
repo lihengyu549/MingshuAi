@@ -12,6 +12,12 @@
           </el-option>
         </el-select>
       </el-form-item>
+      <el-form-item label="文件服务器" prop="databaseType">
+        <el-select v-model="queryParams.databaseType" placeholder="请选择数据库类型" @change="inputSearch" clearable>
+          <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="" class="searchBtn">
         <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
       </el-form-item>
@@ -26,6 +32,7 @@
         </template>
       </el-table-column>
       <el-table-column label="数据库版本" align="center" prop="databaseVersion" show-overflow-tooltip />
+      <el-table-column label="文件服务器类型" align="center" prop="fileServer" show-overflow-tooltip />
       <el-table-column label="状态" align="center" min-width="250" prop="state">
         <template slot-scope="scope">
           <div style="display: flex; align-items: center;justify-content: center;">
@@ -845,7 +852,6 @@ export default {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  flex-wrap: wrap;
   margin-bottom: 35px;
 }
 
