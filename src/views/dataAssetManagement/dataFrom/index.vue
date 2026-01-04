@@ -8,7 +8,8 @@
       </el-form-item>
       <el-form-item label="数据源类型" prop="sourceType">
         <el-select clearable v-model="queryParams.sourceType" @change="inputSearch" placeholder="请选择数据库类型">
-          <el-option v-for="item in dataYTpeList" :key="item.value" :label="item.label" :value="item.value">
+          <el-option v-for="item in dict.type.sys_datasource_type" :key="item.value" :label="item.label"
+            :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
@@ -24,6 +25,12 @@
           </el-option>
         </el-select>
       </el-form-item> -->
+      <el-form-item label="数据库类型" prop="databaseType">
+        <el-select clearable v-model="queryParams.databaseType" @change="inputSearch" placeholder="请选择数据库类型">
+          <el-option v-for="item in databaseTypeList" :key="item.value" :label="item.name" :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="主机信息" prop="targetIpPort">
         <el-input v-model="queryParams.targetIpPort" @input="inputSearch" placeholder="请输入主机信息" clearable
           @keyup.enter.native="handleQuery" />
@@ -40,10 +47,15 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">数据库</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleEcelFn">Excel文件</el-button>
+        <el-dropdown @command="handleCommand" trigger="click">
+          <el-button type="primary" plain size="medium" icon="el-icon-plus">
+            新增
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="database">数据库</el-dropdown-item>
+            <el-dropdown-item command="excel">Excel文件</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </el-col>
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
@@ -71,8 +83,8 @@
           <span>{{ scope.row.targetIpPort }}</span>
         </template>
       </el-table-column>
-
-      <el-table-column label="数据源类型" align="center" prop="databaseType" show-overflow-tooltip>
+      <el-table-column label="数据源类型" align="center" prop="datasourceType" show-overflow-tooltip />
+      <el-table-column label="数据库类型" align="center" prop="databaseType" show-overflow-tooltip>
         <template slot-scope="scope">
           <span>{{ databaseTypeMsg(scope.row.databaseType) }}</span>
         </template>
@@ -93,6 +105,7 @@
       <el-table-column label="数据质量评估" align="center" prop="dataScore" show-overflow-tooltip />
       <el-table-column label="表数量" align="center" prop="tableCount" show-overflow-tooltip />
       <el-table-column label="字段数量" align="center" prop="fieldCount" show-overflow-tooltip />
+      <el-table-column label="文件" align="center" prop="fieldCount" show-overflow-tooltip />
       <el-table-column label="数据字典" align="center" show-overflow-tooltip>
         <template slot-scope="scope">
           <span>{{ scope.row.feature && scope.row.feature.featureName || '-' }}</span>
@@ -215,13 +228,13 @@
             <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
-          <el-select v-show="form.scheduleType == '2' || form.scheduleType == '3'" v-model="form.scheduleInterval" @change="handleIntervalChange">
+          <el-select v-show="form.scheduleType == '2' || form.scheduleType == '3'" v-model="form.scheduleInterval"
+            @change="handleIntervalChange">
             <el-option v-for="item in weekList" :key="item" :label="item" :value="item">
             </el-option>
           </el-select>
           <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
-            @change="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点"
-            :append-to-body="true">
+            @change="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点" :append-to-body="true">
           </el-time-picker>
         </el-form-item>
 
@@ -241,7 +254,7 @@
     <el-dialog class="addMsg" :title="titleExcel" v-loading="importDataLoading" :visible.sync="importData.importShow"
       append-to-body :close-on-click-modal="false" width="700px">
       <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
-        :inline="true" label-width="120px" label-position="top">
+        label-width="auto" label-position="top">
         <el-form-item label="数据源名称" prop="sourceName">
           <el-input v-model="importData.sourceName" maxlength="50" placeholder="请输入数据源名称"></el-input>
         </el-form-item>
@@ -309,6 +322,7 @@ import Result from './components/result.vue'
 import TableSelector from './components/TableSelector.vue'
 import { getFeatureSelect, relevancyDataDict } from "@/api/system/IndustryExperience";
 export default {
+  dicts: ['sys_datasource_type', 'sys_db_type'],
   name: "Proxys",
   components: { Result, TableSelector, },
   data() {
@@ -343,19 +357,6 @@ export default {
         'NONE': require('@/assets/stateImg/stateWaiting.png'),
         'RUNNING': require('@/assets/stateImg/stateing.png'),
       },
-      dataYTpeList: [
-        {
-          value: 'DATABASE',
-          label: '数据库'
-        }, {
-          value: 'FILE',
-          label: 'Excel表'
-        }
-        , {
-          value: 'API',
-          label: 'API'
-        }
-      ],
       weekTimeList: [
         {
           value: '0',
@@ -436,6 +437,7 @@ export default {
         pageSize: 10,
         sourceType: '',
         sourceName: '',
+        databaseType: '',
         businessName: '',
         proxyId: '',
         publishStatus: '',
@@ -852,6 +854,13 @@ export default {
       this.single = selection.length !== 1
       this.multiple = !selection.length
     },
+    handleCommand(command) {
+      if (command === 'database') {
+        this.handleAdd()
+      } else if (command === 'excel') {
+        this.handleEcelFn()
+      }
+    },
     /** 新增按钮操作 */
     handleAdd() {
       this.editIsFlag = false
@@ -1137,7 +1146,7 @@ export default {
         this.form.tabelCheckedName = row.scanContent
         let targetDatabaseCopy = row.targetDatabase
         let targetDatabaseArr
-        if (targetDatabaseCopy.length > 1) {
+        if (targetDatabaseCopy?.length > 1) {
           targetDatabaseArr = targetDatabaseCopy.split(',')
           targetDatabaseArr.splice(targetDatabaseArr.length - 1, 1)
         }
@@ -1425,17 +1434,6 @@ export default {
   margin-left: 263px
 }
 
-.importForm {
-  margin-bottom: 0;
-}
-
-.importForm /deep/ .el-form-item--medium {
-  width: 100%;
-}
-
-.importForm /deep/ .el-form-item__content {
-  width: 100%;
-}
 
 .uploadClass /deep/.el-form-item__content {
   display: flex;
