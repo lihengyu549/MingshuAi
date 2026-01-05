@@ -1478,7 +1478,7 @@ export default {
       } else {
         this.editIsFlag = false
       }
-      if (row.databaseType == "Excel") {
+      if (row.sourceType == "FILE") {
         this.importData.importFile = row.fileName
         this.titleExcel = "编辑Excel";
         this.importData.categoryId = row.projectId
@@ -1487,7 +1487,7 @@ export default {
         this.importData.businessName = row.businessName
         this.importData.businessComment = row.businessComment
         this.importData.importShow = true
-      } else if (row.databaseType == "DATABASE") {
+      } else if (row.sourceType == "DATABASE") {
         this.form = JSON.parse(JSON.stringify(row))
         this.form.tabelCheckedName = row.scanContent
         let targetDatabaseCopy = row.targetDatabase
@@ -1522,7 +1522,7 @@ export default {
         // }
         // this.form = row
 
-      } else if (row.databaseType == "FILE_CATALOGUE") { // 添加文件目录编辑支持
+      } else if (row.sourceType == "FILE_CATALOGUE") { // 添加文件目录编辑支持
         // 文件目录编辑：回显数据到表单并打开弹窗
         this.titleFileDirectory = "编辑文件目录";
         this.fileDirectoryData.id = row.id;
@@ -1533,7 +1533,7 @@ export default {
         // this.fileDirectoryData.uploadFiles = row.uploadFiles || [];
         this.fileDirectoryData.show = true;
 
-      } else if (row.databaseType == "FILE_SERVER") { // 添加文件共享服务器编辑支持
+      } else if (row.sourceType == "FILE_SERVER") { // 添加文件共享服务器编辑支持
         // 文件共享服务器编辑：回显数据到表单并打开弹窗
         this.titleFileShareServer = "编辑文件共享服务器";
         this.fileShareServerForm.id = row.id;
