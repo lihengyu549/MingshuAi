@@ -29,8 +29,8 @@
           <el-tree class="treeBox" style="overflow-y: auto;height: 785px;" :data="categoryList" :props="defaultProps"
             :default-expanded-keys="[treeID]" :current-node-key="treeID" :expand-on-click-node="false"
             :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current show-checkbox
-            :check-strictly="false" :default-checked-keys="defaultCheckedKeys" @check="handleTreeCheck"
-            :render-content="renderContent" />
+            :check-strictly="false" :default-checked-keys="defaultCheckedKeys" @node-click="handleTreeNodeClick"
+            @check="handleTreeCheck" :render-content="renderContent" />
         </div>
       </el-col>
       <!--用户数据-->
@@ -631,32 +631,60 @@ export default {
 
 
     /**
-     * 新增：全选框点击事件（与 watch 配合确保状态同步）
+     * 新增：全选框点击事件（仅用于导出，不影响右侧列表）
      * @param {Boolean} checked - 全选框的新状态
      */
     handleTreeAllCheck(checked) {
       this.isTreeAllChecked = checked;
       if (checked) {
         const allChildren = this.collectAllChildren(this.categoryList);
-        this.getList(allChildren)
+        this.selectedTreeNodeIds = allChildren.map(item => item.id);
+        this.$refs.tree.setCheckedKeys(this.selectedTreeNodeIds);
       } else {
-        this.getList([])
+        this.selectedTreeNodeIds = [];
+        this.$refs.tree.setCheckedKeys([]);
       }
       // 全选状态变更后调用getList方法
     },
     /**
-     * 新增：树节点复选框状态变更事件（勾选/取消勾选时触发）
+     * 树节点复选框变更事件（仅用于导出，不影响右侧列表）
      * @param {Object} currentNode - 当前操作的节点
-     * @param {Array} selectedNodes - 所有已勾选的节点数组
+     * @param {Object} treeStatus - 树的选中状态
      */
     handleTreeCheck(currentNode, treeStatus) {
       // 获取所有勾选的节点ID（包括半选节点的子节点）
       const checkedIds = this.getCheckedNodeIds(this.categoryList);
       this.selectedTreeNodeIds = checkedIds;
-
-      // 调用列表刷新方法
-      const checkedNodeData = this.getCheckedNodeData(treeStatus.checkedNodes);
-      this.getList(checkedNodeData);
+      this.updateTreeAllCheckedState();
+    },
+    /**
+     * 更新全选框状态
+     */
+    updateTreeAllCheckedState() {
+      const allChildren = this.collectAllChildren(this.categoryList);
+      if (this.selectedTreeNodeIds.length === 0) {
+        this.isTreeAllChecked = false;
+      } else if (this.selectedTreeNodeIds.length === allChildren.length) {
+        this.isTreeAllChecked = true;
+      } else {
+        this.isTreeAllChecked = null;
+      }
+    },
+    /**
+     * 点击树节点事件：点击节点展示右侧列表
+     * @param {Object} data - 点击的节点数据
+     */
+    handleTreeNodeClick(data) {
+      if (data.children && data.children.length > 0) {
+        // 点击的是父节点
+        this.getList(data.children)
+      } else {
+        // 点击的是子节点
+        this.getList([{
+          parentId: data.parentId,
+          label: data.label,
+        }]);
+      }
     },
 
     getCheckedNodeIds(treeData) {
@@ -882,27 +910,6 @@ export default {
         }
       });
       return checkedData;
-    },
-
-    /**
-     * 工具方法：格式化导出数据（按图片层级分组，如 DataSource01 → [CoreDatabase, UserDatabase]）
-     * @param {Array} selectedNodes - 选中节点的完整数据
-     * @returns {Array} 格式化后的导出数据
-     */
-    formatExportData(selectedNodes) {
-      // 1. 筛选顶级节点（图片中的 DataSource01、DataSource02，特征：无 parentId）
-      const topNodes = selectedNodes.filter(node => !node.parentId);
-      // 2. 为每个顶级节点匹配其子节点（图片中的 CoreDatabase 等，特征：parentId = 顶级节点ID）
-      return topNodes.map(topNode => ({
-        数据源名称: topNode.label, // 如 "DataSource01"
-        数据源ID: topNode.id,
-        包含数据库: selectedNodes
-          .filter(node => node.parentId === topNode.id)
-          .map(dbNode => ({
-            数据库名称: dbNode.label, // 如 "CoreDatabase"
-            数据库ID: dbNode.id
-          }))
-      }));
     },
 
     //一键填充
