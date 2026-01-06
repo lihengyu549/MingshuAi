@@ -292,7 +292,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="语义填充状态">
-              <el-select v-model="form.paddingStatus" multiple clearable placeholder="请选择内容">
+              <el-select v-model="form.paddingStatus" multiple clearable placeholder="请选择内容" :disabled="form.sourceType == 'FILE_CATALOGUE' || form.sourceType == 'FILE_SERVER'">
                 <el-option label="未开始" value="1" />
                 <el-option label="成功" value="2" />
                 <el-option label="失败" value="3" />
@@ -312,8 +312,14 @@
           <el-col :span="12">
             <el-form-item label="归类原因">
               <el-select v-model="form.classificationReasons" multiple clearable placeholder="请选择内容">
-                <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
+                <template v-if="form.sourceType == 'FILE_CATALOGUE' || form.sourceType == 'FILE_SERVER'">
+                  <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value" :label="item.label"
                   :value="item.value" />
+                </template>
+                <template v-else>
+                  <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
+                  :value="item.value" />
+                </template>
               </el-select>
             </el-form-item>
           </el-col>
@@ -376,7 +382,16 @@
         <!-- 启用功能 -->
         <Title title="启用功能" />
         <div class="feature-container">
-          <div class="feature-grid">
+          <div class="feature-grid" v-if="form.sourceType === 'FILE_CATALOGUE' || form.sourceType === 'FILE_SERVER'">
+            <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
+              <div class="feature-content">
+                <div class="feature-title">AI分类打标</div>
+                <div class="feature-desc">结合字段上下文对数据进行智能打标</div>
+                <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+              </div>
+            </div>
+          </div>
+          <div class="feature-grid" v-else>
             <div class="feature-item" :class="{ highlight: form.ifStartAiFill }"
               @click="toggleFeature('ifStartAiFill')">
               <div class="feature-content">
@@ -415,7 +430,7 @@
             </div>
             <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
               <div class="feature-content">
-                <div class="feature-title">分类打标</div>
+                <div class="feature-title">AI分类打标</div>
                 <div class="feature-desc">结合字段上下文对数据进行智能打标</div>
                 <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
               </div>
@@ -477,7 +492,7 @@ import { path } from "d3";
 import { color } from "echarts";
 export default {
   name: "hierarchicalTask",
-  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_classification_reasons', 'sys_executing_state'],
+  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_classification_reasons', 'sys_executing_state', 'sys_classification_reasons_un'],
   components: { Result },
   data() {
     return {
@@ -603,7 +618,7 @@ export default {
         scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '',
-
+        sourceType: '',
       },
       executeCycle: '1',
       // 表单校验
@@ -885,9 +900,7 @@ export default {
     },
 
     projectChangeEdit(e) {
-      // this.form.projectName = this.databaseTypeList.find(item => item.id == e).projectName
-      // this.form.projectId = e
-      // this.$forceUpdate()
+      this.form.sourceType = this.databaseTypeList.find(item => item.id == e).sourceType
     },
     /** 查询数据库代理列表 */
     getList() {
