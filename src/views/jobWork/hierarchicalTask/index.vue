@@ -292,7 +292,8 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="语义填充状态">
-              <el-select v-model="form.paddingStatus" multiple clearable placeholder="请选择内容" :disabled="form.sourceType == 'FILE_CATALOGUE' || form.sourceType == 'FILE_SERVER'">
+              <el-select v-model="form.paddingStatus" multiple clearable placeholder="请选择内容"
+                :disabled="isFileSource">
                 <el-option label="未开始" value="1" />
                 <el-option label="成功" value="2" />
                 <el-option label="失败" value="3" />
@@ -312,13 +313,13 @@
           <el-col :span="12">
             <el-form-item label="归类原因">
               <el-select v-model="form.classificationReasons" multiple clearable placeholder="请选择内容">
-                <template v-if="form.sourceType == 'FILE_CATALOGUE' || form.sourceType == 'FILE_SERVER'">
-                  <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value" :label="item.label"
-                  :value="item.value" />
+                <template v-if="isFileSource">
+                  <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value"
+                    :label="item.label" :value="item.value" />
                 </template>
                 <template v-else>
                   <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
-                  :value="item.value" />
+                    :value="item.value" />
                 </template>
               </el-select>
             </el-form-item>
@@ -382,7 +383,7 @@
         <!-- 启用功能 -->
         <Title title="启用功能" />
         <div class="feature-container">
-          <div class="feature-grid" v-if="form.sourceType === 'FILE_CATALOGUE' || form.sourceType === 'FILE_SERVER'">
+          <div class="feature-grid" v-if="isFileSource">
             <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
               <div class="feature-content">
                 <div class="feature-title">AI分类打标</div>
@@ -486,6 +487,8 @@ import {
   terminateTask,
   withdrawReleaseState,
 } from "@/api/system/proxys";
+import { addScanCompleteDataTasksByFile, editScanCompleteDataByFile, selectFileResult } from "@/api/system/unstructured"
+
 import { getFrameworks, } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import { path } from "d3";
@@ -695,6 +698,11 @@ export default {
     }
     this.getList()
     this.getScanCompleteDataFn()
+  },
+  computed: {
+    isFileSource() {
+      return this.form.sourceType === 'FILE_CATALOGUE' || this.form.sourceType === 'FILE_SERVER';
+    }
   },
   mounted() {
   },
@@ -1036,22 +1044,40 @@ export default {
           if (this.form.isAddTasks === '1') {
             // this.form.piiDetectionFlag = this.form.piiDetectionFlag + ''
             // this.form.aiAnalyticsEngine = this.aiAnalyticsEngine
-            editScanCompleteDataTasks(params).then(response => {
-              this.formLoading = false
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            });
+            if (this.isFileSource) {
+              editScanCompleteDataByFile(params).then(response => {
+                this.formLoading = false
+                this.$modal.msgSuccess("修改成功");
+                this.open = false;
+                this.getList();
+              })
+            } else {
+              editScanCompleteDataTasks(params).then(response => {
+                this.formLoading = false
+                this.$modal.msgSuccess("修改成功");
+                this.open = false;
+                this.getList();
+              })
+            }
           } else {
-            // let data = JSON.parse(JSON.stringify(this.form))
-            // data.aiAnalyticsEngine = this.aiAnalyticsEngine
-            // data.piiDetectionFlag = this.form.piiDetectionFlag + ''
-            addScanCompleteDataTasks(params).then(response => {
-              this.formLoading = false
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            });
+            if (this.isFileSource) {
+              addScanCompleteDataTasksByFile(params).then(response => {
+                this.formLoading = false
+                this.$modal.msgSuccess("新增成功");
+                this.open = false;
+                this.getList();
+              })
+            } else {
+              // let data = JSON.parse(JSON.stringify(this.form))
+              // data.aiAnalyticsEngine = this.aiAnalyticsEngine
+              // data.piiDetectionFlag = this.form.piiDetectionFlag + ''
+              addScanCompleteDataTasks(params).then(response => {
+                this.formLoading = false
+                this.$modal.msgSuccess("新增成功");
+                this.open = false;
+                this.getList();
+              });
+            }
           }
           this.getList()
         }

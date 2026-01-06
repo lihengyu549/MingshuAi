@@ -3,10 +3,18 @@
     <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
       v-show="showSearch" label-width="auto">
       <!-- 默认显示的筛选条件（前两行） -->
-      <el-form-item label="字段名" prop="fieldName">
-        <el-input v-model="queryParams.fieldName" @input="inputSearch" placeholder="请输入数据源名称" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
+      <template v-if="isFileSource">
+        <el-form-item label="文件名" prop="fileName">
+          <el-input v-model="queryParams.fileName" @input="inputSearch" placeholder="请输入文件名" clearable
+            @keyup.enter.native="handleQuery" />
+        </el-form-item>
+      </template>
+      <template v-else>
+        <el-form-item label="字段名" prop="fieldName">
+          <el-input v-model="queryParams.fieldName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+            @keyup.enter.native="handleQuery" />
+        </el-form-item>
+      </template>
       <el-form-item label="分类" prop="categoryId">
         <el-select ref="addSelectRef" v-model="addNodeName" :filter-method="filterCategoryTree">
           <el-option style="height: 100%; padding: 0" value="">
@@ -35,31 +43,45 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="所属库" prop="databaseName">
-        <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn" placeholder="请选择">
-          <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
-          </el-option>
-        </el-select>
-      </el-form-item>
-
-      <!-- 点击展开后显示的筛选条件 -->
-      <template v-if="showMoreFilters">
-        <el-form-item label="所属表" prop="tableName">
-          <el-select clearable v-model="queryParams.tableName" filterable :disabled="!queryParams.databaseName"
-            @change="inputSearch" placeholder="全部">
-            <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.tableName">
+      <template v-if="isFileSource">
+        <el-form-item label="所属文件夹" prop="filePath">
+          <el-input v-model="queryParams.filePath" @input="inputSearch" placeholder="请输入所属文件夹" clearable
+            el-ineyup.enter.native="handleQuery" />
+        </el-form-item>
+      </template>
+      <template v-else>
+        <el-form-item label="所属库" prop="databaseName">
+          <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn" placeholder="请选择">
+            <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
             </el-option>
           </el-select>
         </el-form-item>
-        <!-- <el-form-item label="来源业务系统" prop="businessName">
-        <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入来源业务系统" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item> -->
+      </template>
+
+
+      <!-- 点击展开后显示的筛选条件 -->
+      <template v-if="showMoreFilters">
+        <template v-if="!isFileSource">
+          <el-form-item label="所属表" prop="tableName">
+            <el-select clearable v-model="queryParams.tableName" filterable :disabled="!queryParams.databaseName"
+              @change="inputSearch" placeholder="全部">
+              <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.tableName">
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </template>
         <el-form-item label="归类原因" prop="classificationReasons">
           <el-select clearable v-model="queryParams.classificationReasons" @change="inputSearch" placeholder="请选择">
-            <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
-              :value="item.value">
-            </el-option>
+            <template v-if="isFileSource">
+              <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value" :label="item.label"
+                :value="item.value">
+              </el-option>
+            </template>
+            <template v-else>
+              <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
+                :value="item.value">
+              </el-option>
+            </template>
           </el-select>
         </el-form-item>
         <el-form-item label="置信度" prop="confidenceLevel">
@@ -77,12 +99,14 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="样本特征" prop="featureData">
-          <el-select clearable v-model="queryParams.featureData" @change="inputSearch" placeholder="请选择">
-            <el-option label="是" value="1" />
-            <el-option label="否" value="0" />
-          </el-select>
-        </el-form-item>
+        <template v-if="!isFileSource">
+          <el-form-item label="样本特征" prop="featureData">
+            <el-select clearable v-model="queryParams.featureData" @change="inputSearch" placeholder="请选择">
+              <el-option label="是" value="1" />
+              <el-option label="否" value="0" />
+            </el-select>
+          </el-form-item>
+        </template>
       </template>
       <el-form-item label=" " class="searchBtn">
         <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
@@ -139,19 +163,24 @@
     <el-table class="tableBox" v-loading="loading" :key="checkedColumn.length" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="字段名" align="left" prop="fieldName" width="150" show-overflow-tooltip>
+      <el-table-column :label="isFileSource ? '文件名' : '字段名'" align="left"
+        :prop="isFileSource ? 'fileName' : 'fieldName'" width="150" show-overflow-tooltip>
         <template slot-scope="scope">
           <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
             <svg-icon icon-class="text" style="font-size: 14px; margin-right: 5px;" />
-            {{ scope.row.fieldName
-            }}</span>
+            {{ isFileSource ? scope.row.fileName : scope.row.fieldName }}</span>
         </template>
       </el-table-column>
+      <el-table-column v-if="isFileSource" label="文件类型" align="center" prop="fileFormat" width="150"
+        show-overflow-tooltip />
+      <el-table-column v-if="isFileSource" label="所属文件夹" align="center" prop="filePath" width="150"
+        show-overflow-tooltip />
       <!-- <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip /> -->
-      <el-table-column label="字段注释" align="center" prop="fieldRemark" width="150" show-overflow-tooltip />
+      <el-table-column v-if="!isFileSource" label="字段注释" align="center" prop="fieldRemark" width="150"
+        show-overflow-tooltip />
       <!-- <el-table-column label="AI字段注释" align="center" prop="craftRemark" width="240" show-overflow-tooltip /> -->
       <template>
-        <el-table-column v-for="item in checkedColumn" :label="item.label"
+        <el-table-column v-for="item in filteredCheckedColumn" :label="item.label"
           :align="item.label == '分类' ? 'left' : 'center'" :prop="item.prop" :width="item.width" show-overflow-tooltip>
           <template slot-scope="scope">
             <!-- 分类不再展示，直接显示原始值 -->
@@ -171,7 +200,7 @@
           </template>
         </el-table-column>
       </template>
-      <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
+      <el-table-column v-if="!isFileSource" label="样本" align="center" prop="sampleData" show-overflow-tooltip>
         <template slot-scope="scope">
           <el-tooltip placement="bottom" effect="light">
             <div slot="content">
@@ -198,7 +227,8 @@
       @pagination="getList" />
     <el-dialog title="结果修改" class="addMsg" :visible.sync="deleteVisible" width="700px" append-to-body
       :close-on-click-modal="false">
-      <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto" label-position="top">
+      <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto"
+        label-position="top">
         <el-form-item label="分类" class="addSelectClass">
           <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable :filter-method="handleSearch">
             <el-option style="height: 100%; padding: 0" value="">
@@ -254,10 +284,7 @@
 </template>
 
 <script>
-import {
-  usersAddI
-} from "@/api/system/proxyUser";
-
+import { selectFileResult } from "@/api/system/unstructured"
 import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
   startI, stopI, databaseMaskI, strategyPushI, strategyAll,
@@ -272,7 +299,7 @@ import {
 } from "@/api/system/protectCategory"
 
 export default {
-  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_classification_reasons'],
+  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un'],
   name: "ProxysResult",
   data() {
     return {
@@ -519,15 +546,16 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        projectId: this.$route.query.drawerData.projectId,
+        projectId: '',
         securityLevel: [],
         confirm: '',
-        databaseId: this.$route.query.drawerData.id,
+        databaseId: '',
         businessName: '',
         databaseName: '',
         categoryId: '',
         categoryIds: '',
         piiDetection: '',
+        sourceType: ''
       },
       confirmList: [
         {
@@ -652,6 +680,10 @@ export default {
     if (drawerData) {
       // 确保drawerData是对象类型
       const drawerDataObj = typeof drawerData === 'string' ? JSON.parse(drawerData) : drawerData;
+      // 初始化 queryParams
+      this.queryParams.projectId = drawerDataObj.projectId || '';
+      this.queryParams.databaseId = drawerDataObj.id || '';
+      this.queryParams.sourceType = drawerDataObj.sourceType || '';
       // 处理数据库列表
       if (drawerDataObj.targetDatabase && typeof drawerDataObj.targetDatabase === 'string') {
         const cleanedDatabase = drawerDataObj.targetDatabase.replace(/,$/, '');
@@ -672,12 +704,25 @@ export default {
     this.getProtectCategory();
     this.getPiiList();
     // 设置默认展示的列
-    this.checkedColumn = this.setList.filter(item =>
-      ['所属表', '表注释', '分类', '安全分级'].includes(item.label)
-    );
+    if (!this.isFileSource) {
+      this.checkedColumn = this.setList.filter(item =>
+        ['所属表', '表注释', '分类', '安全分级'].includes(item.label)
+      );
+    }
     this.checkAll = false;
     this.getList();
     this.getListTableByProject();
+  },
+  computed: {
+    isFileSource() {
+      return this.queryParams.sourceType === 'FILE_CATALOGUE' || this.queryParams.sourceType === 'FILE_SERVER';
+    },
+    filteredCheckedColumn() {
+      if (this.isFileSource) {
+        return this.checkedColumn.filter(item => !['所属表', '所属库', '样本特征'].includes(item.label));
+      }
+      return this.checkedColumn;
+    }
   },
   mounted() {
 
@@ -940,17 +985,17 @@ export default {
       const selectedIds = selection.map(row => row.id)
       // 设置到表单中
       this.resultForm.selectedIds = selectedIds
-      
+
       // 为分类下拉框设置默认选中第一项
       if (this.categoryList && this.categoryList.length > 0) {
         this.resultFormNodeName = this.categoryList[0].categoryName;
       }
-      
+
       // 为安全分级下拉框设置默认选中第一项
       if (this.dict && this.dict.type && this.dict.type.sys_risk_level && this.dict.type.sys_risk_level.length > 0) {
         this.resultForm.securityLevel = this.dict.type.sys_risk_level[0].value;
       }
-      
+
       this.deleteVisible = true
     },
     updataResultFn() {
@@ -1009,16 +1054,30 @@ export default {
         securityLevel: '',
         securityLevelIds: this.queryParams.securityLevel,
       }
-      selectResultsById(params).then(response => {
-        this.proxysList = response.data.rows;
-        this.proxysList.forEach(ele => {
-          if (ele.sampleData) {
-            ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
-          }
-        })
-        this.total = response.data.total;
-        this.loading = false;
-      });
+      if (this.isFileSource) {
+        selectFileResult(params).then(response => {
+          this.proxysList = response.data.rows;
+          this.proxysList.forEach(ele => {
+            if (ele.sampleData) {
+              ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
+            }
+          })
+          this.total = response.data.total;
+          this.loading = false;
+        });
+      } else {
+        selectResultsById(params).then(response => {
+          this.proxysList = response.data.rows;
+          this.proxysList.forEach(ele => {
+            if (ele.sampleData) {
+              ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
+            }
+          })
+          this.total = response.data.total;
+          this.loading = false;
+        });
+      }
+
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -1066,17 +1125,17 @@ export default {
       this.resultForm.tableFieldId = row.id
       this.piiNodeName = row.piiDetectionName
       this.resultForm.confidenceLevel = row.confidenceLevel == '高' ? '2' : '1'
-      
+
       // 为分类下拉框设置默认选中第一项（如果没有已有值）
       if (!this.resultFormNodeName && this.categoryList && this.categoryList.length > 0) {
         this.resultFormNodeName = this.categoryList[0].id;
       }
-      
+
       // 为安全分级下拉框设置默认选中第一项（如果没有已有值）
       if (!this.resultForm.securityLevel && this.dict && this.dict.type && this.dict.type.sys_risk_level && this.dict.type.sys_risk_level.length > 0) {
         this.resultForm.securityLevel = this.dict.type.sys_risk_level[0].value;
       }
-      
+
       this.deleteVisible = true
     },
     addHandleNodeCheck(node, checkData) {
@@ -1108,7 +1167,7 @@ export default {
       checkedLeafNodes.forEach(leafNode => {
         // 添加叶子节点自身
         allCategoryIds.add(leafNode.id);
-        
+
         // 递归收集所有祖先节点（包括父节点、爷节点等）
         const ancestors = this.findAllAncestors(this.categoryList, leafNode.id);
         ancestors.forEach(ancestorId => allCategoryIds.add(ancestorId));
@@ -1151,7 +1210,7 @@ export default {
     // 查找节点的所有祖先节点ID（父节点、爷节点等）
     findAllAncestors(tree, nodeId) {
       const ancestors = [];
-      
+
       // 递归查找节点本身
       const findNode = (nodes, id) => {
         for (const node of nodes) {
