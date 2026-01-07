@@ -2,7 +2,7 @@
     <div class="id-card-page" v-loading="loading">
         <!-- 顶部标题和按钮区域 -->
         <div class="top-section">
-            <h2>{{ row.id + ' ' + row.fieldName }}</h2>
+            <h2>{{ titleText }}</h2>
             <div class="top-buttons">
                 <el-button plain @click="handleReturn">返回</el-button>
                 <el-button @click="handleNext('0')">上一个</el-button>
@@ -18,19 +18,19 @@
                     <template v-if="isFileSource">
                         <div class="info-item">
                             <label class="info-label">文件类型：</label>
-                            <div class="info-content">{{ row.fileType || '--' }}</div>
+                            <div class="info-content">{{ row.fileFormat || '--' }}</div>
                         </div>
                         <div class="info-item">
                             <label class="info-label">文件大小：</label>
                             <div class="info-content">{{ row.fileSize || '--' }}</div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">修改时间：</label>
-                            <div class="info-content">{{ row.modifyTime || '--' }}</div>
+                            <label class="info-label">上传时间：</label>
+                            <div class="info-content">{{ row.createTime || '--' }}</div>
                         </div>
                         <div class="info-item">
                             <label class="info-label">文件摘要：</label>
-                            <div class="info-content">{{ row.fileRemark || '--' }}</div>
+                            <div class="info-content">{{ row.fileContext || '--' }}</div>
                         </div>
                         <div class="info-item">
                             <label class="info-label">文件路径：</label>
@@ -271,6 +271,7 @@
 import {
     getCategoryAttachData, updateFiledRule, confirmIds
 } from "@/api/system/proxys";
+import { updateResultByFile, selectLastOrNextByFileId } from "@/api/system/unstructured"
 import {
     treeListI, getProtectTableFieldById
 } from "@/api/system/protectCategory"
@@ -313,6 +314,9 @@ export default {
         isFileSource() {
             return this.$route.query.queryParams.sourceType === 'FILE_CATALOGUE' || this.$route.query.queryParams.sourceType === 'FILE_SERVER';
         },
+        titleText() {
+            return this.row.id + ' ' + (this.isFileSource ? this.row.fileName : this.row.fieldName);
+        }
     },
     methods: {
         getPiiList(key) {
@@ -352,22 +356,42 @@ export default {
                 piiDetection: this.resultForm.piiDetection,
                 detectionProcess: this.resultForm.detectionProcess,
             }
-            updateFiledRule(params).then(res => {
-                if (res.code == 200) {
-                    this.row = res.data;
-                    this.$message({
-                        message: res.msg,
-                        type: 'success'
-                    })
-                }
-                this.dialogVisible = false
-                this.resultFormNodeName = ''
-                this.resetForm('resultForm')
-                this.updataLoading = false
-            })
-                .catch(err => {
+            if (this.isFileSource) {
+                updateResultByFile(params).then(res => {
+                    if (res.code == 200) {
+                        this.row = res.data;
+                        this.$message({
+                            message: res.msg,
+                            type: 'success'
+                        })
+                    }
                     this.dialogVisible = false
+                    this.resultFormNodeName = ''
+                    this.resetForm('resultForm')
+                    this.updataLoading = false
                 })
+                    .catch(err => {
+                        this.dialogVisible = false
+                    })
+            } else {
+                updateFiledRule(params).then(res => {
+                    if (res.code == 200) {
+                        this.row = res.data;
+                        this.$message({
+                            message: res.msg,
+                            type: 'success'
+                        })
+                    }
+                    this.dialogVisible = false
+                    this.resultFormNodeName = ''
+                    this.resetForm('resultForm')
+                    this.updataLoading = false
+                })
+                    .catch(err => {
+                        this.dialogVisible = false
+                    })
+            }
+
             // this.handleNext('2')
         },
         updataResultCanelFn() {
@@ -485,73 +509,81 @@ export default {
                 id: this.row?.id || '',
                 lastOrNext: lastOrNext || '0'
             };
-
-            getProtectTableFieldById(params).then(res => {
-                // 检查res对象是否存在
-                if (!res) {
-                    console.error('API返回数据格式异常');
+            if (this.isFileSource) {
+                selectLastOrNextByFileId(params).then(res => {
+                    this.handleNextResponse(res, lastOrNext);
+                }).catch(() => {
                     this.loading = false;
-                    return;
+                    this.$message({
+                        message: '数据加载失败，请稍后重试',
+                        type: 'error'
+                    });
+                });
+            } else {
+                getProtectTableFieldById(params).then(res => {
+                    this.handleNextResponse(res, lastOrNext);
+                }).catch(() => {
+                    this.loading = false;
+                    this.$message({
+                        message: '数据加载失败，请稍后重试',
+                        type: 'error'
+                    });
+                });
+            }
+        },
+        handleNextResponse(res, lastOrNext) {
+            if (!res) {
+                console.error('API返回数据格式异常');
+                this.loading = false;
+                return;
+            }
+
+            if (res.code === 200 && res.data) {
+                this.row = res.data;
+                this.$route.query.queryParams.pageNum = res.data.pageNum;
+                this.$route.query.queryParams.pageSize = res.data.pageSize;
+
+                if (res.data.reasoningProcess !== undefined) {
+                    this.resultForm.reasoningProcess = res.data.reasoningProcess;
                 }
 
-                if (res.code === 200 && res.data) {
-                    // 更新数据
-                    this.row = res.data;
-                    this.$route.query.queryParams.pageNum = res.data.pageNum;
-                    this.$route.query.queryParams.pageSize = res.data.pageSize;
-
-                    // 安全地更新reasoningProcess
-                    if (res.data.reasoningProcess !== undefined) {
-                        this.resultForm.reasoningProcess = res.data.reasoningProcess;
-                    }
-
-                    // 根据操作类型显示不同的消息
-                    if (lastOrNext === '0') {
-                        this.$message({
-                            message: '已切换到上一个结果',
-                            type: 'success'
-                        });
-                    } else if (lastOrNext === '1') {
-                        this.$message({
-                            message: '已切换到下一个结果',
-                            type: 'success'
-                        });
-                    } else if (lastOrNext === '2') {
-                        this.$message({
-                            message: '已刷新当前结果',
-                            type: 'success'
-                        });
-                    }
-                } else {
-                    // 根据操作类型显示不同的错误消息
-                    let message;
-                    switch (lastOrNext) {
-                        case '0':
-                            message = '没有上一个结果！';
-                            break;
-                        case '1':
-                            message = '没有下一个结果！';
-                            break;
-                        case '2':
-                            message = '无法获取当前结果数据！';
-                            break;
-                        default:
-                            message = '操作失败，请重试！';
-                    }
+                if (lastOrNext === '0') {
                     this.$message({
-                        message: message,
-                        type: 'warning'
+                        message: '已切换到上一个结果',
+                        type: 'success'
+                    });
+                } else if (lastOrNext === '1') {
+                    this.$message({
+                        message: '已切换到下一个结果',
+                        type: 'success'
+                    });
+                } else if (lastOrNext === '2') {
+                    this.$message({
+                        message: '已刷新当前结果',
+                        type: 'success'
                     });
                 }
-                this.loading = false;
-            }).catch(() => {
-                this.loading = false;
-                // 统一错误处理
+            } else {
+                let message;
+                switch (lastOrNext) {
+                    case '0':
+                        message = '没有上一个结果！';
+                        break;
+                    case '1':
+                        message = '没有下一个结果！';
+                        break;
+                    case '2':
+                        message = '无法获取当前结果数据！';
+                        break;
+                    default:
+                        message = '操作失败，请重试！';
+                }
                 this.$message({
-                    message: '数据加载失败，请稍后重试',
-                    type: 'error'
+                    message: message,
+                    type: 'warning'
                 });
-            });
+            }
+            this.loading = false;
         },
         handleManualConfirm() {
             // 人工确认点击事件

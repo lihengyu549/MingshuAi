@@ -37,3 +37,39 @@ export function getProjectFileList(params) {
     data: params,
   })
 }
+
+// 分类分级框架-结果查看-确认过滤项
+export function confirmListByFile(params) {
+  return request({
+    url: `/system/projectFile/confirmListByFile`,
+    method: 'post',
+    data: params,
+  })
+}
+
+// 分类分级框架-结果查看-取消过滤项
+export function cancelConfirmByFile(params) {
+  return request({
+    url: `/system/projectFile/cancelConfirmByFile`,
+    method: 'post',
+    data: params,
+  })
+}
+
+// 分类分级框架-结果查看-结果修改/批量修改
+export function updateResultByFile(params) {
+  return request({
+    url: `/system/projectFile/updateResultByFile`,
+    method: 'post',
+    data: params,
+  })
+}
+
+// 分类分级框架-结果查看-查询上一条/下一条数据
+export function selectLastOrNextByFileId(params) {
+  return request({
+    url: `/system/projectFile/selectLastOrNextByFileId?pageNum=${params.pageNum}&pageSize=${params.pageSize}`,
+    method: 'post',
+    data: params,
+  })
+}

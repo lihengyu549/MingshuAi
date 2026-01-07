@@ -284,7 +284,7 @@
 </template>
 
 <script>
-import { selectFileResult } from "@/api/system/unstructured"
+import { selectFileResult, updateResultByFile, confirmListByFile, cancelConfirmByFile } from "@/api/system/unstructured"
 import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
   startI, stopI, databaseMaskI, strategyPushI, strategyAll,
@@ -719,7 +719,9 @@ export default {
     },
     filteredCheckedColumn() {
       if (this.isFileSource) {
-        return this.checkedColumn.filter(item => !['所属表', '所属库', '样本特征'].includes(item.label));
+        return this.checkedColumn.filter(item => 
+          !['所属表', '所属库', '样本特征', '字段类型', 'AI字段注释', '表注释', 'AI表注释'].includes(item.label)
+        );
       }
       return this.checkedColumn;
     }
@@ -862,16 +864,29 @@ export default {
         securityLevelIds: [...this.queryParams.securityLevel],
         securityLevel: toString(this.queryParams.securityLevel)
       }
-      confirmList(params).then(res => {
-        if (res.code === 200) {
-          this.$message.success(res.msg)
-          this.getList()
-          this.loading = false
-        }
-      })
-        .catch(err => {
-          this.loading = false
+      if (this.isFileSource) {
+        confirmListByFile(params).then(res => {
+          if (res.code === 200) {
+            this.$message.success(res.msg)
+            this.getList()
+            this.loading = false
+          }
         })
+          .catch(err => {
+            this.loading = false
+          })
+      } else {
+        confirmList(params).then(res => {
+          if (res.code === 200) {
+            this.$message.success(res.msg)
+            this.getList()
+            this.loading = false
+          }
+        })
+          .catch(err => {
+            this.loading = false
+          })
+      }
     },
     handleBack() {
       // 返回到hierarchicalTask时，根据需求，不需要保留viewResults的查询条件
@@ -890,16 +905,29 @@ export default {
         securityLevelIds: [...this.queryParams.securityLevel],
         securityLevel: toString(this.queryParams.securityLevel)
       }
-      cancelConfirmData(params).then(res => {
-        if (res.code === 200) {
-          this.$message.success(res.msg)
-          this.getList()
-          this.loading = false
-        }
-      })
-        .catch(err => {
-          this.loading = false
+      if (this.isFileSource) {
+        cancelConfirmByFile(params).then(res => {
+          if (res.code === 200) {
+            this.$message.success(res.msg)
+            this.getList()
+            this.loading = false
+          }
         })
+          .catch(err => {
+            this.loading = false
+          })
+      } else {
+        cancelConfirmData(params).then(res => {
+          if (res.code === 200) {
+            this.$message.success(res.msg)
+            this.getList()
+            this.loading = false
+          }
+        })
+          .catch(err => {
+            this.loading = false
+          })
+      }
     },
     targetDatabaseChange(value) {
       if (value.includes('all')) {
@@ -1011,23 +1039,44 @@ export default {
         piiDetection: this.resultForm.piiDetection,
         detectionProcess: this.resultForm.detectionProcess,
       }
-      updateFiledRule(params).then(res => {
-        if (res.code == 200) {
-          this.$message({
-            message: res.msg,
-            type: 'success'
-          })
-        }
-        this.deleteVisible = false
-        this.resultFormNodeName = ''
-        this.resetForm('resultForm')
-        this.resultForm.selectedIds = null
-        this.getList()
-        this.updataLoading = false
-      })
-        .catch(err => {
+      if (this.isFileSource) {
+        updateResultByFile(params).then(res => {
+          if (res.code == 200) {
+            this.$message({
+              message: res.msg,
+              type: 'success'
+            })
+          }
+          this.deleteVisible = false
+          this.resultFormNodeName = ''
+          this.resetForm('resultForm')
+          this.resultForm.selectedIds = null
+          this.getList()
           this.updataLoading = false
         })
+          .catch(err => {
+            this.updataLoading = false
+          })
+      } else {
+        updateFiledRule(params).then(res => {
+          if (res.code == 200) {
+            this.$message({
+              message: res.msg,
+              type: 'success'
+            })
+          }
+          this.deleteVisible = false
+          this.resultFormNodeName = ''
+          this.resetForm('resultForm')
+          this.resultForm.selectedIds = null
+          this.getList()
+          this.updataLoading = false
+        })
+          .catch(err => {
+            this.updataLoading = false
+          })
+      }
+
     },
     updataResultCanelFn() {
       this.deleteVisible = false
