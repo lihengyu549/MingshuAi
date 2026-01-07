@@ -326,11 +326,11 @@
           <el-upload ref="fileDirectoryUploadRef" class="upload-dragger-area" drag :action="''" :auto-upload="false"
             :multiple="true" :show-file-list="false" :limit="20" :file-list="fileDirectoryData.uploadFiles"
             :on-change="handleFileDirectoryChange" :on-remove="handleFileDirectoryRemove"
-            :on-exceed="handleFileDirectoryExceed" accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx">
+            :on-exceed="handleFileDirectoryExceed" accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.bmp,.webp">
             <div class="upload-dragger-content">
               <i class="el-icon-upload upload-icon"></i>
               <div class="upload-text">点击或拖拽上传文件</div>
-              <div class="upload-tip">支持 .doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx等格式（支持多文件上传，最多20个，总大小不超过50MB）
+              <div class="upload-tip">支持 .doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif等格式（支持多文件上传，最多20个，总大小不超过50MB）
               </div>
             </div>
           </el-upload>
