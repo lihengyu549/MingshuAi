@@ -22,7 +22,7 @@
                         </div>
                         <div class="info-item">
                             <label class="info-label">文件大小：</label>
-                            <div class="info-content">{{ row.fileSize || '--' }}</div>
+                            <div class="info-content">{{ row.fileSizeName || '--' }}</div>
                         </div>
                         <div class="info-item">
                             <label class="info-label">上传时间：</label>
