@@ -232,29 +232,17 @@
                   <i :class="sortOrderIcon"></i>
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item command="create_time-asc">
+                  <el-dropdown-item command="create_time">
                     <span>上传时间</span>
-                    <i class="el-icon-top sort-icon"></i>
+                    <i :class="getSortIcon('create_time')"></i>
                   </el-dropdown-item>
-                  <el-dropdown-item command="create_time-desc">
-                    <span>上传时间</span>
-                    <i class="el-icon-bottom sort-icon"></i>
-                  </el-dropdown-item>
-                  <el-dropdown-item command="file_name-asc">
+                  <el-dropdown-item command="file_name">
                     <span>文件名称</span>
-                    <i class="el-icon-top sort-icon"></i>
+                    <i :class="getSortIcon('file_name')"></i>
                   </el-dropdown-item>
-                  <el-dropdown-item command="file_name-desc">
-                    <span>文件名称</span>
-                    <i class="el-icon-bottom sort-icon"></i>
-                  </el-dropdown-item>
-                  <el-dropdown-item command="file_size-asc">
+                  <el-dropdown-item command="file_size">
                     <span>文件大小</span>
-                    <i class="el-icon-top sort-icon"></i>
-                  </el-dropdown-item>
-                  <el-dropdown-item command="file_size-desc">
-                    <span>文件大小</span>
-                    <i class="el-icon-bottom sort-icon"></i>
+                    <i :class="getSortIcon('file_size')"></i>
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
@@ -503,8 +491,13 @@ export default {
       currentNodeType: '0', // 当前节点的type值,默认为'0'
       currentFolderName: '', // 当前文件夹名称
       breadcrumbList: [], // 面包屑路径数组
-      currentSortType: 'create_time-asc', // 当前排序类型
+      currentSortField: 'create_time', // 当前排序字段
       currentSortLabel: '上传时间', // 当前排序显示文本
+      sortOrders: {
+        create_time: 'asc',
+        file_name: 'asc',
+        file_size: 'asc'
+      },
       currentNodeData: null, // 存储当前选中的节点数据
       folderList: [], // 文件夹列表
       fileList: [], // 文件列表
@@ -687,9 +680,10 @@ export default {
       return this.folderList.length + this.fileTotal;
     },
     sortOrderIcon() {
-      if (this.currentSortType.endsWith('-asc')) {
+      const order = this.sortOrders[this.currentSortField];
+      if (order === 'asc') {
         return 'el-icon-top';
-      } else if (this.currentSortType.endsWith('-desc')) {
+      } else if (order === 'desc') {
         return 'el-icon-bottom';
       }
       return 'el-icon-d-caret';
@@ -770,24 +764,31 @@ export default {
       }
     },
 
-    handleSortChange(command) {
-      this.currentSortType = command;
+    handleSortChange(field) {
+      if (this.currentSortField === field) {
+        this.sortOrders[field] = this.sortOrders[field] === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.currentSortField = field;
+        this.sortOrders[field] = 'asc';
+      }
 
-      // 更新显示文本
-      const sortMap = {
-        'create_time-asc': '上传时间',
-        'create_time-desc': '上传时间',
-        'file_name-asc': '文件名称',
-        'file_name-desc': '文件名称',
-        'file_size-asc': '文件大小',
-        'file_size-desc': '文件大小'
+      const labelMap = {
+        'create_time': '上传时间',
+        'file_name': '文件名称',
+        'file_size': '文件大小'
       };
-      this.currentSortLabel = sortMap[command] || '上传时间';
+      this.currentSortLabel = labelMap[field] || '上传时间';
 
-      // 重新加载数据
       if (this.currentNodeData) {
         this.loadFileListData(this.currentNodeData);
       }
+    },
+
+    getSortIcon(field) {
+      if (this.currentSortField !== field) {
+        return 'el-icon-sort';
+      }
+      return this.sortOrders[field] === 'asc' ? 'el-icon-top' : 'el-icon-bottom';
     },
 
 
@@ -819,8 +820,9 @@ export default {
 
 
     loadFileListData(data) {
-      const [sortField, order] = this.currentSortType.split('-');
-      const isAsc = order == 'asc';
+      const sortField = this.currentSortField;
+      const order = this.sortOrders[sortField];
+      const isAsc = order === 'asc';
 
       const response = {
         sortField: sortField,
