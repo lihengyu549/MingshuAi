@@ -28,3 +28,12 @@ export function selectFileResult(params) {
     data: params,
   })
 }
+
+// 资产目录—非结构化（新）
+export function getProjectFileList(params) {
+  return request({
+    url: `/system/projectFile/getProjectFileList`,
+    method: 'post',
+    data: params,
+  })
+}
