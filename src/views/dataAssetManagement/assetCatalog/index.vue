@@ -990,14 +990,18 @@ export default {
      * 自定义树节点渲染,为父节点和子节点添加不同的SVG图标
      */
     renderContent(h, { node, data }) {
-      // 判断是否为父节点(有children属性且长度大于0)
-      const isParentNode = data.children && data.children.length > 0;
+      let iconClass = 'database1';
+      if (data.type == 1) {
+        iconClass = 'file-o';
+      } else if (data.children && data.children.length > 0) {
+        iconClass = 'sysBusiness';
+      }
 
       return h('span', { class: 'custom-tree-node' }, [
         h('svg-icon', {
           class: 'tree-node-icon',
           attrs: {
-            iconClass: isParentNode ? 'sysBusiness' : 'database1'
+            iconClass: iconClass
           },
           style: { marginRight: '8px' }
         }),

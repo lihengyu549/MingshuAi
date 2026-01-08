@@ -84,7 +84,16 @@
           <span>{{ scope.row.aiAnalyticsEngine == 1 ? '快速响应' : '深度思考' }}</span>
         </template>
       </el-table-column> -->
-      <el-table-column label="任务字段数" width="120" align="center" prop="fieldCount" show-overflow-tooltip />
+      <el-table-column label="任务字段数" width="120" align="center" prop="fieldCount" show-overflow-tooltip>
+        <template slot-scope="scope">
+          {{ emptyHandler(scope.row.fieldCount) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="任务文件数" width="120" align="center" prop="fileCount" show-overflow-tooltip>
+        <template slot-scope="scope">
+          {{ emptyHandler(scope.row.fileCount) }}
+        </template>
+      </el-table-column>
       <el-table-column label="执行状态" align="center" width="120" prop="maskComplete">
         <template slot-scope="scope">
           <div class="runType">
@@ -292,8 +301,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="语义填充状态">
-              <el-select v-model="form.paddingStatus" multiple clearable placeholder="请选择内容"
-                :disabled="isFileSource">
+              <el-select v-model="form.paddingStatus" multiple clearable placeholder="请选择内容" :disabled="isFileSource">
                 <el-option label="未开始" value="1" />
                 <el-option label="成功" value="2" />
                 <el-option label="失败" value="3" />
@@ -717,6 +725,9 @@ export default {
     // }
   },
   methods: {
+    emptyHandler(val) {
+      return val === null || val === undefined || val === '' ? '-' : val;
+    },
     // 处理启用功能模块选中方法
     toggleFeature(featureName) {
       this.$set(this.form, featureName, !this.form[featureName]);
