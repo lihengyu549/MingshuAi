@@ -63,7 +63,7 @@
                     <el-col :span="12">
                         <el-form-item label="数据集类型" prop="dataSetType">
                             <el-select clearable v-model="dialogData.dataSetType" placeholder="请选择数据集类型"
-                                :disabled="isViewMode">
+                                :disabled="true">
                                 <el-option v-for="item in dict.type.sys_data_set" :key="item.value" :label="item.label"
                                     :value="item.value">
                                 </el-option>
@@ -124,7 +124,7 @@ export default {
             // 表单数据
             dialogData: {
                 dataSetName: '',       // 数据集名称
-                dataSetType: '',       // 数据集类型（字典表维护）
+                dataSetType: '1',       // 数据集类型
                 databaseProxyListId: []      // 选择内容（多选）
             },
             // 防抖定时器
@@ -324,10 +324,9 @@ export default {
          */
         resetAddData() {
             this.dialogData = {
-                taskName: '',
-                pushType: '',
-                sourceName: [],
-                id: ''
+                dataSetName: '',
+                dataSetType: '1',
+                databaseProxyListId: []
             };
             // 重置表单验证
             if (this.$refs.dialogData) {
