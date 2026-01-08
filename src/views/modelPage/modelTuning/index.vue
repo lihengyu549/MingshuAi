@@ -102,8 +102,8 @@
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="训练数据集" prop="modelDataSetId">
-                            <el-select clearable v-model="dialogData.modelDataSetId" placeholder="请选择训练数据集"
+                        <el-form-item label="训练数据集" prop="dataSetId">
+                            <el-select clearable v-model="dialogData.dataSetId" placeholder="请选择训练数据集"
                                 :disabled="isViewMode">
                                 <el-option v-for="item in dataSetList" :key="item.id" :label="item.dataSetName"
                                     :value="item.id">
@@ -207,7 +207,7 @@ export default {
                 modelTaskName: '',       // 数据集名称
                 modelTrainingMethod: '',       // 数据集类型（字典表维护）
                 modelBase: '',     // 选择内容（多选）
-                modelDataSetId: '',     // 选择内容（多选）
+                dataSetId: '',     // 选择内容（多选）
                 modelOutputName: '',     // 选择内容（多选）
                 modelParameterConfigJson: [] // 参数配置
             },
@@ -224,7 +224,7 @@ export default {
                 modelBase: [    
                     { required: true, message: "请选择基座模型", trigger: "blur" }
                 ],
-                modelDataSetId: [
+                dataSetId: [
                     { required: true, message: "请选择训练数据集", trigger: "blur" }
                 ],
                 modelOutputName: [
@@ -488,7 +488,7 @@ export default {
                 modelTaskName: '',
                 modelTrainingMethod: '',
                 modelBase: '',
-                modelDataSetId: '',
+                dataSetId: '',
                 modelOutputName: '',
                 modelParameterConfigJson: [],
                 id: ''
