@@ -79,9 +79,8 @@
                     <el-col :span="12">
                         <el-form-item label="训练方式" prop="modelTrainingMethod">
                             <el-select clearable v-model="dialogData.modelTrainingMethod" placeholder="请选择训练方式"
-                                :disabled="isViewMode">
+                                :disabled="true">
                                 <el-option label="SFT微调训练" value="SFT微调训练"></el-option>
-
                             </el-select>
                         </el-form-item>
                     </el-col>
@@ -90,7 +89,7 @@
                     <el-col :span="12">
                         <el-form-item label="基座模型" prop="modelBase">
                             <el-select clearable v-model="dialogData.modelBase" placeholder="请选择基座模型"
-                                :disabled="isViewMode">
+                                :disabled="true">
                                 <el-option label="Qwen3-4B" value="Qwen3-4B"></el-option>
                             </el-select>
                         </el-form-item>
@@ -108,7 +107,7 @@
                 </el-row>
                 <el-form-item label="模型导出名称" prop="modelOutputName">
                     <el-input v-model="dialogData.modelOutputName" placeholder="请输入模型导出名称"
-                        :disabled="isViewMode"></el-input>
+                        :disabled="true"></el-input>
                 </el-form-item>
                 <Title title="参数配置">
                     <el-button type="text" icon="el-icon-refresh-right" size="mini" style="float: inline-end;"
@@ -199,10 +198,10 @@ export default {
             // 表单数据
             dialogData: {
                 modelTaskName: '',       // 数据集名称
-                modelTrainingMethod: '',       // 数据集类型（字典表维护）
-                modelBase: '',     // 选择内容（多选）
-                dataSetId: '',     // 选择内容（多选）
-                modelOutputName: '',     // 选择内容（多选）
+                modelTrainingMethod: 'SFT微调训练',       // 数据集类型（字典表维护）
+                modelBase: 'Qwen3-4B',     // 选择内容
+                dataSetId: '',     // 选择内容
+                modelOutputName: '',     // 选择内容
                 modelParameterConfigJson: [] // 参数配置
             },
             // 防抖定时器
@@ -327,6 +326,10 @@ export default {
         handleAdd() {
             this.resetAddData();
             this.resetParam();
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+            const timeStr = now.toTimeString().slice(0, 5).replace(':', '');
+            this.dialogData.modelOutputName = `Qwen3-4B_${dateStr}_${timeStr}`;
             this.dialogDataShow = true;
             this.title = "新增数据集";
             this.isViewMode = false;
