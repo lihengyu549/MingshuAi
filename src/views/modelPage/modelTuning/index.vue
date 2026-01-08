@@ -483,8 +483,8 @@ export default {
         resetAddData() {
             this.dialogData = {
                 modelTaskName: '',
-                modelTrainingMethod: '',
-                modelBase: '',
+                modelTrainingMethod: 'SFT微调训练',
+                modelBase: 'Qwen3-4B',
                 dataSetId: '',
                 modelOutputName: '',
                 modelParameterConfigJson: [],
