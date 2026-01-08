@@ -73,7 +73,7 @@
       <el-table-column label="数据源名称" align="left" width="140" prop="sourceName" show-overflow-tooltip>
         <template slot-scope="scope">
           <span class="source-name" @click="scanContentEdit(scope.row)">
-            <svg-icon :icon-class="databaseTypeIcon(databaseTypeMsg(scope.row.databaseType))"
+            <svg-icon :icon-class="databaseTypeIcon(scope.row.sourceTypeName)"
               style="font-size: 14px; margin-right: 5px;" />
             {{ scope.row.sourceName }}
           </span>
@@ -82,16 +82,24 @@
 
       <el-table-column label="主机信息" align="center" prop="targetIpPort" show-overflow-tooltip>
         <template slot-scope="scope">
-          <span>{{ scope.row.targetIpPort }}</span>
+          <span>{{ emptyHandler(scope.row.targetIpPort) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="数据源类型" align="center" prop="sourceTypeName" show-overflow-tooltip />
+      <el-table-column label="数据源类型" align="center" prop="sourceTypeName" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span>{{ emptyHandler(scope.row.sourceTypeName) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="数据库类型" align="center" prop="databaseType" show-overflow-tooltip>
         <template slot-scope="scope">
-          <span>{{ scope.row.databaseType }}</span>
+          <span>{{ emptyHandler(scope.row.databaseType) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
+      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span>{{ emptyHandler(scope.row.businessName) }}</span>
+        </template>
+      </el-table-column>
       <!-- <el-table-column label="分类分级标准" align="center" prop="projectName" /> -->
       <el-table-column label="扫描状态" align="center" prop="scanState">
         <template slot-scope="scope">
@@ -102,12 +110,36 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="耗时(毫秒)" align="center" prop="scanTime" show-overflow-tooltip />
-      <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
-      <el-table-column label="数据质量评估" align="center" prop="dataScore" show-overflow-tooltip />
-      <el-table-column label="表数量" align="center" prop="tableCount" show-overflow-tooltip />
-      <el-table-column label="字段数量" align="center" prop="fieldCount" show-overflow-tooltip />
-      <el-table-column label="文件" align="center" prop="fieldCount" show-overflow-tooltip />
+      <el-table-column label="耗时(毫秒)" align="center" prop="scanTime" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span>{{ emptyHandler(scope.row.scanTime) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span>{{ emptyHandler(scope.row.updateTime) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="数据质量评估" align="center" prop="dataScore" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span>{{ emptyHandler(scope.row.dataScore) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="表数量" align="center" prop="tableCount" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span>{{ emptyHandler(scope.row.tableCount) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="字段数量" align="center" prop="fieldCount" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span>{{ emptyHandler(scope.row.fieldCount) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="文件" align="center" prop="fieldCount" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span>{{ emptyHandler(scope.row.fieldCount) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="数据字典" align="center" show-overflow-tooltip>
         <template slot-scope="scope">
           <span>{{ scope.row.feature && scope.row.feature.featureName || '-' }}</span>
@@ -971,32 +1003,23 @@ export default {
       }
       return msg || '待扫描'
     },
-    databaseTypeMsg(val) {
-      if (val === 'Excel') {
-        return 'Excel'
-      }
-      if (val === 'API') {
-        return 'API'
-      }
-      let msg = ''
-      for (let item of this.databaseTypeList) {
-        if (item.value == val) {
-          msg = item.name
-        }
-      }
-      return msg || '未知来源'
-    },
     databaseTypeIcon(val) {
-      if (val == 'Excel') {
+      if (val == 'Excel表') {
         return 'excel-o'
       } else if (val == 'API') {
         return 'api-o'
-      } else if (val == 'MYSQL') {
+      } else if (val == '数据库') {
         return 'mysql-o'
+      } else if (val == '文件目录') {
+        return 'file-o'
+      } else if (val == '文件服务器') {
+        return 'fileServe-o'
       } else {
         return 'unknow-o'
       }
-
+    },
+    emptyHandler(val) {
+      return val === null || val === undefined || val === '' ? '-' : val;
     },
     businessNameFn(val) {
       this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
