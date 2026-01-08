@@ -262,8 +262,8 @@ export default {
                     this.dialogLoading = true;
 
                     let data = {
-                        datasetName: this.dialogData.dataSetName,
-                        datasetType: this.dialogData.dataSetType,
+                        dataSetName: this.dialogData.dataSetName,
+                        dataSetType: this.dialogData.dataSetType,
                         databaseProxyListId: this.dialogData.dataContent
                     };
                     try {
