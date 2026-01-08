@@ -135,9 +135,9 @@
           <span>{{ emptyHandler(scope.row.fieldCount) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="文件" align="center" prop="fieldCount" show-overflow-tooltip>
+      <el-table-column label="文件" align="center" prop="fileCount" show-overflow-tooltip>
         <template slot-scope="scope">
-          <span>{{ emptyHandler(scope.row.fieldCount) }}</span>
+          <span>{{ emptyHandler(scope.row.fileCount) }}</span>
         </template>
       </el-table-column>
       <el-table-column label="数据字典" align="center" show-overflow-tooltip>
