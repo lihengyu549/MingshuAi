@@ -71,8 +71,8 @@
                         </el-form-item>
                     </el-col>
                 </el-row>
-                <el-form-item label="选择内容" prop="dataContent">
-                    <el-select v-model="dialogData.dataContent" multiple clearable filterable placeholder="请选择内容"
+                <el-form-item label="选择内容" prop="databaseProxyListId">
+                    <el-select v-model="dialogData.databaseProxyListId" multiple clearable filterable placeholder="请选择内容"
                         :disabled="isViewMode">
                         <el-option v-for="item in sourceContentList" :key="item.id" :label="item.tasksName"
                             :value="item.id"></el-option>
@@ -125,7 +125,7 @@ export default {
             dialogData: {
                 dataSetName: '',       // 数据集名称
                 dataSetType: '',       // 数据集类型（字典表维护）
-                dataContent: []      // 选择内容（多选）
+                databaseProxyListId: []      // 选择内容（多选）
             },
             // 防抖定时器
             debounceTimeout: null,
@@ -137,7 +137,7 @@ export default {
                 dataSetType: [
                     { required: true, message: "请选择数据集类型", trigger: "blur" }
                 ],
-                dataContent: [
+                databaseProxyListId: [
                     { required: true, message: "请选择内容", trigger: "blur" }
                 ],
             },
@@ -264,7 +264,7 @@ export default {
                     let data = {
                         dataSetName: this.dialogData.dataSetName,
                         dataSetType: this.dialogData.dataSetType,
-                        databaseProxyListId: this.dialogData.dataContent
+                        databaseProxyListId: this.dialogData.databaseProxyListId
                     };
                     try {
                         // 根据是否有ID判断是新增还是编辑
