@@ -80,10 +80,7 @@
                         <el-form-item label="训练方式" prop="modelTrainingMethod">
                             <el-select clearable v-model="dialogData.modelTrainingMethod" placeholder="请选择训练方式"
                                 :disabled="isViewMode">
-                                <el-option label="SFT微调训练" value="1"></el-option>
-                                <!-- <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel"
-                                    :value="item.dictValue">
-                                </el-option> -->
+                                <el-option label="SFT微调训练" value="SFT微调训练"></el-option>
 
                             </el-select>
                         </el-form-item>
@@ -94,10 +91,7 @@
                         <el-form-item label="基座模型" prop="modelBase">
                             <el-select clearable v-model="dialogData.modelBase" placeholder="请选择基座模型"
                                 :disabled="isViewMode">
-                                <!-- <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel"
-                                    :value="item.dictValue">
-                                </el-option> -->
-                                <el-option label="qwen3-4b-fp16_202511271132_baed6c00" value="1"></el-option>
+                                <el-option label="Qwen3-4B" value="Qwen3-4B"></el-option>
                             </el-select>
                         </el-form-item>
                     </el-col>
