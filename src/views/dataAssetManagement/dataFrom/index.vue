@@ -1765,6 +1765,8 @@ export default {
               this.resetFileDirectoryForm()
               this.getList()
             }
+          }).catch(() => {
+            this.fileDirectoryLoading = false
           })
         } else {
           return false
@@ -1820,6 +1822,7 @@ export default {
             this.getList()
           }, 500)
         } else {
+          this.fileShareServerSubmitLoading = false
           return false
         }
       })
