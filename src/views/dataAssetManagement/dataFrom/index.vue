@@ -358,11 +358,13 @@
           <el-upload ref="fileDirectoryUploadRef" class="upload-dragger-area" drag :action="''" :auto-upload="false"
             :multiple="true" :show-file-list="false" :limit="20" :file-list="fileDirectoryData.uploadFiles"
             :on-change="handleFileDirectoryChange" :on-remove="handleFileDirectoryRemove"
-            :on-exceed="handleFileDirectoryExceed" accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.bmp,.webp">
+            :on-exceed="handleFileDirectoryExceed"
+            accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.bmp,.webp">
             <div class="upload-dragger-content">
               <i class="el-icon-upload upload-icon"></i>
               <div class="upload-text">点击或拖拽上传文件</div>
-              <div class="upload-tip">支持 .doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif等格式（支持多文件上传，最多20个，总大小不超过50MB）
+              <div class="upload-tip">支持
+                .doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif等格式（支持多文件上传，最多20个，总大小不超过50MB）
               </div>
             </div>
           </el-upload>
@@ -576,10 +578,10 @@
 <script>
 import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys,
-  importExcel, publish, saveDatabaseAndTables, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI, getDatabaseNameList, getDatabaseTableNameList, stopDataScan, checkSourceName
+  importExcel, publish, saveDatabaseAndTables, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI, getDatabaseNameList, getDatabaseTableNameList, stopDataScan
 } from "@/api/system/proxys";
 import {
-  forceLogout, nameTesting, dataSacn, getFrameworks, getDatabaseAndTablesById, updateDatabaseAndTables, addOrUpdateFileDataList
+  forceLogout, nameTesting, dataSacn, getFrameworks, getDatabaseAndTablesById, updateDatabaseAndTables, addOrUpdateFileDataList, checkSourceName
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import TableSelector from './components/TableSelector.vue'
@@ -987,6 +989,24 @@ export default {
       let params = {
         sourceName: this.importData.sourceName,
         id: this.importData.id || ''
+      }
+      let res = await checkSourceName(params)
+      return res.code == 200
+    },
+
+    async checkFileDirectoryNameFn() {
+      let params = {
+        sourceName: this.fileDirectoryData.sourceName,
+        id: this.fileDirectoryData.id || ''
+      }
+      let res = await checkSourceName(params)
+      return res.code == 200
+    },
+
+    async checkFileShareServerNameFn() {
+      let params = {
+        sourceName: this.fileShareServerForm.sourceName,
+        id: this.fileShareServerForm.id || ''
       }
       let res = await checkSourceName(params)
       return res.code == 200
@@ -1740,6 +1760,10 @@ export default {
     async submitFileDirectoryForm() {
       this.$refs["fileDirectoryForm"].validate(async valid => {
         if (valid) {
+          if (!await this.checkFileDirectoryNameFn()) {
+            this.fileDirectoryLoading = false
+            return
+          }
           this.fileDirectoryLoading = true
           // TODO: 调用API保存文件目录数据
           const formData = new FormData();
@@ -1801,6 +1825,11 @@ export default {
 
       this.$refs["fileShareServerForm"].validate(async valid => {
         if (valid) {
+          if (!await this.checkFileShareServerNameFn()) {
+            this.fileShareServerSubmitLoading = false
+            return
+          }
+
           this.fileShareServerSubmitLoading = true
 
           // TODO: 调用API保存文件共享服务器数据
