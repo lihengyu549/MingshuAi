@@ -54,6 +54,10 @@
             <el-input v-model="queryParams.tableName" clearable @input="inputSearch" placeholder="请输入表名"
               @keyup.enter.native="handleQuery" />
           </el-form-item>
+          <el-form-item label="文件夹" prop="folderName">
+            <el-input v-model="queryParams.folderName" clearable @input="inputSearch" placeholder="请输入文件夹"
+              @keyup.enter.native="handleQuery" />
+          </el-form-item>
           <!-- <el-form-item> -->
           <!-- <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button> -->
           <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
@@ -71,8 +75,10 @@
           <el-table-column type="selection" width="60" align="center" />
           <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip />
           <el-table-column label="字段注释" align="center" prop="fieldRemark" show-overflow-tooltip />
+          <el-table-column label="文件名称" align="center" prop="fileName" show-overflow-tooltip />
           <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
           <el-table-column label="数据源" align="center" prop="sourceName" show-overflow-tooltip />
+          <el-table-column label="所属文件夹" align="center" prop="folderName" show-overflow-tooltip />
           <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
           <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
           <el-table-column label="分类" align="center" prop="categoryName" min-width="250" show-overflow-tooltip />
