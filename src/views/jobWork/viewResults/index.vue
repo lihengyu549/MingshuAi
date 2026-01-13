@@ -1056,29 +1056,16 @@ export default {
         securityLevel: '',
         securityLevelIds: this.queryParams.securityLevel,
       }
-      if (this.isFileSource) {
-        selectFileResult(params).then(response => {
-          this.proxysList = response.data.rows;
-          this.proxysList.forEach(ele => {
-            if (ele.sampleData) {
-              ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
-            }
-          })
-          this.total = response.data.total;
-          this.loading = false;
-        });
-      } else {
-        selectResultsById(params).then(response => {
-          this.proxysList = response.data.rows;
-          this.proxysList.forEach(ele => {
-            if (ele.sampleData) {
-              ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
-            }
-          })
-          this.total = response.data.total;
-          this.loading = false;
-        });
-      }
+      selectFileResult(params).then(response => {
+        this.proxysList = response.data.rows;
+        this.proxysList.forEach(ele => {
+          if (ele.sampleData) {
+            ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
+          }
+        })
+        this.total = response.data.total;
+        this.loading = false;
+      });
 
     },
     /** 搜索按钮操作 */
