@@ -475,6 +475,12 @@
         <el-form-item label="扫描内容" prop="scanContent">
           <el-input v-model="fileShareServerForm.scanContent" placeholder="请输入扫描内容" />
         </el-form-item>
+        <el-form-item label="扫描逻辑" prop="proceedOrOverwrite">
+          <el-checkbox v-model="fileShareServerForm.proceedOrOverwrite">全量扫描</el-checkbox>
+          <el-tooltip class="item" effect="dark" content="全量扫描：清空，上一次的所有扫描结果，以本次勾选的内容为准" placement="top-start">
+            <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+          </el-tooltip>
+        </el-form-item>
 
         <!-- 过滤配置 -->
         <div class="form-section-title">过滤配置</div>
@@ -550,19 +556,14 @@
             </el-option>
           </el-select>
           <el-select v-show="fileShareServerForm.scheduleType == '2' || fileShareServerForm.scheduleType == '3'"
-            v-model="fileShareServerForm.scheduleInterval" style="margin-left: 10px;">
+            v-model="fileShareServerForm.scheduleInterval">
             <el-option v-for="item in weekList" :key="item" :label="item" :value="item">
             </el-option>
           </el-select>
           <el-time-picker v-show="fileShareServerForm.scheduleType != '0' && fileShareServerForm.scheduleType != ''"
             v-model="fileShareServerForm.scheduleTime" value-format='HH:mm' format="HH:mm" placeholder="任意时间点"
-            style="margin-left: 10px;" :append-to-body="true">
+            :append-to-body="true">
           </el-time-picker>
-        </el-form-item>
-
-        <el-form-item>
-          <el-radio v-model="fileShareServerForm.proceedOrOverwrite" label="0">全量覆盖</el-radio>
-          <el-radio v-model="fileShareServerForm.proceedOrOverwrite" label="1">增量添加</el-radio>
         </el-form-item>
 
       </el-form>
@@ -903,7 +904,7 @@ export default {
         scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '00:00',
-        proceedOrOverwrite: '0',
+        proceedOrOverwrite: false,
         id: null, // 添加id字段用于编辑
       },
       fileShareServerRules: {
@@ -947,6 +948,9 @@ export default {
         ],
         scheduleType: [
           { required: true, message: "请选择执行周期", trigger: "change" }
+        ],
+        proceedOrOverwrite: [
+          { required: true, message: "请选择扫描逻辑", trigger: "change" }
         ],
       },
     };
@@ -1604,7 +1608,7 @@ export default {
         this.fileShareServerForm.scheduleType = row.databaseProxysTimer?.scheduleType || '0';
         this.fileShareServerForm.scheduleInterval = row.databaseProxysTimer?.scheduleInterval || '';
         this.fileShareServerForm.scheduleTime = row.databaseProxysTimer?.scheduleTime || '00:00';
-        this.fileShareServerForm.proceedOrOverwrite = row.proceedOrOverwrite || '0';
+        this.fileShareServerForm.proceedOrOverwrite = row.proceedOrOverwrite || false;
         this.fileShareServerOpen = true;
       }
     },
@@ -1895,7 +1899,7 @@ export default {
         scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '00:00',
-        proceedOrOverwrite: '0',
+        proceedOrOverwrite: false,
         id: null,
       }
       if (this.$refs.fileShareServerForm) {

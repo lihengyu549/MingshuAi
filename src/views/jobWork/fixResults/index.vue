@@ -356,41 +356,22 @@ export default {
                 piiDetection: this.resultForm.piiDetection,
                 detectionProcess: this.resultForm.detectionProcess,
             }
-            if (this.isFileSource) {
-                updateResultByFile(params).then(res => {
-                    if (res.code == 200) {
-                        this.row = res.data;
-                        this.$message({
-                            message: res.msg,
-                            type: 'success'
-                        })
-                    }
-                    this.dialogVisible = false
-                    this.resultFormNodeName = ''
-                    this.resetForm('resultForm')
-                    this.updataLoading = false
-                })
-                    .catch(err => {
-                        this.dialogVisible = false
+            updateResultByFile(params).then(res => {
+                if (res.code == 200) {
+                    this.row = res.data;
+                    this.$message({
+                        message: res.msg,
+                        type: 'success'
                     })
-            } else {
-                updateFiledRule(params).then(res => {
-                    if (res.code == 200) {
-                        this.row = res.data;
-                        this.$message({
-                            message: res.msg,
-                            type: 'success'
-                        })
-                    }
+                }
+                this.dialogVisible = false
+                this.resultFormNodeName = ''
+                this.resetForm('resultForm')
+                this.updataLoading = false
+            })
+                .catch(err => {
                     this.dialogVisible = false
-                    this.resultFormNodeName = ''
-                    this.resetForm('resultForm')
-                    this.updataLoading = false
                 })
-                    .catch(err => {
-                        this.dialogVisible = false
-                    })
-            }
 
             // this.handleNext('2')
         },
@@ -509,27 +490,15 @@ export default {
                 id: this.row?.id || '',
                 lastOrNext: lastOrNext || '0'
             };
-            if (this.isFileSource) {
-                selectLastOrNextByFileId(params).then(res => {
-                    this.handleNextResponse(res, lastOrNext);
-                }).catch(() => {
-                    this.loading = false;
-                    this.$message({
-                        message: '数据加载失败，请稍后重试',
-                        type: 'error'
-                    });
+            selectLastOrNextByFileId(params).then(res => {
+                this.handleNextResponse(res, lastOrNext);
+            }).catch(() => {
+                this.loading = false;
+                this.$message({
+                    message: '数据加载失败，请稍后重试',
+                    type: 'error'
                 });
-            } else {
-                getProtectTableFieldById(params).then(res => {
-                    this.handleNextResponse(res, lastOrNext);
-                }).catch(() => {
-                    this.loading = false;
-                    this.$message({
-                        message: '数据加载失败，请稍后重试',
-                        type: 'error'
-                    });
-                });
-            }
+            });
         },
         handleNextResponse(res, lastOrNext) {
             if (!res) {

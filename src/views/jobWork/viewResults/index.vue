@@ -719,7 +719,7 @@ export default {
     },
     filteredCheckedColumn() {
       if (this.isFileSource) {
-        return this.checkedColumn.filter(item => 
+        return this.checkedColumn.filter(item =>
           !['所属表', '所属库', '样本特征', '字段类型', 'AI字段注释', '表注释', 'AI表注释'].includes(item.label)
         );
       }
@@ -864,29 +864,16 @@ export default {
         securityLevelIds: [...this.queryParams.securityLevel],
         securityLevel: toString(this.queryParams.securityLevel)
       }
-      if (this.isFileSource) {
-        confirmListByFile(params).then(res => {
-          if (res.code === 200) {
-            this.$message.success(res.msg)
-            this.getList()
-            this.loading = false
-          }
+      confirmListByFile(params).then(res => {
+        if (res.code === 200) {
+          this.$message.success(res.msg)
+          this.getList()
+          this.loading = false
+        }
+      })
+        .catch(err => {
+          this.loading = false
         })
-          .catch(err => {
-            this.loading = false
-          })
-      } else {
-        confirmList(params).then(res => {
-          if (res.code === 200) {
-            this.$message.success(res.msg)
-            this.getList()
-            this.loading = false
-          }
-        })
-          .catch(err => {
-            this.loading = false
-          })
-      }
     },
     handleBack() {
       // 返回到hierarchicalTask时，根据需求，不需要保留viewResults的查询条件
@@ -905,29 +892,16 @@ export default {
         securityLevelIds: [...this.queryParams.securityLevel],
         securityLevel: toString(this.queryParams.securityLevel)
       }
-      if (this.isFileSource) {
-        cancelConfirmByFile(params).then(res => {
-          if (res.code === 200) {
-            this.$message.success(res.msg)
-            this.getList()
-            this.loading = false
-          }
+      cancelConfirmByFile(params).then(res => {
+        if (res.code === 200) {
+          this.$message.success(res.msg)
+          this.getList()
+          this.loading = false
+        }
+      })
+        .catch(err => {
+          this.loading = false
         })
-          .catch(err => {
-            this.loading = false
-          })
-      } else {
-        cancelConfirmData(params).then(res => {
-          if (res.code === 200) {
-            this.$message.success(res.msg)
-            this.getList()
-            this.loading = false
-          }
-        })
-          .catch(err => {
-            this.loading = false
-          })
-      }
     },
     targetDatabaseChange(value) {
       if (value.includes('all')) {
@@ -1039,44 +1013,23 @@ export default {
         piiDetection: this.resultForm.piiDetection,
         detectionProcess: this.resultForm.detectionProcess,
       }
-      if (this.isFileSource) {
-        updateResultByFile(params).then(res => {
-          if (res.code == 200) {
-            this.$message({
-              message: res.msg,
-              type: 'success'
-            })
-          }
-          this.deleteVisible = false
-          this.resultFormNodeName = ''
-          this.resetForm('resultForm')
-          this.resultForm.selectedIds = null
-          this.getList()
+      updateResultByFile(params).then(res => {
+        if (res.code == 200) {
+          this.$message({
+            message: res.msg,
+            type: 'success'
+          })
+        }
+        this.deleteVisible = false
+        this.resultFormNodeName = ''
+        this.resetForm('resultForm')
+        this.resultForm.selectedIds = null
+        this.getList()
+        this.updataLoading = false
+      })
+        .catch(err => {
           this.updataLoading = false
         })
-          .catch(err => {
-            this.updataLoading = false
-          })
-      } else {
-        updateFiledRule(params).then(res => {
-          if (res.code == 200) {
-            this.$message({
-              message: res.msg,
-              type: 'success'
-            })
-          }
-          this.deleteVisible = false
-          this.resultFormNodeName = ''
-          this.resetForm('resultForm')
-          this.resultForm.selectedIds = null
-          this.getList()
-          this.updataLoading = false
-        })
-          .catch(err => {
-            this.updataLoading = false
-          })
-      }
-
     },
     updataResultCanelFn() {
       this.deleteVisible = false
