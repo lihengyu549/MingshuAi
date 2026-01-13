@@ -864,7 +864,7 @@ export default {
         securityLevelIds: [...this.queryParams.securityLevel],
         securityLevel: toString(this.queryParams.securityLevel)
       }
-      confirmListByFile(params).then(res => {
+      confirmList(params).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
           this.getList()
@@ -892,7 +892,7 @@ export default {
         securityLevelIds: [...this.queryParams.securityLevel],
         securityLevel: toString(this.queryParams.securityLevel)
       }
-      cancelConfirmByFile(params).then(res => {
+      cancelConfirmData(params).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
           this.getList()
@@ -1013,7 +1013,7 @@ export default {
         piiDetection: this.resultForm.piiDetection,
         detectionProcess: this.resultForm.detectionProcess,
       }
-      updateResultByFile(params).then(res => {
+      updateFiledRule(params).then(res => {
         if (res.code == 200) {
           this.$message({
             message: res.msg,
@@ -1056,7 +1056,7 @@ export default {
         securityLevel: '',
         securityLevelIds: this.queryParams.securityLevel,
       }
-      selectFileResult(params).then(response => {
+      selectResultsById(params).then(response => {
         this.proxysList = response.data.rows;
         this.proxysList.forEach(ele => {
           if (ele.sampleData) {
@@ -1066,7 +1066,6 @@ export default {
         this.total = response.data.total;
         this.loading = false;
       });
-
     },
     /** 搜索按钮操作 */
     handleQuery() {

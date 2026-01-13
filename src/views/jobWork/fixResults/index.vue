@@ -356,7 +356,7 @@ export default {
                 piiDetection: this.resultForm.piiDetection,
                 detectionProcess: this.resultForm.detectionProcess,
             }
-            updateResultByFile(params).then(res => {
+            updateFiledRule(params).then(res => {
                 if (res.code == 200) {
                     this.row = res.data;
                     this.$message({
@@ -490,7 +490,7 @@ export default {
                 id: this.row?.id || '',
                 lastOrNext: lastOrNext || '0'
             };
-            selectLastOrNextByFileId(params).then(res => {
+            getProtectTableFieldById(params).then(res => {
                 this.handleNextResponse(res, lastOrNext);
             }).catch(() => {
                 this.loading = false;
