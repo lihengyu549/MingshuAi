@@ -232,9 +232,9 @@
                   <i :class="sortOrderIcon"></i>
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item command="create_time">
+                  <el-dropdown-item command="add_time">
                     <span>上传时间</span>
-                    <i :class="getSortIcon('create_time')"></i>
+                    <i :class="getSortIcon('add_time')"></i>
                   </el-dropdown-item>
                   <el-dropdown-item command="file_name">
                     <span>文件名称</span>
@@ -491,10 +491,10 @@ export default {
       currentNodeType: '0', // 当前节点的type值,默认为'0'
       currentFolderName: '', // 当前文件夹名称
       breadcrumbList: [], // 面包屑路径数组
-      currentSortField: 'create_time', // 当前排序字段
+      currentSortField: 'add_time', // 当前排序字段
       currentSortLabel: '上传时间', // 当前排序显示文本
       sortOrders: {
-        create_time: 'asc',
+        add_time: 'asc',
         file_name: 'asc',
         file_size: 'asc'
       },
@@ -773,7 +773,7 @@ export default {
       }
 
       const labelMap = {
-        'create_time': '上传时间',
+        'add_time': '上传时间',
         'file_name': '文件名称',
         'file_size': '文件大小'
       };
