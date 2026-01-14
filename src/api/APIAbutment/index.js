@@ -104,3 +104,11 @@ export function pushResult(data) {
   })
 }
 
+// 选择发布数据库接口
+export function selectPublishDataBase(data) {
+  return request({
+    url: '/system/result/push/selectPublishDataBase',
+    method: 'get',
+    params:data
+  })
+}

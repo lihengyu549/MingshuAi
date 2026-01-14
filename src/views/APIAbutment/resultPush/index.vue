@@ -8,7 +8,8 @@
       </el-form-item>
       <el-form-item label="推送类型" prop="pushType">
         <el-select clearable v-model="queryParams.pushType" @change="inputSearch" placeholder="请选择数据库类型">
-          <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel" :value="item.dictValue">
+          <el-option v-for="item in dict.type.sys_push_type" :key="item.dictValue" :label="item.dictLabel"
+            :value="item.dictValue">
           </el-option>
         </el-select>
       </el-form-item>
@@ -35,8 +36,7 @@
       <el-table-column type="selection" width="60" align="center" />
       <el-table-column label="任务名称" prop="taskName" width="150" show-overflow-tooltip>
         <template slot-scope="scope">
-          <svg-icon icon-class="jobs"
-              style="font-size: 16px; margin-right: 5px;" />
+          <svg-icon icon-class="jobs" style="font-size: 16px; margin-right: 5px;" />
           {{ scope.row.taskName }}
         </template>
       </el-table-column>
@@ -66,8 +66,8 @@
           <el-col :span="12">
             <el-form-item label="推送类型" prop="pushType">
               <el-select clearable v-model="dialogData.pushType" placeholder="请选择">
-                <el-option v-for="item in pushList" :key="item.dictValue" :label="item.dictLabel"
-                  :value="item.dictValue">
+                <el-option v-for="item in dict.type.sys_push_type" :key="item.value" :label="item.label"
+                  :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -75,8 +75,8 @@
           <el-col :span="12">
             <el-form-item label="对接厂商" prop="provider">
               <el-select clearable v-model="dialogData.provider" placeholder="请选择">
-                <el-option v-for="item in providerList" :key="item.dictValue" :label="item.dictLabel"
-                  :value="item.dictValue">
+                <el-option v-for="item in dict.type.sys_provider_type" :key="item.value" :label="item.label"
+                  :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -106,9 +106,15 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="分类分级标准" prop="standardId">
+        <el-form-item v-if="dialogData.pushType === '1'" label="分类分级标准" prop="standardId">
           <el-select clearable v-model="dialogData.standardId" placeholder="请选择">
             <el-option v-for="item in standardList" :key="item.id" :label="item.categoryName" :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="dialogData.pushType === '2'" label="数据源名称" prop="sourceName">
+          <el-select clearable v-model="dialogData.sourceName" placeholder="请选择">
+            <el-option v-for="item in sourceNameList" :key="item.id" :label="item.sourceName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -139,29 +145,21 @@
 import {
   getResultPushList,
   getStandardList,
+  getSourceNameList,
   addResultPush,
   updateResultPush,
   pushResult,
   deleteResultPush,
+  selectPublishDataBase
 } from "@/api/APIAbutment";
 import { treeListI } from "@/api/system/protectCategory";
 import Result from './components/result.vue'
-import {
-  listByDataType
-} from "@/api/dictData";
-import d from "highlight.js/lib/languages/d";
 export default {
+  dicts: ['sys_provider_type', 'sys_push_type'],
   name: "resultPush",
   components: { Result },
   data() {
     return {
-      pushList: [
-        { label: "关键字字典", value: "1" },
-        { label: "正则表达式", value: "2" }],
-
-      pushList: [
-        { label: "关键字字典", value: "1" },
-        { label: "正则表达式", value: "2" }],
       // 遮罩层
       loading: false,
       contentShow: false,
@@ -240,12 +238,15 @@ export default {
         standardId: [
           { required: true, message: "请选择分类分级标准", trigger: "blur" },
         ],
+        sourceName: [
+          { required: true, message: "请选择数据源名称", trigger: "blur" },
+        ],
         pushBodyList: [
           { required: true, message: "请选择推送内容", trigger: "blur" },
         ],
       },
-      providerList: [],
       standardList: [],
+      sourceNameList: [],
       categoryList: [],
     };
   },
@@ -254,13 +255,18 @@ export default {
   created() {
     // 分类分级标准列表
     this.getStandardListFn()
-    // 字典数据
-    this.getDictDataFn()
+    //数据源名称列表
+    this.getSourceNameListFn()
   },
   mounted() {
     this.getList();
   },
   methods: {
+    getSourceNameListFn() {
+      selectPublishDataBase().then(res => {
+        this.sourceNameList = res.data
+      })
+    },
     getProtectCategory() {
       this.treeLoading = true
       let data = {
@@ -272,14 +278,7 @@ export default {
         // this.categoryList = resp.data
       });
     },
-    getDictDataFn() {
-      listByDataType({ type: 'sys_provider_type' }).then(res => {
-        this.providerList = res.data;// 此字典只给新增子类的建议防护措施用
-      })
-      listByDataType({ type: 'sys_push_type' }).then(res => {
-        this.pushList = res.data;// 此字典只给新增子类的建议防护措施用
-      })
-    },
+
     getStandardListFn() {
       getStandardList().then(res => {
         this.standardList = res.data.map(item => {
