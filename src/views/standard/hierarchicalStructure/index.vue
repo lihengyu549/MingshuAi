@@ -79,7 +79,7 @@
         </div>
 
         <!-- 右键菜单 (已禁用) -->
-        <!-- 
+        <!--
         <div class="context-menu" v-show="show" :style="{ left: left + 'px', top: top + 'px' }">
             <div class="menu-item" @click="insertChild" v-if="type === 'node'">
                 插入子节点
@@ -107,7 +107,7 @@
 <script>
 import MindMap from "simple-mind-map";
 import "simple-mind-map/dist/simpleMindMap.esm.css";
-import { generateStandard, saveGenerateStandard, cancelGenerateStandard, terminationGenerateStandard, getGenerateStandard } from '@/api/system/proxys'
+import { generateStandard, saveGenerateStandard, cancelGenerateStandard, terminationGenerateStandard } from '@/api/system/proxys'
 export default {
     name: "FlowChart",
     data() {
@@ -139,28 +139,16 @@ export default {
             },
             // 存储最新收到的完整数据
             latestFullData: null,
-            // 表单数据
             form: {
-                enterpriseName: '',
-                structureLevel: '3'
-            },
-            rules: {
-                enterpriseName: [
-                    { required: true, message: '请输入企业名称', trigger: 'blur' }
-                ],
-                structureLevel: [
-                    { required: true, message: '请选择结构层级', trigger: 'change' }
-                ]
+                enterpriseName: ''
             },
             // 状态变量
-            canGenerate: false,
             canSave: false,
             canCancel: false,
             websocket: null,
             isGenerating: false,
             isTerminating: false,
             isSending: false,
-            generateIcon: '',
             // 控制节点生成的状态
             isGeneratingNodes: false,
             nodeGenerationDelay: 500,
@@ -228,7 +216,7 @@ export default {
         */
         this.mindMap.on("node_dblclick", node => {
             if (node && node.renderer && node.renderer.textEdit) {
-                node.renderer.textEdit.hideEditTextBox(); // 隐藏文本编辑框，禁用所有节点的编辑功能
+                node.renderer.textEdit.hideEditTextBox(); // 隐藏文本编辑框,禁用所有节点的编辑功能
             }
             return;
         })
@@ -245,10 +233,10 @@ export default {
                 // 仅当生成结束时才处理用户操作
                 if (!this.isGenerating && !this.isGeneratingNodes) {
                     // 检查是否有创建、修改或删除操作
-                    const userOperations = list.filter(item => 
+                    const userOperations = list.filter(item =>
                         item.action === 'create' || item.action === 'update' || item.action === 'delete'
                     );
-                    
+
                     if (userOperations.length > 0) {
                         console.log('检测到生成结束后的用户节点操作:', userOperations);
                         // 在这里添加您需要的处理逻辑
@@ -321,11 +309,6 @@ export default {
                 console.error('处理node_tree_render_end事件时出错:', error);
             }
         });
-
-        // 监听表单变化，当表单填写完整时允许生成
-        this.$watch('form', (newVal) => {
-            this.canGenerate = !!newVal.enterpriseName && !!newVal.structureLevel;
-        }, { deep: true });
     },
     beforeDestroy() {
         // 组件销毁前关闭WebSocket连接
@@ -466,10 +449,21 @@ export default {
 
                 // 开始逐字显示
                 this.typeWriter(nextItem.nodeData, nextItem.fullText);
-            } else if (this.typingQueue.length === 0) {
+            } else if (this.typingQueue.length === 0 && !this.currentTypingNode) {
                 this.typingComplete = true;
 
-                if (this.backendCompleted && !this.currentTypingNode) {
+                // 只有在以下所有条件都满足时才认为真正完成:
+                // 1. 后端已返回完成标识
+                // 2. 打字队列为空
+                // 3. 没有正在打字的节点
+                // 4. 没有正在生成节点
+                // 5. 数据处理队列为空
+                if (this.backendCompleted &&
+                    this.typingQueue.length === 0 &&
+                    !this.currentTypingNode &&
+                    !this.isGeneratingNodes &&
+                    this.dataProcessingQueue.length === 0) {
+                    console.log('[v0] 所有条件满足，触发完成回调');
                     this.onAllTypingComplete();
                     return;
                 }
@@ -674,7 +668,6 @@ export default {
             } catch (error) {
                 console.error('处理节点生成时出错:', error);
             } finally {
-                // 确保所有打字动画完成后再处理下一批数据
                 const processNextBatch = async () => {
                     // 先等待所有打字动画完成
                     await this.waitForAllTypingComplete();
@@ -689,7 +682,10 @@ export default {
                             // 对队列中的所有数据都使用processFullData处理，保持逐字动画效果
                             this.processFullData(nextData);
                         }, 100);
-                    } else if (this.backendCompleted && this.typingQueue.length === 0 && !this.currentTypingNode) {
+                    } else if (this.backendCompleted &&
+                        this.typingQueue.length === 0 &&
+                        !this.currentTypingNode) {
+                        console.log('[v0] processFullData 完成，检查是否触发完成回调');
                         this.onAllTypingComplete();
                     }
                 };
@@ -824,61 +820,6 @@ export default {
             node.children = uniqueChildren;
         },
 
-
-        loadNodesByBranch(originalData, currentData, branchIndex) {
-            if (!originalData.children || !currentData.children) return;
-            if (branchIndex < originalData.children.length) {
-                const targetChild = originalData.children[branchIndex];
-                const currentChild = currentData.children[branchIndex] || { data: { text: '新节点' }, children: [] };
-                currentChild.data.uid = targetChild.data.uid; // 使用后端返回的uid
-                this.loadBranchRecursively(originalData, currentChild, targetChild, 1);
-            }
-        },
-
-        loadBranchRecursively(originalData, currentData, branchNode, level, onComplete) {
-            // 确保必要的参数存在
-            if (!branchNode || !currentData) return;
-
-            // 确保数据对象存在
-            currentData.data = currentData.data || {};
-            if (branchNode.data) {
-                currentData.data = { ...currentData.data, ...branchNode.data };
-                // 仅当branchNode.data.uid存在时才设置
-                if (branchNode.data.uid) {
-                    currentData.data.uid = branchNode.data.uid;
-                }
-            }
-
-            if (branchNode.children && branchNode.children.length > 0) {
-                currentData.children = currentData.children || [];
-                branchNode.children.forEach((child, index) => {
-                    // 确保子节点对象存在
-                    currentData.children[index] = currentData.children[index] || { data: { text: '子节点' }, children: [] };
-                    this.loadBranchRecursively(originalData, currentData.children[index], child, level + 1, onComplete);
-                });
-            }
-
-            if (onComplete && typeof onComplete === 'function') {
-                onComplete();
-            }
-        },
-
-        addBranchNode(targetData, nodeToAdd) {
-            if (targetData.children) {
-                targetData.children.push(nodeToAdd);
-            } else {
-                targetData.children = [nodeToAdd];
-            }
-        },
-
-        moveNodeToCenter(nodeUid) {
-            if (!nodeUid) return;
-            const node = this.mindMap.renderer.findNodeByUid(nodeUid);
-            if (node && this.mindMap.renderer.moveNodeToCenter) {
-                this.mindMap.renderer.moveNodeToCenter(node);
-            }
-        },
-
         hideMenu() {
             this.show = false;
         },
@@ -891,15 +832,15 @@ export default {
                 this.hideMenu();
                 return;
             }
-            
+
             // 复制当前节点的所有属性，除了名字
             if (this.currentNode && this.currentNode.nodeData.data) {
                 // 创建新节点配置，复制原始节点的数据
                 const newNodeConfig = JSON.parse(JSON.stringify(this.currentNode.nodeData.data));
                 // 清空名字，使用默认名称
-                
+
                 // 使用自定义配置插入子节点
-                this.mindMap.execCommand("INSERT_CHILD_NODE", false , [], { 
+                this.mindMap.execCommand("INSERT_CHILD_NODE", false , [], {
                     type: newNodeConfig.type,
                     text: '新节点',
                 });
@@ -921,15 +862,15 @@ export default {
                 this.hideMenu();
                 return;
             }
-            
+
             // 复制当前节点的所有属性，除了名字
             if (this.currentNode && this.currentNode.nodeData.data) {
                 // 创建新节点配置，复制原始节点的数据
                 const newNodeConfig = JSON.parse(JSON.stringify(this.currentNode.nodeData.data));
                 // 清空名字，使用默认名称
-                
+
                 // 使用自定义配置插入节点
-                this.mindMap.execCommand("INSERT_NODE", false , [], { 
+                this.mindMap.execCommand("INSERT_NODE", false , [], {
                     type: newNodeConfig.type,
                     text: '新节点',
                 });
@@ -951,15 +892,15 @@ export default {
                 this.hideMenu();
                 return;
             }
-            
+
             // 复制当前节点的所有属性，除了名字
             if (this.currentNode && this.currentNode.nodeData.data) {
                 // 创建新节点配置，复制原始节点的数据
                 const newNodeConfig = JSON.parse(JSON.stringify(this.currentNode.nodeData.data));
                 // 清空名字，使用默认名称
-                
+
                 // 使用自定义配置插入父节点
-                this.mindMap.execCommand("INSERT_PARENT_NODE", false , [], { 
+                this.mindMap.execCommand("INSERT_PARENT_NODE", false , [], {
                     type: newNodeConfig.type,
                     text: '新节点',
                 });
@@ -1028,7 +969,7 @@ export default {
                 // 发送HTTP请求验证企业名称
                 const response = await generateStandard({
                     enterpriseName: this.form.enterpriseName,
-                    structureLevel: this.form.structureLevel
+                    structureLevel: '3' // 硬编码默认值，移除form.structureLevel
                 });
 
                 if (response.code === 200) {
@@ -1125,11 +1066,6 @@ export default {
             }
         },
 
-        // 生成按钮事件（保留用于兼容）
-        async handleGenerate() {
-            this.handleSend();
-        },
-
         // 停止按钮事件
         async handleTermination() {
             if (!this.generate || !this.generate.id) {
@@ -1163,13 +1099,7 @@ export default {
         cleanupGeneration(isSuccess = false) {
             this.isGenerating = false;
             this.isGeneratingNodes = false; // 停止节点生成
-            if (isSuccess) {
-                this.generateIcon = 'el-icon-success';
-                setTimeout(() => {
-                    this.generateIcon = '';
-                }, 3000);
-            } else {
-                this.generateIcon = '';
+            if (!isSuccess) {
                 if (this.websocket) {
                     this.isExpectedClose = true; // 标记为预期关闭
                     this.websocket.close();
@@ -1208,8 +1138,8 @@ export default {
             const protocols = token ? [`${token}`] : [];
             const currentUrl = new URL(window.location.href);
             const hostName = currentUrl.hostname;
-            // const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
-            const wsUrl = `wss://${hostName}:443/prod-api/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
+            const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
+            // const wsUrl = `wss://${hostName}:443/prod-api/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
 
             this.websocket = new WebSocket(
                 wsUrl,
@@ -1237,6 +1167,7 @@ export default {
                             this.addChatMessage('ai', data.text);
                         }
 
+                        // 设置后端完成标志
                         this.backendCompleted = true;
 
                         // 检查当前打字队列状态
@@ -1274,7 +1205,6 @@ export default {
                     return;
                 }
 
-                // 如果后端已标记完成，继续等待打字机效果完成
                 if (this.backendCompleted) {
                     console.log('后端已完成，继续执行打字机效果');
                     // 不改变isGenerating状态，让打字机继续执行
@@ -1327,47 +1257,45 @@ export default {
 
         // 保存按钮事件
         handleSave() {
-            this.$refs.form.validate(async (valid) => {
-                if (valid) {
-                    try {
-                        // 获取思维导图的最新完整数据，确保包含手动添加的节点
-                        let saveData = this.latestFullData;
+            this.saveData();
+        },
 
-                        // 尝试从mindMap获取最新数据，优先使用getFullData方法
-                        if (this.mindMap && typeof this.mindMap.getFullData === 'function') {
-                            saveData = this.mindMap.getFullData();
-                            console.log('从mindMap获取的完整数据:', saveData);
-                        } else if (this.mindMap && typeof this.mindMap.getData === 'function') {
-                            // 备选方案，使用getData方法
-                            saveData = this.mindMap.getData();
-                            console.log('从mindMap获取的数据:', saveData);
-                        } else if (!saveData) {
-                            // 如果没有最新数据，使用当前显示的fullData
-                            saveData = this.fullData;
-                            console.log('使用当前显示的fullData:', saveData);
-                        }
+        // 保存数据方法
+        async saveData() {
+            try {
+                // 获取思维导图的最新完整数据，确保包含手动添加的节点
+                let saveData = this.latestFullData;
 
-                        console.log('准备保存的数据:', saveData);
-                        const response = await saveGenerateStandard({ id: this.generate.id, treeStructureData: saveData });
-
-                        if (response.code === 200) {
-                            this.$message.success('保存成功');
-                            // 更新latestFullData为保存的数据，确保状态一致
-                            this.latestFullData = saveData;
-                            // 保存成功后跳转到管理页面
-                            this.$router.push({ path: '/standard/jobMonitoring', query: { id: this.generate.id } });
-                        } else {
-                            this.$message.error('保存失败: ' + (response.message || '未知错误'));
-                        }
-                    } catch (error) {
-                        console.error('保存请求出错:', error);
-                        this.$message.error('保存失败，请重试');
-                    }
-                } else {
-                    console.log('表单验证失败');
-                    return false;
+                // 尝试从mindMap获取最新数据，优先使用getFullData方法
+                if (this.mindMap && typeof this.mindMap.getFullData === 'function') {
+                    saveData = this.mindMap.getFullData();
+                    console.log('从mindMap获取的完整数据:', saveData);
+                } else if (this.mindMap && typeof this.mindMap.getData === 'function') {
+                    // 备选方案，使用getData方法
+                    saveData = this.mindMap.getData();
+                    console.log('从mindMap获取的数据:', saveData);
+                } else if (!saveData) {
+                    // 如果没有最新数据，使用当前显示的fullData
+                    saveData = this.fullData;
+                    console.log('使用当前显示的fullData:', saveData);
                 }
-            });
+
+                console.log('准备保存的数据:', saveData);
+                const response = await saveGenerateStandard({ id: this.generate.id, treeStructureData: saveData });
+
+                if (response.code === 200) {
+                    this.$message.success('保存成功');
+                    // 更新latestFullData为保存的数据，确保状态一致
+                    this.latestFullData = saveData;
+                    // 保存成功后跳转到管理页面
+                    this.$router.push({ path: '/standard/jobMonitoring', query: { id: this.generate.id } });
+                } else {
+                    this.$message.error('保存失败: ' + (response.message || '未知错误'));
+                }
+            } catch (error) {
+                console.error('保存请求出错:', error);
+                this.$message.error('保存失败，请重试');
+            }
         },
 
         async handleCancel() {
@@ -1393,7 +1321,6 @@ export default {
             setTimeout(() => {
                 this.showInputSection = true;
                 this.chatMessages = [];
-                this.canGenerate = false;
                 this.canSave = false;
                 this.canCancel = false;
                 this.generationCompleted = false;
