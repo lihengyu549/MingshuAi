@@ -31,6 +31,9 @@
 import { getToken } from "@/utils/auth";
 import { licenseVerifyI } from "@/api/system/systemInformation"
 import { getServerInfosI, licenseSetI } from "@/api/system/license"
+import store from '@/store'
+import router from '@/router'
+
 export default {
   name: '',
   //import引入的组件需要注入到对象中才能使用
@@ -84,10 +87,12 @@ export default {
         licenseVerifyI().then((res => {
           if (res.data.verify == true) {
             this.$message.success('文件上传成功。')
-            this.$router.push({ path: '/index' });
+            store.dispatch('GenerateRoutes').then(accessRoutes => {
+              router.addRoutes(accessRoutes)
+              this.$router.push({ path: '/index' })
+            })
           } else {
             this.$message.error('文件已过期,请重新上传')
-            // location.reload();
           }
         }))
       } else {
