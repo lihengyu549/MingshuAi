@@ -104,3 +104,20 @@ export function pushResult(data) {
   })
 }
 
+// 选择发布数据库接口
+export function selectPublishDataBase(data) {
+  return request({
+    url: '/system/result/push/selectPublishDataBase',
+    method: 'get',
+    params:data
+  })
+}
+
+// 结果推送-数据源
+export function selectFieldIdByDatabaseId(data) {
+  return request({
+    url: '/system/result/push/selectFieldIdByDatabaseId',
+    method: 'get',
+    params:data
+  })
+}
