@@ -112,3 +112,12 @@ export function selectPublishDataBase(data) {
     params:data
   })
 }
+
+// 结果推送-数据源
+export function selectFieldIdByDatabaseId(data) {
+  return request({
+    url: '/system/result/push/selectFieldIdByDatabaseId',
+    method: 'get',
+    params:data
+  })
+}

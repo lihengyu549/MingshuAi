@@ -8,8 +8,7 @@
       </el-form-item>
       <el-form-item label="推送类型" prop="pushType">
         <el-select clearable v-model="queryParams.pushType" @change="inputSearch" placeholder="请选择数据库类型">
-          <el-option v-for="item in dict.type.sys_push_type" :key="item.dictValue" :label="item.dictLabel"
-            :value="item.dictValue">
+          <el-option v-for="item in dict.type.sys_push_type" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
@@ -106,14 +105,14 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item v-if="dialogData.pushType === '1'" label="分类分级标准" prop="standardId">
+        <el-form-item v-if="dialogData.pushType == '1'" label="分类分级标准" prop="standardId">
           <el-select clearable v-model="dialogData.standardId" placeholder="请选择">
             <el-option v-for="item in standardList" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="dialogData.pushType === '2'" label="数据源名称" prop="sourceName">
-          <el-select clearable v-model="dialogData.sourceName" placeholder="请选择">
+        <el-form-item v-if="dialogData.pushType == '2'" label="数据源名称" prop="sourceId">
+          <el-select clearable v-model="dialogData.sourceId" placeholder="请选择">
             <el-option v-for="item in sourceNameList" :key="item.id" :label="item.sourceName" :value="item.id">
             </el-option>
           </el-select>
@@ -131,8 +130,13 @@
         <el-button @click="importcancel">取 消</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="推送内容" :visible.sync="contentShow" width="850px">
-      <Result v-if="contentShow" ref="ResultSon" :treeData="categoryList" :checkList="dialogData.pushBodyList" />
+    <el-dialog title="推送内容" :visible.sync="contentShow" width="950px">
+      <template v-if="dialogData.pushType == '1'">
+        <Result v-if="contentShow" ref="ResultSon" :treeData="categoryList" :checkList="dialogData.pushBodyList" />
+      </template>
+      <template v-else>
+        <Result2 v-if="contentShow" ref="Result2Son" :id="dialogData.id" :databaseId="dialogData.sourceId" />
+      </template>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" plain @click="pushBodySumbit">确 定</el-button>
         <el-button @click="pushBodycancel">取 消</el-button>
@@ -145,19 +149,19 @@
 import {
   getResultPushList,
   getStandardList,
-  getSourceNameList,
   addResultPush,
   updateResultPush,
   pushResult,
   deleteResultPush,
-  selectPublishDataBase
+  selectPublishDataBase,
 } from "@/api/APIAbutment";
 import { treeListI } from "@/api/system/protectCategory";
 import Result from './components/result.vue'
+import Result2 from './components/result2.vue'
 export default {
   dicts: ['sys_provider_type', 'sys_push_type'],
   name: "resultPush",
-  components: { Result },
+  components: { Result, Result2 },
   data() {
     return {
       // 遮罩层
@@ -202,6 +206,7 @@ export default {
         userName: '',//账号
         passWord: '',//密码
         standardId: '',//行业标准ID
+        sourceId: '',//数据源ID
         pushBodyList: [],//推送内容
         pushVersion: '',
       },
@@ -238,7 +243,7 @@ export default {
         standardId: [
           { required: true, message: "请选择分类分级标准", trigger: "blur" },
         ],
-        sourceName: [
+        sourceId: [
           { required: true, message: "请选择数据源名称", trigger: "blur" },
         ],
         pushBodyList: [
@@ -264,7 +269,10 @@ export default {
   methods: {
     getSourceNameListFn() {
       selectPublishDataBase().then(res => {
-        this.sourceNameList = res.data
+        this.sourceNameList = res.data.map(item => ({
+          ...item,
+          id: String(item.id)
+        }))
       })
     },
     getProtectCategory() {
@@ -331,9 +339,15 @@ export default {
       this.title = "新增";
     },
     pushBodySumbit() {
-      this.dialogData.pushBodyList = this.$refs.ResultSon.lastChildList.map(item => {
-        return item.id
-      })
+      if (this.dialogData.pushType == '1') {
+        this.dialogData.pushBodyList = this.$refs.ResultSon.lastChildList.map(item => {
+          return item.id
+        })
+      } else {
+        this.dialogData.pushBodyList = this.$refs.Result2Son.lastChildList.map(item => {
+          return item.id
+        })
+      }
       this.contentShow = false
     },
     /** 提交按钮 */
@@ -345,6 +359,15 @@ export default {
             pushBody: this.dialogData.pushBodyList.join()
           }
           delete data.pushBodyList
+
+          if (this.dialogData.pushType == '2') {
+            const selectedSource = this.sourceNameList.find(item => item.id == this.dialogData.sourceId)
+            if (selectedSource) {
+              data.standardId = this.dialogData.sourceId
+              data.sourceName = selectedSource.sourceName
+            }
+          }
+
           if (this.dialogData.id) {
             updateResultPush(data).then(response => {
               this.$modal.msgSuccess("修改成功");
@@ -365,6 +388,10 @@ export default {
       this.editIsFlag = false
       this.dialogDataShow = true
       this.dialogData = JSON.parse(JSON.stringify(row))
+      if (this.dialogData.pushType == '2') {
+        this.dialogData.sourceId = String(row.standardId)
+        this.dialogData.sourceName = row.sourceName
+      }
       this.dialogData.pushBodyList = row.pushBody.split(',')
       this.title = '编辑'
     },
@@ -403,7 +430,8 @@ export default {
         userName: '',//账号
         passWord: '',//密码
         standardId: '',//行业标准ID
-        pushBodyList: '',//推送内容
+        sourceId: '',//数据源ID
+        pushBodyList: [],//推送内容
         pushVersion: '',
       }
     },
@@ -424,13 +452,21 @@ export default {
       });
     },
     async pushBodyClickFn() {
-      if (!this.dialogData.standardId) {
-        this.$message({ message: '请选择分类分级标准后点击', type: 'warning' })
-        return
+      if (this.dialogData.pushType == '1') {
+        if (!this.dialogData.standardId) {
+          this.$message({ message: '请选择分类分级标准后点击  ', type: 'warning' })
+          return
+        }
+        await this.getProtectCategory()
+        this.contentShow = true
+      } else {
+        if (!this.dialogData.sourceId) {
+          this.$message({ message: '请选择数据源名称后点击', type: 'warning' })
+          return
+        }
+        this.contentShow = true
       }
-      await this.getProtectCategory()
-      this.contentShow = true
-    }
+    },
   }
 };
 </script>
