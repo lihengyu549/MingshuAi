@@ -320,7 +320,7 @@ export default {
         // 优化：页面不可见时不处理数据，避免UI卡顿
         async processFullData(newData) {
             if (!this.isPageVisible) {
-                console.log('[v0] 页面不可见，暂停处理数据，保留最新数据');
+                // console.log('[v0] 页面不可见，暂停处理数据，保留最新数据');
                 // 如果页面不可见，我们只保留最新的数据，而不是实时更新
                 // 后续页面可见时，可以选择直接更新最新数据，或按原逻辑处理
                 // 当前策略是，页面不可见时，数据不更新，避免卡顿
@@ -382,7 +382,7 @@ export default {
                     } else if (this.backendCompleted &&
                         this.typingQueue.length === 0 &&
                         !this.currentTypingNode) {
-                        console.log('[v0] processFullData 完成，检查是否触发完成回调');
+                        // console.log('[v0] processFullData 完成，检查是否触发完成回调');
                         this.onAllTypingComplete();
                     }
                 };
@@ -418,7 +418,7 @@ export default {
                     this.typeWriter(nextItem.nodeData, nextItem.fullText);
                 } else {
                     // 页面不可见，直接显示完整文本，不进行打字动画
-                    console.log('[v0] 页面不可见，直接显示完整文本');
+                    // console.log('[v0] 页面不可见，直接显示完整文本');
                     nextItem.nodeData.text = nextItem.fullText;
                     this.updateMindMapWithNewData(this.fullData);
                     this.currentTypingNode = null; // 立即重置，以便下一个节点能尽快处理
@@ -438,7 +438,7 @@ export default {
                     !this.currentTypingNode &&
                     !this.isGeneratingNodes &&
                     this.dataProcessingQueue.length === 0) {
-                    console.log('[v0] 所有条件满足，触发完成回调');
+                    // console.log('[v0] 所有条件满足，触发完成回调');
                     this.onAllTypingComplete();
                     return;
                 }
@@ -454,25 +454,25 @@ export default {
         },
 
         onAllTypingComplete() {
-            console.log('[v0] 所有打字动画完成回调');
+            // console.log('[v0] 所有打字动画完成回调');
 
             // 检查所有队列是否真的为空
             if (this.typingQueue.length > 0 ||
                 this.dataProcessingQueue.length > 0 ||
                 this.currentTypingNode !== null ||
                 this.isGeneratingNodes) {
-                console.log('[v0] 还有任务未完成，跳过完成处理', {
-                    typingQueue: this.typingQueue.length,
-                    dataProcessingQueue: this.dataProcessingQueue.length,
-                    currentTypingNode: this.currentTypingNode,
-                    isGeneratingNodes: this.isGeneratingNodes
-                });
+                // console.log('[v0] 还有任务未完成，跳过完成处理', {
+                //     typingQueue: this.typingQueue.length,
+                //     dataProcessingQueue: this.dataProcessingQueue.length,
+                //     currentTypingNode: this.currentTypingNode,
+                //     isGeneratingNodes: this.isGeneratingNodes
+                // });
                 return;
             }
 
             // 只有在后端真正完成时才显示完成消息
             if (this.backendCompleted && !this.generationCompleted) {
-                console.log('[v0] 后端已完成且所有队列为空，触发完成');
+                // console.log('[v0] 后端已完成且所有队列为空，触发完成');
                 this.triggerCompletion();
             }
         },
@@ -704,7 +704,7 @@ export default {
         // 直接更新完整数据，不触发打字动画
         updateFullDataWithoutAnimation(newData) {
             try {
-                console.log('[v0] 开始更新完整数据（无动画）');
+                // console.log('[v0] 开始更新完整数据（无动画）');
 
                 // 确保新数据存在
                 if (!newData) {
@@ -726,7 +726,7 @@ export default {
 
                 // 更新思维导图
                 this.updateMindMapWithNewData(this.fullData);
-                console.log('[v0] 完整数据更新完成');
+                // console.log('[v0] 完整数据更新完成');
 
                 // 重置相关状态，防止干扰
                 this.isGeneratingNodes = false;
@@ -737,7 +737,7 @@ export default {
                 this.dataProcessingQueue = [];
 
                 if (this.backendCompleted) {
-                    console.log('[v0] 检测到后端已完成且数据已直接更新，触发完成逻辑');
+                    // console.log('[v0] 检测到后端已完成且数据已直接更新，触发完成逻辑');
                     this.triggerCompletion();
                 }
 
@@ -1153,8 +1153,8 @@ export default {
             const protocols = token ? [`${token}`] : [];
             const currentUrl = new URL(window.location.href);
             const hostName = currentUrl.hostname;
-            const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
-            // const wsUrl = `wss://${hostName}:443/prod-api/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
+            // const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
+            const wsUrl = `wss://${hostName}:443/prod-api/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
 
             this.websocket = new WebSocket(
                 wsUrl,
@@ -1170,7 +1170,7 @@ export default {
 
             this.websocket.onmessage = (event) => {
                 try {
-                    console.log('[v0] 收到WebSocket数据');
+                    // console.log('[v0] 收到WebSocket数据');
                     const data = JSON.parse(event.data);
 
                     // 检查是否是完成信号
@@ -1183,11 +1183,11 @@ export default {
                     if (data) {
                         // 如果页面不可见，直接更新数据，不使用打字机效果
                         if (!this.isPageVisible) {
-                            console.log('[v0] 页面不可见，直接更新数据不使用打字机效果');
+                            // console.log('[v0] 页面不可见，直接更新数据不使用打字机效果');
                             this.updateFullDataWithoutAnimation(data);
                         } else {
                             // 页面可见，使用正常的打字机效果
-                            console.log('[v0] 页面可见，使用打字机效果');
+                            // console.log('[v0] 页面可见，使用打字机效果');
                             this.processFullData(data);
                         }
                     } else {
@@ -1260,12 +1260,12 @@ export default {
         },
 
         handleBackendCompleted(data) {
-            console.log('[v0] 收到后端完成信号');
+            // console.log('[v0] 收到后端完成信号');
             this.backendCompleted = true;
 
             // 处理最后一批数据（如果有）
             if (data && data.data) {
-                console.log('[v0] 处理完成信号中的最后数据');
+                // console.log('[v0] 处理完成信号中的最后数据');
                 // 根据页面可见性决定如何处理
                 if (!this.isPageVisible) {
                     this.updateFullDataWithoutAnimation(data);
@@ -1280,7 +1280,7 @@ export default {
                     this.dataProcessingQueue.length === 0 &&
                     !this.currentTypingNode &&
                     !this.isGeneratingNodes) {
-                    console.log('[v0] 无额外数据且无待处理任务，立即完成');
+                    // console.log('[v0] 无额外数据且无待处理任务，立即完成');
                     this.triggerCompletion();
                 }
             }
@@ -1391,11 +1391,11 @@ export default {
 
         triggerCompletion() {
             if (this.generationCompleted) {
-                console.log('[v0] 已经完成，跳过重复触发');
+                // console.log('[v0] 已经完成，跳过重复触发');
                 return;
             }
 
-            console.log('[v0] 触发生成完成');
+            // console.log('[v0] 触发生成完成');
             this.generationCompleted = true;
             this.isGenerating = false;
             this.canSave = true;
@@ -1415,7 +1415,7 @@ export default {
 
         handleVisibilityChange() {
             this.isPageVisible = !document.hidden;
-            console.log('[v0] 页面可见性变化:', this.isPageVisible ? '可见' : '不可见');
+            // console.log('[v0] 页面可见性变化:', this.isPageVisible ? '可见' : '不可见');
 
             if (this.isPageVisible && this.backendCompleted) {
                 // 确保所有队列都已清空
@@ -1424,7 +1424,7 @@ export default {
                     !this.currentTypingNode &&
                     !this.isGeneratingNodes &&
                     !this.generationCompleted) {
-                    console.log('[v0] 页面重新可见，检测到应该完成，触发完成逻辑');
+                    // console.log('[v0] 页面重新可见，检测到应该完成，触发完成逻辑');
                     this.triggerCompletion();
                 }
             }
