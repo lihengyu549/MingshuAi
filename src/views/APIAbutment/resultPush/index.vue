@@ -112,7 +112,7 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="dialogData.pushType == '2'" label="数据源名称" prop="sourceId">
-          <el-select clearable v-model="dialogData.sourceId" placeholder="请选择">
+          <el-select clearable v-model="dialogData.sourceId" placeholder="请选择" @change="handleSourceIdChange">
             <el-option v-for="item in sourceNameList" :key="item.id" :label="item.sourceName" :value="item.id">
             </el-option>
           </el-select>
@@ -388,12 +388,19 @@ export default {
       this.editIsFlag = false
       this.dialogDataShow = true
       this.dialogData = JSON.parse(JSON.stringify(row))
-      if (this.dialogData.pushType == '2') {
-        this.dialogData.sourceId = String(row.standardId)
-        this.dialogData.sourceName = row.sourceName
+      if (String(this.dialogData.pushType) == '2') {
+        this.$set(this.dialogData, 'sourceId', String(row.standardId))
+        this.$set(this.dialogData, 'sourceName', row.sourceName)
       }
-      this.dialogData.pushBodyList = row.pushBody.split(',')
+      this.dialogData.pushBodyList = row.pushBody ? row.pushBody.split(',') : []
       this.title = '编辑'
+    },
+    handleSourceIdChange(value) {
+      this.$set(this.dialogData, 'sourceId', String(value))
+      const selected = this.sourceNameList.find(item => item.id === String(value))
+      if (selected) {
+        this.$set(this.dialogData, 'sourceName', selected.sourceName)
+      }
     },
     deleteFn() {
       let dataS = this.$refs.tableRef.selection
