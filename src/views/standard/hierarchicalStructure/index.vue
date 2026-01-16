@@ -77,30 +77,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- 右键菜单 (已禁用) -->
-        <!--
-        <div class="context-menu" v-show="show" :style="{ left: left + 'px', top: top + 'px' }">
-            <div class="menu-item" @click="insertChild" v-if="type === 'node'">
-                插入子节点
-            </div>
-            <div class="menu-item" @click="insertSibling" v-if="type === 'node' && !isRoot">
-                插入同级节点
-            </div>
-            <div class="menu-item" @click="insertParent" v-if="type === 'node' && !isRoot">
-                插入父节点
-            </div>
-            <div class="menu-item" @click="deleteNode" v-if="type === 'node' && !isRoot">
-                删除节点
-            </div>
-            <div class="menu-item" @click="moveUp" v-if="type === 'node' && !isRoot && !isFirst">
-                上移节点
-            </div>
-            <div class="menu-item" @click="moveDown" v-if="type === 'node' && !isRoot && !isLast">
-                下移节点
-            </div>
-        </div>
-        -->
     </div>
 </template>
 
@@ -171,6 +147,9 @@ export default {
             processedNodeUids: new Set(),
             backendCompleted: false,
             isExpectedClose: false,
+            isPageVisible: true,
+            pendingWebSocketData: [], // 存储页面不可见时接收的数据
+            pageVisibilityHandler: null,
         };
     },
     mounted() {
@@ -309,6 +288,7 @@ export default {
                 console.error('处理node_tree_render_end事件时出错:', error);
             }
         });
+        this.initPageVisibilityListener();
     },
     beforeDestroy() {
         // 组件销毁前关闭WebSocket连接
@@ -320,8 +300,56 @@ export default {
             clearInterval(this.batchUpdateTimer);
             this.batchUpdateTimer = null;
         }
+        this.removePageVisibilityListener();
     },
     methods: {
+        initPageVisibilityListener() {
+            this.pageVisibilityHandler = () => {
+                if (document.hidden) {
+                    // 页面不可见
+                    console.log('[v0] 页面不可见，暂停处理数据');
+                    this.isPageVisible = false;
+                } else {
+                    // 页面可见
+                    console.log('[v0] 页面可见，恢复处理数据');
+                    this.isPageVisible = true;
+                    // 恢复处理积压的数据
+                    this.processPendingData();
+                }
+            };
+            document.addEventListener('visibilitychange', this.pageVisibilityHandler);
+        },
+
+        removePageVisibilityListener() {
+            if (this.pageVisibilityHandler) {
+                document.removeEventListener('visibilitychange', this.pageVisibilityHandler);
+                this.pageVisibilityHandler = null;
+            }
+        },
+
+        processPendingData() {
+            if (!this.isPageVisible || this.pendingWebSocketData.length === 0) {
+                return;
+            }
+
+            console.log(`[v0] 开始处理积压的${this.pendingWebSocketData.length}条数据`);
+
+            // 只处理最新的一条数据（因为每次数据都包含之前的所有内容）
+            if (this.pendingWebSocketData.length > 0) {
+                const latestData = this.pendingWebSocketData[this.pendingWebSocketData.length - 1];
+                this.pendingWebSocketData = [];
+
+                // 处理最新数据
+                if (latestData.isCompleted) {
+                    // 如果是完成信号，直接处理
+                    this.handleBackendCompleted(latestData);
+                } else {
+                    // 否则加入处理队列
+                    this.processFullData(latestData);
+                }
+            }
+        },
+
         // 初始化批量更新处理器
         initBatchUpdateProcessor() {
             // 清除已存在的定时器
@@ -413,9 +441,15 @@ export default {
 
             // 如果还没显示完，继续显示下一个字符
             if (currentLength + 1 < fullText.length) {
-                setTimeout(() => {
-                    this.typeWriter(nodeData, fullText, currentLength + 1);
-                }, this.typingSpeed);
+                let lastTime = performance.now();
+                const animate = (currentTime) => {
+                    if (currentTime - lastTime >= this.typingSpeed) {
+                        this.typeWriter(nodeData, fullText, currentLength + 1);
+                    } else {
+                        requestAnimationFrame(animate);
+                    }
+                };
+                requestAnimationFrame(animate);
             } else {
                 // 显示完成，处理下一个节点
                 this.currentTypingNode = null;
@@ -462,7 +496,8 @@ export default {
                     this.typingQueue.length === 0 &&
                     !this.currentTypingNode &&
                     !this.isGeneratingNodes &&
-                    this.dataProcessingQueue.length === 0) {
+                    this.dataProcessingQueue.length === 0 &&
+                    this.pendingWebSocketData.length === 0) { // 新增：检查待处理数据
                     console.log('[v0] 所有条件满足，触发完成回调');
                     this.onAllTypingComplete();
                     return;
@@ -479,7 +514,20 @@ export default {
         },
 
         onAllTypingComplete() {
-            console.log('所有打字动画已完成');
+            console.log('[v0] 所有打字动画已完成，准备显示完成状态');
+
+            // 再次确认所有队列都已清空
+            if (this.typingQueue.length > 0 ||
+                this.currentTypingNode ||
+                this.isGeneratingNodes ||
+                this.dataProcessingQueue.length > 0 ||
+                this.pendingWebSocketData.length > 0) {
+                console.log('[v0] 检测到仍有未完成任务，延迟完成');
+                setTimeout(() => {
+                    this.onAllTypingComplete();
+                }, 500);
+                return;
+            }
 
             // 关闭WebSocket连接
             if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
@@ -488,17 +536,18 @@ export default {
                 this.websocket = null;
             }
 
-            // 先显示完成消息
-            this.$message.success('生成完成');
+            // 先添加完成消息到聊天
+            this.addChatMessage('ai', '分类分级标准生成完成');
 
-            // 延迟显示按钮，确保动画完整展示完毕后再出现按钮
+            // 延迟显示成功提示和按钮
             setTimeout(() => {
+                this.$message.success('生成完成');
                 this.generationCompleted = true;
                 this.isGenerating = false;
                 this.isGeneratingNodes = false;
                 this.canSave = true;
                 this.canCancel = true;
-            }, 500);
+            }, 300);
         },
 
         // 递归比较并添加新节点 - 严格按照层级顺序逐个生成
@@ -684,7 +733,8 @@ export default {
                         }, 100);
                     } else if (this.backendCompleted &&
                         this.typingQueue.length === 0 &&
-                        !this.currentTypingNode) {
+                        !this.currentTypingNode &&
+                        this.pendingWebSocketData.length === 0) { // 新增检查
                         console.log('[v0] processFullData 完成，检查是否触发完成回调');
                         this.onAllTypingComplete();
                     }
@@ -1138,8 +1188,8 @@ export default {
             const protocols = token ? [`${token}`] : [];
             const currentUrl = new URL(window.location.href);
             const hostName = currentUrl.hostname;
-            // const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
-            const wsUrl = `wss://${hostName}:443/prod-api/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
+            const wsUrl = `ws://192.168.7.84:8080/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; //本地
+            // const wsUrl = `wss://${hostName}:443/prod-api/system/generateWebSocket/${currentUser}/${this.form.enterpriseName}`; // 线上
 
             this.websocket = new WebSocket(
                 wsUrl,
@@ -1153,38 +1203,39 @@ export default {
                 resolve();
             };
 
-            // 接收消息
             this.websocket.onmessage = (event) => {
                 try {
-                    console.log('收到WebSocket数据:', event.data);
+                    console.log('[v0] 收到WebSocket数据');
                     const data = JSON.parse(event.data);
 
+                    // 检查是否是完成信号
                     if (data && (data.isCompleted === true || data.isCompleted === 'true')) {
-                        console.log('收到后端完成信号');
-
-                        // 添加AI聊天消息
-                        if (data.text) {
-                            this.addChatMessage('ai', data.text);
+                        // 如果页面不可见，先存储数据
+                        if (!this.isPageVisible) {
+                            console.log('[v0] 页面不可见，存储完成信号');
+                            this.pendingWebSocketData.push(data);
+                            return;
                         }
 
-                        // 设置后端完成标志
-                        this.backendCompleted = true;
-
-                        // 检查当前打字队列状态
-                        if (this.typingQueue.length === 0 && !this.currentTypingNode && !this.isGeneratingNodes) {
-                            // 如果没有待处理的打字任务，直接完成
-                            console.log('打字队列为空，直接完成');
-                            this.onAllTypingComplete();
-                        } else {
-                            // 还有打字任务，等待完成
-                            console.log('等待打字队列完成，当前队列长度:', this.typingQueue.length);
-                            this.$message.info('数据接收完成，正在展示剩余内容...');
-                        }
+                        this.handleBackendCompleted(data);
                         return;
                     }
 
-                    // 处理完整数据，实现逐级逐个节点生成
+                    // 处理正常数据
                     if (data) {
+                        // 如果页面不可见，存储数据而不是立即处理
+                        if (!this.isPageVisible) {
+                            console.log('[v0] 页面不可见，存储数据');
+                            // 只保留最新的几条数据（因为新数据包含旧数据）
+                            this.pendingWebSocketData.push(data);
+                            if (this.pendingWebSocketData.length > 5) {
+                                // 只保留最新的5条，因为最新的包含了之前的所有内容
+                                this.pendingWebSocketData = this.pendingWebSocketData.slice(-5);
+                            }
+                            return;
+                        }
+
+                        // 页面可见，正常处理
                         this.processFullData(data);
                     } else {
                         console.warn('收到空数据');
@@ -1205,13 +1256,13 @@ export default {
                     return;
                 }
 
+                // 非预期关闭（可能是网络问题或服务器主动断开）
                 if (this.backendCompleted) {
                     console.log('后端已完成，继续执行打字机效果');
                     // 不改变isGenerating状态，让打字机继续执行
                     return;
                 }
 
-                // 非预期关闭（可能是网络问题或服务器主动断开）
                 if (this.isGenerating) {
                     this.$message.warning('连接已断开');
 
@@ -1253,6 +1304,39 @@ export default {
                 this.canSave = false;
                 this.canCancel = false;
             };
+        },
+
+        handleBackendCompleted(data) {
+            console.log('[v0] 收到后端完成信号');
+
+            // 添加AI聊天消息
+            if (data.text) {
+                this.addChatMessage('ai', data.text);
+            }
+
+            // 设置后端完成标志
+            this.backendCompleted = true;
+
+            // 检查当前状态
+            const hasRemainingTasks = this.typingQueue.length > 0 ||
+                this.currentTypingNode ||
+                this.isGeneratingNodes ||
+                this.dataProcessingQueue.length > 0;
+
+            if (!hasRemainingTasks) {
+                // 如果没有待处理的任务，直接完成
+                console.log('[v0] 无剩余任务，直接完成');
+                this.onAllTypingComplete();
+            } else {
+                // 还有任务，显示提示信息
+                console.log('[v0] 等待剩余任务完成', {
+                    typingQueue: this.typingQueue.length,
+                    currentTypingNode: !!this.currentTypingNode,
+                    isGeneratingNodes: this.isGeneratingNodes,
+                    dataProcessingQueue: this.dataProcessingQueue.length
+                });
+                this.addChatMessage('ai', '数据接收完成，正在展示剩余内容...');
+            }
         },
 
         // 保存按钮事件

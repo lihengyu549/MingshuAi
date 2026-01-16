@@ -214,7 +214,7 @@ export function removeById (data) {
     url: '/system/exportFileInfo/removeById',
     method: 'post',
     data: data,
-    responseType: 'blob' //响应数据格式配置
+    // responseType: 'blob' //响应数据格式配置
   })
 }
 
@@ -223,6 +223,6 @@ export function removeByAll (data) {
   return request({
     url: '/system/exportFileInfo/removeByAll',
     method: 'post',
-    responseType: 'blob' //响应数据格式配置
+    // responseType: 'blob' //响应数据格式配置
   })
 }

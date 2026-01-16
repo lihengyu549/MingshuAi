@@ -177,7 +177,8 @@
     <!-- 添加或修改数据库代理对话框 -->
     <el-dialog class="addMsg" :title="title" :visible.sync="open" append-to-body :close-on-click-modal="false"
       width="700px">
-      <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent label-position="top">
+      <el-form class="dialogForm" ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent
+        label-position="top">
         <el-row>
           <el-col :span="12">
             <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
@@ -287,8 +288,8 @@
     </el-dialog>
     <el-dialog class="addMsg" :title="titleExcel" v-loading="importDataLoading" :visible.sync="importData.importShow"
       append-to-body :close-on-click-modal="false" width="700px">
-      <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
-        label-width="auto" label-position="top">
+      <el-form class="dialogForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
+        :inline="true" label-width="120px" label-position="top">
         <el-form-item label="数据源名称" prop="sourceName">
           <el-input v-model="importData.sourceName" maxlength="50" placeholder="请输入数据源名称"></el-input>
         </el-form-item>
@@ -1909,113 +1910,7 @@ export default {
   }
 };
 </script>
-
 <style scoped>
-.app-container .el-dialog__wrapper .addMsg .el-dialog .el-dialog__body {
-  padding-bottom: 0 !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-dialog .el-dialog__footer {
-  padding-bottom: 32px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-form-item {
-  margin-bottom: 20px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-form-item__label {
-  line-height: 20px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-form-item .el-form-item__content {
-  line-height: 20px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-input__inner,
-.app-container .el-dialog__wrapper .addMsg .el-textarea__inner,
-.app-container .el-dialog__wrapper .addMsg .el-select .el-input__inner {
-  height: 36px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-form--label-top .el-form-item__label {
-  padding: 0 !important;
-  margin-bottom: 8px !important;
-  font-size: 14px !important;
-  font-weight: 700 !important;
-  color: #303133 !important;
-  line-height: 14px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-select .el-select__tags>span>input.el-input__inner {
-  height: 30px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-checkbox {
-  margin-left: 0px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-dialog__body .el-row {
-  margin-left: -15px !important;
-  margin-right: -15px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-dialog__body .el-row .el-col-12 {
-  padding-left: 15px !important;
-  padding-right: 15px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-col-12 .el-form-item {
-  margin-bottom: 0 !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-col-12 .el-form-item .el-form-item__content {
-  width: 100% !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-col-12 .el-form-item .el-input__inner {
-  width: 100% !important;
-}
-
-.addMsg /deep/ .el-input--medium {
-  width: 237px;
-}
-
-.addMsg /deep/.el-dialog {
-  border-radius: 10px;
-}
-
-.addMsg /deep/.el-dialog__header {
-  border-bottom: 1px solid #e6e6e6;
-}
-
-.addMsg /deep/.el-dialog__title {
-  font-weight: bold;
-}
-
-.addMsg /deep/.el-form-item__content {
-  padding-right: 15px;
-}
-
-.addMsg /deep/.el-dialog__body {
-  padding: 30px;
-}
-
-.addMsg /deep/ .el-dialog:not(.is-fullscreen) {
-  margin-top: 10% !important;
-}
-
-.addMsg /deep/ .el-dialog__body {
-  padding-bottom: 0;
-}
-
-.addMsg /deep/ .el-dialog__footer {
-  padding-bottom: 32px;
-}
-
-.addMsg /deep/ .el-form-item__label {
-  text-align: left;
-}
-
 .success {
   color: #67c23a;
 }
@@ -2034,22 +1929,6 @@ export default {
 
 .scanContentBox /deep/ .el-dialog__body {
   padding: 20px;
-}
-
-.addMsg /deep/ .el-input {
-  width: 100%;
-}
-
-.addMsg /deep/ .el-textarea {
-  width: 100%;
-}
-
-.addMsg /deep/ .el-select {
-  width: 100%;
-}
-
-.addMsg .el-select /deep/ .el-input {
-  width: 100%;
 }
 
 .yuanDataClass {
@@ -2084,6 +1963,17 @@ export default {
   margin-left: 263px
 }
 
+.importForm {
+  margin-bottom: 0;
+}
+
+.importForm /deep/ .el-form-item--medium {
+  width: 100%;
+}
+
+.importForm /deep/ .el-form-item__content {
+  width: 100%;
+}
 
 .uploadClass /deep/.el-form-item__content {
   display: flex;
@@ -2304,5 +2194,37 @@ export default {
 .selected-files-list::-webkit-scrollbar-track {
   background-color: #f5f7fa;
   border-radius: 3px;
+}
+
+.addMsg ::v-deep .el-input {
+  width: 100%;
+}
+
+.addMsg ::v-deep .el-select {
+  width: 100%;
+}
+
+.addMsg .el-select ::v-deep .el-input {
+  width: 100%;
+}
+
+.addMsg ::v-deep.el-dialog {
+  border-radius: 10px;
+}
+
+.addMsg ::v-deep.el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.addMsg ::v-deep.el-dialog__title {
+  font-weight: bold;
+}
+
+.addMsg ::v-deep.el-dialog__body {
+  padding: 30px;
+}
+
+.addMsg ::v-deep.el-form {
+  margin-bottom: 0;
 }
 </style>

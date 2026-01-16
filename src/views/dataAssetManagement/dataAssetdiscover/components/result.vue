@@ -52,9 +52,10 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
-    <el-dialog class="addMsg" :title="title" :visible.sync="open" width="580px" append-to-body
+    <el-dialog class="addMsg" :title="title" :visible.sync="open" width="700px" append-to-body
       :close-on-click-modal="false">
-      <el-form v-if="open" ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent>
+      <el-form class="dialogForm" v-if="open" ref="form" :model="form" :rules="rules" label-width="auto"
+        @submit.native.prevent label-position="top">
         <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
           <el-select v-model="form.databaseType" placeholder="请选择数据库类型" @change="databaseTypeChange($event)">
             <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
@@ -739,38 +740,49 @@ export default {
 };
 </script>
 <style scoped>
-.addMsg /deep/ .el-input--medium {
-  width: 237px;
-}
-
-.addMsg /deep/ .el-dialog:not(.is-fullscreen) {
-  margin-top: 10% !important;
-}
-
-.addMsg /deep/ .el-dialog__body {
-  padding-bottom: 0;
-
-}
-
-.addMsg /deep/ .el-dialog__footer {
-  padding-bottom: 32px;
-
-}
-
-.addMsg /deep/ .el-form-item__label {
-  text-align: left;
-}
-
-.addMsg /deep/ .el-input {
-  width: 80%;
-}
-
-.addMsg /deep/ .el-select {
-  width: 80%;
-}
-
-.addMsg .el-select /deep/ .el-input {
+.dialogForm .el-form-item {
   width: 100%;
+}
+
+.dialogForm .el-form-item /deep/ .el-form-item__content {
+  width: 100%;
+  padding-right: 15px;
+}
+
+.dialogForm .el-form-item /deep/ .el-select {
+  width: 100%;
+}
+
+.addMsg ::v-deep .el-input {
+  width: 100%;
+}
+
+.addMsg ::v-deep .el-select {
+  width: 100%;
+}
+
+.addMsg .el-select ::v-deep .el-input {
+  width: 100%;
+}
+
+.addMsg ::v-deep.el-dialog {
+  border-radius: 10px;
+}
+
+.addMsg ::v-deep.el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.addMsg ::v-deep.el-dialog__title {
+  font-weight: bold;
+}
+
+.addMsg ::v-deep.el-dialog__body {
+  padding: 30px;
+}
+
+.addMsg ::v-deep.el-form {
+  margin-bottom: 0;
 }
 
 .addSelectClass /deep/ .el-select {
