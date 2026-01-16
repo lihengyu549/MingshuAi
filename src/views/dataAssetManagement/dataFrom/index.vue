@@ -342,7 +342,7 @@
     <!-- 新增文件目录表单对话框 -->
     <el-dialog class="addMsg" :title="titleFileDirectory" v-loading="fileDirectoryLoading"
       :visible.sync="fileDirectoryData.show" append-to-body :close-on-click-modal="false" width="700px">
-      <el-form class="importForm" :rules="fileDirectoryRules" :model="fileDirectoryData" size="medium"
+      <el-form class="dialogForm" :rules="fileDirectoryRules" :model="fileDirectoryData" size="medium"
         ref="fileDirectoryForm" label-width="auto" label-position="top">
         <el-form-item label="数据源名称" prop="sourceName">
           <el-input v-model="fileDirectoryData.sourceName" maxlength="50" placeholder="请输入数据源名称"></el-input>
@@ -409,7 +409,7 @@
     <!-- 新增文件共享服务器表单对话框 -->
     <el-dialog class="addMsg" :title="titleFileShareServer" :visible.sync="fileShareServerOpen" append-to-body
       :close-on-click-modal="false" width="700px">
-      <el-form ref="fileShareServerForm" :model="fileShareServerForm" :rules="fileShareServerRules" label-width="auto"
+      <el-form class="dialogForm" ref="fileShareServerForm" :model="fileShareServerForm" :rules="fileShareServerRules" label-width="auto"
         @submit.native.prevent label-position="top">
 
         <!-- 基本信息 -->
@@ -1963,15 +1963,16 @@ export default {
   margin-left: 263px
 }
 
-.importForm {
-  margin-bottom: 0;
-}
-
-.importForm /deep/ .el-form-item--medium {
+.dialogForm .el-form-item {
   width: 100%;
 }
 
-.importForm /deep/ .el-form-item__content {
+.dialogForm .el-form-item /deep/ .el-form-item__content {
+  width: 100%;
+  padding-right: 15px;
+}
+
+.dialogForm .el-form-item /deep/ .el-select {
   width: 100%;
 }
 
