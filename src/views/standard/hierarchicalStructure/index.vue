@@ -305,17 +305,7 @@ export default {
     methods: {
         initPageVisibilityListener() {
             this.pageVisibilityHandler = () => {
-                if (document.hidden) {
-                    // 页面不可见
-                    console.log('[v0] 页面不可见，暂停处理数据');
-                    this.isPageVisible = false;
-                } else {
-                    // 页面可见
-                    console.log('[v0] 页面可见，恢复处理数据');
-                    this.isPageVisible = true;
-                    // 恢复处理积压的数据
-                    this.processPendingData();
-                }
+                this.handleVisibilityChange();
             };
             document.addEventListener('visibilitychange', this.pageVisibilityHandler);
         },
@@ -327,56 +317,167 @@ export default {
             }
         },
 
-        processPendingData() {
-            if (!this.isPageVisible || this.pendingWebSocketData.length === 0) {
+        // 优化：页面不可见时不处理数据，避免UI卡顿
+        async processFullData(newData) {
+            if (!this.isPageVisible) {
+                // console.log('[v0] 页面不可见，暂停处理数据，保留最新数据');
+                // 如果页面不可见，我们只保留最新的数据，而不是实时更新
+                // 后续页面可见时，可以选择直接更新最新数据，或按原逻辑处理
+                // 当前策略是，页面不可见时，数据不更新，避免卡顿
+                // this.latestFullData = newData; // 不再存储，因为页面不可见时不需要实时更新
+                return; // 暂停处理
+            }
+
+            this.latestFullData = newData;
+
+            // 如果当前正在处理数据，将新数据加入队列，避免打断正在进行的动画
+            if (this.isGeneratingNodes || this.currentTypingNode || this.typingQueue.length > 0) {
+                // 只保留最新的数据，避免队列过长
+                this.dataProcessingQueue = [newData];
                 return;
             }
 
-            console.log(`[v0] 开始处理积压的${this.pendingWebSocketData.length}条数据`);
+            this.isGeneratingNodes = true;
+            // 关闭批量更新，确保逐个节点生成
+            this.batchUpdate = false;
+            this.updateQueue = [];
 
-            // 只处理最新的一条数据（因为每次数据都包含之前的所有内容）
-            if (this.pendingWebSocketData.length > 0) {
-                const latestData = this.pendingWebSocketData[this.pendingWebSocketData.length - 1];
-                this.pendingWebSocketData = [];
-
-                // 处理最新数据
-                if (latestData.isCompleted) {
-                    // 如果是完成信号，直接处理
-                    this.handleBackendCompleted(latestData);
-                } else {
-                    // 否则加入处理队列
-                    this.processFullData(latestData);
+            try {
+                // 根节点直接显示完整文本，不应用逐字效果
+                if (newData.data && newData.data.text) {
+                    this.fullData.data.text = newData.data.text;
+                    this.fullData.data.uid = newData.data.uid || this.fullData.data.uid;
+                    this.updateMindMapWithNewData(this.fullData);
+                    // 短暂延迟确保根节点渲染完成
+                    await new Promise(resolve => setTimeout(resolve, 100));
                 }
+
+                // 严格按照层级顺序生成子节点（应用逐字效果）
+                await this.compareAndAddNodes(this.fullData, newData.children || []);
+
+                // 等待所有打字动画完成后再进行清理
+                await this.waitForAllTypingComplete();
+
+                // 清理可能的重复节点
+                this.cleanDuplicateNodes(this.fullData);
+                this.updateMindMapWithNewData(this.fullData);
+
+            } catch (error) {
+                console.error('处理节点生成时出错:', error);
+            } finally {
+                const processNextBatch = async () => {
+                    // 先等待所有打字动画完成
+                    await this.waitForAllTypingComplete();
+
+                    this.isGeneratingNodes = false;
+
+                    // 如果队列中有数据，则继续处理
+                    if (this.dataProcessingQueue.length > 0) {
+                        const nextData = this.dataProcessingQueue.shift();
+                        // 短暂延迟后处理下一批数据，保持动画流畅
+                        setTimeout(() => {
+                            // 对队列中的所有数据都使用processFullData处理，保持逐字动画效果
+                            this.processFullData(nextData);
+                        }, 100);
+                    } else if (this.backendCompleted &&
+                        this.typingQueue.length === 0 &&
+                        !this.currentTypingNode) {
+                        // console.log('[v0] processFullData 完成，检查是否触发完成回调');
+                        this.onAllTypingComplete();
+                    }
+                };
+
+                // 启动下一批数据处理
+                processNextBatch();
             }
         },
 
-        // 初始化批量更新处理器
-        initBatchUpdateProcessor() {
-            // 清除已存在的定时器
-            if (this.batchUpdateTimer) {
-                clearInterval(this.batchUpdateTimer);
-            }
+        // 优化：处理打字队列中的下一个节点，如果页面不可见则直接显示完整文本
+        processNextInTypingQueue() {
+            if (this.typingQueue.length > 0 && !this.currentTypingNode) {
+                const nextItem = this.typingQueue.shift();
+                this.currentTypingNode = nextItem.nodeData;
 
-            // 设置新的定时器来处理更新队列
-            this.batchUpdateTimer = setInterval(() => {
-                if (this.updateQueue.length > 0) {
-                    // 获取队列中的最新数据
-                    const latestData = this.updateQueue.pop();
-                    // 清空队列，只应用最新的更新
-                    this.updateQueue = [];
-
-                    // 应用更新
-                    if (this.mindMap) {
-                        // 使用requestAnimationFrame确保DOM更新更流畅
-                        requestAnimationFrame(() => {
-                            this.mindMap.setData(latestData);
-                        });
+                // 将节点居中显示
+                if (this.mindMap && this.mindMap.renderer && nextItem.uid) {
+                    try {
+                        // 使用setTimeout确保节点已经渲染完成
+                        setTimeout(() => {
+                            const node = this.mindMap.renderer.findNodeByUid(nextItem.uid);
+                            if (node && this.mindMap.renderer.moveNodeToCenter) {
+                                this.mindMap.renderer.moveNodeToCenter(node);
+                            }
+                        }, 50);
+                    } catch (error) {
+                        console.error('居中节点时出错:', error);
                     }
                 }
-            }, this.batchUpdateInterval);
+
+                // 开始逐字显示
+                if (this.isPageVisible) {
+                    this.typeWriter(nextItem.nodeData, nextItem.fullText);
+                } else {
+                    // 页面不可见，直接显示完整文本，不进行打字动画
+                    // console.log('[v0] 页面不可见，直接显示完整文本');
+                    nextItem.nodeData.text = nextItem.fullText;
+                    this.updateMindMapWithNewData(this.fullData);
+                    this.currentTypingNode = null; // 立即重置，以便下一个节点能尽快处理
+                    this.processNextInTypingQueue(); // 立即处理下一个节点
+                }
+            } else if (this.typingQueue.length === 0 && !this.currentTypingNode) {
+                this.typingComplete = true;
+
+                // 只有在以下所有条件都满足时才认为真正完成:
+                // 1. 后端已返回完成标识
+                // 2. 打字队列为空
+                // 3. 没有正在打字的节点
+                // 4. 没有正在生成节点
+                // 5. 数据处理队列为空
+                if (this.backendCompleted &&
+                    this.typingQueue.length === 0 &&
+                    !this.currentTypingNode &&
+                    !this.isGeneratingNodes &&
+                    this.dataProcessingQueue.length === 0) {
+                    // console.log('[v0] 所有条件满足，触发完成回调');
+                    this.onAllTypingComplete();
+                    return;
+                }
+
+                // 打字队列为空时，检查是否有等待处理的数据
+                if (this.dataProcessingQueue.length > 0 && !this.isGeneratingNodes) {
+                    const nextData = this.dataProcessingQueue.shift();
+                    setTimeout(() => {
+                        this.processFullData(nextData);
+                    }, 100);
+                }
+            }
         },
 
-        // 优化的思维导图更新方法，减少闪烁
+        onAllTypingComplete() {
+            // console.log('[v0] 所有打字动画完成回调');
+
+            // 检查所有队列是否真的为空
+            if (this.typingQueue.length > 0 ||
+                this.dataProcessingQueue.length > 0 ||
+                this.currentTypingNode !== null ||
+                this.isGeneratingNodes) {
+                // console.log('[v0] 还有任务未完成，跳过完成处理', {
+                //     typingQueue: this.typingQueue.length,
+                //     dataProcessingQueue: this.dataProcessingQueue.length,
+                //     currentTypingNode: this.currentTypingNode,
+                //     isGeneratingNodes: this.isGeneratingNodes
+                // });
+                return;
+            }
+
+            // 只有在后端真正完成时才显示完成消息
+            if (this.backendCompleted && !this.generationCompleted) {
+                // console.log('[v0] 后端已完成且所有队列为空，触发完成');
+                this.triggerCompletion();
+            }
+        },
+
+        // 优化：当页面不可见时，直接更新数据，不触发打字动画
         updateMindMapWithNewData(data) {
             // 存储最新数据以供参考
             this.latestFullData = data;
@@ -430,11 +531,6 @@ export default {
                 return;
             }
 
-            // 保存原始文本引用，用于恢复
-            if (!nodeData.originalText) {
-                nodeData.originalText = fullText;
-            }
-
             // 显示当前长度的文本
             nodeData.text = fullText.substring(0, currentLength + 1);
             this.updateMindMapWithNewData(this.fullData);
@@ -458,96 +554,6 @@ export default {
                     this.processNextInTypingQueue();
                 }, 300);
             }
-        },
-
-        // 处理打字队列中的下一个节点
-        processNextInTypingQueue() {
-            if (this.typingQueue.length > 0 && !this.currentTypingNode) {
-                const nextItem = this.typingQueue.shift();
-                this.currentTypingNode = nextItem.nodeData;
-
-                // 将节点居中显示
-                if (this.mindMap && this.mindMap.renderer && nextItem.uid) {
-                    try {
-                        // 使用setTimeout确保节点已经渲染完成
-                        setTimeout(() => {
-                            const node = this.mindMap.renderer.findNodeByUid(nextItem.uid);
-                            if (node && this.mindMap.renderer.moveNodeToCenter) {
-                                this.mindMap.renderer.moveNodeToCenter(node);
-                            }
-                        }, 50);
-                    } catch (error) {
-                        console.error('居中节点时出错:', error);
-                    }
-                }
-
-                // 开始逐字显示
-                this.typeWriter(nextItem.nodeData, nextItem.fullText);
-            } else if (this.typingQueue.length === 0 && !this.currentTypingNode) {
-                this.typingComplete = true;
-
-                // 只有在以下所有条件都满足时才认为真正完成:
-                // 1. 后端已返回完成标识
-                // 2. 打字队列为空
-                // 3. 没有正在打字的节点
-                // 4. 没有正在生成节点
-                // 5. 数据处理队列为空
-                if (this.backendCompleted &&
-                    this.typingQueue.length === 0 &&
-                    !this.currentTypingNode &&
-                    !this.isGeneratingNodes &&
-                    this.dataProcessingQueue.length === 0 &&
-                    this.pendingWebSocketData.length === 0) { // 新增：检查待处理数据
-                    console.log('[v0] 所有条件满足，触发完成回调');
-                    this.onAllTypingComplete();
-                    return;
-                }
-
-                // 打字队列为空时，检查是否有等待处理的数据
-                if (this.dataProcessingQueue.length > 0 && !this.isGeneratingNodes) {
-                    const nextData = this.dataProcessingQueue.shift();
-                    setTimeout(() => {
-                        this.processFullData(nextData);
-                    }, 100);
-                }
-            }
-        },
-
-        onAllTypingComplete() {
-            console.log('[v0] 所有打字动画已完成，准备显示完成状态');
-
-            // 再次确认所有队列都已清空
-            if (this.typingQueue.length > 0 ||
-                this.currentTypingNode ||
-                this.isGeneratingNodes ||
-                this.dataProcessingQueue.length > 0 ||
-                this.pendingWebSocketData.length > 0) {
-                console.log('[v0] 检测到仍有未完成任务，延迟完成');
-                setTimeout(() => {
-                    this.onAllTypingComplete();
-                }, 500);
-                return;
-            }
-
-            // 关闭WebSocket连接
-            if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-                this.isExpectedClose = true;
-                this.websocket.close();
-                this.websocket = null;
-            }
-
-            // 先添加完成消息到聊天
-            this.addChatMessage('ai', '分类分级标准生成完成');
-
-            // 延迟显示成功提示和按钮
-            setTimeout(() => {
-                this.$message.success('生成完成');
-                this.generationCompleted = true;
-                this.isGenerating = false;
-                this.isGeneratingNodes = false;
-                this.canSave = true;
-                this.canCancel = true;
-            }, 300);
         },
 
         // 递归比较并添加新节点 - 严格按照层级顺序逐个生成
@@ -678,74 +684,6 @@ export default {
             });
         },
 
-        // 处理WebSocket返回的完整数据，实现严格的层级顺序节点生成
-        async processFullData(newData) {
-            this.latestFullData = newData;
-
-            // 如果当前正在处理数据，将新数据加入队列，避免打断正在进行的动画
-            if (this.isGeneratingNodes || this.currentTypingNode || this.typingQueue.length > 0) {
-                // 只保留最新的数据，避免队列过长
-                this.dataProcessingQueue = [newData];
-                return;
-            }
-
-            this.isGeneratingNodes = true;
-            // 关闭批量更新，确保逐个节点生成
-            this.batchUpdate = false;
-            this.updateQueue = [];
-
-            try {
-                // 根节点直接显示完整文本，不应用逐字效果
-                if (newData.data && newData.data.text) {
-                    this.fullData.data.text = newData.data.text;
-                    this.fullData.data.uid = newData.data.uid || this.fullData.data.uid;
-                    this.updateMindMapWithNewData(this.fullData);
-                    // 短暂延迟确保根节点渲染完成
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                }
-
-                // 严格按照层级顺序生成子节点（应用逐字效果）
-                await this.compareAndAddNodes(this.fullData, newData.children || []);
-
-                // 等待所有打字动画完成后再进行清理
-                await this.waitForAllTypingComplete();
-
-                // 清理可能的重复节点
-                this.cleanDuplicateNodes(this.fullData);
-                this.updateMindMapWithNewData(this.fullData);
-
-            } catch (error) {
-                console.error('处理节点生成时出错:', error);
-            } finally {
-                const processNextBatch = async () => {
-                    // 先等待所有打字动画完成
-                    await this.waitForAllTypingComplete();
-
-                    this.isGeneratingNodes = false;
-
-                    // 如果队列中有数据，则继续处理
-                    if (this.dataProcessingQueue.length > 0) {
-                        const nextData = this.dataProcessingQueue.shift();
-                        // 短暂延迟后处理下一批数据，保持动画流畅
-                        setTimeout(() => {
-                            // 对队列中的所有数据都使用processFullData处理，保持逐字动画效果
-                            this.processFullData(nextData);
-                        }, 100);
-                    } else if (this.backendCompleted &&
-                        this.typingQueue.length === 0 &&
-                        !this.currentTypingNode &&
-                        this.pendingWebSocketData.length === 0) { // 新增检查
-                        console.log('[v0] processFullData 完成，检查是否触发完成回调');
-                        this.onAllTypingComplete();
-                    }
-                };
-
-                // 启动下一批数据处理
-                processNextBatch();
-            }
-        },
-
-        // 等待所有打字动画完成
         async waitForAllTypingComplete() {
             return new Promise(resolve => {
                 const checkComplete = () => {
@@ -766,7 +704,7 @@ export default {
         // 直接更新完整数据，不触发打字动画
         updateFullDataWithoutAnimation(newData) {
             try {
-                console.log('开始更新完整数据:', newData);
+                // console.log('[v0] 开始更新完整数据（无动画）');
 
                 // 确保新数据存在
                 if (!newData) {
@@ -788,7 +726,7 @@ export default {
 
                 // 更新思维导图
                 this.updateMindMapWithNewData(this.fullData);
-                console.log('完整数据更新完成');
+                // console.log('[v0] 完整数据更新完成');
 
                 // 重置相关状态，防止干扰
                 this.isGeneratingNodes = false;
@@ -797,6 +735,11 @@ export default {
 
                 // 清空处理队列，避免重复处理
                 this.dataProcessingQueue = [];
+
+                if (this.backendCompleted) {
+                    // console.log('[v0] 检测到后端已完成且数据已直接更新，触发完成逻辑');
+                    this.triggerCompletion();
+                }
 
             } catch (error) {
                 console.error('直接更新数据时出错:', error);
@@ -843,6 +786,7 @@ export default {
                 }
             });
         },
+
         cleanDuplicateNodes(node) {
             // 确保node存在
             if (!node || !node.children || node.children.length === 0) return;
@@ -868,6 +812,26 @@ export default {
             });
 
             node.children = uniqueChildren;
+        },
+
+        // 初始化批量更新处理器
+        initBatchUpdateProcessor() {
+            if (this.batchUpdateInterval && !this.batchUpdateTimer) {
+                this.batchUpdateTimer = setInterval(() => {
+                    if (this.updateQueue.length > 0) {
+                        const dataToUpdate = this.updateQueue.shift();
+                        // 确保 MindMap 实例已加载
+                        if (this.mindMap && this.mindMap.setData) {
+                            // 在这里可以进行批量数据的合并或直接更新
+                            // 如果 MindMap 支持增量更新，可以实现更优的性能
+                            this.mindMap.setData(dataToUpdate);
+                        }
+                        if (this.updateQueue.length === 0) {
+                            // 如果队列为空，可能需要一个回调或状态更新
+                        }
+                    }
+                }, this.batchUpdateInterval);
+            }
         },
 
         hideMenu() {
@@ -1076,6 +1040,7 @@ export default {
             this.processedNodeUids.clear();
             this.backendCompleted = false;
             this.isExpectedClose = false;
+            this.pendingWebSocketData = []; // 清空积压数据
 
             // 建立WebSocket连接
             new Promise(resolve => {
@@ -1205,38 +1170,26 @@ export default {
 
             this.websocket.onmessage = (event) => {
                 try {
-                    console.log('[v0] 收到WebSocket数据');
+                    // console.log('[v0] 收到WebSocket数据');
                     const data = JSON.parse(event.data);
 
                     // 检查是否是完成信号
                     if (data && (data.isCompleted === true || data.isCompleted === 'true')) {
-                        // 如果页面不可见，先存储数据
-                        if (!this.isPageVisible) {
-                            console.log('[v0] 页面不可见，存储完成信号');
-                            this.pendingWebSocketData.push(data);
-                            return;
-                        }
-
                         this.handleBackendCompleted(data);
                         return;
                     }
 
                     // 处理正常数据
                     if (data) {
-                        // 如果页面不可见，存储数据而不是立即处理
+                        // 如果页面不可见，直接更新数据，不使用打字机效果
                         if (!this.isPageVisible) {
-                            console.log('[v0] 页面不可见，存储数据');
-                            // 只保留最新的几条数据（因为新数据包含旧数据）
-                            this.pendingWebSocketData.push(data);
-                            if (this.pendingWebSocketData.length > 5) {
-                                // 只保留最新的5条，因为最新的包含了之前的所有内容
-                                this.pendingWebSocketData = this.pendingWebSocketData.slice(-5);
-                            }
-                            return;
+                            // console.log('[v0] 页面不可见，直接更新数据不使用打字机效果');
+                            this.updateFullDataWithoutAnimation(data);
+                        } else {
+                            // 页面可见，使用正常的打字机效果
+                            // console.log('[v0] 页面可见，使用打字机效果');
+                            this.processFullData(data);
                         }
-
-                        // 页面可见，正常处理
-                        this.processFullData(data);
                     } else {
                         console.warn('收到空数据');
                     }
@@ -1307,35 +1260,29 @@ export default {
         },
 
         handleBackendCompleted(data) {
-            console.log('[v0] 收到后端完成信号');
-
-            // 添加AI聊天消息
-            if (data.text) {
-                this.addChatMessage('ai', data.text);
-            }
-
-            // 设置后端完成标志
+            // console.log('[v0] 收到后端完成信号');
             this.backendCompleted = true;
 
-            // 检查当前状态
-            const hasRemainingTasks = this.typingQueue.length > 0 ||
-                this.currentTypingNode ||
-                this.isGeneratingNodes ||
-                this.dataProcessingQueue.length > 0;
-
-            if (!hasRemainingTasks) {
-                // 如果没有待处理的任务，直接完成
-                console.log('[v0] 无剩余任务，直接完成');
-                this.onAllTypingComplete();
+            // 处理最后一批数据（如果有）
+            if (data && data.data) {
+                // console.log('[v0] 处理完成信号中的最后数据');
+                // 根据页面可见性决定如何处理
+                if (!this.isPageVisible) {
+                    this.updateFullDataWithoutAnimation(data);
+                    // updateFullDataWithoutAnimation 内部会检查并触发完成
+                } else {
+                    this.processFullData(data);
+                    // processFullData 完成后会通过 onAllTypingComplete 触发
+                }
             } else {
-                // 还有任务，显示提示信息
-                console.log('[v0] 等待剩余任务完成', {
-                    typingQueue: this.typingQueue.length,
-                    currentTypingNode: !!this.currentTypingNode,
-                    isGeneratingNodes: this.isGeneratingNodes,
-                    dataProcessingQueue: this.dataProcessingQueue.length
-                });
-                this.addChatMessage('ai', '数据接收完成，正在展示剩余内容...');
+                // 没有额外数据，检查是否应该立即完成
+                if (this.typingQueue.length === 0 &&
+                    this.dataProcessingQueue.length === 0 &&
+                    !this.currentTypingNode &&
+                    !this.isGeneratingNodes) {
+                    // console.log('[v0] 无额外数据且无待处理任务，立即完成');
+                    this.triggerCompletion();
+                }
             }
         },
 
@@ -1440,7 +1387,48 @@ export default {
 
                 this.updateMindMapWithNewData(this.fullData);
             }, 300);
-        }
+        },
+
+        triggerCompletion() {
+            if (this.generationCompleted) {
+                // console.log('[v0] 已经完成，跳过重复触发');
+                return;
+            }
+
+            // console.log('[v0] 触发生成完成');
+            this.generationCompleted = true;
+            this.isGenerating = false;
+            this.canSave = true;
+            this.canCancel = true;
+
+            // 更新对话框消息
+            // this.messages.push({ // 这是一个旧的聊天消息存储方式，需要适配到this.chatMessages
+            //     role: 'assistant',
+            //     content: '框架生成完成！您可以查看生成的内容。'
+            // });
+            this.addChatMessage('ai', '框架生成完成！您可以查看生成的内容。');
+
+            this.$nextTick(() => {
+                this.scrollToBottom();
+            });
+        },
+
+        handleVisibilityChange() {
+            this.isPageVisible = !document.hidden;
+            // console.log('[v0] 页面可见性变化:', this.isPageVisible ? '可见' : '不可见');
+
+            if (this.isPageVisible && this.backendCompleted) {
+                // 确保所有队列都已清空
+                if (this.typingQueue.length === 0 &&
+                    this.dataProcessingQueue.length === 0 &&
+                    !this.currentTypingNode &&
+                    !this.isGeneratingNodes &&
+                    !this.generationCompleted) {
+                    // console.log('[v0] 页面重新可见，检测到应该完成，触发完成逻辑');
+                    this.triggerCompletion();
+                }
+            }
+        },
     },
 };
 </script>
