@@ -388,8 +388,9 @@ import {
   getSelectTableNames, callAIPaddingComments, updateDataQualityAssessment, updateFieldListByFieldId,
   callAIPaddingCommentsByAll, updateDataQualityAssessmentByAll, propertyCatalogueExport
 } from "@/api/system/protectCategory";
-import { tree } from "d3";
+import { getDicts } from "@/api/system/dict/data";
 export default {
+  dicts: ['sys_export_column'],
   name: "assetCatalog",
   components: {},
   data() {
@@ -728,27 +729,24 @@ export default {
       this.exportColumnDialog.loading = true;
 
       try {
-        // 尝试从localStorage获取用户保存的默认配置
-        const savedColumns = localStorage.getItem('assetCatalogExportDefaultColumns');
-        const defaultColumns = savedColumns ? JSON.parse(savedColumns) : [];
-
-        // 如果有保存的配置，使用保存的配置，否则使用初始默认配置
         let finalSelectedColumns = [];
-        if (savedColumns && defaultColumns.length > 0) {
-          // 有保存的配置，使用保存的配置
-          finalSelectedColumns = defaultColumns;
-        } else {
-          // 没有保存的配置，使用初始默认配置
-          finalSelectedColumns = [...this.initialDefaultColumns];
+
+        const res = await getDicts('sys_export_column');
+        if (res.data && res.data.length > 0) {
+          const dictItem = res.data.find(item => item.dictValue == '2');
+          if (dictItem && dictItem.remark) {
+            finalSelectedColumns = dictItem.remark.split(',').map(item => item.trim());
+          }
         }
 
-        // 设置选中的列为最终配置
+        if (finalSelectedColumns.length === 0) {
+          finalSelectedColumns = [...this.initialDefaultColumns];
+        }
         this.exportColumnDialog.selectedColumns = [...finalSelectedColumns];
 
       } catch (error) {
         console.error('获取导出列配置失败:', error);
         this.$message.warning('获取导出列配置失败，使用默认配置');
-        // 出错时使用初始默认配置
         this.exportColumnDialog.selectedColumns = [...this.initialDefaultColumns];
       } finally {
         this.exportColumnDialog.loading = false;
@@ -788,7 +786,6 @@ export default {
 
       try {
         if (this.exportColumnDialog.saveAsDefault) {
-          localStorage.setItem('assetCatalogExportDefaultColumns', JSON.stringify(this.exportColumnDialog.selectedColumns));
           this.$message.success('已保存为默认配置');
         }
 
@@ -816,12 +813,15 @@ export default {
         }, []);
 
         // 构造请求参数
+        const allColumns = this.exportColumnDialog.allColumns.map(item => item.value);
+        const unselectedColumns = allColumns.filter(value => !this.exportColumnDialog.selectedColumns.includes(value));
+        
         const params = {
           tableName: this.queryParams.tableName,
           paddingStatus: this.queryParams.paddingStatus,
           featureExtractionStatus: this.queryParams.featureExtractionStatus,
           databaseList: allChildrenData,
-          columnList: this.exportColumnDialog.selectedColumns,
+          columnList: unselectedColumns,
           saveAsDefault: this.exportColumnDialog.saveAsDefault
         };
 
