@@ -176,9 +176,8 @@ import { getDatabaseList, protectTableFieldList, exportReport, getDatabaseSource
 import { getFrameworks, treeListI, } from "@/api/system/protectCategory";
 import Cookies from "js-cookie";
 import 'vue-json-viewer/style.css'
-import router from "@/router";
+import { getDicts } from "@/api/system/dict/data";
 import { attachStatus, forceLogout } from "@/api/system/protectTableField"; // Declare the variables here
-import dict from "@/utils/dict";
 
 export default {
   name: "ProtectTableField",
@@ -387,7 +386,6 @@ export default {
         "classificationReasons",
         "piiDetectionName",
         "securityLevelName",
-        "protectMethod",
         "sampleData",
       ],
     };
@@ -931,37 +929,29 @@ Authorization:Bearer ${this.Token}`
       this.exportColumnDialog.loading = true;
 
       try {
-        // 尝试从localStorage获取用户保存的默认配置
-        const savedColumns = localStorage.getItem('exportDefaultColumns');
-        const defaultColumns = savedColumns ? JSON.parse(savedColumns) : [];
-
-        // 从字典中获取未选中的列配置（fieldType,craftRemark格式，分割成数组）
-        const dictColumns = this.dict.type['sys_export_column'].filter(item => item.value == 1)[0].raw.remark.split(',').map(item => item.trim());
-
-        // 获取所有可选的导出列（label和value的组合）
         const allColumns = this.exportColumnDialog.allColumns;
-
-        // 如果没有保存的配置，则根据字典反转计算选中的列
-        // 字典中的值代表未选中项，所以选中的应该是allColumns中不在字典数组里的那些
         let finalSelectedColumns = [];
-        if (savedColumns) {
-          // 有保存的配置，使用保存的配置
-          finalSelectedColumns = defaultColumns;
-        } else {
-          // 没有保存的配置，从allColumns中排除字典中的未选中项
+
+        const res = await getDicts('sys_export_column');
+        if (res.data && res.data.length > 0) {
+          const dictItem = res.data.find(item => item.dictValue == '1');
+          if (dictItem && dictItem.remark) {
+            finalSelectedColumns = dictItem.remark.split(',').map(item => item.trim());
+          }
+        }
+
+        if (finalSelectedColumns.length === 0) {
           finalSelectedColumns = allColumns
             .map(item => item.value)
             .filter(value => !dictColumns.includes(value));
         }
 
-        // 设置选中的列为最终配置
         this.exportColumnDialog.selectedColumns = [...finalSelectedColumns];
 
       } catch (error) {
         console.error('获取导出列配置失败:', error);
         this.$message.warning('获取导出列配置失败，使用默认配置');
-        // 出错时使用空数组作为默认选中的列
-        this.exportColumnDialog.selectedColumns = [];
+        this.exportColumnDialog.selectedColumns = [...this.initialDefaultColumns];
       } finally {
         this.exportColumnDialog.loading = false;
       }
@@ -995,10 +985,8 @@ Authorization:Bearer ${this.Token}`
 
       try {
         if (this.exportColumnDialog.saveAsDefault) {
-          localStorage.setItem('exportDefaultColumns', JSON.stringify(this.exportColumnDialog.selectedColumns));
           this.$message.success('已保存为默认配置');
         }
-
         this.exportColumnDialog.visible = false;
         await this.performExport();
       } finally {
@@ -1014,6 +1002,9 @@ Authorization:Bearer ${this.Token}`
     async performExport() {
       try {
         this.loading = true;
+        const allColumns = this.exportColumnDialog.allColumns.map(item => item.value);
+        const unselectedColumns = allColumns.filter(value => !this.exportColumnDialog.selectedColumns.includes(value));
+        
         const params = {
           databaseNames: this.databaseNames,
           projectId: this.projectId,
@@ -1023,7 +1014,7 @@ Authorization:Bearer ${this.Token}`
           pageNum: this.queryParams.pageNum,
           pageSize: this.queryParams.pageSize,
           categoryId: this.queryParams.categoryId,
-          columnList: this.exportColumnDialog.selectedColumns,
+          columnList: unselectedColumns,
           saveAsDefault: this.exportColumnDialog.saveAsDefault
         };
         await exportReport(params);
