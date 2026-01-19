@@ -198,7 +198,7 @@
       @pagination="getList" />
     <el-dialog title="结果修改" class="addMsg" :visible.sync="deleteVisible" width="700px" append-to-body
       :close-on-click-modal="false">
-      <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
+      <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto" label-position="top">
         <el-form-item label="分类" class="addSelectClass">
           <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable :filter-method="handleSearch">
             <el-option style="height: 100%; padding: 0" value="">

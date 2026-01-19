@@ -101,9 +101,11 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
-            :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">开始扫描</el-button>
+            :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API' || btnLoading"
+            :loading="btnLoading">开始扫描</el-button>
           <el-button size="mini" type="text" @click="stopScan(scope.row)"
-            :disabled="scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API'">终止扫描</el-button>
+            :disabled="scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API' || btnLoading"
+            :loading="btnLoading">终止扫描</el-button>
           <!-- 添加关联数据字典按钮和下拉菜单 -->
           <el-dropdown trigger="click" @command="handleDictionaryCommand"
             @click.native="handleDropdownClick(scope.row)">
@@ -128,7 +130,8 @@
     <!-- 添加或修改数据库代理对话框 -->
     <el-dialog class="addMsg" :title="title" :visible.sync="open" append-to-body :close-on-click-modal="false"
       width="700px">
-      <el-form ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent label-position="top">
+      <el-form class="dialogForm" ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent
+        label-position="top">
         <el-row>
           <el-col :span="12">
             <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
@@ -213,12 +216,13 @@
             <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
-          <el-select v-show="form.scheduleType == '2' || form.scheduleType == '3'" v-model="form.scheduleInterval">
+          <el-select v-show="form.scheduleType == '2' || form.scheduleType == '3'" v-model="form.scheduleInterval"
+            @change="handleIntervalChange">
             <el-option v-for="item in weekList" :key="item" :label="item" :value="item">
             </el-option>
           </el-select>
           <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
-            @change="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点" :append-to-body="true">
+            @input="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点" :append-to-body="true">
           </el-time-picker>
         </el-form-item>
 
@@ -231,13 +235,13 @@
         </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="submitForm">确 定</el-button>
+        <el-button type="primary" plain @click="submitForm" :loading="submitLoading">确 定</el-button>
         <el-button @click="scanContentCanlce">取消</el-button>
       </div>
     </el-dialog>
     <el-dialog class="addMsg" :title="titleExcel" v-loading="importDataLoading" :visible.sync="importData.importShow"
       append-to-body :close-on-click-modal="false" width="700px">
-      <el-form class="importForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
+      <el-form class="dialogForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px" label-position="top">
         <el-form-item label="数据源名称" prop="sourceName">
           <el-input v-model="importData.sourceName" maxlength="50" placeholder="请输入数据源名称"></el-input>
@@ -332,6 +336,8 @@ export default {
       markingVisible: false,
       addUserId: 0,
       mainLoading: false,
+      submitLoading: false,
+      btnLoading: false,
       imgSrc: {
         'ERR': require('@/assets/stateImg/stateDanger.png'),
         'COMPLETE': require('@/assets/stateImg/stateSuess.png'),
@@ -855,6 +861,8 @@ export default {
     },
     /** 提交按钮 */
     async submitForm() {
+      if (this.submitLoading) return;
+      this.submitLoading = true;
       this.$refs["form"].validate(async valid => {
         let data = JSON.parse(JSON.stringify(this.form))
         delete data.projectName
@@ -871,13 +879,16 @@ export default {
         console.log(data);
         if (!this.editIsFlag && !data.tables) {
           this.$message({ message: '请选择扫描内容', type: 'warning' })
+          this.submitLoading = false;
           return
         } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
           this.$message({ message: '请选择扫描内容', type: 'warning' })
+          this.submitLoading = false;
           return
         }
         if (valid) {
           if (!await this.getNameTestingFn()) {
+            this.submitLoading = false;
             return
           }
           if (this.form.id != null) {
@@ -886,14 +897,22 @@ export default {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
+              this.submitLoading = false;
+            }).catch(() => {
+              this.submitLoading = false;
             });
           } else {
             saveDatabaseAndTables(data).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
+              this.submitLoading = false;
+            }).catch(() => {
+              this.submitLoading = false;
             });
           }
+        } else {
+          this.submitLoading = false;
         }
       });
     },
@@ -1033,61 +1052,64 @@ export default {
       }
     },
     scanStateClickFn(row) {
+      if (this.btnLoading) return;
       if (row.scanState == 'COMPLETE') {
         this.$confirm(`再次扫描将会覆盖之前的所有扫描结果，确定继续吗？`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.loading = true
+          this.btnLoading = true;
           dataSacn({ proxyIds: row.id }).then(async res => {
-            // this.scanStateName = false
             await this.getList()
+          }).catch(() => {
+            this.$message.error('扫描失败')
           }).finally(() => {
-            this.loading = false
+            this.btnLoading = false;
           })
         })
           .catch(() => {
             this.getList()
           })
       } else {
-        this.loading = true
+        this.btnLoading = true;
         dataSacn({ proxyIds: row.id }).then(async res => {
-          // this.scanStateName = false
           await this.getList()
+        }).catch(() => {
+          this.$message.error('扫描失败')
         }).finally(() => {
-          this.loading = false
+          this.btnLoading = false;
         })
-          .catch(() => {
-            this.getList()
-          })
       }
     },
     stopScan(row) {
+      if (this.btnLoading) return;
       this.$confirm(`确定要终止"${row.sourceName}"的扫描任务吗？`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.loading = true
+        this.btnLoading = true;
         stopDataScan({ proxyIds: row.id }).then(async res => {
           this.$message.success(res.msg || '终止扫描成功')
           await this.getList()
         }).catch(() => {
           this.$message.error('终止扫描失败')
         }).finally(() => {
-          this.loading = false
+          this.btnLoading = false;
         })
       }).catch(() => {
-        // 用户取消操作，不做处理
       })
     },
     handleTimeChange(time) {
-      // 确保时间值正确更新到表单数据中
-      this.$nextTick(() => {
-        this.form.scheduleTime = time;
-      });
-      // 移除$forceUpdate()，避免引起不必要的视图重绘
+      if (time) {
+        this.form.scheduleTime = time
+      }
+      this.$forceUpdate()
+    },
+    handleIntervalChange(val) {
+      this.form.scheduleInterval = val
+      this.$forceUpdate()
     },
     scanContentEdit(row) {
       console.log('row', row);
@@ -1164,6 +1186,9 @@ export default {
           } else {
             this.scanContentTreeData = res.data
             this.scanContentShow = true
+            if (this.title == "添加数据库") {
+              this.treeCheckedData = ['0']
+            }
           }
         }
       })
@@ -1222,112 +1247,7 @@ export default {
   }
 };
 </script>
-<style scope>
-.app-container .el-dialog__wrapper .addMsg .el-dialog .el-dialog__body {
-  padding-bottom: 0 !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-dialog .el-dialog__footer {
-  padding-bottom: 32px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-form-item {
-  margin-bottom: 20px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-form-item__label {
-  line-height: 20px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-form-item .el-form-item__content {
-  line-height: 20px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-input__inner,
-.app-container .el-dialog__wrapper .addMsg .el-textarea__inner,
-.app-container .el-dialog__wrapper .addMsg .el-select .el-input__inner {
-  height: 36px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-form--label-top .el-form-item__label {
-  padding: 0 !important;
-  margin-bottom: 8px !important;
-  font-size: 14px !important;
-  font-weight: 700 !important;
-  color: #303133 !important;
-  line-height: 14px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-select .el-select__tags>span>input.el-input__inner {
-  height: 30px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-checkbox {
-  margin-left: 0px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-dialog__body .el-row {
-  margin-left: -15px !important;
-  margin-right: -15px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-dialog__body .el-row .el-col-12 {
-  padding-left: 15px !important;
-  padding-right: 15px !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-dialog__body .el-col-12 .el-form-item {
-  margin-bottom: 0 !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-dialog__body .el-col-12 .el-form-item .el-form-item__content {
-  width: 100% !important;
-}
-
-.app-container .el-dialog__wrapper .addMsg .el-dialog__body .el-col-12 .el-form-item .el-input__inner {
-  width: 100% !important;
-}
-
-.addMsg /deep/ .el-input--medium {
-  width: 237px;
-}
-
-.addMsg /deep/.el-dialog {
-  border-radius: 10px;
-}
-
-.addMsg /deep/.el-dialog__header {
-  border-bottom: 1px solid #e6e6e6;
-}
-
-.addMsg /deep/.el-dialog__title {
-  font-weight: bold;
-}
-
-.addMsg /deep/.el-form-item__content {
-  padding-right: 15px;
-}
-
-.addMsg /deep/.el-dialog__body {
-  padding: 30px;
-}
-
-.addMsg /deep/ .el-dialog:not(.is-fullscreen) {
-  margin-top: 10% !important;
-}
-
-.addMsg /deep/ .el-dialog__body {
-  padding-bottom: 0;
-}
-
-.addMsg /deep/ .el-dialog__footer {
-  padding-bottom: 32px;
-}
-
-.addMsg /deep/ .el-form-item__label {
-  text-align: left;
-}
-
+<style scoped>
 .success {
   color: #67c23a;
 }
@@ -1346,22 +1266,6 @@ export default {
 
 .scanContentBox /deep/ .el-dialog__body {
   padding: 20px;
-}
-
-.addMsg /deep/ .el-input {
-  width: 100%;
-}
-
-.addMsg /deep/ .el-textarea {
-  width: 100%;
-}
-
-.addMsg /deep/ .el-select {
-  width: 100%;
-}
-
-.addMsg .el-select /deep/ .el-input {
-  width: 100%;
 }
 
 .yuanDataClass {
@@ -1396,15 +1300,16 @@ export default {
   margin-left: 263px
 }
 
-.importForm {
-  margin-bottom: 0;
-}
-
-.importForm /deep/ .el-form-item--medium {
+.dialogForm .el-form-item {
   width: 100%;
 }
 
-.importForm /deep/ .el-form-item__content {
+.dialogForm .el-form-item /deep/ .el-form-item__content {
+  width: 100%;
+  padding-right: 15px;
+}
+
+.dialogForm .el-form-item /deep/ .el-select {
   width: 100%;
 }
 
@@ -1447,5 +1352,37 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.addMsg ::v-deep .el-input {
+  width: 100%;
+}
+
+.addMsg ::v-deep .el-select {
+  width: 100%;
+}
+
+.addMsg .el-select ::v-deep .el-input {
+  width: 100%;
+}
+
+.addMsg ::v-deep.el-dialog {
+  border-radius: 10px;
+}
+
+.addMsg ::v-deep.el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.addMsg ::v-deep.el-dialog__title {
+  font-weight: bold;
+}
+
+.addMsg ::v-deep.el-dialog__body {
+  padding: 30px;
+}
+
+.addMsg ::v-deep.el-form {
+  margin-bottom: 0;
 }
 </style>

@@ -525,9 +525,16 @@ export default {
 
         // 搜索表名
         inputSearch(val) {
-            this.checkListChildAll = this.serchListChildAll.filter(item =>
-                item.tableName.includes(val)
-            );
+            const lowerVal = val.toLowerCase();
+            const keywords = lowerVal.split(',').filter(k => k.trim());
+            if (keywords.length === 0) {
+                this.checkListChildAll = [...this.serchListChildAll];
+            } else {
+                this.checkListChildAll = this.serchListChildAll.filter(item => {
+                    const itemName = item.tableName.toLowerCase();
+                    return keywords.some(keyword => itemName.includes(keyword));
+                });
+            }
             this.updateMiddleListCheckAllStatus();
         },
 

@@ -182,6 +182,22 @@
             </el-form-item>
           </el-col> -->
         </el-row>
+        <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="主题词表" prop="tags">
+          <div class="tagsClass" :style="tagsShow ? heightSmall : heightBig" style="width: 100%;">
+            <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag + index" class="mx-1"
+              :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'tags')" style="margin: 0 10px;">
+              {{ tag }}
+            </el-tag>
+            <el-input class="input-new-tag" v-if="inputVisible && countIs40" maxlength="10" v-model="inputValue"
+              ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm('tags')"
+              @blur="handleInputConfirm('tags')">
+            </el-input>
+            <el-button v-if="!inputVisible && countIs40 && addOrEdit.flag != 3" class="button-new-tag" size="small"
+              @click="showInput('tags')">+ 新增</el-button>
+          </div>
+          <el-button class="button-new-tag" size="small" v-show="tags.length > 10" @click="tagsShow = !tagsShow">{{
+            tagsShow ? '展开' : '收起' }}</el-button>
+        </el-form-item>
 
         <Title title="安全防护"></Title>
         <el-form-item class="addSelectClass" prop="minSecurityLevel" label="建议防护措施">
@@ -198,22 +214,6 @@
               :value="item.dictLabel">
             </el-option>
           </el-select>
-        </el-form-item>
-        <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="主题词表" prop="tags">
-          <div class="tagsClass" :style="tagsShow ? heightSmall : heightBig" style="width: 100%;">
-            <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag + index" class="mx-1"
-              :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'tags')" style="margin: 0 10px;">
-              {{ tag }}
-            </el-tag>
-            <el-input class="input-new-tag" v-if="inputVisible && countIs40" maxlength="10" v-model="inputValue"
-              ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm('tags')"
-              @blur="handleInputConfirm('tags')">
-            </el-input>
-            <el-button v-if="!inputVisible && countIs40 && addOrEdit.flag != 3" class="button-new-tag" size="small"
-              @click="showInput('tags')">+ 新增</el-button>
-          </div>
-          <el-button class="button-new-tag" size="small" v-show="tags.length > 10" @click="tagsShow = !tagsShow">{{
-            tagsShow ? '展开' : '收起' }}</el-button>
         </el-form-item>
 
         <!-- 新增核心主题词 -->
@@ -375,8 +375,8 @@
       </div>
     </Drawer>
     <!-- 新增规则弹窗-->
-    <el-dialog class="addRuler" title="新增规则" :visible.sync="ruleDialogVisible" width="580px"
-      :close-on-click-modal="false" :show-close="false">
+    <el-dialog class="addMsg" title="新增规则" :visible.sync="ruleDialogVisible" width="580px" :close-on-click-modal="false"
+      :show-close="false">
       <el-form :model="ruleForm" ref="ruleForm" label-width="100px" class="rule-dialog-form" size="medium"
         label-position="top" :rules="dialogRules">
         <el-form-item label="规则类型" prop="ruleType">
@@ -388,19 +388,19 @@
 
         <el-form-item label="匹配条件" prop="matchType">
           <el-radio-group v-model="ruleForm.matchType"
-            style="width: 220px; display: flex; justify-content: space-between">
+            style="display: flex; justify-content: space-between">
             <el-radio label="greater" v-if="currentRuleType === 'upgrade'">大于等于</el-radio>
             <el-radio label="less" v-if="currentRuleType === 'downgrade'">小于等于</el-radio>
           </el-radio-group>
         </el-form-item>
 
         <el-form-item label="内容" prop="ruleContent">
-          <el-input v-model="ruleForm.ruleContent" style="width: 220px" placeholder="请输入数值"
+          <el-input v-model="ruleForm.ruleContent" placeholder="请输入数值"
             oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
         </el-form-item>
 
         <el-form-item label="安全分级" prop="securityLevel">
-          <el-select v-model="ruleForm.securityLevel" style="width: 220px" placeholder="请选择">
+          <el-select v-model="ruleForm.securityLevel" placeholder="请选择">
             <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
               :value="item.value" :disabled="!filterSecurityLevels(item)">
               <template #default>
@@ -1034,7 +1034,7 @@ export default {
 
       // 右侧元素（设置图标）
       const rightElements = [];
-      
+
       // 对所有层级添加setting图标（根节点）
       if (this.dataSource != '内置' && isRoot) {
         rightElements.push(
@@ -1054,21 +1054,21 @@ export default {
       const nodeContent = [
         h('span', { class: 'node-label', attrs: { title: node.label } }, node.label)
       ];
-      
+
       // 非根节点才显示等级标签
       if (!isRoot) {
         nodeContent.push(
-          h('span', { 
-            class: 'node-level', 
-            style: { 
-              color: currentColor, 
+          h('span', {
+            class: 'node-level',
+            style: {
+              color: currentColor,
               fontWeight: '500',
               marginLeft: '8px'
-            } 
+            }
           }, levelLabel)
         );
       }
-      
+
       // 添加填充元素和右侧元素
       nodeContent.push(
         h('span', { style: { flexGrow: 1 } }), // 填充元素，将右侧元素推到最右侧
@@ -1101,7 +1101,7 @@ export default {
 
       return mainNode;
     },
-    
+
     goToMenuEdit(data) {
       this.$router.push({
         path: '/editMenu',
@@ -1654,10 +1654,6 @@ export default {
   background: "rgba(0, 0, 0, 0.7)" !important;
 }
 
-.addMsg /deep/ .el-input--medium {
-  width: 237px;
-}
-
 .success {
   color: #67c23a;
 }
@@ -1876,5 +1872,47 @@ export default {
 .tree-node-main {
   margin-left: 0px;
   /* Default margin for L1 */
+}
+
+.table-with-actions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+
+  .vertical-actions {
+    margin-left: 10px;
+  }
+}
+
+.addMsg ::v-deep .el-input {
+  width: 100%;
+}
+
+.addMsg ::v-deep .el-select {
+  width: 100%;
+}
+
+.addMsg .el-select ::v-deep .el-input {
+  width: 100%;
+}
+
+.addMsg ::v-deep.el-dialog {
+  border-radius: 10px;
+}
+
+.addMsg ::v-deep.el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.addMsg ::v-deep.el-dialog__title {
+  font-weight: bold;
+}
+
+.addMsg ::v-deep.el-dialog__body {
+  padding: 30px;
+}
+
+.addMsg ::v-deep.el-form {
+  margin-bottom: 0;
 }
 </style>
