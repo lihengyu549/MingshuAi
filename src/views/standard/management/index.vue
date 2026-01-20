@@ -112,7 +112,7 @@
         <el-row>
           <el-col>
             <el-form-item label="标准描述" prop="standardDescription" :rules="rules.tasksName">
-              <el-input type="textarea" v-model="form.standardDescription" maxlength="50" placeholder="请输入标准描述" />
+              <el-input type="textarea" v-model="form.standardDescription" maxlength="1000" placeholder="请输入标准描述" />
             </el-form-item>
           </el-col>
         </el-row>
