@@ -431,7 +431,7 @@
             <div class="feature-item" :class="{ highlight: form.piiDetectionFlag }"
               @click="toggleFeature('piiDetectionFlag')">
               <div class="feature-content">
-                <div class="feature-title">个人信息识别</div>
+                <div class="feature-title">个保法合规审查</div>
                 <div class="feature-desc">智能识别姓名、身份证号等个人敏感信息</div>
                 <el-checkbox v-model="form.piiDetectionFlag" class="checkbox-right round-checkbox"
                   @click.stop></el-checkbox>
