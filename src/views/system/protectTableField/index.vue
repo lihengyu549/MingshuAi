@@ -40,8 +40,8 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="个人信息识别" class="addSelectClass">
-            <el-select ref="piiSelectRef" v-model="piiNodeName" filterable placeholder="搜索个人信息识别..."
+          <el-form-item label="个保法合规审查" class="addSelectClass">
+            <el-select ref="piiSelectRef" v-model="piiNodeName" filterable placeholder="搜索个保法合规审查..."
               :filter-method="handlePiiFilter">
               <el-option style="height: 100%; padding: 0" value="">
                 <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
@@ -76,7 +76,7 @@
           <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
           <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
           <el-table-column label="分类" align="center" prop="categoryName" min-width="250" show-overflow-tooltip />
-          <el-table-column label="个人信息识别" align="center" prop="piiDetectionName" show-overflow-tooltip />
+          <el-table-column label="个保法合规审查" align="center" prop="piiDetectionName" show-overflow-tooltip />
           <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
           <el-table-column label="建议防护措施" prop="protectMethod" width="200">
             <!-- 自定义标题样式 -->
@@ -337,7 +337,7 @@ export default {
             "value": "reasoningProcess"
           },
           {
-            "label": "个人信息识别",
+            "label": "个保法合规审查",
             "value": "piiDetectionName"
           },
           {

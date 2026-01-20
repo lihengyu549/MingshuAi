@@ -68,7 +68,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="个人信息识别" prop="piiDetection">
+        <el-form-item label="个保法合规审查" prop="piiDetection">
           <el-select ref="addSelectRef" v-model="piiNodeName">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
@@ -229,7 +229,7 @@
             </el-option>
           </el-select>
         </el-form-item> -->
-        <el-form-item label="个人信息识别" class="addSelectClass" prop="piiDetection">
+        <el-form-item label="个保法合规审查" class="addSelectClass" prop="piiDetection">
           <el-select ref="piiSelectRef" v-model="piiNodeName">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="piiList" :props="defaultProps" :expand-on-click-node="true"
@@ -475,7 +475,7 @@ export default {
         //   width: "250"
         // },
         {
-          label: "个人信息识别",
+          label: "个保法合规审查",
           prop: "piiDetectionName",
           width: "250"
         },

@@ -13,10 +13,25 @@
                         <el-table-column type="selection" width="55"></el-table-column>
                         <el-table-column label="数据路径" prop="dataPath" align="center"></el-table-column>
                         <el-table-column label="字段名称" prop="fieldName" align="center"></el-table-column>
-                        <el-table-column label="字段注释" prop="fieldComment" align="center"></el-table-column>
-                        <el-table-column label="AI字段注释" prop="aiFieldComment" align="center"></el-table-column>
-                        <el-table-column label="样本" prop="sample" align="center"></el-table-column>
-                        <el-table-column label="样本特征" prop="sampleFeature" align="center"></el-table-column>
+                        <el-table-column label="字段注释" prop="fileRemark" align="center"></el-table-column>
+                        <el-table-column label="AI字段注释" prop="fileAiRemark" align="center"></el-table-column>
+                        <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
+                            <template slot-scope="scope">
+                                <el-tooltip placement="bottom" effect="light">
+                                    <div slot="content">
+                                        <el-table :data="scope.row.sampleList" height="250" border class="tableCla"
+                                            style="width: 100%">
+                                            <el-table-column type="index" label="序号" width="50" />
+                                            <el-table-column prop="value" label="字段值" width="100"
+                                                show-overflow-tooltip>
+                                            </el-table-column>
+                                        </el-table>
+                                    </div>
+                                    <el-button size="mini" type="text">查看</el-button>
+                                </el-tooltip>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="样本特征" prop="regularExpression" align="center"></el-table-column>
                     </el-table>
                     <pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
                         :current-page="currentPage" :pageSizes="[10, 20, 50, 100]" :limit="pageSize" :pagerCount="5"
@@ -61,6 +76,7 @@ export default {
         return {
             loading: false,
             lastChildList: [],
+            selectedList: [],
             currentPage: 1,
             pageSize: 10,
             total: 0,
@@ -76,9 +92,6 @@ export default {
         },
         parsedTableData() {
             return this.pageData.records || []
-        },
-        selectedList() {
-            return this.sourceTableData.list || []
         },
         paginatedTableData() {
             return this.parsedTableData
@@ -129,10 +142,28 @@ export default {
                 pageSize: this.pageSize 
             }).then(res => {
                 if (this.databaseId) {
-                    this.sourceTableData = res.data || {
+                    const data = res.data || {
                         list: [],
                         page: { records: [], total: 0, current: 1, size: 10 }
                     }
+                    
+                    if (data.page && data.page.records) {
+                        data.page.records = data.page.records.map(item => {
+                            if (item.sampleData) {
+                                try {
+                                    const sampleList = JSON.parse(item.sampleData)
+                                    item.sampleList = Array.isArray(sampleList) ? sampleList.map(value => ({ value })) : []
+                                } catch (e) {
+                                    item.sampleList = []
+                                }
+                            } else {
+                                item.sampleList = []
+                            }
+                            return item
+                        })
+                    }
+                    
+                    this.sourceTableData = data
                     this.$nextTick(() => {
                         this.initCheckedRows()
                     })

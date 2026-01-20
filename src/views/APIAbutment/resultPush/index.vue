@@ -101,18 +101,18 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="密码" prop="passWord">
-              <el-input v-model="dialogData.passWord" show-password placeholder="请输入密码"></el-input>
+              <el-input type="password" v-model="dialogData.passWord" :show-password="passwordVisible" placeholder="请输入密码"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-form-item v-if="dialogData.pushType == '1'" label="分类分级标准" prop="standardId">
-          <el-select clearable v-model="dialogData.standardId" placeholder="请选择">
+          <el-select clearable v-model="dialogData.standardId" placeholder="请选择" filterable>
             <el-option v-for="item in standardList" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item v-if="dialogData.pushType == '2'" label="数据源名称" prop="sourceId">
-          <el-select clearable v-model="dialogData.sourceId" placeholder="请选择" @change="handleSourceIdChange">
+          <el-select clearable v-model="dialogData.sourceId" placeholder="请选择" filterable @change="handleSourceIdChange">
             <el-option v-for="item in sourceNameList" :key="item.id" :label="item.sourceName" :value="item.id">
             </el-option>
           </el-select>
@@ -253,20 +253,24 @@ export default {
       standardList: [],
       sourceNameList: [],
       categoryList: [],
+      passwordVisible: true,
     };
   },
   computed: {
   },
   created() {
-    // 分类分级标准列表
-    this.getStandardListFn()
-    //数据源名称列表
-    this.getSourceNameListFn()
+
   },
   mounted() {
     this.getList();
   },
   methods: {
+    initList() {
+      // 分类分级标准列表
+      this.getStandardListFn()
+      //数据源名称列表
+      this.getSourceNameListFn()
+    },
     getSourceNameListFn() {
       selectPublishDataBase().then(res => {
         this.sourceNameList = res.data.map(item => ({
@@ -334,7 +338,10 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
+      // 初始化列表
+      this.initList()
       this.resetAddData()
+      this.passwordVisible = true
       this.dialogDataShow = true;
       this.title = "新增";
     },
@@ -385,7 +392,10 @@ export default {
       });
     },
     handleEcelFn(row) {
+      // 初始化列表
+      this.initList()
       this.editIsFlag = false
+      this.passwordVisible = false
       this.dialogDataShow = true
       this.dialogData = JSON.parse(JSON.stringify(row))
       if (String(this.dialogData.pushType) == '2') {
