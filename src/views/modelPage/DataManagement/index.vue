@@ -39,7 +39,7 @@
                     </span>
                 </template>
             </el-table-column>
-            <el-table-column label="数据集类型" align="center" prop="dataSetType" width="300" show-overflow-tooltip />
+            <el-table-column label="数据集类型" align="center" prop="dataSetTypeName" width="300" show-overflow-tooltip />
             <el-table-column label="数据量" align="center" prop="dataSize" width="300" show-overflow-tooltip />
             <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
                 <template slot-scope="scope">
@@ -134,7 +134,7 @@ export default {
                 dataSetName: [
                     { required: true, message: "请输入数据集名称", trigger: "blur" }
                 ],
-                dataSetType: [
+                dataSetTypeName: [
                     { required: true, message: "请选择数据集类型", trigger: "blur" }
                 ],
                 databaseProxyListId: [
