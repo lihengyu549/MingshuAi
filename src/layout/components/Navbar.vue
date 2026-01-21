@@ -6,7 +6,7 @@
       <router-link
         v-for="item in navbarChildren"
         :key="item.path"
-        :class="['navbar-child-item', isActive(item) ? 'active' : '']"
+        class="navbar-child-item"
         :to="{ path: item.path, query: item.query, fullPath: item.fullPath }"
       >
         {{ item.meta ? item.meta.title : item.title }}
@@ -153,9 +153,6 @@ export default {
     this.updateNavbarChildren()
   },
   methods: {
-    isActive(route) {
-      return route.path === this.$route.path
-    },
     updateNavbarChildren() {
       const currentPath = this.$route.path
       const sidebarRouters = this.sidebarRouters
@@ -315,29 +312,31 @@ export default {
     height: 100%;
     display: flex;
     align-items: center;
-    background-color: #f5f7fa;
-    padding: 0 20px;
+    padding: 8px 20px;
     
     .navbar-child-item {
       display: inline-flex;
       align-items: center;
       height: 100%;
       padding: 0 15px;
-      color: #606266;
+      color: #26244ce0;
       font-size: 14px;
       text-decoration: none;
-      border-bottom: 2px solid transparent;
+      // border-bottom: 2px solid transparent;
       transition: all 0.3s;
+      border-radius: 10px;
       cursor: pointer;
       
       &:hover {
-        color: #409EFF;
+        
       }
       
-      &.active {
-        color: #409EFF;
-        border-bottom-color: #409EFF;
+      &.router-link-active {
+        color: #26244ce0;
+        // border-bottom-color: #26244ce0;
         background-color: rgba(64, 158, 255, 0.1);
+        border-bottom: none;
+        font-weight: bold;
       }
     }
   }
