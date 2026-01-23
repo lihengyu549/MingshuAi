@@ -77,35 +77,32 @@
       overflow: hidden !important;
       text-overflow: ellipsis !important;
       white-space: nowrap !important;
-      height: 40px !important; /* 降低菜单项高度 */
-      line-height: 40px !important; /* 调整行高匹配新高度 */
-      padding-top: 0 !important; /* 移除顶部内边距 */
-      padding-bottom: 0 !important; /* 移除底部内边距 */
+      height: 45px !important;
+      line-height: 40px !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      color: #738192 !important;
     }
 
     // menu hover
     .submenu-title-noDropdown,
     .el-submenu__title {
       &:hover {
-        background-color: $base-menu-hover-background !important;
-        border-radius: $base-menu-border-radius !important; // 添加圆角样式
-        // margin: 0 10px; // 添加边距让圆角效果更明显
+        background-color: #f8fafc !important;
+        color: #1e293b !important;
       }
     }
 
-    // 新增：菜单选中状态样式
-    .el-menu-item.is-active, 
+    .el-menu-item.is-active,
     .el-submenu__title.is-active {
-      background-color: $base-menu-active-background !important;
-      border-radius: $base-menu-border-radius !important; // 添加圆角样式
-      font-weight: 600 !important; // 添加字体加粗设置
-      color: $base-menu-color-active !important;
-      // margin: 0 10px; // 可选：添加边距让圆角效果更明显
+      background-color: #eff6ff !important;
+      color: #3b82f6 !important;
+      font-weight: 600 !important;
     }
 
     // 首页菜单项特殊样式 - 添加上下边距
     .el-menu-item.home-menu-item {
-      margin: 20px 0 0 0 !important;
+      // margin: 20px 0 0 0 !important;
     }
 
     & .theme-dark .is-active>.el-submenu__title {
@@ -121,9 +118,8 @@
       padding-bottom: 0 !important; /* 移除底部内边距 */
 
       &:hover {
-        background-color: $base-menu-hover-background !important;
-        border-radius: $base-menu-border-radius !important; // 添加圆角样式
-        // margin: 0 10px; // 添加边距让圆角效果更明显
+        background-color: #f8fafc !important;
+        color: #1e293b !important;
       }
     }
 

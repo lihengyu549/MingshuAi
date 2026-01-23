@@ -1,14 +1,10 @@
 <template>
   <div class="navbar">
     <top-nav id="topmenu-container" class="topmenu-container" v-if="topNav" />
-    
+
     <div class="navbar-children" v-if="navbarChildren.length > 0">
-      <router-link
-        v-for="item in navbarChildren"
-        :key="item.path"
-        class="navbar-child-item"
-        :to="{ path: item.path, query: item.query, fullPath: item.fullPath }"
-      >
+      <router-link v-for="item in navbarChildren" :key="item.path" class="navbar-child-item"
+        :to="{ path: item.path, query: item.query, fullPath: item.fullPath }">
         {{ item.meta ? item.meta.title : item.title }}
       </router-link>
     </div>
@@ -156,7 +152,7 @@ export default {
     updateNavbarChildren() {
       const currentPath = this.$route.path
       const sidebarRouters = this.sidebarRouters
-      
+
       for (const route of sidebarRouters) {
         const result = this.findNavbarChildren(route, currentPath)
         if (result) {
@@ -168,12 +164,12 @@ export default {
     },
     findNavbarChildren(route, currentPath, parentPath = '') {
       if (!route || !route.children) return null
-      
+
       const fullParentPath = parentPath
-      
+
       for (const child of route.children) {
         if (!child) continue
-        
+
         const childPath = child.path.startsWith('/') ? child.path : '/' + child.path
         let fullChildPath
         if (fullParentPath) {
@@ -185,7 +181,7 @@ export default {
         } else {
           fullChildPath = childPath
         }
-        
+
         if (child.children && child.children.length > 0) {
           if (child.meta && child.meta.hideChildrenInNavbar) {
             const childHasGrandchildren = child.children.some(grandChild => grandChild.children && grandChild.children.length > 0)
@@ -198,7 +194,7 @@ export default {
                 }
               }
             }
-            
+
             if (currentPath === fullChildPath || currentPath.startsWith(fullChildPath + '/')) {
               return child.children
             }
@@ -206,7 +202,7 @@ export default {
           const nestedResult = this.findNavbarChildren(child, currentPath, fullChildPath)
           if (nestedResult) return nestedResult
         }
-        
+
         if (currentPath === fullChildPath || currentPath.startsWith(fullChildPath + '/')) {
           if (route.meta && route.meta.hideChildrenInNavbar && child.children) {
             return child.children
@@ -301,46 +297,45 @@ export default {
   position: fixed !important;
   z-index: 1000;
   width: 100%;
-  height: 50px;
+  height: 60px;
   position: relative;
   background: #ffffff;
   padding-right: 3%;
-  
+  border-left: 1px solid #e6e8ee;
+
   .navbar-children {
     position: absolute;
     top: 0;
     height: 100%;
     display: flex;
     align-items: center;
-    padding: 8px 20px;
-    
+    padding: 10px 20px;
+
     .navbar-child-item {
       display: inline-flex;
       align-items: center;
       height: 100%;
       padding: 0 15px;
-      color: #26244ce0;
+      color: #738192;
       font-size: 14px;
       text-decoration: none;
-      // border-bottom: 2px solid transparent;
       transition: all 0.3s;
       border-radius: 10px;
       cursor: pointer;
-      
+
       &:hover {
-        
+        background-color: #f8fafc;
+        color: #1e293b;
       }
-      
+
       &.router-link-active {
-        color: #26244ce0;
-        // border-bottom-color: #26244ce0;
-        background-color: rgba(64, 158, 255, 0.1);
-        border-bottom: none;
-        font-weight: bold;
+        background-color: #eff6ff;
+        color: #3b82f6;
+        font-weight: 600;
       }
     }
   }
-  
+
   .export-records-btn {
     overflow: visible !important;
   }

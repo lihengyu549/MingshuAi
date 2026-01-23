@@ -29,13 +29,13 @@ export default {
 <style lang="scss" scoped>
 .app-main {
   /* 50= navbar  50  */
-  background-color: white;
+  background-color: #fafafa;
   min-height: calc(100vh - 50px);
   width: 100%;
   position: relative;
   overflow: hidden;
   border: 1px solid #e6e8ee;
-  border-radius: 10px 0 0 0;
+  // border-radius: 10px 0 0 0;
 
   // overflow-y: hidden;
   // background-color: #F0F2F5;

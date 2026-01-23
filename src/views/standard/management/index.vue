@@ -2,82 +2,73 @@
 
 <template>
   <div class="app-container" v-loading="mainLoading">
-    <el-form :model="queryParams" ref="queryParams" v-show="showSearch" class="yuanDataClass" size="small"
-      :inline="true" label-width="auto">
-      <!-- <el-form-item label="标准编号" prop="standardDescription">
+    <el-card class="searchCard" shadow="hover">
+      <el-form :model="queryParams" ref="queryParams" v-show="showSearch" class="yuanDataClass" size="small"
+        :inline="true" label-width="auto">
+        <!-- <el-form-item label="标准编号" prop="standardDescription">
         <el-input v-model="queryParams.standardDescription" @input="inputSearch" placeholder="请输入标准编号" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item> -->
-      <el-form-item label="标准名称" prop="standardName">
-        <el-input v-model="queryParams.standardName" @input="inputSearch" placeholder="请输入标准名称" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="标准类型" prop="standardType">
-        <el-select clearable v-model="queryParams.standardType" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in dict.type.sys_standard_type" :key="item.value" :label="item.label"
-            :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="行业类别" prop="industryCategory">
-        <el-input v-model="queryParams.industryCategory" @input="inputSearch" placeholder="请输入行业类别" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <!-- <el-form-item class="searchBtn">
+        <el-form-item label="标准名称" prop="standardName">
+          <el-input v-model="queryParams.standardName" @input="inputSearch" placeholder="请输入标准名称" clearable
+            @keyup.enter.native="handleQuery" />
+        </el-form-item>
+        <el-form-item label="标准类型" prop="standardType">
+          <el-select clearable v-model="queryParams.standardType" @change="inputSearch" placeholder="请选择">
+            <el-option v-for="item in dict.type.sys_standard_type" :key="item.value" :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="行业类别" prop="industryCategory">
+          <el-input v-model="queryParams.industryCategory" @input="inputSearch" placeholder="请输入行业类别" clearable
+            @keyup.enter.native="handleQuery" />
+        </el-form-item>
+        <!-- <el-form-item class="searchBtn">
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
       </el-form-item> -->
-    </el-form>
+      </el-form>
+    </el-card>
+
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="managementImport">标准导入</el-button>
-        <el-button type="primary" plain size="medium" @click="push">智能生成</el-button>
+        <!-- <el-button type="primary" plain size="medium" @click="push">智能生成</el-button> -->
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
     <div class="listBox">
-      <div class="listBox_item" v-for="item in proxysList" :key="item.id">
-        <!-- 头部区域：包含图标和标签 -->
-        <div class="listBox_header">
-          <div class="title_content">
-            <!-- <img src="@/assets/images/file.png" alt="标准" class="standard_icon"> -->
-            <svg-icon icon-class="dunpai-2" class="standard_icon"></svg-icon>
-            <div class="title_text_area">
-              <el-tooltip class="item" effect="dark" :content="item.categoryName" placement="top-start">
-                <h3 class="category-title">{{ item.categoryName }}</h3>
-              </el-tooltip>
-              <div class="title_tags">
-                <el-tag class="tag-item" size="small" type="primary">{{ item.standardTypeName }}</el-tag>
-                <el-tag class="tag-item" size="small" type="info">现行</el-tag>
-                <el-tag class="tag-item" size="small" type="info">{{ item.dataSource }}</el-tag>
-              </div>
+      <el-card class="listBox_item" v-for="item in proxysList" :key="item.id" shadow="hover" :body-style="{ display: 'flex', flexDirection: 'column', height: '100%' }">
+        <div class="card-header">
+          <svg-icon icon-class="dunpai-2" class="card-icon"></svg-icon>
+          <div class="card-title-area">
+            <el-tooltip effect="dark" :content="item.categoryName" placement="top-start">
+              <h3 class="card-title">{{ item.categoryName }}</h3>
+            </el-tooltip>
+            <div class="card-tags">
+              <el-tag size="small" type="primary">{{ item.standardTypeName }}</el-tag>
+              <el-tag size="small" type="info">现行</el-tag>
+              <el-tag size="small" type="info">{{ item.dataSource }}</el-tag>
             </div>
           </div>
         </div>
-
-        <!-- 中间描述区域：即使内容为空也保持高度 -->
-        <div class="listBox_body">
-          <p class="desc_content">{{ item.standardDescription || '' }}</p>
+        <p class="card-desc" style="flex: 1;">{{ item.standardDescription || '' }}</p>
+        <div class="card-info">
+          <span>{{ item.industryCategory }}</span>
+          <span>{{ item.implementTime }}实施</span>
         </div>
-
-        <!-- 信息展示区域 -->
-        <div class="listBox_info">
-          <div class="standard_info">
-            <span>{{ item.industryCategory }}</span>
-            <span>{{ item.implementTime }}实施</span>
-          </div>
+        <div class="card-actions">
+          <el-button type="text" size="small" class="btn-delete" @click="deleteFn(item)">
+            <i class="el-icon-delete"></i> 删除
+          </el-button>
+          <el-button type="text" size="small" class="btn-primary" :disabled="item.dataSource === '内置'" @click="editFn(item)">
+            <i class="el-icon-edit-outline"></i> 编辑
+          </el-button>
+          <el-button type="text" size="small" class="btn-primary" @click="detailFn(item)">
+            <i class="el-icon-warning-outline"></i> 查看详情
+          </el-button>
         </div>
-
-        <!-- 底部操作区域 -->
-        <div class="listBox_footer">
-          <el-button type="text" size="small" @click="deleteFn(item)" :disabled="item.dataSource === '内置'"
-            style="color: #d1d1da;"><i class="el-icon-delete"></i> 删除</el-button>
-          <el-button type="text" size="small" :disabled="item.dataSource === '内置'" @click="editFn(item)"
-            style="color: #666580;"><i class="el-icon-edit-outline"></i> 编辑</el-button>
-          <el-button type="text" size="small" @click="detailFn(item)" style="color: #666580;"><i
-              class="el-icon-warning-outline"></i>
-            查看详情</el-button>
-        </div>
-      </div>
+      </el-card>
       <div v-if="proxysList.length == 0" style="margin: 0 auto;">
         <el-empty description="暂无数据"></el-empty>
       </div>
@@ -526,7 +517,11 @@ input[aria-hidden=true] {
 .addMsg .el-select /deep/ .el-input {
   width: 100%;
 }
-
+.searchCard {
+  border-radius: 10px;
+  margin-bottom: 30px;
+  padding: 15px 0px;
+}
 .yuanDataClass {
   display: flex;
   justify-content: flex-start;
@@ -536,6 +531,7 @@ input[aria-hidden=true] {
 
 .yuanDataClass /deep/ .el-form-item {
   width: 30%;
+  margin-bottom: 0px;
 }
 
 .yuanDataClass /deep/ .el-form-item__label {
@@ -629,25 +625,28 @@ input[aria-hidden=true] {
   /* 移除space-between，默认就是左对齐排列 */
   align-items: flex-start;
   /* 顶部对齐防止高度不一致导致错位 */
-  background-color: #fefefe;
-  padding: 40px 0px;
-  margin-top: 20px;
+  background-color: #fafafa;
+  padding: 30px 0px;
+  justify-content: space-between;
 }
 
 .listBox_item {
-  /* 计算宽度：4个项目均分100%宽度，减去间距 */
   width: calc(25% - 3%);
   margin: 0 3% 50px 0;
-  /* 右侧和底部保留间距 */
   height: 250px;
-  background-color: #fafafa;
+  background-color: #fff;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
   padding: 8px;
   border: 1px solid #e8eaed;
   box-sizing: border-box;
-  /* 确保padding和border不影响宽度计算 */
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
 }
 
 .listBox_item:nth-child(4n) {
@@ -669,156 +668,55 @@ input[aria-hidden=true] {
   border-radius: 10px;
 }
 
-
-.listBox_header {
-  padding: 15px;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  /* border-bottom: 1px solid #e6e6e6; */
-}
-
-.listBox_title {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 10px;
-}
-
-.title_content {
+.card-header {
   display: flex;
   align-items: center;
-  /* 确保图标和文字区域垂直居中对齐 */
+  margin-bottom: 12px;
 }
 
-.standard_icon {
-  width: 50px;
-  height: 50px;
-  margin-right: 20px;
-  vertical-align: middle;
+.card-icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 12px;
   background-color: #e1f2fe;
-  padding: 10px;
-  border-radius: 10px;
+  padding: 8px;
+  border-radius: 8px;
 }
 
-.title_text_area {
-  display: flex;
-  flex-direction: column;
+.card-title-area {
   flex: 1;
   overflow: hidden;
 }
 
-.title_content h3 {
-  margin: 0 0 4px 0;
+.card-title {
+  margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 600;
   color: #333;
-  line-height: 24px;
-  /* 关键样式：控制只显示一行并添加省略号 */
+  line-height: 1.2;
   white-space: nowrap;
-  /* 禁止换行 */
   overflow: hidden;
-  /* 超出部分隐藏 */
   text-overflow: ellipsis;
-  /* 超出部分显示省略号 */
-  max-width: 100%;
-  /* 限制最大宽度为父容器宽度 */
 }
 
-.tag-item {
-  height: 20px;
-  /* 调整标签高度 */
+.card-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.card-tags .el-tag {
+  height: 22px;
   line-height: 20px;
-  /* 确保标签文字居中 */
   padding: 0 8px;
   font-size: 12px;
 }
 
-.listBox_desc {
-  color: #666;
-  font-size: 14px;
-  margin: 0;
-}
-
-.listBox_body {
-  flex: 1;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.standard_desc {
+.card-desc {
   margin: 0 0 10px 0;
   font-size: 14px;
   color: #666;
   line-height: 1.5;
-}
-
-.standard_info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #999;
-}
-
-.listBox_footer {
-  padding: 10px 15px;
-  border-top: 1px solid #e6e6e6;
-  display: flex;
-  justify-content: space-around;
-  gap: 10px;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  overflow: hidden;
-}
-
-.listBox_footer .el-button {
-  padding: 5px 10px;
-  font-size: 12px;
-}
-
-.title_tags span {
-  margin-right: 10px;
-  width: auto;
-  height: 25px;
-  line-height: 23px;
-  text-align: center;
-  font-size: 14px;
-  border-radius: 10px;
-}
-</style>
-<style scoped>
-/* 保持其他原有样式不变，添加/修改以下样式 */
-
-
-
-/* 头部区域样式 */
-.listBox_header {
-  padding: 15px;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  /* border-bottom: 1px solid #e6e6e6; */
-}
-
-/* 中间描述区域样式 - 确保空内容时不塌陷 */
-.listBox_body {
-  padding: 15px;
-  flex: 1;
-  /* 占据剩余空间 */
-  min-height: 60px;
-  /* 设置最小高度 */
-  display: flex;
-  align-items: center;
-  /* border-bottom: 1px solid #e6e6e6; */
-}
-
-.desc_content {
-  width: 100%;
-  margin: 0;
-  font-size: 14px;
-  color: #666;
-  line-height: 1.5;
-  /* 保持文本溢出处理 */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -828,26 +726,43 @@ input[aria-hidden=true] {
   word-break: break-word;
 }
 
-/* 信息区域样式 */
-.listBox_info {
-  padding: 10px 15px;
-  /* border-bottom: 1px solid #e6e6e6; */
-}
-
-.standard_info {
+.card-info {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
   color: #999;
+  margin-bottom: 10px;
 }
 
-/* 底部操作区域样式 */
-.listBox_footer {
-  padding: 10px 15px;
+.card-actions {
   display: flex;
   justify-content: space-around;
   gap: 10px;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #e6e6e6;
+}
+
+.card-actions .el-button {
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 10px;
+}
+
+.card-actions .btn-delete {
+  color: #909399;
+}
+
+.card-actions .btn-delete:hover {
+  background-color: #fef0f0;
+  color: #f56c6c;
+}
+
+.card-actions .btn-primary {
+  color: #606266;
+}
+
+.card-actions .btn-primary:hover {
+  background-color: #ecf5ff;
+  color: #409eff;
 }
 </style>

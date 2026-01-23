@@ -10,9 +10,13 @@
       </router-link>
       <router-link v-else key="expand" class="sidebar-logo-link" to="/">
         <img v-if="logo" :src="$store.state.user.projectData.img" class="sidebar-logo" />
-        <h1 class="sidebar-title"
-          :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }">{{
-            title }} </h1>
+        <div class="logo-text">
+          <!-- <h1 class="sidebar-title"
+            :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }">{{
+              title }} </h1> -->
+          <h1 class="logo-h1">DataGuard</h1>
+          <span class="sidebar-title">{{ title }}</span>
+        </div>
       </router-link>
     </transition>
   </div>
@@ -31,18 +35,18 @@ export default {
     }
   },
   computed: {
-    variables () {
+    variables() {
       return variables;
     },
-    sideTheme () {
+    sideTheme() {
       return this.$store.state.settings.sideTheme
     }
   },
-  mounted () {
+  mounted() {
   },
-  data () {
+  data() {
     return {
-      title:  this.$store.state.user.projectData.projectName,
+      title: this.$store.state.user.projectData.projectName,
       // title: '明数Ai分类分级平台',
       logo: logoImg
     }
@@ -63,15 +67,18 @@ export default {
 .sidebar-logo-container {
   position: relative;
   width: 100%;
-  height: 50px;
-  line-height: 50px;
+  height: 95px;
+  // line-height: 50px;
   background: #2b2f3a;
   text-align: center;
   overflow: hidden;
+  padding: 24px 20px;
 
   & .sidebar-logo-link {
     height: 100%;
     width: 100%;
+    display: flex !important;
+    align-items: center;
 
     & .sidebar-logo {
       width: 32px;
@@ -80,15 +87,31 @@ export default {
       margin-right: 12px;
     }
 
+    & .logo-text {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      margin-left: 12px;
+    }
+
+    & .logo-h1 {
+      margin: 0;
+      font-weight: 900;
+      font-size: 16px;
+      line-height: 1.2;
+      font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
+    }
+
     & .sidebar-title {
       display: inline-block;
       margin: 0;
-      color: #fff;
+      color: #9ba9bd;
       font-weight: 600;
-      line-height: 50px;
-      font-size: 14px;
+      font-size: 10px;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
-      vertical-align: middle;
     }
   }
 
