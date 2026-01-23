@@ -60,6 +60,7 @@
       display: inline-block;
       width: 100%;
       overflow: hidden;
+      border-radius: 10px;
     }
 
     .svg-icon {
@@ -70,6 +71,7 @@
       border: none;
       height: 100%;
       width: 100% !important;
+      padding: 16px;
     }
 
     .el-menu-item,

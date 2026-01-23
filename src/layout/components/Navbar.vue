@@ -12,11 +12,12 @@
     <div class="right-menu">
       <!-- 添加近期导出记录按钮和下拉菜单 -->
       <template v-if="device !== 'mobile'">
-        <!-- 导出记录下拉菜单 -->
+        <!-- 导出记录下拉菜单 - 小铃铛 -->
         <el-dropdown class="right-menu-item hover-effect export-records-btn" trigger="click"
           @command="handleExportCommand">
-          <div @click="showExportDropdown">
+          <div class="bell-wrapper" @click="showExportDropdown">
             <svg-icon icon-class="download" class="export-icon" />
+            <span class="notification-dot"></span>
           </div>
           <el-dropdown-menu slot="dropdown" class="export-dropdown-menu">
             <div class="export-list">
@@ -68,18 +69,52 @@
           </el-dropdown-menu>
         </el-dropdown>
 
+        <!-- 设置下拉菜单 -->
+        <el-dropdown class="right-menu-item hover-effect settings-btn" trigger="click">
+          <div class="settings-wrapper">
+            <i class="el-icon-setting settings-icon"></i>
+          </div>
+          <el-dropdown-menu slot="dropdown" class="settings-dropdown-menu">
+            <el-dropdown-item class="settings-item">
+              <i class="el-icon-s-tools settings-item-icon"></i>
+              <span>通用设置</span>
+            </el-dropdown-item>
+            <el-dropdown-item class="settings-item">
+              <i class="el-icon-s-help settings-item-icon"></i>
+              <span>语言 / Language</span>
+            </el-dropdown-item>
+            <el-dropdown-item class="settings-item settings-item-danger" divided>
+              <i class="el-icon-refresh-left settings-item-icon danger"></i>
+              <span>恢复初始配置</span>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </template>
+      <!-- 用户头像下拉菜单 -->
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="$store.state.user.projectData.img" class="user-avatar" />
-          <div class="user">用户名</div>
-          <i class="el-icon-caret-bottom" />
+          <div class="user-avatar-circle">
+            <i class="el-icon-user"></i>
+          </div>
         </div>
-        <el-dropdown-menu class="el-dropdown-menus" slot="dropdown">
-          <router-link to="/user/profile">
-            <el-dropdown-item>个人中心</el-dropdown-item>
+        <el-dropdown-menu class="user-dropdown-menu" slot="dropdown">
+          <!-- 用户信息区域 -->
+          <div class="user-info-header">
+            <!-- <div class="user-avatar-orange">AU</div> -->
+            <img :src="$store.state.user.projectData.img" style="width: 40px; height: 40px; border-radius: 50%;" />
+            <div class="user-details">
+              <div class="user-name">{{ $store.state.user.name }}</div>
+              <div class="user-email">{{ $store.state.user.projectData.email }}</div>
+            </div>
+          </div>
+          <router-link to="user/profile">
+            <el-dropdown-item class="user-menu-item" divided>
+              <i class="el-icon-user user-menu-icon"></i>
+              <span>个人中心</span>
+            </el-dropdown-item>
           </router-link>
-          <el-dropdown-item divided @click.native="logout">
+          <el-dropdown-item class="user-menu-item user-menu-item-danger" divided @click.native="logout">
+            <i class="el-icon-switch-button user-menu-icon danger"></i>
             <span>退出登录</span>
           </el-dropdown-item>
         </el-dropdown-menu>
@@ -96,7 +131,7 @@ import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
 import RuoYiGit from '@/components/RuoYi/Git'
 import RuoYiDoc from '@/components/RuoYi/Doc'
-import { listAll, downloadById } from "@/api/system/protectTableField"; // 临时注释掉不存在的API
+import { listAll, downloadById } from "@/api/system/protectTableField";
 
 export default {
   data() {
@@ -238,31 +273,22 @@ export default {
       }
     },
     downloadFile(record) {
-      // 下载文件逻辑
       try {
         downloadById({
           id: record.id
         }).then(response => {
-          // 创建一个Blob对象
           const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-          // 创建一个URL对象
           const url = window.URL.createObjectURL(blob);
-          // 创建一个a标签并设置href属性
           const link = document.createElement('a');
           link.href = url;
-          link.download = record.fileName; // 设置下载后的文件名
-          // 将a标签添加到DOM中
+          link.download = record.fileName;
           document.body.appendChild(link);
-          // 触发点击事件
           link.click();
-          // 移除a标签
           document.body.removeChild(link);
-          // 释放URL对象
           window.URL.revokeObjectURL(url);
           this.loading = false;
           this.$message.success('导出成功');
         }).catch(error => {
-          // 处理下载失败逻辑
           this.$message.error('文件下载失败')
         })
       } catch (error) {
@@ -309,12 +335,13 @@ export default {
     height: 100%;
     display: flex;
     align-items: center;
-    padding: 10px 20px;
+    padding: 10px 40px;
 
     .navbar-child-item {
       display: inline-flex;
       align-items: center;
       height: 100%;
+      margin: 0 4px;
       padding: 0 15px;
       color: #738192;
       font-size: 14px;
@@ -355,22 +382,29 @@ export default {
     right: 11%;
     height: 100%;
     line-height: 50px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
     &:focus {
       outline: none;
     }
 
     .right-menu-item {
-      display: inline-block;
-      padding: 0 8px;
-      height: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      height: 40px;
+      width: 40px;
       font-size: 18px;
       color: #5a5e66;
-      vertical-align: text-bottom;
+      vertical-align: middle;
 
       &.hover-effect {
         cursor: pointer;
         transition: background .3s;
+        border-radius: 8px;
 
         &:hover {
           background: rgba(0, 0, 0, .025)
@@ -378,46 +412,79 @@ export default {
       }
     }
 
-    /* 添加导出记录按钮样式 */
+    /* 导出记录按钮样式 - 小铃铛 */
     .export-records-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      .bell-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
 
-      .export-icon {
-        width: 20px;
-        height: 20px;
+        .export-icon {
+          width: 22px;
+          height: 22px;
+          color: #6b7280;
+        }
+
+        .notification-dot {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          width: 8px;
+          height: 8px;
+          background-color: #ef4444;
+          border-radius: 50%;
+        }
       }
     }
 
+    /* 设置按钮样式 */
+    .settings-btn {
+      .settings-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+
+        .settings-icon {
+          font-size: 22px;
+          color: #6b7280;
+        }
+      }
+    }
+
+    /* 用户头像样式 */
     .avatar-container {
-      margin-right: 30px;
+      margin-right: 0;
 
       .avatar-wrapper {
         display: flex;
-        margin-top: 5px;
-        position: relative;
+        align-items: center;
+        justify-content: center;
 
-        .user {
-          font-size: 14px;
-          padding: 0 5px 0 5px;
-        }
-
-        .user-avatar {
-          margin-top: 8px;
-          margin-right: 5px;
-          cursor: pointer;
-          width: 26px;
-          height: 26px;
+        .user-avatar-circle {
+          width: 40px;
+          height: 40px;
           border-radius: 50%;
-        }
-
-        .el-icon-caret-bottom {
+          background-color: #eff6ff;
+          border: 2px solid #dbeafe;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           cursor: pointer;
-          position: absolute;
-          right: -20px;
-          top: 15px;
-          font-size: 12px;
+          transition: border-color 0.2s;
+
+          &:hover {
+            border-color: #93c5fd;
+          }
+
+          .el-icon-user {
+            font-size: 18px;
+            color: #60a5fa;
+          }
         }
       }
     }
@@ -501,7 +568,6 @@ export default {
 
         .status-processing {
           color: #666666;
-
         }
 
         .status-timeout {
@@ -553,6 +619,135 @@ export default {
     i {
       margin-left: 4px;
       font-size: 12px;
+    }
+  }
+}
+
+/* 设置下拉菜单样式 */
+.settings-dropdown-menu {
+  width: 200px;
+  padding: 8px;
+  border-radius: 12px;
+
+  .settings-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #374151;
+
+    &:hover {
+      background-color: #f9fafb;
+    }
+
+    &.el-dropdown-menu__item--divided {
+      position: relative;
+      margin-top: 0;
+      border-top: 1px solid #f0f0f0;
+
+      &::before {
+        display: none;
+      }
+    }
+
+    .settings-item-icon {
+      font-size: 18px;
+      color: #6b7280;
+
+      &.danger {
+        color: #f97316;
+      }
+    }
+
+    .language-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #3b82f6;
+      background-color: #eff6ff;
+      border-radius: 4px;
+    }
+
+    &.settings-item-danger {
+      color: #f97316;
+    }
+  }
+}
+
+/* 用户下拉菜单样式 */
+.user-dropdown-menu {
+  width: 220px;
+  padding: 8px;
+  border-radius: 12px;
+
+  .user-info-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+
+
+    .user-details {
+      flex: 1;
+
+      .user-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 2px;
+      }
+
+      .user-email {
+        font-size: 12px;
+        color: #3b82f6;
+      }
+    }
+  }
+
+  .user-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #374151;
+
+    &:hover {
+      background-color: #f9fafb;
+    }
+
+    &.el-dropdown-menu__item--divided {
+      position: relative;
+      margin-top: 0;
+      border-top: 1px solid #f0f0f0;
+
+      &::before {
+        display: none;
+      }
+    }
+
+    .user-menu-icon {
+      font-size: 18px;
+      color: #9ca3af;
+
+      &.danger {
+        color: #ef4444;
+      }
+    }
+
+    &.user-menu-item-danger {
+      color: #ef4444;
+
+      &:hover {
+        background-color: #fef2f2;
+      }
     }
   }
 }

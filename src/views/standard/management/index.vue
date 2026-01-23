@@ -631,14 +631,14 @@ input[aria-hidden=true] {
 }
 
 .listBox_item {
-  width: calc(25% - 3%);
-  margin: 0 3% 50px 0;
-  height: 250px;
+  width: calc(25% - 2%);
+  margin: 0 2% 30px 0;
+  height: 280px;
   background-color: #fff;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  padding: 8px;
+  padding: 12px;
   border: 1px solid #e8eaed;
   box-sizing: border-box;
   transition: all 0.3s ease;
