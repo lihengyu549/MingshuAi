@@ -211,3 +211,13 @@ aside {
     color: #2c98ff !important;
   }
 }
+
+// el-button--danger.is-plain 全局样式
+.el-button--danger.is-plain {
+  border-color: #ffb6b6 !important;
+
+  &:hover {
+    background-color: #ffb6b6 !important;
+    color: #ff4949 !important;
+  }
+}

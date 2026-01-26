@@ -63,7 +63,7 @@
               @click="addFn">新增</el-button>
           </el-col>
           <el-col :span="1.5">
-            <el-button type="primary" plain icon="el-icon-close" :disabled="dataSource === '内置'" size="medium"
+            <el-button type="danger" plain icon="el-icon-close" :disabled="dataSource === '内置'" size="medium"
               @click="enabledFn('删除')">删除</el-button>
           </el-col>
         </el-row>
