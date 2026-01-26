@@ -523,6 +523,7 @@ input[aria-hidden=true] {
 /deep/.searchCard {
   border-radius: 10px;
   margin-bottom: 30px;
+
   & .el-card__body {
     padding: 24px;
   }
@@ -642,7 +643,7 @@ input[aria-hidden=true] {
   display: flex;
   flex-direction: column;
   padding: 12px;
-  border: 1px solid #e8eaed;
+  border: 1px solid #f1f5f9;
   box-sizing: border-box;
   transition: all 0.3s ease;
 
@@ -674,9 +675,9 @@ input[aria-hidden=true] {
 }
 
 .card-icon {
-  width: 40px;
-  height: 40px;
-  margin-right: 12px;
+  width: 50px;
+  height: 50px;
+  margin-right: 15px;
   background-color: #e1f2fe;
   padding: 8px;
   border-radius: 8px;
@@ -730,21 +731,21 @@ input[aria-hidden=true] {
   justify-content: space-between;
   font-size: 12px;
   color: #999;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .card-actions {
   display: flex;
-  justify-content: space-around;
   gap: 10px;
   padding-top: 12px;
   border-top: 1px solid #e6e6e6;
+  justify-content: space-between;
 }
 
 .card-actions .el-button {
   padding: 5px 10px;
   font-size: 12px;
-  border-radius: 10px;
+  border-radius: 6px;
 }
 
 .card-actions .btn-delete {

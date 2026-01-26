@@ -190,9 +190,24 @@ aside {
 .multiselect--active {
   z-index: 1000 !important;
 }
+
 // message 自定义样式
 .el-message {
-  white-space: pre-wrap !important; /* 识别 HTML 换行/换行符 */
-  word-break: break-all !important; /* 防止长文本溢出 */
-  line-height: 1.5 !important; /* 调整行高，优化多行显示 */
+  white-space: pre-wrap !important;
+  /* 识别 HTML 换行/换行符 */
+  word-break: break-all !important;
+  /* 防止长文本溢出 */
+  line-height: 1.5 !important;
+  /* 调整行高，优化多行显示 */
+}
+
+// el-button--primary.is-plain 全局样式
+.el-button--primary.is-plain {
+  border-color: #dbeafe !important;
+
+  &:hover {
+    background-color: #dbeafe !important;
+    border-color: #dbeafe !important;
+    color: #2c98ff !important;
+  }
 }
