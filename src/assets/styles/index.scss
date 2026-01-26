@@ -210,14 +210,27 @@ aside {
     border-color: #dbeafe !important;
     color: #2c98ff !important;
   }
+
+  &:focus,
+  &:active {
+    background-color: #dbeafe !important;
+    border-color: #dbeafe !important;
+    color: #2c98ff !important;
+  }
 }
 
 // el-button--danger.is-plain 全局样式
 .el-button--danger.is-plain {
-  border-color: #ffb6b6 !important;
+  border-color: #f9e0e0 !important;
 
   &:hover {
-    background-color: #ffb6b6 !important;
+    background-color: #f9e0e0 !important;
+    color: #ff4949 !important;
+  }
+
+  &:focus,
+  &:active {
+    background-color: #f9e0e0 !important;
     color: #ff4949 !important;
   }
 }
