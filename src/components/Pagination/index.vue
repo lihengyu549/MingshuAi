@@ -104,4 +104,44 @@ export default {
 .pagination-container.hidden {
   display: none;
 }
+
+/* 页码按钮样式 */
+.pagination-container /deep/ .el-pager li {
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  margin: 0 4px;
+  background-color: #ffffff;
+  color: #606266;
+  font-weight: 500;
+  min-width: 32px;
+  height: 32px;
+  line-height: 30px;
+}
+
+.pagination-container /deep/ .el-pager li:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.pagination-container /deep/ .el-pager li.active {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+/* 上一页下一页按钮样式 */
+.pagination-container /deep/ .el-pagination button {
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #606266;
+  font-weight: 500;
+  height: 32px;
+  min-width: 32px;
+}
+
+.pagination-container /deep/ .el-pagination button:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
 </style>
