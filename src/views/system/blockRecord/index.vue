@@ -52,7 +52,7 @@
       </el-table-column>
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.page
-      " :limit.sync="queryParams.pageSize" @pagination="getList" />
+      " :page-size.sync="queryParams.pageSize" @pagination="getList" />
     <!-- 详情 -->
     <el-dialog width="30%" title="详情" :close-on-click-modal="false" :visible.sync="particularsVisible" append-to-body>
       <div class="xiangqing">

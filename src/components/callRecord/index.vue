@@ -21,7 +21,7 @@
             </el-table>
           </div>
           <pagination class="totalTion" v-show="totalCount > 0" :total="totalCount" :page.sync="curNum"
-            :limit.sync="queryParams.pageSize" :page-size="20" @pagination="handleCurrentChange"
+            :page-size.sync="queryParams.pageSize" :page-size="20" @pagination="handleCurrentChange"
             @current-change="handleCurrentChange">
           </pagination>
         </div>

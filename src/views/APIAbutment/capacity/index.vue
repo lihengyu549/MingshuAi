@@ -31,7 +31,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :page-size.sync="queryParams.pageSize"
       @pagination="getList" />
     <!-- 添加apikeys -->
     <el-dialog class="addMsg" title="创建API Key" v-loading="formLoading" :visible.sync="dialogShow" append-to-body

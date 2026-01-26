@@ -212,7 +212,7 @@
                                             @size-change="handleMappingSizeChange"
                                             @current-change="handleMappingCurrentChange"
                                             :page.sync="mappingPagination.currentPage"
-                                            :limit.sync="mappingPagination.pageSize" :total="mappingPagination.total"
+                                            :page-size.sync="mappingPagination.pageSize" :total="mappingPagination.total"
                                             size="small" />
                                     </div>
                                 </div>

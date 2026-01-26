@@ -195,7 +195,7 @@
         </div>
       </el-col>
       <pagination class="paginationClass" v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-        :limit.sync="queryParams.pageSize" @pagination="handlePagination" />
+        :page-size.sync="queryParams.pageSize" @pagination="handlePagination" />
     </el-row>
     <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow"
       :destroy-on-close="true" direction="rtl" size="51%">
@@ -289,7 +289,7 @@
 
       <!-- 新增分页组件 -->
       <Pagination v-show="drawerTotal > 0" :total="drawerTotal" :page.sync="drawerQueryParams.pageNum"
-        :limit.sync="drawerQueryParams.pageSize" @pagination="handleDrawerPagination" style="margin-top: 15px;" />
+        :page-size.sync="drawerQueryParams.pageSize" @pagination="handleDrawerPagination" style="margin-top: 15px;" />
     </el-drawer>
 
     <!-- 导出列配置弹窗 -->

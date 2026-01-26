@@ -86,7 +86,7 @@
           </el-table-column>
         </el-table>
         <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-          :limit.sync="queryParams.pageSize" @pagination="getList" />
+          :page-size.sync="queryParams.pageSize" @pagination="getList" />
       </el-col>
     </el-row>
     <el-dialog title="导入框架" v-loading="importDataLoading" :visible.sync="importData.importShow" width="700px"

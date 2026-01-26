@@ -34,7 +34,7 @@
                         <el-table-column label="样本特征" prop="regularExpression" align="center"></el-table-column>
                     </el-table>
                     <pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
-                        :current-page="currentPage" :pageSizes="[10, 20, 50, 100]" :limit="pageSize" :pagerCount="5"
+                        :current-page="currentPage" :page-sizes="[10, 20, 50, 100]" :page-size="pageSize" :pagerCount="5"
                         layout="total, sizes, prev, pager, next" :total="total"
                         style="margin-top: 10px; text-align: right;" size="small"></pagination>
                 </div>

@@ -76,7 +76,7 @@
       </div>
     </div>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :pageSizes="[8]"
-      :limit.sync="queryParams.pageSize" @pagination="getList" />
+      :page-size.sync="queryParams.pageSize" @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
     <el-dialog class="custom-dialog" :title="title" v-loading="formLoading" :visible.sync="open" append-to-body
       :close-on-click-modal="false" width="700px">

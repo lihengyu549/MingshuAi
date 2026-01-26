@@ -79,7 +79,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :page-size.sync="queryParams.pageSize"
       @pagination="getList" />
     <!-- 添加或修改行业分类对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>

@@ -217,7 +217,7 @@
                     <!-- 分页 -->
                     <Pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
                         :current-page="pagination.currentPage" :page-sizes="[5, 10, 15, 20]"
-                        :limit="pagination.pageSize" layout="total, sizes, prev, pager, next, jumper"
+                        :page-size="pagination.pageSize" layout="total, sizes, prev, pager, next, jumper"
                         :total="pagination.total">
                     </Pagination>
                 </div>

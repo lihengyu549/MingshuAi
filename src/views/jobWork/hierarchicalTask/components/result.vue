@@ -139,7 +139,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :page-size.sync="queryParams.pageSize"
       @pagination="getList" />
     <el-dialog title="结果修改" v-loading="updataLoading" :visible.sync="deleteVisible" width="650px"
       style="padding: 0 20px;" append-to-body :close-on-click-modal="false">

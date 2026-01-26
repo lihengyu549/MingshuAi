@@ -66,7 +66,7 @@
 		</el-table>
 
 		<pagination v-show="total > 0" :total="total" :page.sync="queryParams.page
-		" :limit.sync="queryParams.pageSize" @pagination="getList" />
+		" :page-size.sync="queryParams.pageSize" @pagination="getList" />
 		<!-- 拦截日志 -->
 		<el-dialog class="lanjie" title="拦截日志" :visible.sync="dialogVisible" width="65%" :close-on-click-modal="false">
 			<div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
@@ -134,7 +134,7 @@
 			</el-table>
 
 			<pagination v-show="interceptTotal > 0" :total="interceptTotal" :page.sync="queryParams.page
-			" :limit.sync="queryParams.pageSize" @pagination="interceptList" />
+			" :page-size.sync="queryParams.pageSize" @pagination="interceptList" />
 
 
 			<!-- 详情 -->
