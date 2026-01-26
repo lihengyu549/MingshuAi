@@ -38,7 +38,8 @@
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
     <div class="listBox">
-      <el-card class="listBox_item" v-for="item in proxysList" :key="item.id" shadow="hover" :body-style="{ display: 'flex', flexDirection: 'column', height: '100%' }">
+      <el-card class="listBox_item" v-for="item in proxysList" :key="item.id" shadow="hover"
+        :body-style="{ display: 'flex', flexDirection: 'column', height: '100%' }">
         <div class="card-header">
           <svg-icon icon-class="dunpai-2" class="card-icon"></svg-icon>
           <div class="card-title-area">
@@ -61,7 +62,8 @@
           <el-button type="text" size="small" class="btn-delete" @click="deleteFn(item)">
             <i class="el-icon-delete"></i> 删除
           </el-button>
-          <el-button type="text" size="small" class="btn-primary" :disabled="item.dataSource === '内置'" @click="editFn(item)">
+          <el-button type="text" size="small" class="btn-primary" :disabled="item.dataSource === '内置'"
+            @click="editFn(item)">
             <i class="el-icon-edit-outline"></i> 编辑
           </el-button>
           <el-button type="text" size="small" class="btn-primary" @click="detailFn(item)">
@@ -517,11 +519,15 @@ input[aria-hidden=true] {
 .addMsg .el-select /deep/ .el-input {
   width: 100%;
 }
-.searchCard {
+
+/deep/.searchCard {
   border-radius: 10px;
   margin-bottom: 30px;
-  padding: 15px 0px;
+  & .el-card__body {
+    padding: 24px;
+  }
 }
+
 .yuanDataClass {
   display: flex;
   justify-content: flex-start;
@@ -718,12 +724,12 @@ input[aria-hidden=true] {
   color: #666;
   line-height: 1.5;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-word;
+  min-height: 0;
 }
 
 .card-info {

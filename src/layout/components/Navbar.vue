@@ -328,6 +328,7 @@ export default {
   background: #ffffff;
   padding-right: 3%;
   border-left: 1px solid #e6e8ee;
+  border-bottom: 1px solid #e2e8f0;
 
   .navbar-children {
     position: absolute;
@@ -348,6 +349,7 @@ export default {
       text-decoration: none;
       transition: all 0.3s;
       border-radius: 10px;
+      font-weight: 600;
       cursor: pointer;
 
       &:hover {
@@ -358,7 +360,6 @@ export default {
       &.router-link-active {
         background-color: #eff6ff;
         color: #3b82f6;
-        font-weight: 600;
       }
     }
   }

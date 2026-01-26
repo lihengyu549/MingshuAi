@@ -84,6 +84,7 @@
       padding-top: 0 !important;
       padding-bottom: 0 !important;
       color: #738192 !important;
+      font-weight: 600 !important;
     }
 
     // menu hover
@@ -99,7 +100,6 @@
     .el-submenu__title.is-active {
       background-color: #eff6ff !important;
       color: #3b82f6 !important;
-      font-weight: 600 !important;
     }
 
     // 首页菜单项特殊样式 - 添加上下边距
@@ -114,10 +114,11 @@
     & .nest-menu .el-submenu>.el-submenu__title,
     & .el-submenu .el-menu-item {
       min-width: $base-sidebar-width !important;
-      height: 36px !important; /* 子菜单项高度稍微小一点 */
-      line-height: 36px !important; /* 调整行高匹配新高度 */
-      padding-top: 0 !important; /* 移除顶部内边距 */
-      padding-bottom: 0 !important; /* 移除底部内边距 */
+      height: 36px !important;
+      line-height: 36px !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      font-weight: 600 !important;
 
       &:hover {
         background-color: #f8fafc !important;
@@ -228,16 +229,17 @@
 
   .nest-menu .el-submenu>.el-submenu__title,
   .el-menu-item {
-    height: 36px !important; /* 垂直菜单项高度 */
-    line-height: 36px !important; /* 调整行高匹配新高度 */
-    padding-top: 0 !important; /* 移除顶部内边距 */
-    padding-bottom: 0 !important; /* 移除底部内边距 */
+    height: 36px !important;
+    line-height: 36px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    font-weight: 600 !important;
     
     &:hover {
       // you can use $subMenuHover
       background-color: $base-menu-hover-background !important;
-      border-radius: $base-menu-border-radius !important; // 添加圆角样式
-      margin: 0 10px; // 添加边距让圆角效果更明显
+      border-radius: $base-menu-border-radius !important;
+      margin: 0 10px;
     }
   }
 
