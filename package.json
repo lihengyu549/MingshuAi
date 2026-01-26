@@ -36,7 +36,6 @@
     "url": "https://gitee.com/y_project/RuoYi-Cloud.git"
   },
   "dependencies": {
-    "@fontsource/noto-sans-sc": "^5.2.9",
     "@riophae/vue-treeselect": "0.4.0",
     "axios": "0.24.0",
     "bootstrap-vue": "^2.23.1",
