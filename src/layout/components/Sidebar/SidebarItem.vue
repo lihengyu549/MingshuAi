@@ -4,7 +4,7 @@
     <template v-if="item.meta && item.meta.type === 'category'">
       <div class="menu-category">
         <span class="category-title">{{ item.meta.title }}</span>
-        <i class="el-icon-caret-bottom category-title" style="float: inline-end;"></i>
+        <i class="el-icon-arrow-down category-title" style="float: inline-end;"></i>
       </div>
       <div class="category-children">
         <sidebar-item v-for="(child, index) in item.children" :key="child.path + '-' + index" :is-nest="false"
