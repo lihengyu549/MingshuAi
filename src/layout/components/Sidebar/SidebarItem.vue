@@ -133,9 +133,9 @@ export default {
   letter-spacing: 1px;
 }
 
-.category-children {
+/* .category-children {
   padding: 0 10px;
-}
+} */
 
 .category-children .nest-menu {
   padding-left: 0;

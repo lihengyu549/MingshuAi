@@ -628,17 +628,14 @@ input[aria-hidden=true] {
   max-height: 700px;
   display: flex;
   flex-wrap: wrap;
-  /* 移除space-between，默认就是左对齐排列 */
-  align-items: flex-start;
-  /* 顶部对齐防止高度不一致导致错位 */
+  align-content: flex-start;
   background-color: #fafafa;
   padding: 30px 0px;
-  justify-content: space-between;
+  gap: 20px;
 }
 
 .listBox_item {
-  width: calc(25% - 2%);
-  margin: 0 2% 30px 0;
+  width: calc((100% - 60px) / 4);
   height: 280px;
   background-color: #fff;
   border-radius: 10px;
@@ -653,10 +650,6 @@ input[aria-hidden=true] {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
-}
-
-.listBox_item:nth-child(4n) {
-  margin-right: 0;
 }
 
 .listBox::-webkit-scrollbar {
