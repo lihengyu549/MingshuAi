@@ -322,27 +322,26 @@ export default {
 .navbar {
   position: fixed !important;
   z-index: 1000;
-  width: 100%;
+  width: calc(100% - 260px);
   height: 60px;
-  position: relative;
   background: #ffffff;
-  padding-right: 3%;
-  border-left: 1px solid #e6e8ee;
   border-bottom: 1px solid #e2e8f0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  left: 260px;
 
   .navbar-children {
-    position: absolute;
-    top: 0;
-    height: 100%;
     display: flex;
     align-items: center;
-    padding: 10px 40px;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 10px 0px 10px 40px;
 
     .navbar-child-item {
       display: inline-flex;
       align-items: center;
       height: 100%;
-      margin: 0 4px;
       padding: 0 15px;
       color: #738192;
       font-size: 14px;
@@ -351,6 +350,7 @@ export default {
       border-radius: 10px;
       font-weight: 600;
       cursor: pointer;
+      box-sizing: border-box;
 
       &:hover {
         background-color: #f8fafc;
@@ -379,13 +379,14 @@ export default {
   }
 
   .right-menu {
-    position: absolute;
-    right: 11%;
+    margin-left: auto;
+    margin-right: 30px;
     height: 100%;
     line-height: 50px;
     display: flex;
     align-items: center;
     gap: 8px;
+    box-sizing: border-box;
 
     &:focus {
       outline: none;
@@ -751,5 +752,18 @@ export default {
       }
     }
   }
+}
+
+/* 侧边栏收起时的响应式样式 */
+.sidebarHide .navbar {
+  width: 100% !important;
+  max-width: 100% !important;
+  left: 0 !important;
+}
+
+.mobile .navbar {
+  width: 100% !important;
+  max-width: 100% !important;
+  left: 0 !important;
 }
 </style>

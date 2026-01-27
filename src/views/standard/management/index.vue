@@ -103,13 +103,6 @@
           </el-col>
         </el-row>
         <el-row>
-          <el-col>
-            <el-form-item label="标准描述" prop="standardDescription" :rules="rules.tasksName">
-              <el-input type="textarea" v-model="form.standardDescription" maxlength="1000" placeholder="请输入标准描述" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
           <el-col :span="12">
             <el-form-item label="标准来源" prop="source">
               <el-input v-model="form.source" maxlength="50" placeholder="请输入来源" />
@@ -120,6 +113,13 @@
               <el-date-picker class="managementDate" v-model="form.implementTime" type="date" value-format="yyyy-MM-dd"
                 format="yyyy-MM-dd" placeholder="选择日期">
               </el-date-picker>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col>
+            <el-form-item label="标准描述" prop="standardDescription" :rules="rules.tasksName">
+              <el-input type="textarea" v-model="form.standardDescription" maxlength="1000" placeholder="请输入标准描述" />
             </el-form-item>
           </el-col>
         </el-row>

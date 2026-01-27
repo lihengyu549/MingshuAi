@@ -1,128 +1,135 @@
 <template>
-  <div class="app-container" v-loading="Loading">
+  <div class="app-container job-monitoring-container" v-loading="Loading">
     <el-row :gutter="20">
-      <el-col :span="4" :xs="24">
-        <div class="head-container">
-          <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
-            placeholder="全部" style="margin-bottom: 20px" filterable>
-            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
-            </el-option>
-          </el-select>
-        </div>
-        <div class="head-container" v-loading="treeLoading">
-          <el-input v-model="filterName" placeholder="搜索树节点..." clearable size="mini" style="margin-bottom: 20px;" />
-          <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
-            :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
-            node-key="id" highlight-current @node-click="handleNodeClick" :render-content="renderContent">
-          </el-tree>
-        </div>
+      <!-- 左侧卡片：树形菜单 -->
+      <el-col :span="5" :xs="24">
+        <el-card class="left-card" shadow="never">
+          <div class="head-container">
+            <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
+              placeholder="全部" style="margin-bottom: 20px" filterable>
+              <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
+              </el-option>
+            </el-select>
+          </div>
+          <div class="head-container" v-loading="treeLoading">
+            <el-input v-model="filterName" placeholder="搜索树节点..." clearable size="mini" style="margin-bottom: 20px;" />
+            <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
+              :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
+              node-key="id" highlight-current @node-click="handleNodeClick" :render-content="renderContent">
+            </el-tree>
+          </div>
+        </el-card>
       </el-col>
-      <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="false"
-          v-show="showSearch" label-width="auto">
-          <el-form-item label="子类名称" prop="name">
-            <el-input v-model="queryParams.name" @input="inputSearch" placeholder="请输入类名称" clearable
-              @keyup.enter.native="handleQuery" />
-          </el-form-item>
-          <el-form-item label="确认防护措施" prop="confirmProtectMethod">
-            <el-select v-model="queryParams.confirmProtectMethod" @change="selectProjectIdChange" multiple
-              placeholder="全部">
-              <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
-                :value="item.dictLabel">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="来源" prop="dataSourceId">
-            <el-select v-model="queryParams.dataSourceId" clearable @change="dataSourceIdIdChange" placeholder="全部"
-              :loading="loading">
-              <el-option v-for="item in sourceList" :key="item.value" :label="item.label" :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="安全分级" prop="levelId">
-            <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple placeholder="全部">
-              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item prop="dataOwner" label="数据持有者">
-            <el-select v-model="queryParams.dataOwner" @change="selectProjectIdChange" clearable placeholder="全部">
-              <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="直属父类" prop="baseParent">
-            <el-input v-model="queryParams.baseParent" @input="inputSearch" placeholder="请输入父类名称" clearable
-              @keyup.enter.native="handleQuery" />
-          </el-form-item>
-        </el-form>
-        <el-row :gutter="10" class="mb8">
-          <el-col :span="1.5">
-            <el-button type="primary" plain icon="el-icon-plus" :disabled="dataSource === '内置'" size="medium"
-              @click="addFn">新增</el-button>
-          </el-col>
-          <el-col :span="1.5">
-            <el-button type="danger" plain icon="el-icon-close" :disabled="dataSource === '内置'" size="medium"
-              @click="enabledFn('删除')">删除</el-button>
-          </el-col>
-        </el-row>
-        <el-table v-loading="loading" :data="protectTableFieldList" height="650px" ref="tableRef" class="tableBox">
-          <template slot="empty">
-            <el-empty description="暂无数据"></el-empty>
-          </template>
-          <el-table-column type="selection" width="60" align="center">
-          </el-table-column>
-          <el-table-column label="子类名称" align="left" width="140" prop="attachData" show-overflow-tooltip>
-            <template slot-scope="scope">
-              <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />{{ scope.row.attachData
-              }}
+      <!-- 右侧卡片：搜索表单和数据表格 -->
+      <el-col :span="19" :xs="24">
+        <el-card class="right-card" shadow="never">
+          <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="false"
+            v-show="showSearch" label-width="auto">
+            <el-form-item label="子类名称" prop="name">
+              <el-input v-model="queryParams.name" @input="inputSearch" placeholder="请输入类名称" clearable
+                @keyup.enter.native="handleQuery" />
+            </el-form-item>
+            <el-form-item label="确认防护措施" prop="confirmProtectMethod">
+              <el-select v-model="queryParams.confirmProtectMethod" @change="selectProjectIdChange" multiple
+                placeholder="全部">
+                <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
+                  :value="item.dictLabel">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="来源" prop="dataSourceId">
+              <el-select v-model="queryParams.dataSourceId" clearable @change="dataSourceIdIdChange" placeholder="全部"
+                :loading="loading">
+                <el-option v-for="item in sourceList" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="安全分级" prop="levelId">
+              <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple placeholder="全部">
+                <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item prop="dataOwner" label="数据持有者">
+              <el-select v-model="queryParams.dataOwner" @change="selectProjectIdChange" clearable placeholder="全部">
+                <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="直属父类" prop="baseParent">
+              <el-input v-model="queryParams.baseParent" @input="inputSearch" placeholder="请输入父类名称" clearable
+                @keyup.enter.native="handleQuery" />
+            </el-form-item>
+          </el-form>
+          <el-row :gutter="10" class="mb8">
+            <el-col :span="1.5">
+              <el-button type="primary" plain icon="el-icon-plus" :disabled="dataSource === '内置'" size="medium"
+                @click="addFn">新增</el-button>
+            </el-col>
+            <el-col :span="1.5">
+              <el-button type="danger" plain icon="el-icon-close" :disabled="dataSource === '内置'" size="medium"
+                @click="enabledFn('删除')">删除</el-button>
+            </el-col>
+          </el-row>
+          <el-table v-loading="loading" :data="protectTableFieldList" height="800px" ref="tableRef" class="tableBox">
+            <template slot="empty">
+              <el-empty description="暂无数据"></el-empty>
             </template>
-          </el-table-column>
-          <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
-          <el-table-column label="建议防护措施" prop="protectMethodName" width="200">
-            <template slot="header">
-              <div style="text-align: center;">建议防护措施</div>
-            </template>
-            <template slot-scope="scope">
-              <el-tag class="tagsBox custom-plain-tag" v-for="(item, index) in scope.row.protectMethodNameList"
-                :key="item + index" :style="{
-                  '--tag-color': colorFn(item),
-                  '--tag-rgb': hexToRgb(colorFn(item))
-                }" plain>
-                {{ item }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="数据持有者" align="center" prop="dataOwner" show-overflow-tooltip />
-          <el-table-column label="确认防护措施" prop="confirmProtectMethod" width="200">
-            <template slot="header">
-              <div style="text-align: center;">确认防护措施</div>
-            </template>
-            <template slot-scope="scope">
-              <el-tag class="tagsBox custom-plain-tag" v-for="item in scope.row.confirmProtectMethodList" :key="item"
-                :style="{
-                  '--tag-color': colorFn(item),
-                  '--tag-rgb': hexToRgb(colorFn(item))
-                }" plain>
-                {{ item }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="来源" align="center" prop="dataSource" show-overflow-tooltip />
-          <el-table-column label="直属父类" align="center" prop="baseParent" show-overflow-tooltip />
-          <el-table-column label="操作" align="center" width="180">
-            <template slot-scope="scope">
-              <el-button type="text" size="medium"
-                :disabled="(scope.row.dataSource === '内置' || scope.row.dataOwner !== $store.state.user.name) && !$store.state.user.roles.includes('admin')"
-                @click="editFn(scope.row)">编辑</el-button>
-              <el-button type="text" size="medium" @click="lookFn(scope.row)">查看</el-button>
-              <el-button type="text" size="medium" @click="dataFn(scope.row)">数据摸底</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-          :page-size.sync="queryParams.pageSize" @pagination="getList" />
+            <el-table-column type="selection" width="60" align="center">
+            </el-table-column>
+            <el-table-column label="子类名称" align="left" width="140" prop="attachData" show-overflow-tooltip>
+              <template slot-scope="scope">
+                <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />{{
+                  scope.row.attachData
+                }}
+              </template>
+            </el-table-column>
+            <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
+            <el-table-column label="建议防护措施" prop="protectMethodName" width="200">
+              <template slot="header">
+                <div style="text-align: center;">建议防护措施</div>
+              </template>
+              <template slot-scope="scope">
+                <el-tag class="tagsBox custom-plain-tag" v-for="(item, index) in scope.row.protectMethodNameList"
+                  :key="item + index" :style="{
+                    '--tag-color': colorFn(item),
+                    '--tag-rgb': hexToRgb(colorFn(item))
+                  }" plain>
+                  {{ item }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="数据持有者" align="center" prop="dataOwner" show-overflow-tooltip />
+            <el-table-column label="确认防护措施" prop="confirmProtectMethod" width="200">
+              <template slot="header">
+                <div style="text-align: center;">确认防护措施</div>
+              </template>
+              <template slot-scope="scope">
+                <el-tag class="tagsBox custom-plain-tag" v-for="item in scope.row.confirmProtectMethodList" :key="item"
+                  :style="{
+                    '--tag-color': colorFn(item),
+                    '--tag-rgb': hexToRgb(colorFn(item))
+                  }" plain>
+                  {{ item }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="来源" align="center" prop="dataSource" show-overflow-tooltip />
+            <el-table-column label="直属父类" align="center" prop="baseParent" show-overflow-tooltip />
+            <el-table-column label="操作" align="center" width="180">
+              <template slot-scope="scope">
+                <el-button type="text" size="medium"
+                  :disabled="(scope.row.dataSource === '内置' || scope.row.dataOwner !== $store.state.user.name) && !$store.state.user.roles.includes('admin')"
+                  @click="editFn(scope.row)">编辑</el-button>
+                <el-button type="text" size="medium" @click="lookFn(scope.row)">查看</el-button>
+                <el-button type="text" size="medium" @click="dataFn(scope.row)">数据摸底</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+            :page-size.sync="queryParams.pageSize" @pagination="getList" />
+        </el-card>
       </el-col>
     </el-row>
     <!-- 新增编辑框 -->
@@ -1021,11 +1028,13 @@ export default {
       if (isRoot) {
         // L1根节点
         iconClass = 'dunpai-2';
-        iconStyle = { color: currentColor, fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+        // iconStyle = { color: currentColor, fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+        iconStyle = { fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
       } else {
         // 二级及以下节点
         iconClass = node.expanded ? 'openFile' : 'closeFile';
-        iconStyle = { color: currentColor, fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+        // iconStyle = { color: currentColor, fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+        iconStyle = { fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
       }
 
       // 获取面包屑路径
@@ -1039,7 +1048,7 @@ export default {
         rightElements.push(
           h('svg-icon', {
             attrs: { iconClass: 'setting' },
-            style: { cursor: 'pointer', flexShrink: 0, marginRight: '5px' },
+            style: { cursor: 'pointer', flexShrink: 0, marginRight: '10px' },
             on: {
               click: (e) => {
                 e.stopPropagation();
@@ -1055,15 +1064,21 @@ export default {
         h('span', { class: 'node-label', attrs: { title: node.label } }, node.label)
       ];
 
-      // 非根节点才显示等级标签
+      // 非根节点才显示等级标签，放到最右侧
       if (!isRoot) {
-        labelPart.push(
+        rightElements.unshift(
           h('span', {
             class: 'node-level',
             style: {
-              color: currentColor,
+              // color: currentColor,
               fontWeight: '500',
-              marginLeft: '8px'
+              fontSize: '10px',
+              marginLeft: '8px',
+              marginRight: '8px',
+              padding: '2px 6px',
+              backgroundColor: '#e8f4ff',
+              borderRadius: '4px',
+              flexShrink: 0
             }
           }, levelLabel)
         );
@@ -1083,7 +1098,7 @@ export default {
         // 非根节点正常布局
         nodeContent = [
           ...labelPart,
-          h('span', { style: { flex: '1', minWidth: '0' } }), // 填充元素
+          h('span', { style: { flex: '1', minWidth: '0' } }), // 填充元素占满剩余空间
           ...rightElements
         ];
       }
@@ -1944,11 +1959,56 @@ export default {
   font-weight: bold;
 }
 
-.addMsg ::v-deep.el-dialog__body {
+.addMsg ::v-deep .el-dialog__body {
   padding: 30px;
+}
+
+/* 左右卡片布局 */
+::v-deep .el-row {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  overflow: hidden;
+}
+
+::v-deep .el-col {
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .addMsg ::v-deep.el-form {
   margin-bottom: 0;
+}
+
+/* 左侧卡片样式 */
+.left-card {
+  border-radius: 10px;
+  height: 100%;
+  max-height: 100%;
+  overflow: auto;
+  ::v-deep .el-card__body {
+    padding: 20px;
+    height: 100%;
+    max-height: 100%;
+    box-sizing: border-box;
+    overflow: auto;
+  }
+}
+
+/* 右侧卡片样式 */
+.right-card {
+  border-radius: 10px;
+  height: 100%;
+  max-height: 100%;
+  overflow: auto;
+  ::v-deep .el-card__body {
+    padding: 20px;
+    height: 100%;
+    max-height: 100%;
+    box-sizing: border-box;
+    overflow: auto;
+  }
 }
 </style>

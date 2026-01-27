@@ -123,6 +123,11 @@ aside {
 //main-container全局样式
 .app-container {
   padding: 40px;
+  // height: calc(100vh - 130px);
+  // max-height: calc(100vh - 130px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .components-container {
@@ -222,6 +227,7 @@ aside {
 // el-button--danger.is-plain 全局样式
 .el-button--danger.is-plain {
   border-color: #f9e0e0 !important;
+  background-color: #ffffff !important;
 
   &:hover {
     background-color: #f9e0e0 !important;
