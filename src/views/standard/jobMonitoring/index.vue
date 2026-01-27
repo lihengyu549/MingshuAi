@@ -22,7 +22,7 @@
       </el-col>
       <!-- 右侧卡片：搜索表单和数据表格 -->
       <el-col :span="19" :xs="24">
-        <el-card class="right-card" shadow="never">
+        <el-card class="search-card" shadow="never">
           <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="false"
             v-show="showSearch" label-width="auto">
             <el-form-item label="子类名称" prop="name">
@@ -62,17 +62,15 @@
                 @keyup.enter.native="handleQuery" />
             </el-form-item>
           </el-form>
-          <el-row :gutter="10" class="mb8">
-            <el-col :span="1.5">
-              <el-button type="primary" plain icon="el-icon-plus" :disabled="dataSource === '内置'" size="medium"
-                @click="addFn">新增</el-button>
-            </el-col>
-            <el-col :span="1.5">
-              <el-button type="danger" plain icon="el-icon-close" :disabled="dataSource === '内置'" size="medium"
-                @click="enabledFn('删除')">删除</el-button>
-            </el-col>
-          </el-row>
-          <el-table v-loading="loading" :data="protectTableFieldList" height="900px" ref="tableRef" class="tableBox">
+        </el-card>
+        <div class="search-actions">
+          <el-button type="primary" plain icon="el-icon-plus" :disabled="dataSource === '内置'" size="medium"
+            @click="addFn">新增</el-button>
+          <el-button type="danger" plain icon="el-icon-close" :disabled="dataSource === '内置'" size="medium"
+            @click="enabledFn('删除')">删除</el-button>
+        </div>
+        <el-card class="table-card" shadow="never">
+          <el-table v-loading="loading" :data="protectTableFieldList" height="860px" ref="tableRef" class="tableBox">
             <template slot="empty">
               <el-empty description="暂无数据"></el-empty>
             </template>
@@ -80,9 +78,8 @@
             </el-table-column>
             <el-table-column label="子类名称" align="left" width="140" prop="attachData" show-overflow-tooltip>
               <template slot-scope="scope">
-                <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />{{
-                  scope.row.attachData
-                }}
+                <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />
+                {{ scope.row.attachData }}
               </template>
             </el-table-column>
             <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
@@ -91,14 +88,11 @@
                 <div style="text-align: center;">建议防护措施</div>
               </template>
               <template slot-scope="scope">
-                <el-tag class="tagsBox custom-plain-tag" v-for="(item, index) in scope.row.protectMethodNameList"
-                  :key="item + index" :style="{
-                    '--tag-color': colorFn(item),
-                    '--tag-rgb': hexToRgb(colorFn(item))
-                  }" plain>
-                  {{ item }}
-                </el-tag>
-              </template>
+                  <el-tag class="tagsBox custom-plain-tag" v-for="(item, index) in scope.row.protectMethodNameList"
+                    :key="item + index" plain>
+                    {{ item }}
+                  </el-tag>
+                </template>
             </el-table-column>
             <el-table-column label="数据持有者" align="center" prop="dataOwner" show-overflow-tooltip />
             <el-table-column label="确认防护措施" prop="confirmProtectMethod" width="200">
@@ -107,10 +101,7 @@
               </template>
               <template slot-scope="scope">
                 <el-tag class="tagsBox custom-plain-tag" v-for="item in scope.row.confirmProtectMethodList" :key="item"
-                  :style="{
-                    '--tag-color': colorFn(item),
-                    '--tag-rgb': hexToRgb(colorFn(item))
-                  }" plain>
+                  plain>
                   {{ item }}
                 </el-tag>
               </template>
@@ -1155,31 +1146,6 @@ export default {
         this.confirmProtectMethodList = res.data;
       })
     },
-    colorFn(item) {
-      switch (item) {
-        case '加密':
-          return '#70b503';
-        case 'DLP':
-          return '#0600ff';
-        case '脱敏':
-          return '#f59b22';
-        case '无保护':
-          return '#409eff';
-        case '空':
-          return '#909399';
-        default:
-          return '#909399';
-      }
-    },
-    hexToRgb(hex) {
-      if (!hex || typeof hex !== 'string' || hex.length !== 7 || hex[0] !== '#') {
-        return '0, 0, 0';
-      }
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      return `${r}, ${g}, ${b}`;
-    },
     //  获取用户列表
     getSelectUserListAll() {
       selectUserListAll().then(res => {
@@ -1815,25 +1781,7 @@ export default {
 }
 
 .tagsBox {
-  /* border: none; */
-  /* color: white; */
-  /* border: none; */
-  /* justify-content: space-between; */
-}
-
-/* 自定义plain标签样式 */
-::v-deep .custom-plain-tag {
-  /* 使用CSS变量设置颜色 */
-  color: var(--tag-color) !important;
-  border-color: var(--tag-color) !important;
-  /* 背景色使用RGB值加透明度实现浅色效果 */
-  background-color: rgba(var(--tag-rgb), 0.1) !important;
   margin-right: 5px;
-}
-
-/* 去除默认hover样式干扰 */
-::v-deep .custom-plain-tag:hover {
-  background-color: rgba(var(--tag-rgb), 0.15) !important;
 }
 
 .addNode {
@@ -1990,6 +1938,7 @@ export default {
   height: 100%;
   max-height: 100%;
   overflow: auto;
+
   ::v-deep .el-card__body {
     padding: 20px;
     height: 100%;
@@ -1999,12 +1948,41 @@ export default {
   }
 }
 
+/* 右侧搜索卡片样式 */
+.search-card {
+  border-radius: 10px;
+  margin-bottom: 20px;
+
+  ::v-deep .el-card__body {
+    padding: 20px;
+    box-sizing: border-box;
+  }
+}
+
+/* 右侧表格卡片样式 */
+.table-card {
+  border-radius: 10px;
+  height: 100%;
+
+  ::v-deep .el-card__body {
+    padding: 20px;
+    box-sizing: border-box;
+  }
+}
+
+/* 搜索区域按钮居中 */
+.search-actions {
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
 /* 右侧卡片样式 */
 .right-card {
   border-radius: 10px;
   height: 100%;
   max-height: 100%;
   overflow: auto;
+
   ::v-deep .el-card__body {
     padding: 20px;
     height: 100%;
