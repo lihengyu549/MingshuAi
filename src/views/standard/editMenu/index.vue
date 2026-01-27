@@ -753,6 +753,8 @@ export default {
     line-height: 28px;
     color: #333;
     transition: color 0.2s;
+    margin-left: 10px;
+    font-size: 14px;
 }
 
 .node-label:hover {
@@ -788,6 +790,7 @@ export default {
 ::v-deep .el-tree-node__content {
     height: 36px;
     align-items: center;
+    border-radius: 6px;
 }
 
 ::v-deep .el-tree-node:focus>.el-tree-node__content {
@@ -795,9 +798,16 @@ export default {
 }
 
 ::v-deep .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
-    background-color: #f0f0f5;
-    color: #26244ce0;
-    font-weight: 500;
+  background-color: #eff6ff;
+}
+
+::v-deep .el-tree-node.is-current .tree-node-icon {
+  color: #3b82f6;
+}
+
+::v-deep .el-tree-node.is-current .node-label {
+  color: #3b82f6;
+  font-weight: 600;
 }
 
 .edit-menu-dialog /deep/.el-dialog__body {

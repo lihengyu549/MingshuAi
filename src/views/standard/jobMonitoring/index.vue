@@ -72,7 +72,7 @@
                 @click="enabledFn('删除')">删除</el-button>
             </el-col>
           </el-row>
-          <el-table v-loading="loading" :data="protectTableFieldList" height="800px" ref="tableRef" class="tableBox">
+          <el-table v-loading="loading" :data="protectTableFieldList" height="900px" ref="tableRef" class="tableBox">
             <template slot="empty">
               <el-empty description="暂无数据"></el-empty>
             </template>
@@ -1097,8 +1097,10 @@ export default {
       } else {
         // 非根节点正常布局
         nodeContent = [
-          ...labelPart,
-          h('span', { style: { flex: '1', minWidth: '0' } }), // 填充元素占满剩余空间
+          h('div', {
+            class: 'node-label-wrapper',
+            style: { flex: '1', minWidth: '0', overflow: 'hidden', display: 'flex', alignItems: 'center' }
+          }, labelPart),
           ...rightElements
         ];
       }
