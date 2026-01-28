@@ -941,9 +941,7 @@ Authorization:Bearer ${this.Token}`
         }
 
         if (finalSelectedColumns.length === 0) {
-          finalSelectedColumns = allColumns
-            .map(item => item.value)
-            .filter(value => !dictColumns.includes(value));
+          finalSelectedColumns = [...this.initialDefaultColumns];
         }
 
         this.exportColumnDialog.selectedColumns = [...finalSelectedColumns];
