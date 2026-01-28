@@ -18,12 +18,20 @@
         <!-- 生成后区域（左侧画布+右侧聊天框） -->
         <div class="flow-chart-container" :class="{ 'fade-in': showChatSection }">
             <div class="main-content">
+                <div class="chat-header">
+                    <i class="el-icon-monitor"></i>
+                    <span>业务结构预览</span>
+                </div>
                 <div id="mindMapContainer">
                 </div>
             </div>
             <!-- 右侧聊天框（替代原表单） -->
             <div class="chat-container">
                 <!-- 聊天记录区域 -->
+                <div class="chat-header">
+                    <i class="el-icon-chat-line-round"></i>
+                    <span>智能助手</span>
+                </div>
                 <div class="chat-messages" ref="chatScroll">
                     <!-- 聊天消息项 -->
                     <div v-for="(msg, index) in chatMessages" :key="index" :class="['chat-item', msg.type]">
@@ -1445,7 +1453,6 @@ export default {
     height: 96vh;
     position: relative;
     overflow: hidden;
-    padding: 0;
 }
 
 /* 首屏输入区域样式 */
@@ -1514,6 +1521,7 @@ export default {
     display: flex;
     opacity: 0;
     transition: opacity 0.3s ease-in;
+    gap: 20px;
 }
 
 .flow-chart-container.fade-in {
@@ -1535,7 +1543,19 @@ export default {
 .main-content {
     flex: 1;
     overflow: hidden;
-    border-right: 1px solid #e5e5e5;
+    border: 1px solid #e2e8f0;
+    border-radius: 15px;
+    background-color: #ffffff;
+
+    & .chat-header {
+        padding: 16px 24px;
+        border-bottom: 1px solid #e2e8f0;
+        font-weight: 600;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 }
 
 /* 聊天容器样式 */
@@ -1545,6 +1565,18 @@ export default {
     display: flex;
     flex-direction: column;
     background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 15px;
+
+    & .chat-header {
+        padding: 16px 24px;
+        border-bottom: 1px solid #e2e8f0;
+        font-weight: 600;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 }
 
 .chat-messages {
@@ -1680,6 +1712,7 @@ export default {
 
 /* 聊天输入框样式 */
 .chat-input-container {
+    border-top: 1px solid #e2e8f0;
     padding: 15px 20px;
 }
 
