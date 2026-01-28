@@ -4,13 +4,13 @@
         <div class="input-section" :class="{ 'fade-out': !showInputSection }">
             <div class="input-tip"><img :src="$store.state.user.projectData.img"
                     class="sidebar-logo" />请您输入需要定制分类标准的企业名称。</div>
-            <div style="width: 50%;border: 1px solid rgb(230 232 238);border-radius: 10px;padding: 10px;">
-                <el-input v-model="form.enterpriseName" class="enterprise-name-input" placeholder="给 MingShu 发送消息"
-                    :class="{ 'input-focus': isInputFocused }" @focus="isInputFocused = true"
-                    @blur="isInputFocused = false" clearable></el-input>
+            <div class="input-wrapper" @click="focusInput" :class="{ 'input-focus': isInputFocused }">
+                <el-input ref="enterpriseInput" v-model="form.enterpriseName" class="enterprise-name-input"
+                    placeholder="给 MingShu 发送消息" :class="{ 'input-focus': isInputFocused }"
+                    @focus="isInputFocused = true" @blur="isInputFocused = false" clearable></el-input>
                 <el-button type="primary" @click="handleSend" :disabled="!form.enterpriseName.trim() || isSending"
                     :loading="isSending" size="small" class="send-btn">
-                    <i class="el-icon-top" v-if="!isSending"></i>
+                    <i class="el-icon-arrow-up" v-if="!isSending"></i>
                 </el-button>
             </div>
         </div>
@@ -303,6 +303,12 @@ export default {
         this.removePageVisibilityListener();
     },
     methods: {
+        focusInput() {
+            if (this.$refs.enterpriseInput) {
+                this.$refs.enterpriseInput.focus();
+            }
+        },
+
         initPageVisibilityListener() {
             this.pageVisibilityHandler = () => {
                 this.handleVisibilityChange();
@@ -1450,7 +1456,7 @@ export default {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: #fff;
+    background-color: #f8fafc;
     transition: opacity 0.3s ease-out;
     position: absolute;
     top: 0;
@@ -1476,6 +1482,27 @@ export default {
     width: 24px;
     height: 24px;
     margin-right: 8px;
+}
+
+.input-wrapper {
+    width: 55%;
+    height: 90px;
+    max-width: 900px;
+    border: 1px solid #f8fafc;
+    border-radius: 15px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    cursor: text;
+}
+
+.input-wrapper.input-focus {
+    border-color: #3b82f6;
+    box-shadow: 0 10px 30px rgba(100, 181, 246, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* 主容器样式 */
@@ -1600,20 +1627,49 @@ export default {
     width: 100%;
 }
 
+.enterprise-name-input {
+    flex: 1;
+    margin-right: 12px;
+}
+
 .enterprise-name-input::v-deep .el-input__inner {
     border: none;
+    background-color: transparent;
+    font-size: 16px;
+    padding: 12px 0;
+}
+
+.enterprise-name-input::v-deep .el-input__inner::placeholder {
+    color: #bdbdbd;
 }
 
 .send-btn {
-    height: 30px;
-    width: 30px;
+    height: 40px;
+    width: 40px;
     border-radius: 50%;
     min-width: 0;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    float: inline-end;
+    flex-shrink: 0;
+    background-color: #64b5f6 !important;
+    border: none !important;
+    transition: all 0.3s ease;
+}
+
+.send-btn:hover {
+    background-color: #42a5f5 !important;
+}
+
+.send-btn::v-deep .el-icon-arrow-up::before {
+    content: '\e6e1';
+    font-weight: bold;
+}
+
+.send-btn::v-deep .el-icon-arrow-up {
+    color: #ffffff;
+    font-size: 18px;
 }
 
 .bottom-buttons {
