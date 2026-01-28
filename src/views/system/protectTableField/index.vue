@@ -110,7 +110,7 @@
           </el-table-column>
         </el-table>
         <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-          :page-size.sync="queryParams.pageSize" @pagination="getList" />
+          :limit.sync="queryParams.pageSize" @pagination="getList" />
       </el-col>
     </el-row>
     <!-- 新增编辑框 -->
@@ -941,9 +941,7 @@ Authorization:Bearer ${this.Token}`
         }
 
         if (finalSelectedColumns.length === 0) {
-          finalSelectedColumns = allColumns
-            .map(item => item.value)
-            .filter(value => !dictColumns.includes(value));
+          finalSelectedColumns = [...this.initialDefaultColumns];
         }
 
         this.exportColumnDialog.selectedColumns = [...finalSelectedColumns];
@@ -1004,8 +1002,9 @@ Authorization:Bearer ${this.Token}`
         this.loading = true;
         const allColumns = this.exportColumnDialog.allColumns.map(item => item.value);
         const unselectedColumns = allColumns.filter(value => !this.exportColumnDialog.selectedColumns.includes(value));
-        
+
         const params = {
+          databaseIds: this.dataCategoryList.map(item => item.id),
           databaseNames: this.databaseNames,
           projectId: this.projectId,
           securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel : null,
