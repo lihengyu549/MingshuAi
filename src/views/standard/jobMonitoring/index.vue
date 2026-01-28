@@ -88,11 +88,11 @@
                 <div style="text-align: center;">建议防护措施</div>
               </template>
               <template slot-scope="scope">
-                  <el-tag class="tagsBox custom-plain-tag" v-for="(item, index) in scope.row.protectMethodNameList"
-                    :key="item + index" plain>
-                    {{ item }}
-                  </el-tag>
-                </template>
+                <el-tag class="tagsBox custom-plain-tag" v-for="(item, index) in scope.row.protectMethodNameList"
+                  :key="item + index" plain>
+                  {{ item }}
+                </el-tag>
+              </template>
             </el-table-column>
             <el-table-column label="数据持有者" align="center" prop="dataOwner" show-overflow-tooltip />
             <el-table-column label="确认防护措施" prop="confirmProtectMethod" width="200">
@@ -311,20 +311,22 @@
                 <el-table-column prop="securityLevel" label="安全分级" min-width="180" />
               </el-table>
               <div class="import-format-tip"
-                style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #f9f9f9; border: 1px solid #eee; border-radius: 4px;">
+                style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #eff6ff; border: 1px solid #eee; border-radius: 4px;">
                 <i class="el-icon-warning-outline" type="info" />
                 升级规则，当同时匹配多条规则时，等级最高规则生效
               </div>
             </div>
             <div class="vertical-actions">
-              <svg-icon icon-class="plus-circle"
-                @click="addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3 && handleOpenRuleDialog('upgrade')"
+              <el-button type="primary" plain size="mini"
                 :disabled="!addOrEditDataRuls.upgradeRule || addOrEdit.flag == 3"
-                :style="{ cursor: addOrEditDataRuls.upgradeRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.upgradeRule ? 1 : 0.5 }" />
-              <svg-icon icon-class="删除"
-                @click="addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3 && handleDeleteRule('upgrade')"
+                @click="addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3 && handleOpenRuleDialog('upgrade')">
+                <svg-icon icon-class="plus-circle" />
+              </el-button>
+              <el-button type="danger" plain size="mini"
                 :disabled="!addOrEditDataRuls.upgradeRule || addOrEdit.flag == 3"
-                :style="{ cursor: addOrEditDataRuls.upgradeRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.upgradeRule ? 1 : 0.5 }" />
+                @click="addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3 && handleDeleteRule('upgrade')">
+                <svg-icon icon-class="删除" />
+              </el-button>
             </div>
           </div>
         </el-form-item>
@@ -348,28 +350,30 @@
                 <el-table-column prop="securityLevel" label="安全分级" min-width="180" />
               </el-table>
               <div class="import-format-tip"
-                style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #f9f9f9; border: 1px solid #eee; border-radius: 4px;">
+                style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #eff6ff; border: 1px solid #eee; border-radius: 4px;">
                 <i class="el-icon-warning-outline" type="info" />
                 降级规则，当同时匹配多条规则时，等级最低规则生效
               </div>
             </div>
             <div class="vertical-actions">
-              <svg-icon icon-class="plus-circle"
-                @click="addOrEditDataRuls.demotionRule && addOrEdit.flag != 3 && handleOpenRuleDialog('downgrade')"
+              <el-button type="primary" plain size="mini"
                 :disabled="!addOrEditDataRuls.demotionRule || addOrEdit.flag == 3"
-                :style="{ cursor: addOrEditDataRuls.demotionRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.demotionRule ? 1 : 0.5 }" />
-              <svg-icon icon-class="删除"
-                @click="addOrEditDataRuls.demotionRule && addOrEdit.flag != 3 && handleDeleteRule('downgrade')"
+                @click="addOrEditDataRuls.demotionRule && addOrEdit.flag != 3 && handleOpenRuleDialog('downgrade')">
+                <svg-icon icon-class="plus-circle" />
+              </el-button>
+              <el-button type="danger" plain size="mini"
                 :disabled="!addOrEditDataRuls.demotionRule || addOrEdit.flag == 3"
-                :style="{ cursor: addOrEditDataRuls.demotionRule ? 'pointer' : 'not-allowed', opacity: addOrEditDataRuls.demotionRule ? 1 : 0.5 }" />
+                @click="addOrEditDataRuls.demotionRule && addOrEdit.flag != 3 && handleDeleteRule('downgrade')">
+                <svg-icon icon-class="删除" />
+              </el-button>
             </div>
           </div>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
+        <el-button @click="addCancel">取 消</el-button>
         <el-button type="primary" plain v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">确
           定</el-button>
-        <el-button @click="addCancel">取 消</el-button>
       </div>
     </Drawer>
     <!-- 新增规则弹窗-->
@@ -413,7 +417,7 @@
         </el-form-item>
       </el-form>
 
-      <div slot="footer" class="dialog-footer" style="justify-content: end; gap: 20px">
+      <div slot="footer" class="dialog-footer">
         <el-button type="primary" plain @click="handleSaveRule">保存</el-button>
         <el-button @click="ruleDialogVisible = false">返回</el-button>
       </div>
@@ -1877,8 +1881,6 @@ export default {
 
 .table-with-actions {
   width: 100%;
-  display: flex;
-  justify-content: flex-start;
 
   .vertical-actions {
     margin-left: 10px;
@@ -1990,5 +1992,10 @@ export default {
     box-sizing: border-box;
     overflow: auto;
   }
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: end;
 }
 </style>

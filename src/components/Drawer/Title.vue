@@ -4,7 +4,7 @@
       <svg-icon v-if="iconClass != ''" :icon-class="iconClass"></svg-icon>
       {{ label }}
     </div>
-    <el-divider style="margin: 10px 0;"></el-divider>
+    <!-- <el-divider style="margin: 10px 0;"></el-divider> -->
   </div>
 
 </template>
@@ -42,8 +42,19 @@ export default {
   margin-bottom: 5px;
 }
 
+.basic-info-title::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  background-color: #409EFF;
+  margin-right: 10px;
+  vertical-align: inherit;
+  border-radius: 2px;
+}
+
 .el-divider--horizontal {
-  margin: 9px 0;
+  margin: 10px 0;
   height: 3px;
 }
 

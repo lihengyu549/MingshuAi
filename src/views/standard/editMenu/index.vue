@@ -793,19 +793,15 @@ export default {
     border-radius: 6px;
 }
 
-::v-deep .el-tree-node:focus>.el-tree-node__content {
-    background-color: #f5f5f7;
-}
-
-::v-deep .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
+::v-deep .el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
   background-color: #eff6ff;
 }
 
-::v-deep .el-tree-node.is-current .tree-node-icon {
+::v-deep .el-tree-node.is-current > .el-tree-node__content .tree-node-icon {
   color: #3b82f6;
 }
 
-::v-deep .el-tree-node.is-current .node-label {
+::v-deep .el-tree-node.is-current > .el-tree-node__content .node-label {
   color: #3b82f6;
   font-weight: 600;
 }

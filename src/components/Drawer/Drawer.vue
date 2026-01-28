@@ -37,11 +37,14 @@ export default {
 </script>
 
 <style scoped>
+/deep/ .el-drawer {
+  border-radius: 10px;
+}
 /* 可根据需求自定义样式 */
 /deep/.el-drawer__header {
   padding-bottom: 20px;
   margin-bottom: 0;
-  background-color: rgb(230, 242, 255);
+  border-bottom: 1px solid #e4e7ed;
 }
 
 /deep/.el-drawer__header> :first-child {
