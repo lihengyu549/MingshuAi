@@ -1004,6 +1004,7 @@ Authorization:Bearer ${this.Token}`
         const unselectedColumns = allColumns.filter(value => !this.exportColumnDialog.selectedColumns.includes(value));
         
         const params = {
+          databaseIds: this.dataCategoryList.map(item => item.id),
           databaseNames: this.databaseNames,
           projectId: this.projectId,
           securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel : null,
