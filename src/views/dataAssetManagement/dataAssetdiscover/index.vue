@@ -1,79 +1,81 @@
 <template>
   <div class="app-container" v-loading="mainLoading">
-    <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small" :inline="true"
-      label-width="auto">
-      <el-form-item label="任务名称" prop="taskName">
-        <el-input v-model="queryParams.taskName" @input="inputSearch" placeholder="请输入数据源名称" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="状态" prop="taskState">
-        <el-select clearable v-model="queryParams.taskState" @change="inputSearch" placeholder="请选择数据库类型">
-          <el-option v-for="item in executeStatus" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <!-- <el-form-item class="searchBtn">
-        <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
-      </el-form-item> -->
-    </el-form>
+    <el-card shadow="never" class="searchCard">
+      <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
+        :inline="true" label-width="auto">
+        <el-form-item label="任务名称" prop="taskName">
+          <el-input v-model="queryParams.taskName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+            @keyup.enter.native="handleQuery" />
+        </el-form-item>
+        <el-form-item label="状态" prop="taskState">
+          <el-select clearable v-model="queryParams.taskState" @change="inputSearch" placeholder="请选择数据库类型">
+            <el-option v-for="item in executeStatus" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+    </el-card>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">新增</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
+        <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="scanSMFn">立即扫描</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
-    <el-table v-loading="loading" height="670px" class="tableBox" :data="proxysList"
-      @selection-change="handleSelectionChange" ref="tableRef">
-      <template slot="empty">
-        <el-empty description="暂无数据"></el-empty>
-      </template>
-      <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="任务名称" align="left" width="140" prop="taskName" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <svg-icon icon-class="jobs"
-              style="font-size: 16px; margin-right: 5px;" />
-          {{ scope.row.taskName }}
+    <el-card class="table-card" shadow="never">
+      <el-table v-loading="loading" height="860px" class="tableBox" :data="proxysList"
+        @selection-change="handleSelectionChange" ref="tableRef">
+        <template slot="empty">
+          <el-empty description="暂无数据"></el-empty>
         </template>
-      </el-table-column>
-      <el-table-column label="IP段" align="center" prop="ipScope" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <span>{{ scope.row.ipScope }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="指定端口" align="center" prop="ports" show-overflow-tooltip />
-      <el-table-column label="周期" align="center" prop="scheduleType" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <span>{{ scope.row.scheduleType == '0' ? '手动' : scope.row.scheduleType == '1' ? '每天' : scope.row.scheduleType
-            == '2' ? '每周' : scope.row.scheduleType == '3' ? '每月' : '' }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="服务数" align="center" prop="servicesNum" show-overflow-tooltip />
-      <el-table-column label="状态" align="center" prop="taskState" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <div style="display: flex; align-items: center;justify-content: center;">
-            <img style="display: block; width: 20px;margin-right: 10px;"
-              :src="imgSrc[scope.row.taskState ? scope.row.taskState : 'NONE']" alt="">
-            <span> {{ stateMsg(scope.row.taskState) }}</span>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
-            @click="handleEcelFn(scope.row)">编辑</el-button>
-          <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)">结果查看</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :page-size.sync="queryParams.pageSize"
-      @pagination="getList" />
+        <el-table-column type="selection" width="60" align="center" />
+        <el-table-column label="任务名称" align="left" width="140" prop="taskName" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <svg-icon icon-class="jobs" style="font-size: 16px; margin-right: 5px;" />
+            {{ scope.row.taskName }}
+          </template>
+        </el-table-column>
+        <el-table-column label="IP段" align="center" prop="ipScope" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span>{{ scope.row.ipScope }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="指定端口" align="center" prop="ports" show-overflow-tooltip />
+        <el-table-column label="周期" align="center" prop="scheduleType" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span>{{ scope.row.scheduleType == '0' ? '手动' : scope.row.scheduleType == '1' ? '每天' :
+              scope.row.scheduleType
+                == '2' ? '每周' : scope.row.scheduleType == '3' ? '每月' : '' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="服务数" align="center" prop="servicesNum" show-overflow-tooltip />
+        <el-table-column label="状态" align="center" prop="taskState" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div style="display: flex; align-items: center;justify-content: center;">
+              <img style="display: block; width: 20px;margin-right: 10px;"
+                :src="imgSrc[scope.row.taskState ? scope.row.taskState : 'NONE']" alt="">
+              <span> {{ stateMsg(scope.row.taskState) }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
+        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+          <template slot-scope="scope">
+            <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
+              @click="handleEcelFn(scope.row)">编辑</el-button>
+            <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)">结果查看</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+        :page-size.sync="queryParams.pageSize" @pagination="getList" />
+    </el-card>
+
 
     <!-- 新增编辑框 -->
     <el-dialog class="custom-dialog" :title="addOrEdit.title" v-loading="addOrEditLoading"
@@ -530,6 +532,15 @@ input[aria-hidden=true] {
 }
 </style>
 <style scoped>
+/deep/.searchCard {
+  border-radius: 10px;
+  margin-bottom: 30px;
+
+  & .el-card__body {
+    padding: 24px;
+  }
+}
+
 .addMsg /deep/ .el-input--medium {
   width: 237px;
 }
@@ -593,6 +604,7 @@ input[aria-hidden=true] {
 
 .yuanDataClass /deep/ .el-form-item {
   width: 30%;
+  margin-bottom: 0px;
 }
 
 .yuanDataClass /deep/ .el-form-item__label {
@@ -648,6 +660,22 @@ input[aria-hidden=true] {
   /* width: calc(100%); */
 }
 
+.table-card {
+  margin-top: 30px;
+  border-radius: 10px;
+
+  .el-card__body {
+    padding: 0;
+    box-sizing: border-box;
+  }
+}
+
+.tableBox {
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -667,6 +695,11 @@ input[aria-hidden=true] {
   margin-bottom: 0px;
   /* padding: 0px; */
   /* display: none; */
+}
+
+.dialogClass /deep/ .el-drawer__body {
+  padding: 0px;
+  background-color: #f1f5f9;
 }
 
 .custom-dialog /deep/.el-dialog {

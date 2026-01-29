@@ -1,49 +1,53 @@
 <template>
   <div class="app-container" v-loading="loading">
-    <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" label-position="left"
-      v-show="showSearch" label-width="auto">
-      <el-form-item label="主机" prop="ip">
-        <el-input v-model="queryParams.ip" @input="inputSearch" placeholder="请输入ip" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="数据库类型" prop="databaseType">
-        <el-select v-model="queryParams.databaseType" placeholder="请选择数据库类型" @change="inputSearch" clearable>
-          <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="" class="searchBtn">
-        <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
-      </el-form-item>
-    </el-form>
-    <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
-    <el-table v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange" ref="tableRef">
-      <el-table-column label="主机" align="center" prop="ip" show-overflow-tooltip />
-      <el-table-column label="端口" align="center" prop="port" show-overflow-tooltip />
-      <el-table-column label="数据库类型" align="center" prop="databaseType" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <span>{{ findDatabaseValueByValue(scope.row.databaseType) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="数据库版本" align="center" prop="databaseVersion" show-overflow-tooltip />
-      <el-table-column label="状态" align="center" min-width="250" prop="state">
-        <template slot-scope="scope">
-          <div style="display: flex; align-items: center;justify-content: center;">
-            <img style="display: block; width: 20px;margin-right: 10px;"
-              :src="imgSrc[scope.row.state ? scope.row.state : 'NONE']" alt="">
-            <span> {{ scope.row.state == 1 ? '已完成' : '未完成' }}</span>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button size="mini" type="text" :disabled="scope.row.state == '1'"
-            @click="resultExdit(scope.row)">导入数据源</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :page-size.sync="queryParams.pageSize"
-      @pagination="getList" />
+    <el-card shadow="never" class="searchCard">
+      <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" label-position="left"
+        v-show="showSearch" label-width="auto">
+        <el-form-item label="主机" prop="ip">
+          <el-input v-model="queryParams.ip" @input="inputSearch" placeholder="请输入ip" clearable
+            @keyup.enter.native="handleQuery" />
+        </el-form-item>
+        <el-form-item label="数据库类型" prop="databaseType">
+          <el-select v-model="queryParams.databaseType" placeholder="请选择数据库类型" @change="inputSearch" clearable>
+            <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="" class="searchBtn">
+          <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
+        </el-form-item>
+      </el-form>
+    </el-card>
+    <el-card shadow="never" class="table-card">
+      <el-table class="tableBox" height="860px" v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange"
+        ref="tableRef">
+        <el-table-column label="主机" align="center" prop="ip" show-overflow-tooltip />
+        <el-table-column label="端口" align="center" prop="port" show-overflow-tooltip />
+        <el-table-column label="数据库类型" align="center" prop="databaseType" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span>{{ findDatabaseValueByValue(scope.row.databaseType) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="数据库版本" align="center" prop="databaseVersion" show-overflow-tooltip />
+        <el-table-column label="状态" align="center" min-width="250" prop="state">
+          <template slot-scope="scope">
+            <div style="display: flex; align-items: center;justify-content: center;">
+              <img style="display: block; width: 20px;margin-right: 10px;"
+                :src="imgSrc[scope.row.state ? scope.row.state : 'NONE']" alt="">
+              <span> {{ scope.row.state == 1 ? '已完成' : '未完成' }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+          <template slot-scope="scope">
+            <el-button size="mini" type="text" :disabled="scope.row.state == '1'"
+              @click="resultExdit(scope.row)">导入数据源</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+        :page-size.sync="queryParams.pageSize" @pagination="getList" />
+    </el-card>
     <!-- 添加或修改数据库代理对话框 -->
     <el-dialog class="addMsg" :title="title" :visible.sync="open" width="700px" append-to-body
       :close-on-click-modal="false">
@@ -733,40 +737,31 @@ export default {
 };
 </script>
 <style scoped>
-.dialogForm .el-form-item {
-  width: 100%;
-}
-
-.dialogForm .el-form-item /deep/ .el-form-item__content {
-  width: 100%;
-  padding-right: 15px;
-}
-
-.dialogForm .el-form-item /deep/ .el-select {
-  width: 100%;
-}
-
-.addMsg ::v-deep .el-input {
-  width: 100%;
-}
-
-.addMsg ::v-deep .el-select {
-  width: 100%;
-}
-
-.addMsg .el-select ::v-deep .el-input {
-  width: 100%;
-}
-
-.addMsg ::v-deep.el-dialog {
+.searchCard {
   border-radius: 10px;
+  margin-bottom: 30px;
+
+  & .el-card__body {
+    padding: 24px;
+  }
 }
 
-.addMsg ::v-deep.el-dialog__header {
-  border-bottom: 1px solid #e6e6e6;
+.table-card {
+  border-radius: 10px;
+
+  .el-card__body {
+    padding: 0;
+    box-sizing: border-box;
+  }
 }
 
-.addMsg ::v-deep.el-dialog__title {
+.tableBox {
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+addMsg ::v-deep.el-dialog__title {
   font-weight: bold;
 }
 
@@ -858,11 +853,11 @@ export default {
   justify-content: space-around;
   align-items: center;
   flex-wrap: wrap;
-  margin-bottom: 35px;
 }
 
 .yuanDataClass /deep/ .el-form-item {
   width: 35%;
+  margin-bottom: 0;
 }
 
 .yuanDataClass /deep/ .el-form-item__content {

@@ -1974,7 +1974,6 @@ export default {
 
 /* 右侧表格卡片样式 */
 .table-card {
-  height: 100%; 
   border-radius: 10px;
 
   .el-card__body {
