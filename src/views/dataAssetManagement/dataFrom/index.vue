@@ -1,43 +1,45 @@
 <template>
   <div class="app-container" v-loading="mainLoading">
-    <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small" :inline="false"
-      label-width="auto">
-      <el-form-item label="数据源名称" prop="sourceName">
-        <el-input v-model="queryParams.sourceName" @input="inputSearch" placeholder="请输入数据源名称" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="数据源类型" prop="sourceType">
-        <el-select clearable v-model="queryParams.sourceType" @change="inputSearch" placeholder="请选择数据库类型">
-          <el-option v-for="item in dataYTpeList" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
+    <el-card shadow="never" class="searchCard">
+      <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
+        :inline="false" label-width="auto">
+        <el-form-item label="数据源名称" prop="sourceName">
+          <el-input v-model="queryParams.sourceName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+            @keyup.enter.native="handleQuery" />
+        </el-form-item>
+        <el-form-item label="数据源类型" prop="sourceType">
+          <el-select clearable v-model="queryParams.sourceType" @change="inputSearch" placeholder="请选择数据库类型">
+            <el-option v-for="item in dataYTpeList" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
 
-      <el-form-item label="来源业务系统" prop="businessName">
-        <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入数据源名称" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
+        <el-form-item label="来源业务系统" prop="businessName">
+          <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+            @keyup.enter.native="handleQuery" />
+        </el-form-item>
 
-      <!-- <el-form-item label="分类分级标准" prop="projectId">
+        <!-- <el-form-item label="分类分级标准" prop="projectId">
         <el-select clearable v-model="queryParams.projectId" filterable @change="inputSearch" placeholder="请选择分类分级标准">
           <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
           </el-option>
         </el-select>
       </el-form-item> -->
-      <el-form-item label="主机信息" prop="targetIpPort">
-        <el-input v-model="queryParams.targetIpPort" @input="inputSearch" placeholder="请输入主机信息" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="扫描状态" prop="scanState">
-        <el-select clearable v-model="queryParams.scanState" @change="inputSearch" placeholder="请选择扫描状态">
-          <el-option v-for="item in executeStatus" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <!-- <el-form-item class="searchBtn">
+        <el-form-item label="主机信息" prop="targetIpPort">
+          <el-input v-model="queryParams.targetIpPort" @input="inputSearch" placeholder="请输入主机信息" clearable
+            @keyup.enter.native="handleQuery" />
+        </el-form-item>
+        <el-form-item label="扫描状态" prop="scanState">
+          <el-select clearable v-model="queryParams.scanState" @change="inputSearch" placeholder="请选择扫描状态">
+            <el-option v-for="item in executeStatus" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <!-- <el-form-item class="searchBtn">
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
       </el-form-item> -->
-    </el-form>
+      </el-form>
+    </el-card>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">数据库</el-button>
@@ -46,87 +48,89 @@
         <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleEcelFn">Excel文件</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
+        <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
-    <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList"
-      @selection-change="handleSelectionChange" ref="tableRef">
-      <template slot="empty">
-        <el-empty description="暂无数据"></el-empty>
-      </template>
-      <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="数据源名称" align="left" width="140" prop="sourceName" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <span class="source-name" @click="scanContentEdit(scope.row)">
-            <svg-icon :icon-class="databaseTypeIcon(databaseTypeMsg(scope.row.databaseType))"
-              style="font-size: 14px; margin-right: 5px;" />
-            {{ scope.row.sourceName }}
-          </span>
+    <el-card shadow="never" class="table-card">
+      <el-table v-loading="loading" height="860px" class="tableBox" :data="proxysList"
+        @selection-change="handleSelectionChange" ref="tableRef">
+        <template slot="empty">
+          <el-empty description="暂无数据"></el-empty>
         </template>
-      </el-table-column>
+        <el-table-column type="selection" width="60" align="center" />
+        <el-table-column label="数据源名称" align="left" width="140" prop="sourceName" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span class="source-name" @click="scanContentEdit(scope.row)">
+              <svg-icon :icon-class="databaseTypeIcon(databaseTypeMsg(scope.row.databaseType))"
+                style="font-size: 14px; margin-right: 5px;" />
+              {{ scope.row.sourceName }}
+            </span>
+          </template>
+        </el-table-column>
 
-      <el-table-column label="主机信息" align="center" prop="targetIpPort" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <span>{{ scope.row.targetIpPort }}</span>
-        </template>
-      </el-table-column>
+        <el-table-column label="主机信息" align="center" prop="targetIpPort" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span>{{ scope.row.targetIpPort }}</span>
+          </template>
+        </el-table-column>
 
-      <el-table-column label="数据源类型" align="center" prop="databaseType" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <span>{{ databaseTypeMsg(scope.row.databaseType) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
-      <!-- <el-table-column label="分类分级标准" align="center" prop="projectName" /> -->
-      <el-table-column label="扫描状态" align="center" prop="scanState">
-        <template slot-scope="scope">
-          <div style="display: flex; align-items: center;justify-content: center;">
-            <img style="display: block; width: 20px;margin-right: 10px;"
-              :src="imgSrc[scope.row.scanState ? scope.row.scanState : 'NONE']" alt="">
-            <span> {{ stateMsg(scope.row.scanState) }}</span>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="耗时(毫秒)" align="center" prop="scanTime" show-overflow-tooltip />
-      <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
-      <el-table-column label="数据质量评估" align="center" prop="dataScore" show-overflow-tooltip />
-      <el-table-column label="表数量" align="center" prop="tableCount" show-overflow-tooltip />
-      <el-table-column label="字段数量" align="center" prop="fieldCount" show-overflow-tooltip />
-      <el-table-column label="数据字典" align="center" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <span>{{ scope.row.feature && scope.row.feature.featureName || '-' }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
-        <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
-            :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API' || btnLoading"
-            :loading="btnLoading">开始扫描</el-button>
-          <el-button size="mini" type="text" @click="stopScan(scope.row)"
-            :disabled="scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API' || btnLoading"
-            :loading="btnLoading">终止扫描</el-button>
-          <!-- 添加关联数据字典按钮和下拉菜单 -->
-          <el-dropdown trigger="click" @command="handleDictionaryCommand"
-            @click.native="handleDropdownClick(scope.row)">
-            <el-button size="mini" type="text">
-              关联数据字典
-            </el-button>
-            <el-dropdown-menu slot="dropdown" class="dictionary-dropdown-menu">
-              <el-dropdown-item v-for="item in dictionaryList" :key="item.id"
-                :command="{ action: 'link', row: scope.row, dictionary: item }">
-                <div class="dictionary-menu-item">
-                  <span>{{ item.featureName }}</span>
-                  <svg-icon iconClass="lightning" style="font-size: 14px;" />
-                </div>
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :page-size.sync="queryParams.pageSize"
-      @pagination="getList" />
+        <el-table-column label="数据源类型" align="center" prop="databaseType" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span>{{ databaseTypeMsg(scope.row.databaseType) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
+        <!-- <el-table-column label="分类分级标准" align="center" prop="projectName" /> -->
+        <el-table-column label="扫描状态" align="center" prop="scanState">
+          <template slot-scope="scope">
+            <div style="display: flex; align-items: center;justify-content: center;">
+              <img style="display: block; width: 20px;margin-right: 10px;"
+                :src="imgSrc[scope.row.scanState ? scope.row.scanState : 'NONE']" alt="">
+              <span> {{ stateMsg(scope.row.scanState) }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="耗时(毫秒)" align="center" prop="scanTime" show-overflow-tooltip />
+        <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
+        <el-table-column label="数据质量评估" align="center" prop="dataScore" show-overflow-tooltip />
+        <el-table-column label="表数量" align="center" prop="tableCount" show-overflow-tooltip />
+        <el-table-column label="字段数量" align="center" prop="fieldCount" show-overflow-tooltip />
+        <el-table-column label="数据字典" align="center" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span>{{ scope.row.feature && scope.row.feature.featureName || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
+          <template slot-scope="scope">
+            <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
+              :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API' || btnLoading"
+              :loading="btnLoading">开始扫描</el-button>
+            <el-button size="mini" type="text" @click="stopScan(scope.row)"
+              :disabled="scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API' || btnLoading"
+              :loading="btnLoading">终止扫描</el-button>
+            <!-- 添加关联数据字典按钮和下拉菜单 -->
+            <el-dropdown trigger="click" @command="handleDictionaryCommand"
+              @click.native="handleDropdownClick(scope.row)">
+              <el-button size="mini" type="text">
+                关联数据字典
+              </el-button>
+              <el-dropdown-menu slot="dropdown" class="dictionary-dropdown-menu">
+                <el-dropdown-item v-for="item in dictionaryList" :key="item.id"
+                  :command="{ action: 'link', row: scope.row, dictionary: item }">
+                  <div class="dictionary-menu-item">
+                    <span>{{ item.featureName }}</span>
+                    <svg-icon iconClass="lightning" style="font-size: 14px;" />
+                  </div>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </template>
+        </el-table-column>
+      </el-table>
+      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+        :page-size.sync="queryParams.pageSize" @pagination="getList" />
+    </el-card>
     <!-- 添加或修改数据库代理对话框 -->
     <el-dialog class="addMsg" :title="title" :visible.sync="open" append-to-body :close-on-click-modal="false"
       width="700px">
@@ -1268,6 +1272,15 @@ export default {
   padding: 20px;
 }
 
+/deep/.searchCard {
+  border-radius: 10px;
+  margin-bottom: 30px;
+
+  & .el-card__body {
+    padding: 24px;
+  }
+}
+
 .yuanDataClass {
   display: flex;
   justify-content: flex-start;
@@ -1277,6 +1290,15 @@ export default {
 
 .yuanDataClass /deep/ .el-form-item {
   width: 30%;
+  margin-bottom: 18px;
+}
+
+.yuanDataClass /deep/ .el-form-item:nth-child(3n) {
+  margin-right: 0;
+}
+
+.yuanDataClass /deep/ .el-form-item:nth-last-child(-n+3) {
+  margin-bottom: 0;
 }
 
 .yuanDataClass /deep/ .el-form-item__label {
@@ -1320,6 +1342,22 @@ export default {
 
 .addSelectClass /deep/ .el-select {
   width: calc(100%);
+}
+
+.table-card {
+  margin-top: 30px;
+  border-radius: 10px;
+
+  .el-card__body {
+    padding: 0;
+    box-sizing: border-box;
+  }
+}
+
+.tableBox {
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {

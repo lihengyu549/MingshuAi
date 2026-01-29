@@ -1780,6 +1780,15 @@ export default {
 
 .yuanDataClass /deep/ .el-form-item {
   width: 30%;
+  margin-bottom: 18px;
+}
+
+.yuanDataClass /deep/ .el-form-item:nth-child(3n) {
+  margin-right: 0;
+}
+
+.yuanDataClass /deep/ .el-form-item:nth-last-child(-n+3) {
+  margin-bottom: 0;
 }
 
 .yuanDataClass /deep/ .el-form-item__label {
