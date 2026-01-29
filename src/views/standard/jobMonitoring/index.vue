@@ -5,14 +5,14 @@
       <el-col :span="5" :xs="24">
         <el-card class="left-card" shadow="never">
           <div class="head-container">
-            <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
+            <el-select v-model="queryParams.categoryId" class="serachSelect" @change="treeOptionsSelectChange"
               placeholder="全部" style="margin-bottom: 20px" filterable>
               <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
               </el-option>
             </el-select>
           </div>
           <div class="head-container" v-loading="treeLoading">
-            <el-input v-model="filterName" placeholder="搜索树节点..." clearable size="mini" style="margin-bottom: 20px;" />
+            <el-input class="serachInput" v-model="filterName" placeholder="搜索树节点..." clearable />
             <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
               :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
               node-key="id" highlight-current @node-click="handleNodeClick" :render-content="renderContent">
@@ -106,7 +106,7 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="来源" align="center" prop="dataSource" show-overflow-tooltip />
+            <!-- <el-table-column label="来源" align="center" prop="dataSource" show-overflow-tooltip /> -->
             <el-table-column label="直属父类" align="center" prop="baseParent" show-overflow-tooltip />
             <el-table-column label="操作" align="center" width="180">
               <template slot-scope="scope">
@@ -1024,7 +1024,7 @@ export default {
         // L1根节点
         iconClass = 'dunpai-2';
         // iconStyle = { color: currentColor, fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
-        iconStyle = { fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+        iconStyle = { fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', };
       } else {
         // 二级及以下节点
         iconClass = node.expanded ? 'openFile' : 'closeFile';
@@ -1056,7 +1056,14 @@ export default {
 
       // 构建节点内容
       const labelPart = [
-        h('span', { class: 'node-label', attrs: { title: node.label } }, node.label)
+        h('span', {
+          class: 'node-label',
+          attrs: { title: node.label },
+          style: {
+            fontSize: '14px',
+            fontWeight: isRoot ? '600' : 'normal'
+          }
+        }, node.label)
       ];
 
       // 非根节点才显示等级标签，放到最右侧
@@ -1668,13 +1675,14 @@ export default {
   display: none;
 }
 
-.serachInput {
+.serachSelect {
   width: 100%;
   margin-right: 10px;
-
-  input {
-    height: 28px !important;
-    line-height: 28px !important;
+}
+.serachInput {
+  margin-bottom: 20px;
+  .el-input__inner {
+    background-color: #f8fafc;
   }
 }
 
@@ -1697,6 +1705,9 @@ export default {
 
 .tableBox {
   overflow-y: auto;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
@@ -1706,13 +1717,12 @@ export default {
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-thumb {
   background-color: #0003;
-  border-radius: 10px;
   transition: all .2s ease-in-out;
 }
 
-.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
+/* .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
   border-radius: 10px;
-}
+} */
 
 .AiStudesCont /deep/ .el-form-item__content {
   display: flex;
@@ -1803,13 +1813,14 @@ export default {
   border-radius: 10px;
 }
 
-::v-deep .el-tree-node.is-current>.el-tree-node__content {
-  background-color: #e8f4ff !important;
+::v-deep .el-tree-node.is-current > .el-tree-node__content {
+  background-color: #eff6ff;
+  color: #3b84f6;
   border-radius: 10px;
 }
 
 ::v-deep .el-tree-node__content:hover {
-  background-color: #eef4fc !important;
+  background-color: #f8fafc !important;
   border-radius: 10px;
 }
 
@@ -1963,11 +1974,11 @@ export default {
 
 /* 右侧表格卡片样式 */
 .table-card {
+  height: 100%; 
   border-radius: 10px;
-  height: 100%;
 
-  ::v-deep .el-card__body {
-    padding: 20px;
+  .el-card__body {
+    padding: 0;
     box-sizing: border-box;
   }
 }
