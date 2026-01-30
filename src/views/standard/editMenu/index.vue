@@ -735,6 +735,7 @@ export default {
     padding: 20px;
     border-radius: 6px;
     min-height: 500px;
+    overflow: auto;
 }
 
 .custom-tree-node {
