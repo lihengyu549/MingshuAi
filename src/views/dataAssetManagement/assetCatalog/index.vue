@@ -1,201 +1,205 @@
 <template>
   <div class="app-container" v-loading="Loading">
-    <el-row :gutter="20">
-      <el-col :span="4" :xs="24">
-        <!-- 1. 原有搜索输入框（保持不变，位于最上方） -->
-        <div class="head-container" style="margin-bottom: 15px;">
-          <el-input v-model="filterText" placeholder="请输入库名搜索" clearable>
-            <i slot="prefix" class="el-input__icon el-icon-search"></i>
-          </el-input>
-        </div>
-
-        <!-- 2. 新增：全选框（左） + 导出按钮（右） 区域 -->
-        <div class="tree-operation-bar"
-          style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-          <!-- 左侧全选框（带文字说明） -->
-          <el-checkbox v-model="isTreeAllChecked" @change="handleTreeAllCheck"
-            :indeterminate="isTreeAllChecked === null" style="font-size: 14px; margin-left: 20px;">
-            全选
-          </el-checkbox>
-          <!-- 右侧导出按钮（无选中节点时禁用） -->
-          <el-button type="text" @click="handleTreeExport" :disabled="selectedTreeNodeIds.length === 0"
-            style="color: #26244ce0;">
-            <svg-icon icon-class="导出" />
-            导出
-          </el-button>
-        </div>
-
-        <div class="head-container" v-loading="treeLoading">
-          <el-tree class="treeBox" style="overflow-y: auto;height: 785px;" :data="categoryList" :props="defaultProps"
-            :default-expanded-keys="[treeID]" :current-node-key="treeID" :expand-on-click-node="false"
-            :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current show-checkbox
-            :check-strictly="false" :default-checked-keys="defaultCheckedKeys" @check="handleTreeCheck"
-            :render-content="renderContent" />
-        </div>
-      </el-col>
-      <!--用户数据-->
-      <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="false"
-          label-width="100px">
-          <el-form-item label="表名" prop="tableName">
-            <el-input v-model="queryParams.tableName" placeholder="请输入表名搜索" @input="handleInputChange" clearable>
+    <el-row :gutter="20" style="height: 100%; display: flex;">
+      <el-col :span="5" :xs="24" style="height: 100%; display: flex; flex-direction: column;">
+        <el-card class="left-card" shadow="never" style="height: 100%; display: flex; flex-direction: column;">
+          <!-- 1. 原有搜索输入框（保持不变，位于最上方） -->
+          <div class="head-container" style="margin-bottom: 15px; flex-shrink: 0;">
+            <el-input v-model="filterText" placeholder="请输入库名搜索" clearable>
               <i slot="prefix" class="el-input__icon el-icon-search"></i>
             </el-input>
-          </el-form-item>
-          <el-form-item label="语义填充" prop="paddingStatus">
-            <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange" placeholder="全部" clearable>
-              <el-option label="未开始" value="1"></el-option>
-              <el-option label="成功" value="2"></el-option>
-              <el-option label="失败" value="3"></el-option>
-              <el-option label="执行中" value="4"></el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="样本特征提取" prop="featureExtractionStatus">
-            <el-select v-model="queryParams.featureExtractionStatus" @change="selectProjectIdChange" placeholder="全部"
-              clearable>
-              <el-option label="未开始" value="1"></el-option>
-              <el-option label="成功" value="2"></el-option>
-              <el-option label="失败" value="3"></el-option>
-              <el-option label="执行中" value="4"></el-option>
-            </el-select>
-          </el-form-item>
-          <!-- <el-form-item> -->
-          <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
-          <!-- <el-button icon="el-icon-s-opportunity" type="primary" size="small" @click="allFill">一键填充</el-button>
-            <el-button icon="el-icon-s-help" type="primary" size="small" @click="allAssess">一键评估</el-button> -->
-          <!-- </el-form-item> -->
-        </el-form>
-        <div class="mian_box" id="main_box">
-          <div v-for="(item, index) in dataAll" v-loading="loading" :key="index" class="table-info-card">
-            <!-- 头部区域：表名 + 字段信息按钮 -->
-            <div class="card-header">
-              <h3 class="table-name">
-                <svg-icon icon-class="table1" style="margin-right: 5px;" />
-                {{ item.tableName }}
-              </h3>
-              <button class="field-info-btn" @click="fieldInformationFn(item)">
-                <i class="el-icon-warning-outline" style="margin-right: 5px;"></i>字段信息
-              </button>
-            </div>
+          </div>
 
-            <!-- 内容区域：分三行布局 -->
-            <div class="card-content">
-              <!-- 第一行：4 列 -->
-              <div class="row row-1">
-                <!-- CHANGE: 添加点击事件打开评估详情弹窗 -->
-                <div class="col col-4" @click="showScoreDialog(item)" style="cursor: pointer;">
-                  <div class="label">数据质量评分</div>
-                  <div class="value" :title="item.score || '--'">{{ item.score ? item.score : '--' }}</div>
-                  <svg-icon icon-class="xingxing" class="info-icon" />
-                  <div class="progress-bar">
-                    <el-progress :percentage="Number(item.score)" color="#f4a63e" :show-text="false"></el-progress>
-                  </div>
-                </div>
-                <div class="col col-1">
-                  <div class="label">表注释</div>
-                  <div class="value" :title="item.oldTableRemark || '--'">{{ item.oldTableRemark ? item.oldTableRemark :
-                    '--' }}</div>
-                  <svg-icon icon-class="xinxi" class="info-icon" />
-                </div>
-                <div class="col col-2">
-                  <div class="label">数据大小</div>
-                  <div class="value" :title="item.dataSize || '--'">{{ item.dataSize ? item.dataSize : '--' }}</div>
-                  <svg-icon icon-class="database" class="info-icon" />
-                </div>
-                <div class="col col-3">
-                  <div class="label">数据量级</div>
-                  <div class="value" :title="item.dataMagnitude ? item.dataMagnitude + ' 行' : '--'">{{
-                    item.dataMagnitude ? item.dataMagnitude + ' 行' : '--' }}</div>
-                  <svg-icon icon-class="list2" class="info-icon" />
-                </div>
-              </div>
+          <!-- 2. 新增：全选框（左） + 导出按钮（右） 区域 -->
+          <div class="tree-operation-bar"
+            style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+            <!-- 左侧全选框（带文字说明） -->
+            <el-checkbox v-model="isTreeAllChecked" @change="handleTreeAllCheck"
+              :indeterminate="isTreeAllChecked === null" style="font-size: 14px; margin-left: 20px;">
+              全选
+            </el-checkbox>
+            <!-- 右侧导出按钮（无选中节点时禁用） -->
+            <el-button type="text" @click="handleTreeExport" :disabled="selectedTreeNodeIds.length === 0"
+              style="color: #26244ce0;">
+              <svg-icon icon-class="导出" />
+              导出
+            </el-button>
+          </div>
 
-              <!-- 第二行：6 列 -->
-              <div class="row row-2">
-                <div class="col">
-                  <div class="label">AI表注释</div>
-                  <div class="value" :title="item.craftTableRemark || '--'">{{ item.craftTableRemark ?
-                    item.craftTableRemark : '--' }}</div>
-                </div>
-                <div class="col">
-                  <div class="label">数据源名称</div>
-                  <div class="value" :title="item.dataSourceName || '--'">{{ item.dataSourceName ?
-                    item.dataSourceName : '--' }}</div>
-                </div>
-                <div class="col">
-                  <div class="label">分类分级标准</div>
-                  <div class="value" :title="item.categoryName || '--'">{{ item.categoryName ?
-                    item.categoryName : '--' }}</div>
-                </div>
-                <div class="col">
-                  <div class="label">来源业务系统</div>
-                  <div class="value" :title="item.businessName || '--'">{{ item.businessName ?
-                    item.businessName : '--' }}</div>
-                </div>
-                <div class="col">
-                  <div class="label">所属库名</div>
-                  <div class="value" :title="item.affiliationDatabaseName || '--'">{{ item.affiliationDatabaseName ?
-                    item.affiliationDatabaseName : '--' }}</div>
-                </div>
-                <div class="col">
-                  <div class="label">表分类</div>
-                  <div class="value" :title="item.tableCategoryName || '--'">{{ item.tableCategoryName ?
-                    item.tableCategoryName : '--' }}</div>
-                </div>
-              </div>
-
-              <!-- 第三行：6 列 -->
-              <div class="row row-3">
-                <div class="col">
-                  <div class="label">表分级</div>
-                  <div class="value" :title="item.tableSecurityLevel || '--'">{{ item.tableSecurityLevel ?
-                    item.tableSecurityLevel : '--' }}</div>
-                </div>
-                <div class="col">
-                  <div class="label">个人信息条数</div>
-                  <div class="value green" :title="item.personalInformation ? item.personalInformation + ' 条' : '--'">{{
-                    item.personalInformation ? item.personalInformation + ' 条' : '--' }}</div>
-                </div>
-                <div class="col">
-                  <div class="label">未成年人信息条数</div>
-                  <div class="value" :title="item.minorsInformation || '--'">{{ item.minorsInformation ?
-                    item.minorsInformation : '--' }}</div>
-                </div>
-                <div class="col">
-                  <div class="label">字段数量</div>
-                  <div class="value" :title="item.fieldCount || '--'">{{ item.fieldCount ? item.fieldCount : '--' }}
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="label">语义填充</div>
-                  <el-tag
-                    :type="item.paddingStatus == '未开始' ? 'info' : item.paddingStatus == '成功' ? 'success' : item.paddingStatus == '失败' ? 'danger' : item.paddingStatus == '执行中' ? 'primary' : 'info'"
-                    class="status-tag" :title="item.paddingStatus">
-                    <i
-                      :class="item.paddingStatus == '未开始' ? 'el-icon-time' : item.paddingStatus == '成功' ? 'el-icon-circle-check' : item.paddingStatus == '失败' ? 'el-icon-warning-outline' : item.paddingStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
-                    {{ item.paddingStatus }}
-                  </el-tag>
-                </div>
-                <div class="col">
-                  <div class="label">样本特征提取</div>
-                  <el-tag
-                    :type="item.featureExtractionStatus == '未开始' ? 'info' : item.featureExtractionStatus == '成功' ? 'success' : item.featureExtractionStatus == '失败' ? 'danger' : item.featureExtractionStatus == '执行中' ? 'primary' : 'primary'"
-                    class="status-tag" :title="item.featureExtractionStatus">
-                    <i
-                      :class="item.featureExtractionStatus == '未开始' ? 'el-icon-time' : item.featureExtractionStatus == '成功' ? 'el-icon-circle-check' : item.featureExtractionStatus == '失败' ? 'el-icon-warning-outline' : item.featureExtractionStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
-                    {{ item.featureExtractionStatus }}
-                  </el-tag>
-                </div>
-              </div>
+          <div class="tree-wrapper" style="flex: 1; overflow: hidden; display: flex;">
+            <div class="head-container" v-loading="treeLoading" style="flex: 1; overflow: auto; min-height: 0;">
+              <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
+                :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
+                node-key="id" highlight-current show-checkbox :check-strictly="false"
+                :default-checked-keys="defaultCheckedKeys" @check="handleTreeCheck" :render-content="renderContent" />
             </div>
           </div>
-          <div v-if="dataAll.length === 0" class="no-data">
-            <el-empty description="暂无数据"></el-empty>
-          </div>
-        </div>
+        </el-card>
       </el-col>
-      <pagination class="paginationClass" v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-        :page-size.sync="queryParams.pageSize" @pagination="handlePagination" />
+      <!--用户数据-->
+      <el-col :span="19" :xs="24" style="height: 100%; display: flex; flex-direction: column;">
+        <el-card class="search-card" shadow="never">
+          <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="false"
+            label-width="100px">
+            <el-form-item label="表名" prop="tableName">
+              <el-input v-model="queryParams.tableName" placeholder="请输入表名搜索" @input="handleInputChange" clearable>
+                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+              </el-input>
+            </el-form-item>
+            <el-form-item label="语义填充" prop="paddingStatus">
+              <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange" placeholder="全部" clearable>
+                <el-option label="未开始" value="1"></el-option>
+                <el-option label="成功" value="2"></el-option>
+                <el-option label="失败" value="3"></el-option>
+                <el-option label="执行中" value="4"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="样本特征提取" prop="featureExtractionStatus">
+              <el-select v-model="queryParams.featureExtractionStatus" @change="selectProjectIdChange" placeholder="全部"
+                clearable>
+                <el-option label="未开始" value="1"></el-option>
+                <el-option label="成功" value="2"></el-option>
+                <el-option label="失败" value="3"></el-option>
+                <el-option label="执行中" value="4"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-form>
+        </el-card>
+        <el-card class="table-card" shadow="never" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+          <div class="mian_box" id="main_box" style="flex: 1; overflow: auto;">
+            <div v-for="(item, index) in dataAll" v-loading="loading" :key="index" class="table-info-card">
+              <!-- 头部区域：表名 + 字段信息按钮 -->
+              <div class="card-header">
+                <h3 class="table-name">
+                  <svg-icon icon-class="table1" style="margin-right: 5px;" />
+                  {{ item.tableName }}
+                </h3>
+                <button class="field-info-btn" @click="fieldInformationFn(item)">
+                  <i class="el-icon-warning-outline" style="margin-right: 5px;"></i>字段信息
+                </button>
+              </div>
+
+              <!-- 内容区域：分三行布局 -->
+              <div class="card-content">
+                <!-- 第一行：4 列 -->
+                <div class="row row-1">
+                  <!-- CHANGE: 添加点击事件打开评估详情弹窗 -->
+                  <div class="col col-4" @click="showScoreDialog(item)" style="cursor: pointer;">
+                    <div class="label">数据质量评分</div>
+                    <div class="value" :title="item.score || '--'">{{ item.score ? item.score : '--' }}</div>
+                    <svg-icon icon-class="xingxing" class="info-icon" />
+                    <div class="progress-bar">
+                      <el-progress :percentage="Number(item.score)" color="#f4a63e" :show-text="false"></el-progress>
+                    </div>
+                  </div>
+                  <div class="col col-1">
+                    <div class="label">表注释</div>
+                    <div class="value" :title="item.oldTableRemark || '--'">{{ item.oldTableRemark ? item.oldTableRemark
+                      :
+                      '--' }}</div>
+                    <svg-icon icon-class="xinxi" class="info-icon" />
+                  </div>
+                  <div class="col col-2">
+                    <div class="label">数据大小</div>
+                    <div class="value" :title="item.dataSize || '--'">{{ item.dataSize ? item.dataSize : '--' }}</div>
+                    <svg-icon icon-class="database" class="info-icon" />
+                  </div>
+                  <div class="col col-3">
+                    <div class="label">数据量级</div>
+                    <div class="value" :title="item.dataMagnitude ? item.dataMagnitude + ' 行' : '--'">{{
+                      item.dataMagnitude ? item.dataMagnitude + ' 行' : '--' }}</div>
+                    <svg-icon icon-class="list2" class="info-icon" />
+                  </div>
+                </div>
+
+                <!-- 第二行：6 列 -->
+                <div class="row row-2">
+                  <div class="col">
+                    <div class="label">AI表注释</div>
+                    <div class="value" :title="item.craftTableRemark || '--'">{{ item.craftTableRemark ?
+                      item.craftTableRemark : '--' }}</div>
+                  </div>
+                  <div class="col">
+                    <div class="label">数据源名称</div>
+                    <div class="value" :title="item.dataSourceName || '--'">{{ item.dataSourceName ?
+                      item.dataSourceName : '--' }}</div>
+                  </div>
+                  <div class="col">
+                    <div class="label">分类分级标准</div>
+                    <div class="value" :title="item.categoryName || '--'">{{ item.categoryName ?
+                      item.categoryName : '--' }}</div>
+                  </div>
+                  <div class="col">
+                    <div class="label">来源业务系统</div>
+                    <div class="value" :title="item.businessName || '--'">{{ item.businessName ?
+                      item.businessName : '--' }}</div>
+                  </div>
+                  <div class="col">
+                    <div class="label">所属库名</div>
+                    <div class="value" :title="item.affiliationDatabaseName || '--'">{{ item.affiliationDatabaseName ?
+                      item.affiliationDatabaseName : '--' }}</div>
+                  </div>
+                  <div class="col">
+                    <div class="label">表分类</div>
+                    <div class="value" :title="item.tableCategoryName || '--'">{{ item.tableCategoryName ?
+                      item.tableCategoryName : '--' }}</div>
+                  </div>
+                </div>
+
+                <!-- 第三行：6 列 -->
+                <div class="row row-3">
+                  <div class="col">
+                    <div class="label">表分级</div>
+                    <div class="value" :title="item.tableSecurityLevel || '--'">{{ item.tableSecurityLevel ?
+                      item.tableSecurityLevel : '--' }}</div>
+                  </div>
+                  <div class="col">
+                    <div class="label">个人信息条数</div>
+                    <div class="value green" :title="item.personalInformation ? item.personalInformation + ' 条' : '--'">
+                      {{
+                        item.personalInformation ? item.personalInformation + ' 条' : '--' }}</div>
+                  </div>
+                  <div class="col">
+                    <div class="label">未成年人信息条数</div>
+                    <div class="value" :title="item.minorsInformation || '--'">{{ item.minorsInformation ?
+                      item.minorsInformation : '--' }}</div>
+                  </div>
+                  <div class="col">
+                    <div class="label">字段数量</div>
+                    <div class="value" :title="item.fieldCount || '--'">{{ item.fieldCount ? item.fieldCount : '--' }}
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="label">语义填充</div>
+                    <el-tag
+                      :type="item.paddingStatus == '未开始' ? 'info' : item.paddingStatus == '成功' ? 'success' : item.paddingStatus == '失败' ? 'danger' : item.paddingStatus == '执行中' ? 'primary' : 'info'"
+                      class="status-tag" :title="item.paddingStatus">
+                      <i
+                        :class="item.paddingStatus == '未开始' ? 'el-icon-time' : item.paddingStatus == '成功' ? 'el-icon-circle-check' : item.paddingStatus == '失败' ? 'el-icon-warning-outline' : item.paddingStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
+                      {{ item.paddingStatus }}
+                    </el-tag>
+                  </div>
+                  <div class="col">
+                    <div class="label">样本特征提取</div>
+                    <el-tag
+                      :type="item.featureExtractionStatus == '未开始' ? 'info' : item.featureExtractionStatus == '成功' ? 'success' : item.featureExtractionStatus == '失败' ? 'danger' : item.featureExtractionStatus == '执行中' ? 'primary' : 'primary'"
+                      class="status-tag" :title="item.featureExtractionStatus">
+                      <i
+                        :class="item.featureExtractionStatus == '未开始' ? 'el-icon-time' : item.featureExtractionStatus == '成功' ? 'el-icon-circle-check' : item.featureExtractionStatus == '失败' ? 'el-icon-warning-outline' : item.featureExtractionStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
+                      {{ item.featureExtractionStatus }}
+                    </el-tag>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-if="dataAll.length === 0" class="no-data">
+              <el-empty description="暂无数据"></el-empty>
+            </div>
+          </div>
+          <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+            :page-size.sync="queryParams.pageSize" @pagination="handlePagination" />
+        </el-card>
+      </el-col>
     </el-row>
     <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow"
       :destroy-on-close="true" direction="rtl" size="51%">
@@ -815,7 +819,7 @@ export default {
         // 构造请求参数
         const allColumns = this.exportColumnDialog.allColumns.map(item => item.value);
         const unselectedColumns = allColumns.filter(value => !this.exportColumnDialog.selectedColumns.includes(value));
-        
+
         const params = {
           tableName: this.queryParams.tableName,
           paddingStatus: this.queryParams.paddingStatus,
@@ -1388,23 +1392,64 @@ export default {
   }
 };
 </script>
-<style>
-.mian_box::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.mian_box::-webkit-scrollbar-thumb {
-  background-color: #0003;
-  border-radius: 10px;
-  transition: all .2s ease-in-out;
-}
-
-.mian_box::-webkit-scrollbar-track {
-  border-radius: 10px;
-}
-</style>
 <style lang="scss" scoped>
+/* 左右卡片布局 */
+::v-deep .el-row {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  overflow: hidden;
+}
+
+::v-deep .el-col {
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.left-card {
+  border-radius: 10px;
+  height: 100%;
+  overflow: hidden;
+
+  ::v-deep .el-card__body {
+    padding: 20px;
+    height: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.search-card {
+  border-radius: 10px;
+  margin-bottom: 20px;
+
+  ::v-deep .el-card__body {
+    padding: 20px;
+    box-sizing: border-box;
+  }
+}
+
+.table-card {
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  border: none;
+  background-color: #f8fafc;
+
+  ::v-deep .el-card__body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+}
+
 .el-drawer__wrapper ::v-deep .el-drawer__body::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -1424,12 +1469,6 @@ export default {
   padding: 0 20px 10px 20px;
 }
 
-.mian_box_item {
-  margin-top: 15px;
-  margin-right: 10px;
-  margin-left: 10px;
-}
-
 .mian_box_item ::v-deep .el-card {
   box-shadow: none;
 }
@@ -1438,11 +1477,6 @@ export default {
   width: 237px;
 }
 
-.paginationClass {
-  position: absolute;
-  bottom: -3%;
-  right: 0;
-}
 
 .success {
   color: #67c23a;
@@ -1458,11 +1492,8 @@ export default {
 
 .mian_box {
   width: 100%;
-  /* border: 7px solid #f7f7f7; */
-  height: 700px;
   overflow: auto;
-  margin-bottom: 50px;
-
+  flex: 1;
 }
 
 .mian_box_head {
@@ -1470,7 +1501,6 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #f1fafe;
 }
 
 .mian_box_center {
@@ -1510,6 +1540,10 @@ export default {
 
 .btnItem:hover {
   cursor: pointer;
+}
+
+.treeBox {
+  overflow-y: auto;
 }
 
 .treeBox::-webkit-scrollbar {
@@ -1555,6 +1589,7 @@ export default {
 
 .yuanDataClass ::v-deep .el-form-item {
   width: 30%;
+  margin-bottom: 0px;
 }
 
 .yuanDataClass ::v-deep .el-form-item__label {

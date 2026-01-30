@@ -123,6 +123,7 @@ aside {
 //main-container全局样式
 .app-container {
   padding: 40px;
+  height: calc(100vh - 55px);
   // height: calc(100vh - 130px);
   // max-height: calc(100vh - 130px);
   overflow: auto;

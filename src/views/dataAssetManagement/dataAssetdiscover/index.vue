@@ -661,7 +661,7 @@ input[aria-hidden=true] {
 }
 
 .table-card {
-  margin-top: 30px;
+  margin-top: 20px;
   border-radius: 10px;
   flex: 1;
   min-height: 0;
