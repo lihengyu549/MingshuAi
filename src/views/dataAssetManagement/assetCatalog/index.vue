@@ -65,7 +65,8 @@
             </el-form-item>
           </el-form>
         </el-card>
-        <el-card class="table-card" shadow="never" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+        <el-card class="table-card" shadow="never"
+          style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
           <div class="mian_box" id="main_box" style="flex: 1; overflow: auto;">
             <div v-for="(item, index) in dataAll" v-loading="loading" :key="index" class="table-info-card">
               <!-- 头部区域：表名 + 字段信息按钮 -->
@@ -202,23 +203,24 @@
       </el-col>
     </el-row>
     <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow"
-      :destroy-on-close="true" direction="rtl" size="51%">
+      :destroy-on-close="true" direction="rtl" size="60%">
       <!-- 新增筛选区域 -->
-      <el-form :model="drawerQueryParams" ref="drawerQueryForm" size="small" :inline="true" label-width="80px"
-        style="margin: 15px 0;">
-        <el-form-item label="字段名称" prop="fieldName"> <!-- 添加prop -->
-          <el-input v-model="drawerQueryParams.fieldName" placeholder="请输入字段名称搜索" @input="handleDrawerSearch"
-            size="mini"></el-input>
-        </el-form-item>
-        <el-form-item label="字段类型" prop="fieldType"> <!-- 添加prop -->
-          <el-input v-model="drawerQueryParams.fieldType" placeholder="请输入字段类型搜索" @input="handleDrawerSearch"
-            size="mini"></el-input>
-        </el-form-item>
-        <el-form-item label="字段注释" prop="oldFieldRemark"> <!-- 添加prop -->
-          <el-input v-model="drawerQueryParams.oldFieldRemark" placeholder="请输入字段注释搜索" @input="handleDrawerSearch"
-            size="mini"></el-input>
-        </el-form-item>
-        <!-- <el-form-item label="脏数据" prop="dirtyData">
+      <el-card shadow="never">
+        <el-form class="drawer-form" :model="drawerQueryParams" ref="drawerQueryForm" size="small" :inline="true"
+          label-width="80px">
+          <el-form-item label="字段名称" prop="fieldName"> <!-- 添加prop -->
+            <el-input v-model="drawerQueryParams.fieldName" placeholder="请输入字段名称搜索" @input="handleDrawerSearch"
+              size="mini"></el-input>
+          </el-form-item>
+          <el-form-item label="字段类型" prop="fieldType"> <!-- 添加prop -->
+            <el-input v-model="drawerQueryParams.fieldType" placeholder="请输入字段类型搜索" @input="handleDrawerSearch"
+              size="mini"></el-input>
+          </el-form-item>
+          <el-form-item label="字段注释" prop="oldFieldRemark"> <!-- 添加prop -->
+            <el-input v-model="drawerQueryParams.oldFieldRemark" placeholder="请输入字段注释搜索" @input="handleDrawerSearch"
+              size="mini"></el-input>
+          </el-form-item>
+          <!-- <el-form-item label="脏数据" prop="dirtyData">
           <el-select v-model="drawerQueryParams.dirtyData" placeholder="全部" @change="handleDrawerSearch"
             style="width: 120px;">
             <el-option label="是" value="是"></el-option>
@@ -232,34 +234,35 @@
             <el-option label="不包含" value="不包含"></el-option>
           </el-select>
         </el-form-item> -->
-        <el-form-item>
-          <!-- <el-button icon="el-icon-refresh" size="small" @click="resetDrawerSearch">重置</el-button> -->
-        </el-form-item>
-      </el-form>
-      <el-table :data="filteredDrawerData" ref="tableRef" height="calc(100% - 100px)" :key="tableKey" border
-        class="tableBox">
-        <el-table-column label="字段名称" align="center" prop="fieldName" width="200" show-overflow-tooltip />
-        <el-table-column label="字段类型" align="center" prop="fieldType" width="200" show-overflow-tooltip />
-        <el-table-column label="字段注释" align="center" width="200" prop="oldFieldRemark" show-overflow-tooltip>
-          <template slot-scope="scope">
-            <span>{{ scope.row.oldFieldRemark }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="AI字段注释" align="center" prop="aiFieldRemark" min-width="200" show-overflow-tooltip>
-          <template slot-scope="scope">
-            <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, 'aiFieldRemark')">{{
-              scope.row.aiFieldRemark }}</span>
-            <el-input v-else id="editInput" v-model="editMsg" @blur="drawerEditBlurFn(scope.row, 'aiFieldRemark')"
-              size="small" />
-          </template>
-        </el-table-column>
-        <!-- <el-table-column label="样本是否为空" align="center" prop="dataIsNull" width="100" show-overflow-tooltip />
+          <!-- <el-form-item> -->
+            <!-- <el-button icon="el-icon-refresh" size="small" @click="resetDrawerSearch">重置</el-button> -->
+          <!-- </el-form-item> -->
+        </el-form>
+      </el-card>
+      <el-card class="drawer-table-card" shadow="never">
+        <el-table :data="filteredDrawerData" ref="tableRef" :key="tableKey" class="tableBox" height="100%">
+          <el-table-column label="字段名称" align="center" prop="fieldName" width="200" show-overflow-tooltip />
+          <el-table-column label="字段类型" align="center" prop="fieldType" width="200" show-overflow-tooltip />
+          <el-table-column label="字段注释" align="center" width="200" prop="oldFieldRemark" show-overflow-tooltip>
+            <template slot-scope="scope">
+              <span>{{ scope.row.oldFieldRemark }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="AI字段注释" align="center" prop="aiFieldRemark" min-width="200" show-overflow-tooltip>
+            <template slot-scope="scope">
+              <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, 'aiFieldRemark')">{{
+                scope.row.aiFieldRemark }}</span>
+              <el-input v-else id="editInput" v-model="editMsg" @blur="drawerEditBlurFn(scope.row, 'aiFieldRemark')"
+                size="small" />
+            </template>
+          </el-table-column>
+          <!-- <el-table-column label="样本是否为空" align="center" prop="dataIsNull" width="100" show-overflow-tooltip />
         <el-table-column label="样本重复率" align="center" prop="dataIsRepeat" width="100" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.dataIsRepeat ? scope.row.dataIsRepeat + '%' : '' }}</span>
           </template>
         </el-table-column> -->
-        <!-- <el-table-column label="样本长度过短" align="center" prop="sampleLengthShort" width="100" show-overflow-tooltip />
+          <!-- <el-table-column label="样本长度过短" align="center" prop="sampleLengthShort" width="100" show-overflow-tooltip />
         <el-table-column label="是否为脏数据（可编辑）" align="center" prop="dirtyData" width="200" show-overflow-tooltip>
           <template slot-scope="scope">
             <span v-if="!scope.row.drawerEditDirtyData" @click="drawerEditFn(scope.row, 'dirtyData')">{{
@@ -271,29 +274,29 @@
             </el-select>
           </template>
         </el-table-column> -->
-        <el-table-column label="样本" align="center" width="80" class-name="small-padding fixed-width">
-          <template slot-scope="scope">
-            <el-tooltip placement="bottom" effect="light">
-              <div slot="content">
-                <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
-                  <el-table-column type="index" label="序号" width="50" />
-                  <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
-                  </el-table-column>
-                </el-table>
-              </div>
-              <el-button size="mini" type="text">查看</el-button>
-            </el-tooltip>
-          </template>
-        </el-table-column>
-        <!-- <el-table-column label="是否包含特征" align="center" prop="featureData" width="100" show-overflow-tooltip />
+          <el-table-column label="样本" align="center" width="80" class-name="small-padding fixed-width">
+            <template slot-scope="scope">
+              <el-tooltip placement="bottom" effect="light">
+                <div slot="content">
+                  <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
+                    <el-table-column type="index" label="序号" width="50" />
+                    <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
+                    </el-table-column>
+                  </el-table>
+                </div>
+                <el-button size="mini" type="text">查看</el-button>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+          <!-- <el-table-column label="是否包含特征" align="center" prop="featureData" width="100" show-overflow-tooltip />
         <el-table-column label="数据特征" align="center" min-width="150" prop="dataFeature" show-overflow-tooltip /> -->
-        <!-- <el-table-column label="是否添加为匹配策略" align="center" min-width="150" prop="isMatchStrategy"
+          <!-- <el-table-column label="是否添加为匹配策略" align="center" min-width="150" prop="isMatchStrategy"
           show-overflow-tooltip /> -->
-      </el-table>
-
-      <!-- 新增分页组件 -->
-      <Pagination v-show="drawerTotal > 0" :total="drawerTotal" :page.sync="drawerQueryParams.pageNum"
-        :page-size.sync="drawerQueryParams.pageSize" @pagination="handleDrawerPagination" style="margin-top: 15px;" />
+        </el-table>
+        <!-- 新增分页组件 -->
+        <Pagination v-show="drawerTotal > 0" :total="drawerTotal" :page.sync="drawerQueryParams.pageNum"
+          :page-size.sync="drawerQueryParams.pageSize" @pagination="handleDrawerPagination" />
+      </el-card>
     </el-drawer>
 
     <!-- 导出列配置弹窗 -->
@@ -1433,11 +1436,10 @@ export default {
   }
 }
 
-.table-card {
+.table-card, .drawer-table-card {
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  border: none;
   background-color: #f8fafc;
 
   ::v-deep .el-card__body {
@@ -1449,28 +1451,74 @@ export default {
     box-sizing: border-box;
   }
 }
-
-.el-drawer__wrapper ::v-deep .el-drawer__body::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.el-drawer__wrapper ::v-deep .el-drawer__body::-webkit-scrollbar-thumb {
-  background-color: #0003;
+.drawer-table-card {
   border-radius: 10px;
-  transition: all .2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+
+  ::v-deep .el-card__body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  ::v-deep .el-table {
+    flex: 1;
+    overflow: auto;
+  }
+
+  ::v-deep .el-pagination {
+    flex-shrink: 0;
+    margin-top: 10px;
+  }
 }
 
-.el-drawer__wrapper ::v-deep .el-drawer__body::-webkit-scrollbar-track {
-  border-radius: 10px;
+.el-drawer__wrapper {
+  ::v-deep .el-drawer__body {
+    padding: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background-color: #f1f5f9;
+
+    > .el-card {
+      border-radius: 10px;
+      margin-bottom: 20px;
+      flex-shrink: 0;
+    }
+
+    > .drawer-table-card {
+      flex: 1;
+      min-height: 0;
+      margin-bottom: 0;
+      > .el-card__body {
+        background-color: #fff;
+      }
+    }
+  }
 }
 
-.el-drawer__wrapper ::v-deep .el-drawer__body {
-  padding: 0 20px 10px 20px;
+
+.tableBox {
+  border: none;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .mian_box_item ::v-deep .el-card {
   box-shadow: none;
+}
+
+.drawer-form {
+  .el-form-item--small.el-form-item {
+    margin-bottom: 0;
+  }
 }
 
 .addMsg ::v-deep .el-input--medium {
