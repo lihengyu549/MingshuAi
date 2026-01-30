@@ -1679,8 +1679,10 @@ export default {
   width: 100%;
   margin-right: 10px;
 }
+
 .serachInput {
   margin-bottom: 20px;
+
   .el-input__inner {
     background-color: #f8fafc;
   }
@@ -1719,10 +1721,6 @@ export default {
   background-color: #0003;
   transition: all .2s ease-in-out;
 }
-
-/* .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
-  border-radius: 10px;
-} */
 
 .AiStudesCont /deep/ .el-form-item__content {
   display: flex;
@@ -1822,7 +1820,7 @@ export default {
   border-radius: 10px;
 }
 
-::v-deep .el-tree-node.is-current > .el-tree-node__content {
+::v-deep .el-tree-node.is-current>.el-tree-node__content {
   background-color: #eff6ff;
   color: #3b84f6;
   border-radius: 10px;
@@ -1935,7 +1933,6 @@ export default {
   padding: 30px;
 }
 
-/* 左右卡片布局 */
 ::v-deep .el-row {
   display: flex;
   align-items: stretch;
@@ -1954,63 +1951,43 @@ export default {
   margin-bottom: 0;
 }
 
-/* 左侧卡片样式 */
 .left-card {
   border-radius: 10px;
   height: 100%;
   max-height: 100%;
   overflow: auto;
 
-  ::v-deep .el-card__body {
-    padding: 20px;
+  .el-card__body {
     height: 100%;
     max-height: 100%;
-    box-sizing: border-box;
     overflow: auto;
   }
 }
 
-/* 右侧搜索卡片样式 */
 .search-card {
   border-radius: 10px;
   margin-bottom: 20px;
-
-  ::v-deep .el-card__body {
-    padding: 20px;
-    box-sizing: border-box;
-  }
 }
 
-/* 右侧表格卡片样式 */
 .table-card {
   border-radius: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 
   .el-card__body {
     padding: 0;
-    box-sizing: border-box;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 }
 
-/* 搜索区域按钮居中 */
 .search-actions {
   gap: 12px;
   margin-bottom: 20px;
-}
-
-/* 右侧卡片样式 */
-.right-card {
-  border-radius: 10px;
-  height: 100%;
-  max-height: 100%;
-  overflow: auto;
-
-  ::v-deep .el-card__body {
-    padding: 20px;
-    height: 100%;
-    max-height: 100%;
-    box-sizing: border-box;
-    overflow: auto;
-  }
 }
 
 .dialog-footer {
