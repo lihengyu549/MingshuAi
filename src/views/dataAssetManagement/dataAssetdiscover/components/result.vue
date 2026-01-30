@@ -19,8 +19,8 @@
       </el-form>
     </el-card>
     <el-card shadow="never" class="table-card">
-      <el-table class="tableBox" height="860px" v-loading="loading" :data="proxysList" @selection-change="handleSelectionChange"
-        ref="tableRef">
+      <el-table class="tableBox" height="860px" v-loading="loading" :data="proxysList"
+        @selection-change="handleSelectionChange" ref="tableRef">
         <el-table-column label="主机" align="center" prop="ip" show-overflow-tooltip />
         <el-table-column label="端口" align="center" prop="port" show-overflow-tooltip />
         <el-table-column label="数据库类型" align="center" prop="databaseType" show-overflow-tooltip>
@@ -737,6 +737,9 @@ export default {
 };
 </script>
 <style scoped>
+.app-container {
+  height: calc(100vh - 70px);
+}
 .searchCard {
   border-radius: 10px;
   margin-bottom: 30px;
@@ -748,10 +751,17 @@ export default {
 
 .table-card {
   border-radius: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 
   .el-card__body {
     padding: 0;
-    box-sizing: border-box;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 }
 
