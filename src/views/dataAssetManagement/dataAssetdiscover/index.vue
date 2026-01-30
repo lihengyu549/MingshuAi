@@ -663,10 +663,17 @@ input[aria-hidden=true] {
 .table-card {
   margin-top: 30px;
   border-radius: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 
   .el-card__body {
     padding: 0;
-    box-sizing: border-box;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 }
 
