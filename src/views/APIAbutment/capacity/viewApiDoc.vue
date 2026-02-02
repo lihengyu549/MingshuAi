@@ -232,6 +232,7 @@ export default {
     border-right: 1px solid #e6e6e6;
     height: 100%;
     overflow-y: auto;
+    padding: 10px;
 }
 
 .api-menu {
@@ -394,12 +395,14 @@ export default {
     text-overflow: ellipsis;
     white-space: nowrap;
     flex: 1;
+    font-weight: 500;
     /* 让名称占满剩余空间 */
 }
 
 .api-menu .el-menu-item {
     display: flex;
     align-items: center;
+    border-radius: 10px;
 }
 
 .code-block {

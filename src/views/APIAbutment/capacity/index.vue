@@ -4,35 +4,37 @@
       <el-button size="medium" type="primary" plain @click="addApiKeys()">创建API Key</el-button>
       <el-button size="medium" type="primary" plain style="float:right" @click="showApiDoc = true">查看接口文档</el-button>
     </div>
-    <el-table v-loading="loading" max-height="700px" class="tableBox" :data="tableList" ref="tableRef">
-      <template slot="empty">
-        <el-empty description="暂无数据"></el-empty>
-      </template>
-      <el-table-column label="API Key" width="300" align="center" prop="proxyToken">
-        <template slot-scope="scope">
-          <span>{{ scope.row.proxyToken }}</span>
+    <el-card class="table-card" shadow="never">
+      <el-table v-loading="loading" height="700px" class="tableBox" :data="tableList" ref="tableRef">
+        <template slot="empty">
+          <el-empty description="暂无数据"></el-empty>
         </template>
-      </el-table-column>
-      <el-table-column label="授信地址" width="230" align="center" prop="ip" />
-      <el-table-column label="归属账号" width="180" align="center" prop="accountNumber" />
-      <el-table-column label="描述" align="center" prop="userData" />
-      <el-table-column label="调用次数" align="center" width="120" prop="callNum" />
-      <el-table-column label="创建时间" align="center" width="180" prop="updateTime" />
-      <el-table-column label="操作" align="center" width="230" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <template>
-            <el-button size="mini" type="text" v-if="scope.row.passTextShow"
-              @click="resultLookFn(scope.row)">查看</el-button>
-            <el-button size="mini" type="text" v-else @click="copyApiKey(scope.row)">复制</el-button>
+        <el-table-column label="API Key" width="300" align="center" prop="proxyToken">
+          <template slot-scope="scope">
+            <span>{{ scope.row.proxyToken }}</span>
           </template>
-          <el-button size="mini" type="text" @click="updataFn(scope.row)">更新</el-button>
-          <el-button size="mini" type="text" @click="editFn(scope.row)">编辑</el-button>
-          <el-button size="mini" type="text" @click="deleteFn(scope.row)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :page-size.sync="queryParams.pageSize"
-      @pagination="getList" />
+        </el-table-column>
+        <el-table-column label="授信地址" width="230" align="center" prop="ip" />
+        <el-table-column label="归属账号" width="180" align="center" prop="accountNumber" />
+        <el-table-column label="描述" align="center" prop="userData" />
+        <el-table-column label="调用次数" align="center" width="120" prop="callNum" />
+        <el-table-column label="创建时间" align="center" width="180" prop="updateTime" />
+        <el-table-column label="操作" align="center" width="230" class-name="small-padding fixed-width">
+          <template slot-scope="scope">
+            <template>
+              <el-button size="mini" type="text" v-if="scope.row.passTextShow"
+                @click="resultLookFn(scope.row)">查看</el-button>
+              <el-button size="mini" type="text" v-else @click="copyApiKey(scope.row)">复制</el-button>
+            </template>
+            <el-button size="mini" type="text" @click="updataFn(scope.row)">更新</el-button>
+            <el-button size="mini" type="text" @click="editFn(scope.row)">编辑</el-button>
+            <el-button size="mini" type="text" @click="deleteFn(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :page-size.sync="queryParams.pageSize"
+        @pagination="getList" />
+    </el-card>
     <!-- 添加apikeys -->
     <el-dialog class="addMsg" title="创建API Key" v-loading="formLoading" :visible.sync="dialogShow" append-to-body
       :close-on-click-modal="false" width="700px">
@@ -484,12 +486,31 @@ export default {
 
 <style lang="scss" scoped>
 .header {
-  height: 100px;
-  width: 100%;
+  flex-shrink: 0;
+  margin-bottom: 20px;
+}
 
-  .el-button {
-    margin-top: 50px;
+.table-card {
+  margin-top: 0;
+  border-radius: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  ::v-deep .el-card__body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
+}
+
+.tableBox {
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .addMsg ::v-deep .el-input {
