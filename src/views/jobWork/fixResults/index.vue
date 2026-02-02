@@ -1,7 +1,7 @@
 <template>
-    <div class="id-card-page" v-loading="loading">
+    <div class="container" v-loading="loading">
         <!-- 顶部标题和按钮区域 -->
-        <div class="top-section">
+        <el-card class="top-section" shadow="never">
             <h2>{{ row.id + ' ' + row.fieldName }}</h2>
             <div class="top-buttons">
                 <el-button plain @click="handleReturn">返回</el-button>
@@ -9,12 +9,12 @@
                 <el-button @click="handleNext('1')">下一个</el-button>
                 <el-button type="primary" plain @click="handleManualConfirm">人工确认</el-button>
             </div>
-        </div>
+        </el-card>
 
         <!-- 下方左右分栏区域 -->
         <div class="content-section">
             <div class="left-section">
-                <el-card class="box-card" shadow="never" style="border: none;">
+                <el-card class="box-card" shadow="never">
                     <div class="info-item">
                         <label class="info-label">字段注释：</label>
                         <div class="info-content">{{ row.fieldRemark || '--' }}</div>
@@ -84,54 +84,56 @@
                         </div>
                     </div>
                 </el-card>
-
-                <Title title="推理过程"></Title>
-                <el-card class="box-card" shadow="never" v-for="(item, index) in row.inferenceProcessList" :key="index"
-                    style="margin-bottom: 20px;">
-                    <template slot="header">
-                        <span class="header-name">{{ item.name }}</span>
-                        <span class="header-confidence">{{ '当前置信度：' + item.value * 100 + '%' }}</span>
-                    </template>
-                    <div class="info-item">
-                        <label class="info-label">推理过程：</label>
-                        <div class="info-content">{{ item.text }}</div>
-                    </div>
-                </el-card>
-
-                <el-card class="box-card" shadow="never" style="margin-top: 20px;">
-                    <template slot="header">
-                        <span class="header-name">最终定级：{{ row.securityLevelName }}</span>
-                        <el-tag size="small" type="primary" color="#ffc5e0"
-                            style="border-radius: 8px; float: inline-end; color: #dc478f;">就高原则</el-tag>
-                    </template>
-                    <div class="info-item">
-                        <label class="info-label">推理过程：</label>
-                        <div class="info-content">
-                            <template v-if="row.oldSecurityLevel || row.newSecurityLevel || row.piiLevel">
-                                分类级别为<el-tag size="small" type="primary" style="border-radius: 8px;">{{
-                                    row.oldSecurityLevel }}级</el-tag>，
-                                <template v-if="row.newSecurityLevel">
-                                    触发动态安全分级规则，分类级别调整为<el-tag size="small" type="success" style="border-radius: 8px;">{{
-                                        row.newSecurityLevel }}级</el-tag>
-                                </template>
-                                <template v-else>
-                                    未触发动态安全分级规则
-                                </template>。
-                                <template v-if="row.piiLevel">
-                                    个人信息识别结果为<el-tag size="small" type="info" style="border-radius: 8px;">{{
-                                        row.piiLevel }}级</el-tag>
-                                </template>
-                                <template v-else>
-                                    未开启个人信息识别
-                                </template>
-                            </template>
+                <el-card shadow="never" style="margin-top: 20px; border-radius: 10px;">
+                    <Title title="推理过程"></Title>
+                    <el-card class="box-card" shadow="never" v-for="(item, index) in row.inferenceProcessList"
+                        :key="index" style="margin-bottom: 20px;">
+                        <template slot="header">
+                            <span class="header-name">{{ item.name }}</span>
+                            <span class="header-confidence">{{ '当前置信度：' + item.value * 100 + '%' }}</span>
+                        </template>
+                        <div class="info-item">
+                            <label class="info-label">推理过程：</label>
+                            <div class="info-content">{{ item.text }}</div>
                         </div>
-                    </div>
+                    </el-card>
+
+                    <el-card class="box-card" shadow="never" style="margin-top: 20px;">
+                        <template slot="header">
+                            <span class="header-name">最终定级：{{ row.securityLevelName }}</span>
+                            <el-tag size="small" type="primary" color="#ffc5e0"
+                                style="border-radius: 8px; float: inline-end; color: #dc478f;">就高原则</el-tag>
+                        </template>
+                        <div class="info-item">
+                            <label class="info-label">推理过程：</label>
+                            <div class="info-content">
+                                <template v-if="row.oldSecurityLevel || row.newSecurityLevel || row.piiLevel">
+                                    分类级别为<el-tag size="small" type="primary" style="border-radius: 8px;">{{
+                                        row.oldSecurityLevel }}级</el-tag>，
+                                    <template v-if="row.newSecurityLevel">
+                                        触发动态安全分级规则，分类级别调整为<el-tag size="small" type="success"
+                                            style="border-radius: 8px;">{{
+                                                row.newSecurityLevel }}级</el-tag>
+                                    </template>
+                                    <template v-else>
+                                        未触发动态安全分级规则
+                                    </template>。
+                                    <template v-if="row.piiLevel">
+                                        个人信息识别结果为<el-tag size="small" type="info" style="border-radius: 8px;">{{
+                                            row.piiLevel }}级</el-tag>
+                                    </template>
+                                    <template v-else>
+                                        未开启个人信息识别
+                                    </template>
+                                </template>
+                            </div>
+                        </div>
+                    </el-card>
                 </el-card>
             </div>
 
             <div class="right-section">
-                <el-card class="box-card" shadow="never" style="border: none;">
+                <el-card class="box-card" shadow="never">
                     <Title title="人工审核" iconClass="seal"></Title>
                     <div class="audit-status">
                         <span>{{ row.confirm == '1' ? '已确认' : '未确认' }}</span>
@@ -164,7 +166,7 @@
                     </div>
                 </el-card>
 
-                <el-card class="box-card" shadow="never" style="border: none;">
+                <el-card class="box-card" shadow="never" style="margin-top: 20px;">
                     <Title title="AI建议分类" iconClass="suggest"></Title>
                     <template v-if="row.suggestClassifyJson">
                         <el-card
@@ -453,7 +455,7 @@ export default {
                 id: this.row?.id || '',
                 lastOrNext: lastOrNext || '0'
             };
-            
+
             getProtectTableFieldById(params).then(res => {
                 // 检查res对象是否存在
                 if (!res) {
@@ -467,12 +469,12 @@ export default {
                     this.row = res.data;
                     this.$route.query.queryParams.pageNum = res.data.pageNum;
                     this.$route.query.queryParams.pageSize = res.data.pageSize;
-                    
+
                     // 安全地更新reasoningProcess
                     if (res.data.reasoningProcess !== undefined) {
                         this.resultForm.reasoningProcess = res.data.reasoningProcess;
                     }
-                    
+
                     // 根据操作类型显示不同的消息
                     if (lastOrNext === '0') {
                         this.$message({
@@ -580,16 +582,26 @@ export default {
 </script>
 
 <style scoped>
-.id-card-page {
-    padding: 20px;
+.container {
+    padding: 40px;
 }
 
 /* 顶部标题和按钮区域样式 */
 .top-section {
+    margin-bottom: 20px;
+    border-radius: 10px;
+    border: 1px solid #ebeef5;
+}
+
+.top-section /deep/ .el-card__header,
+.top-section /deep/ .el-card__body {
+    padding: 20px;
+}
+
+.top-section /deep/ .el-card__body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
 }
 
 .top-section h2 {
@@ -702,19 +714,23 @@ export default {
 }
 
 .box-card {
-    border-radius: 5px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
 }
 
-.box-card /deep/ .el-card__header,
-.box-card /deep/ .el-card__body {
-    padding: 5px 10px;
+.box-card {
+    .el-card__body {
+        padding: 20px;
+    }
 }
 
-.box-card /deep/ .el-card__header {
-    background-color: #fafafa;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.box-card {
+    .el-card__header {
+        background-color: #fafafa;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
 }
 
 .header-name {

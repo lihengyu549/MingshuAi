@@ -1,93 +1,96 @@
 <template>
   <div class="app-container" v-loading="loading">
-    <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
-      v-show="showSearch" label-width="auto">
-      <!-- 默认显示的筛选条件（前两行） -->
-      <el-form-item label="字段名" prop="fieldName">
-        <el-input v-model="queryParams.fieldName" @input="inputSearch" placeholder="请输入数据源名称" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="分类" prop="categoryId">
-        <el-select ref="addSelectRef" v-model="addNodeName" :filter-method="filterCategoryTree">
-          <el-option style="height: 100%; padding: 0" value="">
-            <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
-              :filter-node-method="filterNode" ref="treeSelectQuery" node-key="id" highlight-current
-              @check="addHandleNodeCheck" />
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="分类状态" class="addSelectClass" prop="classificationStateIds">
-        <el-select v-model="queryParams.classificationStateIds" multiple @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
-            :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="安全分级" prop="securityLevel">
-        <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="确认状态" prop="confirm">
-        <el-select clearable v-model="queryParams.confirm" @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in confirmList" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="所属库" prop="databaseName">
-        <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn" placeholder="请选择">
-          <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
-          </el-option>
-        </el-select>
-      </el-form-item>
-
-      <!-- 点击展开后显示的筛选条件 -->
-      <template v-if="showMoreFilters">
-        <el-form-item label="所属表" prop="tableName">
-          <el-select clearable v-model="queryParams.tableName" filterable :disabled="!queryParams.databaseName"
-            @change="inputSearch" placeholder="全部">
-            <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.tableName">
+    <el-card class="searchCard" shadow="never">
+      <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
+        v-show="showSearch" label-width="auto">
+        <!-- 默认显示的筛选条件（前两行） -->
+        <el-form-item label="字段名" prop="fieldName">
+          <el-input v-model="queryParams.fieldName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+            @keyup.enter.native="handleQuery" />
+        </el-form-item>
+        <el-form-item label="分类" prop="categoryId">
+          <el-select ref="addSelectRef" v-model="addNodeName" :filter-method="filterCategoryTree">
+            <el-option style="height: 100%; padding: 0" value="">
+              <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
+                :filter-node-method="filterNode" ref="treeSelectQuery" node-key="id" highlight-current
+                @check="addHandleNodeCheck" />
             </el-option>
           </el-select>
         </el-form-item>
-        <!-- <el-form-item label="来源业务系统" prop="businessName">
-        <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入来源业务系统" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item> -->
-        <el-form-item label="归类原因" prop="classificationReasons">
-          <el-select clearable v-model="queryParams.classificationReasons" @change="inputSearch" placeholder="请选择">
-            <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
+        <el-form-item label="分类状态" class="addSelectClass" prop="classificationStateIds">
+          <el-select v-model="queryParams.classificationStateIds" multiple @change="inputSearch" placeholder="请选择">
+            <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
               :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="置信度" prop="confidenceLevel">
-          <el-select clearable v-model="queryParams.confidenceLevel" @change="inputSearch" placeholder="请选择">
-            <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
+        <el-form-item label="安全分级" prop="securityLevel">
+          <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch" placeholder="请选择">
+            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+              :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="个保法合规审查" prop="piiDetection">
-          <el-select ref="addSelectRef" v-model="piiNodeName">
-            <el-option style="height: 100%; padding: 0" value="">
-              <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
-                :filter-node-method="filterNode" ref="treeSelectPii" node-key="id" highlight-current
-                @check="piiHandleNodeCheck" />
+        <el-form-item label="确认状态" prop="confirm">
+          <el-select clearable v-model="queryParams.confirm" @change="inputSearch" placeholder="请选择">
+            <el-option v-for="item in confirmList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="样本特征" prop="featureData">
-          <el-select clearable v-model="queryParams.featureData" @change="inputSearch" placeholder="请选择">
-            <el-option label="是" value="1" />
-            <el-option label="否" value="0" />
+        <el-form-item label="所属库" prop="databaseName">
+          <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn" placeholder="请选择">
+            <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
+            </el-option>
           </el-select>
         </el-form-item>
-      </template>
-      <el-form-item label=" " class="searchBtn">
-        <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
-      </el-form-item>
-    </el-form>
+
+        <!-- 点击展开后显示的筛选条件 -->
+        <template v-if="showMoreFilters">
+          <el-form-item label="所属表" prop="tableName">
+            <el-select clearable v-model="queryParams.tableName" filterable :disabled="!queryParams.databaseName"
+              @change="inputSearch" placeholder="全部">
+              <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.tableName">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <!-- <el-form-item label="来源业务系统" prop="businessName">
+        <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入来源业务系统" clearable
+          @keyup.enter.native="handleQuery" />
+      </el-form-item> -->
+          <el-form-item label="归类原因" prop="classificationReasons">
+            <el-select clearable v-model="queryParams.classificationReasons" @change="inputSearch" placeholder="请选择">
+              <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="置信度" prop="confidenceLevel">
+            <el-select clearable v-model="queryParams.confidenceLevel" @change="inputSearch" placeholder="请选择">
+              <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="个保法合规审查" prop="piiDetection">
+            <el-select ref="addSelectRef" v-model="piiNodeName">
+              <el-option style="height: 100%; padding: 0" value="">
+                <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
+                  :filter-node-method="filterNode" ref="treeSelectPii" node-key="id" highlight-current
+                  @check="piiHandleNodeCheck" />
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="样本特征" prop="featureData">
+            <el-select clearable v-model="queryParams.featureData" @change="inputSearch" placeholder="请选择">
+              <el-option label="是" value="1" />
+              <el-option label="否" value="0" />
+            </el-select>
+          </el-form-item>
+        </template>
+        <!-- <el-form-item label=" " class="searchBtn"> -->
+          <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
+        <!-- </el-form-item> -->
+      </el-form>
+    </el-card>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-dropdown trigger="click">
@@ -105,7 +108,7 @@
       </el-col>
       <el-col :span="1.5">
         <el-dropdown trigger="click">
-          <el-button type="primary" plain size="medium">取消操作<i
+          <el-button type="danger" plain size="medium">取消操作<i
               class="el-icon-arrow-down el-icon--right"></i></el-button>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item @click.native="handleAddFnClose">
@@ -136,69 +139,72 @@
       <el-button plain size="medium" @click="toggleFilters" style="float: inline-end; margin-right: 10px;">{{
         showMoreFilters ? '收起筛选' : '展开筛选' }}</el-button>
     </el-row>
-    <el-table class="tableBox" v-loading="loading" :key="checkedColumn.length" :data="proxysList"
-      @selection-change="handleSelectionChange" ref="tableRef">
-      <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="字段名" align="left" prop="fieldName" width="150" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
-            <svg-icon icon-class="text" style="font-size: 14px; margin-right: 5px;" />
-            {{ scope.row.fieldName
-            }}</span>
-        </template>
-      </el-table-column>
-      <!-- <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip /> -->
-      <el-table-column label="字段注释" align="center" prop="fieldRemark" width="150" show-overflow-tooltip />
-      <!-- <el-table-column label="AI字段注释" align="center" prop="craftRemark" width="240" show-overflow-tooltip /> -->
-      <template>
-        <el-table-column v-for="item in checkedColumn" :label="item.label"
-          :align="item.label == '分类' ? 'left' : 'center'" :prop="item.prop" :width="item.width" show-overflow-tooltip>
+    <el-card class="table-card" shadow="never">
+      <el-table class="tableBox" v-loading="loading" :key="checkedColumn.length" :data="proxysList"
+        @selection-change="handleSelectionChange" ref="tableRef">
+        <el-table-column type="selection" width="60" align="center" />
+        <el-table-column label="字段名" align="left" prop="fieldName" width="150" show-overflow-tooltip>
           <template slot-scope="scope">
-            <!-- 分类不再展示，直接显示原始值 -->
-            <template v-if="item.label == '安全分级'">
-              <el-tag :style="{ backgroundColor: getRiskColor(Number(scope.row.securityLevel)), color: '#fff' }">
-                {{ scope.row.securityLevelName }}
-              </el-tag>
-            </template>
-            <template v-else-if="item.label == '分类'">
-              <el-tag
-                :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '噪音数据' ? 'info' : 'primary'">{{
-                  scope.row.categoryName }}</el-tag>
-            </template>
-            <template v-else>
-              {{ scope.row[item.prop] }}
-            </template>
+            <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
+              <svg-icon icon-class="text" style="font-size: 14px; margin-right: 5px;" />
+              {{ scope.row.fieldName
+              }}</span>
           </template>
         </el-table-column>
-      </template>
-      <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <el-tooltip placement="bottom" effect="light">
-            <div slot="content">
-              <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
-                <el-table-column type="index" label="序号" width="50" />
-                <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
-                </el-table-column>
-              </el-table>
-            </div>
-            <i class="el-icon-view" style="font-size: 18px; cursor: pointer;"></i>
-          </el-tooltip>
+        <!-- <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip /> -->
+        <el-table-column label="字段注释" align="center" prop="fieldRemark" width="150" show-overflow-tooltip />
+        <!-- <el-table-column label="AI字段注释" align="center" prop="craftRemark" width="240" show-overflow-tooltip /> -->
+        <template>
+          <el-table-column v-for="item in checkedColumn" :label="item.label"
+            :align="item.label == '分类' ? 'left' : 'center'" :prop="item.prop" :width="item.width" show-overflow-tooltip>
+            <template slot-scope="scope">
+              <!-- 分类不再展示，直接显示原始值 -->
+              <template v-if="item.label == '安全分级'">
+                <el-tag :style="{ backgroundColor: getRiskColor(Number(scope.row.securityLevel)), color: '#fff' }">
+                  {{ scope.row.securityLevelName }}
+                </el-tag>
+              </template>
+              <template v-else-if="item.label == '分类'">
+                <el-tag
+                  :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '噪音数据' ? 'info' : 'primary'">{{
+                    scope.row.categoryName }}</el-tag>
+              </template>
+              <template v-else>
+                {{ scope.row[item.prop] }}
+              </template>
+            </template>
+          </el-table-column>
         </template>
-      </el-table-column>
-      <el-table-column label="确认状态" align="center" prop="confirm">
-        <template slot-scope="scope">
-          <!-- <span>{{ scope.row.confirm == 1 ? '已确认' : '未确认' }}</span> -->
-          <el-tag :type="scope.row.confirm == 0 ? 'info' : 'primary'">{{ scope.row.confirm == 0 ? '未确认' :
-            '已确认' }}</el-tag>
-        </template>
-      </el-table-column>
-      <!-- 操作列已集成到字段名列中 -->
-    </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :page-size.sync="queryParams.pageSize"
-      @pagination="getList" />
+        <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <el-tooltip placement="bottom" effect="light">
+              <div slot="content">
+                <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
+                  <el-table-column type="index" label="序号" width="50" />
+                  <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
+                  </el-table-column>
+                </el-table>
+              </div>
+              <i class="el-icon-view" style="font-size: 18px; cursor: pointer;"></i>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column label="确认状态" align="center" prop="confirm">
+          <template slot-scope="scope">
+            <!-- <span>{{ scope.row.confirm == 1 ? '已确认' : '未确认' }}</span> -->
+            <el-tag :type="scope.row.confirm == 0 ? 'info' : 'primary'">{{ scope.row.confirm == 0 ? '未确认' :
+              '已确认' }}</el-tag>
+          </template>
+        </el-table-column>
+        <!-- 操作列已集成到字段名列中 -->
+      </el-table>
+      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+        :page-size.sync="queryParams.pageSize" @pagination="getList" />
+    </el-card>
     <el-dialog title="结果修改" class="addMsg" :visible.sync="deleteVisible" width="700px" append-to-body
       :close-on-click-modal="false">
-      <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto" label-position="top">
+      <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto"
+        label-position="top">
         <el-form-item label="分类" class="addSelectClass">
           <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable :filter-method="handleSearch">
             <el-option style="height: 100%; padding: 0" value="">
@@ -940,17 +946,17 @@ export default {
       const selectedIds = selection.map(row => row.id)
       // 设置到表单中
       this.resultForm.selectedIds = selectedIds
-      
+
       // 为分类下拉框设置默认选中第一项
       if (this.categoryList && this.categoryList.length > 0) {
         this.resultFormNodeName = this.categoryList[0].categoryName;
       }
-      
+
       // 为安全分级下拉框设置默认选中第一项
       if (this.dict && this.dict.type && this.dict.type.sys_risk_level && this.dict.type.sys_risk_level.length > 0) {
         this.resultForm.securityLevel = this.dict.type.sys_risk_level[0].value;
       }
-      
+
       this.deleteVisible = true
     },
     updataResultFn() {
@@ -1066,17 +1072,17 @@ export default {
       this.resultForm.tableFieldId = row.id
       this.piiNodeName = row.piiDetectionName
       this.resultForm.confidenceLevel = row.confidenceLevel == '高' ? '2' : '1'
-      
+
       // 为分类下拉框设置默认选中第一项（如果没有已有值）
       if (!this.resultFormNodeName && this.categoryList && this.categoryList.length > 0) {
         this.resultFormNodeName = this.categoryList[0].id;
       }
-      
+
       // 为安全分级下拉框设置默认选中第一项（如果没有已有值）
       if (!this.resultForm.securityLevel && this.dict && this.dict.type && this.dict.type.sys_risk_level && this.dict.type.sys_risk_level.length > 0) {
         this.resultForm.securityLevel = this.dict.type.sys_risk_level[0].value;
       }
-      
+
       this.deleteVisible = true
     },
     addHandleNodeCheck(node, checkData) {
@@ -1108,7 +1114,7 @@ export default {
       checkedLeafNodes.forEach(leafNode => {
         // 添加叶子节点自身
         allCategoryIds.add(leafNode.id);
-        
+
         // 递归收集所有祖先节点（包括父节点、爷节点等）
         const ancestors = this.findAllAncestors(this.categoryList, leafNode.id);
         ancestors.forEach(ancestorId => allCategoryIds.add(ancestorId));
@@ -1151,7 +1157,7 @@ export default {
     // 查找节点的所有祖先节点ID（父节点、爷节点等）
     findAllAncestors(tree, nodeId) {
       const ancestors = [];
-      
+
       // 递归查找节点本身
       const findNode = (nodes, id) => {
         for (const node of nodes) {
@@ -1375,6 +1381,15 @@ export default {
 }
 </style>
 <style scoped>
+/deep/.searchCard {
+  border-radius: 10px;
+  margin-bottom: 30px;
+
+  & .el-card__body {
+    padding: 24px;
+  }
+}
+
 .addMsg /deep/.el-dialog {
   border-radius: 10px;
 }
@@ -1422,8 +1437,27 @@ export default {
   width: 100%;
 }
 
+.table-card {
+  margin-top: 20px;
+  border-radius: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  .el-card__body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
 .tableBox {
   overflow-y: auto;
+  border: none;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
@@ -1543,6 +1577,15 @@ export default {
 
 .yuanDataClass /deep/ .el-form-item {
   width: 32%;
+  margin-bottom: 18px;
+}
+
+.yuanDataClass /deep/ .el-form-item:nth-child(3n) {
+  margin-right: 0;
+}
+
+.yuanDataClass /deep/ .el-form-item:nth-last-child(-n+3) {
+  margin-bottom: 0;
 }
 
 .yuanDataClass /deep/ .el-form-item__label {

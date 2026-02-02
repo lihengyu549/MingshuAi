@@ -1,143 +1,148 @@
 <template>
   <div class="app-container" v-loading="mainLoading">
-    <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small" :inline="false"
-      label-width="auto">
-      <el-form-item label="任务名称" prop="tasksName">
-        <el-input v-model="queryParams.tasksName" @input="inputSearch" placeholder="请输入数据源名称" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="数据源类型" prop="sourceType">
-        <el-select clearable v-model="queryParams.sourceType" @change="inputSearch" placeholder="请选择数据库类型">
-          <el-option v-for="item in dataYTpeList" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="来源业务系统" prop="businessName">
-        <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入数据源名称" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
+    <el-card class="searchCard" shadow="never">
+      <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
+        :inline="false" label-width="auto">
+        <el-form-item label="任务名称" prop="tasksName">
+          <el-input v-model="queryParams.tasksName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+            @keyup.enter.native="handleQuery" />
+        </el-form-item>
+        <el-form-item label="数据源类型" prop="sourceType">
+          <el-select clearable v-model="queryParams.sourceType" @change="inputSearch" placeholder="请选择数据库类型">
+            <el-option v-for="item in dataYTpeList" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="来源业务系统" prop="businessName">
+          <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+            @keyup.enter.native="handleQuery" />
+        </el-form-item>
 
-      <el-form-item label="分类分级框架" prop="projectId">
-        <el-select clearable v-model="queryParams.projectId" filterable @change="inputSearch" placeholder="请选择分类分级框架">
-          <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="执行状态" prop="maskComplete">
-        <el-select clearable v-model="queryParams.maskComplete" @change="inputSearch" placeholder="请选择执行状态">
-          <el-option v-for="item in dict.type.sys_executing_state" :key="item.value" :label="item.label"
-            :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="发布状态" prop="publishStatus">
-        <el-select clearable v-model="queryParams.publishStatus" @change="inputSearch" placeholder="请选择扫描状态">
-          <el-option v-for="item in publishStatus" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <!-- <el-form-item class="searchBtn">
+        <el-form-item label="分类分级框架" prop="projectId">
+          <el-select clearable v-model="queryParams.projectId" filterable @change="inputSearch" placeholder="请选择分类分级框架">
+            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="执行状态" prop="maskComplete">
+          <el-select clearable v-model="queryParams.maskComplete" @change="inputSearch" placeholder="请选择执行状态">
+            <el-option v-for="item in dict.type.sys_executing_state" :key="item.value" :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="发布状态" prop="publishStatus">
+          <el-select clearable v-model="queryParams.publishStatus" @change="inputSearch" placeholder="请选择扫描状态">
+            <el-option v-for="item in publishStatus" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <!-- <el-form-item class="searchBtn">
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
       </el-form-item> -->
-    </el-form>
+      </el-form>
+    </el-card>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">新增任务</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除任务</el-button>
+        <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">删除任务</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
       <el-col :span="1.5" style="float: inline-end;">
         <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="handleQuery">刷新</el-button>
       </el-col>
     </el-row>
-    <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList"
-      @selection-change="handleSelectionChange" ref="tableRef">
-      <template slot="empty">
-        <el-empty description="暂无数据"></el-empty>
-      </template>
-      <el-table-column type="selection" width="60" align="center" :selectable="selectableFn" />
-      <el-table-column label="任务名称" width="140" align="left" prop="tasksName" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon icon-class="jobs"
-              style="font-size: 16px; margin-right: 5px;" />{{ scope.row.tasksName }}</span>
+    <el-card class="table-card" shadow="never">
+      <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList"
+        @selection-change="handleSelectionChange" ref="tableRef">
+        <template slot="empty">
+          <el-empty description="暂无数据"></el-empty>
         </template>
-      </el-table-column>
-      <el-table-column label="数据源" width="140" align="left" prop="sourceName" show-overflow-tooltip>
-        <template slot-scope="scope">
-          {{ scope.row.sourceName }}
-        </template>
-      </el-table-column>
-      <el-table-column label="来源业务系统" width="140" align="left" prop="businessName" show-overflow-tooltip>
-        <template slot-scope="scope">
-          {{ scope.row.businessName }}
-        </template>
-      </el-table-column>
-      <el-table-column label="分类分级标准" width="240" align="left" prop="projectName" show-overflow-tooltip>
-        <template slot-scope="scope">
-          {{ scope.row.projectName }}
-        </template>
-      </el-table-column>
-      <!-- <el-table-column label="AI分析引擎" align="center">
+        <el-table-column type="selection" width="60" align="center" :selectable="selectableFn" />
+        <el-table-column label="任务名称" width="140" align="left" prop="tasksName" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon icon-class="jobs"
+                style="font-size: 16px; margin-right: 5px;" />{{ scope.row.tasksName }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="数据源" width="140" align="left" prop="sourceName" show-overflow-tooltip>
+          <template slot-scope="scope">
+            {{ scope.row.sourceName }}
+          </template>
+        </el-table-column>
+        <el-table-column label="来源业务系统" width="140" align="left" prop="businessName" show-overflow-tooltip>
+          <template slot-scope="scope">
+            {{ scope.row.businessName }}
+          </template>
+        </el-table-column>
+        <el-table-column label="分类分级标准" width="240" align="left" prop="projectName" show-overflow-tooltip>
+          <template slot-scope="scope">
+            {{ scope.row.projectName }}
+          </template>
+        </el-table-column>
+        <!-- <el-table-column label="AI分析引擎" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.aiAnalyticsEngine == 1 ? '快速响应' : '深度思考' }}</span>
         </template>
       </el-table-column> -->
-      <el-table-column label="任务字段数" width="120" align="center" prop="fieldCount" show-overflow-tooltip />
-      <el-table-column label="执行状态" align="center" width="120" prop="maskComplete">
-        <template slot-scope="scope">
-          <div class="runType">
-            <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'"
-              class="el-icon-loading" style="margin-right: 10px;font-size: 18px;"></i>
-            <svg-icon v-else :icon-class="scope.row.maskComplete" class="runIcon"
-              style="margin-right: 10px;width: 20px;height: 20px;"></svg-icon>
-            <span>{{ stateMsg(scope.row.maskComplete) }}</span>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="发布状态" align="center" prop="publishStatus">
-        <template slot-scope="scope">
-          <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ? '未发布' :
-            '已发布' }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
-      <el-table-column label="任务操作" align="center" width="200" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <div class="iconBtnBox">
-            <el-tooltip class="item" effect="dark" content="执行任务" placement="top-start">
-              <i class="el-icon-video-play" @click="scope.row.publishStatus != 1 && implementFn(scope.row)"
-                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
-            </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="暂停任务" placement="top-start">
-              <i class="el-icon-video-pause" @click="scope.row.publishStatus != 1 && suspendWorkFn(scope.row)"
-                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
-            </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="终止任务" placement="top-start">
-              <i class="el-icon-switch-button" @click="scope.row.publishStatus != 1 && terminationWorkFn(scope.row)"
-                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
-            </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="任务监控" placement="top-start">
-              <i class="el-icon-view" @click="scope.row.publishStatus != 1 && toJobMonitoring(scope.row)"
-                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
-            </el-tooltip>
-            <!-- <i class="el-icon-refresh-left" @click="recoverWorkFn(scope.row)"></i> -->
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="结果操作" align="center" width="230" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="resultLookFn(scope.row)">结果查看</el-button>
-          <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
-            @click="resultReleaseFn(scope.row)">结果发布</el-button>
-          <el-button size="mini" type="text" :disabled="scope.row.publishStatus != 1"
-            @click="resultWithdraw(scope.row)">发布撤回</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :page-size.sync="queryParams.pageSize"
-      @pagination="getList" />
+        <el-table-column label="任务字段数" width="120" align="center" prop="fieldCount" show-overflow-tooltip />
+        <el-table-column label="执行状态" align="center" width="120" prop="maskComplete">
+          <template slot-scope="scope">
+            <div class="runType">
+              <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'"
+                class="el-icon-loading" style="margin-right: 10px;font-size: 18px;"></i>
+              <svg-icon v-else :icon-class="scope.row.maskComplete" class="runIcon"
+                style="margin-right: 10px;width: 20px;height: 20px;"></svg-icon>
+              <span>{{ stateMsg(scope.row.maskComplete) }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="发布状态" align="center" prop="publishStatus">
+          <template slot-scope="scope">
+            <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ? '未发布' :
+              '已发布' }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
+        <el-table-column label="任务操作" align="center" width="200" class-name="small-padding fixed-width">
+          <template slot-scope="scope">
+            <div class="iconBtnBox">
+              <el-tooltip class="item" effect="dark" content="执行任务" placement="top-start">
+                <i class="el-icon-video-play" @click="scope.row.publishStatus != 1 && implementFn(scope.row)"
+                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+              </el-tooltip>
+              <el-tooltip class="item" effect="dark" content="暂停任务" placement="top-start">
+                <i class="el-icon-video-pause" @click="scope.row.publishStatus != 1 && suspendWorkFn(scope.row)"
+                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+              </el-tooltip>
+              <el-tooltip class="item" effect="dark" content="终止任务" placement="top-start">
+                <i class="el-icon-switch-button" @click="scope.row.publishStatus != 1 && terminationWorkFn(scope.row)"
+                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+              </el-tooltip>
+              <el-tooltip class="item" effect="dark" content="任务监控" placement="top-start">
+                <i class="el-icon-view" @click="scope.row.publishStatus != 1 && toJobMonitoring(scope.row)"
+                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+              </el-tooltip>
+              <!-- <i class="el-icon-refresh-left" @click="recoverWorkFn(scope.row)"></i> -->
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="结果操作" align="center" width="230" class-name="small-padding fixed-width">
+          <template slot-scope="scope">
+            <el-button size="mini" type="text" @click="resultLookFn(scope.row)">结果查看</el-button>
+            <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
+              @click="resultReleaseFn(scope.row)">结果发布</el-button>
+            <el-button size="mini" type="text" :disabled="scope.row.publishStatus != 1"
+              @click="resultWithdraw(scope.row)">发布撤回</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+        :page-size.sync="queryParams.pageSize" @pagination="getList" />
+    </el-card>
+
     <!-- 添加或修改数据库代理对话框 -->
     <Drawer :title="title" v-loading="formLoading" :visible.sync="open">
       <el-form slot="body" ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent
@@ -1225,6 +1230,15 @@ input[aria-hidden=true] {
 }
 </style>
 <style scoped>
+/deep/.searchCard {
+  border-radius: 10px;
+  margin-bottom: 30px;
+
+  & .el-card__body {
+    padding: 24px;
+  }
+}
+
 .addMsg /deep/ .el-input--medium {
   width: 237px;
 }
@@ -1284,8 +1298,27 @@ input[aria-hidden=true] {
   color: #f56c6c;
 }
 
+.table-card {
+  margin-top: 20px;
+  border-radius: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  .el-card__body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
 .tableBox {
   overflow-y: auto;
+  border: none;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
@@ -1374,6 +1407,15 @@ input[aria-hidden=true] {
 
 .yuanDataClass /deep/ .el-form-item {
   width: 30%;
+  margin-bottom: 18px;
+}
+
+.yuanDataClass /deep/ .el-form-item:nth-child(3n) {
+  margin-right: 0;
+}
+
+.yuanDataClass /deep/ .el-form-item:nth-last-child(-n+3) {
+  margin-bottom: 0;
 }
 
 .yuanDataClass /deep/ .el-form-item__label {

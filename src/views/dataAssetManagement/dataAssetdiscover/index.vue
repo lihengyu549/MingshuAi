@@ -690,7 +690,6 @@ input[aria-hidden=true] {
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-thumb {
   background-color: #0003;
-  border-radius: 10px;
   transition: all .2s ease-in-out;
 }
 
