@@ -1,116 +1,113 @@
 <template>
   <div class="app-container" v-loading="Loading">
     <el-row :gutter="20">
-      <el-col :span="4" :xs="24" style="height: calc(100vh - 75px); overflow-y: auto;">
-        <div class="head-container">
-          <span style="display: inline-block;background-color: #eee; font-size: 14px; padding: 5px 10px;">所属标准</span>
-          <el-select v-model="projectId" class="serachInput" @change="treeOptionsSelectChange" placeholder="全部"
-            style="margin-bottom: 20px">
-            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
-            </el-option>
-          </el-select>
-        </div>
-        <div class="head-container" v-loading="treeLoading">
-          <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox :expand-on-click-node="false"
-            :filter-node-method="filterNode" ref="tree" node-key="id" @check="treeCheck" :highlightCurrent="isHighlight"
-            :render-content="renderContent" />
-        </div>
+      <el-col :span="5" :xs="24">
+        <el-card class="left-card" shadow="never">
+          <div class="head-container select-container">
+            <span class="select-label">所属标准：</span>
+            <el-select v-model="projectId" class="serachInput" @change="treeOptionsSelectChange" placeholder="全部"
+              filterable>
+              <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
+              </el-option>
+            </el-select>
+          </div>
+          <div class="head-container" v-loading="treeLoading">
+            <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox :expand-on-click-node="false"
+              :filter-node-method="filterNode" ref="tree" node-key="id" @check="treeCheck"
+              :highlightCurrent="isHighlight" :render-content="renderContent" />
+          </div>
+        </el-card>
+
       </el-col>
       <!--用户数据-->
-      <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true">
-          <el-form-item label="来源业务系统" prop="businessName">
-            <el-input v-model="queryParams.businessName" clearable @input="inputSearch" placeholder="请输入来源业务系统"
-              @keyup.enter.native="handleQuery" />
-          </el-form-item>
-          <el-form-item label="安全分级" prop="securityLevel">
-            <el-select v-model="queryParams.securityLevel" clearable multiple @change="handleQuery" placeholder="全部">
-              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="分类" class="addSelectClass">
-            <el-select ref="categorySelectRef" v-model="resultFormNodeName" @change="handleQuery" filterable
-              placeholder="搜索分类..." :filter-method="handleCategoryFilter">
-              <el-option style="height: 100%; padding: 0" value="">
-                <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
-                  :filter-node-method="filterCategoryNode" ref="categoryTreeRef" node-key="id" highlight-current
-                  @check="resultHandleNodeClick" />
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="个保法合规审查" class="addSelectClass">
-            <el-select ref="piiSelectRef" v-model="piiNodeName" filterable placeholder="搜索个保法合规审查..."
-              :filter-method="handlePiiFilter">
-              <el-option style="height: 100%; padding: 0" value="">
-                <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
-                  :filter-node-method="filterPiiNode" ref="piiTreeRef" node-key="id" highlight-current
-                  @check="piiHandleNodeCheck" />
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="表名" prop="tableName">
-            <el-input v-model="queryParams.tableName" clearable @input="inputSearch" placeholder="请输入表名"
-              @keyup.enter.native="handleQuery" />
-          </el-form-item>
-          <!-- <el-form-item> -->
-          <!-- <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button> -->
-          <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
-          <!-- </el-form-item> -->
-        </el-form>
-        <div style="margin-bottom: 8px; display: flex;justify-content: flex-start;">
-          <!-- <el-button type="primary" icon="el-icon-link" size="medium" @click="apiSumbit()">API调用</el-button> -->
+      <el-col :span="19" :xs="24">
+        <el-card class="search-card" shadow="never">
+          <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true">
+            <el-form-item label="来源业务系统" prop="businessName">
+              <el-input v-model="queryParams.businessName" clearable @input="inputSearch" placeholder="请输入来源业务系统"
+                @keyup.enter.native="handleQuery" />
+            </el-form-item>
+            <el-form-item label="安全分级" prop="securityLevel">
+              <el-select v-model="queryParams.securityLevel" clearable multiple @change="handleQuery" placeholder="全部">
+                <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="分类" class="addSelectClass">
+              <el-select ref="categorySelectRef" v-model="resultFormNodeName" @change="handleQuery" filterable
+                placeholder="搜索分类..." :filter-method="handleCategoryFilter">
+                <el-option style="height: 100%; padding: 0" value="">
+                  <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
+                    :filter-node-method="filterCategoryNode" ref="categoryTreeRef" node-key="id" highlight-current
+                    @check="resultHandleNodeClick" />
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="个保法合规审查" class="addSelectClass">
+              <el-select ref="piiSelectRef" v-model="piiNodeName" filterable placeholder="搜索个保法合规审查..."
+                :filter-method="handlePiiFilter">
+                <el-option style="height: 100%; padding: 0" value="">
+                  <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
+                    :filter-node-method="filterPiiNode" ref="piiTreeRef" node-key="id" highlight-current
+                    @check="piiHandleNodeCheck" />
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="表名" prop="tableName">
+              <el-input v-model="queryParams.tableName" clearable @input="inputSearch" placeholder="请输入表名"
+                @keyup.enter.native="handleQuery" />
+            </el-form-item>
+          </el-form>
+        </el-card>
+        <div>
           <el-button type="primary" plain icon="el-icon-document" size="medium" @click="downloadFile()">清单导出</el-button>
         </div>
-        <el-table v-loading="loading" height="620px" :data="protectTableFieldList"
-          @selection-change="handleSelectionChange" class="tableBox" ref="tableRef">
-          <template slot="empty">
-            <el-empty description="暂无数据"></el-empty>
-          </template>
-          <el-table-column type="selection" width="60" align="center" />
-          <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip />
-          <el-table-column label="字段注释" align="center" prop="fieldRemark" show-overflow-tooltip />
-          <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
-          <el-table-column label="数据源" align="center" prop="sourceName" show-overflow-tooltip />
-          <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
-          <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
-          <el-table-column label="分类" align="center" prop="categoryName" min-width="250" show-overflow-tooltip />
-          <el-table-column label="个保法合规审查" align="center" prop="piiDetectionName" show-overflow-tooltip />
-          <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
-          <el-table-column label="建议防护措施" prop="protectMethod" width="200">
-            <!-- 自定义标题样式 -->
-            <template slot="header">
-              <div style="text-align: center;">建议防护措施</div>
+        <el-card class="table-card" shadow="never">
+          <el-table v-loading="loading" height="620px" :data="protectTableFieldList"
+            @selection-change="handleSelectionChange" class="tableBox" ref="tableRef">
+            <template slot="empty">
+              <el-empty description="暂无数据"></el-empty>
             </template>
-            <!-- 内容保持默认靠左 -->
-            <template slot-scope="scope">
-              <el-tag class="tagsBox custom-plain-tag" v-for="(item, index) in scope.row.protectMethodNameList"
-                :key="item + index" :style="{
-                  '--tag-color': colorFn(item),
-                  '--tag-rgb': hexToRgb(colorFn(item))
-                }" plain>
-                {{ item }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
-            <template slot-scope="scope">
-              <el-tooltip placement="bottom" effect="light">
-                <div slot="content">
-                  <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
-                    <el-table-column type="index" label="序号" width="50" />
-                    <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
-                    </el-table-column>
-                  </el-table>
-                </div>
-                <el-button size="mini" type="text">查看</el-button>
-              </el-tooltip>
-            </template>
-          </el-table-column>
-        </el-table>
-        <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-          :limit.sync="queryParams.pageSize" @pagination="getList" />
+            <el-table-column type="selection" width="60" align="center" />
+            <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip />
+            <el-table-column label="字段注释" align="center" prop="fieldRemark" show-overflow-tooltip />
+            <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
+            <el-table-column label="数据源" align="center" prop="sourceName" show-overflow-tooltip />
+            <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
+            <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
+            <el-table-column label="分类" align="center" prop="categoryName" min-width="250" show-overflow-tooltip />
+            <el-table-column label="个保法合规审查" align="center" prop="piiDetectionName" show-overflow-tooltip />
+            <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
+            <el-table-column label="建议防护措施" prop="protectMethod" width="200">
+              <template slot="header">
+                <div style="text-align: center;">建议防护措施</div>
+              </template>
+              <template slot-scope="scope">
+                <el-tag class="protect-tag" v-for="(item, index) in scope.row.protectMethodNameList" :key="item + index"
+                  type="primary">
+                  {{ item }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
+              <template slot-scope="scope">
+                <el-tooltip placement="bottom" effect="light">
+                  <div slot="content">
+                    <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
+                      <el-table-column type="index" label="序号" width="50" />
+                      <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
+                      </el-table-column>
+                    </el-table>
+                  </div>
+                  <el-button size="mini" type="text">查看</el-button>
+                </el-tooltip>
+              </template>
+            </el-table-column>
+          </el-table>
+          <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+            :limit.sync="queryParams.pageSize" @pagination="getList" />
+        </el-card>
       </el-col>
     </el-row>
     <!-- 新增编辑框 -->
@@ -399,31 +396,6 @@ export default {
     this.init()
   },
   methods: {
-    colorFn(item) {
-      switch (item) {
-        case '加密':
-          return '#70b503';
-        case 'DLP':
-          return '#0600ff';
-        case '脱敏':
-          return '#f59b22';
-        case '无保护':
-          return '#409eff';
-        case '空':
-          return '#909399';
-        default:
-          return '#909399';
-      }
-    },
-    hexToRgb(hex) {
-      if (!hex || typeof hex !== 'string' || hex.length !== 7 || hex[0] !== '#') {
-        return '0, 0, 0';
-      }
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      return `${r}, ${g}, ${b}`;
-    },
     /**
      * 自定义树节点渲染，为不同层级节点添加不同的SVG图标
      * 第一层：sysBusiness，第二层：database1，第三层：table1
@@ -1223,6 +1195,65 @@ Authorization:Bearer ${this.Token}`
   width: 237px;
 }
 
+.left-card {
+  border-radius: 10px;
+  height: 100%;
+  max-height: 100%;
+  overflow: auto;
+
+  .el-card__body {
+    height: 100%;
+    max-height: 100%;
+    overflow: auto;
+  }
+}
+
+.search-card {
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.table-card {
+  border-radius: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+
+  .el-card__body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+.select-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.select-label {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.select-container .serachInput {
+  flex: 1;
+  min-width: 0;
+}
+
+.select-container .serachInput .el-input__inner {
+  text-overflow: ellipsis;
+}
+
 .success {
   color: #67c23a;
 }
@@ -1235,18 +1266,18 @@ Authorization:Bearer ${this.Token}`
   display: none;
 }
 
-.serachInput {
-  width: 60%;
-  margin-right: 10px;
-
-  input {
-    height: 28px !important;
-    line-height: 28px !important;
-  }
-}
+.serachInput {}
 
 .yuanDataClass /deep/ .el-form-item {
   width: 30%;
+}
+
+.yuanDataClass /deep/ .el-form-item:nth-child(3n) {
+  margin-right: 0;
+}
+
+.yuanDataClass /deep/ .el-form-item:nth-last-child(-n+3) {
+  margin-bottom: 0;
 }
 
 .yuanDataClass /deep/ .el-form-item__label {
@@ -1271,6 +1302,9 @@ Authorization:Bearer ${this.Token}`
 
 .tableBox {
   overflow-y: auto;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
@@ -1302,19 +1336,12 @@ Authorization:Bearer ${this.Token}`
   height: 266px !important;
 }
 
-/* 自定义plain标签样式 */
-::v-deep .custom-plain-tag {
-  /* 使用CSS变量设置颜色 */
-  color: var(--tag-color) !important;
-  border-color: var(--tag-color) !important;
-  /* 背景色使用RGB值加透明度实现浅色效果 */
-  background-color: rgba(var(--tag-rgb), 0.1) !important;
-  margin-right: 5px;
+.protect-tag {
+  margin-right: 8px;
 }
 
-/* 去除默认hover样式干扰 */
-::v-deep .custom-plain-tag:hover {
-  background-color: rgba(var(--tag-rgb), 0.15) !important;
+.protect-tag:last-child {
+  margin-right: 0;
 }
 
 /* 自定义树节点样式 */
@@ -1424,5 +1451,19 @@ Authorization:Bearer ${this.Token}`
 .export-column-dialog-wrapper .restore-link:hover {
   color: #40a9ff;
   text-decoration: underline;
+}
+
+::v-deep .el-row {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  overflow: hidden;
+}
+
+::v-deep .el-col {
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  overflow: hidden;
 }
 </style>

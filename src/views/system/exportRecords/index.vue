@@ -1,61 +1,64 @@
 <template>
     <div class="export-records-page app-container">
-        <div class="page-header">
-            <h1 class="page-title">导出记录</h1>
-            <div class="page-actions">
-                <el-input v-model="searchKeyword" placeholder="搜索导出历史" prefix-icon="el-icon-search" class="search-input"
-                    @input="handleSearch"></el-input>
-                <el-button class="clear-btn" @click="clearAll">全部清除</el-button>
+        <el-card class="main-card">
+            <div class="page-header">
+                <h1 class="page-title">导出记录</h1>
+                <div class="page-actions">
+                    <el-input v-model="searchKeyword" placeholder="搜索导出历史" prefix-icon="el-icon-search"
+                        class="search-input" @input="handleSearch"></el-input>
+                    <el-button class="clear-btn" @click="clearAll">全部清除</el-button>
+                </div>
             </div>
-        </div>
 
-        <div class="records-container">
-            <div v-if="loading" class="loading-container">
-                <i class="el-icon-loading"></i> 加载中...
-            </div>
-            <div v-else-if="filteredRecords.length === 0" class="empty-container">
-                <i class="el-icon-document"></i>
-                <p>暂无导出记录</p>
-            </div>
-            <div v-else class="records-list">
-                <div v-for="record in filteredRecords" :key="record.id" class="record-item" :class="{
-                    'record-selected': selectedRecord && selectedRecord.id === record.id,
-                    'record-completed': record.status === '3'
-                }" @click="selectRecord(record)">
-                    <div class="file-icon">
-                        <svg-icon icon-class="file" class="icon" />
-                    </div>
-                    <div class="file-info">
-                        <div class="file-name">{{ record.fileName }}</div>
-                        <div class="file-status">
-                            <!-- 导出超时 -->
-                            <span v-if="record.status === '5'" class="status-timeout">
-                                <el-tag type="danger">导出超时</el-tag>
-                            </span>
-                            <!-- 导出失败 -->
-                            <span v-else-if="record.status === '4'" class="status-failed">
-                                <el-tag type="danger">导出失败</el-tag>
-                            </span>
-                            <!-- 导出完成 -->
-                            <span v-else-if="record.status === '3'" class="status-completed">
-                                {{ record.fileSizeName }} · {{ record.createTime }}
-                            </span>
+            <div class="records-container">
+                <div v-if="loading" class="loading-container">
+                    <i class="el-icon-loading"></i> 加载中...
+                </div>
+                <div v-else-if="filteredRecords.length === 0" class="empty-container">
+                    <i class="el-icon-document"></i>
+                    <p>暂无导出记录</p>
+                </div>
+                <div v-else class="records-list">
+                    <div v-for="record in filteredRecords" :key="record.id" class="record-item" :class="{
+                        'record-selected': selectedRecord && selectedRecord.id === record.id,
+                        'record-completed': record.status === '3'
+                    }" @click="selectRecord(record)">
+                        <div class="file-icon">
+                            <svg-icon icon-class="file" class="icon" />
                         </div>
-                    </div>
-                    <div class="file-actions">
-                        <el-button v-if="record.status === '3'" type="text" icon="el-icon-download"
-                            class="action-btn download-btn" @click.stop="downloadFile(record)"></el-button>
-                        <el-button type="text" icon="el-icon-close" class="action-btn delete-btn"
-                            @click.stop="deleteRecord(record)"></el-button>
+                        <div class="file-info">
+                            <div class="file-name">{{ record.fileName }}</div>
+                            <div class="file-status">
+                                <!-- 导出超时 -->
+                                <span v-if="record.status === '5'" class="status-timeout">
+                                    <el-tag type="danger">导出超时</el-tag>
+                                </span>
+                                <!-- 导出失败 -->
+                                <span v-else-if="record.status === '4'" class="status-failed">
+                                    <el-tag type="danger">导出失败</el-tag>
+                                </span>
+                                <!-- 导出完成 -->
+                                <span v-else-if="record.status === '3'" class="status-completed">
+                                    {{ record.fileSizeName }} · {{ record.createTime }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <el-button v-if="record.status === '3'" type="text" icon="el-icon-download"
+                                class="action-btn download-btn" @click.stop="downloadFile(record)"></el-button>
+                            <el-button type="text" icon="el-icon-close" class="action-btn delete-btn"
+                                @click.stop="deleteRecord(record)"></el-button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 返回按钮 -->
-        <div class="back-button">
-            <el-button type="primary" plain @click="goBack">返回</el-button>
-        </div>
+            <!-- 返回按钮 -->
+            <div class="back-button">
+                <el-button type="primary" plain @click="goBack">返回</el-button>
+            </div>
+        </el-card>
+
     </div>
 </template>
 
@@ -182,10 +185,26 @@ export default {
 
 <style lang="scss" scoped>
 .export-records-page {
-    padding: 24px;
     width: 100%;
-    background-color: #f5f5f5;
-    min-height: calc(100vh - 50px);
+    background-color: #f8fafc;
+
+    .main-card {
+        height: calc(100vh - 100px);
+        max-height: calc(100vh - 100px);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        border-radius: 10px;
+
+        ::v-deep .el-card__body {
+            height: 100%;
+            max-height: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+    }
 
     .page-header {
         display: flex;
@@ -230,9 +249,13 @@ export default {
     }
 
     .records-container {
+        flex: 1;
+        min-height: 0;
         background-color: #ffffff;
         border-radius: 8px;
-        min-height: 500px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
 
         .loading-container,
         .empty-container {
@@ -255,6 +278,10 @@ export default {
         }
 
         .records-list {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+
             .record-item {
                 display: flex;
                 align-items: center;
