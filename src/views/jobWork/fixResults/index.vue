@@ -2,7 +2,7 @@
     <div class="container" v-loading="loading">
         <!-- 顶部标题和按钮区域 -->
         <el-card class="top-section" shadow="never">
-            <h2>{{ row.id + ' ' + row.fieldName }}</h2>
+            <h2><el-tag type="info" style="font-size: 18px;">ID：{{row.id}}</el-tag> {{ row.fieldName }}</h2>
             <div class="top-buttons">
                 <el-button plain @click="handleReturn">返回</el-button>
                 <el-button @click="handleNext('0')">上一个</el-button>
@@ -147,7 +147,7 @@
                         <div class="info-item">
                             <label class="info-label">定级结果：</label>
                             <div class="info-content">
-                                <el-tag type="warning">{{ row.securityLevelName || '--' }}</el-tag>
+                                <el-tag :style="getRiskStyle(Number(row.securityLevel))">{{ row.securityLevelName || '--' }}</el-tag>
                             </div>
                         </div>
                         <div class="info-item">
@@ -161,7 +161,7 @@
                             <div class="info-content">{{ row.piiDetectionName || '--' }}</div>
                         </div>
                         <div class="info-item">
-                            <el-button type="primary" plain @click="handleModifyResult">修改结果</el-button>
+                            <el-button type="primary" plain class="full-width-btn" @click="handleModifyResult">修改结果</el-button>
                         </div>
                     </div>
                 </el-card>
@@ -285,6 +285,16 @@ export default {
         // 页面加载时，当前查询条件不需要从任何地方恢复，因为这个页面主要展示单个数据详情
     },
     methods: {
+        getRiskStyle(level) {
+            const styles = {
+                1: { color: '#16a34a', backgroundColor: '#f0fdf4', border: 'none' },
+                2: { color: '#f97316', backgroundColor: '#fff7ed', border: 'none' },
+                3: { color: '#c2410c', backgroundColor: '#ffedd5', border: 'none' },
+                4: { color: '#dc2626', backgroundColor: '#fee2e2', border: 'none' },
+                5: { color: '#991b1b', backgroundColor: '#fecaca', border: 'none' }
+            };
+            return styles[level] || { color: '#6b7280', backgroundColor: '#f3f4f6', border: 'none' };
+        },
         getPiiList(key) {
             this.treeLoading = true
             let data = {
@@ -741,5 +751,12 @@ export default {
 .header-confidence {
     font-size: 12px;
     color: #909399;
+}
+
+.full-width-btn {
+    width: 100%;
+    border: none;
+    font-weight: 500;
+    border-radius: 5px;
 }
 </style>
