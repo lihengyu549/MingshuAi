@@ -40,10 +40,10 @@
                     <el-table-column align="center" label="风险统计" min-width="200">
                         <template slot-scope="scope">
                             <div class="risk-stats">
-                                <span class="risk-level" v-for="(item, index) in scope.row.riskStatistics" :key="index"
-                                    :style="{ backgroundColor: getRiskColor(Number(item.securityLevel)), marginRight: '5px' }">
+                                <el-tag :style="getRiskStyle(Number(item.securityLevel))" v-for="(item, index) in scope.row.riskStatistics" :key="index"
+                                    class="risk-level-tag">
                                     {{ item.securityLevelName + ' * ' + item.num }}
-                                </span>
+                                </el-tag>
                             </div>
                         </template>
                     </el-table-column>
@@ -116,7 +116,7 @@
                             </div>
                             <div class="category-tags-row">
                                 <el-tag class="security-level"
-                                    :style="{ backgroundColor: getRiskColor(category.securityLevel) }" size="mini">
+                                    :style="getRiskStyle(category.securityLevel)" size="mini">
                                     {{ category.securityLevelName }}
                                 </el-tag>
                                 <el-tag class="protection-status"
@@ -464,15 +464,15 @@ export default {
         },
 
         // 获取风险等级颜色
-        getRiskColor(level) {
-            const colors = {
-                5: '#F56C6C', // 深红色
-                4: '#FF9800', // 橙红色
-                3: '#FB8C00', // 橙色
-                2: '#FFC107', // 黄色
-                1: '#4CAF50'  // 绿色
+        getRiskStyle(level) {
+            const styles = {
+                1: { color: '#16a34a', backgroundColor: '#f0fdf4', border: 'none' },
+                2: { color: '#f97316', backgroundColor: '#fff7ed', border: 'none' },
+                3: { color: '#c2410c', backgroundColor: '#ffedd5', border: 'none' },
+                4: { color: '#dc2626', backgroundColor: '#fee2e2', border: 'none' },
+                5: { color: '#991b1b', backgroundColor: '#fecaca', border: 'none' }
             };
-            return colors[level] || '#9E9E9E';
+            return styles[level] || { color: '#6b7280', backgroundColor: '#f3f4f6', border: 'none' };
         },
 
         // 加载风险详情数据（添加分页和筛选参数）
@@ -723,13 +723,12 @@ export default {
     grid-row: 4; // 放在第4行
 }
 
-.risk-level {
-    display: inline-block;
-    padding: 2px 6px;
-    border-radius: 3px;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 500;
+.risk-level-tag {
+    margin-right: 5px;
+}
+
+.risk-level-tag:last-child {
+    margin-right: 0;
 }
 
 .view-details-btn {
