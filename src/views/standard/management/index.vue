@@ -1,7 +1,7 @@
 <!-- 分类分级标准---标准管理 -->
 
 <template>
-  <div class="app-container" v-loading="mainLoading">
+  <div class="app-container management-container" v-loading="mainLoading">
     <el-card class="searchCard" shadow="hover">
       <el-form :model="queryParams" ref="queryParams" v-show="showSearch" class="yuanDataClass" size="small"
         :inline="true" label-width="auto">
@@ -523,10 +523,6 @@ input[aria-hidden=true] {
 /deep/.searchCard {
   border-radius: 10px;
   margin-bottom: 30px;
-
-  & .el-card__body {
-    padding: 24px;
-  }
 }
 
 .yuanDataClass {
@@ -554,32 +550,7 @@ input[aria-hidden=true] {
 }
 
 
-.searchBtn {
-  margin-left: auto;
-  height: 100%;
-}
-
-.searchBtn /deep/ .el-form-item__content {
-  margin-left: 263px
-}
-
-.custom-dialog /deep/.el-dialog {
-  border-radius: 10px;
-}
-
-.custom-dialog /deep/.el-dialog__header {
-  border-bottom: 1px solid #e6e6e6;
-}
-
-.custom-dialog /deep/.el-dialog__title {
-  font-weight: bold;
-}
-
-.custom-dialog /deep/.el-dialog__body {
-  padding: 30px;
-}
-
-.importForm {
+  {
   margin-bottom: 0;
 }
 
@@ -626,13 +597,13 @@ input[aria-hidden=true] {
 }
 
 .listBox {
-  max-height: 700px;
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
   background-color: #fafafa;
   padding: 30px 0px;
   gap: 20px;
+  overflow: auto;
 }
 
 .listBox_item {
@@ -764,5 +735,32 @@ input[aria-hidden=true] {
 .card-actions .btn-primary:hover {
   background-color: #ecf5ff;
   color: #409eff;
+}
+
+.management-container {
+  container-type: size;
+  container-name: management;
+}
+
+@media screen and (max-width: 768px) {
+  .yuanDataClass /deep/ .el-form-item {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .yuanDataClass /deep/ .el-form-item__label {
+    width: auto;
+    padding-right: 10px;
+  }
+  
+  .yuanDataClass /deep/ .el-form-item__content {
+    width: 100%;
+  }
+}
+
+@container management (max-height: 800px) {
+  .listBox {
+    max-height: 400px;
+  }
 }
 </style>
