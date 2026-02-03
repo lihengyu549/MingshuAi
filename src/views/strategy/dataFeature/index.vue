@@ -1,77 +1,78 @@
 <template>
-    <div class="feature-management-container">
+    <div class="app-container">
         <!-- 搜索区域卡片 -->
-        <el-form :inline="true" :model="searchForm" class="yuanDataClass">
-            <el-form-item label="特征名称">
-                <el-input v-model="searchForm.featureName" placeholder="请输入特征名称" clearable @input="handleSearch" />
-            </el-form-item>
-            <el-form-item label="特征类型">
-                <el-select v-model="searchForm.featureType" placeholder="请选择特征类型" clearable @change="handleSearch">
-                    <el-option v-for="item in dict.type.sys_feature_type" :key="item.value" :label="item.label"
-                        :value="item.value">
-                    </el-option>
-                </el-select>
-            </el-form-item>
-            <el-form-item label="来源">
-                <el-select v-model="searchForm.source" placeholder="请选择来源" clearable @change="handleSearch">
-                    <el-option v-for="item in dict.type.sys_source" :key="item.value" :label="item.label"
-                        :value="item.value">
-                    </el-option>
-                </el-select>
-            </el-form-item>
-        </el-form>
+        <el-card shadow="never" class="searchCard">
+            <el-form :inline="true" :model="searchForm" class="yuanDataClass">
+                <el-form-item label="特征名称">
+                    <el-input v-model="searchForm.featureName" placeholder="请输入特征名称" clearable @input="handleSearch" />
+                </el-form-item>
+                <el-form-item label="特征类型">
+                    <el-select v-model="searchForm.featureType" placeholder="请选择特征类型" clearable @change="handleSearch">
+                        <el-option v-for="item in dict.type.sys_feature_type" :key="item.value" :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="来源">
+                    <el-select v-model="searchForm.source" placeholder="请选择来源" clearable @change="handleSearch">
+                        <el-option v-for="item in dict.type.sys_source" :key="item.value" :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+        </el-card>
 
         <!-- 操作按钮区域 -->
         <div class="operation-buttons">
             <el-button type="primary" plain @click="handleAdd">
                 <i class="el-icon-plus"></i> 新增
             </el-button>
-            <el-button type="primary" plain @click="handleDelete" :disabled="selectedRows.length === 0">
+            <el-button type="danger" plain @click="handleDelete" :disabled="selectedRows.length === 0">
                 <i class="el-icon-close"></i> 删除
             </el-button>
         </div>
 
         <!-- 数据表格 -->
-        <el-table v-loading="loading" :data="tableData" style="width: 100%;" @selection-change="handleSelectionChange">
-            <template slot="empty">
-                <el-empty description="暂无数据"></el-empty>
-            </template>
-            <el-table-column type="selection" align="center" width="45" />
-            <el-table-column prop="featureName" label="特征名称" width="160"
-                show-overflow-tooltip>
-            <template slot-scope="scope">
-                <svg-icon icon-class="zhiwen" style="font-size: 16px; margin-right: 5px;" />
-                {{ scope.row.featureName }}
-            </template>
-            </el-table-column>
-            <el-table-column prop="featureTypeName" align="center" label="特征类型" width="100" show-overflow-tooltip />
-            <el-table-column prop="featureSourceName" align="center" label="来源" width="120" show-overflow-tooltip />
-            <el-table-column prop="featureDescribe" align="center" label="描述" min-width="200" show-overflow-tooltip />
-            <el-table-column prop="updateTime" align="center" label="更新时间" width="160" show-overflow-tooltip />
-            <el-table-column align="center" label="操作" width="120" fixed="right">
-                <template slot-scope="scope">
-                    <el-button type="text" size="small" @click="handleView(scope.row)">查看</el-button>
-                    <el-button type="text" size="small" @click="handleEdit(scope.row)">编辑</el-button>
+        <el-card shadow="never" class="table-card">
+            <el-table v-loading="loading" :data="tableData" class="tableBox" style="width: 100%;"
+                @selection-change="handleSelectionChange">
+                <template slot="empty">
+                    <el-empty description="暂无数据"></el-empty>
                 </template>
-            </el-table-column>
-        </el-table>
-
-        <!-- 分页 -->
-        <div class="pagination-container">
+                <el-table-column type="selection" align="center" width="45" />
+                <el-table-column prop="featureName" label="特征名称" width="160" show-overflow-tooltip>
+                    <template slot-scope="scope">
+                        <svg-icon icon-class="zhiwen" style="font-size: 16px; margin-right: 5px;" />
+                        {{ scope.row.featureName }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="featureTypeName" align="center" label="特征类型" width="100" show-overflow-tooltip />
+                <el-table-column prop="featureSourceName" align="center" label="来源" width="120" show-overflow-tooltip />
+                <el-table-column prop="featureDescribe" align="center" label="描述" min-width="200"
+                    show-overflow-tooltip />
+                <el-table-column prop="updateTime" align="center" label="更新时间" width="160" show-overflow-tooltip />
+                <el-table-column align="center" label="操作" width="120" fixed="right">
+                    <template slot-scope="scope">
+                        <el-button type="text" size="small" @click="handleView(scope.row)">查看</el-button>
+                        <el-button type="text" size="small" @click="handleEdit(scope.row)">编辑</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <!-- 分页 -->
             <Pagination v-show="pagination.total > 0" @size-change="handleSizeChange"
                 @current-change="handleCurrentChange" :page.sync="pagination.currentPage"
                 :limit.sync="pagination.pageSize" :total="pagination.total" size="small" />
-        </div>
+        </el-card>
 
         <!-- 抽屉：查看/编辑 -->
-        <el-drawer v-loading="drawerLoading" title="数据特征" :visible.sync="drawerVisible" direction="rtl" size="35%"
+        <Drawer v-loading="drawerLoading" title="数据特征" :visible.sync="drawerVisible" direction="rtl" size="35%"
             :before-close="handleDrawerClose" :wrapperClosable="false">
             <!-- 根据特征类型动态渲染不同表单 -->
             <template v-if="form.featureType == '1'">
-                <el-form :model="form" label-width="100px" :disabled="isView" size="small" class="feature-form"
-                    label-position="top" :rules="rules">
-                    <div class="basic-info-title">基本信息</div>
-                    <el-divider style="margin: 10px 0;"></el-divider>
+                <el-form slot="body" :model="form" label-width="100px" :disabled="isView" size="small"
+                    class="feature-form" label-position="top" :rules="rules">
+                    <Title title="基本信息"></Title>
                     <el-row>
                         <el-col :span="12">
                             <el-form-item label="编号:" prop="id">
@@ -115,10 +116,9 @@
             </template>
 
             <template v-else-if="form.featureType == '2' || form.featureType == '3'">
-                <el-form :model="form" label-width="100px" :disabled="isView" size="small" class="feature-form"
-                    :rules="rules" label-position="top">
-                    <div class="basic-info-title">基本信息</div>
-                    <el-divider style="margin: 10px 0;"></el-divider>
+                <el-form slot="body" :model="form" label-width="100px" :disabled="isView" size="small"
+                    class="feature-form" :rules="rules" label-position="top">
+                    <Title title="基本信息"></Title>
                     <el-row>
                         <el-col :span="12">
                             <el-form-item label="编号:" prop="id">
@@ -212,8 +212,8 @@
                                             @size-change="handleMappingSizeChange"
                                             @current-change="handleMappingCurrentChange"
                                             :page.sync="mappingPagination.currentPage"
-                                            :page-size.sync="mappingPagination.pageSize" :total="mappingPagination.total"
-                                            size="small" />
+                                            :page-size.sync="mappingPagination.pageSize"
+                                            :total="mappingPagination.total" size="small" />
                                     </div>
                                 </div>
 
@@ -249,12 +249,12 @@
             </template>
 
             <!-- 抽屉底部按钮 -->
-            <div class="drawer-footer">
+            <div slot="footer" class="drawer-footer">
                 <el-button @click="handleCancel" size="small">取消</el-button>
                 <el-button type="primary" plain @click="handleConfirm" v-if="!isView" size="small"
                     style="margin-left: 10px;">确认</el-button>
             </div>
-        </el-drawer>
+        </Drawer>
     </div>
 </template>
 
@@ -987,13 +987,6 @@ export default {
 </script>
 
 <style scoped>
-.feature-management-container {
-    padding: 40px;
-    background-color: #ffffff;
-    min-height: 100vh;
-    box-sizing: border-box;
-}
-
 .page-title {
     font-size: 18px;
     color: #333;
@@ -1009,12 +1002,32 @@ export default {
     align-items: center;
 }
 
-.pagination-container {
-    margin-top: 15px;
-    text-align: right;
-    /* position: absolute;
-    bottom: 6%;
-    right: 2%; */
+.searchCard {
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.table-card {
+    border-radius: 10px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.table-card ::v-deep .el-card__body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.tableBox {
+    overflow-y: auto;
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 /* 抽屉样式 */
@@ -1054,17 +1067,9 @@ export default {
     color: #F56C6C;
 }
 
-/deep/.el-drawer__header {
-    color: #000000;
-    font-size: 18px;
-    background-color: rgb(230, 242, 255);
-    font-weight: bold;
-    padding-bottom: 20px;
-    margin-bottom: 0;
-}
-
 .yuanDataClass /deep/ .el-form-item {
     width: 30%;
+    margin-bottom: 0;
 }
 
 .yuanDataClass /deep/ .el-form-item__label {
@@ -1115,12 +1120,6 @@ export default {
     font-size: 12px;
 }
 
-.basic-info-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 5px;
-}
 
 .el-divider--horizontal {
     margin: 10px 0;

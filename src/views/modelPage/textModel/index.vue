@@ -1,71 +1,79 @@
 <template>
-    <div class="model-config-page">
+    <div class="app-container">
         <!-- 页面标题区域 -->
         <!-- <div class="page-header">
             <h2 style="padding-top: 10px;">模型配置</h2>
         </div> -->
 
-        <div class="model-config-container">
+        <el-row :gutter="20">
             <!-- 左侧菜单区域 -->
-            <div class="left-sidebar">
-                <!-- 搜索框 -->
-                <div style="padding: 5%;">
-                    <el-input placeholder="搜索模型..." v-model="searchKeyword" clearable class="search-input">
-                        <i slot="prefix" class="el-input__icon el-icon-search"></i>
-                    </el-input>
-                </div>
+            <el-col :span="5" :xs="24">
+                <el-card shadow="never" class="left-sidebar-card">
+                    <div class="left-sidebar">
+                        <!-- 搜索框 -->
+                        <div style="padding: 5%;">
+                            <el-input placeholder="搜索模型..." v-model="searchKeyword" clearable class="search-input">
+                                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                            </el-input>
+                        </div>
 
-                <!-- 菜单列表 -->
-                <el-menu :default-active="activeModel" class="model-menu" background-color="#fff" text-color="#333"
-                    active-text-color="#409EFF" @select="handleMenuSelect">
-                    <el-menu-item v-for="model in filteredModels" :key="model.name" :index="model.name"
-                        :style="{ backgroundColor: activeModel === model.id ? '#eaf1ff' : '' }">
-                        <svg-icon
-                            :icon-class="model.label == 'Ollama' ? 'Ollama' : model.label == '阿里云百炼' ? 'alybl' : model.label == 'Deepseek深度求索' ? 'deepseek' : 'lingqi'"
-                            style="margin-right: 10px;"></svg-icon>
-                        <span>{{ model.label }}</span>
-                        <!-- 左侧菜单开关 - 调整为内部显示ON/OFF -->
-                        <el-switch v-model="model.enabled" active-color="#13ce66" inactive-color="#e9ecef"
-                            active-text="ON" inactive-text="OFF" class="inner-text-switch" style="margin-left: auto;"
-                            @change="handleModelSwitch(model)"></el-switch>
-                    </el-menu-item>
-                </el-menu>
-            </div>
-
+                        <!-- 菜单列表 -->
+                        <el-menu :default-active="activeModel" class="model-menu" background-color="#fff"
+                            text-color="#333" active-text-color="#409EFF" @select="handleMenuSelect">
+                            <el-menu-item v-for="model in filteredModels" :key="model.name" :index="model.name"
+                                :style="{ backgroundColor: activeModel === model.id ? '#eaf1ff' : '' }">
+                                <svg-icon
+                                    :icon-class="model.label == 'Ollama' ? 'Ollama' : model.label == '阿里云百炼' ? 'alybl' : model.label == 'Deepseek深度求索' ? 'deepseek' : 'lingqi'"
+                                    style="margin-right: 10px;"></svg-icon>
+                                <span>{{ model.label }}</span>
+                                <!-- 左侧菜单开关 - 调整为内部显示ON/OFF -->
+                                <el-switch v-model="model.enabled" active-color="#13ce66" inactive-color="#e9ecef"
+                                    active-text="ON" inactive-text="OFF" class="inner-text-switch"
+                                    style="margin-left: auto;" @change="handleModelSwitch(model)"></el-switch>
+                            </el-menu-item>
+                        </el-menu>
+                    </div>
+                </el-card>
+            </el-col>
             <!-- 右侧内容区域 -->
-            <div class="right-content">
-                <div class="content-header">
-                    <svg-icon
-                        :icon-class="currentModel.label == 'Ollama' ? 'Ollama' : currentModel.label == '阿里云百炼' ? 'alybl' : currentModel.label == 'Deepseek深度求索' ? 'deepseek' : 'lingqi'"
-                        style="margin-right: 10px;"></svg-icon>
-                    <span>{{ currentModel.label || '请选择模型' }}</span>
-                    <!-- 右侧主开关 - 调整为内部显示ON/OFF，右侧开关只读展示 -->
-                    <el-switch v-model="currentModel.enabled" active-color="#13ce66" inactive-color="#e9ecef"
-                        class="inner-text-switch" style="margin-left: auto;" disabled></el-switch>
-                </div>
+            <el-col :span="19" :xs="24">
+                <el-card shadow="never" class="right-content-card">
+                    <div class="right-content">
+                        <div class="content-header">
+                            <svg-icon
+                                :icon-class="currentModel.label == 'Ollama' ? 'Ollama' : currentModel.label == '阿里云百炼' ? 'alybl' : currentModel.label == 'Deepseek深度求索' ? 'deepseek' : 'lingqi'"
+                                style="margin-right: 10px;"></svg-icon>
+                            <span>{{ currentModel.label || '请选择模型' }}</span>
+                            <!-- 右侧主开关 - 调整为内部显示ON/OFF，右侧开关只读展示 -->
+                            <el-switch v-model="currentModel.enabled" active-color="#13ce66" inactive-color="#e9ecef"
+                                class="inner-text-switch" style="margin-left: auto;" disabled></el-switch>
+                        </div>
 
-                <!-- 表单内容 -->
-                <el-form label-width="100px" class="config-form" :disabled="!currentModel.enabled">
-                    <el-form-item label="接口地址">
-                        <el-input v-model="currentModel.apiUrl" placeholder="请输入接口地址" style="width: 100%;"></el-input>
-                    </el-form-item>
-                    <el-form-item v-if="currentModel.name == 'aliyun' || currentModel.name == 'deepseek' || currentModel.name == 'lingqi'" label="API密钥">
-                        <el-input v-model="currentModel.apiKey" placeholder="请输入API密钥" type="password"
-                            style="width: 100%;"></el-input>
-                    </el-form-item>
+                        <!-- 表单内容 -->
+                        <el-form label-width="100px" class="config-form" :disabled="!currentModel.enabled">
+                            <el-form-item label="接口地址">
+                                <el-input v-model="currentModel.apiUrl" placeholder="请输入接口地址"
+                                    style="width: 100%;"></el-input>
+                            </el-form-item>
+                            <el-form-item
+                                v-if="currentModel.name == 'aliyun' || currentModel.name == 'deepseek' || currentModel.name == 'lingqi'"
+                                label="API密钥">
+                                <el-input v-model="currentModel.apiKey" placeholder="请输入API密钥" type="password"
+                                    style="width: 100%;"></el-input>
+                            </el-form-item>
 
-                    <el-form-item label="模型名称">
-                        <el-select v-model="currentModel.modelName" placeholder="请选择模型" style="width: 70%;">
-                            <el-option v-for="item in currentModel.availableModels" :key="item.value"
-                                :label="item.label" :value="item.value"></el-option>
-                        </el-select>
-                        <el-button type="primary" plain style="margin-left: 10px;"
-                             @click="refreshModelList(currentModel.id)">
-                            刷新模型列表
-                        </el-button>
-                    </el-form-item>
+                            <el-form-item label="模型名称">
+                                <el-select v-model="currentModel.modelName" placeholder="请选择模型" style="width: 70%;">
+                                    <el-option v-for="item in currentModel.availableModels" :key="item.value"
+                                        :label="item.label" :value="item.value"></el-option>
+                                </el-select>
+                                <el-button type="primary" plain style="margin-left: 10px;"
+                                    @click="refreshModelList(currentModel.id)">
+                                    刷新模型列表
+                                </el-button>
+                            </el-form-item>
 
-                    <!-- <el-form-item v-if="currentModel.name == 'ollama'" label="模型特性">
+                            <!-- <el-form-item v-if="currentModel.name == 'ollama'" label="模型特性">
                         <el-switch v-model="currentModel.thinkingMode" active-color="#13ce66" class="model-switch"
                             inactive-color="#e9ecef" active-text="深度思考" style="margin-left: auto;"></el-switch>
                         <el-tooltip content="深度思考模式让模型在回答前进行推理分析，提供更详细的思考过程" placement="top"
@@ -74,52 +82,54 @@
                         </el-tooltip>
                     </el-form-item> -->
 
-                    <el-form-item label="模型温度">
-                        <div class="slider-container">
-                            <el-slider v-model="currentModel.temperature" :max="1" :min="0" :step="0.1" show-tooltip
-                                style="flex: 1;" class="temperature"></el-slider>
-                            <!-- .toFixed(1) -->
-                            <span class="slider-value">{{ currentModel.temperature }}</span>
-                            <el-tooltip content="控制模型输出的随机性和创造性。较低的值（0.1-0.3）产生更确定性的回答，较高的值（0.7-1.0）产生更创造性的回答"
-                                placement="top" transition="el-fade-in-linear">
-                                <svg-icon icon-class="dengpao" style="margin-left: 10px;"></svg-icon>
-                            </el-tooltip>
-                        </div>
-                    </el-form-item>
+                            <el-form-item label="模型温度">
+                                <div class="slider-container">
+                                    <el-slider v-model="currentModel.temperature" :max="1" :min="0" :step="0.1"
+                                        show-tooltip style="flex: 1;" class="temperature"></el-slider>
+                                    <!-- .toFixed(1) -->
+                                    <span class="slider-value">{{ currentModel.temperature }}</span>
+                                    <el-tooltip content="控制模型输出的随机性和创造性。较低的值（0.1-0.3）产生更确定性的回答，较高的值（0.7-1.0）产生更创造性的回答"
+                                        placement="top" transition="el-fade-in-linear">
+                                        <svg-icon icon-class="dengpao" style="margin-left: 10px;"></svg-icon>
+                                    </el-tooltip>
+                                </div>
+                            </el-form-item>
 
-                    <el-form-item label="请求超时">
-                        <div class="slider-container">
-                            <el-slider v-model="currentModel.timeout" :max="300" :min="30" :step="30" show-tooltip
-                                style="flex: 1;" class="timeout"></el-slider>
-                            <span class="slider-value">
-                                {{ formatTimeout(currentModel.timeout) }}
-                            </span>
-                            <el-tooltip content="设置API请求的最大等待时间。如果请求超过此时间仍未响应，将自动中断连接。建议根据网络环境和任务复杂度调整" placement="top"
-                                transition="el-fade-in-linear">
-                                <svg-icon icon-class="dengpao" style="margin-left: 10px;"></svg-icon>
-                            </el-tooltip>
-                        </div>
-                        <div class="timeout-buttons">
-                            <el-button v-for="btn in timeoutOptions" :key="btn.value"
-                                :type="currentModel.timeout === btn.value ? 'danger' : 'default'" size="mini"
-                                @click="setTimeout(btn.value)">
-                                {{ btn.label }}
+                            <el-form-item label="请求超时">
+                                <div class="slider-container">
+                                    <el-slider v-model="currentModel.timeout" :max="300" :min="30" :step="30"
+                                        show-tooltip style="flex: 1;" class="timeout"></el-slider>
+                                    <span class="slider-value">
+                                        {{ formatTimeout(currentModel.timeout) }}
+                                    </span>
+                                    <el-tooltip content="设置API请求的最大等待时间。如果请求超过此时间仍未响应，将自动中断连接。建议根据网络环境和任务复杂度调整"
+                                        placement="top" transition="el-fade-in-linear">
+                                        <svg-icon icon-class="dengpao" style="margin-left: 10px;"></svg-icon>
+                                    </el-tooltip>
+                                </div>
+                                <div class="timeout-buttons">
+                                    <el-button v-for="btn in timeoutOptions" :key="btn.value"
+                                        :type="currentModel.timeout === btn.value ? 'danger' : 'default'" size="mini"
+                                        @click="setTimeout(btn.value)">
+                                        {{ btn.label }}
+                                    </el-button>
+                                </div>
+                            </el-form-item>
+                        </el-form>
+
+                        <!-- 新增按钮容器 -->
+                        <div class="button-container">
+                            <el-button plain @click="handleTest" :disabled="!currentModel.enabled">
+                                测试连接
+                            </el-button>
+                            <el-button type="primary" plain style="margin-left: 10px;" @click="handleSave">
+                                保存配置
                             </el-button>
                         </div>
-                    </el-form-item>
-                </el-form>
-
-                <!-- 新增按钮容器 -->
-                <div class="button-container">
-                    <el-button plain @click="handleTest" :disabled="!currentModel.enabled">
-                        测试连接
-                    </el-button>
-                    <el-button type="primary" plain style="margin-left: 10px;" @click="handleSave">
-                        保存配置
-                    </el-button>
-                </div>
-            </div>
-        </div>
+                    </div>
+                </el-card>
+            </el-col>
+        </el-row>
     </div>
 </template>
 
@@ -346,42 +356,45 @@ export default {
 </script>
 
 <style scoped>
-/* 样式部分保持不变 */
-.model-config-page {
-    padding: 40px;
-    background-color: #fff;
+.left-sidebar-card {
     width: 100%;
-    height: 100vh;
-    box-shadow: none;
-}
-
-/* .page-header {
-    margin-bottom: 20px;
-}
-
-.page-header h2 {
-    font-size: 18px;
-    color: #333;
-    margin: 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e6e6e6;
-} */
-
-.model-config-container {
-    display: flex;
-    height: calc(100% - 40px);
-    background-color: #fff;
     border-radius: 10px;
-    /* box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05); */
-    overflow: hidden;
-    border: solid 0.5px #dcdfe6;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .el-card__body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 0;
+    }
+}
+
+.right-content-card {
+    flex: 1;
+    border-radius: 10px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .el-card__body {
+        height: 100%;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 0;
+    }
 }
 
 .left-sidebar {
-    width: 260px;
-    border-right: 1px solid #e6e6e6;
+    width: 100%;
     display: flex;
     flex-direction: column;
+    flex: 1;
+    overflow: hidden;
 }
 
 .model-menu {
@@ -403,6 +416,8 @@ export default {
     overflow-y: auto;
     position: relative;
     /* 添加相对定位 */
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .content-header {
@@ -535,10 +550,27 @@ export default {
     width: 60px !important;
 }
 
-/* 新增按钮容器样式 */
+::v-deep .el-row {
+    display: flex;
+    align-items: stretch;
+    flex: 1;
+    overflow: hidden;
+}
+
+::v-deep .el-col {
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    overflow: hidden;
+}
+
 .button-container {
     position: absolute;
     right: 20px;
     bottom: 20px;
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 15px;
+    background: linear-gradient(transparent, #fff 20%);
 }
 </style>
