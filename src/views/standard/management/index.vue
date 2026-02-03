@@ -707,7 +707,6 @@ input[aria-hidden=true] {
 
 .card-actions {
   display: flex;
-  gap: 10px;
   padding-top: 12px;
   border-top: 1px solid #e6e6e6;
   justify-content: space-between;
