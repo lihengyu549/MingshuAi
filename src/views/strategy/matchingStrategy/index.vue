@@ -1,96 +1,104 @@
 <template>
   <div class="app-container" v-loading="Loading">
     <el-row :gutter="20">
-      <el-col :span="4" :xs="24">
-        <div class="head-container">
-          <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
-            placeholder="全部" style="margin-bottom: 20px">
-            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
-            </el-option>
-          </el-select>
-        </div>
-        <div class="head-container" v-loading="treeLoading">
-          <el-input v-model="filterName" placeholder="搜索树节点..." clearable size="mini" style="margin-bottom: 20px;" />
-          <el-tree style="overflow-y: auto;height: 785px;" :data="categoryList" :props="defaultProps"
-            :default-expanded-keys="[treeID]" :current-node-key="treeID" :expand-on-click-node="false"
-            :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current @node-click="handleNodeClick" />
-        </div>
+      <el-col :span="5" :xs="24">
+        <el-card class="left-card" shadow="never">
+          <div class="head-container">
+            <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
+              placeholder="全部" style="margin-bottom: 20px; width: 100%;">
+              <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
+              </el-option>
+            </el-select>
+          </div>
+          <div class="head-container" v-loading="treeLoading">
+            <el-input v-model="filterName" placeholder="搜索树节点..." clearable style="margin-bottom: 20px;" />
+            <el-tree style="overflow-y: auto;" :data="categoryList" :props="defaultProps"
+              :default-expanded-keys="[treeID]" :current-node-key="treeID" :expand-on-click-node="false"
+              :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current
+              @node-click="handleNodeClick" />
+          </div>
+        </el-card>
       </el-col>
       <!--用户数据-->
-      <el-col :span="20" :xs="24">
-        <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="false"
-          v-show="showSearch" label-width="90px">
-          <el-form-item label="规则名称" prop="ruleName">
-            <el-input v-model="queryParams.ruleName" @input="inputSearch" placeholder="请输入规则名称" clearable
-              @keyup.enter.native="handleQuery" />
-          </el-form-item>
-          <el-form-item label="识别对象" prop="recognizeObject">
-            <el-select v-model="queryParams.recognizeObject" clearable @change="dataSourceIdIdChange" placeholder="全部"
-              :loading="loading">
-              <el-option v-for="item in recognizeObjectList" :key="item.value" :label="item.label" :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="识别方式" prop="recognizeWay">
-            <el-select v-model="queryParams.recognizeWay" @change="selectProjectIdChange" placeholder="全部">
-              <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item>
+      <el-col :span="19" :xs="24">
+        <el-card class="search-card" shadow="never">
+          <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="false"
+            v-show="showSearch" label-width="90px">
+            <el-form-item label="规则名称" prop="ruleName">
+              <el-input v-model="queryParams.ruleName" @input="inputSearch" placeholder="请输入规则名称" clearable
+                @keyup.enter.native="handleQuery" />
+            </el-form-item>
+            <el-form-item label="识别对象" prop="recognizeObject">
+              <el-select v-model="queryParams.recognizeObject" clearable @change="dataSourceIdIdChange" placeholder="全部"
+                :loading="loading">
+                <el-option v-for="item in recognizeObjectList" :key="item.value" :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="识别方式" prop="recognizeWay">
+              <el-select v-model="queryParams.recognizeWay" @change="selectProjectIdChange" placeholder="全部">
+                <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <!-- <el-form-item> -->
             <!-- <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button> -->
             <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
-          </el-form-item>
-        </el-form>
-        <div style="margin: 20px 0 20px 25px;">
+            <!-- </el-form-item> -->
+          </el-form>
+        </el-card>
+        <div class="search-actions">
           <el-button type="primary" plain icon="el-icon-plus" size="medium" :disabled="isChildrenNode !== 4"
             @click="addFn">新增</el-button>
-          <el-button type="primary" plain icon="el-icon-close" size="medium" @click="enabledFn('删除')">删除</el-button>
+          <el-button type="danger" plain icon="el-icon-close" size="medium" @click="enabledFn('删除')">删除</el-button>
           <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="enabledFn('启用')">启用</el-button>
-          <el-button type="primary" plain icon="el-icon-warning-outline" size="medium"
+          <el-button type="danger" plain icon="el-icon-warning-outline" size="medium"
             @click="enabledFn('禁用')">禁用</el-button>
         </div>
-        <el-table v-loading="loading" :data="protectTableFieldList" ref="tableRef" height="630px" class="tableBox">
-          <!-- <el-table-column width="55" align="center" /> -->
-          <template slot="empty">
-            <el-empty description="暂无数据"></el-empty>
-          </template>
-          <el-table-column type="selection" width="60" align="center">
-          </el-table-column>
-          <el-table-column label="规则名称" align="center" prop="ruleName" show-overflow-tooltip />
-          <el-table-column label="所属标准" align="center" prop="attachData" show-overflow-tooltip />
-          <el-table-column label="识别对象" align="center" prop="recognizeObject" show-overflow-tooltip>
-            <template slot-scope="scope">
-              <span>
-                {{ recognizeObjectMsg(scope.row.recognizeObject) }}
-              </span>
+        <el-card class="table-card" shadow="never">
+          <el-table v-loading="loading" :data="protectTableFieldList" ref="tableRef" height="630px" class="tableBox">
+            <!-- <el-table-column width="55" align="center" /> -->
+            <template slot="empty">
+              <el-empty description="暂无数据"></el-empty>
             </template>
-          </el-table-column>
-          <el-table-column label="识别方式" align="center" prop="recognizeWay" show-overflow-tooltip>
-            <template slot-scope="scope">
-              <span>
-                {{ recognizeWayMsg(scope.row.recognizeWay) }}
-              </span>
-            </template>
-          </el-table-column>
-          <el-table-column label="状态" align="center" prop="state">
-            <template slot-scope="scope">
-              <span>
-                {{ scope.row.state === '0' ? '启用' : '禁用' }}
-              </span>
-            </template>
-          </el-table-column>
-          <el-table-column label="更新时间" align="center" prop="updateTime" />
-          <el-table-column label="操作" align="center">
-            <template slot-scope="scope">
-              <el-button type="text" size="medium" :disabled="scope.row.dataSource === '内置'"
-                @click="editFn(scope.row)">编辑</el-button>
-              <el-button type="text" size="medium" @click="lookFn(scope.row)">查看</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-          :page-size.sync="queryParams.pageSize" @pagination="getList" />
+            <el-table-column type="selection" width="60" align="center">
+            </el-table-column>
+            <el-table-column label="规则名称" align="center" prop="ruleName" show-overflow-tooltip />
+            <el-table-column label="所属标准" align="center" prop="attachData" show-overflow-tooltip />
+            <el-table-column label="识别对象" align="center" prop="recognizeObject" show-overflow-tooltip>
+              <template slot-scope="scope">
+                <span>
+                  {{ recognizeObjectMsg(scope.row.recognizeObject) }}
+                </span>
+              </template>
+            </el-table-column>
+            <el-table-column label="识别方式" align="center" prop="recognizeWay" show-overflow-tooltip>
+              <template slot-scope="scope">
+                <span>
+                  {{ recognizeWayMsg(scope.row.recognizeWay) }}
+                </span>
+              </template>
+            </el-table-column>
+            <el-table-column label="状态" align="center" prop="state">
+              <template slot-scope="scope">
+                <span>
+                  {{ scope.row.state === '0' ? '启用' : '禁用' }}
+                </span>
+              </template>
+            </el-table-column>
+            <el-table-column label="更新时间" align="center" prop="updateTime" />
+            <el-table-column label="操作" align="center">
+              <template slot-scope="scope">
+                <el-button type="text" size="medium" :disabled="scope.row.dataSource === '内置'"
+                  @click="editFn(scope.row)">编辑</el-button>
+                <el-button type="text" size="medium" @click="lookFn(scope.row)">查看</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+            :page-size.sync="queryParams.pageSize" @pagination="getList" />
+        </el-card>
       </el-col>
     </el-row>
     <!-- 新增编辑框 -->
@@ -745,23 +753,53 @@ export default {
 }
 </style>
 <style scoped>
+.matching-strategy-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .el-popup-parent--hidden /deep/ .el-loading-mask {
   background: "rgba(0, 0, 0, 0.7)" !important;
 }
 
-.app-container /deep/ ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.left-card {
+  border-radius: 10px;
+  height: 100%;
+  max-height: 100%;
+  overflow: auto;
+
+  .el-card__body {
+    height: 100%;
+    max-height: 100%;
+    overflow: auto;
+  }
 }
 
-.app-container /deep/::-webkit-scrollbar-thumb {
-  background-color: #0003;
+.search-card {
   border-radius: 10px;
-  transition: all .2s ease-in-out;
+  margin-bottom: 20px;
 }
 
-.app-container /deep/::-webkit-scrollbar-track {
+.table-card {
   border-radius: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  .el-card__body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+.search-actions {
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .addMsg /deep/ .el-input--medium {
@@ -812,16 +850,6 @@ export default {
   display: none;
 }
 
-.serachInput {
-  width: 100%;
-  margin-right: 10px;
-
-  input {
-    height: 28px !important;
-    line-height: 28px !important;
-  }
-}
-
 .yuanDataClass {
   display: flex;
   justify-content: flex-start;
@@ -831,6 +859,7 @@ export default {
 
 .yuanDataClass /deep/ .el-form-item {
   width: 30%;
+  margin-bottom: 0;
 }
 
 .yuanDataClass /deep/ .el-form-item__label {
@@ -864,7 +893,7 @@ export default {
 
 .rulesContClass /deep/ .el-input,
 .el-autocomplete {
-  width: calc(80%);
+  width: calc(100% - 48px);
 }
 
 .rulesContClass /deep/ .el-autocomplete .el-input {
@@ -882,6 +911,9 @@ export default {
 
 .tableBox {
   overflow-y: auto;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .addTextBtn {
@@ -900,4 +932,17 @@ export default {
   > .el-tree-node__content {
   background-color: #baf !important;
 } */
+::v-deep .el-row {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  overflow: hidden;
+}
+
+::v-deep .el-col {
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  overflow: hidden;
+}
 </style>
