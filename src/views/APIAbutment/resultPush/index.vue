@@ -1,23 +1,26 @@
 <template>
   <div class="app-container" v-loading="mainLoading">
-    <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small" :inline="true"
-      label-width="auto">
-      <el-form-item label="目标名称" prop="taskName">
-        <el-input v-model="queryParams.taskName" @input="inputSearch" placeholder="请输入数据源名称" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item label="推送类型" prop="pushType">
-        <el-select clearable v-model="queryParams.pushType" @change="inputSearch" placeholder="请选择数据库类型">
-          <el-option v-for="item in dict.type.sys_push_type" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-      </el-form-item>
-      <el-form-item class="searchBtn" label-width="0">
+    <el-card shadow="never" class="searchCard">
+      <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
+        :inline="true" label-width="auto">
+        <el-form-item label="目标名称" prop="taskName">
+          <el-input v-model="queryParams.taskName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+            @keyup.enter.native="handleQuery" />
+        </el-form-item>
+        <el-form-item label="推送类型" prop="pushType">
+          <el-select clearable v-model="queryParams.pushType" @change="inputSearch" placeholder="请选择数据库类型">
+            <el-option v-for="item in dict.type.sys_push_type" :key="item.value" :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+        </el-form-item>
+        <!-- <el-form-item class="searchBtn" label-width="0"> -->
         <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
-      </el-form-item>
-    </el-form>
+        <!-- </el-form-item> -->
+      </el-form>
+    </el-card>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">新增</el-button>
@@ -27,33 +30,35 @@
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
-    <el-table v-loading="loading" height="700px" class="tableBox" :data="proxysList"
-      @selection-change="handleSelectionChange" ref="tableRef">
-      <template slot="empty">
-        <el-empty description="暂无数据"></el-empty>
-      </template>
-      <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="任务名称" prop="taskName" width="150" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <svg-icon icon-class="jobs" style="font-size: 16px; margin-right: 5px;" />
-          {{ scope.row.taskName }}
+    <el-card class="table-card" shadow="never">
+      <el-table v-loading="loading" height="700px" class="tableBox" :data="proxysList"
+        @selection-change="handleSelectionChange" ref="tableRef">
+        <template slot="empty">
+          <el-empty description="暂无数据"></el-empty>
         </template>
-      </el-table-column>
-      <el-table-column label="对接厂商" align="center" prop="providerName" width="150" show-overflow-tooltip />
-      <el-table-column label="推送类型" align="center" prop="pushTypeName" width="150" show-overflow-tooltip />
-      <el-table-column label="发布数据源名称" align="center" prop="sourceName" width="250" show-overflow-tooltip />
-      <el-table-column label="分类分级标准" align="center" prop="standardName" show-overflow-tooltip />
-      <el-table-column label="推送状态" align="center" prop="pushStatusName" width="150" show-overflow-tooltip />
-      <el-table-column label="更新时间" align="center" prop="updateTime" width="250" show-overflow-tooltip />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="150">
-        <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="handleEcelFn(scope.row)">编辑</el-button>
-          <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)">推送</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :page-size.sync="queryParams.pageSize"
-      @pagination="getList" />
+        <el-table-column type="selection" width="60" align="center" />
+        <el-table-column label="任务名称" prop="taskName" width="150" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <svg-icon icon-class="jobs" style="font-size: 16px; margin-right: 5px;" />
+            {{ scope.row.taskName }}
+          </template>
+        </el-table-column>
+        <el-table-column label="对接厂商" align="center" prop="providerName" width="150" show-overflow-tooltip />
+        <el-table-column label="推送类型" align="center" prop="pushTypeName" width="150" show-overflow-tooltip />
+        <el-table-column label="发布数据源名称" align="center" prop="sourceName" width="250" show-overflow-tooltip />
+        <el-table-column label="分类分级标准" align="center" prop="standardName" show-overflow-tooltip />
+        <el-table-column label="推送状态" align="center" prop="pushStatusName" width="150" show-overflow-tooltip />
+        <el-table-column label="更新时间" align="center" prop="updateTime" width="250" show-overflow-tooltip />
+        <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="150">
+          <template slot-scope="scope">
+            <el-button size="mini" type="text" @click="handleEcelFn(scope.row)">编辑</el-button>
+            <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)">推送</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+        :page-size.sync="queryParams.pageSize" @pagination="getList" />
+    </el-card>
     <el-dialog :title="title" class="addMsg" v-loading="dialogLoading" :visible.sync="dialogDataShow" append-to-body
       :close-on-click-modal="false" width="700px">
       <el-form class="dialogForm" :rules="dialogDataRules" :model="dialogData" size="medium" ref="dialogData"
@@ -101,7 +106,8 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="密码" prop="passWord">
-              <el-input type="password" v-model="dialogData.passWord" :show-password="passwordVisible" placeholder="请输入密码"></el-input>
+              <el-input type="password" v-model="dialogData.passWord" :show-password="passwordVisible"
+                placeholder="请输入密码"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -112,7 +118,8 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="dialogData.pushType == '2'" label="数据源名称" prop="sourceId">
-          <el-select clearable v-model="dialogData.sourceId" placeholder="请选择" filterable @change="handleSourceIdChange">
+          <el-select clearable v-model="dialogData.sourceId" placeholder="请选择" filterable
+            @change="handleSourceIdChange">
             <el-option v-for="item in sourceNameList" :key="item.id" :label="item.sourceName" :value="item.id">
             </el-option>
           </el-select>
@@ -493,6 +500,11 @@ input[aria-hidden=true] {
 }
 </style>
 <style scoped>
+.searchCard {
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
 .yuanDataClass {
   display: flex;
   justify-content: flex-start;
@@ -502,6 +514,7 @@ input[aria-hidden=true] {
 
 .yuanDataClass /deep/ .el-form-item {
   width: 30%;
+  margin-bottom: 0;
 }
 
 .yuanDataClass /deep/ .el-form-item__label {
@@ -534,8 +547,27 @@ input[aria-hidden=true] {
   height: 100%;
 }
 
+.table-card {
+  margin-top: 20px;
+  border-radius: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-card>>>.el-card__body {
+  padding: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .tableBox {
-  height: calc(100% - 36px - 50px -51px);
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {

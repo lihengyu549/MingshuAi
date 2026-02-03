@@ -1,75 +1,111 @@
 <template>
   <div class="app-container">
-    <el-card class="card-box" v-loading="cardLoading">
-      <div>
-        <h4 class="title">
+    <el-card class="card" shadow="never">
+      <template slot="header">
+        <span class="title">
           <div class="blue-circle"></div><span>噪音数据过滤</span>
-        </h4>
-        <div class="contBox">
-          <el-row>
-            <el-col :span="12">
-              <el-switch v-model="allData.DirtyData.DirtyData1.state" active-color="#009dff" inactive-color="#e0e0e0"
-                :active-text="allData.DirtyData.DirtyData1.label"></el-switch>
-            </el-col>
-            <el-col :span="12">
-              <el-switch v-model="allData.DirtyData.DirtyData2.state" active-color="#009dff" inactive-color="#e0e0e0"
-                :active-text="allData.DirtyData.DirtyData2.label"></el-switch>
-            </el-col>
-          </el-row>
-          <el-row style="display: flex; align-items: center;">
-            <el-col :span="12">
-              <el-switch v-model="allData.DirtyData.DirtyData3.state" active-color="#009dff" inactive-color="#e0e0e0"
-                :active-text="allData.DirtyData.DirtyData3.label">
-              </el-switch>
-              <el-input v-model="allData.DirtyData.DirtyData3.value" size="mini"
-                :disabled="!allData.DirtyData.DirtyData3.state" style="width: 20%;margin-left: 10px;"
-                @input="handleDirtyDataInput"></el-input>
-              <el-tooltip class="item" effect="dark" content="样本重复率" placement="top-start">
-                <svg-icon icon-class="dengpao" style="margin-left:8px;" />
-              </el-tooltip>
-            </el-col>
-            <el-col :span="12">
-              <el-switch v-model="allData.DirtyData.DirtyData4.state" active-color="#009dff" inactive-color="#e0e0e0"
-                :active-text="allData.DirtyData.DirtyData4.label"></el-switch>
-                <el-tooltip class="item" effect="dark" content="包含主键，外键，编码方式等" placement="top-start">
-                <svg-icon icon-class="dengpao" style="margin-left:8px;" />
-              </el-tooltip>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="12">
-              <el-switch v-model="allData.DirtyData.DirtyData5.state" active-color="#009dff" inactive-color="#e0e0e0"
-                :active-text="allData.DirtyData.DirtyData5.label"></el-switch>
-                <el-tooltip class="item" effect="dark" content="包含前端配置，系统参数等" placement="top-start">
-                <svg-icon icon-class="dengpao" style="margin-left:8px;" />
-              </el-tooltip>
-            </el-col>
-            <el-col :span="12">
-              <el-switch v-model="allData.DirtyData.DirtyData6.state" active-color="#009dff" inactive-color="#e0e0e0"
-                :active-text="allData.DirtyData.DirtyData6.label"></el-switch>
-                <el-tooltip class="item" effect="dark" content="包含备份字段，自定义字段等" placement="top-start">
-                <svg-icon icon-class="dengpao" style="margin-left:8px;" />
-              </el-tooltip>
-            </el-col>
-          </el-row>
-        </div>
+        </span>
+      </template>
+      <div class="contBox">
+        <el-row :gutter="16">
+          <el-col :span="8">
+            <div class="switch-card">
+              <div class="switch-content">
+                <div class="switch-label">
+                  <div class="label-text">{{ allData.DirtyData.DirtyData1.label }}</div>
+                </div>
+                <el-switch v-model="allData.DirtyData.DirtyData1.state" active-color="#009dff"
+                  inactive-color="#e0e0e0"></el-switch>
+              </div>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class="switch-card">
+              <div class="switch-content">
+                <div class="switch-label">
+                  <div class="label-text">{{ allData.DirtyData.DirtyData2.label }}</div>
+                </div>
+                <el-switch v-model="allData.DirtyData.DirtyData2.state" active-color="#009dff"
+                  inactive-color="#e0e0e0"></el-switch>
+              </div>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class="switch-card">
+              <div class="switch-content">
+                <div class="switch-label">
+                  <div class="label-text">
+                    <span>{{ allData.DirtyData.DirtyData3.label }}</span>
+                    <el-input v-model="allData.DirtyData.DirtyData3.value" size="mini"
+                      :disabled="!allData.DirtyData.DirtyData3.state" style="width: 60px;margin-left: 10px;"
+                      @input="handleDirtyDataInput"></el-input>
+                    <span style="margin-left: 4px;">%</span>
+                  </div>
+                </div>
+                <el-switch v-model="allData.DirtyData.DirtyData3.state" active-color="#009dff"
+                  inactive-color="#e0e0e0"></el-switch>
+              </div>
+            </div>
+          </el-col>
+        </el-row>
+        <el-row :gutter="16">
+          <el-col :span="8">
+            <div class="switch-card">
+              <div class="switch-content">
+                <div class="switch-label">
+                  <div class="label-text">{{ allData.DirtyData.DirtyData4.label }}</div>
+                  <div class="label-desc">包含主键，外键，编码方式等</div>
+                </div>
+                <el-switch v-model="allData.DirtyData.DirtyData4.state" active-color="#009dff"
+                  inactive-color="#e0e0e0"></el-switch>
+              </div>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class="switch-card">
+              <div class="switch-content">
+                <div class="switch-label">
+                  <div class="label-text">{{ allData.DirtyData.DirtyData5.label }}</div>
+                  <div class="label-desc">包含前端配置，系统参数等</div>
+                </div>
+                <el-switch v-model="allData.DirtyData.DirtyData5.state" active-color="#009dff"
+                  inactive-color="#e0e0e0"></el-switch>
+              </div>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class="switch-card">
+              <div class="switch-content">
+                <div class="switch-label">
+                  <div class="label-text">{{ allData.DirtyData.DirtyData6.label }}</div>
+                  <div class="label-desc">包含备份字段，自定义字段等</div>
+                </div>
+                <el-switch v-model="allData.DirtyData.DirtyData6.state" active-color="#009dff"
+                  inactive-color="#e0e0e0"></el-switch>
+              </div>
+            </div>
+          </el-col>
+        </el-row>
       </div>
-      <div>
-        <h4 class="title">
+    </el-card>
+    <el-card class="card" shadow="never">
+      <template slot="header">
+        <span class="title">
           <div class="blue-circle"></div><span>样本抽取</span>
-        </h4>
-        <div class="contBox" style="display: flex;justify-content: flex-start;align-items: center;">
-          <span style="margin-right: 20px;height: 28.5px;">抽样数量</span>
-          <el-radio-group v-model="allData.SampleExtraction.value">
-            <el-radio label="0">0</el-radio>
-            <el-radio label="5">5</el-radio>
-            <el-radio label="10">10</el-radio>
-            <el-radio label="20">20</el-radio>
-            <el-radio label="50">50</el-radio>
-          </el-radio-group>
-        </div>
+        </span>
+      </template>
+      <div class="contBox">
+        <span class="sample-label">抽样数量</span>
+        <el-radio-group v-model="allData.SampleExtraction.value" class="sample-radio-group">
+          <el-radio label="0" border>0</el-radio>
+          <el-radio label="5" border>5</el-radio>
+          <el-radio label="10" border>10</el-radio>
+          <el-radio label="20" border>20</el-radio>
+          <el-radio label="50" border>50</el-radio>
+        </el-radio-group>
       </div>
-      <!-- <div>
+    </el-card>
+    <!-- <div>
         <h4 class="title">
           <div class="blue-circle"></div><span>数据表质量评分</span>
         </h4>
@@ -81,27 +117,28 @@
         </div>
       </div> -->
 
-      <div>
-        <h4 class="title">
+    <el-card class="card" shadow="never">
+      <template slot="header">
+        <span class="title">
           <div class="blue-circle"></div><span>敏感数据定义</span>
-        </h4>
-        <div class="contBox" style="display: flex;justify-content: flex-start;align-items: center;">
-          <div>
-            <span>
-              安全分级大于等于
-              <el-select v-model="allData.SensitiveData.value" placeholder="请选择">
-                <el-option v-for="item in sys_risk_levelList" :key="item" :label="item" :value="item">
-                </el-option>
-              </el-select>
-              的数据定义敏感数据
-            </span>
-          </div>
+        </span>
+      </template>
+      <div class="contBox" style="display: flex;justify-content: flex-start;align-items: center;">
+        <div>
+          <span>
+            安全分级大于等于
+            <el-select v-model="allData.SensitiveData.value" placeholder="请选择">
+              <el-option v-for="item in sys_risk_levelList" :key="item" :label="item" :value="item">
+              </el-option>
+            </el-select>
+            的数据定义敏感数据
+          </span>
         </div>
       </div>
-      <div class="foot_btn">
-        <el-button type="primary" plain @click="submit">确 定</el-button>
-      </div>
     </el-card>
+    <div class="foot_btn">
+      <el-button type="primary" plain @click="submit">确 定</el-button>
+    </div>
   </div>
 </template>
 
@@ -245,15 +282,25 @@ export default {
   }
 }
 
+.card {
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 15px;
+
+  .el-card__header {
+    padding: 15px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+}
+
 
 .title {
   display: flex;
   justify-content: flex-start;
   align-items: center;
   margin: 0;
-  font-size: 18px;
-  padding: 20px 15px;
-  background-color: #ebebebc2;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .blue-circle {
@@ -265,17 +312,86 @@ export default {
 }
 
 .contBox {
-  padding: 40px 20px;
+  padding: 20px 0;
 }
 
-.card-box {
-  height: 810px;
-  overflow-y: auto;
-  position: relative;
-  padding: 0;
+.switch-card {
+  background-color: #f8fafc;
+  padding: 16px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 70px;
+}
 
-  ::v-deep .el-card__body {
+.switch-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.switch-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.label-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.label-desc {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.sample-label {
+  margin-right: 20px;
+  font-size: 14px;
+  color: #333;
+}
+
+.sample-radio-group {
+  display: inline-flex;
+  gap: 12px;
+
+  ::v-deep .el-radio {
+    width: 40px;
+    height: 40px;
+    margin-right: 0;
+    border-radius: 50% !important;
     padding: 0;
+    text-align: center;
+    line-height: 40px;
+
+    .el-radio__input {
+      display: none !important;
+    }
+
+    .el-radio__label {
+      padding: 0;
+    }
+
+    &.is-bordered {
+      border: 1px solid #dcdfe6;
+    }
+
+    &.is-checked {
+      border-color: #009dff;
+
+      .el-radio__label {
+        color: #009dff;
+      }
+    }
   }
 }
 
@@ -286,7 +402,11 @@ export default {
 }
 
 .el-row {
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 0;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 </style>
