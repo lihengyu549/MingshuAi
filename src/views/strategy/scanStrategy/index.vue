@@ -263,24 +263,6 @@ export default {
 };
 </script>
 <style scoped lang="scss">
-.app-container {
-  overflow-y: auto;
-
-  ::v-deep ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::v-deep ::-webkit-scrollbar-thumb {
-    background-color: #0003;
-    border-radius: 10px;
-    transition: all .2s ease-in-out;
-  }
-
-  ::v-deep ::-webkit-scrollbar-track {
-    border-radius: 10px;
-  }
-}
 
 .card {
   padding: 10px;
