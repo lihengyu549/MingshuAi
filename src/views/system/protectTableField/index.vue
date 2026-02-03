@@ -1282,6 +1282,7 @@ Authorization:Bearer ${this.Token}`
 
 .yuanDataClass /deep/ .el-form-item__label {
   width: 25%;
+  white-space: nowrap;
 }
 
 .yuanDataClass /deep/ .el-form-item__content {
