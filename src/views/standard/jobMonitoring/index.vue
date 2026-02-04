@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container job-monitoring-container" v-loading="Loading">
+  <div class="app-container" v-loading="Loading">
     <el-row :gutter="20">
       <!-- 左侧卡片：树形菜单 -->
       <el-col :span="5" :xs="24">
