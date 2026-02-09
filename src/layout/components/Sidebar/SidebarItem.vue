@@ -4,7 +4,7 @@
     <template v-if="item.meta && item.meta.type === 'category'">
       <div class="menu-category">
         <span class="category-title">{{ item.meta.title }}</span>
-        <i class="el-icon-arrow-down category-title" style="float: inline-end;"></i>
+        <i class="el-icon-arrow-down category-title"></i>
       </div>
       <div class="category-children">
         <sidebar-item v-for="(child, index) in item.children" :key="child.path + '-' + index" :is-nest="false"
@@ -16,9 +16,9 @@
       <!-- 普通路由处理 -->
       <template
         v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
-        <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path, onlyOneChild.query)">
+        <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
           <el-menu-item :index="resolvePath(onlyOneChild.path)"
-            :class="[{ 'submenu-title-noDropdown': !isNest }, { 'home-menu-item': onlyOneChild.meta.title === '首页' }]">
+            :class="[{ 'submenu-title-noDropdown': !isNest }, { 'home-menu-item': onlyOneChild.meta.title === '首页' }, { 'is-active': onlyOneChild.meta.title === '首页' }]">
             <item :icon="onlyOneChild.meta.icon || (item.meta && item.meta.icon)" :title="onlyOneChild.meta.title" />
           </el-menu-item>
         </app-link>
@@ -124,7 +124,20 @@ export default {
 
 .menu-category {
   padding: 20px 20px 8px 20px;
-  /* 增加上边距从12px到20px */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+  
+  &:hover {
+    .category-title {
+      color: #64748b;
+      font-weight: 600;
+    }
+
+  }
 }
 
 .menu-category:first-child {

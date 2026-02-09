@@ -102,9 +102,15 @@
       color: #3b82f6 !important;
     }
 
-    // 首页菜单项特殊样式 - 添加上下边距
-    .el-menu-item.home-menu-item {
-      // margin: 20px 0 0 0 !important;
+    // 首页菜单项特殊样式 - 始终保持active状态
+    .el-menu-item.home-menu-item.is-active {
+      background-color: #eff6ff !important;
+      color: #3b82f6 !important;
+      
+      &:hover {
+        background-color: #dbeafe !important;
+        color: #2563eb !important;
+      }
     }
 
     & .theme-dark .is-active>.el-submenu__title {

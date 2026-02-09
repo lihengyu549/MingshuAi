@@ -79,22 +79,21 @@ export default {
     width: 100%;
     display: flex !important;
     align-items: center;
+    justify-content: center;
 
     & .sidebar-logo {
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
       vertical-align: middle;
-      margin-right: 12px;
+      margin-right: 10px;
     }
 
     & .logo-text {
-      width: 100%;
-      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       justify-content: center;
-      margin-left: 12px;
+      margin-left: 0px;
     }
 
     & .logo-h1 {

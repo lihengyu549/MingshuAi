@@ -325,7 +325,8 @@ export default {
   width: calc(100% - 260px);
   height: 60px;
   background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e6e8ee;
+  border-left: 1px solid #e6e8ee;
   box-sizing: border-box;
   display: flex;
   align-items: center;
