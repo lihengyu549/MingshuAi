@@ -190,6 +190,7 @@ export default {
 <style scoped>
 .content {
   padding: 40px;
+  width: 100%;
 }
 
 .card {
