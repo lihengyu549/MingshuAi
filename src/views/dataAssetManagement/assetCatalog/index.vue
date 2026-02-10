@@ -205,7 +205,7 @@
     <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow"
       :destroy-on-close="true" direction="rtl" size="60%">
       <!-- 新增筛选区域 -->
-      <el-card shadow="never">
+      < shadow="never">
         <el-form class="drawer-form" :model="drawerQueryParams" ref="drawerQueryForm" size="small" :inline="true"
           label-width="80px">
           <el-form-item label="字段名称" prop="fieldName"> <!-- 添加prop -->
@@ -235,10 +235,10 @@
           </el-select>
         </el-form-item> -->
           <!-- <el-form-item> -->
-            <!-- <el-button icon="el-icon-refresh" size="small" @click="resetDrawerSearch">重置</el-button> -->
+          <!-- <el-button icon="el-icon-refresh" size="small" @click="resetDrawerSearch">重置</el-button> -->
           <!-- </el-form-item> -->
         </el-form>
-      </el-card>
+      </>
       <el-card class="drawer-table-card" shadow="never">
         <el-table :data="filteredDrawerData" ref="tableRef" :key="tableKey" class="tableBox" height="100%">
           <el-table-column label="字段名称" align="center" prop="fieldName" width="200" show-overflow-tooltip />
@@ -302,12 +302,7 @@
     <!-- 导出列配置弹窗 -->
     <el-dialog title="调整导出列" :visible.sync="exportColumnDialog.visible" width="760px"
       custom-class="export-column-dialog-wrapper" @close="cancelExport">
-      <div slot="title" class="dialog-header">
-        <div class="title-bar"></div>
-        <span class="title-text"><b>调整导出列</b></span>
-      </div>
-
-      <div v-loading="exportColumnDialog.loading" class="export-column-dialog">
+      <div v-loading="exportColumnDialog.loading">
         <div class="column-options">
           <div v-for="column in exportColumnDialog.allColumns" :key="column.value"
             :class="['column-btn', { active: exportColumnDialog.selectedColumns.includes(column.value) }]"
@@ -1436,7 +1431,8 @@ export default {
   }
 }
 
-.table-card, .drawer-table-card {
+.table-card,
+.drawer-table-card {
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -1451,6 +1447,7 @@ export default {
     box-sizing: border-box;
   }
 }
+
 .drawer-table-card {
   border-radius: 10px;
   display: flex;
@@ -1488,17 +1485,18 @@ export default {
     flex-direction: column;
     background-color: #f1f5f9;
 
-    > .el-card {
+    >.el-card {
       border-radius: 10px;
       margin-bottom: 20px;
       flex-shrink: 0;
     }
 
-    > .drawer-table-card {
+    >.drawer-table-card {
       flex: 1;
       min-height: 0;
       margin-bottom: 0;
-      > .el-card__body {
+
+      >.el-card__body {
         background-color: #fff;
       }
     }
@@ -1873,28 +1871,11 @@ export default {
 /* 导出列配置弹窗样式 */
 ::v-deep .export-column-dialog-wrapper {
   border-radius: 10px;
+  .el-dialog__header{
+    border-bottom: 1px solid #e6e6e6;
+  }
 }
 
-.export-column-dialog-wrapper .dialog-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.export-column-dialog-wrapper .dialog-header .title-bar {
-  width: 4px;
-  height: 16px;
-  background: #1890ff;
-  margin-right: 8px;
-}
-
-.export-column-dialog-wrapper .dialog-header .title-text {
-  font-size: 16px;
-  font-weight: 500;
-  color: #333;
-}
 
 .export-column-dialog-wrapper .column-options {
   display: flex;

@@ -549,9 +549,14 @@ input[aria-hidden=true] {
   width: 100%;
 }
 
+.custom-dialog {
+  .el-dialog {
+    border-radius: 10px;
+  }
 
-  {
-  margin-bottom: 0;
+  .el-dialog__header {
+    border-bottom: 1px solid #e6e6e6;
+  }
 }
 
 .importForm /deep/.el-form-item,
@@ -746,12 +751,12 @@ input[aria-hidden=true] {
     width: 100%;
     margin-bottom: 10px;
   }
-  
+
   .yuanDataClass /deep/ .el-form-item__label {
     width: auto;
     padding-right: 10px;
   }
-  
+
   .yuanDataClass /deep/ .el-form-item__content {
     width: 100%;
   }

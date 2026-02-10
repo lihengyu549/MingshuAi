@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-row :gutter="20">
       <!--部门数据-->
-      <el-col :span="5" :xs="24">
+      <!-- <el-col :span="5" :xs="24">
         <el-card class="left-card" shadow="never">
           <div class="head-container">
             <el-input v-model="deptName" placeholder="请输入部门名称" clearable size="small" prefix-icon="el-icon-search"
@@ -14,9 +14,9 @@
               @node-click="handleNodeClick" />
           </div>
         </el-card>
-      </el-col>
+      </el-col> -->
       <!--用户数据-->
-      <el-col :span="19" :xs="24">
+      <el-col :span="24" :xs="24">
         <el-card class="search-card" shadow="never">
           <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch"
             label-width="68px">
@@ -35,32 +35,33 @@
                   :value="dict.value" />
               </el-select>
             </el-form-item>
-            <el-form-item label="创建时间">
+            <!-- <el-form-item label="创建时间">
               <el-date-picker v-model="dateRange" style="width: 240px" value-format="yyyy-MM-dd" type="daterange"
-                range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" @change="handleQuery"></el-date-picker>
-            </el-form-item>
+                range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"
+                @change="handleQuery"></el-date-picker>
+            </el-form-item> -->
             <!-- <el-form-item>
               <el-button type="primary" plain icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
             </el-form-item> -->
           </el-form>
         </el-card>
         <div class="search-actions">
-          <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
+          <el-button type="primary" plain icon="el-icon-plus" @click="handleAdd"
             v-hasPermi="['system:user:add']">新增</el-button>
-          <el-button type="success" plain icon="el-icon-edit" size="mini" :disabled="single" @click="handleUpdate"
-            v-hasPermi="['system:user:edit']">修改</el-button>
-          <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
+          <!-- <el-button type="success" plain icon="el-icon-edit" :disabled="single" @click="handleUpdate"
+            v-hasPermi="['system:user:edit']">修改</el-button> -->
+          <el-button type="danger" plain icon="el-icon-delete" :disabled="multiple" @click="handleDelete"
             v-hasPermi="['system:user:remove']">删除</el-button>
-          <el-button type="info" plain icon="el-icon-upload2" size="mini" @click="handleImport"
+          <!-- <el-button type="info" plain icon="el-icon-upload2" @click="handleImport"
             v-hasPermi="['system:user:import']">导入</el-button>
-          <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport"
-            v-hasPermi="['system:user:export']">导出</el-button>
+          <el-button type="warning" plain icon="el-icon-download" @click="handleExport"
+            v-hasPermi="['system:user:export']">导出</el-button> -->
           <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar> -->
         </div>
         <el-card class="table-card" shadow="never">
           <el-table v-loading="loading" class="tableBox" :data="userList" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="50" align="center" />
-            <el-table-column label="用户编号" align="center" key="userId" prop="userId" v-if="columns[0].visible" />
+            <!-- <el-table-column label="用户编号" align="center" key="userId" prop="userId" v-if="columns[0].visible" /> -->
             <el-table-column label="用户名称" align="center" key="userName" prop="userName" v-if="columns[1].visible"
               :show-overflow-tooltip="true" />
             <el-table-column label="用户昵称" align="center" key="nickName" prop="nickName" v-if="columns[2].visible"
@@ -80,12 +81,12 @@
                 <span>{{ parseTime(scope.row.createTime) }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="操作" align="center" width="160" class-name="small-padding fixed-width">
+            <el-table-column label="操作" align="center" width="260" class-name="small-padding fixed-width">
               <template slot-scope="scope" v-if="scope.row.userId !== 1">
                 <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
                   v-hasPermi="['system:user:edit']">修改</el-button>
-                <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-                  v-hasPermi="['system:user:remove']">删除</el-button>
+                <el-button size="mini" type="text" class="text-danger" icon="el-icon-delete"
+                  @click="handleDelete(scope.row)" v-hasPermi="['system:user:remove']">删除</el-button>
                 <el-dropdown size="mini" @command="(command) => handleCommand(command, scope.row)"
                   v-hasPermi="['system:user:resetPwd', 'system:user:edit']">
                   <el-button size="mini" type="text" icon="el-icon-d-arrow-right">更多</el-button>
@@ -619,5 +620,13 @@ export default {
   border: none;
   border-radius: 0;
   border-bottom: 1px solid #e2e8f0;
+}
+
+.text-danger {
+  color: #F56C6C;
+}
+
+.text-danger:hover {
+  color: #f96c6c9a;
 }
 </style>

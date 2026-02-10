@@ -136,12 +136,8 @@
       </div>
     </el-dialog>
     <!-- 导出列配置弹窗 -->
-    <el-dialog :visible.sync="exportColumnDialog.visible" width="760px" append-to-body :close-on-click-modal="false"
+    <el-dialog title="调整导出列" :visible.sync="exportColumnDialog.visible" width="760px" append-to-body :close-on-click-modal="false"
       custom-class="export-column-dialog-wrapper" @close="cancelExport">
-      <div slot="title" class="dialog-header">
-        <div class="title-bar"></div>
-        <span class="title-text"><b>调整导出列</b></span>
-      </div>
 
       <div v-loading="exportColumnDialog.loading" class="export-column-dialog">
         <div class="column-options">
