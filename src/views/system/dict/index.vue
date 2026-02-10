@@ -17,15 +17,15 @@
               :value="dict.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="创建时间">
+        <!-- <el-form-item label="创建时间">
           <el-date-picker v-model="dateRange" style="width: 240px" value-format="yyyy-MM-dd" type="daterange"
             range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" @change="handleQuery"></el-date-picker>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
     </el-card>
     <div class="search-actions">
       <el-row :gutter="10" class="mb8">
-        <el-col :span="1.5">
+        <!-- <el-col :span="1.5">
           <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
             v-hasPermi="['system:dict:add']">新增</el-button>
         </el-col>
@@ -36,21 +36,21 @@
         <el-col :span="1.5">
           <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
             v-hasPermi="['system:dict:remove']">删除</el-button>
-        </el-col>
+        </el-col> -->
         <el-col :span="1.5">
-          <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport"
+          <el-button type="info" plain icon="el-icon-download" @click="handleExport"
             v-hasPermi="['system:dict:export']">导出</el-button>
         </el-col>
-        <el-col :span="1.5">
+        <!-- <el-col :span="1.5">
           <el-button type="danger" plain icon="el-icon-refresh" size="mini" @click="handleRefreshCache"
             v-hasPermi="['system:dict:remove']">刷新缓存</el-button>
-        </el-col>
+        </el-col> -->
       </el-row>
     </div>
     <el-card class="table-card" shadow="never">
       <el-table v-loading="loading" :data="typeList" class="tableBox" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="字典编号" align="center" prop="dictId" />
+        <!-- <el-table-column label="字典编号" align="center" prop="dictId" /> -->
         <el-table-column label="字典名称" align="center" prop="dictName" :show-overflow-tooltip="true" />
         <el-table-column label="字典类型" align="center" :show-overflow-tooltip="true">
           <template slot-scope="scope">
@@ -59,12 +59,12 @@
             </router-link>
           </template>
         </el-table-column>
-        <el-table-column label="状态" align="center" prop="status">
+        <el-table-column label="字典状态" align="center" prop="status">
           <template slot-scope="scope">
             <dict-tag :options="dict.type.sys_normal_disable" :value="scope.row.status" />
           </template>
         </el-table-column>
-        <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
+        <!-- <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true" /> -->
         <el-table-column label="创建时间" align="center" prop="createTime" width="180">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.createTime) }}</span>
@@ -74,7 +74,7 @@
           <template slot-scope="scope">
             <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
               v-hasPermi="['system:dict:edit']">修改</el-button>
-            <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
+            <el-button size="mini" type="text" class="text-danger" icon="el-icon-delete" @click="handleDelete(scope.row)"
               v-hasPermi="['system:dict:remove']">删除</el-button>
           </template>
         </el-table-column>
@@ -305,5 +305,13 @@ export default {
   border: none;
   border-radius: 0;
   border-bottom: 1px solid #e2e8f0;
+}
+
+.text-danger {
+  color: #F56C6C;
+}
+
+.text-danger:hover {
+  color: #f96c6c9a;
 }
 </style>

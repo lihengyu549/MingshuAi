@@ -24,24 +24,24 @@
               :value="dict.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="操作时间">
+        <!-- <el-form-item label="操作时间">
           <el-date-picker v-model="dateRange" style="width: 240px" value-format="yyyy-MM-dd" type="daterange"
             range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" @change="handleQuery"></el-date-picker>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
     </el-card>
     <div class="search-actions">
       <el-row :gutter="10" class="mb8">
-        <el-col :span="1.5">
+        <!-- <el-col :span="1.5">
           <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
             v-hasPermi="['system:operlog:remove']">删除</el-button>
         </el-col>
         <el-col :span="1.5">
           <el-button type="danger" plain icon="el-icon-delete" size="mini" @click="handleClean"
             v-hasPermi="['system:operlog:remove']">清空</el-button>
-        </el-col>
+        </el-col> -->
         <el-col :span="1.5">
-          <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport"
+          <el-button type="info" plain icon="el-icon-download" @click="handleExport"
             v-hasPermi="['system:operlog:export']">导出</el-button>
         </el-col>
       </el-row>
@@ -50,7 +50,13 @@
       <el-table ref="tables" v-loading="loading" class="tableBox" :data="list" @selection-change="handleSelectionChange"
         :default-sort="defaultSort" @sort-change="handleSortChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="日志编号" align="center" prop="operId" />
+        <el-table-column label="操作日期" align="center" prop="operTime" sortable="custom"
+          :sort-orders="['descending', 'ascending']" width="180">
+          <template slot-scope="scope">
+            <span>{{ parseTime(scope.row.operTime) }}</span>
+          </template>
+        </el-table-column>
+        <!-- <el-table-column label="日志编号" align="center" prop="operId" /> -->
         <el-table-column label="系统模块" align="center" prop="title" />
         <el-table-column label="操作类型" align="center" prop="businessType">
           <template slot-scope="scope">
@@ -66,18 +72,12 @@
             <dict-tag :options="dict.type.sys_common_status" :value="scope.row.status" />
           </template>
         </el-table-column>
-        <el-table-column label="操作日期" align="center" prop="operTime" sortable="custom"
-          :sort-orders="['descending', 'ascending']" width="180">
-          <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.operTime) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+        <!-- <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
           <template slot-scope="scope">
             <el-button size="mini" type="text" icon="el-icon-view" @click="handleView(scope.row, scope.index)"
               v-hasPermi="['system:operlog:query']">详细</el-button>
           </template>
-        </el-table-column>
+        </el-table-column> -->
       </el-table>
 
       <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"

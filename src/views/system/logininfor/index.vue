@@ -2,30 +2,30 @@
   <div class="app-container">
     <el-card class="search-card" shadow="never">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-        <el-form-item label="登录地址" prop="ipaddr">
+        <!-- <el-form-item label="登录地址" prop="ipaddr">
           <el-input v-model="queryParams.ipaddr" placeholder="请输入登录地址" clearable style="width: 240px;"
             @change="handleQuery" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="用户名称" prop="userName">
           <el-input v-model="queryParams.userName" placeholder="请输入用户名称" clearable style="width: 240px;"
             @change="handleQuery" />
         </el-form-item>
-        <el-form-item label="状态" prop="status">
+        <el-form-item label="登录状态" prop="status">
           <el-select v-model="queryParams.status" placeholder="登录状态" clearable style="width: 240px"
             @change="handleQuery">
             <el-option v-for="dict in dict.type.sys_common_status" :key="dict.value" :label="dict.label"
               :value="dict.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="登录时间">
+        <!-- <el-form-item label="登录时间">
           <el-date-picker v-model="dateRange" style="width: 240px" value-format="yyyy-MM-dd" type="daterange"
             range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" @change="handleQuery"></el-date-picker>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
     </el-card>
     <div class="search-actions">
       <el-row :gutter="10" class="mb8">
-        <el-col :span="1.5">
+        <!-- <el-col :span="1.5">
           <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
             v-hasPermi="['system:logininfor:remove']">删除</el-button>
         </el-col>
@@ -36,9 +36,9 @@
         <el-col :span="1.5">
           <el-button type="primary" plain icon="el-icon-unlock" size="mini" :disabled="single" @click="handleUnlock"
             v-hasPermi="['system:logininfor:unlock']">解锁</el-button>
-        </el-col>
+        </el-col> -->
         <el-col :span="1.5">
-          <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport"
+          <el-button type="info" plain icon="el-icon-download" @click="handleExport"
             v-hasPermi="['system:logininfor:export']">导出</el-button>
         </el-col>
       </el-row>
@@ -47,18 +47,18 @@
       <el-table ref="tables" v-loading="loading" class="tableBox" :data="list" @selection-change="handleSelectionChange"
         :default-sort="defaultSort" @sort-change="handleSortChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="访问编号" align="center" prop="infoId" />
-        <el-table-column label="用户名称" align="center" prop="userName" :show-overflow-tooltip="true" sortable="custom"
-          :sort-orders="['descending', 'ascending']" />
-        <el-table-column label="地址" align="center" prop="ipaddr" width="130" :show-overflow-tooltip="true" />
+        <!-- <el-table-column label="访问编号" align="center" prop="infoId" /> -->
+        <el-table-column label="用户名称" align="center" prop="userName" width="300" :show-overflow-tooltip="true"
+          sortable="custom" :sort-orders="['descending', 'ascending']" />
+        <el-table-column label="IP地址" align="center" prop="ipaddr" width="260" :show-overflow-tooltip="true" />
         <el-table-column label="登录状态" align="center" prop="status">
           <template slot-scope="scope">
             <dict-tag :options="dict.type.sys_common_status" :value="scope.row.status" />
           </template>
         </el-table-column>
-        <el-table-column label="描述" align="center" prop="msg" />
+        <!-- <el-table-column label="描述" align="center" prop="msg" /> -->
         <el-table-column label="访问时间" align="center" prop="accessTime" sortable="custom"
-          :sort-orders="['descending', 'ascending']" width="180">
+          :sort-orders="['descending', 'ascending']">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.accessTime) }}</span>
           </template>
