@@ -1871,7 +1871,8 @@ export default {
 /* 导出列配置弹窗样式 */
 ::v-deep .export-column-dialog-wrapper {
   border-radius: 10px;
-  .el-dialog__header{
+
+  .el-dialog__header {
     border-bottom: 1px solid #e6e6e6;
   }
 }
@@ -1944,6 +1945,8 @@ export default {
   .el-dialog__header {
     padding: 20px 24px;
     border-bottom: 1px solid #e8e8e8;
+    display: flex;
+    align-items: center;
   }
 
   .el-dialog__body {
