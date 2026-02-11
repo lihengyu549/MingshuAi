@@ -1270,58 +1270,56 @@ export default {
     async submitForm() {
       if (this.submitLoading) return;
       this.submitLoading = true;
-      this.$refs["form"].validate(async valid => {
-        let data = JSON.parse(JSON.stringify(this.form))
-        delete data.projectName
-        if (!Array.isArray(data.targetDatabase)) {
-          let str = data.targetDatabase
-          data.targetDatabase = str.trim() // 去除字符串首尾的空白字符
-            .replace(/^"|"$/g, '') // 移除首尾的引号
-            .split(',') // 按逗号分割字符串
-            .filter(Boolean); // 过滤掉空字符串
-        }
-        data.targetDatabase = JSON.stringify(data.targetDatabase)
-        data.connectionType = this.connectionType
-        data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
-        console.log(data);
-        if (!this.editIsFlag && !data.tables) {
-          this.$message({ message: '请选择扫描内容', type: 'warning' })
-          this.submitLoading = false;
-          return
-        } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
-          this.$message({ message: '请选择扫描内容', type: 'warning' })
-          this.submitLoading = false;
-          return
-        }
-        if (valid) {
-          if (!await this.getNameTestingFn()) {
+      try {
+        await this.$refs["form"].validate(async valid => {
+          let data = JSON.parse(JSON.stringify(this.form))
+          delete data.projectName
+          if (!Array.isArray(data.targetDatabase)) {
+            let str = data.targetDatabase
+            data.targetDatabase = str.trim() // 去除字符串首尾的空白字符
+              .replace(/^"|"$/g, '') // 移除首尾的引号
+              .split(',') // 按逗号分割字符串
+              .filter(Boolean); // 过滤掉空字符串
+          }
+          data.targetDatabase = JSON.stringify(data.targetDatabase)
+          data.connectionType = this.connectionType
+          data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
+          console.log(data);
+          if (!this.editIsFlag && !data.tables) {
+            this.$message({ message: '请选择扫描内容', type: 'warning' })
+            this.submitLoading = false;
+            return
+          } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
+            this.$message({ message: '请选择扫描内容', type: 'warning' })
             this.submitLoading = false;
             return
           }
-          if (this.form.id != null) {
-            data.id = this.form.id
-            updateDatabaseAndTables(data).then(response => {
+          if (valid) {
+            if (!await this.getNameTestingFn()) {
+              this.submitLoading = false;
+              return
+            }
+            if (this.form.id != null) {
+              data.id = this.form.id
+              await updateDatabaseAndTables(data)
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
-              this.submitLoading = false;
-            }).catch(() => {
-              this.submitLoading = false;
-            });
-          } else {
-            saveDatabaseAndTables(data).then(response => {
+            } else {
+              await saveDatabaseAndTables(data)
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
-              this.submitLoading = false;
-            }).catch(() => {
-              this.submitLoading = false;
-            });
+            }
+          } else {
+            this.submitLoading = false;
           }
-        } else {
-          this.submitLoading = false;
-        }
-      });
+        });
+      } catch (error) {
+        console.error('提交表单出错:', error);
+      } finally {
+        this.submitLoading = false;
+      }
     },
     /** 删除按钮操作 */
     deleteClick(ids) {
