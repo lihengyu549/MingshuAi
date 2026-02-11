@@ -279,7 +279,7 @@
               </div>
             </div>
 
-            <!-- 文件列表分页 -->
+            <!-- 文件列表��页 -->
             <pagination v-show="fileTotal > 0" :total="fileTotal" :page.sync="fileQueryParams.pageNum"
               :limit.sync="fileQueryParams.pageSize" @pagination="handleFilePagination" class="file-pagination" />
           </div>
@@ -514,7 +514,6 @@ export default {
       drawerTitle: '',
       drawerData: [],
       overflowStatus: {}, // 用于存储每个盒子的溢出状态
-      dirtyDataEditMsg: '',
       filterText: '',// 过滤条件tree
       Loading: false,// 全局loading
       loading: false,
@@ -567,8 +566,6 @@ export default {
       },
       tableKey: 0,
       editMsg: '',
-      scrollTop: '',
-      scrollLeft: '',
 
       // 新增：树复选框相关状态
       isTreeAllChecked: false, // 全选框的勾选状态（双向绑定）
@@ -690,11 +687,10 @@ export default {
       }
       return 'el-icon-d-caret';
     },
-    // 分页后的文件列表
+    // 直接返回文件列表，不再在前端进行切片
+    // 因为接口已经返回了分页后的数据
     paginatedFileList() {
-      const start = (this.fileQueryParams.pageNum - 1) * this.fileQueryParams.pageSize;
-      const end = start + this.fileQueryParams.pageSize;
-      return this.fileList.slice(start, end);
+      return this.fileList;
     }
   },
   watch: {
@@ -837,7 +833,6 @@ export default {
         pageNum: this.fileQueryParams.pageNum,
         pageSize: this.fileQueryParams.pageSize,
       };
-
       getProjectFileList(response).then(res => {
         if (res.code === 200) {
           this.fileList = res.data.fileList?.records || [];
@@ -880,20 +875,10 @@ export default {
 
 
     /**
-     * 新增:全选框点击事件(仅用于导出,不影响右侧列表)
-     * @param {Boolean} checked - 全选框的新状态
+     * 全选框点击事件(通过watch自动处理勾选状态)
      */
     handleTreeAllCheck(checked) {
       this.isTreeAllChecked = checked;
-      if (checked) {
-        const allChildren = this.collectAllChildren(this.categoryList);
-        this.selectedTreeNodeIds = allChildren.map(item => item.id);
-        this.$refs.tree.setCheckedKeys(this.selectedTreeNodeIds);
-      } else {
-        this.selectedTreeNodeIds = [];
-        this.$refs.tree.setCheckedKeys([]);
-      }
-      // 全选状态变更后调用getList方法
     },
     /**
      * 树节点复选框变更事件(仅用于导出,不影响右侧列表)
@@ -1115,7 +1100,7 @@ export default {
         // 构造请求参数
         const allColumns = this.exportColumnDialog.allColumns.map(item => item.value);
         const unselectedColumns = allColumns.filter(value => !this.exportColumnDialog.selectedColumns.includes(value));
-        
+
         const params = {
           tableName: this.queryParams.tableName,
           paddingStatus: this.queryParams.paddingStatus,
@@ -1332,54 +1317,23 @@ export default {
       }
     },
     async drawerEditBlurFn(row) {
-      let params = {
+      const params = {
         craftRemark: this.editMsg || row.aiFieldRemark,
         dirtyData: row.dirtyDataEditMsg || row.dirtyData,
         fieldId: row.fieldId,
       }
-      await updateFieldListByFieldId(params).then(res => {
-        this.$message({
-          type: 'success',
-          message: '修改成功!'
-        });
-        row.drawerEdit = false
-        row.dirtyDataEditMsg = ''
-        this.editMsg = ''
-        this.tableKey += 1
-      })
-      this.fieldInformationFn(this.filedRowData)
-      return
-      // this.$confirm('是否保存编辑数据?', '提示', {
-      //   confirmButtonText: '确定',
-      //   cancelButtonText: '取消',
-      //   type: 'warning'
-      // }).then(async () => {
-      //   row.aiFieldRemark = this.editMsg
-      //   let params = {
-      //     craftRemark: this.editMsg,
-      //     dirtyData: row.dirtyData,
-      //     fieldId: row.fieldId,
-      //   }
-      //   await updateFieldListByFieldId(params).then(res => {
-      //     this.$message({
-      //       type: 'success',
-      //       message: '修改成功!'
-      //     });
-      //     row.drawerEdit = false
-      //     this.tableKey = 0
-      //   })
-      //   this.$nextTick(() => {
-      //     row.drawerEdit = false
-      //     this.tableKey = 0
-      //   })
-      // }).catch(() => {
-      //   this.$message({
-      //     type: 'info',
-      //     message: '已取消'
-      //   });
-      //   row.drawerEdit = false
-      //   this.tableKey += 1
-      // });
+
+      try {
+        await updateFieldListByFieldId(params);
+        this.$message.success('修改成功!');
+        row.drawerEdit = false;
+        row.dirtyDataEditMsg = '';
+        this.editMsg = '';
+        this.tableKey += 1;
+        this.fieldInformationFn(this.filedRowData);
+      } catch (error) {
+        this.$message.error('修改失败');
+      }
     },
     // 字段信息
     async fieldInformationFn(row) {
@@ -1492,30 +1446,6 @@ export default {
       if (!value) return true;
       return data.label.indexOf(value) !== -1;
     },
-    // 左侧树点击事件
-    // handleNodeClick(data) {
-    //   console.log(data);
-    //   if (data.parentId) {
-    //     this.databaseName = data.label
-    //     this.treeID = data.parentId;
-    //   } else {
-    //     this.treeID = data.id;
-    //     this.databaseName = ''
-    //   }
-    //   this.queryParams.tableName = ''
-    //   this.queryParams.paddingStatus = ''
-    //   this.queryParams.featureExtractionStatus = ''
-    //   this.isChildrenNode = data.nodeLayerIndex
-    //   this.handleQuery();
-    //   this.getSelectTableNamesFn()
-    // },
-    // 定时器,防抖使用
-    inputSearch(data) {
-      clearTimeout(this.debounceTimeout);
-      this.debounceTimeout = setTimeout(() => {
-        this.handleQuery()
-      }, 500); // 设置防抖的时间间隔为300毫秒
-    },
     selectProjectIdChange(val) {
       console.log('val', val);
       console.log('queryParams', this.queryParams);
@@ -1544,9 +1474,12 @@ export default {
             this.isTreeAllChecked = true;
 
             // 示例:获取所有children并打印(可根据需要调整调用时机)
-            const allChildren = this.collectAllChildren(this.categoryList);
-            console.log('所有children节点数组：', allChildren);
-            this.getList(allChildren);
+            if (this.categoryList[0].type == '0') {
+              const allChildren = this.collectAllChildren([this.categoryList[0]]);
+              this.getList(allChildren);
+            }else{
+              this.loadFileListData(this.categoryList[0]);
+            }
           });
         }
         this.treeLoading = false;
@@ -1667,7 +1600,7 @@ export default {
   }
 };
 </script>
-<style>
+<style scoped>
 .mian_box::-webkit-scrollbar {
   width: 6px;
   height: 6px;
