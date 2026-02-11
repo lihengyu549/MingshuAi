@@ -1,110 +1,131 @@
 <template>
   <div class="app-container">
-    <el-card class="card-box" v-loading="cardLoading">
-      <div>
-        <h4 class="title">
-          <div class="blue-circle"></div><span>LOGO设计</span>
-        </h4>
-        <div class="contBox">
-          <el-form :model="formData" ref="formData" class="formDataClass" size="small" label-width="auto">
-            <el-form-item label="产品标题" prop="appTitle">
-              <el-input v-model="formData.appTitle" placeholder="请输入产品标题" clearable />
-            </el-form-item>
-            <el-form-item label="产品LOGO" prop="appFacvion">
+    <!-- LOGO设计 -->
+    <el-card class="module-card" shadow="never">
+      <template slot="header">
+        <div class="module-title">
+          <i class="el-icon-picture" style="color: #3B82F6; font-size: 20px;"></i>
+          <span>LOGO设计</span>
+        </div>
+      </template>
+      <div class="contBox">
+        <el-form :model="formData" ref="formData" class="formDataClass" size="small" label-width="120px">
+          <el-form-item label="产品名称" prop="appTitle">
+            <el-input v-model="formData.appTitle" placeholder="数据安全预警管理中心" clearable />
+          </el-form-item>
+          <el-form-item label="产品LOGO" prop="appFacvion">
+            <div class="upload-area">
+              <div class="thumbnail-wrapper" v-if="fileList.length > 0 && fileList[0].url">
+                <img :src="fileList[0].url" class="thumbnail" />
+              </div>
               <el-upload class="upload-demo" action="" :on-remove="handleRemove" :file-list="fileList" ref="uploadRef"
-                list-type="picture" :multiple="false" :limit="1" :on-change="handleFileChange"
-                :on-exceed="handleFileExceed" accept=".jpg,.jpeg,.png,.JPG,.JPEG,.PNG,.ico" :auto-upload="false" :http-request="submit">
-                <el-button size="small" type="primary" plain>点击上传</el-button>
+                :show-file-list="false" :multiple="false" :limit="1" :on-change="handleFileChange"
+                :on-exceed="handleFileExceed" accept=".jpg,.jpeg,.png,.JPG,.JPEG,.PNG,.ico" :auto-upload="false"
+                :http-request="submit">
+                <el-button size="small" type="info" icon="el-icon-upload2">点击上传</el-button>
               </el-upload>
-            </el-form-item>
-          </el-form>
-        </div>
-      </div>
-      <div>
-        <h4 class="title">
-          <div class="blue-circle"></div><span>主题设计</span>
-        </h4>
-        <div class="contBox">
-          <el-form :model="colorForm" ref="colorForm" class="formDataClass" size="small" label-width="auto">
-            <el-form-item label="颜色选择" prop="color">
-              <el-color-picker v-model="colorForm.color" @change="changeColor"  show-alpha :predefine="predefineColors">
-              </el-color-picker>
-            </el-form-item>
-          </el-form>
-        </div>
-      </div>
-      <div>
-        <h4 class="title">
-          <div class="blue-circle"></div><span>技术支持</span>
-        </h4>
-        <div class="contBox">
-          <el-form :model="technologyData" ref="technologyData" class="formDataClass" size="small" label-width="auto">
-            <el-form-item label="邮箱地址" prop="email">
-              <el-input v-model="technologyData.email" placeholder="请输入邮箱地址" clearable />
-            </el-form-item>
-            <el-form-item label="联系电话" prop="phone">
-              <el-input v-model="technologyData.phone" placeholder="请输入联系电话" clearable />
-            </el-form-item>
-          </el-form>
-        </div>
-      </div>
-      <div class="foot_btn">
-        <el-button type="primary" plain @click="submit">确 定</el-button>
+            </div>
+          </el-form-item>
+          <el-form-item label="图标预览" prop="preview">
+            <div class="preview-area">
+              <div :class="['preview-item', themeMode === 'light' ? 'active' : '']" @click="themeMode = 'light'">
+                <div class="preview-label">浅色模式</div>
+                <div class="preview-box light-mode">
+                  <i class="el-icon-user-solid" style="font-size: 24px; color: #3B82F6;"></i>
+                </div>
+              </div>
+              <div :class="['preview-item', themeMode === 'dark' ? 'active' : '']" @click="themeMode = 'dark'">
+                <div class="preview-label">深色模式</div>
+                <div class="preview-box dark-mode">
+                  <i class="el-icon-user-solid" style="font-size: 24px; color: #ffffff;"></i>
+                </div>
+              </div>
+            </div>
+          </el-form-item>
+        </el-form>
       </div>
     </el-card>
+
+    <!-- 主题设计 -->
+    <el-card class="module-card" shadow="never">
+      <template slot="header">
+        <div class="module-title">
+          <i class="el-icon-brush" style="color: #3B82F6; font-size: 20px;"></i>
+          <span>主题设计</span>
+        </div>
+      </template>
+      <div class="contBox">
+        <el-form :model="colorForm" ref="colorForm" class="formDataClass" size="small" label-width="120px">
+          <el-form-item label="主题色" prop="color">
+            <div class="color-picker-area">
+              <div v-for="(color, index) in themeColors" :key="index"
+                :class="['color-circle', colorForm.color === color ? 'selected' : '']"
+                :style="{ backgroundColor: color }" @click="selectColor(color)"></div>
+            </div>
+          </el-form-item>
+        </el-form>
+      </div>
+    </el-card>
+
+    <!-- 技术支持 -->
+    <el-card class="module-card" shadow="never">
+      <template slot="header">
+        <div class="module-title">
+          <i class="el-icon-phone" style="color: #3B82F6; font-size: 20px;"></i>
+          <span>技术支持</span>
+        </div>
+      </template>
+      <div class="contBox">
+        <el-form :model="technologyData" ref="technologyData" class="formDataClass" size="small" label-width="120px">
+          <el-form-item label="技术支持邮箱" prop="email">
+            <el-input v-model="technologyData.email" placeholder="jzhiming@qq.com" clearable />
+          </el-form-item>
+          <el-form-item label="技术支持电话" prop="phone">
+            <el-input v-model="technologyData.phone" placeholder="18310408043" clearable />
+          </el-form-item>
+        </el-form>
+      </div>
+    </el-card>
+
+    <!-- 底部按钮 -->
+    <div class="foot_btn">
+      <el-button type="primary" plain @click="submit">保存配置</el-button>
+    </div>
   </div>
 </template>
 
 <script>
 import { updateInterfaceDesign } from "@/api/system/menu";
 import store from '@/store'
+
 export default {
   name: "sysDesign",
-  // dicts: ['sys_normal_disable'],
   data() {
     return {
       cardLoading: false,
       formData: {
-        appTitle: '',
+        appTitle: '数据安全预警管理中心',
       },
       colorForm: {
-        color: ''
+        color: '#3B82F6'
       },
-      technologyData:{
-        email:'',
-        phone:'',
+      technologyData: {
+        email: 'jzhiming@qq.com',
+        phone: '18310408043',
       },
-      fileList: [
-        // { name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100' },
-      ],
-      color: 'rgba(255, 69, 0, 0.68)',
-      predefineColors: [
-        '#ff4500',
-        '#ff8c00',
-        '#ffd700',
-        '#90ee90',
-        '#00ced1',
-        '#1e90ff',
-        '#c71585',
-        'rgba(255, 69, 0, 0.68)',
-        'rgb(255, 120, 0)',
-        'hsv(51, 100, 98)',
-        'hsva(120, 40, 94, 0.5)',
-        'hsl(181, 100%, 37%)',
-        'hsla(209, 100%, 56%, 0.73)',
-        '#c7158577'
-      ]
+      fileList: [],
+      themeMode: 'light',
+      themeColors: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#6B7280']
     };
   },
   created() {
-    if(this.$store.state.user.projectData.id) {
+    if (this.$store.state.user.projectData.id) {
       this.formData.appTitle = this.$store.state.user.projectData.projectName
-      this.fileList = [{name:this.$store.state.user.projectData.imgName || '项目图标',url:this.$store.state.user.projectData.img}]
+      this.fileList = [{ name: this.$store.state.user.projectData.imgName || '项目图标', url: this.$store.state.user.projectData.img }]
       this.colorForm.color = this.$store.state.user.projectData.themeColor
       this.technologyData.email = this.$store.state.user.projectData.email
       this.technologyData.phone = this.$store.state.user.projectData.phone
     }
-
   },
   methods: {
     handleRemove(file, fileList) {
@@ -112,100 +133,203 @@ export default {
     submit() {
       store.dispatch('settings/setBgcColor', 'red')
       const formData = new FormData();
-      formData.append('file', this.fileList.length?this.fileList[0].raw : null);
-      formData.append('file', this.fileList.length?this.fileList[0].name : '项目图标');
+      formData.append('file', this.fileList.length ? this.fileList[0].raw : null);
+      formData.append('file', this.fileList.length ? this.fileList[0].name : '项目图标');
       formData.append('id', 1);
       formData.append('projectName', this.formData.appTitle);
       formData.append('themeColor', this.colorForm.color);
       formData.append('email', this.technologyData.email);
       formData.append('phone', this.technologyData.phone);
-      updateInterfaceDesign(formData).then(res=>{
-        if(res.code === 200){
+      updateInterfaceDesign(formData).then(res => {
+        if (res.code === 200) {
           this.$modal.msgSuccess(res.msg);
         }
       })
     },
-
     handleFileExceed(files, fileList) {
       this.$refs.uploadRef.clearFiles();
       this.$nextTick(() => {
-        this.$refs.uploadRef.handleStart(files[0]); // 开始上传新文件
+        this.$refs.uploadRef.handleStart(files[0]);
       });
     },
     handleFileChange(file, fileList) {
       this.fileList = fileList;
     },
-    changeColor(val){
-      if(val == null) {
-        this.$message.warning('颜色不可以为透明')
-        this.colorForm.color = 'rgb(0, 84, 217)'
-        return
-      }      
+    selectColor(color) {
+      this.colorForm.color = color;
     }
   }
 };
 </script>
+
 <style scoped lang="scss">
-.app-container {
-  overflow-y: auto;
-
-  ::v-deep ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::v-deep ::-webkit-scrollbar-thumb {
-    background-color: #0003;
-    border-radius: 10px;
-    transition: all .2s ease-in-out;
-  }
-
-  ::v-deep ::-webkit-scrollbar-track {
-    border-radius: 10px;
-  }
-}
-
-
 .title {
   display: flex;
   justify-content: flex-start;
   align-items: center;
   margin: 0;
-  font-size: 18px;
-  padding: 20px 15px;
-  background-color: #ebebebc2;
-}
+  font-size: 16px;
+  font-weight: 600;
+  padding: 16px 24px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e5e7eb;
 
-.blue-circle {
-  // width: 30px;
-  // height: 30px;
-  // background-color: rgb(19, 175, 247);
-  // border-radius: 50%;
-  // margin: 0 10px 0 20px;
+  span {
+    margin-left: 10px;
+  }
 }
 
 .contBox {
-  padding: 40px 20px;
+  padding: 32px 24px;
 }
 
 .card-box {
-  height: 810px;
-  overflow-y: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   position: relative;
-  padding: 0;
+  min-height: 800px;
 
   ::v-deep .el-card__body {
     padding: 0;
   }
 }
 
-.foot_btn {
-  position: absolute;
-  right: 37px;
-  bottom: 24px;
+.module-card {
+  margin-bottom: 20px;
+  border-radius: 10px;
+
+  &:last-of-type {
+    margin-bottom: 80px;
+  }
+}
+
+.module-title {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 10px;
+
+  i {
+    margin-right: 8px;
+  }
+
+  span {
+    font-weight: 600;
+  }
 }
 
 .formDataClass {
-  width: 40%;
+  max-width: 600px;
+}
+
+::v-deep .formDataClass .el-form-item__label {
+  text-align: left;
+  padding-right: 12px;
+}
+
+.upload-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.thumbnail-wrapper {
+  width: 50px;
+  height: 50px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fafafa;
+}
+
+.thumbnail {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.preview-area {
+  display: flex;
+  gap: 16px;
+}
+
+.preview-item {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.3s;
+  background: white;
+
+  &:hover {
+    border-color: #3B82F6;
+  }
+
+  &.active {
+    border-color: #3B82F6;
+    background-color: #eff6ff;
+  }
+}
+
+.preview-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.preview-box {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+
+  &.light-mode {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+  }
+
+  &.dark-mode {
+    background-color: #1f2937;
+  }
+}
+
+.color-picker-area {
+  display: flex;
+  gap: 12px;
+}
+
+.color-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &.selected {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 2px white, 0 0 0 4px #3B82F6;
+  }
+}
+
+.foot_btn {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
 }
 </style>
