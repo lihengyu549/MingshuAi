@@ -43,9 +43,9 @@
         <div class="card-header">
           <svg-icon icon-class="dunpai-2" class="card-icon"></svg-icon>
           <div class="card-title-area">
-            <el-tooltip effect="dark" :content="item.categoryName" placement="top-start">
-              <h3 class="card-title">{{ item.categoryName }}</h3>
-            </el-tooltip>
+            <!-- <el-tooltip effect="dark" :content="item.categoryName" placement="top-start"> -->
+            <h3 class="card-title">{{ item.categoryName }}</h3>
+            <!-- </el-tooltip> -->
             <div class="card-tags">
               <el-tag size="small" type="primary">{{ item.standardTypeName }}</el-tag>
               <el-tag size="small" type="info">现行</el-tag>

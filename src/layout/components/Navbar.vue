@@ -344,6 +344,7 @@ export default {
       align-items: center;
       height: 100%;
       padding: 0 15px;
+      margin-right: 5px;
       color: #738192;
       font-size: 14px;
       text-decoration: none;
