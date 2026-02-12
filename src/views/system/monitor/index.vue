@@ -441,7 +441,7 @@ export default {
   font-size: 14px;
   position: absolute;
   top: 7px;
-  background-color: #409eff;
+  background-color: #3b82f6;
   padding: 4px 8px 0px 8px;
   border-radius: 5px;
 }
@@ -491,7 +491,7 @@ export default {
 }
 
 /* .footer:focus {
-  border: 1px solid #409eff;
+  border: 1px solid #3b82f6;
 } */
 
 .footer {

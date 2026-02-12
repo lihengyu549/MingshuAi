@@ -72,7 +72,7 @@
       </el-table-column>
       <el-table-column label="用户状态" align="center" prop="">
         <template slot-scope="scope">
-          <el-switch v-model="scope.row.userStatus" @change="handleSwitchChange(scope.row)" active-color="#1890ff"
+          <el-switch v-model="scope.row.userStatus" @change="handleSwitchChange(scope.row)" active-color="#3b82f6"
             inactive-color="#999">
           </el-switch>
         </template>

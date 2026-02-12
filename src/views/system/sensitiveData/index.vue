@@ -732,7 +732,7 @@ export default {
 }
 
 .view-details-btn {
-    color: #409EFF;
+    color: #3b82f6;
     padding: 5px 0;
 }
 
@@ -884,7 +884,7 @@ export default {
     background-color: #e8f4fd;
     padding: 4px 8px;
     border-radius: 3px;
-    color: #409EFF;
+    color: #3b82f6;
     font-size: 12px;
 }
 

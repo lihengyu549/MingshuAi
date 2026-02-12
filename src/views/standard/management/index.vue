@@ -738,7 +738,7 @@ input[aria-hidden=true] {
 
 .card-actions .btn-primary:hover {
   background-color: #ecf5ff;
-  color: #409eff;
+  color: #3b82f6;
 }
 
 .management-container {

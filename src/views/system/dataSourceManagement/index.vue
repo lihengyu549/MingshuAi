@@ -81,7 +81,7 @@
       </el-table-column>
       <el-table-column label="运行状态" align="center" prop="">
         <template slot-scope="scope">
-          <el-switch v-model="scope.row.proxyStatus" @change="handleSwitchChange(scope.row)" active-color="#1890ff"
+          <el-switch v-model="scope.row.proxyStatus" @change="handleSwitchChange(scope.row)" active-color="#3b82f6"
             inactive-color="#999">
           </el-switch>
         </template>

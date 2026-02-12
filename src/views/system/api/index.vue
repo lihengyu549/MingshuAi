@@ -264,7 +264,7 @@
           </el-table-column>
           <el-table-column prop="securityRule" label="操作">
             <template slot-scope="scope">
-              <a style="color: #1890ff;" @click="sampleValue(scope.row)"> 示例值</a>
+              <a style="color: #3b82f6;" @click="sampleValue(scope.row)"> 示例值</a>
             </template>
 
           </el-table-column>
@@ -946,7 +946,7 @@ export default {
   margin: 5px;
   height: 30px;
   line-height: 30px;
-  color: #1890ff;
+  color: #3b82f6;
   background-color: #e8f4ff;
   /* border-color: #d1e9ff; */
 /* border: 1px solid #d1e9ff;
@@ -1139,7 +1139,7 @@ export default {
   display: inline-block;
   height: 30px;
   line-height: 28px;
-  color: #1890ff;
+  color: #3b82f6;
   background-color: #e8f4ff;
   /* border-color: #d1e9ff; */
   border: 1px solid #d1e9ff;

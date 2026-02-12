@@ -147,14 +147,14 @@ export default {
       return `
       <style>
         .form-section { margin-bottom: 24px; padding: 16px; border-radius: 4px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .form-section-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px; padding-left: 8px; border-left: 3px solid #409eff; }
+        .form-section-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px; padding-left: 8px; border-left: 3px solid #3b82f6; }
         .form-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
         .form-table th, .form-table td { border: 1px solid #e0e0e0; padding: 12px 16px; text-align: left; }
         .form-table th { background-color: #f5f7fa; font-weight: 500; width: 20%; }
         .form-table td { width: 80%; }
         .sub-table { margin-left: 20px; margin-top: 8px; width: calc(100% - 20px); }
         .tag { display: inline-block; padding: 2px 8px; margin-right: 8px; border-radius: 4px; font-size: 12px; }
-        .tag-primary { background: #ecf5ff; color: #409eff; }
+        .tag-primary { background: #ecf5ff; color: #3b82f6; }
         .list-item { margin-bottom: 8px; padding: 8px; border: 1px solid #f0f0f0; border-radius: 4px; }
         .checkbox-group { display: flex; flex-wrap: wrap; gap: 16px; }
         .checkbox-item { display: inline-flex; align-items: center; }
@@ -516,7 +516,7 @@ ul li.odd {
   color: #fff;
   width: 25px;
   height: 25px;
-  background: #1890ff;
+  background: #3b82f6;
   clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
   transition: all 0.3s ease;
   line-height: 25px;

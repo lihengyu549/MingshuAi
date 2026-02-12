@@ -74,7 +74,7 @@
                         已选
                         <span class="right-panel-text">{{ selectedDisplayText }}</span>
                     </span>
-                    <el-button style="padding: 3px 0;color: #409EFF;" type="text" @click="clearSelection">
+                    <el-button style="padding: 3px 0;color: #3b82f6;" type="text" @click="clearSelection">
                         清空
                     </el-button>
                 </div>
@@ -700,7 +700,7 @@ li {
 }
 
 .database-name-active {
-    color: #409EFF;
+    color: #3b82f6;
     font-weight: 500;
 }
 
@@ -709,7 +709,7 @@ li {
 }
 
 .database-name:hover {
-    color: #409EFF;
+    color: #3b82f6;
 }
 
 .left-panel /deep/.el-card__body {

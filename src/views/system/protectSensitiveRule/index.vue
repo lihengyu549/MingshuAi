@@ -475,7 +475,7 @@ export default {
 
 .btn {
   border: 0;
-  color: #409eff;
+  color: #3b82f6;
   text-align: right;
   padding-left: 20px;
 

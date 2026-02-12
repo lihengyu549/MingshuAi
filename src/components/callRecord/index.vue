@@ -15,7 +15,7 @@
               </el-table-column>
               <el-table-column prop="" label="操作">
                 <template slot-scope="scope">
-                  <a style="color: #409eff;" @click="TracesClk(scope.row)">详情</a>
+                  <a style="color: #3b82f6;" @click="TracesClk(scope.row)">详情</a>
                 </template>
               </el-table-column>
             </el-table>

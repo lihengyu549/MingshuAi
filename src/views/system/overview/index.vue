@@ -179,7 +179,7 @@
           </div>
           <div style="width: 50%; ">
             <span style="padding:0 30px 0 10px; font-weight: 700; ">攻击IP</span>
-            <a style="color: #1890ff;" @click="ipRanking(particularsTab.ip)">{{ particularsTab.ip }}</a>
+            <a style="color: #3b82f6;" @click="ipRanking(particularsTab.ip)">{{ particularsTab.ip }}</a>
           </div>
         </div>
         <div class="shijian1">
@@ -200,7 +200,7 @@
 
       <div style=" display: flex;justify-content: space-between;">
         <div style="margin: 20px  0 10px 10px; font-weight: 700;">过滤规则</div>
-        <div style="margin: 20px  10px 10px 10px; font-weight: 700; color: #1890ff; cursor: pointer;" @click="whiteList">
+        <div style="margin: 20px  10px 10px 10px; font-weight: 700; color: #3b82f6; cursor: pointer;" @click="whiteList">
           URL加白</div>
       </div>
       <div class="dizhi">{{ particularsTab.filterRule }}</div>
@@ -262,7 +262,7 @@ export default {
       overviewTable: {},
       earthOption: {},
       option: {
-        color: ["#409eff"],
+        color: ["#3b82f6"],
         tooltip: {
           axisPointer: {
             type: "cross",

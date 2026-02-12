@@ -1898,14 +1898,14 @@ export default {
 }
 
 .export-column-dialog-wrapper .column-btn:hover {
-  border-color: #1890ff;
-  color: #1890ff;
+  border-color: #3b82f6;
+  color: #3b82f6;
 }
 
 .export-column-dialog-wrapper .column-btn.active {
-  border-color: #1890ff;
+  border-color: #3b82f6;
   background: #e6f7ff;
-  color: #1890ff;
+  color: #3b82f6;
 }
 
 .export-column-dialog-wrapper .dialog-footer-custom {
@@ -1928,7 +1928,7 @@ export default {
 
 .export-column-dialog-wrapper .restore-link {
   margin-left: 16px;
-  color: #1890ff;
+  color: #3b82f6;
   text-decoration: none;
   cursor: pointer;
   font-size: 14px;
@@ -2066,7 +2066,7 @@ export default {
   .footer-score {
     font-size: 36px;
     font-weight: 600;
-    color: #1890ff;
+    color: #3b82f6;
   }
 }
 </style>

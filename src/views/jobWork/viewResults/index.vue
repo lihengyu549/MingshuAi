@@ -145,7 +145,7 @@
         <el-table-column type="selection" width="60" align="center" />
         <el-table-column label="字段名" align="left" prop="fieldName" width="150" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
+            <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #3b82f6;">
               <svg-icon icon-class="text" style="font-size: 14px; margin-right: 5px;" />
               {{ scope.row.fieldName
               }}</span>

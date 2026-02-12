@@ -550,7 +550,7 @@ export default {
       .icon {
         width: 24px;
         height: 24px;
-        color: #1890ff;
+        color: #3b82f6;
       }
     }
 
@@ -599,7 +599,7 @@ export default {
         color: #999999;
 
         &:hover {
-          color: #1890ff;
+          color: #3b82f6;
         }
       }
     }
@@ -612,7 +612,7 @@ export default {
   text-align: center;
 
   .view-all-btn {
-    color: #1890ff;
+    color: #3b82f6;
     font-size: 14px;
     padding: 0;
 

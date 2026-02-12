@@ -1220,7 +1220,7 @@ export default {
 
 .projecClass {
   border: 0;
-  color: #409eff;
+  color: #3b82f6;
 }
 
 .el-form-item__label {

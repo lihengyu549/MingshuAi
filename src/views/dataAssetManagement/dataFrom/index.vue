@@ -1384,7 +1384,7 @@ export default {
 
 .source-name {
   cursor: pointer;
-  color: #409EFF;
+  color: #3b82f6;
 }
 
 /* 关联数据字典下拉菜单 */

@@ -287,7 +287,7 @@ export default {
 
 
 .request-url {
-    color: #1890ff;
+    color: #3b82f6;
     word-break: break-all;
     margin-right: 15px;
 }

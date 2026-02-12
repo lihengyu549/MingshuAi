@@ -1535,7 +1535,7 @@ input[aria-hidden=true] {
 .radio-checked {
   background-color: #e1f5fd;
   /* 浅灰背景，可根据图微调色值 */
-  border: 1px solid #1890ff;
+  border: 1px solid #3b82f6;
   /* 左侧蓝色选中线，匹配Element主题色 */
 }
 
@@ -1596,7 +1596,7 @@ input[aria-hidden=true] {
   height: 12px;
   border-radius: 50%;
   /* 圆形 */
-  background-color: #1890ff;
+  background-color: #3b82f6;
   /* 蓝色，匹配Element主题色 */
   margin-left: 8px;
   /* 与主文本的间距，可按需调整 */
@@ -1631,7 +1631,7 @@ input[aria-hidden=true] {
   left: 0;
   width: 100%;
   height: 100%;
-  border: 1px solid #1890ff;
+  border: 1px solid #3b82f6;
   /* 圆环宽度+颜色 */
   border-radius: 50%;
   /* 圆形 */
@@ -1647,7 +1647,7 @@ input[aria-hidden=true] {
   width: 6px;
   /* 内层圆大小，可调整 */
   height: 6px;
-  border: 1px solid #1890ff;
+  border: 1px solid #3b82f6;
   /* 与外层圆环同色 */
   border-radius: 50%;
   transform: translate(-50%, -50%);
@@ -1693,12 +1693,12 @@ input[aria-hidden=true] {
 }
 
 .feature-item:hover {
-  border-color: #409eff;
+  border-color: #3b82f6;
 }
 
 .feature-item.highlight {
   background-color: #ecf5ff;
-  border-color: #409eff;
+  border-color: #3b82f6;
 }
 
 .feature-content {
@@ -1725,8 +1725,8 @@ input[aria-hidden=true] {
   }
 
   & .el-checkbox__input.is-checked .el-checkbox__inner {
-    background-color: #409eff;
-    border-color: #409eff;
+    background-color: #3b82f6;
+    border-color: #3b82f6;
   }
 
   /* 选中状态下显示实心圆而不是勾选 */
@@ -1769,8 +1769,8 @@ input[aria-hidden=true] {
 
 /* 自定义勾选框样式 */
 .el-checkbox__input.is-checked .el-checkbox__inner {
-  background-color: #409eff;
-  border-color: #409eff;
+  background-color: #3b82f6;
+  border-color: #3b82f6;
 }
 
 .el-checkbox__inner {
@@ -1782,16 +1782,16 @@ input[aria-hidden=true] {
 }
 
 .el-checkbox__input:hover .el-checkbox__inner {
-  border-color: #409eff;
+  border-color: #3b82f6;
 }
 
 /* 高亮样式调整 */
 .feature-item.highlight {
   background-color: #ecf5ff;
-  border-color: #409eff;
+  border-color: #3b82f6;
 }
 
 .feature-item.highlight .feature-title {
-  color: #409eff;
+  color: #3b82f6;
 }
 </style>
