@@ -8,7 +8,7 @@ const user = {
     avatar: '',
     roles: [],
     permissions: [],
-    projectData:{}
+    projectData: {}
   },
 
   mutations: {
@@ -61,7 +61,7 @@ const user = {
       return new Promise((resolve, reject) => {
         getInfo().then(res => {
           const user = res.user
-          const avatar = (user.avatar == "" || user.avatar == null) ? require("@/assets/images/profile.jpg") : user.avatar;
+          const avatar = (user.avatar == "" || user.avatar == null) ? require("@/assets/images/profile.jpg") : window.location.origin + '/' + user.avatar;
           if (res.roles && res.roles.length > 0) { // 验证返回的roles是否是一个非空数组
             commit('SET_ROLES', res.roles)
             commit('SET_PERMISSIONS', res.permissions)
@@ -79,7 +79,7 @@ const user = {
 
     // 刷新token
     // 刷新token
-    RefreshToken({commit, state}) {
+    RefreshToken({ commit, state }) {
       return new Promise((resolve, reject) => {
         refreshToken(state.token).then(res => {
           // 检查返回数据结构，确保能获取到新的token和过期时间
@@ -99,7 +99,7 @@ const user = {
         })
       })
     },
-    
+
     // 退出系统
     LogOut({ commit, state }) {
       return new Promise((resolve, reject) => {
