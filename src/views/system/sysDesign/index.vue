@@ -13,7 +13,8 @@
             <el-form-item label="产品LOGO" prop="appFacvion">
               <el-upload class="upload-demo" action="" :on-remove="handleRemove" :file-list="fileList" ref="uploadRef"
                 list-type="picture" :multiple="false" :limit="1" :on-change="handleFileChange"
-                :on-exceed="handleFileExceed" accept=".jpg,.jpeg,.png,.JPG,.JPEG,.PNG,.ico" :auto-upload="false" :http-request="submit">
+                :on-exceed="handleFileExceed" accept=".jpg,.jpeg,.png,.JPG,.JPEG,.PNG,.ico" :auto-upload="false"
+                :http-request="submit">
                 <el-button size="small" type="primary" plain>点击上传</el-button>
               </el-upload>
             </el-form-item>
@@ -27,7 +28,7 @@
         <div class="contBox">
           <el-form :model="colorForm" ref="colorForm" class="formDataClass" size="small" label-width="auto">
             <el-form-item label="颜色选择" prop="color">
-              <el-color-picker v-model="colorForm.color" @change="changeColor"  show-alpha :predefine="predefineColors">
+              <el-color-picker v-model="colorForm.color" @change="changeColor" show-alpha :predefine="predefineColors">
               </el-color-picker>
             </el-form-item>
           </el-form>
@@ -58,6 +59,7 @@
 <script>
 import { updateInterfaceDesign } from "@/api/system/menu";
 import store from '@/store'
+import { getInterfaceDesignById } from "@/api/system/menu";
 export default {
   name: "sysDesign",
   // dicts: ['sys_normal_disable'],
@@ -70,9 +72,9 @@ export default {
       colorForm: {
         color: ''
       },
-      technologyData:{
-        email:'',
-        phone:'',
+      technologyData: {
+        email: '',
+        phone: '',
       },
       fileList: [
         // { name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100' },
@@ -97,9 +99,9 @@ export default {
     };
   },
   created() {
-    if(this.$store.state.user.projectData.id) {
+    if (this.$store.state.user.projectData.id) {
       this.formData.appTitle = this.$store.state.user.projectData.projectName
-      this.fileList = [{name:this.$store.state.user.projectData.imgName || '项目图标',url:this.$store.state.user.projectData.img}]
+      this.fileList = [{ name: this.$store.state.user.projectData.imgName || '项目图标', url: this.$store.state.user.projectData.img }]
       this.colorForm.color = this.$store.state.user.projectData.themeColor
       this.technologyData.email = this.$store.state.user.projectData.email
       this.technologyData.phone = this.$store.state.user.projectData.phone
@@ -112,16 +114,22 @@ export default {
     submit() {
       store.dispatch('settings/setBgcColor', 'red')
       const formData = new FormData();
-      formData.append('file', this.fileList.length?this.fileList[0].raw : null);
-      formData.append('file', this.fileList.length?this.fileList[0].name : '项目图标');
+      formData.append('file', this.fileList.length ? this.fileList[0].raw : null);
+      formData.append('file', this.fileList.length ? this.fileList[0].name : '项目图标');
       formData.append('id', 1);
       formData.append('projectName', this.formData.appTitle);
       formData.append('themeColor', this.colorForm.color);
       formData.append('email', this.technologyData.email);
       formData.append('phone', this.technologyData.phone);
-      updateInterfaceDesign(formData).then(res=>{
-        if(res.code === 200){
+      updateInterfaceDesign(formData).then(res => {
+        if (res.code === 200) {
           this.$modal.msgSuccess(res.msg);
+          this.getInterfaceDesignById({ id: 1 }).then(res => {
+            if (res.code === 200) {
+              res.data.img = window.location.origin + '/' + res.data.img
+              this.$store.commit('SET_PROJECT', res.data);
+            }
+          })
         }
       })
     },
@@ -135,12 +143,12 @@ export default {
     handleFileChange(file, fileList) {
       this.fileList = fileList;
     },
-    changeColor(val){
-      if(val == null) {
+    changeColor(val) {
+      if (val == null) {
         this.$message.warning('颜色不可以为透明')
         this.colorForm.color = 'rgb(0, 84, 217)'
         return
-      }      
+      }
     }
   }
 };
