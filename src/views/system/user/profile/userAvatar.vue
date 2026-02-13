@@ -141,7 +141,7 @@ export default {
         formData.append("avatarfile", data);
         uploadAvatar(formData).then(response => {
           this.open = false;
-          let avatar = window.location.origin + "/" + response.imgUrl;
+          let avatar = window.location.origin + "/" + response.imgUrl + "?t=" + new Date().getTime();
           this.options.img = avatar;
           store.commit('SET_AVATAR', avatar);
           this.$modal.msgSuccess("修改成功");
