@@ -124,7 +124,7 @@ export default {
       updateInterfaceDesign(formData).then(res => {
         if (res.code === 200) {
           this.$modal.msgSuccess(res.msg);
-          this.getInterfaceDesignById({ id: 1 }).then(res => {
+          getInterfaceDesignById().then(res => {
             if (res.code === 200) {
               res.data.img = window.location.origin + '/' + res.data.img
               this.$store.commit('SET_PROJECT', res.data);
