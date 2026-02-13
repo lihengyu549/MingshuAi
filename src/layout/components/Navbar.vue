@@ -68,7 +68,7 @@
       </template>
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="$store.state.user.avatar" class="user-avatar" />
+          <img :src="avatar" class="user-avatar" />
           <div class="user">用户名</div>
           <i class="el-icon-caret-bottom" />
         </div>
