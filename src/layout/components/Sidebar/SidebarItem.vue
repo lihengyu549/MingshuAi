@@ -130,7 +130,7 @@ export default {
   cursor: pointer;
   border-radius: 4px;
   transition: background-color 0.3s;
-  
+
   &:hover {
     .category-title {
       color: #64748b;
