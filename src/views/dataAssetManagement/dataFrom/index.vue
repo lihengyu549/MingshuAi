@@ -89,9 +89,14 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="数据源类型" align="center" prop="databaseType" show-overflow-tooltip>
+        <el-table-column label="数据源类型" align="center" prop="sourceTypeName" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span>{{ databaseTypeMsg(scope.row.databaseType) }}</span>
+            <span>{{ emptyHandler(scope.row.sourceTypeName) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="数据库类型" align="center" prop="databaseType" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span>{{ emptyHandler(scope.row.databaseType) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
