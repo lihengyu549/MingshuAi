@@ -947,9 +947,7 @@ Authorization:Bearer ${this.Token}`
         }
 
         if (finalSelectedColumns.length === 0) {
-          finalSelectedColumns = allColumns
-            .map(item => item.value)
-            .filter(value => !dictColumns.includes(value));
+          finalSelectedColumns = [...this.initialDefaultColumns];
         }
 
         this.exportColumnDialog.selectedColumns = [...finalSelectedColumns];
@@ -1012,6 +1010,7 @@ Authorization:Bearer ${this.Token}`
         const unselectedColumns = allColumns.filter(value => !this.exportColumnDialog.selectedColumns.includes(value));
         
         const params = {
+          databaseIds: this.dataCategoryList.map(item => item.id),
           databaseNames: this.databaseNames,
           projectId: this.projectId,
           securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel : null,

@@ -387,8 +387,7 @@
         </el-form-item>
 
         <el-form-item label="匹配条件" prop="matchType">
-          <el-radio-group v-model="ruleForm.matchType"
-            style="display: flex; justify-content: space-between">
+          <el-radio-group v-model="ruleForm.matchType" style="display: flex; justify-content: space-between">
             <el-radio label="greater" v-if="currentRuleType === 'upgrade'">大于等于</el-radio>
             <el-radio label="less" v-if="currentRuleType === 'downgrade'">小于等于</el-radio>
           </el-radio-group>
@@ -1040,7 +1039,7 @@ export default {
         rightElements.push(
           h('svg-icon', {
             attrs: { iconClass: 'setting' },
-            style: { cursor: 'pointer' },
+            style: { cursor: 'pointer', flexShrink: 0, marginRight: '5px' },
             on: {
               click: (e) => {
                 e.stopPropagation();
@@ -1051,13 +1050,14 @@ export default {
         );
       }
 
-      const nodeContent = [
+      // 构建节点内容
+      const labelPart = [
         h('span', { class: 'node-label', attrs: { title: node.label } }, node.label)
       ];
 
       // 非根节点才显示等级标签
       if (!isRoot) {
-        nodeContent.push(
+        labelPart.push(
           h('span', {
             class: 'node-level',
             style: {
@@ -1069,11 +1069,24 @@ export default {
         );
       }
 
-      // 添加填充元素和右侧元素
-      nodeContent.push(
-        h('span', { style: { flexGrow: 1 } }), // 填充元素，将右侧元素推到最右侧
-        ...rightElements
-      );
+      // 根节点：label 占满剩余空间（自动压缩），齿轮靠右
+      let nodeContent = [];
+      if (isRoot && this.dataSource != '内置') {
+        nodeContent = [
+          h('div', {
+            class: 'node-label-wrapper',
+            style: { flex: '1', minWidth: '0', overflow: 'hidden', display: 'flex', alignItems: 'center' }
+          }, labelPart),
+          ...rightElements
+        ];
+      } else {
+        // 非根节点正常布局
+        nodeContent = [
+          ...labelPart,
+          h('span', { style: { flex: '1', minWidth: '0' } }), // 填充元素
+          ...rightElements
+        ];
+      }
 
       // 所有节点图标都放在前面
       nodeContent.unshift(
@@ -1092,6 +1105,8 @@ export default {
           display: 'flex',
           alignItems: 'center',
           width: '100%',
+          minWidth: 0,
+          overflow: 'hidden',
           paddingTop: '10px',
           paddingBottom: '10px',
           borderRadius: level > 1 ? '6px' : '0',
@@ -1840,14 +1855,6 @@ export default {
   padding-bottom: 8px;
 }
 
-.node-label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 120px;
-  line-height: 24px;
-}
-
 .node-level {
   font-size: 12px;
   font-weight: 500;
@@ -1858,8 +1865,37 @@ export default {
   align-items: center;
   justify-content: flex-start;
   width: 100%;
+  min-width: 0;
+  overflow: hidden;
   border-radius: 6px;
   transition: background-color 0.2s;
+}
+
+.custom-tree-node .node-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  max-width: 100%;
+  line-height: 24px;
+  display: inline-block;
+}
+
+.node-label-wrapper {
+  overflow: hidden;
+  max-width: 100%;
+}
+
+::v-deep .node-label-wrapper .node-label {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.node-label-wrapper .node-level {
+  flex-shrink: 0;
 }
 
 .node-breadcrumb {
