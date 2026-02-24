@@ -58,6 +58,7 @@ import store from "@/store";
 import { VueCropper } from "vue-cropper";
 import { uploadAvatar } from "@/api/system/user";
 import { debounce } from '@/utils'
+import { getInfo } from "@/api/system/user";
 
 export default {
   components: { VueCropper },
@@ -140,8 +141,9 @@ export default {
         formData.append("avatarfile", data);
         uploadAvatar(formData).then(response => {
           this.open = false;
-          this.options.img = response.imgUrl;
-          store.commit('SET_AVATAR', this.options.img);
+          let avatar = window.location.origin + "/" + response.imgUrl + "?t=" + new Date().getTime();
+          this.options.img = avatar;
+          store.commit('SET_AVATAR', avatar);
           this.$modal.msgSuccess("修改成功");
           this.visible = false;
         });

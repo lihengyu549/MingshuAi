@@ -9,7 +9,8 @@
         </el-form-item>
         <el-form-item label="数据源类型" prop="sourceType">
           <el-select clearable v-model="queryParams.sourceType" @change="inputSearch" placeholder="请选择数据库类型">
-            <el-option v-for="item in dataYTpeList" :key="item.value" :label="item.label" :value="item.value">
+            <el-option v-for="item in dict.type.sys_datasource_type" :key="item.value" :label="item.label"
+              :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -25,6 +26,12 @@
           </el-option>
         </el-select>
       </el-form-item> -->
+        <el-form-item label="数据库类型" prop="databaseType">
+          <el-select clearable v-model="queryParams.databaseType" @change="inputSearch" placeholder="请选择数据库类型">
+            <el-option v-for="item in databaseTypeList" :key="item.value" :label="item.name" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="主机信息" prop="targetIpPort">
           <el-input v-model="queryParams.targetIpPort" @input="inputSearch" placeholder="请输入主机信息" clearable
             @keyup.enter.native="handleQuery" />
@@ -42,13 +49,20 @@
     </el-card>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">数据库</el-button>
+        <el-dropdown @command="handleCommand" trigger="click">
+          <el-button type="primary" plain size="medium" icon="el-icon-plus">
+            新增
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="database">数据库</el-dropdown-item>
+            <el-dropdown-item command="excel">Excel文件</el-dropdown-item>
+            <el-dropdown-item command="fileDirectory">文件目录</el-dropdown-item>
+            <el-dropdown-item command="fileShareServer">文件共享服务器</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleEcelFn">Excel文件</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
+        <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
@@ -62,7 +76,7 @@
         <el-table-column label="数据源名称" align="left" width="140" prop="sourceName" show-overflow-tooltip>
           <template slot-scope="scope">
             <span class="source-name" @click="scanContentEdit(scope.row)">
-              <svg-icon :icon-class="databaseTypeIcon(databaseTypeMsg(scope.row.databaseType))"
+              <svg-icon :icon-class="databaseTypeIcon(scope.row.sourceTypeName)"
                 style="font-size: 14px; margin-right: 5px;" />
               {{ scope.row.sourceName }}
             </span>
@@ -161,7 +175,7 @@
         <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
           <!-- @input="businessNameFn(form.businessName)" -->
           <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
-          <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
+          <div style="font-size: 12px; font-style: italic;">示例:个人健康生理信息管理系统(建议使用中文进行描述)</div>
         </el-form-item>
         <el-form-item label="来源业务系统描述" prop="businessComment" :rules="rules.businessComment">
           <el-input type="textarea" v-model="form.businessComment" maxlength="1000" show-word-limit
@@ -192,16 +206,16 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item v-show="form.databaseType == 'ORACLE'" label="服务名" prop="connectionValue"
-          :rules="rules.connectionValue()">
+        <el-form-item v-show="form.databaseType == 'ORACLE' || form.databaseType == 'OCEAN_BASE_ORACLE'" label="服务名"
+          prop="connectionValue" :rules="rules.connectionValue()">
           <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput()" placeholder="请输入" />
         </el-form-item>
-        <el-form-item v-show="form.databaseType == 'ORACLE'" label="连接方式">
+        <el-form-item v-show="form.databaseType == 'ORACLE' || form.databaseType == 'OCEAN_BASE_ORACLE'" label="连接方式">
           <el-radio v-model="connectionType" label="0">SID</el-radio>
           <el-radio v-model="connectionType" label="1">Service Name</el-radio>
         </el-form-item>
-        <el-form-item v-show="form.databaseType != 'ORACLE'" label="实例名/库名" prop="examplesName"
-          :rules="rules.examplesName()">
+        <el-form-item v-show="form.databaseType != 'ORACLE' && form.databaseType != 'OCEAN_BASE_ORACLE'" label="实例名/库名"
+          prop="examplesName" :rules="rules.examplesName()">
           <el-input v-model="form.examplesName" placeholder="请输入实例名/库名" />
         </el-form-item>
         <el-form-item label="扫描内容" prop="tabelCheckedName">
@@ -226,7 +240,7 @@
             </el-option>
           </el-select>
           <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
-            @input="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点" :append-to-body="true">
+            @change="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点" :append-to-body="true">
           </el-time-picker>
         </el-form-item>
 
@@ -295,25 +309,258 @@
         <el-button @click="scanContentShow = false">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 新增文件目录表单对话框 -->
+    <el-dialog class="addMsg" :title="titleFileDirectory" v-loading="fileDirectoryLoading"
+      :visible.sync="fileDirectoryData.show" append-to-body :close-on-click-modal="false" width="700px">
+      <el-form class="dialogForm" :rules="fileDirectoryRules" :model="fileDirectoryData" size="medium"
+        ref="fileDirectoryForm" label-width="auto" label-position="top">
+        <el-form-item label="数据源名称" prop="sourceName">
+          <el-input v-model="fileDirectoryData.sourceName" maxlength="50" placeholder="请输入数据源名称"></el-input>
+        </el-form-item>
+        <el-form-item label="来源业务系统" prop="businessName">
+          <el-input v-model="fileDirectoryData.businessName" maxlength="50" placeholder="请输入来源业务系统"></el-input>
+        </el-form-item>
+        <el-form-item label="来源业务系统描述" prop="businessComment">
+          <el-input type="textarea" v-model="fileDirectoryData.businessComment" maxlength="1000" show-word-limit
+            placeholder="请输入来源业务系统描述" />
+        </el-form-item>
+        <!-- 将文件目录路径改为文件上传，1:1还原参考图效果 -->
+        <el-form-item label="文件上传" prop="uploadFiles">
+          <el-upload ref="fileDirectoryUploadRef" class="upload-dragger-area" drag :action="''" :auto-upload="false"
+            :multiple="true" :show-file-list="false" :limit="20" :file-list="fileDirectoryData.uploadFiles"
+            :on-change="handleFileDirectoryChange" :on-remove="handleFileDirectoryRemove"
+            :on-exceed="handleFileDirectoryExceed"
+            accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.bmp,.webp">
+            <div class="upload-dragger-content">
+              <i class="el-icon-upload upload-icon"></i>
+              <div class="upload-text">点击或拖拽上传文件</div>
+              <div class="upload-tip">支持
+                .doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif等格式（支持多文件上传，最多20个，总大小不超过50MB）
+              </div>
+            </div>
+          </el-upload>
+          <!-- 添加已选择文件列表显示区域 -->
+          <div v-if="fileDirectoryData.uploadFiles && fileDirectoryData.uploadFiles.length > 0"
+            class="selected-files-container">
+            <div class="selected-files-header">
+              <span>已选择文件 ({{ fileDirectoryData.uploadFiles.length }})</span>
+              <el-button type="text" size="small" @click="clearAllFileDirectoryFiles"
+                style="color: #909399;">清空所有</el-button>
+            </div>
+            <div class="selected-files-list">
+              <div v-for="(file, index) in fileDirectoryData.uploadFiles" :key="index" class="file-item">
+                <div class="file-info">
+                  <i class="el-icon-document file-icon"></i>
+                  <div class="file-details">
+                    <div class="file-name-row">
+                      <span class="file-name"><b>{{ file.name }}</b></span>
+                      <el-tag type="info" dark size="small">{{ getFileExtension(file.name) }}</el-tag>
+                    </div>
+                    <div class="file-meta">
+                      <span>大小: {{ formatFileSize(file.size) }}</span>
+                      <span class="file-meta-separator">|</span>
+                      <span>修改时间: {{ formatFileTime(file.raw ? file.raw.lastModified : Date.now()) }}</span>
+                    </div>
+                  </div>
+                </div>
+                <el-button type="text" icon="el-icon-close" class="remove-file-btn"
+                  @click="removeFileDirectoryFile(index)"></el-button>
+              </div>
+            </div>
+          </div>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" plain @click="submitFileDirectoryForm">确 定</el-button>
+        <el-button @click="fileDirectoryCancel">取 消</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 新增文件共享服务器表单对话框 -->
+    <el-dialog class="addMsg" :title="titleFileShareServer" :visible.sync="fileShareServerOpen" append-to-body
+      :close-on-click-modal="false" width="700px">
+      <el-form class="dialogForm" ref="fileShareServerForm" :model="fileShareServerForm" :rules="fileShareServerRules"
+        label-width="auto" @submit.native.prevent label-position="top">
+
+        <!-- 基本信息 -->
+        <div class="form-section-title">基本信息</div>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="数据源名称" prop="sourceName">
+              <el-input v-model="fileShareServerForm.sourceName" maxlength="50" placeholder="请输入数据源名称" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="文件目录类型" prop="fileServerType">
+              <el-select v-model="fileShareServerForm.fileServerType" placeholder="请选择文件目录类型">
+                <el-option label="SMB" value="SMB"></el-option>
+                <el-option label="NFS" value="NFS"></el-option>
+                <el-option label="FTP" value="FTP"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="来源业务系统" prop="businessName">
+          <el-input v-model="fileShareServerForm.businessName" maxlength="50" placeholder="请输入来源业务系统" />
+        </el-form-item>
+
+        <el-form-item label="来源业务系统描述" prop="businessComment">
+          <el-input type="textarea" v-model="fileShareServerForm.businessComment" maxlength="1000" show-word-limit
+            placeholder="请输入来源业务系统描述" />
+        </el-form-item>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="主机" prop="targetIp">
+              <el-input v-model="fileShareServerForm.targetIp" placeholder="请输入主机IP地址" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="端口" prop="targetPort">
+              <el-input v-model="fileShareServerForm.targetPort" placeholder="请输入端口" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="用户" prop="targetUserName">
+              <el-input v-model="fileShareServerForm.targetUserName" placeholder="请输入用户名" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="密码" prop="targetUserPassword">
+              <el-input type="password" v-model="fileShareServerForm.targetUserPassword" :show-password="true"
+                maxlength="100" placeholder="请输入密码" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="文件夹目录" prop="fileDirectory">
+          <el-input v-model="fileShareServerForm.fileDirectory" placeholder="请输入文件夹目录路径" />
+        </el-form-item>
+
+        <!-- 扫描配置 -->
+        <div class="form-section-title">扫描配置</div>
+        <el-form-item label="扫描内容" prop="scanContent">
+          <el-input v-model="fileShareServerForm.scanContent" placeholder="请输入扫描内容" />
+        </el-form-item>
+        <el-form-item label="扫描逻辑" prop="proceedOrOverwrite">
+          <el-checkbox v-model="fileShareServerForm.proceedOrOverwrite">全量扫描</el-checkbox>
+          <el-tooltip class="item" effect="dark" content="全量扫描：清空，上一次的所有扫描结果，以本次勾选的内容为准" placement="top-start">
+            <svg-icon icon-class="dengpao" style="margin-left:8px;" />
+          </el-tooltip>
+        </el-form-item>
+
+        <!-- 过滤配置 -->
+        <div class="form-section-title">过滤配置</div>
+
+        <!-- 文件大小过滤器 -->
+        <el-form-item>
+          <el-checkbox v-model="fileShareServerForm.enableFileSizeFilter">文件大小过滤器</el-checkbox>
+        </el-form-item>
+
+        <el-form-item v-if="fileShareServerForm.enableFileSizeFilter">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span>扫描</span>
+            <el-input v-model="fileShareServerForm.fileSizeMin" style="width: 120px;" placeholder="0"></el-input>
+            <el-select v-model="fileShareServerForm.fileSizeMinUnit" style="width: 100px;">
+              <el-option label="KB" value="KB"></el-option>
+              <el-option label="MB" value="MB"></el-option>
+              <el-option label="GB" value="GB"></el-option>
+            </el-select>
+            <span>至</span>
+            <el-input v-model="fileShareServerForm.fileSizeMax" style="width: 120px;" placeholder="全部"></el-input>
+            <el-select v-model="fileShareServerForm.fileSizeMaxUnit" style="width: 100px;">
+              <el-option label="KB" value="KB"></el-option>
+              <el-option label="MB" value="MB"></el-option>
+              <el-option label="GB" value="GB"></el-option>
+            </el-select>
+            <span>的文件</span>
+          </div>
+        </el-form-item>
+
+        <!-- 文件日期过滤器 -->
+        <el-form-item>
+          <el-checkbox v-model="fileShareServerForm.enableFileDateFilter">文件日期过滤器</el-checkbox>
+        </el-form-item>
+
+        <el-form-item v-if="fileShareServerForm.enableFileDateFilter">
+          <el-radio-group v-model="fileShareServerForm.fileDateFilterType">
+            <el-radio label="monthsWithin">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span>仅扫描</span>
+                <el-input v-model="fileShareServerForm.fileDateMonths" style="width: 100px;" placeholder="3"></el-input>
+                <span>个月之内的文件</span>
+              </div>
+            </el-radio>
+            <el-radio label="monthsBefore">
+              <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                <span>仅扫描</span>
+                <el-input v-model="fileShareServerForm.fileDateMonthsBefore" style="width: 100px;"
+                  placeholder=""></el-input>
+                <span>个月之前的文件</span>
+              </div>
+            </el-radio>
+            <el-radio label="dateRange">
+              <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                <span>仅扫描</span>
+                <el-date-picker v-model="fileShareServerForm.fileDateStart" type="date" placeholder="请选择时间"
+                  value-format="yyyy-MM-dd" style="width: 160px;">
+                </el-date-picker>
+                <span>-</span>
+                <el-date-picker v-model="fileShareServerForm.fileDateEnd" type="date" placeholder="请选择时间"
+                  value-format="yyyy-MM-dd" style="width: 160px;">
+                </el-date-picker>
+                <span>之间的文件</span>
+              </div>
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <!-- 调度周期 -->
+        <div class="form-section-title">调度周期</div>
+        <el-form-item label="执行周期" prop="scheduleType">
+          <el-select v-model="fileShareServerForm.scheduleType" @change="fileShareServerScheduleTypeChange">
+            <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+          <el-select v-show="fileShareServerForm.scheduleType == '2' || fileShareServerForm.scheduleType == '3'"
+            v-model="fileShareServerForm.scheduleInterval">
+            <el-option v-for="item in weekList" :key="item" :label="item" :value="item">
+            </el-option>
+          </el-select>
+          <el-time-picker v-show="fileShareServerForm.scheduleType != '0' && fileShareServerForm.scheduleType != ''"
+            v-model="fileShareServerForm.scheduleTime" value-format='HH:mm' format="HH:mm" placeholder="任意时间点"
+            :append-to-body="true">
+          </el-time-picker>
+        </el-form-item>
+
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" plain @click="submitFileShareServerForm" :loading="fileShareServerSubmitLoading">确
+          定</el-button>
+        <el-button @click="fileShareServerCancel">取消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import {
-  usersAddI
-} from "@/api/system/proxyUser";
-
-import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys,
   importExcel, publish, saveDatabaseAndTables, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI, getDatabaseNameList, getDatabaseTableNameList, stopDataScan
 } from "@/api/system/proxys";
 import {
-  forceLogout, nameTesting, dataSacn, getFrameworks, checkSourceName, getDatabaseAndTablesById, updateDatabaseAndTables
+  forceLogout, nameTesting, dataSacn, getFrameworks, getDatabaseAndTablesById, updateDatabaseAndTables, addOrUpdateFileDataList, checkSourceName
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import TableSelector from './components/TableSelector.vue'
 import { getFeatureSelect, relevancyDataDict } from "@/api/system/IndustryExperience";
 export default {
+  dicts: ['sys_datasource_type', 'sys_db_type'],
   name: "Proxys",
   components: { Result, TableSelector, },
   data() {
@@ -348,19 +595,6 @@ export default {
         'NONE': require('@/assets/stateImg/stateWaiting.png'),
         'RUNNING': require('@/assets/stateImg/stateing.png'),
       },
-      dataYTpeList: [
-        {
-          value: 'DATABASE',
-          label: '数据库'
-        }, {
-          value: 'FILE',
-          label: 'Excel表'
-        }
-        , {
-          value: 'API',
-          label: 'API'
-        }
-      ],
       weekTimeList: [
         {
           value: '0',
@@ -384,6 +618,10 @@ export default {
         { name: "POSTGRESQL", id: 3, value: "POSTGRESQL", defaultPort: '5432' },
         { name: "DM", id: 4, value: "DM", defaultPort: '5236' },
         { name: "GREENPLUM", id: 5, value: "GREENPLUM", defaultPort: '5432' },
+        { name: "OCEAN_BASE_MYSQL", id: 6, value: "OCEAN_BASE_MYSQL", defaultPort: '3306' },  //mq
+        { name: "OCEAN_BASE_ORACLE", id: 7, value: "OCEAN_BASE_ORACLE", defaultPort: '1521' },  //oracle
+        { name: "KING_BASE", id: 8, value: "KING_BASE", defaultPort: '54321' }, // pg
+        { name: "MARIA_DB", id: 9, value: "MARIA_DB", defaultPort: '3306' },    //mq
       ],
       publishStatus: [
         {
@@ -437,6 +675,7 @@ export default {
         pageSize: 10,
         sourceType: '',
         sourceName: '',
+        databaseType: '',
         businessName: '',
         proxyId: '',
         publishStatus: '',
@@ -488,7 +727,7 @@ export default {
         ],
         examplesName: () => {
           return [{
-            required: ['SQL_SERVER', 'POSTGRESQL', 'GREENPLUM'].includes(this.form.databaseType),
+            required: ['SQL_SERVER', 'POSTGRESQL', 'GREENPLUM', 'KING_BASE'].includes(this.form.databaseType),
             message: '请输入',
             trigger: 'blur'
           }]
@@ -542,6 +781,7 @@ export default {
         businessName: '',
         businessComment: '',
         sourceName: '',
+        id: '' // 添加id字段用于编辑
       },
       isServiesNameRequired: false,
       debounceTimeout: null,
@@ -572,6 +812,119 @@ export default {
       tabelCheckedName: '',
       dictionaryList: [], // 数据字典列表
       currentRow: null, // 当前操作的行数据
+
+      titleFileDirectory: '上传文件',
+      fileDirectoryLoading: false,
+      fileDirectoryData: {
+        show: false,
+        sourceName: '',
+        businessName: '',
+        businessComment: '',
+        uploadFiles: [], // 将directoryPath改为uploadFiles数组
+        id: '', // 添加id字段用于编辑
+      },
+      fileDirectoryRules: {
+        sourceName: [
+          { required: true, message: "请输入数据源名称", trigger: "blur" }
+        ],
+        businessName: [
+          { required: true, message: "请输入来源业务系统", trigger: "blur" }
+        ],
+        businessComment: [
+          { required: true, message: "请输入来源业务系统描述", trigger: "blur" }
+        ],
+        uploadFiles: [
+          {
+            required: true,
+            validator: (rule, value, callback) => {
+              if (!value || value.length === 0) {
+                callback(new Error('请上传文件'));
+              } else {
+                callback();
+              }
+            },
+            trigger: "change"
+          }
+        ],
+      },
+
+      titleFileShareServer: '添加文件共享服务器',
+      fileShareServerOpen: false,
+      fileShareServerSubmitLoading: false,
+      fileShareServerForm: {
+        sourceName: '',
+        fileServerType: 'SMB',
+        businessName: '',
+        businessComment: '',
+        targetIp: '',
+        targetPort: '',
+        targetUserName: '',
+        targetUserPassword: '',
+        fileDirectory: '',
+        scanContent: '',
+        enableFileSizeFilter: false,
+        fileSizeMin: '0',
+        fileSizeMinUnit: 'KB',
+        fileSizeMax: '',
+        fileSizeMaxUnit: 'KB',
+        enableFileDateFilter: false,
+        fileDateFilterType: 'monthsWithin',
+        fileDateMonths: '3',
+        fileDateMonthsBefore: '',
+        fileDateStart: '',
+        fileDateEnd: '',
+        scheduleType: '0',
+        scheduleInterval: '',
+        scheduleTime: '00:00',
+        proceedOrOverwrite: false,
+        id: null, // 添加id字段用于编辑
+      },
+      fileShareServerRules: {
+        sourceName: [
+          { required: true, message: "数据源名称不能为空", trigger: "blur" }
+        ],
+        fileServerType: [
+          { required: true, message: "请选择文件目录类型", trigger: "change" }
+        ],
+        businessName: [
+          { required: true, message: "来源业务系统不能为空", trigger: "blur" }
+        ],
+        businessComment: [
+          { required: true, message: "请输入来源业务系统描述", trigger: "blur" }
+        ],
+        targetIp: [
+          { required: true, message: "请输入主机IP地址", trigger: "blur" },
+          {
+            pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
+            message: "请输入有效的IP地址"
+          },
+        ],
+        targetPort: [
+          { required: true, message: "请输入端口号", trigger: "blur" },
+          {
+            pattern: /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
+            message: "请输入0~65535之间的端口号",
+          },
+        ],
+        targetUserName: [
+          { required: true, message: "请输入用户名", trigger: "blur" }
+        ],
+        targetUserPassword: [
+          { required: true, message: "请输入密码", trigger: "blur" }
+        ],
+        fileDirectory: [
+          { required: true, message: "请输入文件夹目录路径", trigger: "blur" }
+        ],
+        scanContent: [
+          { required: true, message: "请输入扫描内容", trigger: "blur" }
+        ],
+        scheduleType: [
+          { required: true, message: "请选择执行周期", trigger: "change" }
+        ],
+        proceedOrOverwrite: [
+          { required: true, message: "请选择扫描逻辑", trigger: "change" }
+        ],
+      },
     };
   },
   computed: {
@@ -587,7 +940,8 @@ export default {
       callback();
     },
     databaseTypeChange(e) {
-      if (e == 'ORACLE') {
+      // ORACLE和OCEAN_BASE_ORACLE需要服务名
+      if (e == 'ORACLE' || e == 'OCEAN_BASE_ORACLE') {
         this.isServiesNameRequired = true
       } else {
         this.isServiesNameRequired = false
@@ -615,6 +969,24 @@ export default {
       let res = await checkSourceName(params)
       return res.code == 200
     },
+
+    async checkFileDirectoryNameFn() {
+      let params = {
+        sourceName: this.fileDirectoryData.sourceName,
+        id: this.fileDirectoryData.id || ''
+      }
+      let res = await checkSourceName(params)
+      return res.code == 200
+    },
+
+    async checkFileShareServerNameFn() {
+      let params = {
+        sourceName: this.fileShareServerForm.sourceName,
+        id: this.fileShareServerForm.id || ''
+      }
+      let res = await checkSourceName(params)
+      return res.code == 200
+    },
     nameTestingFn(val) {
       this.form.sourceName = val.replace(/[^a-zA-Z0-9]/g, "")
     },
@@ -627,32 +999,23 @@ export default {
       }
       return msg || '待扫描'
     },
-    databaseTypeMsg(val) {
-      if (val === 'Excel') {
-        return 'Excel'
-      }
-      if (val === 'API') {
-        return 'API'
-      }
-      let msg = ''
-      for (let item of this.databaseTypeList) {
-        if (item.value == val) {
-          msg = item.name
-        }
-      }
-      return msg || '未知来源'
-    },
     databaseTypeIcon(val) {
-      if (val == 'Excel') {
+      if (val == 'Excel表') {
         return 'excel-o'
       } else if (val == 'API') {
         return 'api-o'
-      } else if (val == 'MYSQL') {
+      } else if (val == '数据库') {
         return 'mysql-o'
+      } else if (val == '文件目录') {
+        return 'file-o'
+      } else if (val == '文件服务器') {
+        return 'fileServe-o'
       } else {
         return 'unknow-o'
       }
-
+    },
+    emptyHandler(val) {
+      return val === null || val === undefined || val === '' ? '-' : val;
     },
     businessNameFn(val) {
       this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
@@ -852,6 +1215,17 @@ export default {
       this.single = selection.length !== 1
       this.multiple = !selection.length
     },
+    handleCommand(command) {
+      if (command === 'database') {
+        this.handleAdd()
+      } else if (command === 'excel') {
+        this.handleEcelFn()
+      } else if (command === 'fileDirectory') {
+        this.handleFileDirectoryFn()
+      } else if (command === 'fileShareServer') {
+        this.handleFileShareServerFn()
+      }
+    },
     /** 新增按钮操作 */
     handleAdd() {
       this.editIsFlag = false
@@ -867,58 +1241,56 @@ export default {
     async submitForm() {
       if (this.submitLoading) return;
       this.submitLoading = true;
-      this.$refs["form"].validate(async valid => {
-        let data = JSON.parse(JSON.stringify(this.form))
-        delete data.projectName
-        if (!Array.isArray(data.targetDatabase)) {
-          let str = data.targetDatabase
-          data.targetDatabase = str.trim() // 去除字符串首尾的空白字符
-            .replace(/^"|"$/g, '') // 移除首尾的引号
-            .split(',') // 按逗号分割字符串
-            .filter(Boolean); // 过滤掉空字符串
-        }
-        data.targetDatabase = JSON.stringify(data.targetDatabase)
-        data.connectionType = this.connectionType
-        data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
-        console.log(data);
-        if (!this.editIsFlag && !data.tables) {
-          this.$message({ message: '请选择扫描内容', type: 'warning' })
-          this.submitLoading = false;
-          return
-        } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
-          this.$message({ message: '请选择扫描内容', type: 'warning' })
-          this.submitLoading = false;
-          return
-        }
-        if (valid) {
-          if (!await this.getNameTestingFn()) {
+      try {
+        await this.$refs["form"].validate(async valid => {
+          let data = JSON.parse(JSON.stringify(this.form))
+          delete data.projectName
+          if (!Array.isArray(data.targetDatabase)) {
+            let str = data.targetDatabase
+            data.targetDatabase = str.trim() // 去除字符串首尾的空白字符
+              .replace(/^"|"$/g, '') // 移除首尾的引号
+              .split(',') // 按逗号分割字符串
+              .filter(Boolean); // 过滤掉空字符串
+          }
+          data.targetDatabase = JSON.stringify(data.targetDatabase)
+          data.connectionType = this.connectionType
+          data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
+          console.log(data);
+          if (!this.editIsFlag && !data.tables) {
+            this.$message({ message: '请选择扫描内容', type: 'warning' })
+            this.submitLoading = false;
+            return
+          } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
+            this.$message({ message: '请选择扫描内容', type: 'warning' })
             this.submitLoading = false;
             return
           }
-          if (this.form.id != null) {
-            data.id = this.form.id
-            updateDatabaseAndTables(data).then(response => {
+          if (valid) {
+            if (!await this.getNameTestingFn()) {
+              this.submitLoading = false;
+              return
+            }
+            if (this.form.id != null) {
+              data.id = this.form.id
+              await updateDatabaseAndTables(data)
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
-              this.submitLoading = false;
-            }).catch(() => {
-              this.submitLoading = false;
-            });
-          } else {
-            saveDatabaseAndTables(data).then(response => {
+            } else {
+              await saveDatabaseAndTables(data)
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
-              this.submitLoading = false;
-            }).catch(() => {
-              this.submitLoading = false;
-            });
+            }
+          } else {
+            this.submitLoading = false;
           }
-        } else {
-          this.submitLoading = false;
-        }
-      });
+        });
+      } catch (error) {
+        console.error('提交表单出错:', error);
+      } finally {
+        this.submitLoading = false;
+      }
     },
     /** 删除按钮操作 */
     deleteClick(ids) {
@@ -1123,7 +1495,7 @@ export default {
       } else {
         this.editIsFlag = false
       }
-      if (row.databaseType == "Excel") {
+      if (row.sourceType == "FILE") {
         this.importData.importFile = row.fileName
         this.titleExcel = "编辑Excel";
         this.importData.categoryId = row.projectId
@@ -1132,12 +1504,12 @@ export default {
         this.importData.businessName = row.businessName
         this.importData.businessComment = row.businessComment
         this.importData.importShow = true
-      } else {
+      } else if (row.sourceType == "DATABASE") {
         this.form = JSON.parse(JSON.stringify(row))
         this.form.tabelCheckedName = row.scanContent
         let targetDatabaseCopy = row.targetDatabase
         let targetDatabaseArr
-        if (targetDatabaseCopy.length > 1) {
+        if (targetDatabaseCopy?.length > 1) {
           targetDatabaseArr = targetDatabaseCopy.split(',')
           targetDatabaseArr.splice(targetDatabaseArr.length - 1, 1)
         }
@@ -1167,6 +1539,47 @@ export default {
         // }
         // this.form = row
 
+      } else if (row.sourceType == "FILE_CATALOGUE") { // 添加文件目录编辑支持
+        // 文件目录编辑：回显数据到表单并打开弹窗
+        this.titleFileDirectory = "编辑文件目录";
+        this.fileDirectoryData.id = row.id;
+        this.fileDirectoryData.sourceName = row.sourceName;
+        this.fileDirectoryData.businessName = row.businessName;
+        this.fileDirectoryData.businessComment = row.businessComment;
+        // 如果有已上传的文件信息，可以在这里处理回显
+        // this.fileDirectoryData.uploadFiles = row.uploadFiles || [];
+        this.fileDirectoryData.show = true;
+
+      } else if (row.sourceType == "FILE_SERVER") { // 添加文件共享服务器编辑支持
+        // 文件共享服务器编辑：回显数据到表单并打开弹窗
+        this.titleFileShareServer = "编辑文件共享服务器";
+        this.fileShareServerForm.id = row.id;
+        this.fileShareServerForm.sourceName = row.sourceName;
+        this.fileShareServerForm.fileServerType = row.fileServerType || 'SMB';
+        this.fileShareServerForm.businessName = row.businessName;
+        this.fileShareServerForm.businessComment = row.businessComment;
+        this.fileShareServerForm.targetIp = row.targetIp || '';
+        this.fileShareServerForm.targetPort = row.targetPort || '';
+        this.fileShareServerForm.targetUserName = row.targetUserName || '';
+        this.fileShareServerForm.targetUserPassword = row.targetUserPassword || '';
+        this.fileShareServerForm.fileDirectory = row.fileDirectory || '';
+        this.fileShareServerForm.scanContent = row.scanContent || '';
+        this.fileShareServerForm.enableFileSizeFilter = row.enableFileSizeFilter || false;
+        this.fileShareServerForm.fileSizeMin = row.fileSizeMin || '0';
+        this.fileShareServerForm.fileSizeMinUnit = row.fileSizeMinUnit || 'KB';
+        this.fileShareServerForm.fileSizeMax = row.fileSizeMax || '';
+        this.fileShareServerForm.fileSizeMaxUnit = row.fileSizeMaxUnit || 'KB';
+        this.fileShareServerForm.enableFileDateFilter = row.enableFileDateFilter || false;
+        this.fileShareServerForm.fileDateFilterType = row.fileDateFilterType || 'monthsWithin';
+        this.fileShareServerForm.fileDateMonths = row.fileDateMonths || '3';
+        this.fileShareServerForm.fileDateMonthsBefore = row.fileDateMonthsBefore || '';
+        this.fileShareServerForm.fileDateStart = row.fileDateStart || '';
+        this.fileShareServerForm.fileDateEnd = row.fileDateEnd || '';
+        this.fileShareServerForm.scheduleType = row.databaseProxysTimer?.scheduleType || '0';
+        this.fileShareServerForm.scheduleInterval = row.databaseProxysTimer?.scheduleInterval || '';
+        this.fileShareServerForm.scheduleTime = row.databaseProxysTimer?.scheduleTime || '00:00';
+        this.fileShareServerForm.proceedOrOverwrite = row.proceedOrOverwrite || false;
+        this.fileShareServerOpen = true;
       }
     },
     // 扫描内容点击事件
@@ -1246,6 +1659,221 @@ export default {
       } catch (error) {
         this.$message.error('获取数据字典列表失败');
         this.dictionaryList = [];
+      }
+    },
+
+    handleFileDirectoryFn() {
+      this.titleFileDirectory = '上传文件'
+      this.fileDirectoryData.show = true
+      this.fileDirectoryData.sourceName = ''
+      this.fileDirectoryData.businessName = ''
+      this.fileDirectoryData.businessComment = ''
+      this.fileDirectoryData.uploadFiles = []
+      this.fileDirectoryData.id = ''
+    },
+
+    handleFileDirectoryChange(file, fileList) {
+      // 检查文件总大小
+      const totalSize = fileList.reduce((sum, f) => sum + f.size, 0);
+      const maxSize = 50 * 1024 * 1024; // 50MB
+
+      if (totalSize > maxSize) {
+        this.$message.warning('文件总大小不能超过50MB');
+        fileList.pop(); // 移除最后添加的文件
+        return;
+      }
+
+      this.fileDirectoryData.uploadFiles = fileList;
+      // 触发表单验证
+      this.$refs.fileDirectoryForm.validateField('uploadFiles');
+    },
+
+    handleFileDirectoryRemove(file, fileList) {
+      this.fileDirectoryData.uploadFiles = fileList;
+      this.$refs.fileDirectoryForm.validateField('uploadFiles');
+    },
+
+    handleFileDirectoryExceed(files, fileList) {
+      this.$message.warning(`最多只能上传20个文件，当前已选择${fileList.length}个文件`);
+    },
+
+    removeFileDirectoryFile(index) {
+      this.fileDirectoryData.uploadFiles.splice(index, 1);
+      this.$refs.fileDirectoryForm.validateField('uploadFiles');
+    },
+
+    clearAllFileDirectoryFiles() {
+      this.fileDirectoryData.uploadFiles = [];
+      this.$refs.fileDirectoryForm.validateField('uploadFiles');
+    },
+
+    getFileExtension(filename) {
+      const ext = filename.substring(filename.lastIndexOf('.') + 1).toUpperCase();
+      return ext;
+    },
+
+    formatFileSize(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    },
+
+    formatFileTime(timestamp) {
+      const date = new Date(timestamp);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+    },
+
+    async submitFileDirectoryForm() {
+      this.$refs["fileDirectoryForm"].validate(async valid => {
+        if (valid) {
+          if (!await this.checkFileDirectoryNameFn()) {
+            this.fileDirectoryLoading = false
+            return
+          }
+          this.fileDirectoryLoading = true
+          // TODO: 调用API保存文件目录数据
+          const formData = new FormData();
+          formData.append('sourceName', this.fileDirectoryData.sourceName);
+          formData.append('businessName', this.fileDirectoryData.businessName);
+          formData.append('businessComment', this.fileDirectoryData.businessComment);
+
+          if (this.fileDirectoryData.id) {
+            formData.append('id', this.fileDirectoryData.id);
+          }
+
+          // 添加所有上传的文件到FormData
+          this.fileDirectoryData.uploadFiles.forEach((file, index) => {
+            formData.append('files', file.raw);
+          });
+
+          // 这里应该调用实际的API，暂时模拟成功
+          addOrUpdateFileDataList(formData).then(res => {
+            if (res.code == 200) {
+              this.$modal.msgSuccess(this.fileDirectoryData.id ? "修改成功" : "新增成功");
+              this.fileDirectoryData.show = false
+              this.fileDirectoryLoading = false
+              this.resetFileDirectoryForm()
+              this.getList()
+            }
+          }).catch(() => {
+            this.fileDirectoryLoading = false
+          })
+        } else {
+          return false
+        }
+      })
+    },
+
+    fileDirectoryCancel() {
+      this.fileDirectoryData.show = false
+      this.resetFileDirectoryForm()
+    },
+
+    resetFileDirectoryForm() {
+      this.fileDirectoryData.sourceName = ''
+      this.fileDirectoryData.businessName = ''
+      this.fileDirectoryData.businessComment = ''
+      this.fileDirectoryData.uploadFiles = []
+      this.fileDirectoryData.id = ''
+      if (this.$refs.fileDirectoryForm) {
+        this.$refs.fileDirectoryForm.resetFields()
+      }
+    },
+
+    handleFileShareServerFn() {
+      this.titleFileShareServer = '添加文件共享服务器'
+      this.fileShareServerOpen = true
+      this.resetFileShareServerForm()
+    },
+
+    async submitFileShareServerForm() {
+      if (this.fileShareServerSubmitLoading) return
+
+      this.$refs["fileShareServerForm"].validate(async valid => {
+        if (valid) {
+          if (!await this.checkFileShareServerNameFn()) {
+            this.fileShareServerSubmitLoading = false
+            return
+          }
+
+          this.fileShareServerSubmitLoading = true
+
+          // TODO: 调用API保存文件共享服务器数据
+          const params = {
+            ...this.fileShareServerForm,
+            targetIpPort: this.fileShareServerForm.targetIp + ":" + this.fileShareServerForm.targetPort,
+            databaseType: 'FileShareServer',
+          }
+
+          if (this.fileShareServerForm.id) {
+            params.id = this.fileShareServerForm.id;
+          }
+
+          // 这里应该调用实际的API，暂时模拟成功
+          setTimeout(() => {
+            this.$modal.msgSuccess(this.fileShareServerForm.id ? "修改成功" : "新增成功");
+            this.fileShareServerOpen = false
+            this.fileShareServerSubmitLoading = false
+            this.getList()
+          }, 500)
+        } else {
+          this.fileShareServerSubmitLoading = false
+          return false
+        }
+      })
+    },
+
+    fileShareServerCancel() {
+      this.fileShareServerOpen = false
+      this.resetFileShareServerForm()
+    },
+
+    fileShareServerScheduleTypeChange(val) {
+      if (val === '0') {
+        this.fileShareServerForm.scheduleInterval = ''
+        this.fileShareServerForm.scheduleTime = '00:00'
+      }
+    },
+
+    resetFileShareServerForm() {
+      this.fileShareServerForm = {
+        sourceName: '',
+        fileServerType: 'SMB',
+        businessName: '',
+        businessComment: '',
+        targetIp: '',
+        targetPort: '',
+        targetUserName: '',
+        targetUserPassword: '',
+        fileDirectory: '',
+        scanContent: '',
+        enableFileSizeFilter: false,
+        fileSizeMin: '0',
+        fileSizeMinUnit: 'KB',
+        fileSizeMax: '',
+        fileSizeMaxUnit: 'KB',
+        enableFileDateFilter: false,
+        fileDateFilterType: 'monthsWithin',
+        fileDateMonths: '3',
+        fileDateMonthsBefore: '',
+        fileDateStart: '',
+        fileDateEnd: '',
+        scheduleType: '0',
+        scheduleInterval: '',
+        scheduleTime: '00:00',
+        proceedOrOverwrite: false,
+        id: null,
+      }
+      if (this.$refs.fileShareServerForm) {
+        this.$refs.fileShareServerForm.resetFields()
       }
     },
   }
@@ -1397,6 +2025,186 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+/* 新增表单区块标题样式 */
+.form-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+  padding: 12px 0 8px 0;
+  margin-top: 10px;
+  border-bottom: 2px solid #409eff;
+  margin-bottom: 15px;
+}
+
+.form-section-title:first-child {
+  margin-top: 0;
+}
+
+/* 添加文件上传样式，1:1还原参考图效果 */
+.upload-dragger-area {
+  width: 100%;
+}
+
+.upload-dragger-area /deep/ .el-upload {
+  width: 100%;
+}
+
+.upload-dragger-area /deep/ .el-upload-dragger {
+  width: 100%;
+  height: 200px;
+  border: 2px dashed #d9d9d9;
+  border-radius: 6px;
+  background-color: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.upload-dragger-area /deep/ .el-upload-dragger:hover {
+  border-color: #409eff;
+}
+
+.upload-dragger-content {
+  text-align: center;
+  padding: 20px;
+}
+
+.upload-icon {
+  font-size: 48px;
+  color: #909399;
+  margin-bottom: 16px;
+}
+
+.upload-text {
+  font-size: 16px;
+  color: #303133;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.upload-tip {
+  font-size: 12px;
+  color: #909399;
+  line-height: 1.5;
+}
+
+/* 已选择文件列表样式 */
+.selected-files-container {
+  margin-top: 20px;
+  border-radius: 4px;
+}
+
+.selected-files-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.selected-files-header span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.selected-files-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 10px;
+  background-color: #fafafa;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e4e7ed;
+  transition: background-color 0.3s;
+}
+
+.file-item:last-child {
+  border-bottom: none;
+}
+
+.file-item:hover {
+  background-color: #f5f7fa;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-icon {
+  font-size: 24px;
+  color: #909399;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.file-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.file-name {
+  font-size: 14px;
+  color: #303131;
+  margin-right: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-meta {
+  font-size: 12px;
+  color: #909399;
+}
+
+.file-meta-separator {
+  margin: 0 8px;
+}
+
+.remove-file-btn {
+  color: #909399;
+  font-size: 16px;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.remove-file-btn:hover {
+  color: #f56c6c;
+}
+
+/* 滚动条样式 */
+.selected-files-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.selected-files-list::-webkit-scrollbar-thumb {
+  background-color: #dcdfe6;
+  border-radius: 3px;
+}
+
+.selected-files-list::-webkit-scrollbar-thumb:hover {
+  background-color: #c0c4cc;
+}
+
+.selected-files-list::-webkit-scrollbar-track {
+  background-color: #f5f7fa;
+  border-radius: 3px;
 }
 
 .addMsg ::v-deep .el-input {

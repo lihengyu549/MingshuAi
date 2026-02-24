@@ -97,7 +97,7 @@
 <script>
 import { updateInterfaceDesign } from "@/api/system/menu";
 import store from '@/store'
-
+import { getInterfaceDesignById } from "@/api/system/menu";
 export default {
   name: "sysDesign",
   data() {
@@ -143,6 +143,12 @@ export default {
       updateInterfaceDesign(formData).then(res => {
         if (res.code === 200) {
           this.$modal.msgSuccess(res.msg);
+          getInterfaceDesignById().then(res => {
+            if (res.code === 200) {
+              res.data.img = window.location.origin + '/' + res.data.img
+              this.$store.commit('SET_PROJECT', res.data);
+            }
+          })
         }
       })
     },

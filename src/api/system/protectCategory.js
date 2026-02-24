@@ -440,3 +440,12 @@ export function getProtectTableFieldById(data) {
     data: data,
   })
 }
+
+// 新增/修改文件数据列表接口
+export function addOrUpdateFileDataList(params) {
+  return request({
+    url: '/system/proxy/database/addOrUpdateFileDataList',
+    method: 'post',
+    data: params,
+  })
+}

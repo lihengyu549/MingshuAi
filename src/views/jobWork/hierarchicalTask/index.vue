@@ -87,62 +87,69 @@
           <span>{{ scope.row.aiAnalyticsEngine == 1 ? '快速响应' : '深度思考' }}</span>
         </template>
       </el-table-column> -->
-        <el-table-column label="任务字段数" width="120" align="center" prop="fieldCount" show-overflow-tooltip />
-        <el-table-column label="执行状态" align="center" width="120" prop="maskComplete">
-          <template slot-scope="scope">
-            <div class="runType">
-              <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'"
-                class="el-icon-loading" style="margin-right: 10px;font-size: 18px;"></i>
-              <svg-icon v-else :icon-class="scope.row.maskComplete" class="runIcon"
-                style="margin-right: 10px;width: 20px;height: 20px;"></svg-icon>
-              <span>{{ stateMsg(scope.row.maskComplete) }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="发布状态" align="center" prop="publishStatus">
-          <template slot-scope="scope">
-            <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ? '未发布' :
-              '已发布' }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
-        <el-table-column label="任务操作" align="center" width="200" class-name="small-padding fixed-width">
-          <template slot-scope="scope">
-            <div class="iconBtnBox">
-              <el-tooltip class="item" effect="dark" content="执行任务" placement="top-start">
-                <i class="el-icon-video-play" @click="scope.row.publishStatus != 1 && implementFn(scope.row)"
-                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
-              </el-tooltip>
-              <el-tooltip class="item" effect="dark" content="暂停任务" placement="top-start">
-                <i class="el-icon-video-pause" @click="scope.row.publishStatus != 1 && suspendWorkFn(scope.row)"
-                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
-              </el-tooltip>
-              <el-tooltip class="item" effect="dark" content="终止任务" placement="top-start">
-                <i class="el-icon-switch-button" @click="scope.row.publishStatus != 1 && terminationWorkFn(scope.row)"
-                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
-              </el-tooltip>
-              <el-tooltip class="item" effect="dark" content="任务监控" placement="top-start">
-                <i class="el-icon-view" @click="scope.row.publishStatus != 1 && toJobMonitoring(scope.row)"
-                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
-              </el-tooltip>
-              <!-- <i class="el-icon-refresh-left" @click="recoverWorkFn(scope.row)"></i> -->
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="结果操作" align="center" width="230" class-name="small-padding fixed-width">
-          <template slot-scope="scope">
-            <el-button size="mini" type="text" @click="resultLookFn(scope.row)">结果查看</el-button>
-            <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
-              @click="resultReleaseFn(scope.row)">结果发布</el-button>
-            <el-button size="mini" type="text" :disabled="scope.row.publishStatus != 1"
-              @click="resultWithdraw(scope.row)">发布撤回</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-        :page-size.sync="queryParams.pageSize" @pagination="getList" />
-    </el-card>
-
+      <el-table-column label="任务字段数" width="120" align="center" prop="fieldCount" show-overflow-tooltip>
+        <template slot-scope="scope">
+          {{ emptyHandler(scope.row.fieldCount) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="任务文件数" width="120" align="center" prop="fileCount" show-overflow-tooltip>
+        <template slot-scope="scope">
+          {{ emptyHandler(scope.row.fileCount) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="执行状态" align="center" width="120" prop="maskComplete">
+        <template slot-scope="scope">
+          <div class="runType">
+            <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'"
+              class="el-icon-loading" style="margin-right: 10px;font-size: 18px;"></i>
+            <svg-icon v-else :icon-class="scope.row.maskComplete" class="runIcon"
+              style="margin-right: 10px;width: 20px;height: 20px;"></svg-icon>
+            <span>{{ stateMsg(scope.row.maskComplete) }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="发布状态" align="center" prop="publishStatus">
+        <template slot-scope="scope">
+          <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ? '未发布' :
+            '已发布' }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
+      <el-table-column label="任务操作" align="center" width="200" class-name="small-padding fixed-width">
+        <template slot-scope="scope">
+          <div class="iconBtnBox">
+            <el-tooltip class="item" effect="dark" content="执行任务" placement="top-start">
+              <i class="el-icon-video-play" @click="scope.row.publishStatus != 1 && implementFn(scope.row)"
+                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+            </el-tooltip>
+            <el-tooltip class="item" effect="dark" content="暂停任务" placement="top-start">
+              <i class="el-icon-video-pause" @click="scope.row.publishStatus != 1 && suspendWorkFn(scope.row)"
+                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+            </el-tooltip>
+            <el-tooltip class="item" effect="dark" content="终止任务" placement="top-start">
+              <i class="el-icon-switch-button" @click="scope.row.publishStatus != 1 && terminationWorkFn(scope.row)"
+                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+            </el-tooltip>
+            <el-tooltip class="item" effect="dark" content="任务监控" placement="top-start">
+              <i class="el-icon-view" @click="scope.row.publishStatus != 1 && toJobMonitoring(scope.row)"
+                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+            </el-tooltip>
+            <!-- <i class="el-icon-refresh-left" @click="recoverWorkFn(scope.row)"></i> -->
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="结果操作" align="center" width="230" class-name="small-padding fixed-width">
+        <template slot-scope="scope">
+          <el-button size="mini" type="text" @click="resultLookFn(scope.row)">结果查看</el-button>
+          <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
+            @click="resultReleaseFn(scope.row)">结果发布</el-button>
+          <el-button size="mini" type="text" :disabled="scope.row.publishStatus != 1"
+            @click="resultWithdraw(scope.row)">发布撤回</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
+      @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
     <Drawer :title="title" v-loading="formLoading" :visible.sync="open">
       <el-form slot="body" ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent
@@ -297,7 +304,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="语义填充状态">
-              <el-select v-model="form.paddingStatus" multiple clearable placeholder="请选择内容">
+              <el-select v-model="form.paddingStatus" multiple clearable placeholder="请选择内容" :disabled="isFileSource">
                 <el-option label="未开始" value="1" />
                 <el-option label="成功" value="2" />
                 <el-option label="失败" value="3" />
@@ -317,8 +324,14 @@
           <el-col :span="12">
             <el-form-item label="归类原因">
               <el-select v-model="form.classificationReasons" multiple clearable placeholder="请选择内容">
-                <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
-                  :value="item.value" />
+                <template v-if="isFileSource">
+                  <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value"
+                    :label="item.label" :value="item.value" />
+                </template>
+                <template v-else>
+                  <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
+                    :value="item.value" />
+                </template>
               </el-select>
             </el-form-item>
           </el-col>
@@ -381,7 +394,16 @@
         <!-- 启用功能 -->
         <Title title="启用功能" />
         <div class="feature-container">
-          <div class="feature-grid">
+          <div class="feature-grid" v-if="isFileSource">
+            <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
+              <div class="feature-content">
+                <div class="feature-title">AI分类打标</div>
+                <div class="feature-desc">结合字段上下文对数据进行智能打标</div>
+                <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+              </div>
+            </div>
+          </div>
+          <div class="feature-grid" v-else>
             <div class="feature-item" :class="{ highlight: form.ifStartAiFill }"
               @click="toggleFeature('ifStartAiFill')">
               <div class="feature-content">
@@ -420,7 +442,7 @@
             </div>
             <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
               <div class="feature-content">
-                <div class="feature-title">分类打标</div>
+                <div class="feature-title">AI分类打标</div>
                 <div class="feature-desc">结合字段上下文对数据进行智能打标</div>
                 <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
               </div>
@@ -476,13 +498,15 @@ import {
   terminateTask,
   withdrawReleaseState,
 } from "@/api/system/proxys";
+import { addScanCompleteDataTasksByFile, editScanCompleteDataByFile, selectFileResult } from "@/api/system/unstructured"
+
 import { getFrameworks, } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import { path } from "d3";
 import { color } from "echarts";
 export default {
   name: "hierarchicalTask",
-  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_classification_reasons', 'sys_executing_state'],
+  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_classification_reasons', 'sys_executing_state', 'sys_classification_reasons_un'],
   components: { Result },
   data() {
     return {
@@ -608,7 +632,7 @@ export default {
         scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '',
-
+        sourceType: '',
       },
       executeCycle: '1',
       // 表单校验
@@ -686,6 +710,11 @@ export default {
     this.getList()
     this.getScanCompleteDataFn()
   },
+  computed: {
+    isFileSource() {
+      return this.form.sourceType === 'FILE_CATALOGUE' || this.form.sourceType === 'FILE_SERVER';
+    }
+  },
   mounted() {
   },
   watch: {
@@ -699,6 +728,9 @@ export default {
     // }
   },
   methods: {
+    emptyHandler(val) {
+      return val === null || val === undefined || val === '' ? '-' : val;
+    },
     // 处理启用功能模块选中方法
     toggleFeature(featureName) {
       this.$set(this.form, featureName, !this.form[featureName]);
@@ -890,9 +922,7 @@ export default {
     },
 
     projectChangeEdit(e) {
-      // this.form.projectName = this.databaseTypeList.find(item => item.id == e).projectName
-      // this.form.projectId = e
-      // this.$forceUpdate()
+      this.form.sourceType = this.databaseTypeList.find(item => item.id == e).sourceType
     },
     /** 查询数据库代理列表 */
     getList() {
@@ -1028,22 +1058,40 @@ export default {
           if (this.form.isAddTasks === '1') {
             // this.form.piiDetectionFlag = this.form.piiDetectionFlag + ''
             // this.form.aiAnalyticsEngine = this.aiAnalyticsEngine
-            editScanCompleteDataTasks(params).then(response => {
-              this.formLoading = false
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            });
+            if (this.isFileSource) {
+              editScanCompleteDataByFile(params).then(response => {
+                this.formLoading = false
+                this.$modal.msgSuccess("修改成功");
+                this.open = false;
+                this.getList();
+              })
+            } else {
+              editScanCompleteDataTasks(params).then(response => {
+                this.formLoading = false
+                this.$modal.msgSuccess("修改成功");
+                this.open = false;
+                this.getList();
+              })
+            }
           } else {
-            // let data = JSON.parse(JSON.stringify(this.form))
-            // data.aiAnalyticsEngine = this.aiAnalyticsEngine
-            // data.piiDetectionFlag = this.form.piiDetectionFlag + ''
-            addScanCompleteDataTasks(params).then(response => {
-              this.formLoading = false
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            });
+            if (this.isFileSource) {
+              addScanCompleteDataTasksByFile(params).then(response => {
+                this.formLoading = false
+                this.$modal.msgSuccess("新增成功");
+                this.open = false;
+                this.getList();
+              })
+            } else {
+              // let data = JSON.parse(JSON.stringify(this.form))
+              // data.aiAnalyticsEngine = this.aiAnalyticsEngine
+              // data.piiDetectionFlag = this.form.piiDetectionFlag + ''
+              addScanCompleteDataTasks(params).then(response => {
+                this.formLoading = false
+                this.$modal.msgSuccess("新增成功");
+                this.open = false;
+                this.getList();
+              });
+            }
           }
           this.getList()
         }

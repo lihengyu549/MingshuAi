@@ -135,7 +135,6 @@ import {
   nameTesting, checkSourceName,
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
-import Vue from 'vue';
 export default {
   name: "dataAssetdiscover",
   components: { Result },

@@ -4,10 +4,18 @@
       <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
         v-show="showSearch" label-width="auto">
         <!-- 默认显示的筛选条件（前两行） -->
-        <el-form-item label="字段名" prop="fieldName">
-          <el-input v-model="queryParams.fieldName" @input="inputSearch" placeholder="请输入数据源名称" clearable
-            @keyup.enter.native="handleQuery" />
-        </el-form-item>
+        <template v-if="isFileSource">
+          <el-form-item label="文件名" prop="fileName">
+            <el-input v-model="queryParams.fileName" @input="inputSearch" placeholder="请输入文件名" clearable
+              @keyup.enter.native="handleQuery" />
+          </el-form-item>
+        </template>
+        <template v-else>
+          <el-form-item label="字段名" prop="fieldName">
+            <el-input v-model="queryParams.fieldName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+              @keyup.enter.native="handleQuery" />
+          </el-form-item>
+        </template>
         <el-form-item label="分类" prop="categoryId">
           <el-select ref="addSelectRef" v-model="addNodeName" :filter-method="filterCategoryTree">
             <el-option style="height: 100%; padding: 0" value="">
@@ -37,31 +45,45 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="所属库" prop="databaseName">
-          <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn" placeholder="请选择">
-            <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
-            </el-option>
-          </el-select>
-        </el-form-item>
-
-        <!-- 点击展开后显示的筛选条件 -->
-        <template v-if="showMoreFilters">
-          <el-form-item label="所属表" prop="tableName">
-            <el-select clearable v-model="queryParams.tableName" filterable :disabled="!queryParams.databaseName"
-              @change="inputSearch" placeholder="全部">
-              <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.tableName">
+        <template v-if="isFileSource">
+          <el-form-item label="所属文件夹" prop="filePath">
+            <el-input v-model="queryParams.filePath" @input="inputSearch" placeholder="请输入所属文件夹" clearable
+              el-ineyup.enter.native="handleQuery" />
+          </el-form-item>
+        </template>
+        <template v-else>
+          <el-form-item label="所属库" prop="databaseName">
+            <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn" placeholder="请选择">
+              <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
               </el-option>
             </el-select>
           </el-form-item>
-          <!-- <el-form-item label="来源业务系统" prop="businessName">
-        <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入来源业务系统" clearable
-          @keyup.enter.native="handleQuery" />
-      </el-form-item> -->
+        </template>
+
+
+        <!-- 点击展开后显示的筛选条件 -->
+        <template v-if="showMoreFilters">
+          <template v-if="!isFileSource">
+            <el-form-item label="所属表" prop="tableName">
+              <el-select clearable v-model="queryParams.tableName" filterable :disabled="!queryParams.databaseName"
+                @change="inputSearch" placeholder="全部">
+                <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.tableName">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </template>
           <el-form-item label="归类原因" prop="classificationReasons">
             <el-select clearable v-model="queryParams.classificationReasons" @change="inputSearch" placeholder="请选择">
-              <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
-                :value="item.value">
-              </el-option>
+              <template v-if="isFileSource">
+                <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value" :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </template>
+              <template v-else>
+                <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </template>
             </el-select>
           </el-form-item>
           <el-form-item label="置信度" prop="confidenceLevel">
@@ -79,15 +101,17 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="样本特征" prop="featureData">
-            <el-select clearable v-model="queryParams.featureData" @change="inputSearch" placeholder="请选择">
-              <el-option label="是" value="1" />
-              <el-option label="否" value="0" />
-            </el-select>
-          </el-form-item>
+          <template v-if="!isFileSource">
+            <el-form-item label="样本特征" prop="featureData">
+              <el-select clearable v-model="queryParams.featureData" @change="inputSearch" placeholder="请选择">
+                <el-option label="是" value="1" />
+                <el-option label="否" value="0" />
+              </el-select>
+            </el-form-item>
+          </template>
         </template>
         <!-- <el-form-item label=" " class="searchBtn"> -->
-          <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
+        <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
         <!-- </el-form-item> -->
       </el-form>
     </el-card>
@@ -108,8 +132,7 @@
       </el-col>
       <el-col :span="1.5">
         <el-dropdown trigger="click">
-          <el-button type="danger" plain size="medium">取消操作<i
-              class="el-icon-arrow-down el-icon--right"></i></el-button>
+          <el-button type="danger" plain size="medium">取消操作<i class="el-icon-arrow-down el-icon--right"></i></el-button>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item @click.native="handleAddFnClose">
               <i class="el-icon-refresh-left"></i> 取消勾选项
@@ -143,24 +166,29 @@
       <el-table class="tableBox" v-loading="loading" :key="checkedColumn.length" :data="proxysList"
         @selection-change="handleSelectionChange" ref="tableRef">
         <el-table-column type="selection" width="60" align="center" />
-        <el-table-column label="字段名" align="left" prop="fieldName" width="150" show-overflow-tooltip>
+        <el-table-column :label="isFileSource ? '文件名' : '字段名'" align="left"
+          :prop="isFileSource ? 'fileName' : 'fieldName'" width="150" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #3b82f6;">
+            <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
               <svg-icon icon-class="text" style="font-size: 14px; margin-right: 5px;" />
-              {{ scope.row.fieldName
-              }}</span>
+              {{ isFileSource ? scope.row.fileName : scope.row.fieldName }}</span>
           </template>
         </el-table-column>
+        <el-table-column v-if="isFileSource" label="文件类型" align="center" prop="fileFormat" width="150"
+          show-overflow-tooltip />
+        <el-table-column v-if="isFileSource" label="所属文件夹" align="center" prop="filePath" width="150"
+          show-overflow-tooltip />
         <!-- <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip /> -->
-        <el-table-column label="字段注释" align="center" prop="fieldRemark" width="150" show-overflow-tooltip />
+        <el-table-column v-if="!isFileSource" label="字段注释" align="center" prop="fieldRemark" width="150"
+          show-overflow-tooltip />
         <!-- <el-table-column label="AI字段注释" align="center" prop="craftRemark" width="240" show-overflow-tooltip /> -->
         <template>
-          <el-table-column v-for="item in checkedColumn" :label="item.label"
+          <el-table-column v-for="item in filteredCheckedColumn" :label="item.label"
             :align="item.label == '分类' ? 'left' : 'center'" :prop="item.prop" :width="item.width" show-overflow-tooltip>
             <template slot-scope="scope">
               <!-- 分类不再展示，直接显示原始值 -->
               <template v-if="item.label == '安全分级'">
-                <el-tag :style="getRiskStyle(Number(scope.row.securityLevel))">
+                <el-tag :style="{ backgroundColor: getRiskColor(Number(scope.row.securityLevel)), color: '#fff' }">
                   {{ scope.row.securityLevelName }}
                 </el-tag>
               </template>
@@ -175,7 +203,7 @@
             </template>
           </el-table-column>
         </template>
-        <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
+        <el-table-column v-if="!isFileSource" label="样本" align="center" prop="sampleData" show-overflow-tooltip>
           <template slot-scope="scope">
             <el-tooltip placement="bottom" effect="light">
               <div slot="content">
@@ -198,8 +226,8 @@
         </el-table-column>
         <!-- 操作列已集成到字段名列中 -->
       </el-table>
-      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-        :page-size.sync="queryParams.pageSize" @pagination="getList" />
+      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
+        @pagination="getList" />
     </el-card>
     <el-dialog title="结果修改" class="addMsg" :visible.sync="deleteVisible" width="700px" append-to-body
       :close-on-click-modal="false">
@@ -260,10 +288,7 @@
 </template>
 
 <script>
-import {
-  usersAddI
-} from "@/api/system/proxyUser";
-
+import { selectFileResult, updateResultByFile, confirmListByFile, cancelConfirmByFile } from "@/api/system/unstructured"
 import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
   startI, stopI, databaseMaskI, strategyPushI, strategyAll,
@@ -278,7 +303,7 @@ import {
 } from "@/api/system/protectCategory"
 
 export default {
-  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_classification_reasons'],
+  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un'],
   name: "ProxysResult",
   data() {
     return {
@@ -525,15 +550,16 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        projectId: this.$route.query.drawerData.projectId,
+        projectId: '',
         securityLevel: [],
         confirm: '',
-        databaseId: this.$route.query.drawerData.id,
+        databaseId: '',
         businessName: '',
         databaseName: '',
         categoryId: '',
         categoryIds: '',
         piiDetection: '',
+        sourceType: ''
       },
       confirmList: [
         {
@@ -658,6 +684,10 @@ export default {
     if (drawerData) {
       // 确保drawerData是对象类型
       const drawerDataObj = typeof drawerData === 'string' ? JSON.parse(drawerData) : drawerData;
+      // 初始化 queryParams
+      this.queryParams.projectId = drawerDataObj.projectId || '';
+      this.queryParams.databaseId = drawerDataObj.id || '';
+      this.queryParams.sourceType = drawerDataObj.sourceType || '';
       // 处理数据库列表
       if (drawerDataObj.targetDatabase && typeof drawerDataObj.targetDatabase === 'string') {
         const cleanedDatabase = drawerDataObj.targetDatabase.replace(/,$/, '');
@@ -678,12 +708,27 @@ export default {
     this.getProtectCategory();
     this.getPiiList();
     // 设置默认展示的列
-    this.checkedColumn = this.setList.filter(item =>
-      ['所属表', '表注释', '分类', '安全分级'].includes(item.label)
-    );
+    if (!this.isFileSource) {
+      this.checkedColumn = this.setList.filter(item =>
+        ['所属表', '表注释', '分类', '安全分级'].includes(item.label)
+      );
+    }
     this.checkAll = false;
     this.getList();
     this.getListTableByProject();
+  },
+  computed: {
+    isFileSource() {
+      return this.queryParams.sourceType === 'FILE_CATALOGUE' || this.queryParams.sourceType === 'FILE_SERVER';
+    },
+    filteredCheckedColumn() {
+      if (this.isFileSource) {
+        return this.checkedColumn.filter(item =>
+          !['所属表', '所属库', '样本特征', '字段类型', 'AI字段注释', '表注释', 'AI表注释'].includes(item.label)
+        );
+      }
+      return this.checkedColumn;
+    }
   },
   mounted() {
 

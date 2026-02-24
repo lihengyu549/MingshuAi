@@ -14,75 +14,101 @@
         <!-- 下方左右分栏区域 -->
         <div class="content-section">
             <div class="left-section">
-                <el-card class="box-card" shadow="never">
-                    <div class="info-item">
-                        <label class="info-label">字段注释：</label>
-                        <div class="info-content">{{ row.fieldRemark || '--' }}</div>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">AI字段注释：</label>
-                        <div class="info-content">{{ row.craftRemark || '--' }}</div>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">字段主题词：</label>
-                        <div class="info-content">
-                            <el-tag v-for="tag in JSON.parse(row.fieldTopic)" :key="tag"
-                                style="margin-right: 5px; border-radius: 8px;">{{ tag ||
-                                    '--' }}</el-tag>
+                <el-card class="box-card" shadow="never" style="border: none;">
+                    <template v-if="isFileSource">
+                        <div class="info-item">
+                            <label class="info-label">文件类型：</label>
+                            <div class="info-content">{{ row.fileFormat || '--' }}</div>
                         </div>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">数据路径：</label>
-                        <div class="info-content">
-                            {{ row.businessName + ' / ' + row.databaseName + ' / ' + row.tableName }}
+                        <div class="info-item">
+                            <label class="info-label">文件大小：</label>
+                            <div class="info-content">{{ row.fileSizeName || '--' }}</div>
                         </div>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">表注释：</label>
-                        <div class="info-content">
-                            {{ row.tableRemark || '--' }}
+                        <div class="info-item">
+                            <label class="info-label">上传时间：</label>
+                            <div class="info-content">{{ row.createTime || '--' }}</div>
                         </div>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">AI表注释：</label>
-                        <div class="info-content">{{ row.tableCraftRemark || '--' }}</div>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">表主题词：</label>
-                        <div class="info-content">
-                            <el-tag type="success" v-for="tag in JSON.parse(row.tableTopic)" :key="tag"
-                                style="margin-right: 5px; border-radius: 8px;">{{ tag ||
-                                    '--' }}</el-tag>
+                        <div class="info-item">
+                            <label class="info-label">文件摘要：</label>
+                            <div class="info-content">{{ row.fileContext || '--' }}</div>
                         </div>
-                    </div>
-                    <!-- <div class="info-item">
+                        <div class="info-item">
+                            <label class="info-label">文件路径：</label>
+                            <div class="info-content">{{ row.filePath || '--' }}</div>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="info-item">
+                            <label class="info-label">字段注释：</label>
+                            <div class="info-content">{{ row.fieldRemark || '--' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label class="info-label">AI字段注释：</label>
+                            <div class="info-content">{{ row.craftRemark || '--' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label class="info-label">字段主题词：</label>
+                            <div class="info-content">
+                                <el-tag v-for="tag in (row.fieldTopic ? JSON.parse(row.fieldTopic) : [])" :key="tag"
+                                    style="margin-right: 5px; border-radius: 8px;">{{ tag ||
+                                        '--' }}</el-tag>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <label class="info-label">数据路径：</label>
+                            <div class="info-content">
+                                {{ row.businessName + ' / ' + row.databaseName + ' / ' + row.tableName }}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <label class="info-label">表注释：</label>
+                            <div class="info-content">
+                                {{ row.tableRemark || '--' }}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <label class="info-label">AI表注释：</label>
+                            <div class="info-content">{{ row.tableCraftRemark || '--' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label class="info-label">表主题词：</label>
+                            <div class="info-content">
+                                <el-tag type="success" v-for="tag in (row.tableTopic ? JSON.parse(row.tableTopic) : [])"
+                                    :key="tag" style="margin-right: 5px; border-radius: 8px;">{{ tag ||
+                                        '--' }}</el-tag>
+                            </div>
+                        </div>
+                        <!-- <div class="info-item">
                         <label class="info-label">所属库：</label>
                         <div class="info-content">{{ row.databaseName }}</div>
                     </div> -->
-                    <div class="info-item">
-                        <label class="info-label">样本抽样：</label>
-                        <div class="info-content">
-                            <el-tooltip placement="bottom" effect="light">
-                                <div slot="content">
-                                    <el-table :data="row.sampleList" height="250" border class="tableCla"
-                                        style="width: 100%">
-                                        <el-table-column type="index" label="序号" width="50" />
-                                        <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
-                                        </el-table-column>
-                                    </el-table>
-                                </div>
-                                <el-button size="mini" type="text">查看</el-button>
-                            </el-tooltip>
+                        <div class="info-item">
+                            <label class="info-label">样本抽样：</label>
+                            <div class="info-content">
+                                <el-tooltip placement="bottom" effect="light">
+                                    <div slot="content">
+                                        <el-table :data="row.sampleList" height="250" border class="tableCla"
+                                            style="width: 100%">
+                                            <el-table-column type="index" label="序号" width="50" />
+                                            <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
+                                            </el-table-column>
+                                        </el-table>
+                                    </div>
+                                    <el-button size="mini" type="text">查看</el-button>
+                                </el-tooltip>
+                            </div>
                         </div>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">样本特征：</label>
-                        <div class="info-content">
-                            <el-tag type="info" style="margin-right: 5px; border-radius: 8px;">{{ row.regularExpression
-                                ||
-                                '--' }}</el-tag>
+                        <div class="info-item">
+                            <label class="info-label">样本特征：</label>
+                            <div class="info-content">
+                                <el-tag type="info" style="margin-right: 5px; border-radius: 8px;">{{
+                                    row.regularExpression
+                                    ||
+                                    '--' }}</el-tag>
+                            </div>
                         </div>
-                    </div>
+                    </template>
+
                 </el-card>
                 <el-card shadow="never" style="margin-top: 20px; border-radius: 10px;">
                     <Title title="推理过程"></Title>
@@ -247,6 +273,7 @@
 import {
     getCategoryAttachData, updateFiledRule, confirmIds
 } from "@/api/system/proxys";
+import { updateResultByFile, selectLastOrNextByFileId } from "@/api/system/unstructured"
 import {
     treeListI, getProtectTableFieldById
 } from "@/api/system/protectCategory"
@@ -256,14 +283,14 @@ export default {
         return {
             loading: false,
             dialogVisible: false,
-            row: this.$route.query.row,
+            row: null,
             finalRating: {
                 inferenceProcess: '分类级别为 3级，触发动态安全分级规则，分类级别调整为 4级，个人信息识别结果为 5级'
             },
             auditResult: {
                 classificationResult: '客户>个人>个人自然属性>个人财产信息'
             },
-            categoryList: this.$route.query.categoryList,
+            categoryList: [],
             defaultProps: {
                 children: "children",
                 label: "label"
@@ -281,8 +308,17 @@ export default {
         };
     },
     created() {
+        this.row = this.$route.query.row || null;
+        this.categoryList = this.$route.query.categoryList || [];
         this.getPiiList()
-        // 页面加载时，当前查询条件不需要从任何地方恢复，因为这个页面主要展示单个数据详情
+    },
+    computed: {
+        isFileSource() {
+            return this.$route.query.queryParams.sourceType === 'FILE_CATALOGUE' || this.$route.query.queryParams.sourceType === 'FILE_SERVER';
+        },
+        titleText() {
+            return this.row.id + ' ' + (this.isFileSource ? this.row.fileName : this.row.fieldName);
+        }
     },
     methods: {
         getRiskStyle(level) {
@@ -348,6 +384,7 @@ export default {
                 .catch(err => {
                     this.dialogVisible = false
                 })
+
             // this.handleNext('2')
         },
         updataResultCanelFn() {
@@ -465,73 +502,69 @@ export default {
                 id: this.row?.id || '',
                 lastOrNext: lastOrNext || '0'
             };
-
             getProtectTableFieldById(params).then(res => {
-                // 检查res对象是否存在
-                if (!res) {
-                    console.error('API返回数据格式异常');
-                    this.loading = false;
-                    return;
-                }
-
-                if (res.code === 200 && res.data) {
-                    // 更新数据
-                    this.row = res.data;
-                    this.$route.query.queryParams.pageNum = res.data.pageNum;
-                    this.$route.query.queryParams.pageSize = res.data.pageSize;
-
-                    // 安全地更新reasoningProcess
-                    if (res.data.reasoningProcess !== undefined) {
-                        this.resultForm.reasoningProcess = res.data.reasoningProcess;
-                    }
-
-                    // 根据操作类型显示不同的消息
-                    if (lastOrNext === '0') {
-                        this.$message({
-                            message: '已切换到上一个结果',
-                            type: 'success'
-                        });
-                    } else if (lastOrNext === '1') {
-                        this.$message({
-                            message: '已切换到下一个结果',
-                            type: 'success'
-                        });
-                    } else if (lastOrNext === '2') {
-                        this.$message({
-                            message: '已刷新当前结果',
-                            type: 'success'
-                        });
-                    }
-                } else {
-                    // 根据操作类型显示不同的错误消息
-                    let message;
-                    switch (lastOrNext) {
-                        case '0':
-                            message = '没有上一个结果！';
-                            break;
-                        case '1':
-                            message = '没有下一个结果！';
-                            break;
-                        case '2':
-                            message = '无法获取当前结果数据！';
-                            break;
-                        default:
-                            message = '操作失败，请重试！';
-                    }
-                    this.$message({
-                        message: message,
-                        type: 'warning'
-                    });
-                }
-                this.loading = false;
+                this.handleNextResponse(res, lastOrNext);
             }).catch(() => {
                 this.loading = false;
-                // 统一错误处理
                 this.$message({
                     message: '数据加载失败，请稍后重试',
                     type: 'error'
                 });
             });
+        },
+        handleNextResponse(res, lastOrNext) {
+            if (!res) {
+                console.error('API返回数据格式异常');
+                this.loading = false;
+                return;
+            }
+
+            if (res.code === 200 && res.data) {
+                this.row = res.data;
+                this.$route.query.queryParams.pageNum = res.data.pageNum;
+                this.$route.query.queryParams.pageSize = res.data.pageSize;
+
+                if (res.data.reasoningProcess !== undefined) {
+                    this.resultForm.reasoningProcess = res.data.reasoningProcess;
+                }
+
+                if (lastOrNext === '0') {
+                    this.$message({
+                        message: '已切换到上一个结果',
+                        type: 'success'
+                    });
+                } else if (lastOrNext === '1') {
+                    this.$message({
+                        message: '已切换到下一个结果',
+                        type: 'success'
+                    });
+                } else if (lastOrNext === '2') {
+                    this.$message({
+                        message: '已刷新当前结果',
+                        type: 'success'
+                    });
+                }
+            } else {
+                let message;
+                switch (lastOrNext) {
+                    case '0':
+                        message = '没有上一个结果！';
+                        break;
+                    case '1':
+                        message = '没有下一个结果！';
+                        break;
+                    case '2':
+                        message = '无法获取当前结果数据！';
+                        break;
+                    default:
+                        message = '操作失败，请重试！';
+                }
+                this.$message({
+                    message: message,
+                    type: 'warning'
+                });
+            }
+            this.loading = false;
         },
         handleManualConfirm() {
             // 人工确认点击事件

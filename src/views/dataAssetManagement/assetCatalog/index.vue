@@ -391,17 +391,38 @@ import {
   callAIPaddingCommentsByAll, updateDataQualityAssessmentByAll, propertyCatalogueExport
 } from "@/api/system/protectCategory";
 import { getDicts } from "@/api/system/dict/data";
+// 引入getProjectFileList接口
+import { getProjectFileList } from "@/api/system/unstructured";
 export default {
   dicts: ['sys_export_column'],
   name: "assetCatalog",
   components: {},
   data() {
     return {
+      currentNodeType: '0', // 当前节点的type值,默认为'0'
+      currentFolderName: '', // 当前文件夹名称
+      breadcrumbList: [], // 面包屑路径数组
+      currentSortField: 'add_time', // 当前排序字段
+      currentSortLabel: '上传时间', // 当前排序显示文本
+      sortOrders: {
+        add_time: 'asc',
+        file_name: 'asc',
+        file_size: 'asc'
+      },
+      currentNodeData: null, // 存储当前选中的节点数据
+      folderList: [], // 文件夹列表
+      fileList: [], // 文件列表
+      fileTotal: 0, // 文件总数
+      fileQueryParams: {
+        pageNum: 1,
+        pageSize: 10
+      },
+      rootFolderTitle: '', // 根文件夹标题（从接口获取）
+
       drawerShow: false,
       drawerTitle: '',
       drawerData: [],
       overflowStatus: {}, // 用于存储每个盒子的溢出状态
-      dirtyDataEditMsg: '',
       filterText: '',// 过滤条件tree
       Loading: false,// 全局loading
       loading: false,
@@ -454,8 +475,6 @@ export default {
       },
       tableKey: 0,
       editMsg: '',
-      scrollTop: '',
-      scrollLeft: '',
 
       // 新增：树复选框相关状态
       isTreeAllChecked: false, // 全选框的勾选状态（双向绑定）
@@ -554,14 +573,34 @@ export default {
       scoreDialog: {
         visible: false,
         data: {
-          fieldCommentActual: 52,
-          tableCommentActual: 5,
-          namingActual: 28,
-          uniquenessActual: 5,
-          totalScore: 90
+          fieldCommentActual: 0,
+          tableCommentActual: 0,
+          namingActual: 0,
+          uniquenessActual: 0,
+          totalScore: 0
         }
       },
     };
+  },
+  computed: {
+    // 文件+文件夹总数
+    totalItems() {
+      return this.folderList.length + this.fileTotal;
+    },
+    sortOrderIcon() {
+      const order = this.sortOrders[this.currentSortField];
+      if (order === 'asc') {
+        return 'el-icon-top';
+      } else if (order === 'desc') {
+        return 'el-icon-bottom';
+      }
+      return 'el-icon-d-caret';
+    },
+    // 直接返回文件列表，不再在前端进行切片
+    // 因为接口已经返回了分页后的数据
+    paginatedFileList() {
+      return this.fileList;
+    }
   },
   watch: {
     filterText(val) {
@@ -584,6 +623,7 @@ export default {
         treeRef.setCheckedKeys([]);
         this.selectedTreeNodeIds = [];
       }
+      // 全选状态变更后调用getList方法
     },
 
     // 监听选中节点ID数组变化，同步全选框状态
@@ -611,9 +651,119 @@ export default {
   mounted() {
   },
   methods: {
+
+
+    handleBreadcrumbClick(item, index) {
+      if (item === null) {
+        // 点击首页图标,返回根目录（顶层）
+        this.breadcrumbList = [];
+        this.currentFolderName = this.rootFolderTitle;
+        // 重新加载顶层数据
+        if (this.currentNodeData) {
+          this.fileQueryParams.pageNum = 1;
+          this.loadFileListData(this.currentNodeData);
+        }
+      } else {
+        // 点击路径中的某一层
+        this.breadcrumbList = this.breadcrumbList.slice(0, index + 1);
+        this.currentFolderName = item.name;
+        this.loadFolderData(item.id);
+      }
+    },
+
+    handleSortChange(field) {
+      if (this.currentSortField === field) {
+        this.sortOrders[field] = this.sortOrders[field] === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.currentSortField = field;
+        this.sortOrders[field] = 'asc';
+      }
+
+      const labelMap = {
+        'add_time': '上传时间',
+        'file_name': '文件名称',
+        'file_size': '文件大小'
+      };
+      this.currentSortLabel = labelMap[field] || '上传时间';
+
+      if (this.currentNodeData) {
+        this.loadFileListData(this.currentNodeData);
+      }
+    },
+
+    getSortIcon(field) {
+      if (this.currentSortField !== field) {
+        return 'el-icon-sort';
+      }
+      return this.sortOrders[field] === 'asc' ? 'el-icon-top' : 'el-icon-bottom';
+    },
+
+
+    handleFolderClick(folder) {
+      // 添加到面包屑
+      this.breadcrumbList.push({
+        id: folder.id,
+        name: folder.name
+      });
+      this.currentFolderName = folder.name;
+
+      this.loadFolderData(folder.id);
+    },
+
+    loadFolderData(folderId) {
+      // TODO: 这里需要调用接口获取子文件夹的数据
+      // 暂时清空数据，等待接口实现
+      this.folderList = [];
+      this.fileList = [];
+      this.fileTotal = 0;
+
+      // 如果有接口，应该类似这样调用：
+      // getSubFolderData(folderId).then(res => {
+      //   this.folderList = res.data.folder || [];
+      //   this.fileList = res.data.fileList.records || [];
+      //   this.fileTotal = res.data.fileList.total || 0;
+      // });
+    },
+
+
+    loadFileListData(data) {
+      const sortField = this.currentSortField;
+      const order = this.sortOrders[sortField];
+      const isAsc = order === 'asc';
+
+      const response = {
+        sortField: sortField,
+        isAsc: isAsc,
+        // 调整databaseList参数结构,使其符合getProjectFileList接口要求
+        databaseList: [{
+          parentId: data.id,
+          label: data.label
+        }],
+        pageNum: this.fileQueryParams.pageNum,
+        pageSize: this.fileQueryParams.pageSize,
+      };
+      getProjectFileList(response).then(res => {
+        if (res.code === 200) {
+          this.fileList = res.data.fileList?.records || [];
+          this.fileTotal = res.data.fileList?.total || 0;
+          // 处理文件夹数据
+          this.folderList = res.data.folder || [];
+
+          if (res.data.title) {
+            this.rootFolderTitle = res.data.title;
+            this.currentFolderName = res.data.title;
+          }
+        }
+      }).catch(err => {
+        console.error('加载文件列表失败:', err);
+        this.$message.error('加载文件列表失败');
+      });
+    },
+
+
     /**
-     * 新增：递归获取所有树节点的ID（适配 DataSource → Database 二级结构）
-     * @param {Array} treeData - 树数据源（categoryList）
+     * 新增:递归获取所有树节点的ID(适配 DataSource → Database 二级结构)
+     * @param {Array} treeData - 树数据源(categoryList)
      * @returns {Array} 所有节点的ID数组
      */
     getAllTreeIds(treeData) {
@@ -634,32 +784,70 @@ export default {
 
 
     /**
-     * 新增：全选框点击事件（与 watch 配合确保状态同步）
-     * @param {Boolean} checked - 全选框的新状态
+     * 全选框点击事件(通过watch自动处理勾选状态)
      */
     handleTreeAllCheck(checked) {
       this.isTreeAllChecked = checked;
-      if (checked) {
-        const allChildren = this.collectAllChildren(this.categoryList);
-        this.getList(allChildren)
-      } else {
-        this.getList([])
-      }
-      // 全选状态变更后调用getList方法
     },
     /**
-     * 新增：树节点复选框状态变更事件（勾选/取消勾选时触发）
+     * 树节点复选框变更事件(仅用于导出,不影响右侧列表)
      * @param {Object} currentNode - 当前操作的节点
-     * @param {Array} selectedNodes - 所有已勾选的节点数组
+     * @param {Object} treeStatus - 树的选中状态
      */
     handleTreeCheck(currentNode, treeStatus) {
-      // 获取所有勾选的节点ID（包括半选节点的子节点）
+      // 获取所有勾选的节点ID(包括半选节点的子节点)
       const checkedIds = this.getCheckedNodeIds(this.categoryList);
       this.selectedTreeNodeIds = checkedIds;
+      this.updateTreeAllCheckedState();
+    },
+    /**
+     * 更新全选框状态
+     */
+    updateTreeAllCheckedState() {
+      const allChildren = this.collectAllChildren(this.categoryList);
+      if (this.selectedTreeNodeIds.length === 0) {
+        this.isTreeAllChecked = false;
+      } else if (this.selectedTreeNodeIds.length === allChildren.length) {
+        this.isTreeAllChecked = true;
+      } else {
+        this.isTreeAllChecked = null;
+      }
+    },
+    /**
+     * 点击树节点事件:点击节点展示右侧列表
+     * @param {Object} data - 点击的节点数据
+     */
+    handleTreeNodeClick(data) {
+      this.currentNodeType = data.type || '0';
+      this.currentNodeData = data; // 保存当前节点数据
 
-      // 调用列表刷新方法
-      const checkedNodeData = this.getCheckedNodeData(treeStatus.checkedNodes);
-      this.getList(checkedNodeData);
+      if (this.currentNodeType == '1') {
+        // 文件管理模式
+        this.breadcrumbList = [];
+        // 重置分页
+        this.fileQueryParams.pageNum = 1;
+        // 加载文件列表数据（接口会返回 res.data.title 作为顶层标题）
+        this.loadFileListData(data);
+      } else {
+        // 原有表格模式
+        if (data.children && data.children.length > 0) {
+          // 点击的是父节点
+          this.getList(data.children)
+        } else {
+          // 点击的是子节点
+          this.getList([{
+            parentId: data.parentId,
+            label: data.label,
+          }]);
+        }
+      }
+    },
+
+    handleFilePagination() {
+      // 重新加载当前节点的数据
+      if (this.currentNodeData) {
+        this.loadFileListData(this.currentNodeData);
+      }
     },
 
     getCheckedNodeIds(treeData) {
@@ -695,17 +883,21 @@ export default {
     },
 
     /**
-     * 自定义树节点渲染，为父节点和子节点添加不同的SVG图标
+     * 自定义树节点渲染,为父节点和子节点添加不同的SVG图标
      */
     renderContent(h, { node, data }) {
-      // 判断是否为父节点（有children属性且长度大于0）
-      const isParentNode = data.children && data.children.length > 0;
+      let iconClass = 'database1';
+      if (data.type == 1) {
+        iconClass = 'file-o';
+      } else if (data.children && data.children.length > 0) {
+        iconClass = 'sysBusiness';
+      }
 
       return h('span', { class: 'custom-tree-node' }, [
         h('svg-icon', {
           class: 'tree-node-icon',
           attrs: {
-            iconClass: isParentNode ? 'sysBusiness' : 'database1'
+            iconClass: iconClass
           },
           style: { marginRight: '8px' }
         }),
@@ -714,7 +906,7 @@ export default {
     },
 
     /**
-     * 新增：导出选中的树节点数据（按图片层级格式化为 DataSource → Databases）
+     * 新增:导出选中的树节点数据(按图片层级格式化为 DataSource → Databases)
      */
     handleTreeExport() {
       if (this.selectedTreeNodeIds.length === 0) {
@@ -762,7 +954,7 @@ export default {
       } else {
         this.exportColumnDialog.selectedColumns.push(column.value);
       }
-      // 强制更新，确保UI同步
+      // 强制更新,确保UI同步
       this.$forceUpdate();
     },
 
@@ -806,7 +998,7 @@ export default {
           .map(id => this.findNodeById(this.categoryList, id))
           .filter(Boolean); // 过滤无效节点
 
-        // 提取所有选中节点的子节点，组成数组
+        // 提取所有选中节点的子节点,组成数组
         const allChildrenData = selectedNodes.reduce((acc, node) => {
           if (node.children && node.children.length > 0) {
             acc.push(...node.children);
@@ -827,7 +1019,7 @@ export default {
           saveAsDefault: this.exportColumnDialog.saveAsDefault
         };
 
-        // 调用导出接口，注意需要指定responseType为blob
+        // 调用导出接口,注意需要指定responseType为blob
         await propertyCatalogueExport(params);
 
         //  if (res.type != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
@@ -851,12 +1043,12 @@ export default {
 
       } catch (error) {
         this.loading = false;
-        this.$message.error('导出失败，请稍后再试');
+        this.$message.error('导出失败,请稍后再试');
       }
     },
 
     /**
-     * 工具方法：根据选中的ID数组，筛选出对应的节点完整数据
+     * 工具方法:根据选中的ID数组,筛选出对应的节点完整数据
      * @param {Array} treeData - 树数据源
      * @param {Array} checkedIds - 选中的节点ID数组
     * @returns {Array} 选中节点的完整数据
@@ -871,10 +1063,10 @@ export default {
           // 检查是否是半选状态
           const nodeStatus = this.$refs.tree.getNode(node.id);
           if (nodeStatus && nodeStatus.checked) {
-            // 全选状态的父节点，添加所有子节点
+            // 全选状态的父节点,添加所有子节点
             checkedData.push(...node.children);
           } else if (nodeStatus && nodeStatus.indeterminate) {
-            // 半选状态的父节点，递归处理子节点
+            // 半选状态的父节点,递归处理子节点
             const childChecked = this.getCheckedNodeData(node.children);
             checkedData.push(...childChecked);
           }
@@ -886,27 +1078,6 @@ export default {
       return checkedData;
     },
 
-    /**
-     * 工具方法：格式化导出数据（按图片层级分组，如 DataSource01 → [CoreDatabase, UserDatabase]）
-     * @param {Array} selectedNodes - 选中节点的完整数据
-     * @returns {Array} 格式化后的导出数据
-     */
-    formatExportData(selectedNodes) {
-      // 1. 筛选顶级节点（图片中的 DataSource01、DataSource02，特征：无 parentId）
-      const topNodes = selectedNodes.filter(node => !node.parentId);
-      // 2. 为每个顶级节点匹配其子节点（图片中的 CoreDatabase 等，特征：parentId = 顶级节点ID）
-      return topNodes.map(topNode => ({
-        数据源名称: topNode.label, // 如 "DataSource01"
-        数据源ID: topNode.id,
-        包含数据库: selectedNodes
-          .filter(node => node.parentId === topNode.id)
-          .map(dbNode => ({
-            数据库名称: dbNode.label, // 如 "CoreDatabase"
-            数据库ID: dbNode.id
-          }))
-      }));
-    },
-
     //一键填充
     allFill() {
       this.$confirm('确定执行一键填充操作？', '提示', {
@@ -914,7 +1085,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       })
-        // 用户点击确定按钮，执行相关操作
+        // 用户点击确定按钮,执行相关操作
         .then(() => {
           this.loading = true
           let params = {
@@ -932,7 +1103,7 @@ export default {
               this.loading = false
             });
         }).catch(() => {
-          // 用户点击了取消按钮，不做任何操作
+          // 用户点击了取消按钮,不做任何操作
         });
     },
     //一键评估
@@ -942,7 +1113,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       })
-        // 用户点击确定按钮，执行相关操作
+        // 用户点击确定按钮,执行相关操作
         .then(() => {
           this.loading = true
           let params = {
@@ -960,11 +1131,11 @@ export default {
               this.loading = false
             });
         }).catch(() => {
-          // 用户点击了取消按钮，不做任何操作
+          // 用户点击了取消按钮,不做任何操作
         });
     },
     checkOverflow(item, index) {
-      // 检查 ref 是否存在，避免访问 undefined 的属性
+      // 检查 ref 是否存在,避免访问 undefined 的属性
       const containerRef = this.$refs[`container-${index}`];
       if (!containerRef || !containerRef[0]) {
         this.$set(this.overflowStatus, index, false);
@@ -1055,54 +1226,23 @@ export default {
       }
     },
     async drawerEditBlurFn(row) {
-      let params = {
+      const params = {
         craftRemark: this.editMsg || row.aiFieldRemark,
         dirtyData: row.dirtyDataEditMsg || row.dirtyData,
         fieldId: row.fieldId,
       }
-      await updateFieldListByFieldId(params).then(res => {
-        this.$message({
-          type: 'success',
-          message: '修改成功!'
-        });
-        row.drawerEdit = false
-        row.dirtyDataEditMsg = ''
-        this.editMsg = ''
-        this.tableKey += 1
-      })
-      this.fieldInformationFn(this.filedRowData)
-      return
-      // this.$confirm('是否保存编辑数据?', '提示', {
-      //   confirmButtonText: '确定',
-      //   cancelButtonText: '取消',
-      //   type: 'warning'
-      // }).then(async () => {
-      //   row.aiFieldRemark = this.editMsg
-      //   let params = {
-      //     craftRemark: this.editMsg,
-      //     dirtyData: row.dirtyData,
-      //     fieldId: row.fieldId,
-      //   }
-      //   await updateFieldListByFieldId(params).then(res => {
-      //     this.$message({
-      //       type: 'success',
-      //       message: '修改成功!'
-      //     });
-      //     row.drawerEdit = false
-      //     this.tableKey = 0
-      //   })
-      //   this.$nextTick(() => {
-      //     row.drawerEdit = false
-      //     this.tableKey = 0
-      //   })
-      // }).catch(() => {
-      //   this.$message({
-      //     type: 'info',
-      //     message: '已取消'
-      //   });
-      //   row.drawerEdit = false
-      //   this.tableKey += 1
-      // });
+
+      try {
+        await updateFieldListByFieldId(params);
+        this.$message.success('修改成功!');
+        row.drawerEdit = false;
+        row.dirtyDataEditMsg = '';
+        this.editMsg = '';
+        this.tableKey += 1;
+        this.fieldInformationFn(this.filedRowData);
+      } catch (error) {
+        this.$message.error('修改失败');
+      }
     },
     // 字段信息
     async fieldInformationFn(row) {
@@ -1114,7 +1254,7 @@ export default {
       }
       getAllFieldListByTableIdAndDatabaseId(params).then(res => {
         if (res.code == 200) {
-          // 处理原始数据，补充必要字段
+          // 处理原始数据,补充必要字段
           this.drawerData = res.data.map(ele => {
             if (ele.data) {
               ele.sampleList = JSON.parse(ele.data).map(item => ({ value: item }))
@@ -1203,7 +1343,7 @@ export default {
         pageNum: 1,
         pageSize: 10
       };
-      // 再调用表单重置方法（双重保障）
+      // 再调用表单重置方法(双重保障)
       if (this.$refs.drawerQueryForm) {
         this.$refs.drawerQueryForm.resetFields();
       }
@@ -1215,36 +1355,12 @@ export default {
       if (!value) return true;
       return data.label.indexOf(value) !== -1;
     },
-    // 左侧树点击事件
-    // handleNodeClick(data) {
-    //   console.log(data);
-    //   if (data.parentId) {
-    //     this.databaseName = data.label
-    //     this.treeID = data.parentId;
-    //   } else {
-    //     this.treeID = data.id;
-    //     this.databaseName = ''
-    //   }
-    //   this.queryParams.tableName = ''
-    //   this.queryParams.paddingStatus = ''
-    //   this.queryParams.featureExtractionStatus = ''
-    //   this.isChildrenNode = data.nodeLayerIndex
-    //   this.handleQuery();
-    //   this.getSelectTableNamesFn()
-    // },
-    // 定时器，防抖使用
-    inputSearch(data) {
-      clearTimeout(this.debounceTimeout);
-      this.debounceTimeout = setTimeout(() => {
-        this.handleQuery()
-      }, 500); // 设置防抖的时间间隔为300毫秒
-    },
     selectProjectIdChange(val) {
       console.log('val', val);
       console.log('queryParams', this.queryParams);
       this.handleQuery()
     },
-    // 处理input输入事件，添加防抖
+    // 处理input输入事件,添加防抖
     handleInputChange() {
       clearTimeout(this.inputTimer);
       this.inputTimer = setTimeout(() => {
@@ -1266,10 +1382,13 @@ export default {
             // 页面初次加载时全选所有节点
             this.isTreeAllChecked = true;
 
-            // 示例：获取所有children并打印（可根据需要调整调用时机）
-            const allChildren = this.collectAllChildren(this.categoryList);
-            console.log('所有children节点数组：', allChildren);
-            this.getList(allChildren);
+            // 示例:获取所有children并打印(可根据需要调整调用时机)
+            if (this.categoryList[0].type == '0') {
+              const allChildren = this.collectAllChildren([this.categoryList[0]]);
+              this.getList(allChildren);
+            }else{
+              this.loadFileListData(this.categoryList[0]);
+            }
           });
         }
         this.treeLoading = false;
@@ -1277,7 +1396,7 @@ export default {
       });
     },
     /**
- * 收集所有树节点的children，构建成指定结构数组
+ * 收集所有树节点的children,构建成指定结构数组
  * @param {Array} treeData - 树数据源
  * @returns {Array} 包含所有children节点的label和parentId的数组
  */
@@ -1285,7 +1404,7 @@ export default {
       const result = [];
       const traverse = (nodes) => {
         nodes.forEach(node => {
-          // 如果当前节点有children，处理每个child
+          // 如果当前节点有children,处理每个child
           if (node.children && node.children.length > 0) {
             node.children.forEach(child => {
               // 构建目标结构并添加到结果数组
@@ -1293,7 +1412,7 @@ export default {
                 label: child.label,
                 parentId: node.id // parentId为当前节点的id
               });
-              // 递归处理子节点的children（如果有多层嵌套）
+              // 递归处理子节点的children(如果有多层嵌套)
               if (child.children && child.children.length > 0) {
                 traverse([child]);
               }
@@ -1350,7 +1469,7 @@ export default {
     handleQuery() {
       // 重置页码
       this.queryParams.pageNum = 1;
-      // 获取当前选中的节点数据（完整结构）
+      // 获取当前选中的节点数据(完整结构)
       const checkedNodes = this.$refs.tree.getCheckedNodes();
       // 通过getCheckedNodeData处理成需要的格式
       const processedNodes = this.getCheckedNodeData(checkedNodes);
@@ -1397,6 +1516,285 @@ export default {
   align-items: stretch;
   flex: 1;
   overflow: hidden;
+.mian_box::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.mian_box::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.mian_box::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+/* 新增文件管理界面样式 */
+.file-manager-container {
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  min-height: 700px;
+}
+
+/* (1) 面包屑导航样式 */
+.breadcrumb-container {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: #f5f7fa;
+  border-radius: 4px;
+}
+
+.breadcrumb-nav {
+  font-size: 14px;
+
+  ::v-deep .el-breadcrumb__item {
+    cursor: pointer;
+
+    &:hover {
+      color: #409eff;
+    }
+
+    .el-breadcrumb__inner {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #606266;
+      font-weight: 400;
+
+      &:hover {
+        color: #409eff;
+      }
+
+      i {
+        font-size: 16px;
+      }
+    }
+
+    &:last-child .el-breadcrumb__inner {
+      color: #303133;
+      font-weight: 500;
+    }
+  }
+}
+
+/* (2) 文件夹头部样式 */
+.folder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.folder-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+
+  .folder-name {
+    font-size: 20px;
+    font-weight: 600;
+    color: #303133;
+  }
+
+  .folder-count {
+    font-size: 14px;
+    color: #909399;
+  }
+}
+
+/* (3) 排序选择器样式 */
+.sort-selector {
+  .sort-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #606266;
+    cursor: pointer;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    background: #fff;
+    transition: all 0.3s;
+
+    &:hover {
+      color: #409eff;
+      border-color: #409eff;
+    }
+
+    i {
+      font-size: 12px;
+    }
+  }
+
+  ::v-deep .el-dropdown-menu__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+
+    .sort-icon {
+      margin-left: 12px;
+      color: #909399;
+    }
+  }
+}
+
+/* (4) 文件夹展示区域样式 */
+.folder-section {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 16px;
+}
+
+.folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.folder-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #f5f7fa;
+    border-color: #409eff;
+
+    .folder-icon {
+      color: #409eff;
+    }
+  }
+
+  .folder-icon {
+    font-size: 24px;
+    color: #909399;
+    transition: color 0.3s;
+  }
+
+  .folder-item-name {
+    font-size: 14px;
+    color: #606266;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* (5) 文件列表样式 */
+.file-section {
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #303133;
+    margin-bottom: 16px;
+  }
+}
+
+.file-list {
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.file-item {
+  padding: 16px 20px;
+  background: #fff;
+  border-bottom: 1px solid #ebeef5;
+  transition: background 0.3s;
+
+  .file-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .file-footer {
+    font-size: 14px;
+    color: #303133;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: #f5f7fa;
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+
+    .file-icon {
+      font-size: 20px;
+      color: #909399;
+    }
+
+    .file-name {
+      font-size: 14px;
+      color: #303133;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .file-meta {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+
+    .file-time,
+    .file-size {
+      font-size: 14px;
+      color: #909399;
+      white-space: nowrap;
+    }
+
+    .file-time {
+      min-width: 150px;
+    }
+
+    .file-size {
+      min-width: 80px;
+      text-align: right;
+    }
+  }
+}
+
+.file-pagination {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.el-drawer__wrapper ::v-deep .el-drawer__body::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
 ::v-deep .el-col {
@@ -1650,13 +2048,13 @@ export default {
   width: 100%;
 }
 
-/* 新增：树操作栏（全选框+导出按钮）样式 */
+/* 新增:树操作栏(全选框+导出按钮)样式 */
 .tree-operation-bar {
   padding: 0 3px;
   /* 与输入框、树组件保持一致的内边距 */
 }
 
-/* 优化：树复选框与文字的间距（避免拥挤） */
+/* 优化:树复选框与文字的间距(避免拥挤) */
 .treeBox ::v-deep .el-tree-node__content .el-checkbox {
   margin-right: 7px;
 }
@@ -1670,7 +2068,7 @@ export default {
   border-radius: 15px;
   margin-bottom: 50px;
   overflow: hidden;
-  /* 新增：添加最大宽度和水平滚动 */
+  /* 新增:添加最大宽度和水平滚动 */
   max-width: 100%;
   overflow-x: auto;
 }
@@ -1712,14 +2110,14 @@ export default {
   flex-direction: column;
   gap: 20px;
   padding: 20px;
-  /* 新增：确保内容区域有足够空间 */
+  /* 新增:确保内容区域有足够空间 */
   min-width: 0;
 }
 
 .row {
   display: flex;
   gap: 20px;
-  /* 新增：确保行内容不会压缩列 */
+  /* 新增:确保行内容不会压缩列 */
   flex-wrap: nowrap;
 }
 
@@ -1733,7 +2131,7 @@ export default {
   position: relative;
   border: 0.5px solid #e6e8ee;
   border-radius: 10px;
-  /* 新增：限制列的最小宽度，防止过窄 */
+  /* 新增:限制列的最小宽度,防止过窄 */
   min-width: 230px;
 }
 
@@ -1804,7 +2202,7 @@ export default {
   padding: 12px;
   border: 0.5px solid #e6e8ee;
   border-radius: 10px;
-  /* 新增：限制列的最小宽度，防止过窄 */
+  /* 新增:限制列的最小宽度,防止过窄 */
   min-width: 147px;
 }
 
@@ -1853,7 +2251,7 @@ export default {
   color: #f56c6c;
 }
 
-/* 调整滚动条样式，提升用户体验 */
+/* 调整滚动条样式,提升用户体验 */
 .table-info-card::-webkit-scrollbar {
   height: 6px;
 }
@@ -2048,25 +2446,25 @@ export default {
       margin-left: 4px;
     }
   }
-}
 
-.score-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24px;
-  border-top: 1px solid #e8e8e8;
+  .score-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px;
+    border-top: 1px solid #e8e8e8;
 
-  .footer-label {
-    font-size: 16px;
-    font-weight: 600;
-    color: #464545;
-  }
+    .footer-label {
+      font-size: 16px;
+      font-weight: 600;
+      color: #464545;
+    }
 
-  .footer-score {
-    font-size: 36px;
-    font-weight: 600;
-    color: #3b82f6;
+    .footer-score {
+      font-size: 36px;
+      font-weight: 600;
+      color: #3b82f6;
+    }
   }
 }
 </style>
