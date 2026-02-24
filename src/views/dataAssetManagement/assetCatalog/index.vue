@@ -210,86 +210,91 @@
 
         <!-- type = 1 时显示文件管理界面 -->
         <template v-else-if="currentNodeType == '1'">
-          <!-- (1) 面包屑导航 -->
-          <div class="breadcrumb-container">
-            <el-breadcrumb separator=">" class="breadcrumb-nav">
-              <el-breadcrumb-item @click.native="handleBreadcrumbClick(null)">
-                <i class="el-icon-s-home"></i>
-              </el-breadcrumb-item>
-              <el-breadcrumb-item v-for="(item, index) in breadcrumbList" :key="index"
-                @click.native="handleBreadcrumbClick(item, index)">
-                <i class="el-icon-folder"></i>
-                {{ item.name }}
-              </el-breadcrumb-item>
-            </el-breadcrumb>
-          </div>
-
-          <!-- (2) 当前文件夹名称 + 总数量 -->
-          <div class="folder-header">
-            <div class="folder-title">
-              <span class="folder-name">{{ currentFolderName }}</span>
-              <span class="folder-count">{{ totalItems }} 项</span>
-            </div>
-            <!-- (3) 排序组件 -->
-            <!-- 修改排序组件，支持所有字段的升降序 -->
-            <div class="sort-selector">
-              <el-dropdown @command="handleSortChange" trigger="click">
-                <span class="sort-button">
-                  {{ currentSortLabel }}
-                  <i :class="sortOrderIcon"></i>
-                </span>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item command="add_time">
-                    <span>上传时间</span>
-                    <i :class="getSortIcon('add_time')"></i>
-                  </el-dropdown-item>
-                  <el-dropdown-item command="file_name">
-                    <span>文件名称</span>
-                    <i :class="getSortIcon('file_name')"></i>
-                  </el-dropdown-item>
-                  <el-dropdown-item command="file_size">
-                    <span>文件大小</span>
-                    <i :class="getSortIcon('file_size')"></i>
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-            </div>
-          </div>
-
-          <!-- (4) 文件夹展示区域 -->
-          <div class="folder-section">
-            <div class="section-title">文件夹</div>
-            <div v-if="folderList.length > 0" class="folder-grid">
-              <div v-for="folder in folderList" :key="folder.id" class="folder-item" @click="handleFolderClick(folder)">
-                <i class="el-icon-folder folder-icon"></i>
-                <span class="folder-item-name">{{ folder.name }}</span>
+          <el-card class="file-manager-card" shadow="never">
+            <div class="file-manager-content">
+              <!-- (1) 面包屑导航 -->
+              <div class="breadcrumb-container">
+                <el-breadcrumb separator=">" class="breadcrumb-nav">
+                  <el-breadcrumb-item @click.native="handleBreadcrumbClick(null)">
+                    <i class="el-icon-s-home"></i>
+                  </el-breadcrumb-item>
+                  <el-breadcrumb-item v-for="(item, index) in breadcrumbList" :key="index"
+                    @click.native="handleBreadcrumbClick(item, index)">
+                    <i class="el-icon-folder"></i>
+                    {{ item.name }}
+                  </el-breadcrumb-item>
+                </el-breadcrumb>
               </div>
-            </div>
-          </div>
 
-          <!-- (5) 文件列表展示 -->
-          <div class="file-section">
-            <div class="section-title">文件</div>
-            <div class="file-list">
-              <div v-for="file in paginatedFileList" :key="file.id" class="file-item">
-                <div class="file-content">
-                  <div class="file-info">
-                    <i class="el-icon-document file-icon"></i>
-                    <span class="file-name"><b>{{ file.fileName }}</b>{{ file.name }}</span>
-                  </div>
-                  <div class="file-meta">
-                    <span class="file-time">{{ file.createTime }}</span>
-                    <span class="file-size">{{ file.fileSize }}</span>
+              <!-- (2) 当前文件夹名称 + 总数量 -->
+              <div class="folder-header">
+                <div class="folder-title">
+                  <span class="folder-name">{{ currentFolderName }}</span>
+                  <span class="folder-count">{{ totalItems }} 项</span>
+                </div>
+                <!-- (3) 排序组件 -->
+                <!-- 修改排序组件，支持所有字段的升降序 -->
+                <div class="sort-selector">
+                  <el-dropdown @command="handleSortChange" trigger="click">
+                    <span class="sort-button">
+                      {{ currentSortLabel }}
+                      <i :class="sortOrderIcon"></i>
+                    </span>
+                    <el-dropdown-menu slot="dropdown">
+                      <el-dropdown-item command="add_time">
+                        <span>上传时间</span>
+                        <i :class="getSortIcon('add_time')"></i>
+                      </el-dropdown-item>
+                      <el-dropdown-item command="file_name">
+                        <span>文件名称</span>
+                        <i :class="getSortIcon('file_name')"></i>
+                      </el-dropdown-item>
+                      <el-dropdown-item command="file_size">
+                        <span>文件大小</span>
+                        <i :class="getSortIcon('file_size')"></i>
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </el-dropdown>
+                </div>
+              </div>
+
+              <!-- (4) 文件夹展示区域 -->
+              <div class="folder-section">
+                <div class="section-title">文件夹</div>
+                <div v-if="folderList.length > 0" class="folder-grid">
+                  <div v-for="folder in folderList" :key="folder.id" class="folder-item"
+                    @click="handleFolderClick(folder)">
+                    <i class="el-icon-folder folder-icon"></i>
+                    <span class="folder-item-name">{{ folder.name }}</span>
                   </div>
                 </div>
-                <span class="file-footer"><b>摘要：</b>{{ file.digest }}</span>
+              </div>
+
+              <!-- (5) 文件列表展示 -->
+              <div class="file-section">
+                <div class="section-title">文件</div>
+                <div class="file-list">
+                  <div v-for="file in paginatedFileList" :key="file.id" class="file-item">
+                    <div class="file-content">
+                      <div class="file-info">
+                        <i class="el-icon-document file-icon"></i>
+                        <span class="file-name"><b>{{ file.fileName }}</b>{{ file.name }}</span>
+                      </div>
+                      <div class="file-meta">
+                        <span class="file-time">{{ file.createTime }}</span>
+                        <span class="file-size">{{ file.fileSize }}</span>
+                      </div>
+                    </div>
+                    <span class="file-footer"><b>摘要：</b>{{ file.digest }}</span>
+                  </div>
+                </div>
+
+                <!-- 文件列表分页 -->
+                <pagination v-show="fileTotal > 0" :total="fileTotal" :page.sync="fileQueryParams.pageNum"
+                  :limit.sync="fileQueryParams.pageSize" @pagination="handleFilePagination" />
               </div>
             </div>
-
-            <!-- 文件列表��页 -->
-            <pagination v-show="fileTotal > 0" :total="fileTotal" :page.sync="fileQueryParams.pageNum"
-              :limit.sync="fileQueryParams.pageSize" @pagination="handleFilePagination" />
-          </div>
+          </el-card>
         </template>
       </el-col>
     </el-row>
@@ -1679,6 +1684,7 @@ export default {
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid #ebeef5;
+  padding: 0 20px;
 }
 
 .folder-title {
@@ -1746,6 +1752,7 @@ export default {
   font-weight: 600;
   color: #303133;
   margin-bottom: 16px;
+  padding: 0 20px;
 }
 
 .folder-grid {
@@ -1791,6 +1798,12 @@ export default {
 
 /* (5) 文件列表样式 */
 .file-section {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
   .section-title {
     font-size: 16px;
     font-weight: 600;
@@ -1800,14 +1813,17 @@ export default {
 }
 
 .file-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   border: 1px solid #ebeef5;
   border-radius: 4px;
-  overflow: hidden;
   margin-bottom: 20px;
 }
 
 .file-item {
   padding: 16px 20px;
+  margin: 5px;
   background: #fff;
   border-bottom: 1px solid #ebeef5;
   transition: background 0.3s;
@@ -2537,5 +2553,31 @@ export default {
     padding: 0;
     overflow: hidden;
   }
+}
+
+::v-deep .file-manager-card {
+  border-radius: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .el-card__body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+  }
+}
+
+.file-manager-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 </style>
