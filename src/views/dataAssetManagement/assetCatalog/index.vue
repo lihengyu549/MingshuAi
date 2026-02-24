@@ -1,24 +1,24 @@
 <template>
   <div class="app-container" v-loading="Loading">
-    <el-row :gutter="20" style="height: 100%; display: flex;">
-      <el-col :span="5" :xs="24" style="height: 100%; display: flex; flex-direction: column;">
-        <el-card class="left-card" shadow="never" style="height: 100%; display: flex; flex-direction: column;">
-          <!-- 1. 原有搜索输入框（保持不变，位于最上方） -->
-          <div class="head-container" style="margin-bottom: 15px; flex-shrink: 0;">
+    <el-row :gutter="20">
+      <el-col :span="5" :xs="24">
+        <el-card class="left-card" shadow="never">
+          <!-- 1. 原有搜索输入框(保持不变,位于最上方) -->
+          <div class="head-container" style="margin-bottom: 15px;">
             <el-input v-model="filterText" placeholder="请输入库名搜索" clearable>
               <i slot="prefix" class="el-input__icon el-icon-search"></i>
             </el-input>
           </div>
 
-          <!-- 2. 新增：全选框（左） + 导出按钮（右） 区域 -->
+          <!-- 2. 新增:全选框(左) + 导出按钮(右) 区域 -->
           <div class="tree-operation-bar"
-            style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
-            <!-- 左侧全选框（带文字说明） -->
+            style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <!-- 左侧全选框(带文字说明) -->
             <el-checkbox v-model="isTreeAllChecked" @change="handleTreeAllCheck"
               :indeterminate="isTreeAllChecked === null" style="font-size: 14px; margin-left: 20px;">
               全选
             </el-checkbox>
-            <!-- 右侧导出按钮（无选中节点时禁用） -->
+            <!-- 右侧导出按钮(无选中节点时禁用) -->
             <el-button type="text" @click="handleTreeExport" :disabled="selectedTreeNodeIds.length === 0"
               style="color: #26244ce0;">
               <svg-icon icon-class="导出" />
@@ -26,188 +26,278 @@
             </el-button>
           </div>
 
-          <div class="tree-wrapper" style="flex: 1; overflow: hidden; display: flex;">
-            <div class="head-container" v-loading="treeLoading" style="flex: 1; overflow: auto; min-height: 0;">
-              <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
-                :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
-                node-key="id" highlight-current show-checkbox :check-strictly="false"
-                :default-checked-keys="defaultCheckedKeys" @check="handleTreeCheck" :render-content="renderContent" />
-            </div>
+          <div class="head-container" v-loading="treeLoading">
+            <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
+              :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
+              node-key="id" highlight-current show-checkbox :check-strictly="false"
+              :default-checked-keys="defaultCheckedKeys" @node-click="handleTreeNodeClick" @check="handleTreeCheck"
+              :render-content="renderContent" />
           </div>
         </el-card>
       </el-col>
+
+      <!-- 根据currentNodeType动态切换显示内容 -->
       <!--用户数据-->
-      <el-col :span="19" :xs="24" style="height: 100%; display: flex; flex-direction: column;">
-        <el-card class="search-card" shadow="never">
-          <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="false"
-            label-width="100px">
-            <el-form-item label="表名" prop="tableName">
-              <el-input v-model="queryParams.tableName" placeholder="请输入表名搜索" @input="handleInputChange" clearable>
-                <i slot="prefix" class="el-input__icon el-icon-search"></i>
-              </el-input>
-            </el-form-item>
-            <el-form-item label="语义填充" prop="paddingStatus">
-              <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange" placeholder="全部" clearable>
-                <el-option label="未开始" value="1"></el-option>
-                <el-option label="成功" value="2"></el-option>
-                <el-option label="失败" value="3"></el-option>
-                <el-option label="执行中" value="4"></el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item label="样本特征提取" prop="featureExtractionStatus">
-              <el-select v-model="queryParams.featureExtractionStatus" @change="selectProjectIdChange" placeholder="全部"
-                clearable>
-                <el-option label="未开始" value="1"></el-option>
-                <el-option label="成功" value="2"></el-option>
-                <el-option label="失败" value="3"></el-option>
-                <el-option label="执行中" value="4"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-form>
-        </el-card>
-        <el-card class="table-card" shadow="never"
-          style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-          <div class="mian_box" id="main_box" style="flex: 1; overflow: auto;">
-            <div v-for="(item, index) in dataAll" v-loading="loading" :key="index" class="table-info-card">
-              <!-- 头部区域：表名 + 字段信息按钮 -->
-              <div class="card-header">
-                <h3 class="table-name">
-                  <svg-icon icon-class="table1" style="margin-right: 5px;" />
-                  {{ item.tableName }}
-                </h3>
-                <button class="field-info-btn" @click="fieldInformationFn(item)">
-                  <i class="el-icon-warning-outline" style="margin-right: 5px;"></i>字段信息
-                </button>
+      <el-col :span="19" :xs="24">
+        <!-- type = 0 时显示原有表格卡片内容 -->
+        <template v-if="currentNodeType == '0'">
+          <el-card class="search-card" shadow="never">
+            <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="false"
+              label-width="100px">
+              <el-form-item label="表名" prop="tableName">
+                <el-input v-model="queryParams.tableName" placeholder="请输入表名搜索" @input="handleInputChange" clearable>
+                  <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                </el-input>
+              </el-form-item>
+              <el-form-item label="语义填充" prop="paddingStatus">
+                <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange" placeholder="全部"
+                  clearable>
+                  <el-option label="未开始" value="1"></el-option>
+                  <el-option label="成功" value="2"></el-option>
+                  <el-option label="失败" value="3"></el-option>
+                  <el-option label="执行中" value="4"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="样本特征提取" prop="featureExtractionStatus">
+                <el-select v-model="queryParams.featureExtractionStatus" @change="selectProjectIdChange"
+                  placeholder="全部" clearable>
+                  <el-option label="未开始" value="1"></el-option>
+                  <el-option label="成功" value="2"></el-option>
+                  <el-option label="失败" value="3"></el-option>
+                  <el-option label="执行中" value="4"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-form>
+          </el-card>
+          <el-card class="table-card" shadow="never">
+            <div class="mian_box" id="main_box">
+              <div v-for="(item, index) in dataAll" v-loading="loading" :key="index" class="table-info-card">
+                <!-- 头部区域：表名 + 字段信息按钮 -->
+                <div class="card-header">
+                  <h3 class="table-name">
+                    <svg-icon icon-class="table1" style="margin-right: 5px;" />
+                    {{ item.tableName }}
+                  </h3>
+                  <button class="field-info-btn" @click="fieldInformationFn(item)">
+                    <i class="el-icon-warning-outline" style="margin-right: 5px;"></i>字段信息
+                  </button>
+                </div>
+
+                <!-- 内容区域：分三行布局 -->
+                <div class="card-content">
+                  <!-- 第一行：4 列 -->
+                  <div class="row row-1">
+                    <!-- CHANGE: 添加点击事件打开评估详情弹窗 -->
+                    <div class="col col-4" @click="showScoreDialog(item)" style="cursor: pointer;">
+                      <div class="label">数据质量评分</div>
+                      <div class="value" :title="item.score || '--'">{{ item.score ? item.score : '--' }}</div>
+                      <svg-icon icon-class="xingxing" class="info-icon" />
+                      <div class="progress-bar">
+                        <el-progress :percentage="Number(item.score)" color="#f4a63e" :show-text="false"></el-progress>
+                      </div>
+                    </div>
+                    <div class="col col-1">
+                      <div class="label">表注释</div>
+                      <div class="value" :title="item.oldTableRemark || '--'">{{ item.oldTableRemark ?
+                        item.oldTableRemark
+                        :
+                        '--' }}</div>
+                      <svg-icon icon-class="xinxi" class="info-icon" />
+                    </div>
+                    <div class="col col-2">
+                      <div class="label">数据大小</div>
+                      <div class="value" :title="item.dataSize || '--'">{{ item.dataSize ? item.dataSize : '--' }}</div>
+                      <svg-icon icon-class="database" class="info-icon" />
+                    </div>
+                    <div class="col col-3">
+                      <div class="label">数据量级</div>
+                      <div class="value" :title="item.dataMagnitude ? item.dataMagnitude + ' 行' : '--'">{{
+                        item.dataMagnitude ? item.dataMagnitude + ' 行' : '--' }}</div>
+                      <svg-icon icon-class="list2" class="info-icon" />
+                    </div>
+                  </div>
+
+                  <!-- 第二行：6 列 -->
+                  <div class="row row-2">
+                    <div class="col">
+                      <div class="label">AI表注释</div>
+                      <div class="value" :title="item.craftTableRemark || '--'">{{ item.craftTableRemark ?
+                        item.craftTableRemark : '--' }}</div>
+                    </div>
+                    <div class="col">
+                      <div class="label">数据源名称</div>
+                      <div class="value" :title="item.dataSourceName || '--'">{{ item.dataSourceName ?
+                        item.dataSourceName : '--' }}</div>
+                    </div>
+                    <div class="col">
+                      <div class="label">分类分级标准</div>
+                      <div class="value" :title="item.categoryName || '--'">{{ item.categoryName ?
+                        item.categoryName : '--' }}</div>
+                    </div>
+                    <div class="col">
+                      <div class="label">来源业务系统</div>
+                      <div class="value" :title="item.businessName || '--'">{{ item.businessName ?
+                        item.businessName : '--' }}</div>
+                    </div>
+                    <div class="col">
+                      <div class="label">所属库名</div>
+                      <div class="value" :title="item.affiliationDatabaseName || '--'">{{ item.affiliationDatabaseName ?
+                        item.affiliationDatabaseName : '--' }}</div>
+                    </div>
+                    <div class="col">
+                      <div class="label">表分类</div>
+                      <div class="value" :title="item.tableCategoryName || '--'">{{ item.tableCategoryName ?
+                        item.tableCategoryName : '--' }}</div>
+                    </div>
+                  </div>
+
+                  <!-- 第三行：6 列 -->
+                  <div class="row row-3">
+                    <div class="col">
+                      <div class="label">表分级</div>
+                      <div class="value" :title="item.tableSecurityLevel || '--'">{{ item.tableSecurityLevel ?
+                        item.tableSecurityLevel : '--' }}</div>
+                    </div>
+                    <div class="col">
+                      <div class="label">个人信息条数</div>
+                      <div class="value green"
+                        :title="item.personalInformation ? item.personalInformation + ' 条' : '--'">
+                        {{
+                          item.personalInformation ? item.personalInformation + ' 条' : '--' }}</div>
+                    </div>
+                    <div class="col">
+                      <div class="label">未成年人信息条数</div>
+                      <div class="value" :title="item.minorsInformation || '--'">{{ item.minorsInformation ?
+                        item.minorsInformation : '--' }}</div>
+                    </div>
+                    <div class="col">
+                      <div class="label">字段数量</div>
+                      <div class="value" :title="item.fieldCount || '--'">{{ item.fieldCount ? item.fieldCount : '--' }}
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="label">语义填充</div>
+                      <el-tag
+                        :type="item.paddingStatus == '未开始' ? 'info' : item.paddingStatus == '成功' ? 'success' : item.paddingStatus == '失败' ? 'danger' : item.paddingStatus == '执行中' ? 'primary' : 'info'"
+                        class="status-tag" :title="item.paddingStatus">
+                        <i
+                          :class="item.paddingStatus == '未开始' ? 'el-icon-time' : item.paddingStatus == '成功' ? 'el-icon-circle-check' : item.paddingStatus == '失败' ? 'el-icon-warning-outline' : item.paddingStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
+                        {{ item.paddingStatus }}
+                      </el-tag>
+                    </div>
+                    <div class="col">
+                      <div class="label">样本特征提取</div>
+                      <el-tag
+                        :type="item.featureExtractionStatus == '未开始' ? 'info' : item.featureExtractionStatus == '成功' ? 'success' : item.featureExtractionStatus == '失败' ? 'danger' : item.featureExtractionStatus == '执行中' ? 'primary' : 'primary'"
+                        class="status-tag" :title="item.featureExtractionStatus">
+                        <i
+                          :class="item.featureExtractionStatus == '未开始' ? 'el-icon-time' : item.featureExtractionStatus == '成功' ? 'el-icon-circle-check' : item.featureExtractionStatus == '失败' ? 'el-icon-warning-outline' : item.featureExtractionStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
+                        {{ item.featureExtractionStatus }}
+                      </el-tag>
+                    </div>
+                  </div>
+                </div>
               </div>
-
-              <!-- 内容区域：分三行布局 -->
-              <div class="card-content">
-                <!-- 第一行：4 列 -->
-                <div class="row row-1">
-                  <!-- CHANGE: 添加点击事件打开评估详情弹窗 -->
-                  <div class="col col-4" @click="showScoreDialog(item)" style="cursor: pointer;">
-                    <div class="label">数据质量评分</div>
-                    <div class="value" :title="item.score || '--'">{{ item.score ? item.score : '--' }}</div>
-                    <svg-icon icon-class="xingxing" class="info-icon" />
-                    <div class="progress-bar">
-                      <el-progress :percentage="Number(item.score)" color="#f4a63e" :show-text="false"></el-progress>
-                    </div>
-                  </div>
-                  <div class="col col-1">
-                    <div class="label">表注释</div>
-                    <div class="value" :title="item.oldTableRemark || '--'">{{ item.oldTableRemark ? item.oldTableRemark
-                      :
-                      '--' }}</div>
-                    <svg-icon icon-class="xinxi" class="info-icon" />
-                  </div>
-                  <div class="col col-2">
-                    <div class="label">数据大小</div>
-                    <div class="value" :title="item.dataSize || '--'">{{ item.dataSize ? item.dataSize : '--' }}</div>
-                    <svg-icon icon-class="database" class="info-icon" />
-                  </div>
-                  <div class="col col-3">
-                    <div class="label">数据量级</div>
-                    <div class="value" :title="item.dataMagnitude ? item.dataMagnitude + ' 行' : '--'">{{
-                      item.dataMagnitude ? item.dataMagnitude + ' 行' : '--' }}</div>
-                    <svg-icon icon-class="list2" class="info-icon" />
-                  </div>
-                </div>
-
-                <!-- 第二行：6 列 -->
-                <div class="row row-2">
-                  <div class="col">
-                    <div class="label">AI表注释</div>
-                    <div class="value" :title="item.craftTableRemark || '--'">{{ item.craftTableRemark ?
-                      item.craftTableRemark : '--' }}</div>
-                  </div>
-                  <div class="col">
-                    <div class="label">数据源名称</div>
-                    <div class="value" :title="item.dataSourceName || '--'">{{ item.dataSourceName ?
-                      item.dataSourceName : '--' }}</div>
-                  </div>
-                  <div class="col">
-                    <div class="label">分类分级标准</div>
-                    <div class="value" :title="item.categoryName || '--'">{{ item.categoryName ?
-                      item.categoryName : '--' }}</div>
-                  </div>
-                  <div class="col">
-                    <div class="label">来源业务系统</div>
-                    <div class="value" :title="item.businessName || '--'">{{ item.businessName ?
-                      item.businessName : '--' }}</div>
-                  </div>
-                  <div class="col">
-                    <div class="label">所属库名</div>
-                    <div class="value" :title="item.affiliationDatabaseName || '--'">{{ item.affiliationDatabaseName ?
-                      item.affiliationDatabaseName : '--' }}</div>
-                  </div>
-                  <div class="col">
-                    <div class="label">表分类</div>
-                    <div class="value" :title="item.tableCategoryName || '--'">{{ item.tableCategoryName ?
-                      item.tableCategoryName : '--' }}</div>
-                  </div>
-                </div>
-
-                <!-- 第三行：6 列 -->
-                <div class="row row-3">
-                  <div class="col">
-                    <div class="label">表分级</div>
-                    <div class="value" :title="item.tableSecurityLevel || '--'">{{ item.tableSecurityLevel ?
-                      item.tableSecurityLevel : '--' }}</div>
-                  </div>
-                  <div class="col">
-                    <div class="label">个人信息条数</div>
-                    <div class="value green" :title="item.personalInformation ? item.personalInformation + ' 条' : '--'">
-                      {{
-                        item.personalInformation ? item.personalInformation + ' 条' : '--' }}</div>
-                  </div>
-                  <div class="col">
-                    <div class="label">未成年人信息条数</div>
-                    <div class="value" :title="item.minorsInformation || '--'">{{ item.minorsInformation ?
-                      item.minorsInformation : '--' }}</div>
-                  </div>
-                  <div class="col">
-                    <div class="label">字段数量</div>
-                    <div class="value" :title="item.fieldCount || '--'">{{ item.fieldCount ? item.fieldCount : '--' }}
-                    </div>
-                  </div>
-                  <div class="col">
-                    <div class="label">语义填充</div>
-                    <el-tag
-                      :type="item.paddingStatus == '未开始' ? 'info' : item.paddingStatus == '成功' ? 'success' : item.paddingStatus == '失败' ? 'danger' : item.paddingStatus == '执行中' ? 'primary' : 'info'"
-                      class="status-tag" :title="item.paddingStatus">
-                      <i
-                        :class="item.paddingStatus == '未开始' ? 'el-icon-time' : item.paddingStatus == '成功' ? 'el-icon-circle-check' : item.paddingStatus == '失败' ? 'el-icon-warning-outline' : item.paddingStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
-                      {{ item.paddingStatus }}
-                    </el-tag>
-                  </div>
-                  <div class="col">
-                    <div class="label">样本特征提取</div>
-                    <el-tag
-                      :type="item.featureExtractionStatus == '未开始' ? 'info' : item.featureExtractionStatus == '成功' ? 'success' : item.featureExtractionStatus == '失败' ? 'danger' : item.featureExtractionStatus == '执行中' ? 'primary' : 'primary'"
-                      class="status-tag" :title="item.featureExtractionStatus">
-                      <i
-                        :class="item.featureExtractionStatus == '未开始' ? 'el-icon-time' : item.featureExtractionStatus == '成功' ? 'el-icon-circle-check' : item.featureExtractionStatus == '失败' ? 'el-icon-warning-outline' : item.featureExtractionStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
-                      {{ item.featureExtractionStatus }}
-                    </el-tag>
-                  </div>
-                </div>
+              <div v-if="dataAll.length === 0" class="no-data">
+                <el-empty description="暂无数据"></el-empty>
               </div>
             </div>
-            <div v-if="dataAll.length === 0" class="no-data">
-              <el-empty description="暂无数据"></el-empty>
+            <!-- type = 0 时才显示此分页组件 -->
+            <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+              :limit.sync="queryParams.pageSize" @pagination="handlePagination" />
+          </el-card>
+        </template>
+
+        <!-- type = 1 时显示文件管理界面 -->
+        <template v-else-if="currentNodeType == '1'">
+          <!-- (1) 面包屑导航 -->
+          <div class="breadcrumb-container">
+            <el-breadcrumb separator=">" class="breadcrumb-nav">
+              <el-breadcrumb-item @click.native="handleBreadcrumbClick(null)">
+                <i class="el-icon-s-home"></i>
+              </el-breadcrumb-item>
+              <el-breadcrumb-item v-for="(item, index) in breadcrumbList" :key="index"
+                @click.native="handleBreadcrumbClick(item, index)">
+                <i class="el-icon-folder"></i>
+                {{ item.name }}
+              </el-breadcrumb-item>
+            </el-breadcrumb>
+          </div>
+
+          <!-- (2) 当前文件夹名称 + 总数量 -->
+          <div class="folder-header">
+            <div class="folder-title">
+              <span class="folder-name">{{ currentFolderName }}</span>
+              <span class="folder-count">{{ totalItems }} 项</span>
+            </div>
+            <!-- (3) 排序组件 -->
+            <!-- 修改排序组件，支持所有字段的升降序 -->
+            <div class="sort-selector">
+              <el-dropdown @command="handleSortChange" trigger="click">
+                <span class="sort-button">
+                  {{ currentSortLabel }}
+                  <i :class="sortOrderIcon"></i>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item command="add_time">
+                    <span>上传时间</span>
+                    <i :class="getSortIcon('add_time')"></i>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="file_name">
+                    <span>文件名称</span>
+                    <i :class="getSortIcon('file_name')"></i>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="file_size">
+                    <span>文件大小</span>
+                    <i :class="getSortIcon('file_size')"></i>
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
             </div>
           </div>
-          <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-            :page-size.sync="queryParams.pageSize" @pagination="handlePagination" />
-        </el-card>
+
+          <!-- (4) 文件夹展示区域 -->
+          <div class="folder-section">
+            <div class="section-title">文件夹</div>
+            <div v-if="folderList.length > 0" class="folder-grid">
+              <div v-for="folder in folderList" :key="folder.id" class="folder-item" @click="handleFolderClick(folder)">
+                <i class="el-icon-folder folder-icon"></i>
+                <span class="folder-item-name">{{ folder.name }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- (5) 文件列表展示 -->
+          <div class="file-section">
+            <div class="section-title">文件</div>
+            <div class="file-list">
+              <div v-for="file in paginatedFileList" :key="file.id" class="file-item">
+                <div class="file-content">
+                  <div class="file-info">
+                    <i class="el-icon-document file-icon"></i>
+                    <span class="file-name"><b>{{ file.fileName }}</b>{{ file.name }}</span>
+                  </div>
+                  <div class="file-meta">
+                    <span class="file-time">{{ file.createTime }}</span>
+                    <span class="file-size">{{ file.fileSize }}</span>
+                  </div>
+                </div>
+                <span class="file-footer"><b>摘要：</b>{{ file.digest }}</span>
+              </div>
+            </div>
+
+            <!-- 文件列表��页 -->
+            <pagination v-show="fileTotal > 0" :total="fileTotal" :page.sync="fileQueryParams.pageNum"
+              :limit.sync="fileQueryParams.pageSize" @pagination="handleFilePagination" />
+          </div>
+        </template>
       </el-col>
     </el-row>
     <el-drawer custom-class="assetCatalogDrawer" :title="drawerTitle" :visible.sync="drawerShow"
-      :destroy-on-close="true" direction="rtl" size="60%">
+      :destroy-on-close="true" direction="rtl" size="51%">
       <!-- 新增筛选区域 -->
-      <el-card class="drawer-card" shadow="never">
-        <el-form class="drawer-form" :model="drawerQueryParams" ref="drawerQueryForm" size="small" :inline="true"
-          label-width="80px">
+      <el-card class="search-card" shadow="never">
+        <el-form :model="drawerQueryParams" ref="drawerQueryForm" size="small" :inline="true" label-width="80px">
           <el-form-item label="字段名称" prop="fieldName"> <!-- 添加prop -->
             <el-input v-model="drawerQueryParams.fieldName" placeholder="请输入字段名称搜索" @input="handleDrawerSearch"
               size="mini"></el-input>
@@ -234,13 +324,13 @@
             <el-option label="不包含" value="不包含"></el-option>
           </el-select>
         </el-form-item> -->
-          <!-- <el-form-item> -->
-          <!-- <el-button icon="el-icon-refresh" size="small" @click="resetDrawerSearch">重置</el-button> -->
-          <!-- </el-form-item> -->
+          <el-form-item>
+            <!-- <el-button icon="el-icon-refresh" size="small" @click="resetDrawerSearch">重置</el-button> -->
+          </el-form-item>
         </el-form>
       </el-card>
-      <el-card class="drawer-table-card" shadow="never">
-        <el-table :data="filteredDrawerData" ref="tableRef" :key="tableKey" class="tableBox" height="100%">
+      <el-card class="table-card drawer-table-card" shadow="never">
+        <el-table :data="filteredDrawerData" ref="tableRef" :key="tableKey" border class="tableBox">
           <el-table-column label="字段名称" align="center" prop="fieldName" width="200" show-overflow-tooltip />
           <el-table-column label="字段类型" align="center" prop="fieldType" width="200" show-overflow-tooltip />
           <el-table-column label="字段注释" align="center" width="200" prop="oldFieldRemark" show-overflow-tooltip>
@@ -293,16 +383,22 @@
           <!-- <el-table-column label="是否添加为匹配策略" align="center" min-width="150" prop="isMatchStrategy"
           show-overflow-tooltip /> -->
         </el-table>
+
         <!-- 新增分页组件 -->
         <Pagination v-show="drawerTotal > 0" :total="drawerTotal" :page.sync="drawerQueryParams.pageNum"
-          :page-size.sync="drawerQueryParams.pageSize" @pagination="handleDrawerPagination" />
+          :limit.sync="drawerQueryParams.pageSize" @pagination="handleDrawerPagination" style="margin-top: 15px;" />
       </el-card>
     </el-drawer>
 
     <!-- 导出列配置弹窗 -->
     <el-dialog title="调整导出列" :visible.sync="exportColumnDialog.visible" width="760px"
       custom-class="export-column-dialog-wrapper" @close="cancelExport">
-      <div v-loading="exportColumnDialog.loading">
+      <div slot="title" class="dialog-header">
+        <div class="title-bar"></div>
+        <span class="title-text"><b>调整导出列</b></span>
+      </div>
+
+      <div v-loading="exportColumnDialog.loading" class="export-column-dialog">
         <div class="column-options">
           <div v-for="column in exportColumnDialog.allColumns" :key="column.value"
             :class="['column-btn', { active: exportColumnDialog.selectedColumns.includes(column.value) }]"
@@ -1510,964 +1606,936 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-/* 左右卡片布局 */
 ::v-deep .el-row {
   display: flex;
   align-items: stretch;
   flex: 1;
+  min-height: 0;
   overflow: hidden;
+}
 
-  .mian_box::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
+::v-deep .el-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
 
-  .mian_box::-webkit-scrollbar-thumb {
-    background-color: #0003;
-    border-radius: 10px;
-    transition: all .2s ease-in-out;
-  }
+.right-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
 
-  .mian_box::-webkit-scrollbar-track {
-    border-radius: 10px;
-  }
 
-  /* 新增文件管理界面样式 */
-  .file-manager-container {
-    padding: 20px;
-    background: #fff;
-    border-radius: 8px;
-    min-height: 700px;
-  }
+/* (1) 面包屑导航样式 */
+.breadcrumb-container {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: #f5f7fa;
+  border-radius: 4px;
+}
 
-  /* (1) 面包屑导航样式 */
-  .breadcrumb-container {
-    margin-bottom: 20px;
-    padding: 12px 16px;
-    background: #f5f7fa;
-    border-radius: 4px;
-  }
+.breadcrumb-nav {
+  font-size: 14px;
 
-  .breadcrumb-nav {
-    font-size: 14px;
+  ::v-deep .el-breadcrumb__item {
+    cursor: pointer;
 
-    ::v-deep .el-breadcrumb__item {
-      cursor: pointer;
-
-      &:hover {
-        color: #409eff;
-      }
-
-      .el-breadcrumb__inner {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        color: #606266;
-        font-weight: 400;
-
-        &:hover {
-          color: #409eff;
-        }
-
-        i {
-          font-size: 16px;
-        }
-      }
-
-      &:last-child .el-breadcrumb__inner {
-        color: #303133;
-        font-weight: 500;
-      }
-    }
-  }
-
-  /* (2) 文件夹头部样式 */
-  .folder-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #ebeef5;
-  }
-
-  .folder-title {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-
-    .folder-name {
-      font-size: 20px;
-      font-weight: 600;
-      color: #303133;
+    &:hover {
+      color: #409eff;
     }
 
-    .folder-count {
-      font-size: 14px;
-      color: #909399;
-    }
-  }
-
-  /* (3) 排序选择器样式 */
-  .sort-selector {
-    .sort-button {
+    .el-breadcrumb__inner {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 8px 12px;
-      font-size: 14px;
       color: #606266;
-      cursor: pointer;
-      border: 1px solid #dcdfe6;
-      border-radius: 4px;
-      background: #fff;
-      transition: all 0.3s;
+      font-weight: 400;
 
       &:hover {
         color: #409eff;
-        border-color: #409eff;
       }
 
       i {
-        font-size: 12px;
+        font-size: 16px;
       }
     }
 
-    ::v-deep .el-dropdown-menu__item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 20px;
+    &:last-child .el-breadcrumb__inner {
+      color: #303133;
+      font-weight: 500;
+    }
+  }
+}
 
-      .sort-icon {
-        margin-left: 12px;
-        color: #909399;
-      }
+/* (2) 文件夹头部样式 */
+.folder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.folder-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+
+  .folder-name {
+    font-size: 20px;
+    font-weight: 600;
+    color: #303133;
+  }
+
+  .folder-count {
+    font-size: 14px;
+    color: #909399;
+  }
+}
+
+/* (3) 排序选择器样式 */
+.sort-selector {
+  .sort-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #606266;
+    cursor: pointer;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    background: #fff;
+    transition: all 0.3s;
+
+    &:hover {
+      color: #409eff;
+      border-color: #409eff;
+    }
+
+    i {
+      font-size: 12px;
     }
   }
 
-  /* (4) 文件夹展示区域样式 */
-  .folder-section {
-    margin-bottom: 32px;
+  ::v-deep .el-dropdown-menu__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+
+    .sort-icon {
+      margin-left: 12px;
+      color: #909399;
+    }
+  }
+}
+
+/* (4) 文件夹展示区域样式 */
+.folder-section {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 16px;
+}
+
+.folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.folder-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #f5f7fa;
+    border-color: #409eff;
+
+    .folder-icon {
+      color: #409eff;
+    }
   }
 
+  .folder-icon {
+    font-size: 24px;
+    color: #909399;
+    transition: color 0.3s;
+  }
+
+  .folder-item-name {
+    font-size: 14px;
+    color: #606266;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* (5) 文件列表样式 */
+.file-section {
   .section-title {
     font-size: 16px;
     font-weight: 600;
     color: #303133;
     margin-bottom: 16px;
   }
+}
 
-  .folder-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-  }
+.file-list {
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
 
-  .folder-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    background: #fff;
-    border: 1px solid #ebeef5;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s;
+.file-item {
+  padding: 16px 20px;
+  background: #fff;
+  border-bottom: 1px solid #ebeef5;
+  transition: background 0.3s;
 
-    &:hover {
-      background: #f5f7fa;
-      border-color: #409eff;
-
-      .folder-icon {
-        color: #409eff;
-      }
-    }
-
-    .folder-icon {
-      font-size: 24px;
-      color: #909399;
-      transition: color 0.3s;
-    }
-
-    .folder-item-name {
-      font-size: 14px;
-      color: #606266;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
-  /* (5) 文件列表样式 */
-  .file-section {
-    .section-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #303133;
-      margin-bottom: 16px;
-    }
-  }
-
-  .file-list {
-    border: 1px solid #ebeef5;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 20px;
-  }
-
-  .file-item {
-    padding: 16px 20px;
-    background: #fff;
-    border-bottom: 1px solid #ebeef5;
-    transition: background 0.3s;
-
-    .file-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .file-footer {
-      font-size: 14px;
-      color: #303133;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    &:hover {
-      background: #f5f7fa;
-    }
-
-    .file-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex: 1;
-
-      .file-icon {
-        font-size: 20px;
-        color: #909399;
-      }
-
-      .file-name {
-        font-size: 14px;
-        color: #303133;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-    }
-
-    .file-meta {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-
-      .file-time,
-      .file-size {
-        font-size: 14px;
-        color: #909399;
-        white-space: nowrap;
-      }
-
-      .file-time {
-        min-width: 150px;
-      }
-
-      .file-size {
-        min-width: 80px;
-        text-align: right;
-      }
-    }
-  }
-
-  .file-pagination {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 20px;
-  }
-
-  .el-drawer__wrapper ::v-deep .el-drawer__body::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::v-deep .el-col {
-    display: flex;
-    flex-direction: column;
-    max-height: 100%;
-    overflow: hidden;
-  }
-
-  .left-card {
-    border-radius: 10px;
-    height: 100%;
-    overflow: hidden;
-
-    ::v-deep .el-card__body {
-      padding: 20px;
-      height: 100%;
-      box-sizing: border-box;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-  }
-
-  .search-card {
-    border-radius: 10px;
-    margin-bottom: 20px;
-
-    ::v-deep .el-card__body {
-      padding: 20px;
-      box-sizing: border-box;
-    }
-  }
-
-  .table-card,
-  .drawer-table-card {
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    background-color: #f8fafc;
-
-    ::v-deep .el-card__body {
-      padding: 0;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      box-sizing: border-box;
-    }
-  }
-
-  .drawer-table-card {
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    background-color: #f8fafc;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-
-    ::v-deep .el-card__body {
-      padding: 0;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      box-sizing: border-box;
-    }
-
-    ::v-deep .el-table {
-      flex: 1;
-      overflow: auto;
-    }
-
-    ::v-deep .el-pagination {
-      flex-shrink: 0;
-      margin-top: 10px;
-    }
-  }
-
-  .el-drawer__wrapper {
-    ::v-deep .el-drawer__body {
-      padding: 20px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      background-color: #f1f5f9;
-
-      >.el-card {
-        border-radius: 10px;
-        margin-bottom: 20px;
-        flex-shrink: 0;
-      }
-
-      >.drawer-table-card {
-        flex: 1;
-        min-height: 0;
-        margin-bottom: 0;
-
-        >.el-card__body {
-          background-color: #fff;
-        }
-      }
-    }
-  }
-
-
-  .tableBox {
-    border: none;
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .mian_box_item ::v-deep .el-card {
-    box-shadow: none;
-  }
-
-  .drawer-form {
-    .el-form-item--small.el-form-item {
-      margin-bottom: 0;
-    }
-  }
-
-  .addMsg ::v-deep .el-input--medium {
-    width: 237px;
-  }
-
-
-  .success {
-    color: #67c23a;
-  }
-
-  .error {
-    color: #f56c6c;
-  }
-
-  .el-tree-node ::v-deep .el-tree-node {
-    display: none;
-  }
-
-  .mian_box {
-    width: 100%;
-    overflow: auto;
-    flex: 1;
-  }
-
-  .mian_box_head {
-    padding: 10px 15px;
+  .file-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 20px;
   }
 
-  .mian_box_center {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    flex-wrap: wrap;
-    padding: 20px;
-  }
-
-  .mian_box_center div {
-    width: 23%;
-    margin: 10px 5px 10px 0;
+  .file-footer {
     font-size: 14px;
-    white-space: nowrap;
+    color: #303133;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .box-card ::v-deep .el-card__body {
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: #f5f7fa;
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+
+    .file-icon {
+      font-size: 20px;
+      color: #909399;
+    }
+
+    .file-name {
+      font-size: 14px;
+      color: #303133;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .file-meta {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+
+    .file-time,
+    .file-size {
+      font-size: 14px;
+      color: #909399;
+      white-space: nowrap;
+    }
+
+    .file-time {
+      min-width: 150px;
+    }
+
+    .file-size {
+      min-width: 80px;
+      text-align: right;
+    }
+  }
+}
+
+.el-drawer__wrapper ::v-deep .el-drawer__body::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.el-drawer__wrapper ::v-deep .el-drawer__body::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.el-drawer__wrapper ::v-deep .el-drawer__body::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+.el-drawer__wrapper ::v-deep .el-drawer__body {
+  padding: 20px;
+  background-color: #f8fafc;
+}
+
+.mian_box_item {
+  margin-top: 15px;
+  margin-right: 10px;
+  margin-left: 10px;
+}
+
+.mian_box_item ::v-deep .el-card {
+  box-shadow: none;
+}
+
+.addMsg ::v-deep .el-input--medium {
+  width: 237px;
+}
+
+.success {
+  color: #67c23a;
+}
+
+.error {
+  color: #f56c6c;
+}
+
+.el-tree-node ::v-deep .el-tree-node {
+  display: none;
+}
+
+.mian_box {
+  width: 100%;
+  flex: 1;
+  height: 100%;
+  overflow: auto;
+  margin-bottom: 20px;
+}
+
+.mian_box_head {
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f1fafe;
+}
+
+.mian_box_center {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 20px;
+}
+
+.mian_box_center div {
+  width: 23%;
+  margin: 10px 5px 10px 0;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.box-card ::v-deep .el-card__body {
+  padding: 0;
+}
+
+.btnImg {
+  width: 25px;
+  height: 25px;
+  display: block;
+}
+
+.btnItem {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-right: 15px;
+  font-size: 14px;
+}
+
+.btnItem:hover {
+  cursor: pointer;
+}
+
+.treeBox::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.treeBox::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.treeBox::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+.status-tag {
+  border-radius: 50px;
+  font-size: 10px;
+  height: 20px;
+  line-height: 20px;
+}
+
+::v-deep .el-drawer__header {
+  padding-bottom: 20px;
+  margin-bottom: 0;
+  background-color: rgb(230, 242, 255);
+}
+
+::v-deep .el-drawer__header> :first-child {
+  font-size: 18px;
+  color: black;
+  font-weight: bold;
+}
+
+.yuanDataClass {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.yuanDataClass ::v-deep .el-form-item {
+  width: 30%;
+  margin-bottom: 0px;
+}
+
+.yuanDataClass ::v-deep .el-form-item__label {
+  width: 25%;
+}
+
+.yuanDataClass ::v-deep .el-form-item__content {
+  width: 75%;
+}
+
+.yuanDataClass ::v-deep .el-select {
+  width: 100%;
+}
+
+/* 新增:树操作栏(全选框+导出按钮)样式 */
+.tree-operation-bar {
+  padding: 0 3px;
+  /* 与输入框、树组件保持一致的内边距 */
+}
+
+/* 优化:树复选框与文字的间距(避免拥挤) */
+.treeBox ::v-deep .el-tree-node__content .el-checkbox {
+  margin-right: 7px;
+}
+
+.table-info-card {
+  background-color: #fff;
+  /* box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05); */
+  /* padding: 20px; */
+  font-family: "Microsoft YaHei", sans-serif;
+  border: 0.5px solid #e6e8ee;
+  border-radius: 15px;
+  margin-bottom: 50px;
+  overflow: hidden;
+  /* 新增:添加最大宽度和水平滚动 */
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* 头部样式 */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: #f9fafd;
+
+}
+
+.table-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.field-info-btn {
+  display: flex;
+  align-items: center;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: #606266;
+  font-size: 14px;
+}
+
+.field-info-btn .icon {
+  margin-right: 6px;
+}
+
+/* 内容区域样式 */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  /* 新增:确保内容区域有足够空间 */
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  gap: 20px;
+  /* 新增:确保行内容不会压缩列 */
+  flex-wrap: nowrap;
+}
+
+/* 第一行列样式 */
+.row-1 .col {
+  flex: 1;
+  background-color: #fff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border: 0.5px solid #e6e8ee;
+  border-radius: 10px;
+  /* 新增:限制列的最小宽度,防止过窄 */
+  min-width: 230px;
+}
+
+.row-1 .label {
+  font-size: 14px;
+  color: #909399;
+  margin-bottom: 6px;
+}
+
+.row-1 .label,
+.value,
+.row-2 .label,
+.value,
+.row-3 .label,
+.value {
+  font-weight: 600;
+
+}
+
+.row-1 .value {
+  font-size: 16px;
+  color: #333;
+  padding: 10px 0;
+  /* 添加单行显示和省略号样式 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.row-1 .info-icon,
+.row-1 .db-icon,
+.row-1 .list-icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.row-1 .rating-star {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.progress-bar {
+  height: 4px;
+  background-color: #eee;
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #ff9f43;
+  border-radius: 2px;
+}
+
+/* 第二、三行列样式 */
+.row-2 .col,
+.row-3 .col {
+  flex: 1;
+  background-color: #fff;
+  border-radius: 4px;
+  padding: 12px;
+  border: 0.5px solid #e6e8ee;
+  border-radius: 10px;
+  /* 新增:限制列的最小宽度,防止过窄 */
+  min-width: 147px;
+}
+
+.row-2 .label,
+.row-3 .label {
+  font-size: 12px;
+  color: #909399;
+  margin-bottom: 4px;
+}
+
+.row-2 .value,
+.row-3 .value {
+  font-size: 14px;
+  color: #333;
+  padding: 5px 0;
+  /* 添加单行显示和省略号样式 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.row-3 .green {
+  color: #67c23a;
+}
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.status-tag .status-icon {
+  margin-right: 4px;
+}
+
+.status-tag.gray {
+  background-color: #e4e7ed;
+  color: #909399;
+}
+
+.status-tag.red {
+  background-color: #ffe3e3;
+  color: #f56c6c;
+}
+
+/* 调整滚动条样式,提升用户体验 */
+.table-info-card::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-info-card::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.table-info-card::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+/* 导出列配置弹窗样式 */
+::v-deep .export-column-dialog-wrapper {
+  border-radius: 10px;
+}
+
+.export-column-dialog-wrapper .dialog-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.export-column-dialog-wrapper .dialog-header .title-bar {
+  width: 4px;
+  height: 16px;
+  background: #1890ff;
+  margin-right: 8px;
+}
+
+.export-column-dialog-wrapper .dialog-header .title-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.export-column-dialog-wrapper .column-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.export-column-dialog-wrapper .column-btn {
+  padding: 8px 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.export-column-dialog-wrapper .column-btn:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+.export-column-dialog-wrapper .column-btn.active {
+  border-color: #1890ff;
+  background: #e6f7ff;
+  color: #1890ff;
+}
+
+.export-column-dialog-wrapper .dialog-footer-custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.export-column-dialog-wrapper .footer-left {
+  display: flex;
+  align-items: center;
+}
+
+.export-column-dialog-wrapper .footer-right {
+  display: flex;
+  align-items: center;
+}
+
+.export-column-dialog-wrapper .restore-link {
+  margin-left: 16px;
+  color: #1890ff;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.export-column-dialog-wrapper .restore-link:hover {
+  color: #40a9ff;
+}
+
+/* 新增评分详情弹窗样式 */
+::v-deep .score-detail-dialog {
+  border-radius: 8px;
+
+  .el-dialog__header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e8e8e8;
+  }
+
+  .el-dialog__body {
     padding: 0;
   }
 
-  .btnImg {
-    width: 25px;
-    height: 25px;
-    display: block;
-  }
-
-  .btnItem {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin-right: 15px;
-    font-size: 14px;
-  }
-
-  .btnItem:hover {
-    cursor: pointer;
-  }
-
-  .treeBox {
-    overflow-y: auto;
-  }
-
-  .treeBox::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  .treeBox::-webkit-scrollbar-thumb {
-    background-color: #0003;
-    border-radius: 10px;
-    transition: all .2s ease-in-out;
-  }
-
-  .treeBox::-webkit-scrollbar-track {
-    border-radius: 10px;
-  }
-
-  .status-tag {
-    border-radius: 50px;
-    font-size: 10px;
-    height: 20px;
-    line-height: 20px;
-  }
-
-  ::v-deep .el-drawer__header {
-    padding-bottom: 20px;
-    margin-bottom: 0;
-    background-color: rgb(230, 242, 255);
-  }
-
-  ::v-deep .el-drawer__header> :first-child {
+  .el-dialog__headerbtn {
+    top: 24px;
+    right: 24px;
     font-size: 18px;
-    color: black;
-    font-weight: bold;
-  }
 
-  .yuanDataClass {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    flex-wrap: wrap;
-  }
+    .el-dialog__close {
+      color: #999;
+      font-weight: 400;
 
-  .yuanDataClass ::v-deep .el-form-item {
-    width: 30%;
-    margin-bottom: 0px;
-  }
-
-  .yuanDataClass ::v-deep .el-form-item__label {
-    width: 25%;
-  }
-
-  .yuanDataClass ::v-deep .el-form-item__content {
-    width: 75%;
-  }
-
-  .yuanDataClass ::v-deep .el-select {
-    width: 100%;
-  }
-
-  /* 新增:树操作栏(全选框+导出按钮)样式 */
-  .tree-operation-bar {
-    padding: 0 3px;
-    /* 与输入框、树组件保持一致的内边距 */
-  }
-
-  /* 优化:树复选框与文字的间距(避免拥挤) */
-  .treeBox ::v-deep .el-tree-node__content .el-checkbox {
-    margin-right: 7px;
-  }
-
-  .table-info-card {
-    background-color: #fff;
-    /* box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05); */
-    /* padding: 20px; */
-    font-family: "Microsoft YaHei", sans-serif;
-    border: 0.5px solid #e6e8ee;
-    border-radius: 15px;
-    margin-bottom: 50px;
-    overflow: hidden;
-    /* 新增:添加最大宽度和水平滚动 */
-    max-width: 100%;
-    overflow-x: auto;
-  }
-
-  /* 头部样式 */
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background-color: #ffffff;
-
-  }
-
-  .table-name {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-  }
-
-  .field-info-btn {
-    display: flex;
-    align-items: center;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    color: #606266;
-    font-size: 14px;
-  }
-
-  .field-info-btn .icon {
-    margin-right: 6px;
-  }
-
-  /* 内容区域样式 */
-  .card-content {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 20px;
-    /* 新增:确保内容区域有足够空间 */
-    min-width: 0;
-  }
-
-  .row {
-    display: flex;
-    gap: 20px;
-    /* 新增:确保行内容不会压缩列 */
-    flex-wrap: nowrap;
-  }
-
-  /* 第一行列样式 */
-  .row-1 .col {
-    flex: 1;
-    background-color: #fff;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    border: 0.5px solid #e6e8ee;
-    border-radius: 10px;
-    /* 新增:限制列的最小宽度,防止过窄 */
-    min-width: 230px;
-  }
-
-  .row-1 .label {
-    font-size: 14px;
-    color: #909399;
-    margin-bottom: 6px;
-  }
-
-  .row-1 .label,
-  .value,
-  .row-2 .label,
-  .value,
-  .row-3 .label,
-  .value {
-    font-weight: 600;
-
-  }
-
-  .row-1 .value {
-    font-size: 16px;
-    color: #333;
-    padding: 10px 0;
-    /* 添加单行显示和省略号样式 */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-  }
-
-  .row-1 .info-icon,
-  .row-1 .db-icon,
-  .row-1 .list-icon {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 16px;
-    height: 16px;
-  }
-
-  .row-1 .rating-star {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 16px;
-    height: 16px;
-  }
-
-  .progress-bar {
-    height: 4px;
-    background-color: #eee;
-    border-radius: 2px;
-    margin-top: 8px;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background-color: #ff9f43;
-    border-radius: 2px;
-  }
-
-  /* 第二、三行列样式 */
-  .row-2 .col,
-  .row-3 .col {
-    flex: 1;
-    background-color: #fff;
-    border-radius: 4px;
-    padding: 12px;
-    border: 0.5px solid #e6e8ee;
-    border-radius: 10px;
-    /* 新增:限制列的最小宽度,防止过窄 */
-    min-width: 147px;
-  }
-
-  .row-2 .label,
-  .row-3 .label {
-    font-size: 12px;
-    color: #909399;
-    margin-bottom: 4px;
-  }
-
-  .row-2 .value,
-  .row-3 .value {
-    font-size: 14px;
-    color: #333;
-    padding: 5px 0;
-    /* 添加单行显示和省略号样式 */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-  }
-
-  .row-3 .green {
-    color: #67c23a;
-  }
-
-  .status-tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-  }
-
-  .status-tag .status-icon {
-    margin-right: 4px;
-  }
-
-  .status-tag.gray {
-    background-color: #e4e7ed;
-    color: #909399;
-  }
-
-  .status-tag.red {
-    background-color: #ffe3e3;
-    color: #f56c6c;
-  }
-
-  /* 调整滚动条样式,提升用户体验 */
-  .table-info-card::-webkit-scrollbar {
-    height: 6px;
-  }
-
-  .table-info-card::-webkit-scrollbar-thumb {
-    background-color: #0003;
-    border-radius: 10px;
-    transition: all .2s ease-in-out;
-  }
-
-  .table-info-card::-webkit-scrollbar-track {
-    border-radius: 10px;
-  }
-
-  /* 导出列配置弹窗样式 */
-  ::v-deep .export-column-dialog-wrapper {
-    border-radius: 10px;
-
-    .el-dialog__header {
-      border-bottom: 1px solid #e6e6e6;
-    }
-  }
-
-
-  .export-column-dialog-wrapper .column-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .export-column-dialog-wrapper .column-btn {
-    padding: 8px 16px;
-    border: 1px solid #d9d9d9;
-    border-radius: 4px;
-    background: #fff;
-    color: #666;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-size: 14px;
-    white-space: nowrap;
-  }
-
-  .export-column-dialog-wrapper .column-btn:hover {
-    border-color: #3b82f6;
-    color: #3b82f6;
-  }
-
-  .export-column-dialog-wrapper .column-btn.active {
-    border-color: #3b82f6;
-    background: #e6f7ff;
-    color: #3b82f6;
-  }
-
-  .export-column-dialog-wrapper .dialog-footer-custom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 16px;
-    border-top: 1px solid #e8e8e8;
-  }
-
-  .export-column-dialog-wrapper .footer-left {
-    display: flex;
-    align-items: center;
-  }
-
-  .export-column-dialog-wrapper .footer-right {
-    display: flex;
-    align-items: center;
-  }
-
-  .export-column-dialog-wrapper .restore-link {
-    margin-left: 16px;
-    color: #3b82f6;
-    text-decoration: none;
-    cursor: pointer;
-    font-size: 14px;
-  }
-
-  .export-column-dialog-wrapper .restore-link:hover {
-    color: #40a9ff;
-  }
-
-  /* 新增评分详情弹窗样式 */
-  ::v-deep .score-detail-dialog {
-    border-radius: 8px;
-
-    .el-dialog__header {
-      padding: 20px 24px;
-      border-bottom: 1px solid #e8e8e8;
-      display: flex;
-      align-items: center;
-    }
-
-    .el-dialog__body {
-      padding: 0;
-    }
-
-    .el-dialog__headerbtn {
-      top: 24px;
-      right: 24px;
-      font-size: 18px;
-
-      .el-dialog__close {
-        color: #999;
-        font-weight: 400;
-
-        &:hover {
-          color: #333;
-        }
+      &:hover {
+        color: #333;
       }
     }
   }
+}
 
-  .score-dialog-title {
+.score-dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .title-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+}
+
+.score-content {
+  padding: 24px;
+}
+
+.score-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  background: #f7f8fa;
+  border-radius: 8px;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .max-score {
+    flex-shrink: 0;
+    width: 50px;
+    height: 50px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
+    background: #e6f4ff;
+    border-radius: 8px;
+    font-size: 28px;
+    font-weight: 600;
+    color: #1890ff;
+  }
 
-    .title-text {
-      font-size: 18px;
+  .score-detail {
+    flex: 1;
+
+    .detail-title {
+      font-size: 16px;
       font-weight: 600;
       color: #1a1a1a;
+      margin-bottom: 8px;
     }
 
+    .detail-desc {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.5;
+    }
   }
 
-  .score-content {
-    padding: 24px;
-  }
-
-  .score-item {
+  .actual-score {
+    flex-shrink: 0;
+    min-width: 50px;
+    height: 50px;
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 20px 24px;
-    background: #f7f8fa;
+    justify-content: center;
+    background: #f0f94;
     border-radius: 8px;
-    margin-bottom: 16px;
+    font-size: 28px;
+    font-weight: 600;
+    color: #52c41a;
 
-    &:last-child {
-      margin-bottom: 0;
+    .score-unit {
+      font-size: 14px;
+      margin-left: 4px;
     }
+  }
+}
 
-    .max-score {
-      flex-shrink: 0;
-      width: 50px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #e6f4ff;
-      border-radius: 8px;
-      font-size: 28px;
-      font-weight: 600;
-      color: #1890ff;
-    }
+.score-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-top: 1px solid #e8e8e8;
 
-    .score-detail {
-      flex: 1;
+  .footer-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #464545;
+  }
 
-      .detail-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 8px;
-      }
+  .footer-score {
+    font-size: 36px;
+    font-weight: 600;
+    color: #1890ff;
+  }
+}
 
-      .detail-desc {
-        font-size: 14px;
-        color: #666;
-        line-height: 1.5;
-      }
-    }
+.left-card {
+  border-radius: 10px;
+  height: 100%;
+  max-height: 100%;
+  overflow: auto;
 
-    .actual-score {
-      flex-shrink: 0;
-      min-width: 50px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f0f9f4;
-      border-radius: 8px;
-      font-size: 28px;
-      font-weight: 600;
-      color: #52c41a;
+  .el-card__body {
+    height: 100%;
+    max-height: 100%;
+    overflow: auto;
+  }
+}
 
-      .score-unit {
-        font-size: 14px;
-        margin-left: 4px;
-      }
-    }
+.search-card {
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
 
-    .score-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 24px;
-      border-top: 1px solid #e8e8e8;
+::v-deep .table-card {
+  border-radius: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
 
-      .footer-label {
-        font-size: 16px;
-        font-weight: 600;
-        color: #464545;
-      }
+  .el-card__body {
+    flex: 1;
+    height: 93%;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+  }
+}
 
-      .footer-score {
-        font-size: 36px;
-        font-weight: 600;
-        color: #3b82f6;
-      }
-    }
+::v-deep .assetCatalogDrawer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .el-drawer__body {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+::v-deep .drawer-table-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-top: 15px;
+
+  .el-card__body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
   }
 }
 </style>
