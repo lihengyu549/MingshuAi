@@ -148,9 +148,9 @@
           </template>
         </el-table-column>
       </el-table>
+      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
+        @pagination="getList" />
     </el-card>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
-      @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
     <Drawer :title="title" v-loading="formLoading" :visible.sync="open">
       <el-form slot="body" ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent
@@ -1273,11 +1273,6 @@ export default {
   }
 };
 </script>
-<style>
-input[aria-hidden=true] {
-  display: none !important;
-}
-</style>
 <style scoped>
 /deep/.searchCard {
   border-radius: 10px;
