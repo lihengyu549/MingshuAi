@@ -87,67 +87,68 @@
           <span>{{ scope.row.aiAnalyticsEngine == 1 ? '快速响应' : '深度思考' }}</span>
         </template>
       </el-table-column> -->
-      <el-table-column label="任务字段数" width="120" align="center" prop="fieldCount" show-overflow-tooltip>
-        <template slot-scope="scope">
-          {{ emptyHandler(scope.row.fieldCount) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="任务文件数" width="120" align="center" prop="fileCount" show-overflow-tooltip>
-        <template slot-scope="scope">
-          {{ emptyHandler(scope.row.fileCount) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="执行状态" align="center" width="120" prop="maskComplete">
-        <template slot-scope="scope">
-          <div class="runType">
-            <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'"
-              class="el-icon-loading" style="margin-right: 10px;font-size: 18px;"></i>
-            <svg-icon v-else :icon-class="scope.row.maskComplete" class="runIcon"
-              style="margin-right: 10px;width: 20px;height: 20px;"></svg-icon>
-            <span>{{ stateMsg(scope.row.maskComplete) }}</span>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="发布状态" align="center" prop="publishStatus">
-        <template slot-scope="scope">
-          <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ? '未发布' :
-            '已发布' }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
-      <el-table-column label="任务操作" align="center" width="200" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <div class="iconBtnBox">
-            <el-tooltip class="item" effect="dark" content="执行任务" placement="top-start">
-              <i class="el-icon-video-play" @click="scope.row.publishStatus != 1 && implementFn(scope.row)"
-                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
-            </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="暂停任务" placement="top-start">
-              <i class="el-icon-video-pause" @click="scope.row.publishStatus != 1 && suspendWorkFn(scope.row)"
-                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
-            </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="终止任务" placement="top-start">
-              <i class="el-icon-switch-button" @click="scope.row.publishStatus != 1 && terminationWorkFn(scope.row)"
-                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
-            </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="任务监控" placement="top-start">
-              <i class="el-icon-view" @click="scope.row.publishStatus != 1 && toJobMonitoring(scope.row)"
-                :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
-            </el-tooltip>
-            <!-- <i class="el-icon-refresh-left" @click="recoverWorkFn(scope.row)"></i> -->
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="结果操作" align="center" width="230" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="resultLookFn(scope.row)">结果查看</el-button>
-          <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
-            @click="resultReleaseFn(scope.row)">结果发布</el-button>
-          <el-button size="mini" type="text" :disabled="scope.row.publishStatus != 1"
-            @click="resultWithdraw(scope.row)">发布撤回</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+        <el-table-column label="任务字段数" width="120" align="center" prop="fieldCount" show-overflow-tooltip>
+          <template slot-scope="scope">
+            {{ emptyHandler(scope.row.fieldCount) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="任务文件数" width="120" align="center" prop="fileCount" show-overflow-tooltip>
+          <template slot-scope="scope">
+            {{ emptyHandler(scope.row.fileCount) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="执行状态" align="center" width="120" prop="maskComplete">
+          <template slot-scope="scope">
+            <div class="runType">
+              <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'"
+                class="el-icon-loading" style="margin-right: 10px;font-size: 18px;"></i>
+              <svg-icon v-else :icon-class="scope.row.maskComplete" class="runIcon"
+                style="margin-right: 10px;width: 20px;height: 20px;"></svg-icon>
+              <span>{{ stateMsg(scope.row.maskComplete) }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="发布状态" align="center" prop="publishStatus">
+          <template slot-scope="scope">
+            <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ? '未发布' :
+              '已发布' }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
+        <el-table-column label="任务操作" align="center" width="200" class-name="small-padding fixed-width">
+          <template slot-scope="scope">
+            <div class="iconBtnBox">
+              <el-tooltip class="item" effect="dark" content="执行任务" placement="top-start">
+                <i class="el-icon-video-play" @click="scope.row.publishStatus != 1 && implementFn(scope.row)"
+                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+              </el-tooltip>
+              <el-tooltip class="item" effect="dark" content="暂停任务" placement="top-start">
+                <i class="el-icon-video-pause" @click="scope.row.publishStatus != 1 && suspendWorkFn(scope.row)"
+                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+              </el-tooltip>
+              <el-tooltip class="item" effect="dark" content="终止任务" placement="top-start">
+                <i class="el-icon-switch-button" @click="scope.row.publishStatus != 1 && terminationWorkFn(scope.row)"
+                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+              </el-tooltip>
+              <el-tooltip class="item" effect="dark" content="任务监控" placement="top-start">
+                <i class="el-icon-view" @click="scope.row.publishStatus != 1 && toJobMonitoring(scope.row)"
+                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+              </el-tooltip>
+              <!-- <i class="el-icon-refresh-left" @click="recoverWorkFn(scope.row)"></i> -->
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="结果操作" align="center" width="230" class-name="small-padding fixed-width">
+          <template slot-scope="scope">
+            <el-button size="mini" type="text" @click="resultLookFn(scope.row)">结果查看</el-button>
+            <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
+              @click="resultReleaseFn(scope.row)">结果发布</el-button>
+            <el-button size="mini" type="text" :disabled="scope.row.publishStatus != 1"
+              @click="resultWithdraw(scope.row)">发布撤回</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
     <!-- 添加或修改数据库代理对话框 -->
