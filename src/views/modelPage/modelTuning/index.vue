@@ -1,29 +1,28 @@
 <template>
     <div class="app-container" v-loading="mainLoading">
-        <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
-            :inline="true" label-width="auto">
-            <el-form-item label="任务名称" prop="modelTaskName">
-                <el-input v-model="queryParams.modelTaskName" @input="inputSearch" placeholder="请输入数据源名称" clearable
-                    @keyup.enter.native="handleQuery" />
-            </el-form-item>
-            <el-form-item label="训练状态 " prop="modelTrainingStatus">
-                <el-select clearable v-model="queryParams.modelTrainingStatus" @change="inputSearch"
-                    placeholder="请选择训练状态">
-                    <el-option v-for="item in dict.type.sys_model_drill" :key="item.value" :label="item.label"
-                        :value="item.value">
-                    </el-option>
-                </el-select>
-            </el-form-item>
-            <el-form-item label="数据集 " prop="dataSetId">
-                <el-select clearable v-model="queryParams.dataSetId" @change="inputSearch" placeholder="请选择数据集">
-                    <el-option v-for="item in dataSetList" :key="item.id" :label="item.dataSetName" :value="item.id">
-                    </el-option>
-                </el-select>
-            </el-form-item>
-            <!-- <el-form-item class="searchBtn" label-width="0"> -->
-            <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
-            <!-- </el-form-item> -->
-        </el-form>
+        <el-card class="search-card" shadow="never">
+            <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
+                :inline="true" label-width="auto">
+                <el-form-item label="任务名称" prop="modelTaskName">
+                    <el-input v-model="queryParams.modelTaskName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+                        @keyup.enter.native="handleQuery" />
+                </el-form-item>
+                <el-form-item label="训练状态 " prop="modelTrainingStatus">
+                    <el-select clearable v-model="queryParams.modelTrainingStatus" @change="inputSearch"
+                        placeholder="请选择训练状态">
+                        <el-option v-for="item in dict.type.sys_model_drill" :key="item.value" :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="数据集 " prop="dataSetId">
+                    <el-select clearable v-model="queryParams.dataSetId" @change="inputSearch" placeholder="请选择数据集">
+                        <el-option v-for="item in dataSetList" :key="item.id" :label="item.dataSetName" :value="item.id">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+        </el-card>
         <el-row :gutter="10" class="mb8">
             <el-col :span="1.5">
                 <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">新增任务</el-button>
@@ -32,7 +31,8 @@
                 <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除任务 </el-button>
             </el-col>
         </el-row>
-        <el-table v-loading="loading" height="700px" class="tableBox" :data="proxysList"
+        <el-card class="table-card" shadow="never">
+            <el-table v-loading="loading" class="tableBox" :data="proxysList"
             @selection-change="handleSelectionChange" ref="tableRef">
             <template slot="empty">
                 <el-empty description="暂无数据"></el-empty>
@@ -64,6 +64,7 @@
         </el-table>
         <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
             :limit.sync="queryParams.pageSize" @pagination="getList" />
+        </el-card>
         <Drawer :title="title" v-loading="dialogLoading" :visible.sync="dialogDataShow" append-to-body
             :close-on-click-modal="false">
             <el-form slot="body" class="dialogForm" :rules="dialogDataRules" :model="dialogData" size="medium"
@@ -499,6 +500,38 @@ export default {
 };
 </script>
 <style scoped>
+.search-card {
+  border-radius: 10px;
+  margin-bottom: 20px;
+
+  .el-form-item {
+    margin-bottom: 0;
+  }
+}
+
+.table-card {
+  border-radius: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  .el-card__body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+.tableBox {
+  overflow-y: auto;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
 .yuanDataClass {
     display: flex;
     justify-content: flex-start;
