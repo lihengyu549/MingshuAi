@@ -735,15 +735,15 @@ export default {
   },
   methods: {
     // 获取风险等级颜色
-    getRiskStyle(level) {
-      const styles = {
-        1: { color: '#16a34a', backgroundColor: '#f0fdf4', border: 'none' },
-        2: { color: '#f97316', backgroundColor: '#fff7ed', border: 'none' },
-        3: { color: '#c2410c', backgroundColor: '#ffedd5', border: 'none' },
-        4: { color: '#dc2626', backgroundColor: '#fee2e2', border: 'none' },
-        5: { color: '#991b1b', backgroundColor: '#fecaca', border: 'none' }
+    getRiskColor(level) {
+      const colors = {
+        5: '#F56C6C', // 深红色
+        4: '#FF9800', // 橙红色
+        3: '#FB8C00', // 橙色
+        2: '#FFC107', // 黄色
+        1: '#4CAF50'  // 绿色
       };
-      return styles[level] || { color: '#6b7280', backgroundColor: '#f3f4f6', border: 'none' };
+      return colors[level] || '#9E9E9E';
     },
     // 切换筛选条件的显示/隐藏
     toggleFilters() {
@@ -1503,6 +1503,7 @@ export default {
   overflow-y: auto;
   border: none;
   border-bottom: 1px solid #e2e8f0;
+  border-radius: 0;
 }
 
 .tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
