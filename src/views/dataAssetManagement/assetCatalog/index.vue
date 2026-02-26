@@ -428,7 +428,7 @@
     </el-dialog>
 
     <!-- 新增评估详情弹窗 -->
-    <el-dialog title="评估详情" :visible.sync="scoreDialog.visible" width="740px" custom-class="score-detail-dialog"
+    <el-dialog :visible.sync="scoreDialog.visible" width="740px" custom-class="score-detail-dialog"
       :close-on-click-modal="false">
 
       <div slot="title" class="score-dialog-title">
@@ -2365,6 +2365,10 @@ export default {
   .el-dialog__header {
     padding: 20px 24px;
     border-bottom: 1px solid #e8e8e8;
+
+    &::before {
+      display: none;
+    }
   }
 
   .el-dialog__body {
@@ -2391,6 +2395,16 @@ export default {
   display: flex;
   align-items: center;
   gap: 12px;
+
+  &::before {
+    content: "";
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background-color: #3b82f6;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
 
   .title-text {
     font-size: 18px;
