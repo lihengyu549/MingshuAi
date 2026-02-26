@@ -1475,8 +1475,9 @@ export default {
       this.treeLoading = true;
       this.Loading = true;
       getAllProxys().then((resp) => {
+        this.Loading = false;
         if (resp.data.length === 0) {
-          this.Loading = false;
+          this.categoryList = [];
         } else {
           this.categoryList = resp.data;
           this.treeID = resp.data[0].id;
