@@ -2,7 +2,7 @@
     <div class="container" v-loading="loading">
         <!-- 顶部标题和按钮区域 -->
         <el-card class="top-section" shadow="never">
-            <h2><el-tag type="info" style="font-size: 18px;">ID：{{row.id}}</el-tag> {{ row.fieldName }}</h2>
+            <h2><el-tag type="info" style="font-size: 18px;">ID：{{ row.id }}</el-tag> {{ row.fieldName }}</h2>
             <div class="top-buttons">
                 <el-button plain @click="handleReturn">返回</el-button>
                 <el-button @click="handleNext('0')">上一个</el-button>
@@ -173,7 +173,9 @@
                         <div class="info-item">
                             <label class="info-label">定级结果：</label>
                             <div class="info-content">
-                                <el-tag :style="getRiskStyle(Number(row.securityLevel))">{{ row.securityLevelName || '--' }}</el-tag>
+                                <el-tag :style="getRiskStyle(Number(row.securityLevel))">{{ row.securityLevelName ||
+                                    '--'
+                                    }}</el-tag>
                             </div>
                         </div>
                         <div class="info-item">
@@ -187,7 +189,8 @@
                             <div class="info-content">{{ row.piiDetectionName || '--' }}</div>
                         </div>
                         <div class="info-item">
-                            <el-button type="primary" plain class="full-width-btn" @click="handleModifyResult">修改结果</el-button>
+                            <el-button type="primary" plain class="full-width-btn"
+                                @click="handleModifyResult">修改结果</el-button>
                         </div>
                     </div>
                 </el-card>
@@ -759,16 +762,12 @@ export default {
 .box-card {
     border-radius: 10px;
     border: 1px solid #e2e8f0;
-}
 
-.box-card {
-    .el-card__body {
+    ::v-deep .el-card__body {
         padding: 20px;
     }
-}
 
-.box-card {
-    .el-card__header {
+    ::v-deep .el-card__header {
         background-color: #fafafa;
         display: flex;
         align-items: center;
