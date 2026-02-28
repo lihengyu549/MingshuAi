@@ -783,6 +783,7 @@ export default {
 .header-confidence {
     font-size: 12px;
     color: #909399;
+    float: inline-end;
 }
 
 .full-width-btn {
