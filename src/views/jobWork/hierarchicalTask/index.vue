@@ -503,8 +503,6 @@ import { addScanCompleteDataTasksByFile, editScanCompleteDataByFile, selectFileR
 
 import { getFrameworks, } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
-import { path } from "d3";
-import { color } from "echarts";
 export default {
   name: "hierarchicalTask",
   dicts: ['sys_risk_level', 'sys_classification_state', 'sys_classification_reasons', 'sys_executing_state', 'sys_classification_reasons_un'],
