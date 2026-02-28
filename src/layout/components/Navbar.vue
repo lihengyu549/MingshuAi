@@ -107,7 +107,7 @@
               <div class="user-email">{{ $store.state.user.projectData.email }}</div>
             </div>
           </div>
-          <router-link to="user/profile">
+          <router-link to="/user/profile">
             <el-dropdown-item class="user-menu-item" divided>
               <i class="el-icon-user user-menu-icon"></i>
               <span>个人中心</span>
