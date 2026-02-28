@@ -278,7 +278,7 @@ export default {
 <style scoped>
 /* @import url(); 引入公共css类 */
 .content {
-  background-color: #fff;
+  /* background-color: #fff; */
   /* #fafafc */
   padding: 50px;
 }
