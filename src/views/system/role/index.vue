@@ -13,13 +13,13 @@
               <el-input v-model="queryParams.roleKey" placeholder="请输入权限字符" clearable style="width: 240px"
                 @change="handleQuery" />
             </el-form-item> -->
-            <el-form-item label="状态" prop="status">
+            <!-- <el-form-item label="状态" prop="status">
               <el-select v-model="queryParams.status" placeholder="角色状态" clearable style="width: 240px"
                 @change="handleQuery">
                 <el-option v-for="dict in dict.type.sys_normal_disable" :key="dict.value" :label="dict.label"
                   :value="dict.value" />
               </el-select>
-            </el-form-item>
+            </el-form-item> -->
             <!-- <el-form-item label="创建时间">
               <el-date-picker v-model="dateRange" style="width: 240px" value-format="yyyy-MM-dd" type="daterange"
                 range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"
@@ -42,7 +42,7 @@
             <el-table-column type="selection" width="55" align="center" />
             <!-- <el-table-column label="角色编号" prop="roleId" width="120" /> -->
             <el-table-column label="角色名称" prop="roleName" align="center" :show-overflow-tooltip="true" />
-            <el-table-column label="权限字符" prop="roleKey" align="center" :show-overflow-tooltip="true" />
+            <!-- <el-table-column label="权限字符" prop="roleKey" align="center" :show-overflow-tooltip="true" /> -->
             <!-- <el-table-column label="显示顺序" prop="roleSort" width="100" /> -->
             <!-- <el-table-column label="状态" align="center" width="100">
               <template slot-scope="scope">

@@ -18,7 +18,7 @@
         v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
         <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
           <el-menu-item :index="resolvePath(onlyOneChild.path)"
-            :class="[{ 'submenu-title-noDropdown': !isNest }, { 'home-menu-item': onlyOneChild.meta.title === '首页' }, { 'is-active': onlyOneChild.meta.title === '首页' }]">
+            :class="[{ 'submenu-title-noDropdown': !isNest }, { 'home-menu-item': onlyOneChild.meta.title === '态势感知驾驶舱' }, { 'is-active': onlyOneChild.meta.title === '态势感知驾驶舱' }]">
             <item :icon="onlyOneChild.meta.icon || (item.meta && item.meta.icon)" :title="onlyOneChild.meta.title" />
           </el-menu-item>
         </app-link>

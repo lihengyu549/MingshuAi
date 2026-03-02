@@ -66,8 +66,8 @@
               :show-overflow-tooltip="true" />
             <!-- <el-table-column label="用户昵称" align="center" key="nickName" prop="nickName" v-if="columns[2].visible"
               :show-overflow-tooltip="true" /> -->
-            <el-table-column label="部门" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible"
-              :show-overflow-tooltip="true" />
+            <!-- <el-table-column label="部门" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible"
+              :show-overflow-tooltip="true" /> -->
             <el-table-column label="手机号码" align="center" key="phonenumber" prop="phonenumber" v-if="columns[4].visible"
               width="120" />
             <el-table-column label="状态" align="center" key="status" v-if="columns[5].visible">
