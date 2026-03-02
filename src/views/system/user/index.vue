@@ -64,14 +64,14 @@
             <!-- <el-table-column label="用户编号" align="center" key="userId" prop="userId" v-if="columns[0].visible" /> -->
             <el-table-column label="用户名称" align="center" key="userName" prop="userName" v-if="columns[1].visible"
               :show-overflow-tooltip="true" />
-            <el-table-column label="用户昵称" align="center" key="nickName" prop="nickName" v-if="columns[2].visible"
-              :show-overflow-tooltip="true" />
+            <!-- <el-table-column label="用户昵称" align="center" key="nickName" prop="nickName" v-if="columns[2].visible"
+              :show-overflow-tooltip="true" /> -->
             <el-table-column label="部门" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible"
               :show-overflow-tooltip="true" />
             <el-table-column label="手机号码" align="center" key="phonenumber" prop="phonenumber" v-if="columns[4].visible"
               width="120" />
             <el-table-column label="状态" align="center" key="status" v-if="columns[5].visible">
-              <template slot-scope="scope">
+              <template slot-scope="scope" v-if="scope.row.userId !== 1">
                 <el-switch v-model="scope.row.status" active-value="0" inactive-value="1"
                   @change="handleStatusChange(scope.row)"></el-switch>
               </template>
@@ -87,7 +87,10 @@
                   v-hasPermi="['system:user:edit']">修改</el-button>
                 <el-button size="mini" type="text" class="text-danger" icon="el-icon-delete"
                   @click="handleDelete(scope.row)" v-hasPermi="['system:user:remove']">删除</el-button>
-                <el-dropdown size="mini" @command="(command) => handleCommand(command, scope.row)"
+                <el-button size="mini" type="text" icon="el-icon-key" @click="handleResetPwd(scope.row)"
+                  v-hasPermi="['system:user:resetPwd']">重置密码</el-button>
+
+                <!-- <el-dropdown size="mini" @command="(command) => handleCommand(command, scope.row)"
                   v-hasPermi="['system:user:resetPwd', 'system:user:edit']">
                   <el-button size="mini" type="text" icon="el-icon-d-arrow-right">更多</el-button>
                   <el-dropdown-menu slot="dropdown">
@@ -96,7 +99,7 @@
                     <el-dropdown-item command="handleAuthRole" icon="el-icon-circle-check"
                       v-hasPermi="['system:user:edit']">分配角色</el-dropdown-item>
                   </el-dropdown-menu>
-                </el-dropdown>
+                </el-dropdown> -->
               </template>
             </el-table-column>
           </el-table>
@@ -140,7 +143,8 @@
         <el-row>
           <el-col>
             <el-form-item label="角色" prop="roleIds">
-              <el-select v-model="form.roleIds" multiple placeholder="请选择角色" @change="handleRoleSelectChange" style="width: 100%">
+              <el-select v-model="form.roleIds" multiple placeholder="请选择角色" @change="handleRoleSelectChange"
+                style="width: 100%">
                 <el-option v-for="item in roleOptions" :key="item.roleId" :label="item.roleName" :value="item.roleId"
                   :disabled="item.status == 1"></el-option>
               </el-select>
@@ -498,7 +502,7 @@ export default {
     submitForm: function () {
       this.$refs["form"].validate(valid => {
         if (valid) {
-        this.form.nickName = this.form.userName; //nickName不为空
+          this.form.nickName = this.form.userName; //nickName不为空
           if (this.form.userId != undefined) {
             updateUser(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");

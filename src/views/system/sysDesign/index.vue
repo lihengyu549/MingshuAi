@@ -26,7 +26,7 @@
               </el-upload>
             </div>
           </el-form-item>
-          <el-form-item label="图标预览" prop="preview">
+          <!-- <el-form-item label="图标预览" prop="preview">
             <div class="preview-area">
               <div :class="['preview-item', themeMode === 'light' ? 'active' : '']" @click="themeMode = 'light'">
                 <div class="preview-label">浅色模式</div>
@@ -41,7 +41,7 @@
                 </div>
               </div>
             </div>
-          </el-form-item>
+          </el-form-item> -->
         </el-form>
       </div>
     </el-card>

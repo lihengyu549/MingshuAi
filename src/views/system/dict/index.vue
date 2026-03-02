@@ -74,8 +74,8 @@
           <template slot-scope="scope">
             <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
               v-hasPermi="['system:dict:edit']">修改</el-button>
-            <el-button size="mini" type="text" class="text-danger" icon="el-icon-delete" @click="handleDelete(scope.row)"
-              v-hasPermi="['system:dict:remove']">删除</el-button>
+            <el-button size="mini" type="text" class="text-danger" icon="el-icon-delete"
+              @click="handleDelete(scope.row)" v-hasPermi="['system:dict:remove']">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -85,7 +85,7 @@
     </el-card>
 
     <!-- 添加或修改参数配置对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <el-dialog :title="title" class="custom-dialog" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="字典名称" prop="dictName">
           <el-input v-model="form.dictName" placeholder="请输入字典名称" />
@@ -305,6 +305,16 @@ export default {
   border: none;
   border-radius: 0;
   border-bottom: 1px solid #e2e8f0;
+}
+
+.custom-dialog {
+  .el-dialog {
+    border-radius: 10px;
+  }
+
+  .el-dialog__header {
+    border-bottom: 1px solid #e2e8f0;
+  }
 }
 
 .text-danger {

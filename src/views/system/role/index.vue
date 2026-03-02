@@ -41,16 +41,16 @@
           <el-table v-loading="loading" class="tableBox" :data="roleList" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="55" align="center" />
             <!-- <el-table-column label="角色编号" prop="roleId" width="120" /> -->
-            <el-table-column label="角色名称" prop="roleName" :show-overflow-tooltip="true" width="150" />
-            <el-table-column label="权限字符" prop="roleKey" :show-overflow-tooltip="true" width="150" />
-            <el-table-column label="显示顺序" prop="roleSort" width="100" />
-            <el-table-column label="状态" align="center" width="100">
+            <el-table-column label="角色名称" prop="roleName" align="center" :show-overflow-tooltip="true" />
+            <el-table-column label="权限字符" prop="roleKey" align="center" :show-overflow-tooltip="true" />
+            <!-- <el-table-column label="显示顺序" prop="roleSort" width="100" /> -->
+            <!-- <el-table-column label="状态" align="center" width="100">
               <template slot-scope="scope">
                 <el-switch v-model="scope.row.status" active-value="0" inactive-value="1"
                   @change="handleStatusChange(scope.row)"></el-switch>
               </template>
-            </el-table-column>
-            <el-table-column label="创建时间" align="center" prop="createTime" width="180">
+</el-table-column> -->
+            <el-table-column label="创建时间" align="center" prop="createTime">
               <template slot-scope="scope">
                 <span>{{ parseTime(scope.row.createTime) }}</span>
               </template>
@@ -61,7 +61,7 @@
                   v-hasPermi="['system:role:edit']">修改</el-button>
                 <el-button size="mini" type="text" class="text-danger" icon="el-icon-delete"
                   @click="handleDelete(scope.row)" v-hasPermi="['system:role:remove']">删除</el-button>
-                <el-dropdown size="mini" @command="(command) => handleCommand(command, scope.row)"
+                <!-- <el-dropdown size="mini" @command="(command) => handleCommand(command, scope.row)"
                   v-hasPermi="['system:role:edit']">
                   <el-button size="mini" type="text" icon="el-icon-d-arrow-right">更多</el-button>
                   <el-dropdown-menu slot="dropdown">
@@ -70,7 +70,7 @@
                     <el-dropdown-item command="handleAuthUser" icon="el-icon-user"
                       v-hasPermi="['system:role:edit']">分配用户</el-dropdown-item>
                   </el-dropdown-menu>
-                </el-dropdown>
+                </el-dropdown> -->
               </template>
             </el-table-column>
           </el-table>

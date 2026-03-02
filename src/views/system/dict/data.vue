@@ -21,20 +21,20 @@
       </el-form>
     </el-card>
     <div class="search-actions">
-      <el-button type="primary" plain icon="el-icon-plus" @click="handleAdd"
-        v-hasPermi="['system:dict:add']">新增</el-button>
-      <el-button type="success" plain icon="el-icon-edit" :disabled="single" @click="handleUpdate"
-        v-hasPermi="['system:dict:edit']">修改</el-button>
-      <el-button type="danger" plain icon="el-icon-delete" :disabled="multiple" @click="handleDelete"
-        v-hasPermi="['system:dict:remove']">删除</el-button>
-      <el-button type="warning" plain icon="el-icon-download" @click="handleExport"
+      <!-- <el-button type="primary" plain icon="el-icon-plus" @click="handleAdd"
+        v-hasPermi="['system:dict:add']">新增</el-button> -->
+      <!-- <el-button type="success" plain icon="el-icon-edit" :disabled="single" @click="handleUpdate"
+        v-hasPermi="['system:dict:edit']">修改</el-button> -->
+      <!-- <el-button type="danger" plain icon="el-icon-delete" :disabled="multiple" @click="handleDelete"
+        v-hasPermi="['system:dict:remove']">删除</el-button> -->
+      <el-button type="info" plain icon="el-icon-download" @click="handleExport"
         v-hasPermi="['system:dict:export']">导出</el-button>
       <!-- <el-button type="info" plain icon="el-icon-close" @click="handleClose">关闭</el-button> -->
     </div>
     <el-card class="table-card" shadow="never">
       <el-table v-loading="loading" class="tableBox" :data="dataList" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="字典编码" align="center" prop="dictCode" />
+        <el-table-column label="显示排序" align="center" prop="dictCode" />
         <el-table-column label="字典标签" align="center" prop="dictLabel">
           <template slot-scope="scope">
             <span v-if="scope.row.listClass == '' || scope.row.listClass == 'default'">{{ scope.row.dictLabel }}</span>
@@ -43,7 +43,7 @@
           </template>
         </el-table-column>
         <el-table-column label="字典键值" align="center" prop="dictValue" />
-        <el-table-column label="字典排序" align="center" prop="dictSort" />
+        <!-- <el-table-column label="字典排序" align="center" prop="dictSort" /> -->
         <el-table-column label="状态" align="center" prop="status">
           <template slot-scope="scope">
             <dict-tag :options="dict.type.sys_normal_disable" :value="scope.row.status" />
@@ -59,8 +59,8 @@
           <template slot-scope="scope">
             <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
               v-hasPermi="['system:dict:edit']">修改</el-button>
-            <el-button size="mini" type="text" class="text-danger" icon="el-icon-delete" @click="handleDelete(scope.row)"
-              v-hasPermi="['system:dict:remove']">删除</el-button>
+            <el-button size="mini" type="text" class="text-danger" icon="el-icon-delete"
+              @click="handleDelete(scope.row)" v-hasPermi="['system:dict:remove']">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -69,7 +69,7 @@
     </el-card>
 
     <!-- 添加或修改参数配置对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <el-dialog :title="title" class="custom-dialog" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="字典类型">
           <el-input v-model="form.dictType" :disabled="true" />
@@ -80,18 +80,18 @@
         <el-form-item label="数据键值" prop="dictValue">
           <el-input v-model="form.dictValue" placeholder="请输入数据键值" />
         </el-form-item>
-        <el-form-item label="样式属性" prop="cssClass">
+        <!-- <el-form-item label="样式属性" prop="cssClass">
           <el-input v-model="form.cssClass" placeholder="请输入样式属性" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="显示排序" prop="dictSort">
           <el-input-number v-model="form.dictSort" controls-position="right" :min="0" />
         </el-form-item>
-        <el-form-item label="回显样式" prop="listClass">
+        <!-- <el-form-item label="回显样式" prop="listClass">
           <el-select v-model="form.listClass">
             <el-option v-for="item in listClassOptions" :key="item.value" :label="item.label + '(' + item.value + ')'"
               :value="item.value"></el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
             <el-radio v-for="dict in dict.type.sys_normal_disable" :key="dict.value" :label="dict.value">{{ dict.label
@@ -357,6 +357,16 @@ export default {
   border: none;
   border-radius: 0;
   border-bottom: 1px solid #e2e8f0;
+}
+
+.custom-dialog {
+  .el-dialog {
+    border-radius: 10px;
+  }
+
+  .el-dialog__header {
+    border-bottom: 1px solid #e2e8f0;
+  }
 }
 
 .text-danger {
