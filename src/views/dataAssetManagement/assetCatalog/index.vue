@@ -204,7 +204,7 @@
             </div>
             <!-- type = 0 时才显示此分页组件 -->
             <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-              :limit.sync="queryParams.pageSize" @pagination="handlePagination" />
+              :pageSize.sync="queryParams.pageSize" @pagination="handlePagination" />
           </el-card>
         </template>
 
@@ -291,7 +291,7 @@
 
                 <!-- 文件列表分页 -->
                 <pagination v-show="fileTotal > 0" :total="fileTotal" :page.sync="fileQueryParams.pageNum"
-                  :limit.sync="fileQueryParams.pageSize" @pagination="handleFilePagination" />
+                  :pageSize.sync="fileQueryParams.pageSize" @pagination="handleFilePagination" />
               </div>
             </div>
           </el-card>
@@ -393,7 +393,7 @@
 
           <!-- 新增分页组件 -->
           <Pagination v-show="drawerTotal > 0" :total="drawerTotal" :page.sync="drawerQueryParams.pageNum"
-            :limit.sync="drawerQueryParams.pageSize" @pagination="handleDrawerPagination" style="margin-top: 15px;" />
+            :pageSize.sync="drawerQueryParams.pageSize" @pagination="handleDrawerPagination" style="margin-top: 15px;" />
         </el-card>
       </template>
     </Drawer>

@@ -62,7 +62,7 @@
             <!-- 分页 -->
             <Pagination v-show="pagination.total > 0" @size-change="handleSizeChange"
                 @current-change="handleCurrentChange" :page.sync="pagination.currentPage"
-                :limit.sync="pagination.pageSize" :total="pagination.total" size="small" />
+                :pageSize.sync="pagination.pageSize" :total="pagination.total" size="small" />
         </el-card>
 
         <!-- 抽屉：查看/编辑 -->

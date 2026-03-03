@@ -63,7 +63,7 @@
             </el-table-column>
         </el-table>
         <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-            :limit.sync="queryParams.pageSize" @pagination="getList" />
+            :pageSize.sync="queryParams.pageSize" @pagination="getList" />
         </el-card>
         <Drawer :title="title" v-loading="dialogLoading" :visible.sync="dialogDataShow" append-to-body
             :close-on-click-modal="false">

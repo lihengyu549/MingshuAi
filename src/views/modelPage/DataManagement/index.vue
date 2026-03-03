@@ -49,7 +49,7 @@
                 </el-table-column>
             </el-table>
             <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-                :limit.sync="queryParams.pageSize" @pagination="getList" />
+                :pageSize.sync="queryParams.pageSize" @pagination="getList" />
         </el-card>
         <el-dialog :title="title" class="addMsg" v-loading="dialogLoading" :visible.sync="dialogDataShow" append-to-body
             :close-on-click-modal="false" width="700px">

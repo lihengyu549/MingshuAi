@@ -594,13 +594,13 @@ export default {
 
         },
         handleReturn() {
-            // 返回点击事件
-            // 返回到viewResults时，直接返回即可，不需要携带查询参数
-            // 因为viewResults会从sessionStorage中恢复自己的查询条件
+            sessionStorage.setItem('viewResults_queryParams', JSON.stringify(this.$route.query.queryParams || {}));
+            sessionStorage.setItem('prevPage', 'fixResults');
             this.$router.push({
                 path: '/viewResults',
                 query: {
-                    drawerData: this.$route.query.drawerData
+                    drawerData: this.$route.query.drawerData,
+                    queryParams: this.$route.query.queryParams
                 }
             });
         },

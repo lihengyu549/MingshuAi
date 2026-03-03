@@ -34,7 +34,7 @@
       </el-table-column>
     </el-table>
     
-    <pagination v-show="total>0" :total="total" :page.sync="pageNum" :limit.sync="pageSize" />
+    <pagination v-show="total>0" :total="total" :page.sync="pageNum" :pageSize.sync="pageSize" />
 
     <el-form label-width="100px">
       <el-form-item style="text-align: center;margin-left:-120px;margin-top:30px;">

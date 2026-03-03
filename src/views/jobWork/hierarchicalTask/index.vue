@@ -148,7 +148,8 @@
           </template>
         </el-table-column>
       </el-table>
-      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
+      {{ queryParams.pageSize }}
+      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :pageSize.sync="queryParams.pageSize"
         @pagination="getList" />
     </el-card>
     <!-- 添加或修改数据库代理对话框 -->
@@ -692,9 +693,26 @@ export default {
     };
   },
 
+  beforeRouteLeave(to, from, next) {
+    const targetPath = to.path || '';
+    const jobWorkPaths = ['/viewResults', '/fixResults'];
+    const isNavigatingWithinJobWork = jobWorkPaths.some(path => targetPath.startsWith(path));
+    
+    if (!isNavigatingWithinJobWork) {
+      sessionStorage.removeItem('hierarchicalTask_queryParams');
+      sessionStorage.removeItem('prevPage');
+    }
+    next();
+  },
+
   created() {
     this.gettreeOptionsList()
-    // 页面加载时优先检查sessionStorage中是否有保存的查询条件（从viewResults返回的情况）
+    const prevPage = sessionStorage.getItem('prevPage');
+    if (prevPage !== 'viewResults') {
+      sessionStorage.removeItem('hierarchicalTask_queryParams');
+    } else {
+      sessionStorage.removeItem('prevPage');
+    }
     const savedParams = sessionStorage.getItem('hierarchicalTask_queryParams');
     if (savedParams) {
       try {
@@ -703,7 +721,6 @@ export default {
         console.error('解析保存的查询条件失败:', e);
       }
     } else if (this.$route.query.queryParams) {
-      // 如果没有sessionStorage中的参数，再检查路由参数
       this.queryParams = this.$route.query.queryParams
     }
     this.getList()
