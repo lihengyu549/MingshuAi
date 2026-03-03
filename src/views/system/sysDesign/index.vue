@@ -159,7 +159,16 @@ export default {
       });
     },
     handleFileChange(file, fileList) {
-      this.fileList = fileList;
+      const processedList = fileList.map(item => {
+        if (!item.url && item.raw) {
+          return {
+            ...item,
+            url: URL.createObjectURL(item.raw)
+          };
+        }
+        return item;
+      });
+      this.fileList = processedList;
     },
     selectColor(color) {
       this.colorForm.color = color;
