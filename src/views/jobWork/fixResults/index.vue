@@ -310,9 +310,18 @@ export default {
             piiList: [],
         };
     },
+    data() {
+        return {
+            originalQueryParams: null
+        }
+    },
     created() {
         this.row = this.$route.query.row || null;
         this.categoryList = this.$route.query.categoryList || [];
+        if (this.$route.query.queryParams) {
+            const { pageNum, pageSize, ...rest } = this.$route.query.queryParams;
+            this.originalQueryParams = { ...rest };
+        }
         this.getPiiList()
     },
     computed: {
@@ -594,13 +603,14 @@ export default {
 
         },
         handleReturn() {
-            sessionStorage.setItem('viewResults_queryParams', JSON.stringify(this.$route.query.queryParams || {}));
+            const paramsToSave = this.originalQueryParams || this.$route.query.queryParams || {};
+            sessionStorage.setItem('viewResults_queryParams', JSON.stringify(paramsToSave));
             sessionStorage.setItem('prevPage', 'fixResults');
             this.$router.push({
                 path: '/viewResults',
                 query: {
                     drawerData: this.$route.query.drawerData,
-                    queryParams: this.$route.query.queryParams
+                    queryParams: paramsToSave
                 }
             });
         },

@@ -311,6 +311,7 @@ export default {
       isIndeterminate: false,
       checkedColumn: [],
       checkAll: false,
+      originalQueryParams: null,
       // 是否显示更多筛选条件
       showMoreFilters: false,
       // classificationReasonsList: ['策略匹配', 'AI推理', '脏数据识别'],
@@ -675,6 +676,12 @@ export default {
     const drawerData = this.$route.query?.drawerData;
     let queryParams = this.$route.query?.queryParams;
 
+    if (queryParams) {
+      const params = typeof queryParams === 'string' ? JSON.parse(queryParams) : queryParams;
+      const { pageNum, pageSize, ...rest } = params;
+      this.originalQueryParams = { ...rest };
+    }
+
     // 页面加载时优先检查sessionStorage中是否有保存的查询条件（从fixResults返回的情况）
     const savedParams = sessionStorage.getItem('viewResults_queryParams');
     if (savedParams) {
@@ -894,13 +901,14 @@ export default {
         })
     },
     handleBack() {
-      sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(this.$route.query.queryParams || {}));
+      const paramsToSave = this.originalQueryParams || this.$route.query.queryParams || {};
+      sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(paramsToSave));
       sessionStorage.setItem('prevPage', 'viewResults');
       this.$router.push({
         path: 'classificationTask/hierarchicalTask',
         query: {
           drawerData: this.$route.query.drawerData,
-          queryParams: this.$route.query.queryParams
+          queryParams: paramsToSave
         }
       })
     },

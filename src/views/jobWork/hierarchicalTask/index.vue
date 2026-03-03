@@ -1177,13 +1177,12 @@ export default {
       //   this.$message({ message: '当前状态为运行中，无法查看', type: 'warning' })
       //   return
       // }
-      // 保存当前页面的查询条件到sessionStorage
-      sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(this.queryParams));
-      // 记录跳转来源为hierarchicalTask，用于viewResults页面返回时判断
+      const { pageNum, pageSize, ...restParams } = this.queryParams;
+      sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(restParams));
       sessionStorage.setItem('prevPage', 'hierarchicalTask');
       this.$router.push({
         path: '/viewResults',
-        query: { drawerData: row, queryParams: this.queryParams }
+        query: { drawerData: row, queryParams: restParams }
       })
       if (row.publishStatus == 0) {
         this.drawerData = row
