@@ -1,7 +1,6 @@
 <template>
   <div class="navbar">
     <top-nav id="topmenu-container" class="topmenu-container" v-if="topNav" />
-
     <div class="navbar-children" v-if="navbarChildren.length > 0">
       <router-link v-for="item in navbarChildren" :key="item.path" class="navbar-child-item"
         :to="{ path: item.path, query: item.query, fullPath: item.fullPath }">
@@ -101,7 +100,7 @@
           <!-- 用户信息区域 -->
           <div class="user-info-header">
             <!-- <div class="user-avatar-orange">AU</div> -->
-            <img :src="$store.state.user.projectData.img" style="width: 40px; height: 40px; border-radius: 50%;" />
+            <img :src="$store.state.user.avatar" style="width: 40px; height: 40px; border-radius: 50%;" />
             <div class="user-details">
               <div class="user-name">{{ $store.state.user.name }}</div>
               <div class="user-email">{{ $store.state.user.projectData.email }}</div>
