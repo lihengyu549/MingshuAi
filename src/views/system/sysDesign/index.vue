@@ -121,7 +121,14 @@ export default {
   created() {
     if (this.$store.state.user.projectData.id) {
       this.formData.appTitle = this.$store.state.user.projectData.projectName
-      this.fileList = [{ name: this.$store.state.user.projectData.imgName || '项目图标', url: this.$store.state.user.projectData.img }]
+      this.fileList = [{ 
+        name: this.$store.state.user.projectData.imgName || '项目图标', 
+        url: this.$store.state.user.projectData.img || '/docs/logo.svg' 
+      }]
+      // this.fileList = [{ 
+      //   name: this.$store.state.user.projectData.imgName || '项目图标', 
+      //   url: this.$store.state.user.projectData.img || (process.env.BASE_URL || '/') + 'docs/logo.svg' 
+      // }]
       this.colorForm.color = this.$store.state.user.projectData.themeColor
       this.technologyData.email = this.$store.state.user.projectData.email
       this.technologyData.phone = this.$store.state.user.projectData.phone

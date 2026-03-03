@@ -85,6 +85,9 @@ export default {
       width: 40px;
       height: 40px;
       vertical-align: middle;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
       margin-right: 10px;
     }
 
