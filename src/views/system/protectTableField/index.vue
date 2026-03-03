@@ -78,7 +78,8 @@
             <el-table-column label="所属表" align="center" prop="tableName" width="150" show-overflow-tooltip />
             <el-table-column label="分类" align="center" prop="categoryName" min-width="250" show-overflow-tooltip>
               <template slot-scope="scope">
-                +0-<el-tag :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '噪音数据' ? 'info' : 'primary'">
+                <el-tag
+                  :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '噪音数据' ? 'info' : 'primary'">
                   {{ scope.row.categoryName }}
                 </el-tag>
               </template>
