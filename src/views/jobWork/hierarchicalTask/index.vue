@@ -148,7 +148,6 @@
           </template>
         </el-table-column>
       </el-table>
-      {{ queryParams.pageSize }}
       <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :pageSize.sync="queryParams.pageSize"
         @pagination="getList" />
     </el-card>

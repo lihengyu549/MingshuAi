@@ -70,15 +70,29 @@
               <el-empty description="暂无数据"></el-empty>
             </template>
             <el-table-column type="selection" width="60" align="center" />
-            <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip />
-            <el-table-column label="字段注释" align="center" prop="fieldRemark" show-overflow-tooltip />
-            <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
-            <el-table-column label="数据源" align="center" prop="sourceName" show-overflow-tooltip />
-            <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
-            <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
-            <el-table-column label="分类" align="center" prop="categoryName" min-width="250" show-overflow-tooltip />
-            <el-table-column label="个保法合规审查" align="center" prop="piiDetectionName" show-overflow-tooltip />
-            <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
+            <el-table-column label="字段名" align="center" prop="fieldName" width="150" show-overflow-tooltip />
+            <el-table-column label="字段注释" align="center" prop="fieldRemark" width="200" show-overflow-tooltip />
+            <el-table-column label="来源业务系统" align="center" prop="businessName" width="150" show-overflow-tooltip />
+            <el-table-column label="数据源" align="center" prop="sourceName" width="150" show-overflow-tooltip />
+            <el-table-column label="所属库" align="center" prop="databaseName" width="150" show-overflow-tooltip />
+            <el-table-column label="所属表" align="center" prop="tableName" width="150" show-overflow-tooltip />
+            <el-table-column label="分类" align="center" prop="categoryName" min-width="250" show-overflow-tooltip>
+              <template slot-scope="scope">
+                +0-<el-tag :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '噪音数据' ? 'info' : 'primary'">
+                  {{ scope.row.categoryName }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="个保法合规审查" align="center" prop="piiDetectionName" width="200" show-overflow-tooltip />
+            <el-table-column label="安全分级" align="center" prop="securityLevelName" width="150" show-overflow-tooltip>
+              <template slot-scope="scope">
+                <el-tag :style="getRiskStyle(Number(scope.row.securityLevel))">
+                  {{ scope.row.securityLevelName }}
+                </el-tag>
+              </template>
+            </el-table-column>
+
+
             <el-table-column label="建议防护措施" prop="protectMethod" width="200">
               <template slot="header">
                 <div style="text-align: center;">建议防护措施</div>
@@ -136,8 +150,8 @@
       </div>
     </el-dialog>
     <!-- 导出列配置弹窗 -->
-    <el-dialog title="调整导出列" :visible.sync="exportColumnDialog.visible" width="760px" append-to-body :close-on-click-modal="false"
-      custom-class="export-column-dialog-wrapper" @close="cancelExport">
+    <el-dialog title="调整导出列" :visible.sync="exportColumnDialog.visible" width="760px" append-to-body
+      :close-on-click-modal="false" custom-class="export-column-dialog-wrapper" @close="cancelExport">
 
       <div v-loading="exportColumnDialog.loading" class="export-column-dialog">
         <div class="column-options">
@@ -392,6 +406,17 @@ export default {
     this.init()
   },
   methods: {
+    // 获取风险等级颜色
+    getRiskStyle(level) {
+      const styles = {
+        1: { color: '#16a34a', backgroundColor: '#f0fdf4', border: 'none' },
+        2: { color: '#f97316', backgroundColor: '#fff7ed', border: 'none' },
+        3: { color: '#c2410c', backgroundColor: '#ffedd5', border: 'none' },
+        4: { color: '#dc2626', backgroundColor: '#fee2e2', border: 'none' },
+        5: { color: '#991b1b', backgroundColor: '#fecaca', border: 'none' }
+      };
+      return styles[level] || { color: '#6b7280', backgroundColor: '#f3f4f6', border: 'none' };
+    },
     /**
      * 自定义树节点渲染，为不同层级节点添加不同的SVG图标
      * 第一层：sysBusiness，第二层：database1，第三层：table1
