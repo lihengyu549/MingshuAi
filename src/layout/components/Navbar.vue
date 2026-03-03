@@ -100,7 +100,7 @@
           <!-- 用户信息区域 -->
           <div class="user-info-header">
             <!-- <div class="user-avatar-orange">AU</div> -->
-            <img :src="$store.state.user.avatar" style="width: 40px; height: 40px; border-radius: 50%;" />
+            <img :src="defaultLogo" style="width: 40px; height: 40px; border-radius: 50%;" />
             <div class="user-details">
               <div class="user-name">{{ $store.state.user.name }}</div>
               <div class="user-email">{{ $store.state.user.projectData.email }}</div>
@@ -172,6 +172,10 @@ export default {
     },
     navbarChildren() {
       return this.$store.state.tagsView.navbarChildren || []
+    },
+    defaultLogo() {
+      const img = this.$store.state.user.avatar
+      return (!img.includes('null')) ? img : '/docs/user.svg'
     }
   },
   watch: {
