@@ -3,13 +3,13 @@
     :style="{ backgroundColor: $store.state.user.projectData.themeColor || $store.state.settings.bgcColor }">
     <transition name="sidebarLogoFade">
       <router-link v-if="collapse" key="collapse" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="defaultLogo" class="sidebar-logo" />
+        <img v-if="logo" :src="$store.state.user.projectData.img" class="sidebar-logo" />
         <h1 v-else class="sidebar-title"
           :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }">{{
             title }} </h1>
       </router-link>
       <router-link v-else key="expand" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="defaultLogo" class="sidebar-logo" />
+        <img v-if="logo" :src="$store.state.user.projectData.img" class="sidebar-logo" />
         <div class="logo-text">
           <!-- <h1 class="sidebar-title"
             :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }">{{
@@ -41,10 +41,6 @@ export default {
     sideTheme() {
       return this.$store.state.settings.sideTheme
     },
-    defaultLogo() {
-      const img = this.$store.state.user.projectData.img
-      return (!img.includes('null')) ? img : '/docs/logo.svg'
-    }
   },
   mounted() {
   },

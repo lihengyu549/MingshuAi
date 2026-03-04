@@ -28,8 +28,12 @@ export default {
     getInterfaceDesignByIdFn(){
       getInterfaceDesignById().then(res => {
         let facvionEl = document.getElementById('facicon')
-        res.data.img = window.location.origin + '/' + res.data.img
-        facvionEl.href = res.data.img
+        if(res.data.img && !res.data.img.includes('null')){
+          res.data.img = window.location.origin + '/' + res.data.img
+        }else{
+          res.data.img = '/docs/logo.svg'
+        }
+        facvionEl.href = res.data.img //动态浏览器图标
         document.title = res.data.projectName
         this.$store.commit('SET_PROJECT', res.data);
       })
