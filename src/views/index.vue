@@ -126,28 +126,58 @@
                 <div class="steps-section">
                   <div class="steps-wrapper">
                     <div class="step-item">
-                      <i class="step-icon skip-icon el-icon-circle-close"></i>
-                      <span>跳过数据识别</span>
+                      <div class="step-item-content">
+                        <i class="step-icon skip-icon el-icon-circle-close"></i>
+                        <div class="step-text-wrapper">
+                          <span class="step-text-main">跳过数据识别</span>
+                          <span class="step-text-sub">2024-01-15 10:30:00</span>
+                        </div>
+                      </div>
                     </div>
                     <div class="step-item">
-                      <i class="step-icon success-icon el-icon-circle-check"></i>
-                      <span>值质量检查</span>
+                      <div class="step-item-content">
+                        <i class="step-icon success-icon el-icon-circle-check"></i>
+                        <div class="step-text-wrapper">
+                          <span class="step-text-main">值质量检查</span>
+                          <span class="step-text-sub">2024-01-15 10:31:00</span>
+                        </div>
+                      </div>
                     </div>
                     <div class="step-item">
-                      <i class="step-icon skip-icon el-icon-circle-close"></i>
-                      <span>数据检测</span>
+                      <div class="step-item-content">
+                        <i class="step-icon skip-icon el-icon-circle-close"></i>
+                        <div class="step-text-wrapper">
+                          <span class="step-text-main">数据检测</span>
+                          <span class="step-text-sub">2024-01-15 10:32:00</span>
+                        </div>
+                      </div>
                     </div>
                     <div class="step-item">
-                      <i class="step-icon success-icon el-icon-circle-check"></i>
-                      <span>AI 分析打标</span>
+                      <div class="step-item-content">
+                        <i class="step-icon success-icon el-icon-circle-check"></i>
+                        <div class="step-text-wrapper">
+                          <span class="step-text-main">AI 分析打标</span>
+                          <span class="step-text-sub">2024-01-15 10:33:00</span>
+                        </div>
+                      </div>
                     </div>
                     <div class="step-item">
-                      <i class="step-icon processing-icon el-icon-loading"></i>
-                      <span>个人信息匹配</span>
+                      <div class="step-item-content">
+                        <i class="step-icon processing-icon el-icon-loading"></i>
+                        <div class="step-text-wrapper">
+                          <span class="step-text-main">个人信息匹配</span>
+                          <span class="step-text-sub">正在处理...</span>
+                        </div>
+                      </div>
                     </div>
                     <div class="step-item">
-                      <i class="step-icon skip-icon el-icon-circle-close"></i>
-                      <span>样本特征提取</span>
+                      <div class="step-item-content">
+                        <i class="step-icon skip-icon el-icon-circle-close"></i>
+                        <div class="step-text-wrapper">
+                          <span class="step-text-main">样本特征提取</span>
+                          <span class="step-text-sub">等待中</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -614,9 +644,33 @@ export default {
 .step-item {
   display: flex;
   align-items: center;
-  gap: 10px;
   font-size: 12px;
   color: #606266;
+  margin-bottom: 10px;
+}
+
+.step-item-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.step-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.step-text-main {
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.step-text-sub {
+  font-size: 11px;
+  color: #909399;
 }
 
 .step-icon {
@@ -628,6 +682,12 @@ export default {
   justify-content: center;
   font-size: 12px;
   flex-shrink: 0;
+}
+
+.skip-icon,
+.success-icon,
+.processing-icon {
+  font-size: 16px;
 }
 
 .skip-icon {
