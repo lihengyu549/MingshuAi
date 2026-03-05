@@ -1,470 +1,773 @@
 <template>
-  <div class="content" v-loading="loading" element-loading-background="rgba(255, 255, 255, 0.98)">
-    <div class="headerview">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <!-- <img src="../assets/indexImg/jiqiren-2.png" alt="" style="width: 50px;height: 50px;"> -->
-        <div>
-          <div style="margin-top: 10px;">Hi，欢迎来到{{ $store.state.user.projectData.projectName }}！</div>
-          <p style="margin: 16px 0;">可持续化运营，只需4步！</p>
-        </div>
-        <el-button type="primary" plain @click="goData">切换大屏</el-button>
-      </div>
-      <div class="card_box">
-        <el-card class="box-card" v-for="item in cardList" :key="item.id">
-          <div class="text item">
-            <p>{{ 'Setp' + item.id }}</p>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <h3><svg-icon :icon-class="String(item.id)" style="margin-right: 5px;" />{{ item.title }}</h3>
-              <el-button type="text" @click="routerPush(item)">{{ item.btnText }}</el-button>
-            </div>
-            <span style="font-size: 12px; color: #aaaaaa;">{{ item.msg }}</span>
+  <div class="app-container">
+    <!-- 上方四个卡片 -->
+    <div class="top-cards-wrapper">
+      <el-card class="stat-card card1" shadow="hover">
+        <div class="card-header-top">
+          <div class="icon-wrapper dataAsset">
+            <svg-icon icon-class="home-dataAsset" style="font-size: 24px;"></svg-icon>
           </div>
-        </el-card>
-      </div>
+          <svg-icon icon-class="home-dataAsset-c" style="font-size: 58px; color: #e8eefb;"></svg-icon>
+        </div>
+        <p class="card-label">数据资产分布</p>
+        <div class="card-metrics">
+          <div class="metric-item dataAsset">
+            <span class="metric-key">数据表</span>
+            <span class="metric-value">5,809</span>
+          </div>
+          <div class="metric-item dataAsset">
+            <span class="metric-key">文件数</span>
+            <span class="metric-value">12.4k</span>
+          </div>
+        </div>
+        <div class="scan-progress-wrapper">
+          <el-progress :percentage="scanPercentage" :show-text="false" />
+          <div class="scan-progress-text">
+            <span class="scan-label">扫描进度</span>
+            <span class="scan-percentage">{{ scanPercentage }}%</span>
+          </div>
+        </div>
+      </el-card>
+
+      <!-- 卡片2：敏感数据库 -->
+      <el-card class="stat-card card2" shadow="hover">
+        <div class="card-header-top">
+          <div class="icon-wrapper sensitiveData">
+            <svg-icon icon-class="home-sensitiveData" style="font-size: 24px;"></svg-icon>
+          </div>
+          <svg-icon icon-class="home-sensitiveData-c" style="font-size: 58px; color: #f4eafd;"></svg-icon>
+        </div>
+        <p class="card-label">敏感数据库 (L3/L4)</p>
+        <div class="card-metrics">
+          <div class="metric-item sensitiveData">
+            <span class="metric-key">敏感字段</span>
+            <span class="metric-value">24.9k</span>
+          </div>
+          <div class="metric-item sensitiveData">
+            <span class="metric-key">敏感文件</span>
+            <span class="metric-value">3,210</span>
+          </div>
+        </div>
+        <div class="card-description">占总资产约：18.2%</div>
+      </el-card>
+
+      <!-- 卡片3：AI自动化归档 -->
+      <el-card class="stat-card card3" shadow="hover">
+        <div class="card-header-top">
+          <div class="icon-wrapper aiAuto">
+            <svg-icon icon-class="home-aiAuto" style="font-size: 24px;"></svg-icon>
+          </div>
+          <svg-icon icon-class="home-aiAuto-c" style="font-size: 58px; color: #e8eefb;"></svg-icon>
+        </div>
+        <p class="card-label">AI 自动化归档</p>
+        <div class="card-metrics">
+          <div class="metric-item aiAuto">
+            <span class="metric-key">覆盖率</span>
+            <span class="metric-value">98.5%</span>
+          </div>
+          <div class="metric-item aiAuto">
+            <span class="metric-key">节省工时</span>
+            <span class="metric-value">3.4k h</span>
+          </div>
+        </div>
+        <div class="card-description">人工分析单条数据约3-10分钟，AI分析仅10-60秒</div>
+      </el-card>
+
+      <!-- 卡片4：资计分析资产 -->
+      <el-card class="stat-card card4" shadow="hover">
+        <div class="card-header-top">
+          <div class="icon-wrapper analysis">
+            <svg-icon icon-class="home-analysis" style="font-size: 24px;"></svg-icon>
+          </div>
+          <svg-icon icon-class="home-analysis-c" style="font-size: 58px; color: #f9f0e5;"></svg-icon>
+        </div>
+        <p class="card-label">资计分析资产</p>
+        <div class="card-metrics">
+          <div class="metric-item analysis">
+            <span class="metric-key">字段</span>
+            <span class="metric-value">8,321</span>
+          </div>
+          <div class="metric-item analysis">
+            <span class="metric-key">文件</span>
+            <span class="metric-value">1,560</span>
+          </div>
+        </div>
+        <div class="card-description">高置信度 80% · 人工复核 20%</div>
+      </el-card>
     </div>
-    <div class="main">
-      <div class="main_left">
-        <div class="main_head">
-          <!-- <div class="line"></div> -->
-          <svg-icon icon-class="dunpai-3" style="font-size: 20px; margin-right: 5px;"></svg-icon>
-          <div>参考标准</div>
-        </div>
-        <div class="main_body">
-          <div class="main_body_head">
-            <div v-for="item in yuanList" class="yuan" @click="yuanClick(item)"><el-tag :type="item.type">{{ item.text
-            }}</el-tag>
+
+    <!-- 下方两个大卡片 -->
+    <div class="bottom-cards-wrapper">
+      <el-row :gutter="16" style="height: 100%;">
+        <!-- 左侧：任务监控 -->
+        <el-col :xs="24" :lg="16" style="height: 100%; margin-bottom: 0;">
+          <el-card class="monitor-card" shadow="hover">
+            <div slot="header" class="monitor-header">
+              <span class="monitor-title">
+                <svg-icon icon-class="home-taskIcon" style="font-size: 22px;"></svg-icon>
+                任务监控
+              </span>
+              <span class="header-link">实时流传输中</span>
             </div>
-            <!-- <div class="yuan2 yuan">行标</div>
-            <div class="yuan3 yuan">团标</div>
-            <div class="yuan4 yuan">地标</div>
-            <div class="yuan5 yuan">企标</div> -->
-          </div>
-          <div class="main_body_body">
-            <el-table :data="tableData" :stripe="false" style="width: 100%">
-              <el-table-column prop="standardType" label="标准类型" width="80" align="center" show-overflow-tooltip>
-                <template slot-scope="scope">
-                  <span> {{ currentMsgFn(scope.row.standardType) }}</span>
-                </template>
-              </el-table-column>
-              <!-- <el-table-column prop="standardId" label="标准编号" width="100" align="center" show-overflow-tooltip /> -->
-              <el-table-column prop="categoryName" label="标准名称" align="center" show-overflow-tooltip />
-              <el-table-column prop="implementTime" label="实施时间" width="120" align="center" show-overflow-tooltip />
 
-              <el-table-column prop="dataSource" label="来源" width="80" align="center" show-overflow-tooltip />
+            <div class="monitor-content">
+              <!-- 左侧：表格和步骤 -->
+              <div class="monitor-left">
+                <!-- 表格部分 -->
+                <div class="table-section">
+                  <h4 class="section-title">正在处理的表</h4>
+                  <div class="table-item-wrapper">
+                    <span class="table-item-name">vehicle_telemetry</span>
+                    <span class="table-dot"></span>
+                  </div>
+                </div>
 
-              <el-table-column prop="industryCategory" label="行业类别" width="100" align="center" show-overflow-tooltip />
+                <!-- 步骤部分 -->
+                <div class="steps-section">
+                  <div class="steps-wrapper">
+                    <div class="step-item">
+                      <i class="step-icon skip-icon el-icon-circle-close"></i>
+                      <span>跳过数据识别</span>
+                    </div>
+                    <div class="step-item">
+                      <i class="step-icon success-icon el-icon-circle-check"></i>
+                      <span>值质量检查</span>
+                    </div>
+                    <div class="step-item">
+                      <i class="step-icon skip-icon el-icon-circle-close"></i>
+                      <span>数据检测</span>
+                    </div>
+                    <div class="step-item">
+                      <i class="step-icon success-icon el-icon-circle-check"></i>
+                      <span>AI 分析打标</span>
+                    </div>
+                    <div class="step-item">
+                      <i class="step-icon processing-icon el-icon-loading"></i>
+                      <span>个人信息匹配</span>
+                    </div>
+                    <div class="step-item">
+                      <i class="step-icon skip-icon el-icon-circle-close"></i>
+                      <span>样本特征提取</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-            </el-table>
+              <!-- 右侧：进度条和时间轴 -->
+              <div class="monitor-right">
+                <!-- 进度条部分 -->
+                <div class="progress-section" style="flex-shrink: 0; display: flex; flex-direction: column;">
+                  <div class="progress-box">
+                    <span class="progress-title">整体进度</span>
+                    <span class="progress-info">2/3 (66%)</span>
+                  </div>
+                  <el-progress :percentage="66" color="#409EFF" :show-text="false" :stroke-width="12"></el-progress>
+                </div>
 
-          </div>
-        </div>
-      </div>
-      <div class="main_right">
-        <div class="main_head">
-          <svg-icon icon-class="jurassic_data" style="font-size: 20px; margin-right: 5px;"></svg-icon>
-          <div>数据库统计</div>
-        </div>
-        <div class="main_body">
-          <div class="main_body_head">
-            <img v-for="item in yuanImgList" @click="yuanImgClick(item)" :src="item.src" class="yuanimg" alt="">
-            <!-- <img src="../assets/indexImg/pgsql.png" class="yuanimg" alt="">
-            <img src="../assets/indexImg/Oracle.png" class="yuanimg" alt="">
-            <img src="../assets/indexImg/damengshujuku2.png" class="yuanimg" alt="">
-            <img src="../assets/indexImg/ziyuan.png" class="yuanimg" alt="">
-            <img src="../assets/indexImg/excel.png" class="yuanimg" alt=""> -->
-          </div>
-          <div class="main_body_body">
-            <el-table :data="tableRightData" :stripe="false" style="width: 100%">
-              <el-table-column prop="databaseType" label="数据库类型" width="100" align="center" show-overflow-tooltip />
-              <el-table-column prop="targetIp" label="主机" align="center" show-overflow-tooltip />
-              <el-table-column prop="targetPort" label="端口" width="100" align="center" show-overflow-tooltip />
-              <el-table-column prop="databaseNum" label="数据库数量" width="120" align="center" show-overflow-tooltip />
-              <el-table-column prop="tableNum" label="表数量" width="80" align="center" show-overflow-tooltip />
-              <el-table-column prop="fieldCount" label="字段数量" width="100" align="center" show-overflow-tooltip />
-            </el-table>
-          </div>
-        </div>
-      </div>
+                <!-- 时间轴部分 -->
+                <div class="timeline-section">
+                  <div class="timeline-wrapper">
+                    <div class="timeline-item">
+                      <div class="timeline-dot"></div>
+                      <span class="timeline-text">喀音数据过滤字段数量</span>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot"></div>
+                      <span class="timeline-text">命中匹配规则字段数量</span>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot"></div>
+                      <span class="timeline-text">语义填充情况</span>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot"></div>
+                      <span class="timeline-text">分类情况</span>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot"></div>
+                      <span class="timeline-text">样本特征提取数量</span>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot"></div>
+                      <span class="timeline-text">喀音数据过滤字段数量</span>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot"></div>
+                      <span class="timeline-text">命中匹配规则字段数量</span>
+                    </div>
+                    <div class="timeline-item">
+                      <div class="timeline-dot"></div>
+                      <span class="timeline-text">语义填充情况</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </el-card>
+        </el-col>
 
+        <!-- 右侧：任务队列 -->
+        <el-col :xs="24" :lg="8" style="height: 100%; margin-bottom: 0;">
+          <el-card class="queue-card" shadow="hover">
+            <div slot="header" class="queue-header">
+              <span class="queue-title">
+                任务队列
+              </span>
+            </div>
+
+            <div class="queue-body-wrapper">
+              <div class="queue-content">
+                <div class="queue-item">
+                  <div class="queue-item-header">
+                    <span class="queue-item-title">敏感字段查询检</span>
+                    <el-tag type="warning" size="small" style="border: none; border-radius: 10px;">执行中</el-tag>
+                  </div>
+                  <span class="queue-item-info">字段信息：128</span>
+                </div>
+
+                <div class="queue-item">
+                  <div class="queue-item-header">
+                    <span class="queue-item-title">求被敏感检</span>
+                    <el-tag type="success" size="small" style="border: none; border-radius: 10px;">执行完成</el-tag>
+                  </div>
+                  <span class="queue-item-info">字段信息：45</span>
+                </div>
+
+                <div class="queue-item">
+                  <div class="queue-item-header">
+                    <span class="queue-item-title">数据保量审批</span>
+                    <el-tag type="info" size="small" style="border: none; border-radius: 10px;">等待中</el-tag>
+                  </div>
+                  <span class="queue-item-info">字段信息：0</span>
+                </div>
+
+                <div class="queue-item">
+                  <div class="queue-item-header">
+                    <span class="queue-item-title">异常行为分析</span>
+                    <el-tag type="info" size="small" style="border: none; border-radius: 10px;">等待中</el-tag>
+                  </div>
+                  <span class="queue-item-info">字段信息：50GB</span>
+                </div>
+              </div>
+
+              <div class="queue-footer">查看全部结果 →</div>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
     </div>
   </div>
 </template>
 
 <script>
-import MyIndexlist from "@/components/IndexList/index";
-import { getReferenceStandard, getDatabaseStatistics } from "@/api/monitor/server";
-
 export default {
-  name: "Server",
-  components: {
-    "my-indexlist": MyIndexlist,
-  },
+  name: 'Dashboard',
   data() {
     return {
-      tableData: [
-      ],
-      yuanImgList: [
-        {
-          src: require('@/assets/indexImg/mysql-3.png'),
-          value: 'MYSQL',
-        },
-
-        {
-          src: require('@/assets/indexImg/pgsql.png'),
-          value: 'POSTGRESQL'
-        },
-
-        {
-          src: require('@/assets/indexImg/Oracle.png'),
-          value: 'ORACLE'
-        },
-
-        {
-          src: require('@/assets/indexImg/damengshujuku2.png'),
-          value: 'DM'
-        },
-
-        {
-          src: require('@/assets/indexImg/ziyuan.png'),
-          value: 'SQL_SERVER'
-        },
-
-        {
-          src: require('@/assets/indexImg/excel.png'),
-          value: 'Excel'
-        },
-        {
-          src: require('@/assets/indexImg/greenPlum.png'),
-          value: 'GREENPLUM'
-        },
-      ],
-      yuanList: [
-        {
-          text: '国标',
-          bgcColor: 'backgroundColor: #fbf4f5;',
-          value: '0',
-          type: 'danger'
-        },
-        {
-          text: '行标',
-          bgcColor: 'backgroundColor: #e1bee7;',
-          value: '1',
-          type: 'success'
-        },
-        {
-          text: '地标',
-          bgcColor: 'backgroundColor:#b2ebf2;',
-          value: '2',
-          type: 'info'
-        },
-        {
-          text: '团标',
-          bgcColor: 'backgroundColor:#ffe0b2;',
-          value: '3',
-          type: 'warning'
-        },
-        {
-          text: '企标',
-          bgcColor: 'backgroundColor:#b3e5fc;',
-          value: '4',
-          type: 'primary'
-        },
-      ],
-      tableRightData: [
-      ],
-      loading: false,
-      serverNum: "",
-      cardList: [
-        {
-          id: 1,
-          title: '标准制订',
-          msg: '参考国标/行标制订企业标准',
-          btnText: '去制订',
-          path: '/standard/management',
-        },
-
-        {
-          id: 2,
-          title: '数据源发现',
-          msg: '手动/自动发现网络中不同类型数据库',
-          btnText: '去发现',
-          path: '/dataAssetManagement/dataAssetdiscover',
-        },
-
-        {
-          id: 3,
-          title: 'AI推理&审核',
-          msg: 'Qwen/Deepseek双模可选进行AI打标',
-          btnText: '分类分级',
-          path: '/hierarchicalTask',
-        },
-
-        {
-          id: 4,
-          title: 'API对接',
-          msg: '赋能AI分类分级能力/推送AI分析结果',
-          btnText: '快速接入',
-          path: '/APIAbutment/capacity',
-        },
-
-      ],
-      projectNum: "",
-      apiNum: "",
-      // 服务器信息
-      server: [],
-      indexData: {},
-      fieldSort: '',
-    };
-  },
-  watch: {
-    $route() {
-      this.$router.go()
+      scanPercentage: 50
     }
-  },
-
-  created() {
-    this.loading = true;
-    this.init()
-  },
-
-  methods: {
-    goData() {
-      this.$router.push({ path: '/data' });
-    },
-    async init() {
-      await this.getStatistics();
-      await this.getList();
-      this.loading = false;
-    },
-    yuanClick(row) {
-      this.getStatistics(row.value)
-    },
-    yuanImgClick(row) {
-      this.getList(row.value)
-    },
-    routerPush(item) {
-      this.$router.push({ path: item.path });
-    },
-    goData() {
-      this.$router.push({ path: '/data' });
-    },
-    getStatistics(type) {
-      getReferenceStandard({ standardType: type ?? '' }).then((res) => {
-        this.tableData = res.data.list
-      });
-    },
-    /** 查询服务器信息 */
-    getList(type) {
-      getDatabaseStatistics({ databaseType: type || '' }).then((response) => {
-        this.tableRightData = response.data.list;
-      });
-    },
-    currentMsgFn(type) {
-      let msg = ''
-      for (let item of this.yuanList) {
-        if (item.value == type) {
-          msg = item.text
-        }
-      }
-      return msg || '未知来源'
-    },
-    // 打开加载层
-    openLoading() {
-      this.$modal.loading("正在加载服务监控数据，请稍候！");
-    },
-  },
-};
+  }
+}
 </script>
+
 <style scoped>
-/* @import url(); 引入公共css类 */
-.content {
-  /* background-color: #fff; */
-  /* #fafafc */
-  padding: 50px;
-}
-
-.headerview {
-  height: 380px;
-  /* margin-top: 10px; */
-  /* padding: 25px 50px 0px 50px; */
-}
-
-.main {
-  width: 100%;
+/* ========== 上方四个卡片样式 ========== */
+.top-cards-wrapper {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
+  margin-bottom: 20px;
 }
 
-.main_left {
-  width: 47%;
-  /* margin-left: 30px; */
-  background-color: #fff;
-  padding: 20px 30px;
-  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), */
-  /* 底部阴影 */
-  /* 0 2px 4px rgba(0, 0, 0, 0.08); */
-  /* 浮动效果的阴影 */
-  border: 1px solid #e6ebf5;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 15px;
-  /* 添加过渡效果 */
+.stat-card {
+  width: 24%;
+  transition: all 0.3s ease;
+  border-radius: 10px;
 }
 
-.main_right {
-  width: 47%;
-  background-color: #fff;
-  /* margin-left: 30px; */
-  padding: 20px 30px;
-  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), */
-  /* 底部阴影 */
-  /* 0 2px 4px rgba(0, 0, 0, 0.08); */
-  /* 浮动效果的阴影 */
-  border: 1px solid #e6ebf5;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 15px;
-  /* 添加过渡效果 */
+.stat-card:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
-.main_head {
+.stat-card .svg-icon {
+  transition: color 0.3s ease;
+}
+
+.card1:hover .svg-icon {
+  color: #d4e4fc !important;
+}
+
+.card2:hover .svg-icon {
+  color: #e8d4fb !important;
+}
+
+.card3:hover .svg-icon {
+  color: #d4e4fc !important;
+}
+
+.card4:hover .svg-icon {
+  color: #f5e3cd !important;
+}
+
+.stat-card /deep/ .el-card__header {
+  padding: 16px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.stat-card /deep/ .el-card__body {
+  padding: 20px;
+}
+
+.card-header-top {
   display: flex;
-  justify-content: flex-start;
   align-items: center;
-}
-
-.main_body {
-  padding: 30px 20px;
-}
-
-.main_body_head {
-
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-}
-
-.main_body_body {
-  margin-top: 20px;
-}
-
-.yuan {
-  font-weight: 600;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  line-height: 60px;
-  text-align: center;
-  margin-right: 20px;
-  /* box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), */
-  /* 右下方向的阴影 */
-  /* -2px -2px 5px rgba(255, 255, 255, 0.7); */
-  /* 左上方向的阴影 */
-}
-
-.yuan:hover {
-  cursor: pointer;
-}
-
-.yuan1 {
-  background-color: #fbf4f5;
-}
-
-.yuan2 {
-  background-color: #e1bee7;
-}
-
-.yuan3 {
-  background-color: #ffe0b2;
-}
-
-.yuan4 {
-  background-color: #b2ebf2;
-}
-
-.yuan5 {
-  background-color: #b3e5fc;
-}
-
-.card_box {
-  width: 100%;
-  display: flex;
   justify-content: space-between;
-  align-items: center;
-  flex-wrap: nowrap;
-  margin-top: 40px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
-.text {
+.icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+}
+
+.dataAsset {
+  background: #eff6ff;
+}
+
+.sensitiveData {
+  background: #faf5ff;
+}
+
+.aiAuto {
+  background: #eff6ff;
+}
+
+.analysis {
+  background: #fff7ed;
+}
+
+.card-label {
   font-size: 14px;
+  color: #606266;
+  font-weight: 500;
 }
 
-.item {
-  padding: 18px 0;
+.card-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.box-card {
-  width: 23%;
-  border-radius: 15px;
+.metric-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.el-card.is-always-shadow {
-  box-shadow: none;
+.metric-key {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
 }
 
-.line {
-  width: 7px;
-  height: 25px;
-  background-color: #2e5cf5;
-  margin-right: 7px;
-}
-
-.el-table /deep/ .el-table__cell {
-  background-color: #fff;
-
-}
-
-.yuanimg {
+.metric-value {
+  font-size: 24px;
   font-weight: 600;
-  border-radius: 50%;
-  padding: 10px;
-  width: 60px;
-  height: 60px;
-  line-height: 60px;
-  text-align: center;
-  margin-right: 20px;
-  /* box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), */
-  /* 右下方向的阴影 */
-  /* -2px -2px 5px rgba(255, 255, 255, 0.7); */
-  /* 左上方向的阴影 */
-  border: solid 0.5px #e5e5e5;
+  color: #303133;
 }
 
-.yuanimg:hover {
-  cursor: pointer;
+.card-description {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
 }
 
-/* c3动画更改背景位置 */
-@keyframes sun {
-  100% {
-    background-position: -400% 0;
-  }
-}
-
-@-ms-keyframes sun {
-  100% {
-    background-position: -400% 0;
-  }
-}
-
-@-webkit-keyframes sun {
-  100% {
-    background-position: -400% 0;
-  }
-}
-
-.el-tag--medium {
-  height: 100%;
+.scan-progress-wrapper {
   width: 100%;
-  line-height: 60px;
+}
+
+.scan-progress-wrapper .el-progress {
+  width: 100%;
+}
+
+.scan-progress-wrapper .el-progress-bar__outer {
+  border-radius: 4px;
+}
+
+.scan-progress-wrapper .el-progress-bar__inner {
+  border-radius: 4px;
+}
+
+.scan-progress-text {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.scan-label {
+  color: #606266;
+}
+
+.scan-percentage {
+  color: #303133;
+  font-weight: 500;
+}
+
+/* ========== 下方卡片样式 ========== */
+.bottom-cards-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.monitor-card,
+.queue-card {
+  border-radius: 10px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.monitor-card:hover,
+.queue-card:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.monitor-card /deep/ .el-card__header,
+.queue-card /deep/ .el-card__header {
+  padding: 16px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.monitor-card /deep/ .el-card__body,
+.queue-card /deep/ .el-card__body {
+  flex: 1;
+  padding: 0px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.queue-body-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.queue-body-wrapper .queue-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.queue-body-wrapper .queue-footer {
+  flex-shrink: 0;
+}
+
+.monitor-header,
+.queue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.monitor-title,
+.queue-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #303133;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.monitor-title i,
+.queue-title i {
+  font-size: 18px;
+}
+
+.header-link {
+  font-size: 12px;
+}
+
+/* ========== 任务监控内容 ========== */
+.monitor-content {
+  display: grid;
+  grid-template-columns: 1fr 2.5fr;
+  /* gap: 20px; */
+  height: 100%;
+  background-color: #f8fafc;
+  overflow: hidden;
+}
+
+.monitor-left,
+.monitor-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.monitor-left {
+  padding: 15px;
+  background: white;
+  overflow-y: auto;
+}
+
+.monitor-right {
+  padding: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.monitor-left::-webkit-scrollbar,
+.monitor-right::-webkit-scrollbar {
+  width: 6px;
+}
+
+.monitor-left::-webkit-scrollbar-thumb,
+.monitor-right::-webkit-scrollbar-thumb {
+  background: #d3d4d6;
+  border-radius: 3px;
+}
+
+.progress-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.progress-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.progress-info {
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+/* 时间轴部分 */
+.section-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin: 0 0 10px 0;
+}
+
+/* 表格部分 */
+.table-section {
+  flex-shrink: 0;
+}
+
+.table-item-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #eff6ff;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #409eff;
+}
+
+.table-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #1d4ed8;
   border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.table-item-name {
+  font-weight: 500;
+  color: #1d4ed8;
+}
+
+/* 步骤部分 */
+.steps-section {
+  flex-shrink: 0;
+}
+
+.steps-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #606266;
+}
+
+.step-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.skip-icon {
+  background-color: #f5f7fa;
+  color: #909399;
+}
+
+.success-icon {
+  background-color: #f0f9ff;
+  color: #67c23a;
+}
+
+.processing-icon {
+  background-color: #fef3c7;
+  color: #e6a23c;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* 时间轴部分 */
+.timeline-section {
+  flex: 1;
+  min-height: 0;
+  padding: 20px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.timeline-wrapper {
+  position: relative;
+  padding-left: 20px;
+}
+
+.timeline-wrapper::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background-color: rgba(59, 130, 246, 0.3);
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: #606266;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -17px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: none;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.timeline-text {
+  line-height: 1.5;
+  padding-top: 2px;
+}
+
+/* ========== 任务队列样式 ========== */
+.queue-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+}
+
+.queue-item {
+  padding: 12px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.queue-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.queue-item-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.queue-item-info {
+  font-size: 12px;
+  color: #909399;
+  display: block;
+}
+
+.queue-footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 12px;
+  color: #909399;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.queue-footer:hover {
+  color: #409eff;
+}
+
+/* ========== 响应式布局 ========== */
+@media (max-width: 1400px) {
+  .monitor-content {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
