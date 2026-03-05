@@ -9,15 +9,15 @@
           </div>
           <svg-icon icon-class="home-dataAsset-c" style="font-size: 58px; color: #e8eefb;"></svg-icon>
         </div>
-        <p class="card-label">数据资产分布</p>
+        <p class="card-label">{{ cardData[0].label }}</p>
         <div class="card-metrics">
           <div class="metric-item dataAsset">
             <span class="metric-key">数据表</span>
-            <span class="metric-value">5,809</span>
+            <count-to :start-val="0" :end-val="cardData[0].value" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item dataAsset">
             <span class="metric-key">文件数</span>
-            <span class="metric-value">12.4k</span>
+            <count-to :start-val="0" :end-val="cardData[1].value" :duration="2000" class="metric-value" />
           </div>
         </div>
         <div class="scan-progress-wrapper">
@@ -41,11 +41,11 @@
         <div class="card-metrics">
           <div class="metric-item sensitiveData">
             <span class="metric-key">敏感字段</span>
-            <span class="metric-value">24.9k</span>
+            <count-to :start-val="0" :end-val="cardData[2].value" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item sensitiveData">
             <span class="metric-key">敏感文件</span>
-            <span class="metric-value">3,210</span>
+            <count-to :start-val="0" :end-val="cardData[3].value" :duration="2000" class="metric-value" />
           </div>
         </div>
         <div class="card-description">占总资产约：18.2%</div>
@@ -59,15 +59,15 @@
           </div>
           <svg-icon icon-class="home-aiAuto-c" style="font-size: 58px; color: #e8eefb;"></svg-icon>
         </div>
-        <p class="card-label">AI 自动化归档</p>
+        <p class="card-label">{{ cardData[4].label }}</p>
         <div class="card-metrics">
           <div class="metric-item aiAuto">
             <span class="metric-key">覆盖率</span>
-            <span class="metric-value">98.5%</span>
+            <count-to :start-val="0" :end-val="cardData[4].value" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item aiAuto">
             <span class="metric-key">节省工时</span>
-            <span class="metric-value">3.4k h</span>
+            <count-to :start-val="0" :end-val="cardData[5].value" :duration="2000" class="metric-value" />
           </div>
         </div>
         <div class="card-description">人工分析单条数据约3-10分钟，AI分析仅10-60秒</div>
@@ -81,15 +81,15 @@
           </div>
           <svg-icon icon-class="home-analysis-c" style="font-size: 58px; color: #f9f0e5;"></svg-icon>
         </div>
-        <p class="card-label">资计分析资产</p>
+        <p class="card-label">{{ cardData[6].label }}</p>
         <div class="card-metrics">
           <div class="metric-item analysis">
             <span class="metric-key">字段</span>
-            <span class="metric-value">8,321</span>
+            <count-to :start-val="0" :end-val="cardData[6].value" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item analysis">
             <span class="metric-key">文件</span>
-            <span class="metric-value">1,560</span>
+            <count-to :start-val="0" :end-val="cardData[7].value" :duration="2000" class="metric-value" />
           </div>
         </div>
         <div class="card-description">高置信度 80% · 人工复核 20%</div>
@@ -117,7 +117,9 @@
                 <div class="table-section">
                   <h4 class="section-title">正在处理的表</h4>
                   <div class="table-item-wrapper">
-                    <span class="table-item-name">vehicle_telemetry</span>
+                    <transition name="slide-up" mode="out-in">
+                      <span :key="currentTableIndex" class="table-item-name">{{ tableNames[currentTableIndex] }}</span>
+                    </transition>
                     <span class="table-dot"></span>
                   </div>
                 </div>
@@ -197,37 +199,15 @@
                 <!-- 时间轴部分 -->
                 <div class="timeline-section">
                   <div class="timeline-wrapper">
-                    <div class="timeline-item">
-                      <div class="timeline-dot"></div>
-                      <span class="timeline-text">喀音数据过滤字段数量</span>
-                    </div>
-                    <div class="timeline-item">
-                      <div class="timeline-dot"></div>
-                      <span class="timeline-text">命中匹配规则字段数量</span>
-                    </div>
-                    <div class="timeline-item">
-                      <div class="timeline-dot"></div>
-                      <span class="timeline-text">语义填充情况</span>
-                    </div>
-                    <div class="timeline-item">
-                      <div class="timeline-dot"></div>
-                      <span class="timeline-text">分类情况</span>
-                    </div>
-                    <div class="timeline-item">
-                      <div class="timeline-dot"></div>
-                      <span class="timeline-text">样本特征提取数量</span>
-                    </div>
-                    <div class="timeline-item">
-                      <div class="timeline-dot"></div>
-                      <span class="timeline-text">喀音数据过滤字段数量</span>
-                    </div>
-                    <div class="timeline-item">
-                      <div class="timeline-dot"></div>
-                      <span class="timeline-text">命中匹配规则字段数量</span>
-                    </div>
-                    <div class="timeline-item">
-                      <div class="timeline-dot"></div>
-                      <span class="timeline-text">语义填充情况</span>
+                    <div v-for="(item, index) in displayTimelineData" :key="index" class="timeline-item">
+                      <div class="timeline-dot" :class="{ 'timeline-dot-active': item.isActive }">
+                        <i v-if="item.isActive" class="el-icon-loading"></i>
+                      </div>
+                      <div class="timeline-connector" v-if="index < displayTimelineData.length - 1"></div>
+                      <div class="timeline-text-wrapper">
+                        <span class="timeline-text">{{ item.text }}</span>
+                        <span v-if="item.time" class="timeline-time">{{ item.time }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -290,11 +270,97 @@
 </template>
 
 <script>
+import CountTo from 'vue-count-to'
+
 export default {
   name: 'Dashboard',
+  components: {
+    CountTo
+  },
   data() {
     return {
-      scanPercentage: 50
+      scanPercentage: 50,
+      cardData: [
+        { label: '数据资产分布', value: 5809, suffix: '' },
+        { label: '数据资产分布', value: 12400, suffix: 'k' },
+        { label: '敏感数据库 (L3/L4)', value: 24900, suffix: 'k' },
+        { label: '敏感数据库 (L3/L4)', value: 3210, suffix: '' },
+        { label: 'AI 自动化归档', value: 98.5, suffix: '%', isDecimal: true },
+        { label: 'AI 自动化归档', value: 3400, suffix: 'k h' },
+        { label: '资计分析资产', value: 8321, suffix: '' },
+        { label: '资计分析资产', value: 1560, suffix: '' }
+      ],
+      tableNames: ['vehicle_telemetry', 'user_behavior_log', 'transaction_record'],
+      currentTableIndex: 0,
+      timelineData: [
+        { text: '喀音数据过滤字段数量', time: '2024-01-15 10:30:00' },
+        { text: '命中匹配规则字段数量', time: '2024-01-15 10:31:00' },
+        { text: '语义填充情况', time: '2024-01-15 10:32:00' },
+        { text: '分类情况', time: '2024-01-15 10:33:00' },
+        { text: '样本特征提取数量', time: '2024-01-15 10:34:00' }
+      ],
+      isConnected: false,
+      ws: null
+    }
+  },
+  computed: {
+    displayTimelineData() {
+      if (this.isConnected) {
+        return [...this.timelineData, { text: '正在执行中...', time: '', isActive: true }]
+      }
+      return this.timelineData
+    }
+  },
+  mounted() {
+    // this.startTableRotation()
+    // this.connectWebSocket()
+  },
+  beforeDestroy() {
+    // this.stopTableRotation()
+    // this.disconnectWebSocket()
+  },
+  methods: {
+    startTableRotation() {
+      this.tableTimer = setInterval(() => {
+        this.currentTableIndex = (this.currentTableIndex + 1) % this.tableNames.length
+      }, 3000)
+    },
+    stopTableRotation() {
+      if (this.tableTimer) {
+        clearInterval(this.tableTimer)
+      }
+    },
+    connectWebSocket() {
+      this.ws = new WebSocket('ws://localhost:8080/ws/dashboard')
+      this.ws.onopen = () => {
+        this.isConnected = true
+      }
+      this.ws.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+        if (data.type === 'cardData') {
+          this.cardData = data.value
+        } else if (data.type === 'timeline') {
+          this.timelineData = data.value
+        } else if (data.type === 'currentStep') {
+          this.timelineData.push({
+            text: '正在执行中...',
+            time: '',
+            isActive: true
+          })
+        }
+      }
+      this.ws.onclose = () => {
+        this.isConnected = false
+      }
+      this.ws.onerror = () => {
+        this.isConnected = false
+      }
+    },
+    disconnectWebSocket() {
+      if (this.ws) {
+        this.ws.close()
+        this.ws = null
+      }
     }
   }
 }
@@ -630,6 +696,21 @@ export default {
   color: #1d4ed8;
 }
 
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter {
+  transform: translateY(10px);
+  opacity: 0;
+}
+
+.slide-up-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
 /* 步骤部分 */
 .steps-section {
   flex-shrink: 0;
@@ -733,16 +814,6 @@ export default {
   padding-left: 20px;
 }
 
-.timeline-wrapper::before {
-  content: '';
-  position: absolute;
-  left: 7px;
-  top: 6px;
-  bottom: 6px;
-  width: 2px;
-  background-color: rgba(59, 130, 246, 0.3);
-}
-
 .timeline-item {
   position: relative;
   display: flex;
@@ -751,10 +822,21 @@ export default {
   margin-bottom: 20px;
   font-size: 12px;
   color: #606266;
+  padding-left: 20px;
 }
 
 .timeline-item:last-child {
   margin-bottom: 0;
+}
+
+.timeline-connector {
+  position: absolute;
+  left: -13px;
+  top: 16px;
+  height: calc(100% + 20px);
+  width: 2px;
+  background: rgba(59, 130, 246, 0.3);
+  z-index: 0;
 }
 
 .timeline-dot {
@@ -768,6 +850,33 @@ export default {
   border: none;
   flex-shrink: 0;
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.timeline-dot-active {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-dot-active .el-icon-loading {
+  font-size: 8px;
+  color: white;
+}
+
+.timeline-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timeline-time {
+  font-size: 11px;
+  color: #909399;
 }
 
 .timeline-text {
