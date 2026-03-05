@@ -259,8 +259,7 @@
                   <span class="queue-item-info">字段信息：50GB</span>
                 </div>
               </div>
-
-              <div class="queue-footer">查看全部结果 →</div>
+              <el-button type="text" class="queue-footer" @click="seeAll">查看全部结果</el-button>
             </div>
           </el-card>
         </el-col>
@@ -320,6 +319,11 @@ export default {
     // this.disconnectWebSocket()
   },
   methods: {
+    seeAll() {
+      this.$router.push({
+        path: 'classificationTask/hierarchicalTask',
+      })
+    },
     startTableRotation() {
       this.tableTimer = setInterval(() => {
         this.currentTableIndex = (this.currentTableIndex + 1) % this.tableNames.length
@@ -924,13 +928,7 @@ export default {
   text-align: center;
   padding: 20px;
   font-size: 12px;
-  color: #909399;
   cursor: pointer;
-  transition: color 0.3s;
-}
-
-.queue-footer:hover {
-  color: #409eff;
 }
 
 /* ========== 响应式布局 ========== */
