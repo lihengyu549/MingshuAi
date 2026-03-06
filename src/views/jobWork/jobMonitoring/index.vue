@@ -884,7 +884,7 @@ export default {
         },
         handleReturn() {
             this.$router.push({
-                path: '/hierarchicalTask',
+                path: 'classificationTask/hierarchicalTask',
                 query: this.queryParams || {}
             });
         },
