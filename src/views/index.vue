@@ -280,14 +280,14 @@ export default {
     return {
       scanPercentage: 50,
       cardData: [
-        { label: '数据资产分布', value: 5809, suffix: '' },
-        { label: '数据资产分布', value: 12400, suffix: 'k' },
-        { label: '敏感数据库 (L3/L4)', value: 24900, suffix: 'k' },
-        { label: '敏感数据库 (L3/L4)', value: 3210, suffix: '' },
-        { label: 'AI 自动化归档', value: 98.5, suffix: '%', isDecimal: true },
-        { label: 'AI 自动化归档', value: 3400, suffix: 'k h' },
-        { label: '资计分析资产', value: 8321, suffix: '' },
-        { label: '资计分析资产', value: 1560, suffix: '' }
+        { label: '数据资产分布', value: 5809 },
+        { label: '数据资产分布', value: 12400 },
+        { label: '敏感数据库 (L3/L4)', value: 24900 },
+        { label: '敏感数据库 (L3/L4)', value: 3210 },
+        { label: 'AI 自动化归档', value: 98.5 },
+        { label: 'AI 自动化归档', value: 3400 },
+        { label: '资计分析资产', value: 8321 },
+        { label: '资计分析资产', value: 1560 }
       ],
       tableNames: ['vehicle_telemetry', 'user_behavior_log', 'transaction_record'],
       currentTableIndex: 0,

@@ -542,7 +542,7 @@
 </template>
 
 <script>
-import { getAnalyseLog } from "@/api/system/protectCategory"
+import { getAnalyseLog, forcedTermination } from "@/api/system/protectCategory"
 import { debounce } from '@/utils/index';
 
 export default {
@@ -727,6 +727,21 @@ export default {
     methods: {
         handleForceTerminate() {
             console.log('执行强制终止操作')
+            forcedTermination({
+                id: this.routeData.id,
+            }).then(res => {
+                if (res.code === 200) {
+                    this.$message({
+                        message: '强制终止成功',
+                        type: 'success',
+                    })
+                } else {
+                    this.$message({
+                        message: res.msg || '强制终止失败',
+                        type: 'danger',
+                    })
+                }
+            })
             this.forceTerminateDialogVisible = false
             this.forceTerminateConfirm = false
         },

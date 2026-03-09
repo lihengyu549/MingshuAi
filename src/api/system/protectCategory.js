@@ -343,6 +343,15 @@ export function getAnalyseLog(id) {
   })
 }
 
+//强制终止接口
+export function forcedTermination(params) {
+  return request({
+    url: '/system/proxy/database/forcedTermination',
+    method: 'post',
+    data: params,
+  })
+}
+
 // 引用数据特征的正则数据接口
 export function getFeatureItemSelect() {
   return request({
