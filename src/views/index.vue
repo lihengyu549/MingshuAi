@@ -9,22 +9,22 @@
           </div>
           <svg-icon icon-class="home-dataAsset-c" style="font-size: 58px; color: #e8eefb;"></svg-icon>
         </div>
-        <p class="card-label">{{ cardData[0].label }}</p>
+        <p class="card-label">数据资产分布</p>
         <div class="card-metrics">
           <div class="metric-item dataAsset">
             <span class="metric-key">数据表</span>
-            <count-to :start-val="0" :end-val="cardData[0].value" :duration="2000" class="metric-value" />
+            <count-to :start-val="0" :end-val="cardData.dataTable" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item dataAsset">
             <span class="metric-key">文件数</span>
-            <count-to :start-val="0" :end-val="cardData[1].value" :duration="2000" class="metric-value" />
+            <count-to :start-val="0" :end-val="cardData.fileNum" :duration="2000" class="metric-value" />
           </div>
         </div>
         <div class="scan-progress-wrapper">
-          <el-progress :percentage="scanPercentage" :show-text="false" />
+          <el-progress :percentage="cardData.scanPercentage" :show-text="false" />
           <div class="scan-progress-text">
             <span class="scan-label">扫描进度</span>
-            <span class="scan-percentage">{{ scanPercentage }}%</span>
+            <span class="scan-percentage">{{ cardData.scanPercentage }}%</span>
           </div>
         </div>
       </el-card>
@@ -41,14 +41,14 @@
         <div class="card-metrics">
           <div class="metric-item sensitiveData">
             <span class="metric-key">敏感字段</span>
-            <count-to :start-val="0" :end-val="cardData[2].value" :duration="2000" class="metric-value" />
+            <count-to :start-val="0" :end-val="cardData.sensitiveField" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item sensitiveData">
             <span class="metric-key">敏感文件</span>
-            <count-to :start-val="0" :end-val="cardData[3].value" :duration="2000" class="metric-value" />
+            <count-to :start-val="0" :end-val="cardData.sensitiveFile" :duration="2000" class="metric-value" />
           </div>
         </div>
-        <div class="card-description">占总资产约：18.2%</div>
+        <div class="card-description">占总资产约：{{ cardData.assetRatio }}%</div>
       </el-card>
 
       <!-- 卡片3：AI自动化归档 -->
@@ -59,15 +59,15 @@
           </div>
           <svg-icon icon-class="home-aiAuto-c" style="font-size: 58px; color: #e8eefb;"></svg-icon>
         </div>
-        <p class="card-label">{{ cardData[4].label }}</p>
+        <p class="card-label">AI 自动化归档</p>
         <div class="card-metrics">
           <div class="metric-item aiAuto">
             <span class="metric-key">覆盖率</span>
-            <count-to :start-val="0" :end-val="cardData[4].value" :duration="2000" class="metric-value" />
+            <count-to :start-val="0" :end-val="cardData.aiCoverage" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item aiAuto">
             <span class="metric-key">节省工时</span>
-            <count-to :start-val="0" :end-val="cardData[5].value" :duration="2000" class="metric-value" />
+            <count-to :start-val="0" :end-val="cardData.aiSaveTime" :duration="2000" class="metric-value" />
           </div>
         </div>
         <div class="card-description">人工分析单条数据约3-10分钟，AI分析仅10-60秒</div>
@@ -81,18 +81,18 @@
           </div>
           <svg-icon icon-class="home-analysis-c" style="font-size: 58px; color: #f9f0e5;"></svg-icon>
         </div>
-        <p class="card-label">{{ cardData[6].label }}</p>
+        <p class="card-label">资计分析资产</p>
         <div class="card-metrics">
           <div class="metric-item analysis">
             <span class="metric-key">字段</span>
-            <count-to :start-val="0" :end-val="cardData[6].value" :duration="2000" class="metric-value" />
+            <count-to :start-val="0" :end-val="cardData.analysisField" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item analysis">
             <span class="metric-key">文件</span>
-            <count-to :start-val="0" :end-val="cardData[7].value" :duration="2000" class="metric-value" />
+            <count-to :start-val="0" :end-val="cardData.analysisFile" :duration="2000" class="metric-value" />
           </div>
         </div>
-        <div class="card-description">高置信度 80% · 人工复核 20%</div>
+        <div class="card-description">高置信度 {{ cardData.analysisConfidence }}% · 人工复核 {{ cardData.analysisReview }}%</div>
       </el-card>
     </div>
 
@@ -118,7 +118,7 @@
                   <h4 class="section-title">正在处理的表</h4>
                   <div class="table-item-wrapper">
                     <transition name="slide-up" mode="out-in">
-                      <span :key="currentTableIndex" class="table-item-name">{{ tableNames[currentTableIndex] }}</span>
+                      <span :key="taskMonitor.currentTableIndex" class="table-item-name">{{ taskMonitor.tableNames[taskMonitor.currentTableIndex] }}</span>
                     </transition>
                     <span class="table-dot"></span>
                   </div>
@@ -129,55 +129,55 @@
                   <div class="steps-wrapper">
                     <div class="step-item">
                       <div class="step-item-content">
-                        <i class="step-icon skip-icon el-icon-circle-close"></i>
+                        <i :class="['step-icon', taskMonitor.taskSteps.step1.icon, taskMonitor.taskSteps.step1.iconClass]"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">跳过数据识别</span>
-                          <span class="step-text-sub">2024-01-15 10:30:00</span>
+                          <span class="step-text-main">{{ taskMonitor.taskSteps.step1.textMain }}</span>
+                          <span class="step-text-sub">{{ taskMonitor.taskSteps.step1.textSub }}</span>
                         </div>
                       </div>
                     </div>
                     <div class="step-item">
                       <div class="step-item-content">
-                        <i class="step-icon success-icon el-icon-circle-check"></i>
+                        <i :class="['step-icon', taskMonitor.taskSteps.step2.icon, taskMonitor.taskSteps.step2.iconClass]"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">值质量检查</span>
-                          <span class="step-text-sub">2024-01-15 10:31:00</span>
+                          <span class="step-text-main">{{ taskMonitor.taskSteps.step2.textMain }}</span>
+                          <span class="step-text-sub">{{ taskMonitor.taskSteps.step2.textSub }}</span>
                         </div>
                       </div>
                     </div>
                     <div class="step-item">
                       <div class="step-item-content">
-                        <i class="step-icon skip-icon el-icon-circle-close"></i>
+                        <i :class="['step-icon', taskMonitor.taskSteps.step3.icon, taskMonitor.taskSteps.step3.iconClass]"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">数据检测</span>
-                          <span class="step-text-sub">2024-01-15 10:32:00</span>
+                          <span class="step-text-main">{{ taskMonitor.taskSteps.step3.textMain }}</span>
+                          <span class="step-text-sub">{{ taskMonitor.taskSteps.step3.textSub }}</span>
                         </div>
                       </div>
                     </div>
                     <div class="step-item">
                       <div class="step-item-content">
-                        <i class="step-icon success-icon el-icon-circle-check"></i>
+                        <i :class="['step-icon', taskMonitor.taskSteps.step4.icon, taskMonitor.taskSteps.step4.iconClass]"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">AI 分析打标</span>
-                          <span class="step-text-sub">2024-01-15 10:33:00</span>
+                          <span class="step-text-main">{{ taskMonitor.taskSteps.step4.textMain }}</span>
+                          <span class="step-text-sub">{{ taskMonitor.taskSteps.step4.textSub }}</span>
                         </div>
                       </div>
                     </div>
                     <div class="step-item">
                       <div class="step-item-content">
-                        <i class="step-icon processing-icon el-icon-loading"></i>
+                        <i :class="['step-icon', taskMonitor.taskSteps.step5.icon, taskMonitor.taskSteps.step5.iconClass]"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">个人信息匹配</span>
-                          <span class="step-text-sub">正在处理...</span>
+                          <span class="step-text-main">{{ taskMonitor.taskSteps.step5.textMain }}</span>
+                          <span class="step-text-sub">{{ taskMonitor.taskSteps.step5.textSub }}</span>
                         </div>
                       </div>
                     </div>
                     <div class="step-item">
                       <div class="step-item-content">
-                        <i class="step-icon skip-icon el-icon-circle-close"></i>
+                        <i :class="['step-icon', taskMonitor.taskSteps.step6.icon, taskMonitor.taskSteps.step6.iconClass]"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">样本特征提取</span>
-                          <span class="step-text-sub">等待中</span>
+                          <span class="step-text-main">{{ taskMonitor.taskSteps.step6.textMain }}</span>
+                          <span class="step-text-sub">{{ taskMonitor.taskSteps.step6.textSub }}</span>
                         </div>
                       </div>
                     </div>
@@ -191,9 +191,9 @@
                 <div class="progress-section" style="flex-shrink: 0; display: flex; flex-direction: column;">
                   <div class="progress-box">
                     <span class="progress-title">整体进度</span>
-                    <span class="progress-info">2/3 (66%)</span>
+                    <span class="progress-info">{{ taskMonitor.progressCurrent }}/{{ taskMonitor.progressTotal }} ({{ taskMonitor.progressPercent }}%)</span>
                   </div>
-                  <el-progress :percentage="66" color="#409EFF" :show-text="false" :stroke-width="12"></el-progress>
+                  <el-progress :percentage="taskMonitor.progressPercent" color="#409EFF" :show-text="false" :stroke-width="12"></el-progress>
                 </div>
 
                 <!-- 时间轴部分 -->
@@ -229,34 +229,47 @@
               <div class="queue-content">
                 <div class="queue-item">
                   <div class="queue-item-header">
-                    <span class="queue-item-title">敏感字段查询检</span>
-                    <el-tag type="warning" size="small" style="border: none; border-radius: 10px;">执行中</el-tag>
+                    <span class="queue-item-title">{{ queueData.item1.title }}</span>
+                    <el-tag :type="queueData.item1.status" size="small" style="border: none; border-radius: 10px;">{{
+                      queueData.item1.statusText }}</el-tag>
                   </div>
-                  <span class="queue-item-info">字段信息：128</span>
+                  <span class="queue-item-info">{{ queueData.item1.info }}</span>
                 </div>
 
                 <div class="queue-item">
                   <div class="queue-item-header">
-                    <span class="queue-item-title">求被敏感检</span>
-                    <el-tag type="success" size="small" style="border: none; border-radius: 10px;">执行完成</el-tag>
+                    <span class="queue-item-title">{{ queueData.item2.title }}</span>
+                    <el-tag :type="queueData.item2.status" size="small" style="border: none; border-radius: 10px;">{{
+                      queueData.item2.statusText }}</el-tag>
                   </div>
-                  <span class="queue-item-info">字段信息：45</span>
+                  <span class="queue-item-info">{{ queueData.item2.info }}</span>
                 </div>
 
                 <div class="queue-item">
                   <div class="queue-item-header">
-                    <span class="queue-item-title">数据保量审批</span>
-                    <el-tag type="info" size="small" style="border: none; border-radius: 10px;">等待中</el-tag>
+                    <span class="queue-item-title">{{ queueData.item3.title }}</span>
+                    <el-tag :type="queueData.item3.status" size="small" style="border: none; border-radius: 10px;">{{
+                      queueData.item3.statusText }}</el-tag>
                   </div>
-                  <span class="queue-item-info">字段信息：0</span>
+                  <span class="queue-item-info">{{ queueData.item3.info }}</span>
                 </div>
 
                 <div class="queue-item">
                   <div class="queue-item-header">
-                    <span class="queue-item-title">异常行为分析</span>
-                    <el-tag type="info" size="small" style="border: none; border-radius: 10px;">等待中</el-tag>
+                    <span class="queue-item-title">{{ queueData.item4.title }}</span>
+                    <el-tag :type="queueData.item4.status" size="small" style="border: none; border-radius: 10px;">{{
+                      queueData.item4.statusText }}</el-tag>
                   </div>
-                  <span class="queue-item-info">字段信息：50GB</span>
+                  <span class="queue-item-info">{{ queueData.item4.info }}</span>
+                </div>
+
+                <div class="queue-item">
+                  <div class="queue-item-header">
+                    <span class="queue-item-title">{{ queueData.item5.title }}</span>
+                    <el-tag :type="queueData.item5.status" size="small" style="border: none; border-radius: 10px;">{{
+                      queueData.item5.statusText }}</el-tag>
+                  </div>
+                  <span class="queue-item-info">{{ queueData.item5.info }}</span>
                 </div>
               </div>
               <el-button type="text" class="queue-footer" @click="seeAll">查看全部结果</el-button>
@@ -278,36 +291,59 @@ export default {
   },
   data() {
     return {
-      scanPercentage: 50,
-      cardData: [
-        { label: '数据资产分布', value: 5809 },
-        { label: '数据资产分布', value: 12400 },
-        { label: '敏感数据库 (L3/L4)', value: 24900 },
-        { label: '敏感数据库 (L3/L4)', value: 3210 },
-        { label: 'AI 自动化归档', value: 98.5 },
-        { label: 'AI 自动化归档', value: 3400 },
-        { label: '资计分析资产', value: 8321 },
-        { label: '资计分析资产', value: 1560 }
-      ],
-      tableNames: ['vehicle_telemetry', 'user_behavior_log', 'transaction_record'],
-      currentTableIndex: 0,
-      timelineData: [
-        { text: '喀音数据过滤字段数量', time: '2024-01-15 10:30:00' },
-        { text: '命中匹配规则字段数量', time: '2024-01-15 10:31:00' },
-        { text: '语义填充情况', time: '2024-01-15 10:32:00' },
-        { text: '分类情况', time: '2024-01-15 10:33:00' },
-        { text: '样本特征提取数量', time: '2024-01-15 10:34:00' }
-      ],
+      cardData: {
+        scanPercentage: 50,
+        dataTable: 5809,
+        fileNum: 12400,
+        sensitiveField: 24900,
+        sensitiveFile: 3210,
+        assetRatio: 18.2,
+        aiCoverage: 98.5,
+        aiSaveTime: 3400,
+        analysisField: 8321,
+        analysisFile: 1560,
+        analysisConfidence: 80,
+        analysisReview: 20
+      },
+      taskMonitor: {
+        tableNames: ['vehicle_telemetry', 'user_behavior_log', 'transaction_record'],
+        currentTableIndex: 0,
+        progressCurrent: 2,
+        progressTotal: 3,
+        progressPercent: 66,
+        taskSteps: {
+          step1: { icon: 'skip-icon', iconClass: 'el-icon-circle-close', textMain: '数据识别', textSub: '2024-01-15 10:30:00' },
+          step2: { icon: 'success-icon', iconClass: 'el-icon-circle-check', textMain: '值质量检查', textSub: '2024-01-15 10:31:00' },
+          step3: { icon: 'skip-icon', iconClass: 'el-icon-circle-close', textMain: '数据检测', textSub: '2024-01-15 10:32:00' },
+          step4: { icon: 'success-icon', iconClass: 'el-icon-circle-check', textMain: 'AI 分析打标', textSub: '2024-01-15 10:33:00' },
+          step5: { icon: 'processing-icon', iconClass: 'el-icon-loading', textMain: '个人信息匹配', textSub: '正在处理...' },
+          step6: { icon: 'skip-icon', iconClass: 'el-icon-circle-close', textMain: '样本特征提取', textSub: '等待中' }
+        },
+        timelineData: [
+          { text: '喀音数据过滤字段数量', time: '2024-01-15 10:30:00' },
+          { text: '命中匹配规则字段数量', time: '2024-01-15 10:31:00' },
+          { text: '语义填充情况', time: '2024-01-15 10:32:00' },
+          { text: '分类情况', time: '2024-01-15 10:33:00' },
+          { text: '样本特征提取数量', time: '2024-01-15 10:34:00' }
+        ]
+      },
       isConnected: false,
-      ws: null
+      ws: null,
+      queueData: {
+        item1: { title: '敏感字段查询检', status: 'warning', statusText: '执行中', info: '字段信息：128' },
+        item2: { title: '未脱敏检查', status: 'success', statusText: '执行完成', info: '字段信息：45' },
+        item3: { title: '数据导出审批', status: 'info', statusText: '等待中', info: '字段信息：0' },
+        item4: { title: '异常行为分析', status: 'info', statusText: '等待中', info: '字段数量：50GB' },
+        item5: { title: 'API权限审计', status: 'info', statusText: '等待中', info: '字段数量：12' }
+      }
     }
   },
   computed: {
     displayTimelineData() {
       if (this.isConnected) {
-        return [...this.timelineData, { text: '正在执行中...', time: '', isActive: true }]
+        return [...this.taskMonitor.timelineData, { text: '正在执行中...', time: '', isActive: true }]
       }
-      return this.timelineData
+      return this.taskMonitor.timelineData
     }
   },
   mounted() {
@@ -326,7 +362,7 @@ export default {
     },
     startTableRotation() {
       this.tableTimer = setInterval(() => {
-        this.currentTableIndex = (this.currentTableIndex + 1) % this.tableNames.length
+        this.taskMonitor.currentTableIndex = (this.taskMonitor.currentTableIndex + 1) % this.taskMonitor.tableNames.length
       }, 3000)
     },
     stopTableRotation() {
@@ -344,9 +380,9 @@ export default {
         if (data.type === 'cardData') {
           this.cardData = data.value
         } else if (data.type === 'timeline') {
-          this.timelineData = data.value
+          this.taskMonitor.timelineData = data.value
         } else if (data.type === 'currentStep') {
-          this.timelineData.push({
+          this.taskMonitor.timelineData.push({
             text: '正在执行中...',
             time: '',
             isActive: true
