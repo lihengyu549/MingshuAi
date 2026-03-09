@@ -17,6 +17,10 @@
                     <div class="info-item">
                         <span class="info-label">运行时间：{{ runTime }}</span>
                     </div>
+                    <div class="force-terminate-btn">
+                        <el-button type="danger" size="mini"
+                            @click="forceTerminateDialogVisible = true">强制终止</el-button>
+                    </div>
                 </div>
                 <p v-if="status === 'ERR'" class="error-reason">
                     <span>失败原因</span>：
@@ -24,6 +28,24 @@
                 </p>
             </div>
         </div>
+
+        <!-- 强制终止弹窗 -->
+        <el-dialog class="custom-dialog" title="强制终止任务" :visible.sync="forceTerminateDialogVisible" width="500px"
+            :close-on-click-modal="false">
+            <div class="force-terminate-content">
+                <p class="warning-message">
+                    该操作将强制终止任务，可能导致数据状态不一致或需要人工修复。
+                </p>
+                <el-checkbox v-model="forceTerminateConfirm">
+                    我已确认这是特殊情况，需要强制终止。
+                </el-checkbox>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="forceTerminateDialogVisible = false">取消</el-button>
+                <el-button type="danger" :disabled="!forceTerminateConfirm"
+                    @click="handleForceTerminate">确认终止</el-button>
+            </span>
+        </el-dialog>
 
         <!-- 主体内容区：左右分布布局 -->
         <div class="main-content-wrapper">
@@ -87,7 +109,7 @@
                     <div class="progress-header">
                         <span class="progress-label">整体进度</span>
                         <span class="progress-text">{{ progressCurrent }}/{{ progressTotal }} ({{ progressPercent
-                        }}%)</span>
+                            }}%)</span>
                     </div>
                     <div class="custom-progress-container">
                         <el-progress
@@ -157,7 +179,7 @@
                                                         <circle :cx="80" :cy="50 + idx * 60" r="20" class="node-circle"
                                                             :class="{ active: node.matched }" />
                                                         <text :x="80" :y="55 + idx * 60" class="node-text">{{ node.label
-                                                        }}</text>
+                                                            }}</text>
                                                     </g>
                                                 </g>
                                                 <!-- 右侧规则节点 -->
@@ -403,8 +425,8 @@
                                                     </foreignObject>
                                                     <!-- 将标签移动到盒子右上角位置 -->
                                                     <g v-if="box.stamped" class="stamp-label">
-                                                        <rect :x="box.x + 100" y="195" width="60" height="24" fill="#fff"
-                                                            stroke="#ef4444" stroke-width="2" rx="3"
+                                                        <rect :x="box.x + 100" y="195" width="60" height="24"
+                                                            fill="#fff" stroke="#ef4444" stroke-width="2" rx="3"
                                                             :transform="`rotate(-12, ${box.x + 80}, 277)`" />
                                                         <text :x="box.x + 130" y="212" text-anchor="middle"
                                                             fill="#ef4444" font-size="10" font-weight="800"
@@ -536,6 +558,9 @@ export default {
             status: '',
             statusName: '',
             errorReason: '',
+            // 强制终止相关
+            forceTerminateDialogVisible: false,
+            forceTerminateConfirm: false,
             // 进度条数据
             progressTotal: 0,
             progressCurrent: 0,
@@ -700,6 +725,11 @@ export default {
         }
     },
     methods: {
+        handleForceTerminate() {
+            console.log('执行强制终止操作')
+            this.forceTerminateDialogVisible = false
+            this.forceTerminateConfirm = false
+        },
         generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
                 const r = Math.random() * 16 | 0;
@@ -1455,6 +1485,16 @@ export default {
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
 }
 
+.custom-dialog {
+    .el-dialog {
+        border-radius: 10px;
+    }
+
+    .el-dialog__header {
+        border-bottom: 1px solid #e6e6e6;
+    }
+}
+
 .task-info {
     display: flex;
     flex-direction: column;
@@ -1518,6 +1558,30 @@ export default {
 .error-text {
     color: #dc2626;
     font-weight: 600;
+}
+
+.force-terminate-btn {
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.other-info:hover .force-terminate-btn {
+    opacity: 1;
+}
+
+.force-terminate-content {
+    padding: 10px 0;
+}
+
+.warning-message {
+    margin: 0 0 20px 0;
+    color: #dc2626;
+    font-size: 14px;
+    padding: 12px;
+    background: #fef2f2;
+    border-left: 3px solid #dc2626;
+    border-radius: 4px;
 }
 
 .main-content-wrapper {
