@@ -227,49 +227,12 @@
 
             <div class="queue-body-wrapper">
               <div class="queue-content">
-                <div class="queue-item">
+                <div class="queue-item" v-for="(item, index) in queueData" :key="index">
                   <div class="queue-item-header">
-                    <span class="queue-item-title">{{ queueData.item1.title }}</span>
-                    <el-tag :type="queueData.item1.status" size="small" style="border: none; border-radius: 10px;">{{
-                      queueData.item1.statusText }}</el-tag>
+                    <span class="queue-item-title">{{ item.title }}</span>
+                    <el-tag :type="item.status" size="small" style="border: none; border-radius: 10px;">{{ item.statusText }}</el-tag>
                   </div>
-                  <span class="queue-item-info">{{ queueData.item1.info }}</span>
-                </div>
-
-                <div class="queue-item">
-                  <div class="queue-item-header">
-                    <span class="queue-item-title">{{ queueData.item2.title }}</span>
-                    <el-tag :type="queueData.item2.status" size="small" style="border: none; border-radius: 10px;">{{
-                      queueData.item2.statusText }}</el-tag>
-                  </div>
-                  <span class="queue-item-info">{{ queueData.item2.info }}</span>
-                </div>
-
-                <div class="queue-item">
-                  <div class="queue-item-header">
-                    <span class="queue-item-title">{{ queueData.item3.title }}</span>
-                    <el-tag :type="queueData.item3.status" size="small" style="border: none; border-radius: 10px;">{{
-                      queueData.item3.statusText }}</el-tag>
-                  </div>
-                  <span class="queue-item-info">{{ queueData.item3.info }}</span>
-                </div>
-
-                <div class="queue-item">
-                  <div class="queue-item-header">
-                    <span class="queue-item-title">{{ queueData.item4.title }}</span>
-                    <el-tag :type="queueData.item4.status" size="small" style="border: none; border-radius: 10px;">{{
-                      queueData.item4.statusText }}</el-tag>
-                  </div>
-                  <span class="queue-item-info">{{ queueData.item4.info }}</span>
-                </div>
-
-                <div class="queue-item">
-                  <div class="queue-item-header">
-                    <span class="queue-item-title">{{ queueData.item5.title }}</span>
-                    <el-tag :type="queueData.item5.status" size="small" style="border: none; border-radius: 10px;">{{
-                      queueData.item5.statusText }}</el-tag>
-                  </div>
-                  <span class="queue-item-info">{{ queueData.item5.info }}</span>
+                  <span class="queue-item-info">{{ item.infoLabel }}：{{ item.infoValue }}</span>
                 </div>
               </div>
               <el-button type="text" class="queue-footer" @click="seeAll">查看全部结果</el-button>
@@ -329,13 +292,13 @@ export default {
       },
       isConnected: false,
       ws: null,
-      queueData: {
-        item1: { title: '敏感字段查询检', status: 'warning', statusText: '执行中', info: '字段信息：128' },
-        item2: { title: '未脱敏检查', status: 'success', statusText: '执行完成', info: '字段信息：45' },
-        item3: { title: '数据导出审批', status: 'info', statusText: '等待中', info: '字段信息：0' },
-        item4: { title: '异常行为分析', status: 'info', statusText: '等待中', info: '字段数量：50GB' },
-        item5: { title: 'API权限审计', status: 'info', statusText: '等待中', info: '字段数量：12' }
-      }
+      queueData: [
+        { title: '敏感字段查询检', status: 'warning', statusText: '执行中', infoLabel: '字段信息', infoValue: 128 },
+        { title: '未脱敏检查', status: 'success', statusText: '执行完成', infoLabel: '字段信息', infoValue: 45 },
+        { title: '数据导出审批', status: 'info', statusText: '等待中', infoLabel: '字段信息', infoValue: 0 },
+        { title: '异常行为分析', status: 'info', statusText: '等待中', infoLabel: '字段数量', infoValue: '50GB' },
+        { title: 'API权限审计', status: 'info', statusText: '等待中', infoLabel: '字段数量', infoValue: 12 }
+      ]
     }
   },
   computed: {
