@@ -62,11 +62,11 @@
         <p class="card-label">AI 自动化归档</p>
         <div class="card-metrics">
           <div class="metric-item aiAuto">
-            <span class="metric-key">覆盖率</span>
+            <span class="metric-key">覆盖率（%）</span>
             <count-to :start-val="0" :end-val="cardData.aiCoverage" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item aiAuto">
-            <span class="metric-key">节省工时</span>
+            <span class="metric-key">节省工时（min）</span>
             <count-to :start-val="0" :end-val="cardData.aiSaveTime" :duration="2000" class="metric-value" />
           </div>
         </div>
@@ -310,7 +310,7 @@ export default {
     }
   },
   mounted() {
-    // this.startTableRotation()
+    this.startTableRotation()
     // this.connectWebSocket()
   },
   beforeDestroy() {
@@ -345,6 +345,7 @@ export default {
         } else if (data.type === 'timeline') {
           this.taskMonitor.timelineData = data.value
         } else if (data.type === 'currentStep') {
+          //日志执行中
           this.taskMonitor.timelineData.push({
             text: '正在执行中...',
             time: '',

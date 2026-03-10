@@ -308,12 +308,8 @@ export default {
             resultFormNodeName: '',
             piiNodeName: '',
             piiList: [],
-        };
-    },
-    data() {
-        return {
             originalQueryParams: null
-        }
+        };
     },
     created() {
         this.row = this.$route.query.row || null;
