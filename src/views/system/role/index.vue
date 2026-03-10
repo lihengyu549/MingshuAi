@@ -459,6 +459,7 @@ export default {
     /** 提交按钮 */
     submitForm: function () {
       this.$refs["form"].validate(valid => {
+        this.form.roleKey = this.form.roleName
         if (valid) {
           if (this.form.roleId != undefined) {
             this.form.menuIds = this.getMenuAllCheckedKeys();
