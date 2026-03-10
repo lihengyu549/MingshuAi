@@ -591,6 +591,7 @@ export default {
             typewriterText: '',           // 后端返回的完整源文本
             displayedTypewriterText: '',  // 打字机效果显示的文本
             typewriterIndex: 0,           // 当前打字位置
+            typewriterCompleted: false,   // 打字机效果是否已完成
             cursorBlink: true,
             // 匹配规则数据
             leftNodes: [
@@ -831,12 +832,12 @@ export default {
                             // 只有当源文本发生变化时，才重新启动打字机动画
                             if (semanticFill.typewriterOutput !== this.typewriterText) {
                                 this.typewriterText = semanticFill.typewriterOutput;
+                                this.typewriterCompleted = false;
                                 // 如果当前在AI视图且是步骤1，重启打字机动画
                                 if (this.activeTab === 'ai-vision' && this.currentStepIndex === 1) {
                                     this.restartTypewriterAnimation();
                                 }
                             }
-                            // 如果源文本相同，不做任何操作，保持当前打字机动画继续
                         }
 
                         let aiClassify = message.processingSteps.find(step => step.name === 'AI分类打标') //AI分类打标
@@ -1128,30 +1129,27 @@ export default {
                 this.typewriterText = 'AI正在进行语义分析和填充...';
             }
 
+            // 如果打字机已完成且数据没变，不重复执行
+            if (this.typewriterCompleted && this.displayedTypewriterText === this.typewriterText) {
+                return;
+            }
+
             // 重置打字机状态
             this.displayedTypewriterText = '';
             this.typewriterIndex = 0;
+            this.typewriterCompleted = false;
 
             // 启动打字机动画
             this.semanticInterval = setInterval(() => {
                 if (this.typewriterIndex < this.typewriterText.length) {
                     this.displayedTypewriterText += this.typewriterText[this.typewriterIndex];
                     this.typewriterIndex++;
-                    // 移除光标位置计算，让光标自然跟随文本
                 } else {
-                    // 打字完成后，等待一段时间再重新开始
                     clearInterval(this.semanticInterval);
                     this.semanticInterval = null;
-                    setTimeout(() => {
-                        // 只有当还在语义填充步骤时才重启动画
-                        if (this.currentStepIndex === 1 && this.activeTab === 'ai-vision') {
-                            this.displayedTypewriterText = '';
-                            this.typewriterIndex = 0;
-                            this.startSemanticFillAnimation();
-                        }
-                    }, 2000);
+                    this.typewriterCompleted = true;
                 }
-            }, 80); // 每80ms打一个字
+            }, 80);
         },
 
         restartTypewriterAnimation() {
@@ -1163,6 +1161,8 @@ export default {
             // 重置状态并重新开始
             this.displayedTypewriterText = '';
             this.typewriterIndex = 0;
+
+            this.typewriterCompleted = false;
             // 延迟一小段时间再开始，让用户能看到文本清空
             setTimeout(() => {
                 if (this.currentStepIndex === 1 && this.activeTab === 'ai-vision') {
