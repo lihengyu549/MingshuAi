@@ -87,6 +87,7 @@
                             <div class="step-icon">
                                 <i v-if="step.status === 'completed'" class="el-icon-success"></i>
                                 <i v-else-if="step.status === 'processing'" class="el-icon-loading"></i>
+                                <i v-else-if="step.status === 'skip'" class="el-icon-back"></i>
                                 <i v-else class="el-icon-circle-close-outline"></i>
                             </div>
                             <!-- 步骤内容 -->
@@ -95,6 +96,7 @@
                                 <div v-if="step.status === 'completed'" class="step-time">{{ step.completedTime }}</div>
                                 <div v-else-if="step.status === 'processing'" class="step-status">处理中...</div>
                                 <div v-else-if="step.status === 'error'" class="step-status">失败</div>
+                                <div v-else-if="step.status === 'skip'" class="step-status">跳过</div>
                                 <div v-else class="step-status">待开始</div>
                             </div>
                         </div>
@@ -1830,6 +1832,16 @@ export default {
     border-color: #dbeafe;
 }
 
+.step-item.error {
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.step-item.skip {
+    background: #fefce8;
+    border-color: #fef08a;
+}
+
 .step-item.pending {
     background: #f9fafb;
     border-color: #e5e7eb;
@@ -1851,6 +1863,14 @@ export default {
 
 .step-item.processing .step-icon {
     color: #3b82f6;
+}
+
+.step-item.error .step-icon {
+    color: #ef4444;
+}
+
+.step-item.skip .step-icon {
+    color: #eab308;
 }
 
 .step-item.pending .step-icon {
