@@ -289,6 +289,7 @@ export default {
         analysisReview: 0
       },
       taskMonitor: {
+        status: '',
         tableNames: [],
         currentTableIndex: 0,
         progressCurrent: 0,
@@ -314,6 +315,9 @@ export default {
       const list = this.taskMonitor.timelineData.map(item => {
         return typeof item === 'string' ? { text: item, isActive: false } : { ...item, isActive: false }
       })
+      if (this.taskMonitor.status === 'COMPLETE') {
+        return [...list, { text: '执行完成', isActive: false }]
+      }
       if (this.isConnected) {
         return [...list, { text: '正在执行中...', isActive: true }]
       }
@@ -375,6 +379,7 @@ export default {
       }
       this.socket.onmessage = (event) => {
         const data = JSON.parse(event.data)
+        console.log(data)
         if (data.cardData) {
           this.cardDataPrev = { ...this.cardData }
           const normalizedCardData = { ...data.cardData }
@@ -393,6 +398,9 @@ export default {
           this.queueData = data.queueData
         }
         if (data.taskMonitor) {
+          if (data.taskMonitor.status !== undefined) {
+            this.taskMonitor.status = data.taskMonitor.status
+          }
           if (data.taskMonitor.tableName) {
             if (!this.taskMonitor.tableNames.includes(data.taskMonitor.tableName)) {
               this.taskMonitor.tableNames.push(data.taskMonitor.tableName)
@@ -406,7 +414,8 @@ export default {
             this.taskMonitor.progressTotal = data.taskMonitor.progressTotal
           }
           if (data.taskMonitor.progressCurrent !== undefined && data.taskMonitor.progressTotal !== undefined) {
-            this.taskMonitor.progressPercent = Math.round((data.taskMonitor.progressCurrent / data.taskMonitor.progressTotal) * 100)
+            const percent = data.taskMonitor.progressTotal > 0 ? Math.round((data.taskMonitor.progressCurrent / data.taskMonitor.progressTotal) * 100) : 0
+            this.taskMonitor.progressPercent = percent
           }
           if (data.taskMonitor.taskSteps) {
             for (const key in data.taskMonitor.taskSteps) {
@@ -416,7 +425,11 @@ export default {
             }
           }
           if (data.taskMonitor.timelineData) {
-            this.taskMonitor.timelineData.push(data.taskMonitor.timelineData)
+            const newItem = data.taskMonitor.timelineData
+            const lastItem = this.taskMonitor.timelineData[this.taskMonitor.timelineData.length - 1]
+            if (newItem !== lastItem) {
+              this.taskMonitor.timelineData.push(newItem)
+            }
           }
         }
       }
