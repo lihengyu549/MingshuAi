@@ -92,7 +92,8 @@
             <count-to :start-val="0" :end-val="cardData.analysisFile" :duration="2000" class="metric-value" />
           </div>
         </div>
-        <div class="card-description">高置信度 {{ cardData.analysisConfidence }}% · 人工复核 {{ cardData.analysisReview }}%</div>
+        <div class="card-description">高置信度 {{ cardData.analysisConfidence }}% · 人工复核 {{ cardData.analysisReview }}%
+        </div>
       </el-card>
     </div>
 
@@ -118,7 +119,8 @@
                   <h4 class="section-title">正在处理的表</h4>
                   <div class="table-item-wrapper">
                     <transition name="slide-up" mode="out-in">
-                      <span :key="taskMonitor.currentTableIndex" class="table-item-name">{{ taskMonitor.tableNames[taskMonitor.currentTableIndex] }}</span>
+                      <span :key="taskMonitor.currentTableIndex" class="table-item-name">{{
+                        taskMonitor.tableNames[taskMonitor.currentTableIndex] }}</span>
                     </transition>
                     <span class="table-dot"></span>
                   </div>
@@ -129,54 +131,54 @@
                   <div class="steps-wrapper">
                     <div class="step-item">
                       <div class="step-item-content">
-                        <i :class="['step-icon', taskMonitor.taskSteps.step1.icon, taskMonitor.taskSteps.step1.iconClass]"></i>
+                        <i :class="getStepIconClass(taskMonitor.taskSteps.step1.status)"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">{{ taskMonitor.taskSteps.step1.textMain }}</span>
+                          <span class="step-text-main">噪音数据过滤</span>
                           <span class="step-text-sub">{{ taskMonitor.taskSteps.step1.textSub }}</span>
                         </div>
                       </div>
                     </div>
                     <div class="step-item">
                       <div class="step-item-content">
-                        <i :class="['step-icon', taskMonitor.taskSteps.step2.icon, taskMonitor.taskSteps.step2.iconClass]"></i>
+                        <i :class="getStepIconClass(taskMonitor.taskSteps.step2.status)"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">{{ taskMonitor.taskSteps.step2.textMain }}</span>
+                          <span class="step-text-main">语义填充</span>
                           <span class="step-text-sub">{{ taskMonitor.taskSteps.step2.textSub }}</span>
                         </div>
                       </div>
                     </div>
                     <div class="step-item">
                       <div class="step-item-content">
-                        <i :class="['step-icon', taskMonitor.taskSteps.step3.icon, taskMonitor.taskSteps.step3.iconClass]"></i>
+                        <i :class="getStepIconClass(taskMonitor.taskSteps.step3.status)"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">{{ taskMonitor.taskSteps.step3.textMain }}</span>
+                          <span class="step-text-main">匹配规则</span>
                           <span class="step-text-sub">{{ taskMonitor.taskSteps.step3.textSub }}</span>
                         </div>
                       </div>
                     </div>
                     <div class="step-item">
                       <div class="step-item-content">
-                        <i :class="['step-icon', taskMonitor.taskSteps.step4.icon, taskMonitor.taskSteps.step4.iconClass]"></i>
+                        <i :class="getStepIconClass(taskMonitor.taskSteps.step4.status)"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">{{ taskMonitor.taskSteps.step4.textMain }}</span>
+                          <span class="step-text-main">AI 分类打标</span>
                           <span class="step-text-sub">{{ taskMonitor.taskSteps.step4.textSub }}</span>
                         </div>
                       </div>
                     </div>
                     <div class="step-item">
                       <div class="step-item-content">
-                        <i :class="['step-icon', taskMonitor.taskSteps.step5.icon, taskMonitor.taskSteps.step5.iconClass]"></i>
+                        <i :class="getStepIconClass(taskMonitor.taskSteps.step5.status)"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">{{ taskMonitor.taskSteps.step5.textMain }}</span>
+                          <span class="step-text-main">个人信息识别</span>
                           <span class="step-text-sub">{{ taskMonitor.taskSteps.step5.textSub }}</span>
                         </div>
                       </div>
                     </div>
                     <div class="step-item">
                       <div class="step-item-content">
-                        <i :class="['step-icon', taskMonitor.taskSteps.step6.icon, taskMonitor.taskSteps.step6.iconClass]"></i>
+                        <i :class="getStepIconClass(taskMonitor.taskSteps.step6.status)"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">{{ taskMonitor.taskSteps.step6.textMain }}</span>
+                          <span class="step-text-main">样本特征提取</span>
                           <span class="step-text-sub">{{ taskMonitor.taskSteps.step6.textSub }}</span>
                         </div>
                       </div>
@@ -191,9 +193,11 @@
                 <div class="progress-section" style="flex-shrink: 0; display: flex; flex-direction: column;">
                   <div class="progress-box">
                     <span class="progress-title">整体进度</span>
-                    <span class="progress-info">{{ taskMonitor.progressCurrent }}/{{ taskMonitor.progressTotal }} ({{ taskMonitor.progressPercent }}%)</span>
+                    <span class="progress-info">{{ taskMonitor.progressCurrent }}/{{ taskMonitor.progressTotal }} ({{
+                      taskMonitor.progressPercent }}%)</span>
                   </div>
-                  <el-progress :percentage="taskMonitor.progressPercent" color="#409EFF" :show-text="false" :stroke-width="12"></el-progress>
+                  <el-progress :percentage="taskMonitor.progressPercent" color="#409EFF" :show-text="false"
+                    :stroke-width="12"></el-progress>
                 </div>
 
                 <!-- 时间轴部分 -->
@@ -206,7 +210,7 @@
                       <div class="timeline-connector" v-if="index < displayTimelineData.length - 1"></div>
                       <div class="timeline-text-wrapper">
                         <span class="timeline-text">{{ item.text }}</span>
-                        <span v-if="item.time" class="timeline-time">{{ item.time }}</span>
+                        <!-- <span v-if="item.time" class="timeline-time">{{ item.time }}</span> -->
                       </div>
                     </div>
                   </div>
@@ -230,7 +234,8 @@
                 <div class="queue-item" v-for="(item, index) in queueData" :key="index">
                   <div class="queue-item-header">
                     <span class="queue-item-title">{{ item.title }}</span>
-                    <el-tag :type="item.status" size="small" style="border: none; border-radius: 10px;">{{ item.statusText }}</el-tag>
+                    <el-tag :type="item.status" size="small" style="border: none; border-radius: 10px;">{{
+                      item.statusText }}</el-tag>
                   </div>
                   <span class="queue-item-info">{{ item.infoLabel }}：{{ item.infoValue }}</span>
                 </div>
@@ -269,18 +274,21 @@ export default {
         analysisReview: 20
       },
       taskMonitor: {
-        tableNames: ['vehicle_telemetry', 'user_behavior_log', 'transaction_record'],
-        currentTableIndex: 0,
-        progressCurrent: 2,
-        progressTotal: 3,
-        progressPercent: 66,
+        // 表格轮播相关
+        tableNames: ['vehicle_telemetry', 'user_behavior_log', 'transaction_record'],  // 正在处理的表名列表
+        currentTableIndex: 0,  // 当前显示的表格索引（用于轮播）
+
+        // 进度条相关
+        progressCurrent: 2,      // 当前完成的步骤数
+        progressTotal: 3,          // 总步骤数
+        progressPercent: 66,      // 进度百分比
         taskSteps: {
-          step1: { icon: 'skip-icon', iconClass: 'el-icon-circle-close', textMain: '数据识别', textSub: '2024-01-15 10:30:00' },
-          step2: { icon: 'success-icon', iconClass: 'el-icon-circle-check', textMain: '值质量检查', textSub: '2024-01-15 10:31:00' },
-          step3: { icon: 'skip-icon', iconClass: 'el-icon-circle-close', textMain: '数据检测', textSub: '2024-01-15 10:32:00' },
-          step4: { icon: 'success-icon', iconClass: 'el-icon-circle-check', textMain: 'AI 分析打标', textSub: '2024-01-15 10:33:00' },
-          step5: { icon: 'processing-icon', iconClass: 'el-icon-loading', textMain: '个人信息匹配', textSub: '正在处理...' },
-          step6: { icon: 'skip-icon', iconClass: 'el-icon-circle-close', textMain: '样本特征提取', textSub: '等待中' }
+          step1: { status: 'skip', textSub: '2024-01-15 10:30:00' },
+          step2: { status: 'success', textSub: '2024-01-15 10:31:00' },
+          step3: { status: 'skip', textSub: '2024-01-15 10:32:00' },
+          step4: { status: 'success', textSub: '2024-01-15 10:33:00' },
+          step5: { status: 'progressing', textSub: '正在处理...' },
+          step6: { status: 'wait', textSub: '等待中' }
         },
         timelineData: [
           { text: '喀音数据过滤字段数量', time: '2024-01-15 10:30:00' },
@@ -318,6 +326,15 @@ export default {
     // this.disconnectWebSocket()
   },
   methods: {
+    getStepIconClass(status) {
+      const iconMap = {
+        success: ['success-icon', 'el-icon-circle-check'],
+        progressing: ['processing-icon', 'el-icon-loading'],
+        skip: ['skip-icon', 'el-icon-circle-close'],
+        wait: ['skip-icon', 'el-icon-circle-close']
+      }
+      return ['step-icon', ...(iconMap[status] || ['skip-icon', 'el-icon-circle-close'])]
+    },
     seeAll() {
       this.$router.push({
         path: 'classificationTask/hierarchicalTask',
@@ -344,6 +361,12 @@ export default {
           this.cardData = data.value
         } else if (data.type === 'timeline') {
           this.taskMonitor.timelineData = data.value
+        } else if (data.type === 'tableName') {
+          const newTableName = data.value
+          if (!this.taskMonitor.tableNames.includes(newTableName)) {
+            this.taskMonitor.tableNames.push(newTableName)
+            this.taskMonitor.currentTableIndex = this.taskMonitor.tableNames.length - 1
+          }
         } else if (data.type === 'currentStep') {
           //日志执行中
           this.taskMonitor.timelineData.push({
