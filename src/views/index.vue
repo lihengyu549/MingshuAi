@@ -318,7 +318,7 @@ export default {
       if (this.taskMonitor.status === 'COMPLETE') {
         return [...list, { text: '执行完成', isActive: false }]
       }
-      if (this.isConnected) {
+      if (this.isConnected && this.taskMonitor.status != 'NONE') {
         return [...list, { text: '正在执行中...', isActive: true }]
       }
       return list
