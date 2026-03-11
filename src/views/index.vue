@@ -13,11 +13,11 @@
         <div class="card-metrics">
           <div class="metric-item dataAsset">
             <span class="metric-key">数据表</span>
-            <count-to :start-val="0" :end-val="cardData.dataTable" :duration="2000" class="metric-value" />
+            <count-to :start-val="getPrevVal('dataTable')" :end-val="cardData.dataTable" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item dataAsset">
             <span class="metric-key">文件数</span>
-            <count-to :start-val="0" :end-val="cardData.fileNum" :duration="2000" class="metric-value" />
+            <count-to :start-val="getPrevVal('fileNum')" :end-val="cardData.fileNum" :duration="2000" class="metric-value" />
           </div>
         </div>
         <div class="scan-progress-wrapper">
@@ -41,11 +41,11 @@
         <div class="card-metrics">
           <div class="metric-item sensitiveData">
             <span class="metric-key">敏感字段</span>
-            <count-to :start-val="0" :end-val="cardData.sensitiveField" :duration="2000" class="metric-value" />
+            <count-to :start-val="getPrevVal('sensitiveField')" :end-val="cardData.sensitiveField" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item sensitiveData">
             <span class="metric-key">敏感文件</span>
-            <count-to :start-val="0" :end-val="cardData.sensitiveFile" :duration="2000" class="metric-value" />
+            <count-to :start-val="getPrevVal('sensitiveFile')" :end-val="cardData.sensitiveFile" :duration="2000" class="metric-value" />
           </div>
         </div>
         <div class="card-description">占总资产约：{{ cardData.assetRatio }}%</div>
@@ -63,11 +63,11 @@
         <div class="card-metrics">
           <div class="metric-item aiAuto">
             <span class="metric-key">覆盖率（%）</span>
-            <count-to :start-val="0" :end-val="cardData.aiCoverage" :duration="2000" class="metric-value" />
+            <count-to :start-val="getPrevVal('aiCoverage')" :end-val="cardData.aiCoverage" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item aiAuto">
             <span class="metric-key">节省工时（min）</span>
-            <count-to :start-val="0" :end-val="cardData.aiSaveTime" :duration="2000" class="metric-value" />
+            <count-to :start-val="getPrevVal('aiSaveTime')" :end-val="cardData.aiSaveTime" :duration="2000" class="metric-value" />
           </div>
         </div>
         <div class="card-description">人工分析单条数据约3-10分钟，AI分析仅10-60秒</div>
@@ -85,11 +85,11 @@
         <div class="card-metrics">
           <div class="metric-item analysis">
             <span class="metric-key">字段</span>
-            <count-to :start-val="0" :end-val="cardData.analysisField" :duration="2000" class="metric-value" />
+            <count-to :start-val="getPrevVal('analysisField')" :end-val="cardData.analysisField" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item analysis">
             <span class="metric-key">文件</span>
-            <count-to :start-val="0" :end-val="cardData.analysisFile" :duration="2000" class="metric-value" />
+            <count-to :start-val="getPrevVal('analysisFile')" :end-val="cardData.analysisFile" :duration="2000" class="metric-value" />
           </div>
         </div>
         <div class="card-description">高置信度 {{ cardData.analysisConfidence }}% · 人工复核 {{ cardData.analysisReview }}%
@@ -234,8 +234,9 @@
                 <div class="queue-item" v-for="(item, index) in queueData" :key="index">
                   <div class="queue-item-header">
                     <span class="queue-item-title">{{ item.title }}</span>
-                    <el-tag :type="item.status" size="small" style="border: none; border-radius: 10px;">{{
-                      item.statusText }}</el-tag>
+                    <el-tag :type="getQueueTagType(item.status)" size="small"
+                      style="border: none; border-radius: 10px;">{{
+                        item.statusText }}</el-tag>
                   </div>
                   <span class="queue-item-info">{{ item.infoLabel }}：{{ item.infoValue }}</span>
                 </div>
@@ -260,133 +261,176 @@ export default {
   data() {
     return {
       cardData: {
-        scanPercentage: 50,
-        dataTable: 5809,
-        fileNum: 12400,
-        sensitiveField: 24900,
-        sensitiveFile: 3210,
-        assetRatio: 18.2,
-        aiCoverage: 98.5,
-        aiSaveTime: 3400,
-        analysisField: 8321,
-        analysisFile: 1560,
-        analysisConfidence: 80,
-        analysisReview: 20
+        scanPercentage: 0,
+        dataTable: 0,
+        fileNum: 0,
+        sensitiveField: 0,
+        sensitiveFile: 0,
+        assetRatio: 0,
+        aiCoverage: 0,
+        aiSaveTime: 0,
+        analysisField: 0,
+        analysisFile: 0,
+        analysisConfidence: 0,
+        analysisReview: 0
+      },
+      cardDataPrev: {
+        scanPercentage: 0,
+        dataTable: 0,
+        fileNum: 0,
+        sensitiveField: 0,
+        sensitiveFile: 0,
+        assetRatio: 0,
+        aiCoverage: 0,
+        aiSaveTime: 0,
+        analysisField: 0,
+        analysisFile: 0,
+        analysisConfidence: 0,
+        analysisReview: 0
       },
       taskMonitor: {
-        // 表格轮播相关
-        tableNames: ['vehicle_telemetry', 'user_behavior_log', 'transaction_record'],  // 正在处理的表名列表
-        currentTableIndex: 0,  // 当前显示的表格索引（用于轮播）
-
-        // 进度条相关
-        progressCurrent: 2,      // 当前完成的步骤数
-        progressTotal: 3,          // 总步骤数
-        progressPercent: 66,      // 进度百分比
+        tableNames: [],
+        currentTableIndex: 0,
+        progressCurrent: 0,
+        progressTotal: 0,
+        progressPercent: 0,
         taskSteps: {
-          step1: { status: 'skip', textSub: '2024-01-15 10:30:00' },
-          step2: { status: 'success', textSub: '2024-01-15 10:31:00' },
-          step3: { status: 'skip', textSub: '2024-01-15 10:32:00' },
-          step4: { status: 'success', textSub: '2024-01-15 10:33:00' },
-          step5: { status: 'progressing', textSub: '正在处理...' },
-          step6: { status: 'wait', textSub: '等待中' }
+          step1: { textMain: '噪音数据过滤', status: 'wait', textSub: '等待中' },
+          step2: { textMain: '语义填充', status: 'wait', textSub: '等待中' },
+          step3: { textMain: '匹配规则', status: 'wait', textSub: '等待中' },
+          step4: { textMain: 'AI分类打标', status: 'wait', textSub: '等待中' },
+          step5: { textMain: '个人信息识别', status: 'wait', textSub: '等待中' },
+          step6: { textMain: '样本特征提取', status: 'wait', textSub: '等待中' }
         },
-        timelineData: [
-          { text: '喀音数据过滤字段数量', time: '2024-01-15 10:30:00' },
-          { text: '命中匹配规则字段数量', time: '2024-01-15 10:31:00' },
-          { text: '语义填充情况', time: '2024-01-15 10:32:00' },
-          { text: '分类情况', time: '2024-01-15 10:33:00' },
-          { text: '样本特征提取数量', time: '2024-01-15 10:34:00' }
-        ]
+        timelineData: []
       },
       isConnected: false,
       ws: null,
-      queueData: [
-        { title: '敏感字段查询检', status: 'warning', statusText: '执行中', infoLabel: '字段信息', infoValue: 128 },
-        { title: '未脱敏检查', status: 'success', statusText: '执行完成', infoLabel: '字段信息', infoValue: 45 },
-        { title: '数据导出审批', status: 'info', statusText: '等待中', infoLabel: '字段信息', infoValue: 0 },
-        { title: '异常行为分析', status: 'info', statusText: '等待中', infoLabel: '字段数量', infoValue: '50GB' },
-        { title: 'API权限审计', status: 'info', statusText: '等待中', infoLabel: '字段数量', infoValue: 12 }
-      ]
+      queueData: []
     }
   },
   computed: {
     displayTimelineData() {
+      const list = this.taskMonitor.timelineData.map(item => {
+        return typeof item === 'string' ? { text: item, isActive: false } : { ...item, isActive: false }
+      })
       if (this.isConnected) {
-        return [...this.taskMonitor.timelineData, { text: '正在执行中...', time: '', isActive: true }]
+        return [...list, { text: '正在执行中...', isActive: true }]
       }
-      return this.taskMonitor.timelineData
+      return list
     }
   },
   mounted() {
-    this.startTableRotation()
-    // this.connectWebSocket()
+    this.connectWebSocket()
   },
   beforeDestroy() {
-    // this.stopTableRotation()
-    // this.disconnectWebSocket()
+    this.disconnectWebSocket()
   },
   methods: {
+    getPrevVal(key) {
+      return this.cardDataPrev[key] || 0
+    },
     getStepIconClass(status) {
       const iconMap = {
         success: ['success-icon', 'el-icon-circle-check'],
+        succeed: ['success-icon', 'el-icon-circle-check'],
         progressing: ['processing-icon', 'el-icon-loading'],
         skip: ['skip-icon', 'el-icon-circle-close'],
         wait: ['skip-icon', 'el-icon-circle-close']
       }
       return ['step-icon', ...(iconMap[status] || ['skip-icon', 'el-icon-circle-close'])]
     },
+    getQueueTagType(status) {
+      const typeMap = {
+        warning: 'warning',
+        success: 'success',
+        danger: 'danger',
+        info: 'info'
+      }
+      return typeMap[status] || 'info'
+    },
     seeAll() {
       this.$router.push({
         path: 'classificationTask/hierarchicalTask',
       })
     },
-    startTableRotation() {
-      this.tableTimer = setInterval(() => {
-        this.taskMonitor.currentTableIndex = (this.taskMonitor.currentTableIndex + 1) % this.taskMonitor.tableNames.length
-      }, 3000)
-    },
-    stopTableRotation() {
-      if (this.tableTimer) {
-        clearInterval(this.tableTimer)
-      }
-    },
     connectWebSocket() {
-      this.ws = new WebSocket('ws://localhost:8080/ws/dashboard')
-      this.ws.onopen = () => {
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+      };
+      const token = getCookie('Admin-Token');
+      const protocols = token ? [`${token}`] : [];
+      const currentUrl = new URL(window.location.href);
+      const hostName = currentUrl.hostname;
+      this.socket = new WebSocket(
+        `wss://${hostName}:443/prod-api/system/homePage/websocket`, // 线上
+        // `ws://192.168.7.84:8080/system/homePage/websocket`,  // 本地
+        protocols
+      );
+      this.socket.onopen = () => {
         this.isConnected = true
       }
-      this.ws.onmessage = (event) => {
+      this.socket.onmessage = (event) => {
         const data = JSON.parse(event.data)
-        if (data.type === 'cardData') {
-          this.cardData = data.value
-        } else if (data.type === 'timeline') {
-          this.taskMonitor.timelineData = data.value
-        } else if (data.type === 'tableName') {
-          const newTableName = data.value
-          if (!this.taskMonitor.tableNames.includes(newTableName)) {
-            this.taskMonitor.tableNames.push(newTableName)
-            this.taskMonitor.currentTableIndex = this.taskMonitor.tableNames.length - 1
+        if (data.cardData) {
+          this.cardDataPrev = { ...this.cardData }
+          const normalizedCardData = { ...data.cardData }
+          if (normalizedCardData.scanPercentage !== undefined) {
+            normalizedCardData.scanPercentage = parseFloat(normalizedCardData.scanPercentage) || 0
           }
-        } else if (data.type === 'currentStep') {
-          //日志执行中
-          this.taskMonitor.timelineData.push({
-            text: '正在执行中...',
-            time: '',
-            isActive: true
-          })
+          if (normalizedCardData.assetRatio !== undefined) {
+            normalizedCardData.assetRatio = parseFloat(normalizedCardData.assetRatio) || 0
+          }
+          if (normalizedCardData.aiCoverage !== undefined) {
+            normalizedCardData.aiCoverage = parseFloat(normalizedCardData.aiCoverage) || 0
+          }
+          this.cardData = { ...this.cardData, ...normalizedCardData }
+        }
+        if (data.queueData) {
+          this.queueData = data.queueData
+        }
+        if (data.taskMonitor) {
+          if (data.taskMonitor.tableName) {
+            if (!this.taskMonitor.tableNames.includes(data.taskMonitor.tableName)) {
+              this.taskMonitor.tableNames.push(data.taskMonitor.tableName)
+              this.taskMonitor.currentTableIndex = this.taskMonitor.tableNames.length - 1
+            }
+          }
+          if (data.taskMonitor.progressCurrent !== undefined) {
+            this.taskMonitor.progressCurrent = data.taskMonitor.progressCurrent
+          }
+          if (data.taskMonitor.progressTotal !== undefined) {
+            this.taskMonitor.progressTotal = data.taskMonitor.progressTotal
+          }
+          if (data.taskMonitor.progressCurrent !== undefined && data.taskMonitor.progressTotal !== undefined) {
+            this.taskMonitor.progressPercent = Math.round((data.taskMonitor.progressCurrent / data.taskMonitor.progressTotal) * 100)
+          }
+          if (data.taskMonitor.taskSteps) {
+            for (const key in data.taskMonitor.taskSteps) {
+              if (this.taskMonitor.taskSteps[key]) {
+                this.taskMonitor.taskSteps[key] = { ...this.taskMonitor.taskSteps[key], ...data.taskMonitor.taskSteps[key] }
+              }
+            }
+          }
+          if (data.taskMonitor.timelineData) {
+            this.taskMonitor.timelineData.push(data.taskMonitor.timelineData)
+          }
         }
       }
-      this.ws.onclose = () => {
+      this.socket.onclose = () => {
         this.isConnected = false
       }
-      this.ws.onerror = () => {
+      this.socket.onerror = () => {
         this.isConnected = false
       }
     },
     disconnectWebSocket() {
-      if (this.ws) {
-        this.ws.close()
-        this.ws = null
+      if (this.socket) {
+        this.socket.close()
+        this.socket = null
       }
     }
   }
@@ -909,6 +953,7 @@ export default {
 .timeline-text {
   line-height: 1.5;
   padding-top: 2px;
+  font-weight: 500;
 }
 
 /* ========== 任务队列样式 ========== */
