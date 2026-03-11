@@ -37,7 +37,7 @@
           </div>
           <svg-icon icon-class="home-sensitiveData-c" style="font-size: 58px; color: #f4eafd;"></svg-icon>
         </div>
-        <p class="card-label">敏感数据库 (L3/L4)</p>
+        <p class="card-label">敏感数据</p>
         <div class="card-metrics">
           <div class="metric-item sensitiveData">
             <span class="metric-key">敏感字段</span>
@@ -59,14 +59,14 @@
           </div>
           <svg-icon icon-class="home-aiAuto-c" style="font-size: 58px; color: #e8eefb;"></svg-icon>
         </div>
-        <p class="card-label">AI 自动化归档</p>
+        <p class="card-label">AI 自动化识别</p>
         <div class="card-metrics">
           <div class="metric-item aiAuto">
             <span class="metric-key">覆盖率（%）</span>
             <count-to :start-val="getPrevVal('aiCoverage')" :end-val="cardData.aiCoverage" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item aiAuto">
-            <span class="metric-key">节省工时（min）</span>
+            <span class="metric-key">节省人天</span>
             <count-to :start-val="getPrevVal('aiSaveTime')" :end-val="cardData.aiSaveTime" :duration="2000" class="metric-value" />
           </div>
         </div>
@@ -81,7 +81,7 @@
           </div>
           <svg-icon icon-class="home-analysis-c" style="font-size: 58px; color: #f9f0e5;"></svg-icon>
         </div>
-        <p class="card-label">资计分析资产</p>
+        <p class="card-label">资计分析</p>
         <div class="card-metrics">
           <div class="metric-item analysis">
             <span class="metric-key">字段</span>
@@ -379,7 +379,6 @@ export default {
       }
       this.socket.onmessage = (event) => {
         const data = JSON.parse(event.data)
-        console.log(data)
         if (data.cardData) {
           this.cardDataPrev = { ...this.cardData }
           const normalizedCardData = { ...data.cardData }
