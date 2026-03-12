@@ -148,8 +148,8 @@
           </template>
         </el-table-column>
       </el-table>
-      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :pageSize.sync="queryParams.pageSize"
-        @pagination="getList" />
+      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+        :pageSize.sync="queryParams.pageSize" @pagination="getList" />
     </el-card>
     <!-- 添加或修改数据库代理对话框 -->
     <Drawer :title="title" v-loading="formLoading" :visible.sync="open">
@@ -301,96 +301,6 @@
             </el-col>
           </el-row>
         </div> -->
-        <Title title="执行范围与周期" />
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="语义填充状态">
-              <el-select v-model="form.paddingStatus" multiple clearable placeholder="请选择内容" :disabled="isFileSource">
-                <el-option label="未开始" value="1" />
-                <el-option label="成功" value="2" />
-                <el-option label="失败" value="3" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="分类状态">
-              <el-select v-model="form.classificationState" multiple clearable placeholder="请选择内容">
-                <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
-                  :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="归类原因">
-              <el-select v-model="form.classificationReasons" multiple clearable placeholder="请选择内容">
-                <template v-if="isFileSource">
-                  <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value"
-                    :label="item.label" :value="item.value" />
-                </template>
-                <template v-else>
-                  <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
-                    :value="item.value" />
-                </template>
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="置信度" prop="confidenceLevel" :rules="rules.confidenceLevel">
-              <el-select v-model="form.confidenceLevel">
-                <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="确认状态" prop="confirm" :rules="rules.confirm">
-              <el-select v-model="form.confirm" placeholder="全部" clearable>
-                <el-option v-for="item in confirmList" :key="item.value" :label="item.name" :value="item.value">
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="执行周期" prop="executeCycle" :rules="rules.executeCycle">
-              <el-select v-model="form.scheduleType" @change="scheduleTypeChange">
-                <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
-                </el-option>
-              </el-select>
-              <el-select v-show="form.scheduleType == '2' || form.scheduleType == '3'" v-model="form.scheduleInterval">
-                <el-option v-for="item in weekList" :key="item" :label="item" :value="item">
-                </el-option>
-              </el-select>
-              <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
-                value-format='HH:mm' format="HH:mm" placeholder="任意时间点">
-              </el-time-picker>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <!-- <Title title="样本特征提取" />
-        <el-row>
-          <el-col :span="12">
-            <el-form-item prop="id" :rules="rules.id">
-              <el-switch v-model="form.ifStartFeatureExtract" active-text="是否启用" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <Title title="AI建议分类" />
-        <el-row>
-          <el-col :span="12">
-            <el-form-item prop="id" :rules="rules.id">
-              <el-switch v-model="form.ifStartAiClassifySuggest" active-text="是否启用" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <Title title="调度周期" /> -->
 
         <!-- 启用功能 -->
         <Title title="启用功能" />
@@ -469,6 +379,110 @@
           </div>
         </div>
 
+        <Title title="执行范围与周期">
+          <el-button type="text" @click="searchExpand = !searchExpand" style="float:inline-end">
+            {{ searchExpand ? '收起' : '展开' }}
+            <i :class="searchExpand ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
+          </el-button>
+        </Title>
+
+        <transition name="el-zoom-in-top">
+          <div v-show="searchExpand">
+            <el-row>
+              <el-col :span="24">
+                <el-form-item label="语义填充状态">
+                  <el-select v-model="form.paddingStatus" multiple clearable placeholder="请选择内容"
+                    :disabled="isFileSource">
+                    <el-option label="未开始" value="1" />
+                    <el-option label="成功" value="2" />
+                    <el-option label="失败" value="3" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="分类状态">
+                  <el-select v-model="form.classificationState" multiple clearable placeholder="请选择内容">
+                    <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
+                      :value="item.value" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="归类原因">
+                  <el-select v-model="form.classificationReasons" multiple clearable placeholder="请选择内容">
+                    <template v-if="isFileSource">
+                      <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value"
+                        :label="item.label" :value="item.value" />
+                    </template>
+                    <template v-else>
+                      <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value"
+                        :label="item.label" :value="item.value" />
+                    </template>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="置信度" prop="confidenceLevel" :rules="rules.confidenceLevel">
+                  <el-select v-model="form.confidenceLevel">
+                    <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="确认状态" prop="confirm" :rules="rules.confirm">
+                  <el-select v-model="form.confirm" placeholder="全部" clearable>
+                    <el-option v-for="item in confirmList" :key="item.value" :label="item.name" :value="item.value">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="24">
+                <el-form-item label="执行周期" prop="executeCycle" :rules="rules.executeCycle">
+                  <el-select v-model="form.scheduleType" @change="scheduleTypeChange">
+                    <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
+                    </el-option>
+                  </el-select>
+                  <el-select v-show="form.scheduleType == '2' || form.scheduleType == '3'"
+                    v-model="form.scheduleInterval">
+                    <el-option v-for="item in weekList" :key="item" :label="item" :value="item">
+                    </el-option>
+                  </el-select>
+                  <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''"
+                    v-model="form.scheduleTime" value-format='HH:mm' format="HH:mm" placeholder="任意时间点">
+                  </el-time-picker>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </div>
+        </transition>
+
+        <!-- <Title title="样本特征提取" />
+        <el-row>
+          <el-col :span="12">
+            <el-form-item prop="id" :rules="rules.id">
+              <el-switch v-model="form.ifStartFeatureExtract" active-text="是否启用" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <Title title="AI建议分类" />
+        <el-row>
+          <el-col :span="12">
+            <el-form-item prop="id" :rules="rules.id">
+              <el-switch v-model="form.ifStartAiClassifySuggest" active-text="是否启用" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <Title title="调度周期" /> -->
+
       </el-form>
       <div slot="footer" class="dialog-footer" style="display: flex;justify-content: flex-end;">
         <el-button type="primary" plain @click="submitForm">确 定</el-button>
@@ -514,6 +528,7 @@ export default {
       drawerData: null,
       mainLoading: false,
       editIsFlag: false,
+      searchExpand: false,
       // aiAnalyticsEngine: '1',
       confidenceLevelList: [
         { name: "全部", value: "0" },
@@ -696,7 +711,7 @@ export default {
     const targetPath = to.path || '';
     const jobWorkPaths = ['/viewResults', '/fixResults'];
     const isNavigatingWithinJobWork = jobWorkPaths.some(path => targetPath.startsWith(path));
-    
+
     if (!isNavigatingWithinJobWork) {
       sessionStorage.removeItem('hierarchicalTask_queryParams');
       sessionStorage.removeItem('prevPage');
