@@ -972,7 +972,13 @@ export default {
       this.form = {}
       // this.aiAnalyticsEngine = "1"
       this.form.projectName = ''
-      this.$set(this.form, 'piiDetectionFlag', false)
+      this.$set(this.form, 'piiDetectionFlag', true)
+      this.$set(this.form, 'ifStartRuleMatching', true)
+      this.$set(this.form, 'ifStartAiFill', true)
+      this.$set(this.form, 'ifStartTask', true)
+      this.$set(this.form, 'ifStartFeatureExtract', true)
+      this.$set(this.form, 'ifStartAiClassifySuggest', true)
+      this.$set(this.form, 'ifStartDirtyDataFilter', true)
       this.$set(this.form, 'confidenceLevel', "0")
       this.$set(this.form, 'classificationLogic', "3")
       this.$set(this.form, 'confirm', "-1")
