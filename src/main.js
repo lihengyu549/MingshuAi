@@ -40,6 +40,8 @@ import DictTag from '@/components/DictTag'
 import VueMeta from 'vue-meta'
 // 字典数据组件
 import DictData from '@/components/DictData'
+// 引入 i18n 多语言
+import i18n from '@/i18n'
 
 // 动态导入 components 目录下的所有 .vue 文件
 const requireComponent = require.context(
@@ -123,5 +125,6 @@ new Vue({
   el: '#app',
   router,
   store,
+  i18n,
   render: h => h(App)
 })

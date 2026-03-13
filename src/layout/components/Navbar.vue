@@ -21,10 +21,10 @@
           <el-dropdown-menu slot="dropdown" class="export-dropdown-menu">
             <div class="export-list">
               <div v-if="loading" class="loading-container">
-                <i class="el-icon-loading"></i> 加载中...
+                <i class="el-icon-loading"></i> {{ $t('navbar.loading') }}
               </div>
               <div v-else-if="exportRecords.length === 0" class="empty-container">
-                暂无导出记录
+                {{ $t('navbar.noExportRecords') }}
               </div>
               <div v-else>
                 <div v-for="record in exportRecords" :key="record.id" class="export-item"
@@ -37,15 +37,15 @@
                     <div class="file-status">
                       <!-- 正在导出 -->
                       <div v-if="record.status === '2'" class="status-processing">
-                        <span>正在导出...</span>
+                        <span>{{ $t('navbar.statusProcessing') }}</span>
                       </div>
                       <!-- 导出超时 -->
                       <div v-else-if="record.status === '5'" class="status-timeout">
-                        导出超时
+                        <span>{{ $t('navbar.statusTimeout') }}</span>
                       </div>
                       <!-- 导出失败 -->
                       <div v-else-if="record.status === '4'" class="status-failed">
-                        导出失败
+                        <span>{{ $t('navbar.statusFailed') }}</span>
                       </div>
                       <!-- 导出完成 -->
                       <div v-else-if="record.status === '3'" class="status-completed">
@@ -62,7 +62,7 @@
             </div>
             <div class="dropdown-footer">
               <el-button type="text" class="view-all-btn" @click.stop="viewAllRecords" command="viewAll">
-                查看完整导出记录 <i class="el-icon-right"></i>
+                <span>{{ $t('navbar.viewAllRecords') }}</span> <i class="el-icon-right"></i>
               </el-button>
             </div>
           </el-dropdown-menu>
@@ -74,17 +74,17 @@
             <i class="el-icon-s-tools settings-icon"></i>
           </div>
           <el-dropdown-menu slot="dropdown" class="settings-dropdown-menu">
-            <el-dropdown-item class="settings-item">
+            <el-dropdown-item class="settings-item" @click.native="openSettings">
               <i class="el-icon-s-tools settings-item-icon"></i>
-              <span>通用设置</span>
+              <span>{{ $t('navbar.settings') }}</span>
             </el-dropdown-item>
-            <el-dropdown-item class="settings-item">
+            <el-dropdown-item class="settings-item" @click.native="handleSetLanguage(language === 'zh' ? 'en' : 'zh')">
               <i class="el-icon-s-help settings-item-icon"></i>
               <span>语言 / Language</span>
             </el-dropdown-item>
             <el-dropdown-item class="settings-item settings-item-danger" divided>
               <i class="el-icon-refresh-left settings-item-icon danger"></i>
-              <span>恢复初始配置</span>
+              <span>{{ $t('navbar.restore') }}</span>
             </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
@@ -109,12 +109,12 @@
           <router-link to="/user/profile">
             <el-dropdown-item class="user-menu-item" divided>
               <i class="el-icon-user user-menu-icon"></i>
-              <span>个人中心</span>
+              <span>{{ $t('navbar.profile') }}</span>
             </el-dropdown-item>
           </router-link>
           <el-dropdown-item class="user-menu-item user-menu-item-danger" divided @click.native="logout">
             <i class="el-icon-switch-button user-menu-icon danger"></i>
-            <span>退出登录</span>
+            <span>{{ $t('navbar.logout') }}</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -173,6 +173,9 @@ export default {
     navbarChildren() {
       return this.$store.state.tagsView.navbarChildren || []
     },
+    language() {
+      return this.$store.state.app.language
+    }
   },
   watch: {
     $route() {
@@ -302,6 +305,14 @@ export default {
       if (command === 'viewAll') {
         this.viewAllRecords()
       }
+    },
+    handleSetLanguage(lang) {
+      this.$i18n.locale = lang
+      this.$store.dispatch('app/setLanguage', lang)
+      this.$message.success(this.$t('navbar.switchSuccess'))
+    },
+    openSettings() {
+      this.$router.push({ path: '/system/setting' })
     }
   }
 }
@@ -624,6 +635,18 @@ export default {
       font-size: 12px;
     }
   }
+}
+
+.lang-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.current-lang {
+  margin-left: auto;
+  color: #409eff;
+  font-weight: 500;
 }
 
 /* 设置下拉菜单样式 */

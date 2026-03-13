@@ -9,21 +9,21 @@
           </div>
           <svg-icon icon-class="home-dataAsset-c" style="font-size: 58px; color: #e8eefb;"></svg-icon>
         </div>
-        <p class="card-label">数据资产分布</p>
+        <p class="card-label">{{ $t('home.dataAssetDistribution') }}</p>
         <div class="card-metrics">
           <div class="metric-item dataAsset">
-            <span class="metric-key">数据表</span>
+            <span class="metric-key">{{ $t('home.dataTable') }}</span>
             <count-to :start-val="getPrevVal('dataTable')" :end-val="cardData.dataTable" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item dataAsset">
-            <span class="metric-key">文件数</span>
+            <span class="metric-key">{{ $t('home.fileNum') }}</span>
             <count-to :start-val="getPrevVal('fileNum')" :end-val="cardData.fileNum" :duration="2000" class="metric-value" />
           </div>
         </div>
         <div class="scan-progress-wrapper">
           <el-progress :percentage="cardData.scanPercentage" :show-text="false" />
           <div class="scan-progress-text">
-            <span class="scan-label">扫描进度</span>
+            <span class="scan-label">{{ $t('home.scanProgress') }}</span>
             <span class="scan-percentage">{{ cardData.scanPercentage }}%</span>
           </div>
         </div>
@@ -37,18 +37,18 @@
           </div>
           <svg-icon icon-class="home-sensitiveData-c" style="font-size: 58px; color: #f4eafd;"></svg-icon>
         </div>
-        <p class="card-label">敏感数据</p>
+        <p class="card-label">{{ $t('home.sensitiveData') }}</p>
         <div class="card-metrics">
           <div class="metric-item sensitiveData">
-            <span class="metric-key">敏感字段</span>
+            <span class="metric-key">{{ $t('home.sensitiveField') }}</span>
             <count-to :start-val="getPrevVal('sensitiveField')" :end-val="cardData.sensitiveField" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item sensitiveData">
-            <span class="metric-key">敏感文件</span>
+            <span class="metric-key">{{ $t('home.sensitiveFile') }}</span>
             <count-to :start-val="getPrevVal('sensitiveFile')" :end-val="cardData.sensitiveFile" :duration="2000" class="metric-value" />
           </div>
         </div>
-        <div class="card-description">占总资产约：{{ cardData.assetRatio }}%</div>
+        <div class="card-description">{{ $t('home.assetRatio') }}：{{ cardData.assetRatio }}%</div>
       </el-card>
 
       <!-- 卡片3：AI自动化归档 -->
@@ -59,18 +59,18 @@
           </div>
           <svg-icon icon-class="home-aiAuto-c" style="font-size: 58px; color: #e8eefb;"></svg-icon>
         </div>
-        <p class="card-label">AI 自动化识别</p>
+        <p class="card-label">{{ $t('home.aiAutoRecognition') }}</p>
         <div class="card-metrics">
           <div class="metric-item aiAuto">
-            <span class="metric-key">覆盖率（%）</span>
+            <span class="metric-key">{{ $t('home.aiCoverage') }}</span>
             <count-to :start-val="getPrevVal('aiCoverage')" :end-val="cardData.aiCoverage" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item aiAuto">
-            <span class="metric-key">节省人天</span>
+            <span class="metric-key">{{ $t('home.aiSaveTime') }}</span>
             <count-to :start-val="getPrevVal('aiSaveTime')" :end-val="cardData.aiSaveTime" :duration="2000" class="metric-value" />
           </div>
         </div>
-        <div class="card-description">人工分析单条数据约3-10分钟，AI分析仅10-60秒</div>
+        <div class="card-description">{{ $t('home.aiSaveTimeDesc') }}</div>
       </el-card>
 
       <!-- 卡片4：资计分析资产 -->
@@ -81,18 +81,18 @@
           </div>
           <svg-icon icon-class="home-analysis-c" style="font-size: 58px; color: #f9f0e5;"></svg-icon>
         </div>
-        <p class="card-label">资计分析</p>
+        <p class="card-label">{{ $t('home.analysisAsset') }}</p>
         <div class="card-metrics">
           <div class="metric-item analysis">
-            <span class="metric-key">字段</span>
+            <span class="metric-key">{{ $t('home.analysisField') }}</span>
             <count-to :start-val="getPrevVal('analysisField')" :end-val="cardData.analysisField" :duration="2000" class="metric-value" />
           </div>
           <div class="metric-item analysis">
-            <span class="metric-key">文件</span>
+            <span class="metric-key">{{ $t('home.analysisFile') }}</span>
             <count-to :start-val="getPrevVal('analysisFile')" :end-val="cardData.analysisFile" :duration="2000" class="metric-value" />
           </div>
         </div>
-        <div class="card-description">高置信度 {{ cardData.analysisConfidence }}% · 人工复核 {{ cardData.analysisReview }}%
+        <div class="card-description">{{ $t('home.analysisConfidence') }}：{{ cardData.analysisConfidence }}% · {{ $t('home.analysisReview') }}：{{ cardData.analysisReview }}%
         </div>
       </el-card>
     </div>
@@ -106,9 +106,9 @@
             <div slot="header" class="monitor-header">
               <span class="monitor-title">
                 <svg-icon icon-class="home-taskIcon" style="font-size: 22px;"></svg-icon>
-                任务监控
+                {{ $t('home.taskMonitor') }}
               </span>
-              <span class="header-link">实时流传输中</span>
+              <span class="header-link">{{ $t('home.realTimeTransmission') }}</span>
             </div>
 
             <div class="monitor-content">
@@ -116,7 +116,7 @@
               <div class="monitor-left">
                 <!-- 表格部分 -->
                 <div class="table-section">
-                  <h4 class="section-title">正在处理的表</h4>
+                  <h4 class="section-title">{{ $t('home.currentlyProcessingTable') }}</h4>
                   <div class="table-item-wrapper">
                     <transition name="slide-up" mode="out-in">
                       <span :key="taskMonitor.currentTableIndex" class="table-item-name">{{
@@ -133,7 +133,7 @@
                       <div class="step-item-content">
                         <i :class="getStepIconClass(taskMonitor.taskSteps.step1.status)"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">噪音数据过滤</span>
+                          <span class="step-text-main">{{ $t('home.noiseDataFilter') }}</span>
                           <span class="step-text-sub">{{ taskMonitor.taskSteps.step1.textSub }}</span>
                         </div>
                       </div>
@@ -142,7 +142,7 @@
                       <div class="step-item-content">
                         <i :class="getStepIconClass(taskMonitor.taskSteps.step2.status)"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">语义填充</span>
+                          <span class="step-text-main">{{ $t('home.semanticFilling') }}</span>
                           <span class="step-text-sub">{{ taskMonitor.taskSteps.step2.textSub }}</span>
                         </div>
                       </div>
@@ -151,7 +151,7 @@
                       <div class="step-item-content">
                         <i :class="getStepIconClass(taskMonitor.taskSteps.step3.status)"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">匹配规则</span>
+                          <span class="step-text-main">{{ $t('home.matchingRules') }}</span>
                           <span class="step-text-sub">{{ taskMonitor.taskSteps.step3.textSub }}</span>
                         </div>
                       </div>
@@ -160,7 +160,7 @@
                       <div class="step-item-content">
                         <i :class="getStepIconClass(taskMonitor.taskSteps.step4.status)"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">AI 分类打标</span>
+                          <span class="step-text-main">{{ $t('home.aiClassificationLabeling') }}</span>
                           <span class="step-text-sub">{{ taskMonitor.taskSteps.step4.textSub }}</span>
                         </div>
                       </div>
@@ -169,7 +169,7 @@
                       <div class="step-item-content">
                         <i :class="getStepIconClass(taskMonitor.taskSteps.step5.status)"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">个人信息识别</span>
+                          <span class="step-text-main">{{ $t('home.personalInformationRecognition') }}</span>
                           <span class="step-text-sub">{{ taskMonitor.taskSteps.step5.textSub }}</span>
                         </div>
                       </div>
@@ -178,7 +178,7 @@
                       <div class="step-item-content">
                         <i :class="getStepIconClass(taskMonitor.taskSteps.step6.status)"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">样本特征提取</span>
+                          <span class="step-text-main">{{ $t('home.sampleFeatureExtraction') }}</span>
                           <span class="step-text-sub">{{ taskMonitor.taskSteps.step6.textSub }}</span>
                         </div>
                       </div>
@@ -192,7 +192,7 @@
                 <!-- 进度条部分 -->
                 <div class="progress-section" style="flex-shrink: 0; display: flex; flex-direction: column;">
                   <div class="progress-box">
-                    <span class="progress-title">整体进度</span>
+                    <span class="progress-title">{{ $t('home.progress') }}</span>
                     <span class="progress-info">{{ taskMonitor.progressCurrent }}/{{ taskMonitor.progressTotal }} ({{
                       taskMonitor.progressPercent }}%)</span>
                   </div>
@@ -225,7 +225,7 @@
           <el-card class="queue-card" shadow="hover">
             <div slot="header" class="queue-header">
               <span class="queue-title">
-                任务队列
+                {{ $t('home.taskQueue') }}
               </span>
             </div>
 
@@ -241,7 +241,7 @@
                   <span class="queue-item-info">{{ item.infoLabel }}：{{ item.infoValue }}</span>
                 </div>
               </div>
-              <el-button type="text" class="queue-footer" @click="seeAll">查看全部结果</el-button>
+              <el-button type="text" class="queue-footer" @click="seeAll">{{ $t('home.seeAllResults') }}</el-button>
             </div>
           </el-card>
         </el-col>
@@ -296,12 +296,12 @@ export default {
         progressTotal: 0,
         progressPercent: 0,
         taskSteps: {
-          step1: { textMain: '噪音数据过滤', status: 'wait', textSub: '等待中' },
-          step2: { textMain: '语义填充', status: 'wait', textSub: '等待中' },
-          step3: { textMain: '匹配规则', status: 'wait', textSub: '等待中' },
-          step4: { textMain: 'AI分类打标', status: 'wait', textSub: '等待中' },
-          step5: { textMain: '个人信息识别', status: 'wait', textSub: '等待中' },
-          step6: { textMain: '样本特征提取', status: 'wait', textSub: '等待中' }
+          step1: { status: 'wait', textSub: '等待中' },
+          step2: { status: 'wait', textSub: '等待中' },
+          step3: { status: 'wait', textSub: '等待中' },
+          step4: { status: 'wait', textSub: '等待中' },
+          step5: { status: 'wait', textSub: '等待中' },
+          step6: { status: 'wait', textSub: '等待中' }
         },
         timelineData: []
       },
