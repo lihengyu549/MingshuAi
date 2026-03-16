@@ -1,4 +1,7 @@
 export default {
+  noData: 'No data',
+  confirm: 'Confirm',
+  cancel: 'Cancel',
   navbar: {
     title: 'Language Switch',
     language: 'Language',
@@ -44,5 +47,28 @@ export default {
     progress: 'Overall Progress',
     taskQueue: 'Task Queue',
     seeAllResults: 'See All Results',
+  },
+  management: {
+    standardName: 'Standard Name',
+    standardType: 'Standard Type',
+    industryCategory: 'Industry Category',
+    source: 'Source',
+    implementTime: 'Implement Time',
+    import: 'Import',
+    current: 'Current',
+    implement: 'Implement',
+    delete: 'Delete',
+    edit: 'Edit',
+    detail: 'Detail',
+    standardDescription: 'Standard Description',
+    selectFile: 'Select File',
+    selectFileType: 'Supports importing files in EXCEL format (.xls, .xlsx)',
+    downloadSample: 'Download Sample',
+    standardTypeRequired: 'Standard Type is required',
+    standardDescriptionRequired: 'Standard Description is required',
+    standardNameRequired: 'Standard Name is required',
+    sourceRequired: 'Source is required',
+    industryCategoryRequired: 'Industry Category is required',
+    importFileRequired: 'Import File is required',
   }
 }

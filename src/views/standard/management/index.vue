@@ -9,19 +9,19 @@
         <el-input v-model="queryParams.standardDescription" @input="inputSearch" placeholder="请输入标准编号" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item> -->
-        <el-form-item label="标准名称" prop="standardName">
-          <el-input v-model="queryParams.standardName" @input="inputSearch" placeholder="请输入标准名称" clearable
+        <el-form-item :label="$t('management.standardName')" prop="standardName">
+          <el-input v-model="queryParams.standardName" @input="inputSearch" :placeholder="$t('management.standardName')" clearable
             @keyup.enter.native="handleQuery" />
         </el-form-item>
-        <el-form-item label="标准类型" prop="standardType">
-          <el-select clearable v-model="queryParams.standardType" @change="inputSearch" placeholder="请选择">
+        <el-form-item :label="$t('management.standardType')" prop="standardType">
+          <el-select clearable v-model="queryParams.standardType" @change="inputSearch" :placeholder="$t('management.standardType')">
             <el-option v-for="item in dict.type.sys_standard_type" :key="item.value" :label="item.label"
               :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="行业类别" prop="industryCategory">
-          <el-input v-model="queryParams.industryCategory" @input="inputSearch" placeholder="请输入行业类别" clearable
+        <el-form-item :label="$t('management.industryCategory')" prop="industryCategory">
+          <el-input v-model="queryParams.industryCategory" @input="inputSearch" :placeholder="$t('management.industryCategory')" clearable
             @keyup.enter.native="handleQuery" />
         </el-form-item>
         <!-- <el-form-item class="searchBtn">
@@ -32,7 +32,9 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="managementImport">标准导入</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="managementImport">
+          {{ $t('management.import') }}
+        </el-button>
         <!-- <el-button type="primary" plain size="medium" @click="push">智能生成</el-button> -->
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
@@ -48,7 +50,7 @@
             <!-- </el-tooltip> -->
             <div class="card-tags">
               <el-tag size="small" type="primary">{{ item.standardTypeName }}</el-tag>
-              <el-tag size="small" type="info">现行</el-tag>
+              <el-tag size="small" type="info">{{ $t('management.current') }}</el-tag>
               <el-tag size="small" type="info">{{ item.dataSource }}</el-tag>
             </div>
           </div>
@@ -56,23 +58,23 @@
         <p class="card-desc" style="flex: 1;">{{ item.standardDescription || '' }}</p>
         <div class="card-info">
           <span>{{ item.industryCategory }}</span>
-          <span>{{ item.implementTime }}实施</span>
+          <span>{{ item.implementTime }} {{ $t('management.implement') }}</span>
         </div>
         <div class="card-actions">
           <el-button type="text" size="small" class="btn-delete" @click="deleteFn(item)">
-            <i class="el-icon-delete"></i> 删除
+            <i class="el-icon-delete"></i> {{ $t('management.delete') }}
           </el-button>
           <el-button type="text" size="small" class="btn-primary" :disabled="item.dataSource === '内置'"
             @click="editFn(item)">
-            <i class="el-icon-edit-outline"></i> 编辑
+            <i class="el-icon-edit-outline"></i> {{ $t('management.edit') }}
           </el-button>
           <el-button type="text" size="small" class="btn-primary" @click="detailFn(item)">
-            <i class="el-icon-warning-outline"></i> 查看详情
+            <i class="el-icon-warning-outline"></i> {{ $t('management.detail') }}
           </el-button>
         </div>
       </el-card>
       <div v-if="proxysList.length == 0" style="margin: 0 auto;">
-        <el-empty description="暂无数据"></el-empty>
+        <el-empty :description="$t('noData')"></el-empty>
       </div>
     </div>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :pageSizes="[8]"
@@ -83,13 +85,13 @@
       <el-form ref="addForm" :model="form" :rules="rules" label-width="auto" @submit.native.prevent class="importForm"
         label-position="top">
         <!-- <Title title="基本信息" /> -->
-        <el-form-item label="标准名称" prop="categoryName" :rules="rules.tasksName">
-          <el-input v-model="form.categoryName" maxlength="50" placeholder="请输入标准名称" />
+        <el-form-item :label="$t('management.standardName')" prop="categoryName" :rules="rules.tasksName">
+          <el-input v-model="form.categoryName" maxlength="50" :placeholder="$t('management.standardName')" />
         </el-form-item>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="标准类型" prop="standardType">
-              <el-select clearable v-model="form.standardType" @change="inputSearch" placeholder="请选择">
+            <el-form-item :label="$t('management.standardType')" prop="standardType">
+              <el-select clearable v-model="form.standardType" @change="inputSearch" :placeholder="$t('management.standardType')">
                 <el-option v-for="item in dict.type.sys_standard_type" :key="item.value" :label="item.label"
                   :value="item.value">
                 </el-option>
@@ -97,40 +99,40 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="行业类别" prop="industryCategory">
-              <el-input v-model="form.industryCategory" maxlength="50" placeholder="请输入行业类别" />
+            <el-form-item :label="$t('management.industryCategory')" prop="industryCategory">
+              <el-input v-model="form.industryCategory" maxlength="50" :placeholder="$t('management.industryCategory')" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="标准来源" prop="source">
-              <el-input v-model="form.source" maxlength="50" placeholder="请输入来源" />
+            <el-form-item :label="$t('management.source')" prop="source">
+              <el-input v-model="form.source" maxlength="50" :placeholder="$t('management.source')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="标准实施时间" prop="implementTime">
+            <el-form-item :label="$t('management.implementTime')" prop="implementTime">
               <el-date-picker class="managementDate" v-model="form.implementTime" type="date" value-format="yyyy-MM-dd"
-                format="yyyy-MM-dd" placeholder="选择日期">
+                format="yyyy-MM-dd" :placeholder="$t('management.implementTime')">
               </el-date-picker>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col>
-            <el-form-item label="标准描述" prop="standardDescription" :rules="rules.tasksName">
-              <el-input type="textarea" v-model="form.standardDescription" maxlength="1000" placeholder="请输入标准描述" />
+            <el-form-item :label="$t('management.standardDescription')" prop="standardDescription" :rules="rules.tasksName">
+              <el-input type="textarea" v-model="form.standardDescription" maxlength="1000" :placeholder="$t('management.standardDescription')" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col>
-            <el-form-item label="导入标准" prop="importFile" class="uploadClassName">
-              <el-input v-model="form.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
+            <el-form-item :label="$t('management.import')" prop="importFile" class="uploadClassName">
+              <el-input v-model="form.importFile" readonly :placeholder="$t('management.selectFileType')"></el-input>
               <el-upload ref="uploadRef" class="upload-demoupload-demo" :limit="1" :file-list="fileList"
                 :auto-upload="false" :http-request="submitForm" action="" accept=".xls,.xlsx" :show-file-list="false"
                 :on-change="handleFileChange" :on-exceed="handleFileExceed">
-                <el-button size="mini" type="primary" plain>选择文件</el-button>
+                <el-button size="mini" type="primary" plain>{{ $t('management.selectFile') }}</el-button>
               </el-upload>
             </el-form-item>
           </el-col>
@@ -138,10 +140,10 @@
       </el-form>
       <div class="drawer-footer">
         <el-button style="margin-left: 15px;" size="small" type="text" @click="downloadFile" id="btnDownload"
-          icon="el-icon-download">样例下载</el-button>
+          icon="el-icon-download">{{ $t('management.downloadSample') }}</el-button>
         <div slot="footer" class="dialog-footer">
-          <el-button type="primary" plain @click="submitForm">确 定</el-button>
-          <el-button @click="closeFn">取消</el-button>
+          <el-button type="primary" plain @click="submitForm">{{ $t('confirm') }}</el-button>
+          <el-button @click="closeFn">{{ $t('cancel') }}</el-button>
         </div>
       </div>
     </el-dialog>
@@ -252,25 +254,25 @@ export default {
       // 表单校验
       rules: {
         standardType: [
-          { required: true, message: "标准类型不能为空", trigger: "blur" },
+          { required: true, message: this.$t('management.standardTypeRequired'), trigger: "blur" },
         ],
         standardDescription: [
-          { required: true, message: "标准描述不能为空", trigger: "blur" },
+          { required: true, message: this.$t('management.standardDescriptionRequired'), trigger: "blur" },
         ],
         categoryName: [{
-          required: true, message: "标准名称不能为空", trigger: "blur"
+          required: true, message: this.$t('management.standardNameRequired'), trigger: "blur"
         }],
         // implementTime: [{
         //   required: true, message: "实施时间不能为空", trigger: "blur"
         // }],
         source: [{
-          required: true, message: "来源不能为空", trigger: "blur"
+          required: true, message: this.$t('management.sourceRequired'), trigger: "blur"
         }],
         industryCategory: [{
-          required: true, message: "行业类别不能为空", trigger: "blur"
+          required: true, message: this.$t('management.industryCategoryRequired'), trigger: "blur"
         }],
         importFile: [{
-          required: true, validator: this.validateRuleContent, message: "请上传导入标准文件", trigger: "blur"
+          required: true, validator: this.validateRuleContent, message: this.$t('management.importFileRequired'), trigger: "blur"
         }],
       },
       debounceTimeout: null,

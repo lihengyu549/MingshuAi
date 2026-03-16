@@ -1,4 +1,7 @@
 export default {
+  noData: '暂无数据',
+  confirm: '确认',
+  cancel: '取消',
   navbar: {
     title: '语言切换',
     language: '语言 / Language',
@@ -44,5 +47,29 @@ export default {
     progress: '整体进度',
     taskQueue: '任务队列',
     seeAllResults: '查看所有结果',
+  },
+  management: {
+    standardName: '标准名称',
+    standardType: '标准类型',
+    industryCategory: '行业类别',
+    source: '标准来源',
+    implementTime: '标准实施时间',
+    import: '标准导入',
+    current: '现行',
+    implement: '实施',
+    delete: '删除',
+    edit: '编辑',
+    detail: '查看详情',
+    standardDescription: '标准描述',
+    selectFile: '选择文件',
+    selectFileType: '支持EXCEL格式文件导入（.xls, .xlsx)',
+    downloadSample: '下载样例',
+    standardTypeRequired: '标准类型不能为空',
+    standardDescriptionRequired: '标准描述不能为空',
+    standardNameRequired: '标准名称不能为空',
+    sourceRequired: '标准来源不能为空',
+    industryCategoryRequired: '行业类别不能为空',
+    importFileRequired: '导入文件不能为空',
   }
+  
 }

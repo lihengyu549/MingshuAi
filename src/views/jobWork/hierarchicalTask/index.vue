@@ -1753,7 +1753,7 @@ export default {
 }
 
 .feature-container {
-  margin-bottom: 20px;
+  margin-bottom: 40px;
 }
 
 .feature-grid {
