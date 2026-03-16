@@ -3,10 +3,10 @@
         <!-- 首屏输入区域 -->
         <div class="input-section" :class="{ 'fade-out': !showInputSection }">
             <div class="input-tip"><img :src="$store.state.user.projectData.img"
-                    class="sidebar-logo" />请您输入需要定制分类标准的企业名称。</div>
+                    class="sidebar-logo" />{{ $t('hierarchicalStructure.enterpriseName') }}</div>
             <div class="input-wrapper" @click="focusInput" :class="{ 'input-focus': isInputFocused }">
                 <el-input ref="enterpriseInput" v-model="form.enterpriseName" class="enterprise-name-input"
-                    placeholder="给 MingShu 发送消息" :class="{ 'input-focus': isInputFocused }"
+                    :placeholder="$t('hierarchicalStructure.enterpriseNamePlaceholder')" :class="{ 'input-focus': isInputFocused }"
                     @focus="isInputFocused = true" @blur="isInputFocused = false" clearable></el-input>
                 <el-button type="primary" @click="handleSend" :disabled="!form.enterpriseName.trim() || isSending"
                     :loading="isSending" size="small" class="send-btn">
@@ -20,7 +20,7 @@
             <div class="main-content">
                 <div class="chat-header">
                     <i class="el-icon-monitor"></i>
-                    <span>业务结构预览</span>
+                    <span>{{ $t('hierarchicalStructure.structurePreview') }}</span>
                 </div>
                 <div id="mindMapContainer">
                 </div>
@@ -30,7 +30,7 @@
                 <!-- 聊天记录区域 -->
                 <div class="chat-header">
                     <i class="el-icon-chat-line-round"></i>
-                    <span>智能助手</span>
+                    <span>{{ $t('hierarchicalStructure.smartAssistant') }}</span>
                 </div>
                 <div class="chat-messages" ref="chatScroll">
                     <!-- 聊天消息项 -->
@@ -54,7 +54,7 @@
 
                 <!-- 输入框和嵌入按钮 -->
                 <div class="chat-input-container">
-                    <el-input v-model="chatInput" placeholder="给MingShu发送指令"
+                    <el-input v-model="chatInput" :placeholder="$t('hierarchicalStructure.enterpriseNamePlaceholder')"
                         :disabled="isGenerating || generationCompleted" @keyup.enter.native="sendChatMessage"
                         style="position: relative;">
                         <!-- 正在生成时显示停止按钮 -->
