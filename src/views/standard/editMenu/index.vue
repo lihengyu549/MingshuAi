@@ -3,10 +3,10 @@
         <div class="page-title">分类管理</div>
         <!-- 新增搜索和展开控件区域 -->
         <div class="tree-controls">
-            <el-input v-model="searchKeyword" placeholder="搜索节点名称" clearable size="small" class="search-input"
+            <el-input v-model="searchKeyword" :placeholder="$t('editMenu.searchNodeName')" clearable size="small" class="search-input"
                 @input="handleSearch"></el-input>
             <el-button type="primary" plain size="small" @click="toggleExpandAll">
-                {{ isAllExpanded ? '一键折叠' : '一键展开' }}
+                {{ isAllExpanded ? $t('editMenu.collapseAll') : $t('editMenu.expandAll') }}
             </el-button>
         </div>
         <div class="tree-container" v-loading="treeLoading">
@@ -28,55 +28,55 @@
                     <span class="node-actions">
                         <el-button type="text" v-show="data.nodeLayerIndex !== 3" size="mini" class="action-btn add-btn"
                             @click.stop="() => openAddEditDialog(data, 'add')">
-                            增加
+                            {{ $t('editMenu.addCategory') }}
                         </el-button>
                         <el-button type="text" v-show="data.nodeLayerIndex !== 0" size="mini"
                             class="action-btn edit-btn" @click.stop="() => openAddEditDialog(data, 'edit')">
-                            编辑
+                            {{ $t('editMenu.editCategory') }}
                         </el-button>
                         <el-button type="text" v-show="data.nodeLayerIndex !== 0" size="mini"
                             class="action-btn delete-btn" @click.stop="() => remove(node, data)">
-                            删除
+                            {{ $t('editMenu.deleteCategory') }}
                         </el-button>
                     </span>
                 </span>
             </el-tree>
         </div>
         <div class="page-actions">
-            <el-button type="primary" plain @click="goBack">返回</el-button>
+            <el-button type="primary" plain @click="goBack">{{ $t('editMenu.back') }}</el-button>
         </div>
 
         <!-- 新增/编辑分类Dialog -->
-        <el-dialog class="edit-menu-dialog" title="编辑分类" :visible.sync="dialogVisible" width="500px"
+        <el-dialog class="edit-menu-dialog" :title="$t('editMenu.editCategory')" :visible.sync="dialogVisible" width="500px"
             :before-close="handleDialogClose" :close-on-click-modal="false">
             <el-form ref="categoryForm" :model="formData" :rules="formRules" label-width="100px" class="category-form"
                 label-position="top">
                 <!-- 名称输入框 -->
-                <el-form-item label="名称" prop="name">
-                    <el-input v-model="formData.name" placeholder="请输入分类名称" maxlength="15" show-word-limit
+                <el-form-item :label="$t('editMenu.categoryName')" prop="name">
+                    <el-input v-model="formData.name" :placeholder="$t('editMenu.categoryName')" maxlength="15" show-word-limit
                         size="small"></el-input>
                 </el-form-item>
 
                 <!-- 描述输入框 -->
-                <el-form-item label="描述" prop="categoryDescribe">
-                    <el-input v-model="formData.categoryDescribe" placeholder="请输入分类描述（可选）" maxlength="255"
+                <el-form-item :label="$t('editMenu.categoryDescribe')" prop="categoryDescribe">
+                    <el-input v-model="formData.categoryDescribe" :placeholder="$t('editMenu.categoryDescribe')" maxlength="255"
                         show-word-limit type="textarea" rows="3" size="small"></el-input>
                 </el-form-item>
 
                 <!-- 特征标签组件 -->
-                <el-form-item label="主题词表" prop="coreTags">
+                <el-form-item :label="$t('editMenu.coreTags')" prop="coreTags">
                     <el-tag v-for="(tag, index) in formData.coreTags" :key="index" closable :disable-transitions="false"
                         @close="handleTagClose('coreTags', index)">
                         {{ tag }}
                     </el-tag>
                     <el-input v-if="formData.coreTagsInputVisible" v-model="formData.coreTagsInputValue"
                         ref="coreTagsInput" size="small" @blur="handleInputBlur('coreTags')"
-                        @keyup.enter="handleInputConfirm('coreTags')" placeholder="请输入标签"></el-input>
+                        @keyup.enter="handleInputConfirm('coreTags')" :placeholder="$t('editMenu.coreTags')"></el-input>
                     <el-button v-else size="small" icon="el-icon-plus" @click="handleInputShow('coreTags')" type="text">
-                        新增
+                        {{ $t('editMenu.addTag') }}
                     </el-button>
                     <div class="tag-count-tip" v-if="formData.coreTags.length > 0">
-                        已选择 {{ formData.coreTags.length }}/40 个标签
+                        {{ $t('editMenu.selectedTags') }} {{ formData.coreTags.length }}/40 {{ $t('editMenu.tags') }}
                     </div>
                 </el-form-item>
 
@@ -146,8 +146,8 @@
             </el-form>
 
             <div slot="footer" class="dialog-footer">
-                <el-button size="small" type="primary" plain @click="submitAddEditForm">保存</el-button>
-                <el-button size="small" @click="dialogVisible = false">取消</el-button>
+                <el-button size="small" type="primary" plain @click="submitAddEditForm">{{ $t('confirm') }}</el-button>
+                <el-button size="small" @click="dialogVisible = false">{{ $t('cancel') }}</el-button>
             </div>
         </el-dialog>
     </div>
@@ -156,7 +156,7 @@
 import { addCategory, updateCategory, deleteCategory } from "@/api/standard";
 import { treeListI } from "@/api/system/protectCategory";
 export default {
-    name: "MenuEdit",
+    name: "EditMenu",
     data() {
         return {
             loading: false,
