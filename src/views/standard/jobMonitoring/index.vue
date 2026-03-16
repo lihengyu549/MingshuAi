@@ -12,7 +12,7 @@
             </el-select>
           </div>
           <div class="head-container" v-loading="treeLoading">
-            <el-input class="serachInput" v-model="filterName" placeholder="搜索树节点..." clearable />
+            <el-input class="serachInput" v-model="filterName" :placeholder="$t('jobMonitoring.searchTreeNodes')" clearable />
             <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
               :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
               node-key="id" highlight-current @node-click="handleNodeClick" :render-content="renderContent">
@@ -25,67 +25,73 @@
         <el-card class="search-card" shadow="never">
           <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="false"
             v-show="showSearch" label-width="auto">
-            <el-form-item label="子类名称" prop="name">
-              <el-input v-model="queryParams.name" @input="inputSearch" placeholder="请输入类名称" clearable
+            <el-form-item :label="$t('jobMonitoring.subclassName')" prop="name">
+              <el-input v-model="queryParams.name" @input="inputSearch" :placeholder="$t('jobMonitoring.subclassName')" clearable
                 @keyup.enter.native="handleQuery" />
             </el-form-item>
-            <el-form-item label="确认防护措施" prop="confirmProtectMethod">
+            <el-form-item :label="$t('jobMonitoring.confirmProtectMethod')" prop="confirmProtectMethod">
               <el-select v-model="queryParams.confirmProtectMethod" @change="selectProjectIdChange" multiple
-                placeholder="全部">
+                :placeholder="$t('jobMonitoring.confirmProtectMethod')">
                 <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
                   :value="item.dictLabel">
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="来源" prop="dataSourceId">
-              <el-select v-model="queryParams.dataSourceId" clearable @change="dataSourceIdIdChange" placeholder="全部"
-                :loading="loading">
+            <el-form-item :label="$t('jobMonitoring.dataSource')" prop="dataSourceId">
+              <el-select v-model="queryParams.dataSourceId" clearable @change="dataSourceIdIdChange"
+                :placeholder="$t('jobMonitoring.dataSource')" :loading="loading">
                 <el-option v-for="item in sourceList" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="安全分级" prop="levelId">
-              <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple placeholder="全部">
+            <el-form-item :label="$t('jobMonitoring.securityLevel')" prop="levelId">
+              <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple
+                :placeholder="$t('jobMonitoring.securityLevel')">
                 <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
                   :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item prop="dataOwner" label="数据持有者">
-              <el-select v-model="queryParams.dataOwner" @change="selectProjectIdChange" clearable placeholder="全部">
+            <el-form-item :label="$t('jobMonitoring.dataOwner')" prop="dataOwner">
+              <el-select v-model="queryParams.dataOwner" @change="selectProjectIdChange" clearable
+                :placeholder="$t('jobMonitoring.dataOwner')">
                 <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="直属父类" prop="baseParent">
-              <el-input v-model="queryParams.baseParent" @input="inputSearch" placeholder="请输入父类名称" clearable
+            <el-form-item :label="$t('jobMonitoring.baseParent')" prop="baseParent">
+              <el-input v-model="queryParams.baseParent" @input="inputSearch" :placeholder="$t('jobMonitoring.baseParent')" clearable
                 @keyup.enter.native="handleQuery" />
             </el-form-item>
           </el-form>
         </el-card>
         <div class="search-actions">
           <el-button type="primary" plain icon="el-icon-plus" :disabled="dataSource === '内置'" size="medium"
-            @click="addFn">新增</el-button>
+            @click="addFn">
+            {{ $t('jobMonitoring.add') }}
+          </el-button>
           <el-button type="danger" plain icon="el-icon-close" :disabled="dataSource === '内置'" size="medium"
-            @click="enabledFn('删除')">删除</el-button>
+            @click="enabledFn('删除')">
+            {{ $t('jobMonitoring.delete') }}
+          </el-button>
         </div>
         <el-card class="table-card" shadow="never">
           <el-table v-loading="loading" :data="protectTableFieldList" height="860px" ref="tableRef" class="tableBox">
             <template slot="empty">
-              <el-empty description="暂无数据"></el-empty>
+              <el-empty :description="$t('noData')"></el-empty>
             </template>
             <el-table-column type="selection" width="60" align="center">
             </el-table-column>
-            <el-table-column label="子类名称" align="left" width="140" prop="attachData" show-overflow-tooltip>
+            <el-table-column :label="$t('jobMonitoring.subclassName')" align="left" width="140" prop="attachData" show-overflow-tooltip>
               <template slot-scope="scope">
                 <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />
                 {{ scope.row.attachData }}
               </template>
             </el-table-column>
-            <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
-            <el-table-column label="建议防护措施" prop="protectMethodName" width="200">
+            <el-table-column :label="$t('jobMonitoring.securityLevel')" align="center" prop="securityLevelName" show-overflow-tooltip />
+            <el-table-column :label="$t('jobMonitoring.confirmProtectMethod')" prop="protectMethodName" width="200">
               <template slot="header">
-                <div style="text-align: center;">建议防护措施</div>
+                <div style="text-align: center;">{{ $t('jobMonitoring.confirmProtectMethod') }}</div>
               </template>
               <template slot-scope="scope">
                 <el-tag class="tagsBox custom-plain-tag" v-for="(item, index) in scope.row.protectMethodNameList"
@@ -94,10 +100,10 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="数据持有者" align="center" prop="dataOwner" show-overflow-tooltip />
-            <el-table-column label="确认防护措施" prop="confirmProtectMethod" width="200">
+            <el-table-column :label="$t('jobMonitoring.dataOwner')" align="center" prop="dataOwner" show-overflow-tooltip />
+            <el-table-column :label="$t('jobMonitoring.confirmProtectMethod')" prop="confirmProtectMethod" width="200">
               <template slot="header">
-                <div style="text-align: center;">确认防护措施</div>
+                <div style="text-align: center;">{{ $t('jobMonitoring.confirmProtectMethod') }}</div>
               </template>
               <template slot-scope="scope">
                 <el-tag class="tagsBox custom-plain-tag" v-for="item in scope.row.confirmProtectMethodList" :key="item"
@@ -107,14 +113,20 @@
               </template>
             </el-table-column>
             <!-- <el-table-column label="来源" align="center" prop="dataSource" show-overflow-tooltip /> -->
-            <el-table-column label="直属父类" align="center" prop="baseParent" show-overflow-tooltip />
-            <el-table-column label="操作" align="center" width="180">
+            <el-table-column :label="$t('jobMonitoring.baseParent')" align="center" prop="baseParent" show-overflow-tooltip />
+            <el-table-column :label="$t('jobMonitoring.operation')" align="center" width="180">
               <template slot-scope="scope">
                 <el-button type="text" size="medium"
                   :disabled="(scope.row.dataSource === '内置' || scope.row.dataOwner !== $store.state.user.name) && !$store.state.user.roles.includes('admin')"
-                  @click="editFn(scope.row)">编辑</el-button>
-                <el-button type="text" size="medium" @click="lookFn(scope.row)">查看</el-button>
-                <el-button type="text" size="medium" @click="dataFn(scope.row)">数据摸底</el-button>
+                  @click="editFn(scope.row)">
+                  {{ $t('jobMonitoring.edit') }}
+                </el-button>
+                <el-button type="text" size="medium" @click="lookFn(scope.row)">
+                  {{ $t('jobMonitoring.look') }}
+                </el-button>
+                <el-button type="text" size="medium" @click="dataFn(scope.row)">
+                  {{ $t('jobMonitoring.dataBenchmark') }}
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -128,24 +140,24 @@
       :close-on-click-modal="addOrEdit.flag == 3">
       <el-form slot="body" :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules"
         ref="addOrEdit" label-width="120px" label-position="top">
-        <Title title="基本信息"></Title>
+        <Title :title="$t('jobMonitoring.basicInformation')"></Title>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="子类名称" prop="attachData">
+            <el-form-item :label="$t('jobMonitoring.subclassName')" prop="attachData">
               <el-input v-model="addOrEditDataRuls.attachData" :disabled="addOrEdit.flag == 3"
-                @input="sonNameTestingFn(addOrEditDataRuls.attachData)" maxlength="50" placeholder="请输入子类名称"></el-input>
+                @input="sonNameTestingFn(addOrEditDataRuls.attachData)" maxlength="50" :placeholder="$t('jobMonitoring.subclassName')"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item class="addSelectClass" prop="dataOwner" label="数据持有者">
-              <el-select v-model="addOrEditDataRuls.dataOwner" placeholder="全部" :disabled="addOrEdit.flag == 3">
+            <el-form-item class="addSelectClass" prop="dataOwner" :label="$t('jobMonitoring.dataOwner')">
+              <el-select v-model="addOrEditDataRuls.dataOwner" :placeholder="$t('jobMonitoring.dataOwner')" :disabled="addOrEdit.flag == 3">
                 <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
                 </el-option>
               </el-select>
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item class="addSelectClass" label="所属父类" prop="categoryId">
+        <el-form-item class="addSelectClass" :label="$t('jobMonitoring.baseParent')" prop="categoryId">
           <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3" filterable
             :filter-method="handleAddSelectInput">
             <el-option style="height: 100%; padding: 0" value="">
@@ -155,15 +167,15 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="子类描述" prop="additional">
+        <el-form-item :label="$t('jobMonitoring.additional')" prop="additional">
           <el-input v-model="addOrEditDataRuls.additional" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             :disabled="addOrEdit.flag == 3" maxlength="500"
-            placeholder="个人财产按 “有形 / 无形”“动产 / 不动产” 可分为四大类，每类财产的信息描述需包含独特维度"></el-input>
+            :placeholder="$t('jobMonitoring.additionalPlaceholder')"></el-input>
         </el-form-item>
         <el-row>
           <el-col :span="24">
-            <el-form-item class="addSelectClass" prop="minSecurityLevel" label="安全分级">
-              <el-select v-model="addOrEditDataRuls.minSecurityLevel" placeholder="全部" :disabled="addOrEdit.flag == 3">
+            <el-form-item class="addSelectClass" :label="$t('jobMonitoring.securityLevel')" prop="minSecurityLevel">
+              <el-select v-model="addOrEditDataRuls.minSecurityLevel" :placeholder="$t('jobMonitoring.securityLevel')" :disabled="addOrEdit.flag == 3">
                 <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
                   :value="item.value">
                 </el-option>
@@ -180,7 +192,7 @@
             </el-form-item>
           </el-col> -->
         </el-row>
-        <el-form-item v-if="true" class="addSelectClass AiStudesCont" label="主题词表" prop="tags">
+        <el-form-item v-if="true" class="addSelectClass AiStudesCont" :label="$t('jobMonitoring.tags')" prop="tags">
           <div class="tagsClass" :style="tagsShow ? heightSmall : heightBig" style="width: 100%;">
             <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag + index" class="mx-1"
               :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'tags')" style="margin: 0 10px;">
@@ -191,21 +203,21 @@
               @blur="handleInputConfirm('tags')">
             </el-input>
             <el-button v-if="!inputVisible && countIs40 && addOrEdit.flag != 3" class="button-new-tag" size="small"
-              @click="showInput('tags')">+ 新增</el-button>
+              @click="showInput('tags')">{{ $t('jobMonitoring.addTag') }}</el-button>
           </div>
           <el-button class="button-new-tag" size="small" v-show="tags.length > 10" @click="tagsShow = !tagsShow">{{
-            tagsShow ? '展开' : '收起' }}</el-button>
+            tagsShow ? $t('jobMonitoring.expand') : $t('jobMonitoring.collapse') }}</el-button>
         </el-form-item>
 
-        <Title title="安全防护"></Title>
-        <el-form-item class="addSelectClass" prop="minSecurityLevel" label="建议防护措施">
+        <Title :title="$t('jobMonitoring.securityLevel')"></Title>
+        <el-form-item class="addSelectClass" :label="$t('jobMonitoring.confirmProtectMethod')" prop="minSecurityLevel">
           <el-select v-model="addOrEditDataRuls.minSecurityLevel" :disabled="true" placeholder="全部">
             <el-option v-for="item in protectMethodIdList" :key="item.dictValue" :label="item.dictLabel"
               :value="item.dictValue">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item class="addSelectClass" prop="confirmProtectMethod" label="确认防护措施">
+        <el-form-item class="addSelectClass" :label="$t('jobMonitoring.confirmProtectMethod')" prop="confirmProtectMethod">
           <el-select v-model="addOrEditDataRuls.confirmProtectMethod" multiple placeholder="全部"
             :disabled="addOrEdit.flag == 3">
             <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
@@ -290,10 +302,10 @@
               reverseRefShow ? '展开' : '收起' }}</el-button>
         </el-form-item> -->
 
-        <Title title="动态安全分级"></Title>
-        <el-form-item label="" prop="">
+        <Title :title="$t('jobMonitoring.upgradeRule')"></Title>
+        <el-form-item prop="">
           <el-switch v-model="addOrEditDataRuls.upgradeRule" @change="handleRuleSwitchChange('upgrade')"
-            active-text="升级规则" :disabled="addOrEdit.flag == 3" />
+            :active-text="$t('jobMonitoring.upgradeRule')" :disabled="addOrEdit.flag == 3" />
           <div class="table-with-actions">
             <div class="table-container">
               <el-table ref="upgradeList" style="margin-top: 10px; width: 100%" size="small"
@@ -301,19 +313,19 @@
                 @selection-change="handleUpgradeSelectionChange">
                 <el-table-column type="selection" width="45"
                   :selectable="(row, index) => addOrEditDataRuls.upgradeRule && addOrEdit.flag != 3" />
-                <el-table-column prop="ruleType" label="规则类型" width="180">
+                <el-table-column prop="ruleType" :label="$t('jobMonitoring.ruleType')" width="180">
                   <template slot-scope="scope">
                     {{ getRuleTypeLabel(scope.row.ruleType) }}
                   </template>
                 </el-table-column>
-                <el-table-column prop="matchingCondition" label="匹配条件" min-width="180" />
-                <el-table-column prop="ruleContent" label="内容" min-width="180" />
-                <el-table-column prop="securityLevel" label="安全分级" min-width="180" />
+                <el-table-column prop="matchingCondition" :label="$t('jobMonitoring.matchCondition')" min-width="180" />
+                <el-table-column prop="ruleContent" :label="$t('jobMonitoring.ruleContent')" min-width="180" />
+                <el-table-column prop="securityLevel" :label="$t('jobMonitoring.securityLevel')" min-width="180" />
               </el-table>
               <div class="import-format-tip"
                 style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #eff6ff; border: 1px solid #eee; border-radius: 4px;">
                 <i class="el-icon-warning-outline" type="info" />
-                升级规则，当同时匹配多条规则时，等级最高规则生效
+                {{ $t('jobMonitoring.upgradeRuleTip') }}
               </div>
             </div>
             <div class="vertical-actions">
@@ -332,7 +344,7 @@
         </el-form-item>
         <el-form-item label="" prop="">
           <el-switch v-model="addOrEditDataRuls.demotionRule" @change="handleRuleSwitchChange('downgrade')"
-            active-text="降级规则" :disabled="addOrEdit.flag == 3" />
+            :active-text="$t('jobMonitoring.demotionRule')" :disabled="addOrEdit.flag == 3" />
           <div class="table-with-actions">
             <div class="table-container">
               <el-table ref="demotionList" style="margin-top: 10px; width: 100%" size="small"
@@ -340,19 +352,19 @@
                 @selection-change="handleDemotionSelectionChange">
                 <el-table-column type="selection" width="45"
                   :selectable="(row, index) => addOrEditDataRuls.demotionRule && addOrEdit.flag != 3" />
-                <el-table-column prop="ruleType" label="规则类型" width="180">
+                <el-table-column prop="ruleType" :label="$t('jobMonitoring.ruleType')" width="180">
                   <template slot-scope="scope">
                     {{ getRuleTypeLabel(scope.row.ruleType) }}
                   </template>
                 </el-table-column>
-                <el-table-column prop="matchingCondition" label="匹配条件" min-width="180" />
-                <el-table-column prop="ruleContent" label="内容" min-width="180" />
-                <el-table-column prop="securityLevel" label="安全分级" min-width="180" />
+                <el-table-column prop="matchingCondition" :label="$t('jobMonitoring.matchCondition')" min-width="180" />
+                <el-table-column prop="ruleContent" :label="$t('jobMonitoring.ruleContent')" min-width="180" />
+                <el-table-column prop="securityLevel" :label="$t('jobMonitoring.securityLevel')" min-width="180" />
               </el-table>
               <div class="import-format-tip"
                 style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #eff6ff; border: 1px solid #eee; border-radius: 4px;">
                 <i class="el-icon-warning-outline" type="info" />
-                降级规则，当同时匹配多条规则时，等级最低规则生效
+                {{ $t('jobMonitoring.demotionRuleTip') }}
               </div>
             </div>
             <div class="vertical-actions">
@@ -371,44 +383,43 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="addCancel">取 消</el-button>
-        <el-button type="primary" plain v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">确
-          定</el-button>
+        <el-button @click="addCancel">{{ $t('cancel') }}</el-button>
+        <el-button type="primary" plain v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">{{ $t('confirm') }}</el-button>
       </div>
     </Drawer>
     <!-- 新增规则弹窗-->
-    <el-dialog class="addMsg" title="新增规则" :visible.sync="ruleDialogVisible" width="580px" :close-on-click-modal="false"
+    <el-dialog class="addMsg" :title="$t('jobMonitoring.addRule')" :visible.sync="ruleDialogVisible" width="580px" :close-on-click-modal="false"
       :show-close="false">
       <el-form :model="ruleForm" ref="ruleForm" label-width="100px" class="rule-dialog-form" size="medium"
         label-position="top" :rules="dialogRules">
-        <el-form-item label="规则类型" prop="ruleType">
+        <el-form-item :label="$t('jobMonitoring.ruleType')" prop="ruleType">
           <el-select v-model="ruleForm.ruleType" name="ruleType" id="">
             <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
 
-        <el-form-item label="匹配条件" prop="matchType">
+        <el-form-item :label="$t('jobMonitoring.matchCondition')" prop="matchType">
           <el-radio-group v-model="ruleForm.matchType" style="display: flex; justify-content: space-between">
-            <el-radio label="greater" v-if="currentRuleType === 'upgrade'">大于等于</el-radio>
-            <el-radio label="less" v-if="currentRuleType === 'downgrade'">小于等于</el-radio>
+            <el-radio label="greater" v-if="currentRuleType === 'upgrade'">{{ $t('jobMonitoring.greaterEqual') }}</el-radio>
+            <el-radio label="less" v-if="currentRuleType === 'downgrade'">{{ $t('jobMonitoring.lessEqual') }}</el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item label="内容" prop="ruleContent">
-          <el-input v-model="ruleForm.ruleContent" placeholder="请输入数值"
+        <el-form-item :label="$t('jobMonitoring.ruleContent')" prop="ruleContent">
+          <el-input v-model="ruleForm.ruleContent" :placeholder="$t('jobMonitoring.ruleContent')"
             oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
         </el-form-item>
 
-        <el-form-item label="安全分级" prop="securityLevel">
-          <el-select v-model="ruleForm.securityLevel" placeholder="请选择">
+        <el-form-item :label="$t('jobMonitoring.securityLevel')" prop="securityLevel">
+          <el-select v-model="ruleForm.securityLevel" :placeholder="$t('jobMonitoring.securityLevel')">
             <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
               :value="item.value" :disabled="!filterSecurityLevels(item)">
               <template #default>
                 <span>
                   {{ item.label }}
                   <span v-if="!filterSecurityLevels(item)" style="color: #999; margin-left: 8px; font-size: 12px;">
-                    ({{ currentRuleType === 'upgrade' ? '需大于当前等级' : '需小于当前等级' }})
+                    ({{ currentRuleType === 'upgrade' ? $t('jobMonitoring.needGreaterCurrentLevel') : $t('jobMonitoring.needLessCurrentLevel') }})
                   </span>
                 </span>
               </template>
@@ -418,8 +429,8 @@
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="handleSaveRule">保存</el-button>
-        <el-button @click="ruleDialogVisible = false">返回</el-button>
+        <el-button type="primary" plain @click="handleSaveRule">{{ $t('confirm') }}</el-button>
+        <el-button @click="ruleDialogVisible = false">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
     <!-- 数据摸底弹窗 -->
