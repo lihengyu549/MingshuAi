@@ -62,61 +62,56 @@
         </el-card>
         <div>
           <el-button type="primary" plain icon="el-icon-document" size="medium" @click="downloadFile()">清单导出</el-button>
+          <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click"
+            style="float: inline-end; margin-right: 10px;">
+            <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+            <el-checkbox-group v-model="checkedColumn" @change="handleCheckedCitiesChange" class="checkboxGroup"
+              style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
+              <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
+                item.label }}</el-checkbox>
+            </el-checkbox-group>
+            <el-button slot="reference">列设置</el-button>
+          </el-popover>
         </div>
         <el-card class="table-card" shadow="never">
           <el-table v-loading="loading" height="620px" :data="protectTableFieldList"
-            @selection-change="handleSelectionChange" class="tableBox" ref="tableRef">
+            @selection-change="handleSelectionChange" class="tableBox" ref="tableRef" :key="checkedColumn.length">
             <template slot="empty">
               <el-empty description="暂无数据"></el-empty>
             </template>
-            <el-table-column type="selection" width="60" align="center" />
-            <el-table-column label="字段名" align="center" prop="fieldName" width="150" show-overflow-tooltip />
-            <el-table-column label="字段注释" align="center" prop="fieldRemark" width="200" show-overflow-tooltip />
-            <el-table-column label="来源业务系统" align="center" prop="businessName" width="150" show-overflow-tooltip />
-            <el-table-column label="数据源" align="center" prop="sourceName" width="150" show-overflow-tooltip />
-            <el-table-column label="所属库" align="center" prop="databaseName" width="150" show-overflow-tooltip />
-            <el-table-column label="所属表" align="center" prop="tableName" width="150" show-overflow-tooltip />
-            <el-table-column label="分类" align="center" prop="categoryName" min-width="250" show-overflow-tooltip>
+            <!-- <el-table-column type="selection" width="60" align="center" /> -->
+            <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label" :align="item.label === '分类' ? 'left' : 'center'" :prop="item.prop" :width="item.width" show-overflow-tooltip>
               <template slot-scope="scope">
-                <el-tag
-                  :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '噪音数据' ? 'info' : 'primary'">
-                  {{ scope.row.categoryName }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="个保法合规审查" align="center" prop="piiDetectionName" width="200" show-overflow-tooltip />
-            <el-table-column label="安全分级" align="center" prop="securityLevelName" width="150" show-overflow-tooltip>
-              <template slot-scope="scope">
-                <el-tag :style="getRiskStyle(Number(scope.row.securityLevel))">
-                  {{ scope.row.securityLevelName }}
-                </el-tag>
-              </template>
-            </el-table-column>
-
-
-            <el-table-column label="建议防护措施" prop="protectMethod" width="200">
-              <template slot="header">
-                <div style="text-align: center;">建议防护措施</div>
-              </template>
-              <template slot-scope="scope">
-                <el-tag class="protect-tag" v-for="(item, index) in scope.row.protectMethodNameList" :key="item + index"
-                  type="primary">
-                  {{ item }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
-              <template slot-scope="scope">
-                <el-tooltip placement="bottom" effect="light">
-                  <div slot="content">
-                    <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
-                      <el-table-column type="index" label="序号" width="50" />
-                      <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
-                      </el-table-column>
-                    </el-table>
-                  </div>
-                  <el-button size="mini" type="text">查看</el-button>
-                </el-tooltip>
+                <template v-if="item.label === '安全分级'">
+                  <el-tag :style="getRiskStyle(Number(scope.row.securityLevel))">
+                    {{ scope.row.securityLevelName }}
+                  </el-tag>
+                </template>
+                <template v-else-if="item.label === '分类'">
+                  <el-tag :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '噪音数据' ? 'info' : 'primary'">
+                    {{ scope.row.categoryName }}
+                  </el-tag>
+                </template>
+                <template v-else-if="item.label === '建议防护措施'">
+                  <el-tag class="protect-tag" v-for="(protectItem, index) in scope.row.protectMethodNameList" :key="protectItem + index" type="primary">
+                    {{ protectItem }}
+                  </el-tag>
+                </template>
+                <template v-else-if="item.label === '样本'">
+                  <el-tooltip placement="bottom" effect="light">
+                    <div slot="content">
+                      <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
+                        <el-table-column type="index" label="序号" width="50" />
+                        <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
+                        </el-table-column>
+                      </el-table>
+                    </div>
+                    <i class="el-icon-view"></i>
+                  </el-tooltip>
+                </template>
+                <template v-else>
+                  {{ scope.row[item.prop] }}
+                </template>
               </template>
             </el-table-column>
           </el-table>
@@ -286,6 +281,23 @@ export default {
       routeDataShow: false,
       treeIds: [],
       databaseNames: [], // 新增：存储选中的数据库名称
+      // 列设置相关数据
+      isIndeterminate: false,
+      checkedColumn: [],
+      checkAll: false,
+      setList: [
+        { label: "字段名", prop: "fieldName", width: "150" },
+        { label: "字段注释", prop: "fieldRemark", width: "200" },
+        { label: "来源业务系统", prop: "businessName", width: "150" },
+        { label: "数据源", prop: "sourceName", width: "150" },
+        { label: "所属库", prop: "databaseName", width: "200" },
+        { label: "所属表", prop: "tableName", width: "250" },
+        { label: "分类", prop: "categoryName", width: "250" },
+        { label: "个保法合规审查", prop: "piiDetectionName", width: "200" },
+        { label: "安全分级", prop: "securityLevelName" },
+        { label: "建议防护措施", prop: "protectMethod", width: "200" },
+        { label: "样本", prop: "sampleData", width: "100" }
+      ],
       // 导出列配置相关数据
       exportColumnDialog: {
         visible: false,
@@ -379,7 +391,15 @@ export default {
           {
             "label": "样本特征",
             "value": "regularExpression"
-          }
+          },
+          {
+            "label": "表主题词",
+            "value": "tableTopic"
+          },
+          {
+            "label": "字段主题词",
+            "value": "fieldTopic"
+          },
         ], // 所有可选的导出列
         saveAsDefault: false, // 是否保存为默认配置
       },
@@ -404,6 +424,9 @@ export default {
     }
   },
   created() {
+    this.checkedColumn = this.setList.filter(item =>
+      ['字段名', '来源业务系统', '数据源', '所属库', '所属表', '分类', '安全分级'].includes(item.label)
+    );
     this.init()
   },
   methods: {
@@ -417,6 +440,15 @@ export default {
         5: { color: '#991b1b', backgroundColor: '#fecaca', border: 'none' }
       };
       return styles[level] || { color: '#6b7280', backgroundColor: '#f3f4f6', border: 'none' };
+    },
+    handleCheckAllChange(val) {
+      this.checkedColumn = val ? [...this.setList] : [];
+      this.isIndeterminate = false;
+    },
+    handleCheckedCitiesChange(value) {
+      let checkedCount = value.length;
+      this.checkAll = checkedCount === this.setList.length;
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.setList.length;
     },
     /**
      * 自定义树节点渲染，为不同层级节点添加不同的SVG图标
