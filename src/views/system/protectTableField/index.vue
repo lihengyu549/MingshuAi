@@ -286,7 +286,7 @@ export default {
       checkedColumn: [],
       checkAll: false,
       setList: [
-        { label: "字段名", prop: "fieldName", width: "150" },
+        { label: "字段名", prop: "fieldName", width: "200" },
         { label: "字段注释", prop: "fieldRemark", width: "200" },
         { label: "来源业务系统", prop: "businessName", width: "150" },
         { label: "数据源", prop: "sourceName", width: "150" },
