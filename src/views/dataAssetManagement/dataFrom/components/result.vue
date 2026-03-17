@@ -2,7 +2,7 @@
   <div class="app-container" v-loading="loading">
     <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
       v-show="showSearch" label-width="auto">
-      <el-form-item label="分类" prop="categoryId">
+      <el-form-item :label="$t('dataFrom.result.category')" prop="categoryId">
         <el-select ref="addSelectRef" v-model="addNodeName">
           <el-option style="height: 100%; padding: 0" value="">
             <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
@@ -11,33 +11,37 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="安全分级" prop="securityLevel">
-        <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch" placeholder="请选择">
+      <el-form-item :label="$t('dataFrom.result.securityLevel')" prop="securityLevel">
+        <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch"
+          :placeholder="$t('dataFrom.result.pleaseSelect')">
           <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="确认状态" prop="confirm">
-        <el-select clearable v-model="queryParams.confirm" @change="inputSearch" placeholder="请选择">
+      <el-form-item :label="$t('dataFrom.result.confirmStatus')" prop="confirm">
+        <el-select clearable v-model="queryParams.confirm" @change="inputSearch"
+          :placeholder="$t('dataFrom.result.pleaseSelect')">
           <el-option v-for="item in confirmList" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="所属库" prop="databaseName">
-        <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn" placeholder="请选择">
+      <el-form-item :label="$t('dataFrom.result.database')" prop="databaseName">
+        <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn"
+          :placeholder="$t('dataFrom.result.pleaseSelect')">
           <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="所属表" prop="tableId">
+      <el-form-item :label="$t('dataFrom.result.table')" prop="tableId">
         <el-select clearable v-model="queryParams.tableId" :disabled="!queryParams.databaseName" @change="inputSearch"
-          placeholder="全部">
+          :placeholder="$t('dataFrom.result.all')">
           <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.id">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="来源业务系统" prop="businessName">
-        <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入来源业务系统" clearable
+      <el-form-item :label="$t('dataFrom.result.sourceBusinessSystem')" prop="businessName">
+        <el-input v-model="queryParams.businessName" @input="inputSearch"
+          :placeholder="$t('dataFrom.result.pleaseInputSourceBusinessSystem')" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
 
@@ -51,10 +55,12 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-aim" size="medium" @click="handleAdda">确认勾选项</el-button>
+        <el-button type="primary" plain icon="el-icon-aim" size="medium" @click="handleAdda">{{
+          $t('dataFrom.result.confirmSelectedItems') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-more" size="medium" @click="handleEcelFn">确认过滤项</el-button>
+        <el-button type="primary" plain icon="el-icon-more" size="medium" @click="handleEcelFn">{{
+          $t('dataFrom.result.confirmFilterItems') }}</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
@@ -62,45 +68,53 @@
       <!-- <el-table-column type="selection" width="55" align="center" /> -->
       <!-- <el-table-column label="id" align="center" prop="id" /> -->
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="字段名" align="center" prop="fieldName" show-overflow-tooltip />
-      <el-table-column label="字段注释" align="center" prop="fieldRemark" show-overflow-tooltip />
-      <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
+      <el-table-column :label="$t('dataFrom.result.fieldName')" align="center" prop="fieldName" show-overflow-tooltip />
+      <el-table-column :label="$t('dataFrom.result.fieldComment')" align="center" prop="fieldRemark"
+        show-overflow-tooltip />
+      <el-table-column :label="$t('dataFrom.result.sourceBusinessSystem')" align="center" prop="businessName"
+        show-overflow-tooltip />
       <!-- <el-table-column label="数据源" align="center" prop="databaseId" show-overflow-tooltip /> -->
-      <el-table-column label="所属库" align="center" prop="databaseName" show-overflow-tooltip />
-      <el-table-column label="所属表" align="center" prop="tableName" show-overflow-tooltip />
-      <el-table-column label="分类" align="center" min-width="250" prop="categoryName" show-overflow-tooltip />
-      <el-table-column label="安全分级" align="center" prop="securityLevelName" show-overflow-tooltip />
-      <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
+      <el-table-column :label="$t('dataFrom.result.database')" align="center" prop="databaseName"
+        show-overflow-tooltip />
+      <el-table-column :label="$t('dataFrom.result.table')" align="center" prop="tableName" show-overflow-tooltip />
+      <el-table-column :label="$t('dataFrom.result.category')" align="center" min-width="250" prop="categoryName"
+        show-overflow-tooltip />
+      <el-table-column :label="$t('dataFrom.result.securityLevel')" align="center" prop="securityLevelName"
+        show-overflow-tooltip />
+      <el-table-column :label="$t('dataFrom.result.sample')" align="center" prop="sampleData" show-overflow-tooltip>
         <template slot-scope="scope">
           <el-tooltip placement="bottom" effect="light">
             <div slot="content">
               <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
-                <el-table-column type="index" label="序号" width="50" />
-                <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
+                <el-table-column type="index" :label="$t('dataFrom.result.serialNumber')" width="50" />
+                <el-table-column prop="value" :label="$t('dataFrom.result.fieldValue')" width="100"
+                  show-overflow-tooltip>
                 </el-table-column>
               </el-table>
             </div>
-            <el-button size="mini" type="text">查看</el-button>
+            <el-button size="mini" type="text">{{ $t('dataFrom.result.view') }}</el-button>
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="确认状态" align="center" prop="confirm">
+      <el-table-column :label="$t('dataFrom.result.confirmStatus')" align="center" prop="confirm">
         <template slot-scope="scope">
-          <span>{{ scope.row.confirm == 0 ? '未确认' : '已确认' }}</span>
+          <span>{{ scope.row.confirm == 0 ? $t('dataFrom.result.notConfirmed') : $t('dataFrom.result.confirmed')
+            }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('dataFrom.result.operation')" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="resultExdit(scope.row)">结果修改</el-button>
+          <el-button size="mini" type="text" @click="resultExdit(scope.row)">{{ $t('dataFrom.result.resultModification')
+            }}</el-button>
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :page-size.sync="queryParams.pageSize"
-      @pagination="getList" />
-    <el-dialog title="分类分级框架结果修改" v-loading="updataLoading" :visible.sync="deleteVisible" width="650px"
-      style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+      :page-size.sync="queryParams.pageSize" @pagination="getList" />
+    <el-dialog :title="$t('dataFrom.result.classificationFrameworkResultModification')" v-loading="updataLoading"
+      :visible.sync="deleteVisible" width="650px" style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
       <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
-        <el-form-item label="分类" class="addSelectClass">
+        <el-form-item :label="$t('dataFrom.result.category')" class="addSelectClass">
           <el-select ref="resultSelectRef" v-model="resultFormNodeName">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" :props="defaultProps" :expand-on-click-node="true"
@@ -109,8 +123,9 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
-          <el-select v-model="resultForm.securityLevel" placeholder="请选择">
+        <el-form-item :label="$t('dataFrom.result.securityLevelModification')" class="addSelectClass"
+          prop="securityLevel">
+          <el-select v-model="resultForm.securityLevel" :placeholder="$t('dataFrom.result.pleaseSelectSecurityLevel')">
             <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
               :value="item.value">
             </el-option>
@@ -119,8 +134,8 @@
       </el-form>
       <template #footer>
         <span>
-          <el-button type="primary" plain @click="updataResultFn"> 确定 </el-button>
-          <el-button @click="updataResultCanelFn">取消</el-button>
+          <el-button type="primary" plain @click="updataResultFn"> {{ $t('confirm') }} </el-button>
+          <el-button @click="updataResultCanelFn">{{ $t('cancel') }}</el-button>
         </span>
       </template>
     </el-dialog>
@@ -457,9 +472,9 @@ export default {
       this.loading = true
       let dataS = this.$refs.tableRef.selection
       if (dataS && dataS.length > 0) {
-        this.$confirm(`确定当前勾选项吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('dataFrom.result.confirmSelectedItems') + '?', this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {

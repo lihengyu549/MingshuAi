@@ -2,14 +2,14 @@
     <div class="main_div">
         <div class="canChoose">
             <el-card class="left-panel">
-                <div slot="header" class="clearfix">可选</div>
+                <div slot="header" class="clearfix">{{ $t('dataFrom.tableSelector.optional') }}</div>
                 <div class="canChoose_main">
                     <div class="canChoose_left">
                         <!-- 全选复选框 -->
                         <div class="check-item">
                             <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll"
                                 @change="handleCheckAllChange">
-                                全选
+                                {{ $t('dataFrom.tableSelector.selectAll') }}
                             </el-checkbox>
                         </div>
 
@@ -31,7 +31,7 @@
                     </div>
 
                     <div class="canChoose_right">
-                        <el-input style="margin-bottom: 10px;" placeholder="请输入表名" v-model="searchQuery"
+                        <el-input style="margin-bottom: 10px;" :placeholder="$t('dataFrom.tableSelector.pleaseInputTableName')" v-model="searchQuery"
                             @input="inputSearch" clearable>
                             <i slot="prefix" class="el-input__icon el-icon-search"></i>
                         </el-input>
@@ -39,14 +39,14 @@
                         <!-- 新增中间列表全选按钮 -->
                         <el-button type="text" style="margin-bottom: 10px; padding: 0; align-self: flex-end;"
                             @click="handleMiddleListCheckAll">
-                            {{ isMiddleListAllChecked ? '取消全选' : '全选' }}
+                            {{ isMiddleListAllChecked ? $t('dataFrom.tableSelector.cancelSelectAll') : $t('dataFrom.tableSelector.selectAll') }}
                         </el-button>
 
                         <!-- 表名列表容器 -->
                         <div class="table-list-container">
                             <!-- 空状态提示 - 放在前面确保优先显示 -->
                             <div v-if="checkListChildAll.length === 0" class="empty-state">
-                                请选择左侧数据库查看表
+                                {{ $t('dataFrom.tableSelector.selectLeftDatabase') }}
                             </div>
 
                             <!-- 表名列表 - 只有当有数据时才显示 -->
@@ -71,11 +71,11 @@
                 <div slot="header" class="clearfix" style="display: flex; justify-content: space-between;">
 
                     <span>
-                        已选
+                        {{ $t('dataFrom.tableSelector.selected') }}
                         <span class="right-panel-text">{{ selectedDisplayText }}</span>
                     </span>
                     <el-button style="padding: 3px 0;color: #3b82f6;" type="text" @click="clearSelection">
-                        清空
+                        {{ $t('dataFrom.tableSelector.clear') }}
                     </el-button>
                 </div>
 
@@ -99,7 +99,7 @@
                                     <template v-if="index < db.displayTables.length - 1">、</template>
                                 </span>
                                 <template v-if="db.hiddenTableCount > 0">
-                                    <span class="more-tip">...等{{ db.hiddenTableCount }}张表</span>
+                                    <span class="more-tip">...{{ $t('dataFrom.tableSelector.andTables', { count: db.hiddenTableCount }) }}</span>
                                 </template>
                             </div>
                         </li>
@@ -110,7 +110,7 @@
                         <div class="empty-icon">
                             <i class="el-icon-document-empty"></i>
                         </div>
-                        <div class="empty-text">暂无选中的数据库或表</div>
+                        <div class="empty-text">{{ $t('dataFrom.tableSelector.noSelectedData') }}</div>
                     </div>
                 </div>
             </el-card>
@@ -203,13 +203,13 @@ export default {
             const partialCount = this.partialSelectedDbs.length;
             const partialTableCount = this.partialSelectedTables;
             if (fullCount === 0 && partialCount === 0) {
-                return '(暂无选中的数据库或表)';
+                return '(' + this.$t('dataFrom.tableSelector.noSelectedData') + ')';
             } else if (partialCount === 0) {
-                return `(${fullCount}个数据库的所有表)`;
+                return `(${fullCount}` + this.$t('dataFrom.tableSelector.allTablesInDb');
             } else if (fullCount === 0) {
-                return `(${partialCount}个数据库中的${partialTableCount}张数据表)`;
+                return `(${partialCount}` + this.$t('dataFrom.tableSelector.partialTables', { count: partialTableCount });
             } else {
-                return `(${fullCount}个数据库的所有表+${partialCount}个数据库中的${partialTableCount}张数据表)`;
+                return `(${fullCount}` + this.$t('dataFrom.tableSelector.allTablesInDb') + '+' + `${partialCount}` + this.$t('dataFrom.tableSelector.partialTables', { count: partialTableCount });
             }
         },
 
@@ -246,7 +246,7 @@ export default {
                             : 0,
                         // 状态样式与文本
                         statusClass: isFullSelected ? 'status-full' : 'status-partial',
-                        statusText: isFullSelected ? '全部表' : `${selectedTables.length}张表`
+                        statusText: isFullSelected ? this.$t('dataFrom.tableSelector.allTables') : `${selectedTables.length}` + this.$t('dataFrom.tableSelector.tables')
                     };
                 });
         }

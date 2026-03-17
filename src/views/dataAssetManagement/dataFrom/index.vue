@@ -514,7 +514,7 @@
             </el-option>
           </el-select>
           <el-time-picker v-show="fileShareServerForm.scheduleType != '0' && fileShareServerForm.scheduleType != ''"
-            v-model="fileShareServerForm.scheduleTime" value-format='HH:mm' format="HH:mm" placeholder="任意时间点"
+            v-model="fileShareServerForm.scheduleTime" value-format='HH:mm' format="HH:mm" :placeholder="$t('dataFrom.anyTimePoint')"
             :append-to-body="true">
           </el-time-picker>
         </el-form-item>
@@ -579,19 +579,19 @@ export default {
       weekTimeList: [
         {
           value: '0',
-          label: '手动'
+          label: this.$t('dataFrom.manual')
         }, {
           value: '1',
-          label: '每天'
+          label: this.$t('dataFrom.daily')
         }, {
           value: '2',
-          label: '每周'
+          label: this.$t('dataFrom.weekly')
         }, {
           value: '3',
-          label: '每月'
+          label: this.$t('dataFrom.monthly')
         }
       ],
-      weekList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日',],
+      weekList: [this.$t('dataFrom.monday'), this.$t('dataFrom.tuesday'), this.$t('dataFrom.wednesday'), this.$t('dataFrom.thursday'), this.$t('dataFrom.friday'), this.$t('dataFrom.saturday'), this.$t('dataFrom.sunday')],
       databaseTypeList: [
         { name: "MYSQL", id: 0, value: "MYSQL", defaultPort: '3306' },
         { name: "SQL_SERVER", id: 1, value: "SQL_SERVER", defaultPort: '1433' },
@@ -607,25 +607,25 @@ export default {
       publishStatus: [
         {
           value: 0,
-          label: '未发布'
+          label: this.$t('dataFrom.unpublished')
         }, {
           value: 1,
-          label: '已发布'
+          label: this.$t('dataFrom.published')
         },
       ],
       executeStatus: [
         {
           value: 'COMPLETE',
-          label: '扫描完成'
+          label: this.$t('dataFrom.scanComplete')
         }, {
           value: 'RUNNING',
-          label: '扫描中'
+          label: this.$t('dataFrom.scanning')
         }, {
           value: 'NONE',
-          label: '待扫描'
+          label: this.$t('dataFrom.toBeScanned')
         }, {
           value: 'ERR',
-          label: '扫描失败'
+          label: this.$t('dataFrom.scanFailed')
         }
       ],
       formProjectListEdit: [],
@@ -978,7 +978,7 @@ export default {
           msg = item.label
         }
       }
-      return msg || '待扫描'
+      return msg || this.$t('dataFrom.toBeScanned')
     },
     databaseTypeIcon(val) {
       if (val == 'Excel表') {
@@ -1099,9 +1099,9 @@ export default {
       });
     },
     markingCli() {
-      this.$confirm('您是否要开始数据扫描？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('dataFrom.confirmScan'), this.$t('dataFrom.tip'), {
+        confirmButtonText: this.$t('dataFrom.confirm'),
+        cancelButtonText: this.$t('dataFrom.cancel'),
         type: 'warning'
       }).then(() => {
         let ck = ''
@@ -1118,8 +1118,8 @@ export default {
 
         }
         databaseMaskI(data).then((res => {
-          this.$alert('数据已提交', '数据扫描', {
-            confirmButtonText: '确定',
+          this.$alert(this.$t('dataFrom.dataAlreadySubmitted'), this.$t('dataFrom.dataScanning'), {
+            confirmButtonText: this.$t('dataFrom.confirm'),
             type: 'success'
           });
           this.markingVisible = false
@@ -1370,9 +1370,9 @@ export default {
           return
         }
         if (flagList.includes('COMPLETE')) {
-          this.$confirm(`删除任务，将会删除数据源所关联的所有执行结果,确定删除吗`, '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+          this.$confirm(this.$t('dataFrom.confirmDeleteWithResult'), this.$t('dataFrom.tip'), {
+            confirmButtonText: this.$t('dataFrom.confirm'),
+            cancelButtonText: this.$t('dataFrom.cancel'),
             type: 'warning'
           }).then(() => {
             let ids = dataS.map(item => {
@@ -1388,9 +1388,9 @@ export default {
           })
           return
         }
-        this.$confirm(`确定删除所选中的项吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('dataFrom.confirmDelete'), this.$t('dataFrom.tip'), {
+          confirmButtonText: this.$t('dataFrom.confirm'),
+          cancelButtonText: this.$t('dataFrom.cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {
@@ -1411,9 +1411,9 @@ export default {
     scanStateClickFn(row) {
       if (this.btnLoading) return;
       if (row.scanState == 'COMPLETE') {
-        this.$confirm(`再次扫描将会覆盖之前的所有扫描结果，确定继续吗？`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('dataFrom.confirmRescan'), this.$t('dataFrom.tip'), {
+          confirmButtonText: this.$t('dataFrom.confirm'),
+          cancelButtonText: this.$t('dataFrom.cancel'),
           type: 'warning'
         }).then(() => {
           this.btnLoading = true;
@@ -1441,9 +1441,9 @@ export default {
     },
     stopScan(row) {
       if (this.btnLoading) return;
-      this.$confirm(`确定要终止"${row.sourceName}"的扫描任务吗？`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('dataFrom.confirmStopScan', { name: row.sourceName }), this.$t('dataFrom.tip'), {
+        confirmButtonText: this.$t('dataFrom.confirm'),
+        cancelButtonText: this.$t('dataFrom.cancel'),
         type: 'warning'
       }).then(() => {
         this.btnLoading = true;
@@ -1607,7 +1607,7 @@ export default {
         }
       })
       this.form.tables = result
-      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedTableCount}张表`
+      this.form.tabelCheckedName = this.$t('dataFrom.tableSelector.selectedTablesWithCount', { count: this.$refs.scanContentTreeRef.selectedTableCount })
       this.scanContentShow = false
     },
     // 点击下拉按钮
