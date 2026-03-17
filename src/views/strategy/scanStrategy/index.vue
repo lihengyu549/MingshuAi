@@ -3,7 +3,9 @@
     <el-card class="card" shadow="never">
       <template slot="header">
         <span class="title">
-          <div class="blue-circle"></div><span>噪音数据过滤</span>
+          <div class="icon">
+            <svg-icon icon-class="scanStrategy-1" style="font-size: 20px;"></svg-icon>
+          </div><span>噪音数据过滤</span>
         </span>
       </template>
       <div class="contBox">
@@ -91,7 +93,9 @@
     <el-card class="card" shadow="never">
       <template slot="header">
         <span class="title">
-          <div class="blue-circle"></div><span>样本抽取</span>
+          <div class="icon">
+            <svg-icon icon-class="scanStrategy-2" style="font-size: 20px;"></svg-icon>
+          </div><span>样本抽取</span>
         </span>
       </template>
       <div class="contBox">
@@ -120,7 +124,9 @@
     <el-card class="card" shadow="never">
       <template slot="header">
         <span class="title">
-          <div class="blue-circle"></div><span>敏感数据定义</span>
+          <div class="icon">
+            <svg-icon icon-class="scanStrategy-3" style="font-size: 20px;"></svg-icon>
+          </div><span>敏感数据定义</span>
         </span>
       </template>
       <div class="contBox" style="display: flex;justify-content: flex-start;align-items: center;">
@@ -263,7 +269,6 @@ export default {
 };
 </script>
 <style scoped lang="scss">
-
 .card {
   padding: 10px;
   margin-bottom: 20px;
@@ -285,12 +290,11 @@ export default {
   font-weight: 600;
 }
 
-.blue-circle {
-  // width: 30px;
-  // height: 30px;
-  // background-color: rgb(19, 175, 247);
-  // border-radius: 50%;
-  // margin: 0 10px 0 20px;
+.icon {
+  padding: 5px;
+  background-color: #eff6ff;
+  border-radius: 10px;
+  margin-right: 10px;
 }
 
 .contBox {
