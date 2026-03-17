@@ -3,20 +3,20 @@
     <el-card shadow="never" class="searchCard">
       <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
         :inline="false" label-width="auto">
-        <el-form-item label="数据源名称" prop="sourceName">
-          <el-input v-model="queryParams.sourceName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+        <el-form-item :label="$t('dataFrom.sourceName')" prop="sourceName">
+          <el-input v-model="queryParams.sourceName" @input="inputSearch" :placeholder="$t('dataFrom.pleaseInputSourceName')" clearable
             @keyup.enter.native="handleQuery" />
         </el-form-item>
-        <el-form-item label="数据源类型" prop="sourceType">
-          <el-select clearable v-model="queryParams.sourceType" @change="inputSearch" placeholder="请选择数据库类型">
+        <el-form-item :label="$t('dataFrom.sourceType')" prop="sourceType">
+          <el-select clearable v-model="queryParams.sourceType" @change="inputSearch" :placeholder="$t('dataFrom.pleaseSelectDatabaseType')">
             <el-option v-for="item in dict.type.sys_datasource_type" :key="item.value" :label="item.label"
               :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
 
-        <el-form-item label="来源业务系统" prop="businessName">
-          <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+        <el-form-item :label="$t('dataFrom.businessName')" prop="businessName">
+          <el-input v-model="queryParams.businessName" @input="inputSearch" :placeholder="$t('dataFrom.pleaseInputSourceName')" clearable
             @keyup.enter.native="handleQuery" />
         </el-form-item>
 
@@ -26,18 +26,18 @@
           </el-option>
         </el-select>
       </el-form-item> -->
-        <el-form-item label="数据库类型" prop="databaseType">
-          <el-select clearable v-model="queryParams.databaseType" @change="inputSearch" placeholder="请选择数据库类型">
+        <el-form-item :label="$t('dataFrom.databaseType')" prop="databaseType">
+          <el-select clearable v-model="queryParams.databaseType" @change="inputSearch" :placeholder="$t('dataFrom.pleaseSelectDatabaseType')">
             <el-option v-for="item in databaseTypeList" :key="item.value" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="主机信息" prop="targetIpPort">
-          <el-input v-model="queryParams.targetIpPort" @input="inputSearch" placeholder="请输入主机信息" clearable
+        <el-form-item :label="$t('dataFrom.targetIpPort')" prop="targetIpPort">
+          <el-input v-model="queryParams.targetIpPort" @input="inputSearch" :placeholder="$t('dataFrom.pleaseInputHostIP')" clearable
             @keyup.enter.native="handleQuery" />
         </el-form-item>
-        <el-form-item label="扫描状态" prop="scanState">
-          <el-select clearable v-model="queryParams.scanState" @change="inputSearch" placeholder="请选择扫描状态">
+        <el-form-item :label="$t('dataFrom.scanState')" prop="scanState">
+          <el-select clearable v-model="queryParams.scanState" @change="inputSearch" :placeholder="$t('dataFrom.pleaseSelectDatabaseType')">
             <el-option v-for="item in executeStatus" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -51,18 +51,18 @@
       <el-col :span="1.5">
         <el-dropdown @command="handleCommand" trigger="click">
           <el-button type="primary" plain size="medium" icon="el-icon-plus">
-            新增
+            {{ $t('dataFrom.add') }}
           </el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="database">数据库</el-dropdown-item>
-            <el-dropdown-item command="excel">Excel文件</el-dropdown-item>
-            <el-dropdown-item command="fileDirectory">文件目录</el-dropdown-item>
-            <el-dropdown-item command="fileShareServer">文件共享服务器</el-dropdown-item>
+            <el-dropdown-item command="database">{{ $t('dataFrom.databaseType') }}</el-dropdown-item>
+            <el-dropdown-item command="excel">Excel{{ $t('dataFrom.file') }}</el-dropdown-item>
+            <el-dropdown-item command="fileDirectory">{{ $t('dataFrom.fileDirectory') }}</el-dropdown-item>
+            <el-dropdown-item command="fileShareServer">{{ $t('dataFrom.fileShareServer') }}</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
+        <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">{{ $t('dataFrom.delete') }}</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
@@ -70,10 +70,10 @@
       <el-table v-loading="loading" height="860px" class="tableBox" :data="proxysList"
         @selection-change="handleSelectionChange" ref="tableRef">
         <template slot="empty">
-          <el-empty description="暂无数据"></el-empty>
+          <el-empty :description="$t('dataFrom.noData')"></el-empty>
         </template>
         <el-table-column type="selection" width="60" align="center" />
-        <el-table-column label="数据源名称" align="left" width="140" prop="sourceName" show-overflow-tooltip>
+        <el-table-column :label="$t('dataFrom.sourceName')" align="left" width="140" prop="sourceName" show-overflow-tooltip>
           <template slot-scope="scope">
             <span class="source-name" @click="scanContentEdit(scope.row)">
               <svg-icon :icon-class="databaseTypeIcon(scope.row.sourceTypeName)"
@@ -83,25 +83,25 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="主机信息" align="center" prop="targetIpPort" show-overflow-tooltip>
+        <el-table-column :label="$t('dataFrom.targetIpPort')" align="center" prop="targetIpPort" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.targetIpPort }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="数据源类型" align="center" prop="sourceTypeName" show-overflow-tooltip>
+        <el-table-column :label="$t('dataFrom.dataSourceType')" align="center" prop="sourceTypeName" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ emptyHandler(scope.row.sourceTypeName) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="数据库类型" align="center" prop="databaseType" show-overflow-tooltip>
+        <el-table-column :label="$t('dataFrom.databaseTypeCol')" align="center" prop="databaseType" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ emptyHandler(scope.row.databaseType) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="来源业务系统" align="center" prop="businessName" show-overflow-tooltip />
+        <el-table-column :label="$t('dataFrom.sourceBusinessSystem')" align="center" prop="businessName" show-overflow-tooltip />
         <!-- <el-table-column label="分类分级标准" align="center" prop="projectName" /> -->
-        <el-table-column label="扫描状态" align="center" prop="scanState">
+        <el-table-column :label="$t('dataFrom.scanStatus')" align="center" prop="scanState">
           <template slot-scope="scope">
             <div style="display: flex; align-items: center;justify-content: center;">
               <img style="display: block; width: 20px;margin-right: 10px;"
@@ -110,29 +110,29 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="耗时(毫秒)" align="center" prop="scanTime" show-overflow-tooltip />
-        <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
-        <el-table-column label="数据质量评估" align="center" prop="dataScore" show-overflow-tooltip />
-        <el-table-column label="表数量" align="center" prop="tableCount" show-overflow-tooltip />
-        <el-table-column label="字段数量" align="center" prop="fieldCount" show-overflow-tooltip />
-        <el-table-column label="数据字典" align="center" show-overflow-tooltip>
+        <el-table-column :label="$t('dataFrom.timeConsuming')" align="center" prop="scanTime" show-overflow-tooltip />
+        <el-table-column :label="$t('dataFrom.updateTime')" align="center" prop="updateTime" show-overflow-tooltip />
+        <el-table-column :label="$t('dataFrom.dataQualityAssessment')" align="center" prop="dataScore" show-overflow-tooltip />
+        <el-table-column :label="$t('dataFrom.tableCount')" align="center" prop="tableCount" show-overflow-tooltip />
+        <el-table-column :label="$t('dataFrom.fieldCount')" align="center" prop="fieldCount" show-overflow-tooltip />
+        <el-table-column :label="$t('dataFrom.dataDictionary')" align="center" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.feature && scope.row.feature.featureName || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
+        <el-table-column :label="$t('dataFrom.operation')" align="center" class-name="small-padding fixed-width" min-width="150">
           <template slot-scope="scope">
             <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
               :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API' || btnLoading"
-              :loading="btnLoading">开始扫描</el-button>
+              :loading="btnLoading">{{ $t('dataFrom.startScan') }}</el-button>
             <el-button size="mini" type="text" @click="stopScan(scope.row)"
               :disabled="scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API' || btnLoading"
-              :loading="btnLoading">终止扫描</el-button>
+              :loading="btnLoading">{{ $t('dataFrom.terminateScan') }}</el-button>
             <!-- 添加关联数据字典按钮和下拉菜单 -->
             <el-dropdown trigger="click" @command="handleDictionaryCommand"
               @click.native="handleDropdownClick(scope.row)">
               <el-button size="mini" type="text">
-                关联数据字典
+                {{ $t('dataFrom.linkDataDictionary') }}
               </el-button>
               <el-dropdown-menu slot="dropdown" class="dictionary-dropdown-menu">
                 <el-dropdown-item v-for="item in dictionaryList" :key="item.id"
@@ -157,84 +157,76 @@
         label-position="top">
         <el-row>
           <el-col :span="12">
-            <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
-              <el-select v-model="form.databaseType" placeholder="请选择数据库类型" @change="databaseTypeChange($event)">
+            <el-form-item :label="$t('dataFrom.databaseType')" prop="databaseType" :rules="rules.databaseType">
+              <el-select v-model="form.databaseType" :placeholder="$t('dataFrom.pleaseSelectDatabaseType')" @change="databaseTypeChange($event)">
                 <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
-              <el-input v-model="form.sourceName" maxlength="50" placeholder="请输入数据源名称" />
+            <el-form-item :label="$t('dataFrom.sourceName')" prop="sourceName" :rules="rules.sourceName">
+              <el-input v-model="form.sourceName" maxlength="50" :placeholder="$t('dataFrom.pleaseInputSourceName')" />
             </el-form-item>
           </el-col>
         </el-row>
-        <!-- <el-form-item label="分类分级标准" prop="projectName" :rules="rules.projectName">
-          <el-select v-model="form.projectName" :disabled="editIsFlag" placeholder="请输入分类分级框架" clearable
-            @change="projectChangeEdit($event)">
-            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
-            </el-option>
-          </el-select>
-        </el-form-item> -->
-        <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
-          <!-- @input="businessNameFn(form.businessName)" -->
-          <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
-          <div style="font-size: 12px; font-style: italic;">示例:个人健康生理信息管理系统(建议使用中文进行描述)</div>
+        <el-form-item :label="$t('dataFrom.businessName')" prop="businessName" :rules="rules.businessName">
+          <el-input v-model="form.businessName" maxlength="50" :placeholder="$t('dataFrom.pleaseInputBusinessName')" />
+          <div style="font-size: 12px; font-style: italic;">{{ $t('dataFrom.businessSystemExample') }}</div>
         </el-form-item>
-        <el-form-item label="来源业务系统描述" prop="businessComment" :rules="rules.businessComment">
+        <el-form-item :label="$t('dataFrom.businessSystemDescription')" prop="businessComment" :rules="rules.businessComment">
           <el-input type="textarea" v-model="form.businessComment" maxlength="1000" show-word-limit
-            placeholder="请输入来源业务系统描述" />
+            :placeholder="$t('dataFrom.pleaseInputBusinessDescription')" />
         </el-form-item>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
-              <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
+            <el-form-item :label="$t('dataFrom.host')" prop="targetIp" :rules="rules.targetIp">
+              <el-input v-model="form.targetIp" @input="targetIpRulesFn" :placeholder="$t('dataFrom.pleaseInputHostIP')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
-              <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
+            <el-form-item :label="$t('dataFrom.port')" prop="targetPort" :rules="rules.targetPort">
+              <el-input v-model="form.targetPort" :placeholder="$t('dataFrom.pleaseInputDatabasePort')" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="用户" prop="targetUserName" :rules="rules.targetUserName">
-              <el-input v-model="form.targetUserName" placeholder="请输入数据库用户名称" />
+            <el-form-item :label="$t('dataFrom.user')" prop="targetUserName" :rules="rules.targetUserName">
+              <el-input v-model="form.targetUserName" :placeholder="$t('dataFrom.pleaseInputDatabaseUser')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
+            <el-form-item :label="$t('dataFrom.password')" prop="targetUserPassword" :rules="rules.targetUserPassword">
               <el-input type="password" v-model="form.targetUserPassword" :show-password="passwordVisible"
-                maxlength="100" placeholder="请输入数据库密码" />
+                maxlength="100" :placeholder="$t('dataFrom.pleaseInputDatabasePassword')" />
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item v-show="form.databaseType == 'ORACLE' || form.databaseType == 'OCEAN_BASE_ORACLE'" label="服务名"
+        <el-form-item v-show="form.databaseType == 'ORACLE' || form.databaseType == 'OCEAN_BASE_ORACLE'" :label="$t('dataFrom.serviceName')"
           prop="connectionValue" :rules="rules.connectionValue()">
-          <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput()" placeholder="请输入" />
+          <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput()" :placeholder="$t('dataFrom.pleaseInput')" />
         </el-form-item>
-        <el-form-item v-show="form.databaseType == 'ORACLE' || form.databaseType == 'OCEAN_BASE_ORACLE'" label="连接方式">
-          <el-radio v-model="connectionType" label="0">SID</el-radio>
-          <el-radio v-model="connectionType" label="1">Service Name</el-radio>
+        <el-form-item v-show="form.databaseType == 'ORACLE' || form.databaseType == 'OCEAN_BASE_ORACLE'" :label="$t('dataFrom.connectionMethod')">
+          <el-radio v-model="connectionType" label="0">{{ $t('dataFrom.SID') }}</el-radio>
+          <el-radio v-model="connectionType" label="1">{{ $t('dataFrom.serviceNameConnection') }}</el-radio>
         </el-form-item>
-        <el-form-item v-show="form.databaseType != 'ORACLE' && form.databaseType != 'OCEAN_BASE_ORACLE'" label="实例名/库名"
+        <el-form-item v-show="form.databaseType != 'ORACLE' && form.databaseType != 'OCEAN_BASE_ORACLE'" :label="$t('dataFrom.instanceName')"
           prop="examplesName" :rules="rules.examplesName()">
-          <el-input v-model="form.examplesName" placeholder="请输入实例名/库名" />
+          <el-input v-model="form.examplesName" :placeholder="$t('dataFrom.pleaseInputInstanceName')" />
         </el-form-item>
-        <el-form-item label="扫描内容" prop="tabelCheckedName">
+        <el-form-item :label="$t('dataFrom.scanContent')" prop="tabelCheckedName">
           <div @click="scanContentFn()"><el-input style="position: relative;" readonly>
             </el-input>
             <el-tag style="position: absolute;top: 4px;left: 6px;">{{ form.tabelCheckedName ? form.tabelCheckedName :
-              '点击选择扫描内容' }}</el-tag>
+              $t('dataFrom.clickToSelectScanContent') }}</el-tag>
           </div>
         </el-form-item>
         <el-form-item>
-          <el-radio v-model="form.proceedOrOverwrite" label="0">全量覆盖</el-radio>
-          <el-radio v-model="form.proceedOrOverwrite" label="1">增量添加</el-radio>
+          <el-radio v-model="form.proceedOrOverwrite" label="0">{{ $t('dataFrom.fullCoverage') }}</el-radio>
+          <el-radio v-model="form.proceedOrOverwrite" label="1">{{ $t('dataFrom.incrementalAdd') }}</el-radio>
         </el-form-item>
-        <el-form-item label="周期" prop="scheduleType">
+        <el-form-item :label="$t('dataFrom.cycle')" prop="scheduleType">
           <el-select v-model="form.scheduleType" @change="scheduleTypeChange">
             <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
@@ -245,7 +237,7 @@
             </el-option>
           </el-select>
           <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
-            @change="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点" :append-to-body="true">
+            @change="handleTimeChange" value-format='HH:mm' format="HH:mm" :placeholder="$t('dataFrom.anyTimePoint')" :append-to-body="true">
           </el-time-picker>
         </el-form-item>
 
@@ -258,60 +250,54 @@
         </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="submitForm" :loading="submitLoading">确 定</el-button>
-        <el-button @click="scanContentCanlce">取消</el-button>
+        <el-button type="primary" plain @click="submitForm" :loading="submitLoading">{{ $t('confirm') }}</el-button>
+        <el-button @click="scanContentCanlce">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
     <el-dialog class="addMsg" :title="titleExcel" v-loading="importDataLoading" :visible.sync="importData.importShow"
       append-to-body :close-on-click-modal="false" width="700px">
       <el-form class="dialogForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
         :inline="true" label-width="120px" label-position="top">
-        <el-form-item label="数据源名称" prop="sourceName">
-          <el-input v-model="importData.sourceName" maxlength="50" placeholder="请输入数据源名称"></el-input>
+        <el-form-item :label="$t('dataFrom.sourceNameImport')" prop="sourceName">
+          <el-input v-model="importData.sourceName" maxlength="50" :placeholder="$t('dataFrom.pleaseInputDataSourceName')"></el-input>
         </el-form-item>
-        <!-- <el-form-item class="addSelectClass" label="分类分级框架" prop="categoryId">
-          <el-select v-model="importData.categoryId" :disabled="editIsFlag" class="serachInput" placeholder="全部">
-            <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
-            </el-option>
-          </el-select>
-        </el-form-item> -->
-        <el-form-item label="来源业务系统" prop="businessName">
-          <el-input v-model="importData.businessName" maxlength="50" placeholder="请输入数据源名称"></el-input>
+        <el-form-item :label="$t('dataFrom.businessSystem')" prop="businessName">
+          <el-input v-model="importData.businessName" maxlength="50" :placeholder="$t('dataFrom.pleaseInputSourceBusinessSystem')"></el-input>
         </el-form-item>
-        <el-form-item label="来源业务系统描述" prop="businessComment">
+        <el-form-item :label="$t('dataFrom.businessSystemDescription')" prop="businessComment">
           <el-input type="textarea" v-model="importData.businessComment" maxlength="1000" show-word-limit
-            placeholder="请输入来源业务系统描述" />
+            :placeholder="$t('dataFrom.pleaseInputBusinessSystemDescription')" />
         </el-form-item>
-        <el-form-item label="导入文件" prop="importFile" class="uploadClass">
-          <el-input v-model="importData.importFile" readonly placeholder="支持EXCEL格式文件导入（.xls, .xlsx)"></el-input>
+        <el-form-item :label="$t('dataFrom.importFile')" prop="importFile" class="uploadClass">
+          <el-input v-model="importData.importFile" readonly :placeholder="$t('dataFrom.supportExcelFormat')"></el-input>
           <el-upload ref="uploadRef" class="upload-demo" :limit="1" :file-list="importData.fileList"
             :auto-upload="false" :http-request="submitFormExcelFn" action="" accept=".xls,.xlsx,csv"
             :show-file-list="false" :on-change="handleFileChange" :on-exceed="handleFileExceed"
             style="margin-left: 10px;">
-            <el-button size="mini" type="primary" plain>选择文件</el-button>
+            <el-button size="mini" type="primary" plain>{{ $t('dataFrom.selectFile') }}</el-button>
           </el-upload>
         </el-form-item>
       </el-form>
       <el-button size="small" type="text" @click="downloadFile" id="btnDownload"
-        icon="el-icon-download">样例下载</el-button>
+        icon="el-icon-download">{{ $t('dataFrom.sampleDownload') }}</el-button>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="submitFormExcelFn">确 定</el-button>
-        <el-button @click="importcancel">取 消</el-button>
+        <el-button type="primary" plain @click="submitFormExcelFn">{{ $t('confirm') }}</el-button>
+        <el-button @click="importcancel">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
-    <el-drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
+    <el-drawer :title="$t('dataFrom.resultView')" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
       size="80%" :before-close="handleClose">
       <Result :treeOptions="treeOptions" :drawerData="drawerData" />
     </el-drawer>
 
-    <el-dialog title="扫描配置" class="addMsg" v-loading="scanContentLoading" :visible.sync="scanContentShow" width="950px"
+    <el-dialog :title="$t('dataFrom.scanConfiguration')" class="addMsg" v-loading="scanContentLoading" :visible.sync="scanContentShow" width="950px"
       append-to-body :close-on-click-modal="false">
       <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData"
         :scanContentTreeData="scanContentTreeData" :databaseTableNameParama="databaseTableNameParama"
         ref="scanContentTreeRef" />
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="scanContentSubmitFn">确 定</el-button>
-        <el-button @click="scanContentShow = false">取 消</el-button>
+        <el-button type="primary" plain @click="scanContentSubmitFn">{{ $t('confirm') }}</el-button>
+        <el-button @click="scanContentShow = false">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
 
@@ -320,18 +306,17 @@
       :visible.sync="fileDirectoryData.show" append-to-body :close-on-click-modal="false" width="700px">
       <el-form class="dialogForm" :rules="fileDirectoryRules" :model="fileDirectoryData" size="medium"
         ref="fileDirectoryForm" label-width="auto" label-position="top">
-        <el-form-item label="数据源名称" prop="sourceName">
-          <el-input v-model="fileDirectoryData.sourceName" maxlength="50" placeholder="请输入数据源名称"></el-input>
+        <el-form-item :label="$t('dataFrom.sourceName')" prop="sourceName">
+          <el-input v-model="fileDirectoryData.sourceName" maxlength="50" :placeholder="$t('dataFrom.pleaseInputSourceName')"></el-input>
         </el-form-item>
-        <el-form-item label="来源业务系统" prop="businessName">
-          <el-input v-model="fileDirectoryData.businessName" maxlength="50" placeholder="请输入来源业务系统"></el-input>
+        <el-form-item :label="$t('dataFrom.businessName')" prop="businessName">
+          <el-input v-model="fileDirectoryData.businessName" maxlength="50" :placeholder="$t('dataFrom.pleaseInputBusinessName')"></el-input>
         </el-form-item>
-        <el-form-item label="来源业务系统描述" prop="businessComment">
+        <el-form-item :label="$t('dataFrom.businessSystemDescription')" prop="businessComment">
           <el-input type="textarea" v-model="fileDirectoryData.businessComment" maxlength="1000" show-word-limit
-            placeholder="请输入来源业务系统描述" />
+            :placeholder="$t('dataFrom.pleaseInputBusinessDescription')" />
         </el-form-item>
-        <!-- 将文件目录路径改为文件上传，1:1还原参考图效果 -->
-        <el-form-item label="文件上传" prop="uploadFiles">
+        <el-form-item :label="$t('dataFrom.fileUpload')" prop="uploadFiles">
           <el-upload ref="fileDirectoryUploadRef" class="upload-dragger-area" drag :action="''" :auto-upload="false"
             :multiple="true" :show-file-list="false" :limit="20" :file-list="fileDirectoryData.uploadFiles"
             :on-change="handleFileDirectoryChange" :on-remove="handleFileDirectoryRemove"
@@ -339,19 +324,16 @@
             accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.bmp,.webp">
             <div class="upload-dragger-content">
               <i class="el-icon-upload upload-icon"></i>
-              <div class="upload-text">点击或拖拽上传文件</div>
-              <div class="upload-tip">支持
-                .doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif等格式（支持多文件上传，最多20个，总大小不超过50MB）
-              </div>
+              <div class="upload-text">{{ $t('dataFrom.clickOrDragToUpload') }}</div>
+              <div class="upload-tip">{{ $t('dataFrom.supportFormats') }}</div>
             </div>
           </el-upload>
-          <!-- 添加已选择文件列表显示区域 -->
           <div v-if="fileDirectoryData.uploadFiles && fileDirectoryData.uploadFiles.length > 0"
             class="selected-files-container">
             <div class="selected-files-header">
-              <span>已选择文件 ({{ fileDirectoryData.uploadFiles.length }})</span>
+              <span>{{ $t('dataFrom.selectedFiles') }} ({{ fileDirectoryData.uploadFiles.length }})</span>
               <el-button type="text" size="small" @click="clearAllFileDirectoryFiles"
-                style="color: #909399;">清空所有</el-button>
+                style="color: #909399;">{{ $t('dataFrom.clearAll') }}</el-button>
             </div>
             <div class="selected-files-list">
               <div v-for="(file, index) in fileDirectoryData.uploadFiles" :key="index" class="file-item">
@@ -363,9 +345,9 @@
                       <el-tag type="info" dark size="small">{{ getFileExtension(file.name) }}</el-tag>
                     </div>
                     <div class="file-meta">
-                      <span>大小: {{ formatFileSize(file.size) }}</span>
+                      <span>{{ $t('dataFrom.size') }}: {{ formatFileSize(file.size) }}</span>
                       <span class="file-meta-separator">|</span>
-                      <span>修改时间: {{ formatFileTime(file.raw ? file.raw.lastModified : Date.now()) }}</span>
+                      <span>{{ $t('dataFrom.modifiedTime') }}: {{ formatFileTime(file.raw ? file.raw.lastModified : Date.now()) }}</span>
                     </div>
                   </div>
                 </div>
@@ -377,8 +359,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="submitFileDirectoryForm">确 定</el-button>
-        <el-button @click="fileDirectoryCancel">取 消</el-button>
+        <el-button type="primary" plain @click="submitFileDirectoryForm">{{ $t('confirm') }}</el-button>
+        <el-button @click="fileDirectoryCancel">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
 
@@ -388,146 +370,140 @@
       <el-form class="dialogForm" ref="fileShareServerForm" :model="fileShareServerForm" :rules="fileShareServerRules"
         label-width="auto" @submit.native.prevent label-position="top">
 
-        <!-- 基本信息 -->
-        <div class="form-section-title">基本信息</div>
+        <div class="form-section-title">{{ $t('dataFrom.basicInfo') }}</div>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="数据源名称" prop="sourceName">
-              <el-input v-model="fileShareServerForm.sourceName" maxlength="50" placeholder="请输入数据源名称" />
+            <el-form-item :label="$t('dataFrom.sourceName')" prop="sourceName">
+              <el-input v-model="fileShareServerForm.sourceName" maxlength="50" :placeholder="$t('dataFrom.pleaseInputSourceName')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="文件目录类型" prop="fileServerType">
-              <el-select v-model="fileShareServerForm.fileServerType" placeholder="请选择文件目录类型">
-                <el-option label="SMB" value="SMB"></el-option>
-                <el-option label="NFS" value="NFS"></el-option>
-                <el-option label="FTP" value="FTP"></el-option>
+            <el-form-item :label="$t('dataFrom.fileDirectoryType')" prop="fileServerType">
+              <el-select v-model="fileShareServerForm.fileServerType" :placeholder="$t('dataFrom.pleaseSelectFileDirectoryType')">
+                <el-option :label="$t('dataFrom.SMB')" value="SMB"></el-option>
+                <el-option :label="$t('dataFrom.NFS')" value="NFS"></el-option>
+                <el-option :label="$t('dataFrom.FTP')" value="FTP"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
         </el-row>
 
-        <el-form-item label="来源业务系统" prop="businessName">
-          <el-input v-model="fileShareServerForm.businessName" maxlength="50" placeholder="请输入来源业务系统" />
+        <el-form-item :label="$t('dataFrom.businessName')" prop="businessName">
+          <el-input v-model="fileShareServerForm.businessName" maxlength="50" :placeholder="$t('dataFrom.pleaseInputBusinessName')" />
         </el-form-item>
 
-        <el-form-item label="来源业务系统描述" prop="businessComment">
+        <el-form-item :label="$t('dataFrom.businessSystemDescription')" prop="businessComment">
           <el-input type="textarea" v-model="fileShareServerForm.businessComment" maxlength="1000" show-word-limit
-            placeholder="请输入来源业务系统描述" />
+            :placeholder="$t('dataFrom.pleaseInputBusinessDescription')" />
         </el-form-item>
 
         <el-row>
           <el-col :span="12">
-            <el-form-item label="主机" prop="targetIp">
-              <el-input v-model="fileShareServerForm.targetIp" placeholder="请输入主机IP地址" />
+            <el-form-item :label="$t('dataFrom.host')" prop="targetIp">
+              <el-input v-model="fileShareServerForm.targetIp" :placeholder="$t('dataFrom.pleaseInputHostIP')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="端口" prop="targetPort">
-              <el-input v-model="fileShareServerForm.targetPort" placeholder="请输入端口" />
+            <el-form-item :label="$t('dataFrom.port')" prop="targetPort">
+              <el-input v-model="fileShareServerForm.targetPort" :placeholder="$t('dataFrom.pleaseInputPort')" />
             </el-form-item>
           </el-col>
         </el-row>
 
         <el-row>
           <el-col :span="12">
-            <el-form-item label="用户" prop="targetUserName">
-              <el-input v-model="fileShareServerForm.targetUserName" placeholder="请输入用户名" />
+            <el-form-item :label="$t('dataFrom.user')" prop="targetUserName">
+              <el-input v-model="fileShareServerForm.targetUserName" :placeholder="$t('dataFrom.pleaseInputUserName')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="密码" prop="targetUserPassword">
+            <el-form-item :label="$t('dataFrom.password')" prop="targetUserPassword">
               <el-input type="password" v-model="fileShareServerForm.targetUserPassword" :show-password="true"
-                maxlength="100" placeholder="请输入密码" />
+                maxlength="100" :placeholder="$t('dataFrom.pleaseInputPassword')" />
             </el-form-item>
           </el-col>
         </el-row>
 
-        <el-form-item label="文件夹目录" prop="fileDirectory">
-          <el-input v-model="fileShareServerForm.fileDirectory" placeholder="请输入文件夹目录路径" />
+        <el-form-item :label="$t('dataFrom.folderDirectory')" prop="fileDirectory">
+          <el-input v-model="fileShareServerForm.fileDirectory" :placeholder="$t('dataFrom.pleaseInputFolderDirectory')" />
         </el-form-item>
 
-        <!-- 扫描配置 -->
-        <div class="form-section-title">扫描配置</div>
-        <el-form-item label="扫描内容" prop="scanContent">
-          <el-input v-model="fileShareServerForm.scanContent" placeholder="请输入扫描内容" />
+        <div class="form-section-title">{{ $t('dataFrom.scanConfigurationTitle') }}</div>
+        <el-form-item :label="$t('dataFrom.scanContent')" prop="scanContent">
+          <el-input v-model="fileShareServerForm.scanContent" :placeholder="$t('dataFrom.pleaseInputScanContent')" />
         </el-form-item>
-        <el-form-item label="扫描逻辑" prop="proceedOrOverwrite">
-          <el-checkbox v-model="fileShareServerForm.proceedOrOverwrite">全量扫描</el-checkbox>
-          <el-tooltip class="item" effect="dark" content="全量扫描：清空，上一次的所有扫描结果，以本次勾选的内容为准" placement="top-start">
+        <el-form-item :label="$t('dataFrom.scanLogic')" prop="proceedOrOverwrite">
+          <el-checkbox v-model="fileShareServerForm.proceedOrOverwrite">{{ $t('dataFrom.fullScan') }}</el-checkbox>
+          <el-tooltip class="item" effect="dark" :content="$t('dataFrom.fullScanTip')" placement="top-start">
             <svg-icon icon-class="dengpao" style="margin-left:8px;" />
           </el-tooltip>
         </el-form-item>
 
-        <!-- 过滤配置 -->
-        <div class="form-section-title">过滤配置</div>
+        <div class="form-section-title">{{ $t('dataFrom.filterConfiguration') }}</div>
 
-        <!-- 文件大小过滤器 -->
         <el-form-item>
-          <el-checkbox v-model="fileShareServerForm.enableFileSizeFilter">文件大小过滤器</el-checkbox>
+          <el-checkbox v-model="fileShareServerForm.enableFileSizeFilter">{{ $t('dataFrom.fileSizeFilter') }}</el-checkbox>
         </el-form-item>
 
         <el-form-item v-if="fileShareServerForm.enableFileSizeFilter">
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span>扫描</span>
+            <span>{{ $t('dataFrom.scanFilesWithin') }}</span>
             <el-input v-model="fileShareServerForm.fileSizeMin" style="width: 120px;" placeholder="0"></el-input>
             <el-select v-model="fileShareServerForm.fileSizeMinUnit" style="width: 100px;">
               <el-option label="KB" value="KB"></el-option>
               <el-option label="MB" value="MB"></el-option>
               <el-option label="GB" value="GB"></el-option>
             </el-select>
-            <span>至</span>
-            <el-input v-model="fileShareServerForm.fileSizeMax" style="width: 120px;" placeholder="全部"></el-input>
+            <span>{{ $t('dataFrom.to') }}</span>
+            <el-input v-model="fileShareServerForm.fileSizeMax" style="width: 120px;" :placeholder="$t('dataFrom.all')"></el-input>
             <el-select v-model="fileShareServerForm.fileSizeMaxUnit" style="width: 100px;">
               <el-option label="KB" value="KB"></el-option>
               <el-option label="MB" value="MB"></el-option>
               <el-option label="GB" value="GB"></el-option>
             </el-select>
-            <span>的文件</span>
+            <span>{{ $t('dataFrom.files') }}</span>
           </div>
         </el-form-item>
 
-        <!-- 文件日期过滤器 -->
         <el-form-item>
-          <el-checkbox v-model="fileShareServerForm.enableFileDateFilter">文件日期过滤器</el-checkbox>
+          <el-checkbox v-model="fileShareServerForm.enableFileDateFilter">{{ $t('dataFrom.fileDateFilter') }}</el-checkbox>
         </el-form-item>
 
         <el-form-item v-if="fileShareServerForm.enableFileDateFilter">
           <el-radio-group v-model="fileShareServerForm.fileDateFilterType">
             <el-radio label="monthsWithin">
               <div style="display: flex; align-items: center; gap: 10px;">
-                <span>仅扫描</span>
+                <span>{{ $t('dataFrom.onlyScan') }}</span>
                 <el-input v-model="fileShareServerForm.fileDateMonths" style="width: 100px;" placeholder="3"></el-input>
-                <span>个月之内的文件</span>
+                <span>{{ $t('dataFrom.filesWithin') }}</span>
               </div>
             </el-radio>
             <el-radio label="monthsBefore">
               <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
-                <span>仅扫描</span>
+                <span>{{ $t('dataFrom.onlyScan') }}</span>
                 <el-input v-model="fileShareServerForm.fileDateMonthsBefore" style="width: 100px;"
-                  placeholder=""></el-input>
-                <span>个月之前的文件</span>
+                  :placeholder="$t('dataFrom.pleaseInput')"></el-input>
+                <span>{{ $t('dataFrom.scanFilesBefore') }}</span>
               </div>
             </el-radio>
             <el-radio label="dateRange">
               <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
-                <span>仅扫描</span>
-                <el-date-picker v-model="fileShareServerForm.fileDateStart" type="date" placeholder="请选择时间"
+                <span>{{ $t('dataFrom.onlyScan') }}</span>
+                <el-date-picker v-model="fileShareServerForm.fileDateStart" type="date" :placeholder="$t('dataFrom.pleaseSelectTime')"
                   value-format="yyyy-MM-dd" style="width: 160px;">
                 </el-date-picker>
                 <span>-</span>
-                <el-date-picker v-model="fileShareServerForm.fileDateEnd" type="date" placeholder="请选择时间"
+                <el-date-picker v-model="fileShareServerForm.fileDateEnd" type="date" :placeholder="$t('dataFrom.pleaseSelectTime')"
                   value-format="yyyy-MM-dd" style="width: 160px;">
                 </el-date-picker>
-                <span>之间的文件</span>
+                <span>{{ $t('dataFrom.filesBetween') }}</span>
               </div>
             </el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <!-- 调度周期 -->
-        <div class="form-section-title">调度周期</div>
-        <el-form-item label="执行周期" prop="scheduleType">
+        <div class="form-section-title">{{ $t('dataFrom.scheduleCycle') }}</div>
+        <el-form-item :label="$t('dataFrom.executionCycle')" prop="scheduleType">
           <el-select v-model="fileShareServerForm.scheduleType" @change="fileShareServerScheduleTypeChange">
             <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
