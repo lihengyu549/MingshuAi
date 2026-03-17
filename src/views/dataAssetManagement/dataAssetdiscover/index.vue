@@ -3,12 +3,12 @@
     <el-card shadow="never" class="searchCard">
       <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
         :inline="true" label-width="auto">
-        <el-form-item label="任务名称" prop="taskName">
-          <el-input v-model="queryParams.taskName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+        <el-form-item :label="$t('dataAssetdiscover.taskName')" prop="taskName">
+          <el-input v-model="queryParams.taskName" @input="inputSearch" :placeholder="$t('dataAssetdiscover.taskName')" clearable
             @keyup.enter.native="handleQuery" />
         </el-form-item>
-        <el-form-item label="状态" prop="taskState">
-          <el-select clearable v-model="queryParams.taskState" @change="inputSearch" placeholder="请选择数据库类型">
+        <el-form-item :label="$t('dataAssetdiscover.taskState')" prop="taskState">
+          <el-select clearable v-model="queryParams.taskState" @change="inputSearch" :placeholder="$t('dataAssetdiscover.taskState')">
             <el-option v-for="item in executeStatus" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -17,13 +17,19 @@
     </el-card>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">新增</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">
+          {{ $t('dataAssetdiscover.addTask') }}
+        </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="scanSMFn">立即扫描</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="scanSMFn">
+          {{ $t('dataAssetdiscover.scanTask') }}
+        </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">删除</el-button>
+        <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">
+          {{ $t('dataAssetdiscover.deleteTask') }}
+        </el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
@@ -31,30 +37,30 @@
       <el-table v-loading="loading" height="860px" class="tableBox" :data="proxysList"
         @selection-change="handleSelectionChange" ref="tableRef">
         <template slot="empty">
-          <el-empty description="暂无数据"></el-empty>
+          <el-empty :description="$t('noData')"></el-empty>
         </template>
         <el-table-column type="selection" width="60" align="center" />
-        <el-table-column label="任务名称" align="left" width="140" prop="taskName" show-overflow-tooltip>
+        <el-table-column :label="$t('dataAssetdiscover.taskName')" align="left" width="140" prop="taskName" show-overflow-tooltip>
           <template slot-scope="scope">
             <svg-icon icon-class="jobs" style="font-size: 16px; margin-right: 5px;" />
             {{ scope.row.taskName }}
           </template>
         </el-table-column>
-        <el-table-column label="IP段" align="center" prop="ipScope" show-overflow-tooltip>
+        <el-table-column :label="$t('dataAssetdiscover.ipScope')" align="center" prop="ipScope" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.ipScope }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="指定端口" align="center" prop="ports" show-overflow-tooltip />
-        <el-table-column label="周期" align="center" prop="scheduleType" show-overflow-tooltip>
+        <el-table-column :label="$t('dataAssetdiscover.ports')" align="center" prop="ports" show-overflow-tooltip />  
+        <el-table-column :label="$t('dataAssetdiscover.scheduleType')" align="center" prop="scheduleType" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span>{{ scope.row.scheduleType == '0' ? '手动' : scope.row.scheduleType == '1' ? '每天' :
+            <span>{{ scope.row.scheduleType == '0' ? $t('dataAssetdiscover.manual') : scope.row.scheduleType == '1' ? $t('dataAssetdiscover.daily') :
               scope.row.scheduleType
-                == '2' ? '每周' : scope.row.scheduleType == '3' ? '每月' : '' }}</span>
+                == '2' ? $t('dataAssetdiscover.weekly') : scope.row.scheduleType == '3' ? $t('dataAssetdiscover.monthly') : '' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="服务数" align="center" prop="servicesNum" show-overflow-tooltip />
-        <el-table-column label="状态" align="center" prop="taskState" show-overflow-tooltip>
+        <el-table-column :label="$t('dataAssetdiscover.servicesNum')" align="center" prop="servicesNum" show-overflow-tooltip />
+        <el-table-column :label="$t('dataAssetdiscover.taskState')" align="center" prop="taskState" show-overflow-tooltip>
           <template slot-scope="scope">
             <div style="display: flex; align-items: center;justify-content: center;">
               <img style="display: block; width: 20px;margin-right: 10px;"
@@ -63,12 +69,12 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+        <el-table-column :label="$t('dataAssetdiscover.updateTime')" align="center" prop="updateTime" show-overflow-tooltip />
+        <el-table-column :label="$t('dataAssetdiscover.operation')" align="center" class-name="small-padding fixed-width">
           <template slot-scope="scope">
             <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
-              @click="handleEcelFn(scope.row)">编辑</el-button>
-            <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)">结果查看</el-button>
+              @click="handleEcelFn(scope.row)">{{ $t('dataAssetdiscover.editTask') }}</el-button>
+            <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)">{{ $t('dataAssetdiscover.scanResult') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -82,17 +88,17 @@
       :visible.sync="addOrEdit.show" append-to-body :close-on-click-modal="false" width="700px">
       <el-form :model="addOrEditFormData" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules"
         ref="addOrEditForm" label-width="80px" label-position="top" class="dialog-form">
-        <el-form-item label="任务名称" prop="taskName">
-          <el-input v-model="addOrEditFormData.taskName" maxlength="50" placeholder="请输入任务名称"></el-input>
+        <el-form-item :label="$t('dataAssetdiscover.taskName')" prop="taskName">
+          <el-input v-model="addOrEditFormData.taskName" maxlength="50" :placeholder="$t('dataAssetdiscover.taskName')"></el-input>
         </el-form-item>
-        <el-form-item label="IP段" prop="ipScope">
-          <el-input v-model="addOrEditFormData.ipScope" maxlength="50" placeholder="请输入单个IP或IP段"></el-input>
+        <el-form-item :label="$t('dataAssetdiscover.ipScope')" prop="ipScope">
+          <el-input v-model="addOrEditFormData.ipScope" maxlength="50" :placeholder="$t('dataAssetdiscover.ipScope')"></el-input>
         </el-form-item>
-        <el-form-item label="指定端口" prop="ports">
-          <el-input v-model="addOrEditFormData.ports" maxlength="50" placeholder="请输入端口或端口范围"></el-input>
-          <div style="font-size: 12px; font-style: italic;">端口范围示例：0-65535，多个端口以英文逗号隔开</div>
+        <el-form-item :label="$t('dataAssetdiscover.ports')" prop="ports">
+          <el-input v-model="addOrEditFormData.ports" maxlength="50" :placeholder="$t('dataAssetdiscover.ports')"></el-input>
+          <div style="font-size: 12px; font-style: italic;">{{ $t('dataAssetdiscover.portsExample') }}</div>
         </el-form-item>
-        <el-form-item label="周期" prop="scheduleType">
+        <el-form-item :label="$t('dataAssetdiscover.scheduleType')" prop="scheduleType">
           <el-select v-model="addOrEditFormData.scheduleType" @change="scheduleTypeChange">
             <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
@@ -103,17 +109,20 @@
             </el-option>
           </el-select>
           <el-time-picker v-show="addOrEditFormData.scheduleType != '0' && addOrEditFormData.scheduleType != ''"
-            v-model="addOrEditFormData.scheduleTime" value-format='HH:mm' format="HH:mm" placeholder="任意时间点">
+            v-model="addOrEditFormData.scheduleTime" value-format='HH:mm' format="HH:mm" :placeholder="$t('dataAssetdiscover.scheduleTime')">
           </el-time-picker>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="addSubmitForm">确
-          定</el-button>
-        <el-button @click="addCancel">取 消</el-button>
+        <el-button type="primary" plain @click="addSubmitForm">
+          {{ $t('confirm') }}
+        </el-button>
+        <el-button @click="addCancel">
+          {{ $t('cancel') }}
+        </el-button>
       </div>
     </el-dialog>
-    <Drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
+    <Drawer :title="$t('dataAssetdiscover.scanResult')" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
       size="60%" :before-close="handleClose">
       <template slot="body">
         <Result :drawerData="drawerData" />
@@ -156,19 +165,27 @@ export default {
       weekTimeList: [
         {
           value: '0',
-          label: '手动'
+          label: this.$t('dataAssetdiscover.manual')
         }, {
           value: '1',
-          label: '每天'
+          label: this.$t('dataAssetdiscover.daily')
         }, {
           value: '2',
-          label: '每周'
+          label: this.$t('dataAssetdiscover.weekly')
         }, {
           value: '3',
-          label: '每月'
+          label: this.$t('dataAssetdiscover.monthly')
         }
       ],
-      weekList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日',],
+      weekList: [
+        this.$t('dataAssetdiscover.monday'),
+        this.$t('dataAssetdiscover.tuesday'),
+        this.$t('dataAssetdiscover.wednesday'),
+        this.$t('dataAssetdiscover.thursday'),
+        this.$t('dataAssetdiscover.friday'),
+        this.$t('dataAssetdiscover.saturday'),
+        this.$t('dataAssetdiscover.sunday'),
+      ],
       editIsFlag: false,
       scanStateBtnDisabled: false,// 扫描按钮禁用条件
       treeCheckedData: [],//树节点已选中数据
@@ -194,16 +211,16 @@ export default {
       executeStatus: [
         {
           value: 'COMPLETE',
-          label: '扫描完成'
+          label: this.$t('dataAssetdiscover.scanComplete')
         }, {
           value: 'RUNNING',
-          label: '扫描中'
+          label: this.$t('dataAssetdiscover.scanning')
         }, {
           value: 'NONE',
-          label: '待扫描'
+          label: this.$t('dataAssetdiscover.pendingScan')
         }, {
           value: 'ERR',
-          label: '扫描失败'
+          label: this.$t('dataAssetdiscover.scanFailed')
         }
       ],
       // 遮罩层
@@ -264,32 +281,32 @@ export default {
       addOrEditRules: {
         taskName: [
           {
-            required: true, message: "请输入任务名称", trigger: "blur"
+            required: true, message: this.$t('dataAssetdiscover.inputTaskName'), trigger: "blur"
           }
         ],
         ipScope: [
           {
-            required: true, message: "请输入IP段", trigger: "blur"
+            required: true, message: this.$t('dataAssetdiscover.inputIpScope'), trigger: "blur"
           }
         ],
         ports: [
           {
-            required: true, message: "请输入指定端口", trigger: "blur"
+            required: true, message: this.$t('dataAssetdiscover.inputPorts'), trigger: "blur"
           }
         ],
         scheduleType: [
           {
-            required: true, message: "请选择周期", trigger: "blur"
+            required: true, message: this.$t('dataAssetdiscover.selectSchedule'), trigger: "blur"
           }
         ],
         scheduleInterval: [
           {
-            required: true, validator: this.validateScheduleInterval, message: "请选择", trigger: "blur"
+            required: true, validator: this.validateScheduleInterval, message: this.$t('dataAssetdiscover.selectInterval'), trigger: "blur"
           }
         ],
         scheduleTime: [
           {
-            required: true, validator: this.validateScheduleTime, message: "请选择时间", trigger: "blur"
+            required: true, validator: this.validateScheduleTime, message: this.$t('dataAssetdiscover.selectTime'), trigger: "blur"
           }
         ],
       },
@@ -320,8 +337,16 @@ export default {
         // 将天数转换为数组
         this.weekList = this.createDaysArray(daysInMonth);
       } else if (val == '2') {
-        this.addOrEditFormData.scheduleInterval = '周一'
-        this.weekList = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        this.addOrEditFormData.scheduleInterval = this.$t('dataAssetdiscover.monday')
+        this.weekList = [
+          this.$t('dataAssetdiscover.monday'),
+          this.$t('dataAssetdiscover.tuesday'),
+          this.$t('dataAssetdiscover.wednesday'),
+          this.$t('dataAssetdiscover.thursday'),
+          this.$t('dataAssetdiscover.friday'),
+          this.$t('dataAssetdiscover.saturday'),
+          this.$t('dataAssetdiscover.sunday'),
+        ]
       } else {
         this.addOrEditFormData.scheduleInterval = ''
       }
@@ -336,7 +361,7 @@ export default {
           if (this.addOrEditFormData.id) {
             updateDatabaseProxysScan(this.addOrEditFormData).then((response) => {
               this.$message({
-                message: "编辑成功",
+                message: this.$t('dataAssetdiscover.editSuccess'),
                 duration: 3000,
                 type: 'success'
               });
@@ -346,7 +371,7 @@ export default {
           } else {
             addDatabaseProxysScan(this.addOrEditFormData).then((response) => {
               this.$message({
-                message: "添加成功",
+                message: this.$t('dataAssetdiscover.addSuccess'),
                 duration: 3000,
                 type: 'success'
               });
@@ -376,7 +401,7 @@ export default {
           msg = item.label
         }
       }
-      return msg || '待扫描'
+      return msg || this.$t('dataAssetdiscover.pendingScan')
     },
     businessNameFn(val) {
       this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
@@ -437,12 +462,12 @@ export default {
     /** 新增按钮操作 */
     handleAdd() {
       this.reset();
-      this.addOrEdit.title = '新增任务'
+      this.addOrEdit.title = this.$t('dataAssetdiscover.newTask')
       this.addOrEdit.show = true
       this.addOrEdit.flag = 1 // 1新增2编辑
     },
     handleEcelFn(row) {
-      this.addOrEdit.title = '编辑任务'
+      this.addOrEdit.title = this.$t('dataAssetdiscover.editTaskDialog')
       this.addOrEdit.show = true
       this.addOrEdit.flag = 2 // 1新增2编辑
       this.addOrEditFormData = JSON.parse(JSON.stringify(row))
@@ -451,9 +476,9 @@ export default {
     deleteFn() {
       let dataS = this.$refs.tableRef.selection
       if (dataS && dataS.length > 0) {
-        this.$confirm(`确定删除所选中的项吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('dataAssetdiscover.confirmDelete'), this.$t('dataAssetdiscover.tip'), {
+          confirmButtonText: this.$t('dataAssetdiscover.confirm'),
+          cancelButtonText: this.$t('dataAssetdiscover.cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {
@@ -469,16 +494,16 @@ export default {
           })
         })
       } else {
-        this.$message({ message: '至少选择一条数据', type: 'warning' })
+        this.$message({ message: this.$t('dataAssetdiscover.selectAtLeastOne'), type: 'warning' })
       }
     },
     // 扫描
     scanSMFn() {
       let dataS = this.$refs.tableRef.selection
       if (dataS && dataS.length > 0) {
-        this.$confirm(`确定扫描所选中的项吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('dataAssetdiscover.confirmScan'), this.$t('dataAssetdiscover.tip'), {
+          confirmButtonText: this.$t('dataAssetdiscover.confirm'),
+          cancelButtonText: this.$t('dataAssetdiscover.cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {
@@ -494,7 +519,7 @@ export default {
           })
         })
       } else {
-        this.$message({ message: '至少选择一条数据', type: 'warning' })
+        this.$message({ message: this.$t('dataAssetdiscover.selectAtLeastOne'), type: 'warning' })
       }
     },
     scanStateClickFn(row) {
