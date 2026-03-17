@@ -3,18 +3,18 @@
     <el-card shadow="never" class="searchCard">
       <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" label-position="left"
         v-show="showSearch" label-width="auto">
-        <el-form-item label="主机" prop="ip">
-          <el-input v-model="queryParams.ip" @input="inputSearch" placeholder="请输入ip" clearable
+        <el-form-item :label="$t('dataAssetdiscover.result.host')" prop="ip">
+          <el-input v-model="queryParams.ip" @input="inputSearch" :placeholder="$t('dataAssetdiscover.result.pleaseInputIp')" clearable
             @keyup.enter.native="handleQuery" />
         </el-form-item>
-        <el-form-item label="数据库类型" prop="databaseType">
-          <el-select v-model="queryParams.databaseType" placeholder="请选择数据库类型" @change="inputSearch" clearable>
+        <el-form-item :label="$t('dataAssetdiscover.result.databaseType')" prop="databaseType">
+          <el-select v-model="queryParams.databaseType" :placeholder="$t('dataAssetdiscover.result.selectDatabaseType')" @change="inputSearch" clearable>
             <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="文件服务器" prop="databaseType">
-        <el-select v-model="queryParams.databaseType" placeholder="请选择数据库类型" @change="inputSearch" clearable>
+        <el-form-item :label="$t('dataAssetdiscover.result.fileServer')" prop="databaseType">
+        <el-select v-model="queryParams.databaseType" :placeholder="$t('dataAssetdiscover.result.selectDatabaseType')" @change="inputSearch" clearable>
           <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
           </el-option>
         </el-select>
@@ -27,28 +27,28 @@
     <el-card shadow="never" class="table-card">
       <el-table class="tableBox" height="860px" v-loading="loading" :data="proxysList"
         @selection-change="handleSelectionChange" ref="tableRef">
-        <el-table-column label="主机" align="center" prop="ip" show-overflow-tooltip />
-        <el-table-column label="端口" align="center" prop="port" show-overflow-tooltip />
-        <el-table-column label="数据库类型" align="center" prop="databaseType" show-overflow-tooltip>
+        <el-table-column :label="$t('dataAssetdiscover.result.host')" align="center" prop="ip" show-overflow-tooltip />
+        <el-table-column :label="$t('dataAssetdiscover.result.port')" align="center" prop="port" show-overflow-tooltip />
+        <el-table-column :label="$t('dataAssetdiscover.result.databaseType')" align="center" prop="databaseType" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ findDatabaseValueByValue(scope.row.databaseType) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="数据库版本" align="center" prop="databaseVersion" show-overflow-tooltip />
-        <el-table-column label="文件服务器类型" align="center" prop="fileServer" show-overflow-tooltip />
-      <el-table-column label="状态" align="center" min-width="250" prop="state">
+        <el-table-column :label="$t('dataAssetdiscover.result.databaseVersion')" align="center" prop="databaseVersion" show-overflow-tooltip />
+        <el-table-column :label="$t('dataAssetdiscover.result.fileServerType')" align="center" prop="fileServer" show-overflow-tooltip />
+      <el-table-column :label="$t('dataAssetdiscover.result.state')" align="center" min-width="250" prop="state">
           <template slot-scope="scope">
             <div style="display: flex; align-items: center;justify-content: center;">
               <img style="display: block; width: 20px;margin-right: 10px;"
                 :src="imgSrc[scope.row.state ? scope.row.state : 'NONE']" alt="">
-              <span> {{ scope.row.state == 1 ? '已完成' : '未完成' }}</span>
+              <span> {{ scope.row.state == 1 ? $t('dataAssetdiscover.result.completed') : $t('dataAssetdiscover.result.notCompleted') }}</span>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+        <el-table-column :label="$t('dataAssetdiscover.result.operation')" align="center" class-name="small-padding fixed-width">
           <template slot-scope="scope">
             <el-button size="mini" type="text" :disabled="scope.row.state == '1'"
-              @click="resultExdit(scope.row)">导入数据源</el-button>
+              @click="resultExdit(scope.row)">{{ $t('dataAssetdiscover.result.importDataSource') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -60,71 +60,71 @@
       :close-on-click-modal="false">
       <el-form class="dialogForm" v-if="open" ref="form" :model="form" :rules="rules" label-width="auto"
         @submit.native.prevent label-position="top">
-        <el-form-item label="数据库类型" prop="databaseType" :rules="rules.databaseType">
-          <el-select v-model="form.databaseType" placeholder="请选择数据库类型" @change="databaseTypeChange($event)">
+        <el-form-item :label="$t('dataAssetdiscover.result.databaseType')" prop="databaseType" :rules="rules.databaseType">
+          <el-select v-model="form.databaseType" :placeholder="$t('dataAssetdiscover.result.selectDatabaseType')" @change="databaseTypeChange($event)">
             <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="数据源名称" prop="sourceName" :rules="rules.sourceName">
-          <el-input v-model="form.sourceName" maxlength="50" placeholder="请输入数据源名称" />
+        <el-form-item :label="$t('dataAssetdiscover.result.sourceName')" prop="sourceName" :rules="rules.sourceName">
+          <el-input v-model="form.sourceName" maxlength="50" :placeholder="$t('dataAssetdiscover.result.pleaseInputSourceName')" />
         </el-form-item>
-        <el-form-item label="分类分级框架" prop="projectName" :rules="rules.projectName">
-          <el-select v-model="form.projectName" placeholder="请输入分类分级框架" clearable @change="projectChangeEdit($event)">
+        <el-form-item :label="$t('dataAssetdiscover.result.classificationFramework')" prop="projectName" :rules="rules.projectName">
+          <el-select v-model="form.projectName" :placeholder="$t('dataAssetdiscover.result.pleaseSelectClassificationFramework')" clearable @change="projectChangeEdit($event)">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="来源业务系统" prop="businessName" :rules="rules.businessName">
-          <el-input v-model="form.businessName" maxlength="50" placeholder="请输入来源业务系统" />
-          <div style="font-size: 12px; font-style: italic;">示例：个人健康生理信息管理系统（建议使用中文进行描述）</div>
+        <el-form-item :label="$t('dataAssetdiscover.result.businessSystem')" prop="businessName" :rules="rules.businessName">
+          <el-input v-model="form.businessName" maxlength="50" :placeholder="$t('dataAssetdiscover.result.pleaseInputBusinessSystem')" />
+          <div style="font-size: 12px; font-style: italic;">{{ $t('dataAssetdiscover.result.example') }}</div>
         </el-form-item>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="主机" prop="targetIp" :rules="rules.targetIp">
-              <el-input v-model="form.targetIp" @input="targetIpRulesFn" placeholder="请输入主机IP地址" />
+            <el-form-item :label="$t('dataAssetdiscover.result.targetIp')" prop="targetIp" :rules="rules.targetIp">
+              <el-input v-model="form.targetIp" @input="targetIpRulesFn" :placeholder="$t('dataAssetdiscover.result.pleaseInputHostIP')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="端口" prop="targetPort" :rules="rules.targetPort">
-              <el-input v-model="form.targetPort" placeholder="请输入数据库端口" />
+            <el-form-item :label="$t('dataAssetdiscover.result.portField')" prop="targetPort" :rules="rules.targetPort">
+              <el-input v-model="form.targetPort" :placeholder="$t('dataAssetdiscover.result.pleaseInputDatabasePort')" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="用户" prop="targetUserName" :rules="rules.targetUserName">
-              <el-input v-model="form.targetUserName" placeholder="请输入数据库用户名称" />
+            <el-form-item :label="$t('dataAssetdiscover.result.user')" prop="targetUserName" :rules="rules.targetUserName">
+              <el-input v-model="form.targetUserName" :placeholder="$t('dataAssetdiscover.result.pleaseInputDatabaseUser')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="密码" prop="targetUserPassword" :rules="rules.targetUserPassword">
+            <el-form-item :label="$t('dataAssetdiscover.result.password')" prop="targetUserPassword" :rules="rules.targetUserPassword">
               <el-input type="password" v-model="form.targetUserPassword" :show-password="passwordVisible"
-                maxlength="100" placeholder="请输入数据库密码" />
+                maxlength="100" :placeholder="$t('dataAssetdiscover.result.pleaseInputDatabasePassword')" />
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item v-show="form.databaseType == 'ORACLE'" label="服务名" prop="connectionValue"
+        <el-form-item v-show="form.databaseType == 'ORACLE'" :label="$t('dataAssetdiscover.result.serviceName')" prop="connectionValue"
           :rules="rules.connectionValue()">
           <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput(form.connectionValue)"
-            placeholder="请输入" />
+            :placeholder="$t('dataAssetdiscover.result.pleaseInput')" />
         </el-form-item>
-        <el-form-item v-show="form.databaseType == 'ORACLE'" label="连接方式">
-          <el-radio v-model="connectionType" label="0">SID</el-radio>
-          <el-radio v-model="connectionType" label="1">Service Name</el-radio>
+        <el-form-item v-show="form.databaseType == 'ORACLE'" :label="$t('dataAssetdiscover.result.connectionMethod')">
+          <el-radio v-model="connectionType" label="0">{{ $t('dataAssetdiscover.result.SID') }}</el-radio>
+          <el-radio v-model="connectionType" label="1">{{ $t('dataAssetdiscover.result.serviceNameConnection') }}</el-radio>
         </el-form-item>
-        <el-form-item v-show="form.databaseType != 'ORACLE'" label="实例名/库名" prop="examplesName"
+        <el-form-item v-show="form.databaseType != 'ORACLE'" :label="$t('dataAssetdiscover.result.instanceName')" prop="examplesName"
           :rules="rules.examplesName()">
-          <el-input v-model="form.examplesName" placeholder="请输入实例名/库名" />
+          <el-input v-model="form.examplesName" :placeholder="$t('dataAssetdiscover.result.pleaseInputInstanceName')" />
         </el-form-item>
-        <el-form-item label="扫描内容" prop="tabelCheckedName">
+        <el-form-item :label="$t('dataAssetdiscover.result.scanContent')" prop="tabelCheckedName">
           <div @click="scanContentFn()"><el-input style="position: relative;" readonly>
             </el-input>
             <el-tag style="position: absolute;top: 4px;left: 6px;">{{ form.tabelCheckedName ? form.tabelCheckedName :
-              '点击选择扫描内容' }}</el-tag>
+              $t('dataAssetdiscover.result.clickToSelectScanContent') }}</el-tag>
           </div>
         </el-form-item>
-        <el-form-item label="周期" prop="scheduleType">
+        <el-form-item :label="$t('dataAssetdiscover.result.cycle')" prop="scheduleType">
           <el-select v-model="form.scheduleType" @change="scheduleTypeChange">
             <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
@@ -134,24 +134,24 @@
             </el-option>
           </el-select>
           <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
-            @input="handleTimeChange" value-format='HH:mm' format="HH:mm" placeholder="任意时间点">
+            @input="handleTimeChange" value-format='HH:mm' format="HH:mm" :placeholder="$t('dataAssetdiscover.result.anyTimePoint')">
           </el-time-picker>
         </el-form-item>
 
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="submitForm">确 定</el-button>
-        <el-button @click="cancleFn">取消</el-button>
+        <el-button type="primary" plain @click="submitForm">{{ $t('dataAssetdiscover.result.confirm') }}</el-button>
+        <el-button @click="cancleFn">{{ $t('dataAssetdiscover.result.cancel') }}</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="扫描配置" class="addMsg" v-loading="scanContentLoading" :visible.sync="scanContentShow" width="950px"
+    <el-dialog :title="$t('dataAssetdiscover.result.scanConfiguration')" class="addMsg" v-loading="scanContentLoading" :visible.sync="scanContentShow" width="950px"
       append-to-body :close-on-click-modal="false">
       <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData"
         :scanContentTreeData="scanContentTreeData" :databaseTableNameParama="databaseTableNameParama"
         ref="scanContentTreeRef" />
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="scanContentSubmitFn">确 定</el-button>
-        <el-button @click="scanContentShow = false">取 消</el-button>
+        <el-button type="primary" plain @click="scanContentSubmitFn">{{ $t('dataAssetdiscover.result.confirm') }}</el-button>
+        <el-button @click="scanContentShow = false">{{ $t('dataAssetdiscover.result.cancel') }}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -503,7 +503,7 @@ export default {
           }
           let res = await getDatabaseNameList(this.databaseTableNameParama)
           if (res.data.length == 0) {
-            this.$message({ message: '暂无数据，请稍后再试', type: 'warning' })
+            this.$message({ message: this.$t('dataAssetdiscover.tableSelector.noDataPleaseTryLater'), type: 'warning' })
           } else {
             this.scanContentTreeData = res.data
             this.scanContentShow = true
@@ -547,16 +547,16 @@ export default {
         }
       })
       this.form.tables = result
-      this.form.tabelCheckedName = `已选${this.$refs.scanContentTreeRef.selectedTableCount}张表`  //共${this.$refs.scanContentTreeRef.fieldCount}个字段
+      this.form.tabelCheckedName = this.$t('dataAssetdiscover.tableSelector.selectedTablesWithCount', { count: this.$refs.scanContentTreeRef.selectedTableCount })
       this.scanContentShow = false
     },
     handleAdda() {
       this.loading = true
       let dataS = this.$refs.tableRef.selection
       if (dataS && dataS.length > 0) {
-        this.$confirm(`确定当前勾选项吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('dataAssetdiscover.tableSelector.confirmCurrentSelection'), this.$t('dataAssetdiscover.tableSelector.tip'), {
+          confirmButtonText: this.$t('dataAssetdiscover.result.confirm'),
+          cancelButtonText: this.$t('dataAssetdiscover.result.cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {
@@ -575,7 +575,7 @@ export default {
           this.loading = false
         });
       } else {
-        this.$message({ message: '请选择至少一条数据', type: 'warning' })
+        this.$message({ message: this.$t('dataAssetdiscover.result.selectAtLeastOne'), type: 'warning' })
       }
     },
 
@@ -597,10 +597,10 @@ export default {
         console.log(data);
 
         if (!this.editIsFlag && !data.tables) {
-          this.$message({ message: '请选择扫描内容', type: 'warning' })
+          this.$message({ message: this.$t('dataAssetdiscover.result.selectScanContent'), type: 'warning' })
           return
         } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
-          this.$message({ message: '请选择扫描内容', type: 'warning' })
+          this.$message({ message: this.$t('dataAssetdiscover.result.selectScanContent'), type: 'warning' })
           return
         }
         if (valid) {
