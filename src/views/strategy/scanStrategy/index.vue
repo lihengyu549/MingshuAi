@@ -67,10 +67,10 @@
             <div class="switch-card">
               <div class="switch-content">
                 <div class="switch-label">
-                  <div class="label-text">{{ allData.DirtyData.DirtyData5.label }}</div>
-                  <div class="label-desc">包含前端配置，系统参数等</div>
+                  <div class="label-text">{{ allData.DirtyData.DirtyData7.label }}</div>
+                  <div class="label-desc">重复表结构</div>
                 </div>
-                <el-switch v-model="allData.DirtyData.DirtyData5.state" active-color="#009dff"
+                <el-switch v-model="allData.DirtyData.DirtyData7.state" active-color="#009dff"
                   inactive-color="#e0e0e0"></el-switch>
               </div>
             </div>
@@ -142,6 +142,49 @@
         </div>
       </div>
     </el-card>
+
+    <el-card class="card" shadow="never">
+      <template slot="header">
+        <span class="title">
+          <div class="icon">
+            <svg-icon icon-class="scanStrategy-4" style="font-size: 20px;"></svg-icon>
+          </div><span>安全分级管理</span>
+        </span>
+      </template>
+      <el-table :data="allData.SecurityLevelList.sysRiskLevel" style="width: 100%">
+        <el-table-column prop="dictValue" label="分级数字" align="center" />
+        <el-table-column label="分级名称" align="center">
+          <template slot-scope="scope">
+            <el-select v-if="editingIndex === scope.$index" v-model="scope.row.dictLabel" placeholder="请选择">
+              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+                :value="item.value" />
+            </el-select>
+            <span v-else>{{ scope.row.dictLabel }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="分级定义" align="center">
+          <template slot-scope="scope">
+            <el-input v-if="editingIndex === scope.$index" v-model="scope.row.remark" placeholder="请输入" />
+            <span v-else>{{ scope.row.remark }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="启用状态" width="150" align="center">
+          <template slot-scope="scope">
+            <el-switch v-model="scope.row.status" :disabled="scope.row.dictLabel === '未分级'" active-color="#009dff" inactive-color="#e0e0e0"></el-switch>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="150" align="center">
+          <template slot-scope="scope">
+            <span v-if="scope.row.dictLabel === '未分级'">-</span>
+            <template v-else>
+              <el-button v-if="editingIndex === scope.$index" type="text" size="small" @click="cancelEdit">取消</el-button>
+              <el-button v-else type="text" size="small" @click="handleEdit(scope.$index)">编辑</el-button>
+            </template>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
+
     <div class="foot_btn">
       <el-button type="primary" plain @click="submit">确 定</el-button>
     </div>
@@ -151,10 +194,9 @@
 <script>
 import { treeselect as menuTreeselect, roleMenuTreeselect } from "@/api/system/menu";
 import { listByTacticsQueryUrl, updateByTactics } from "@/api/system/dict/data";
-
 export default {
   name: "matchingStrategy",
-  // dicts: ['sys_normal_disable'],
+  dicts: ['sys_risk_level'],
   data() {
     return {
       value: true,
@@ -162,6 +204,7 @@ export default {
       value3: true,
       radio: 20,
       sys_risk_levelList: ['1', '2', '3', '4', '5'],
+      editingIndex: -1,
       allData: {
         DirtyData: {
           DirtyData1: {},
@@ -170,10 +213,14 @@ export default {
           DirtyData4: {},
           DirtyData5: {},
           DirtyData6: {},
+          DirtyData7: {},
         },
         SensitiveData: {},
         SampleExtraction: {},
         DataTableQualityScore: {},
+        SecurityLevelList: {
+          sysRiskLevel: []
+        }
         // 噪音数据过滤
       },
       cardLoading: false,
@@ -183,6 +230,13 @@ export default {
     this.getlistData()
   },
   methods: {
+    handleEdit(index) {
+      this.editingIndex = index;
+    },
+    cancelEdit() {
+      this.editingIndex = -1;
+      this.getlistData();
+    },
     numInputFn() {
       let value = this.allData.DataTableQualityScore.value.replace(/[^0-9]/g, ''); // 移除非数字字符
       this.allData.DataTableQualityScore.value = value; // 更新输入框的值
@@ -244,8 +298,13 @@ export default {
     getlistData() {
       listByTacticsQueryUrl('sys_scan_tactics').then(res => {
         this.cardLoading = true
+        this.allData = res.data
         if (res.code == 200) {
-          this.allData = res.data
+          if (res.data.SecurityLevelList && res.data.SecurityLevelList.sysRiskLevel) {
+            res.data.SecurityLevelList.sysRiskLevel.forEach(item => {
+              item.status = item.status == '0' ? true : false
+            })
+          }
           this.cardLoading = false
         }
       })
@@ -255,7 +314,17 @@ export default {
       if (!this.dirtyDataValueValidate()) {
         return;
       }
-      updateByTactics(this.allData).then(res => {
+      this.editingIndex = -1
+      const submitData = {
+        ...this.allData,
+        SecurityLevelList: {
+          sysRiskLevel: (this.allData.SecurityLevelList.sysRiskLevel || []).map(item => ({
+            ...item,
+            status: item.status ? '0' : '1'
+          }))
+        }
+      }
+      updateByTactics(submitData).then(res => {
         if (res.code == 200) {
           this.$message({
             message: '修改成功',
@@ -263,12 +332,19 @@ export default {
           });
           this.getlistData()
         }
+      }).catch(err => {
+        this.getlistData()
       })
     }
   }
 };
 </script>
 <style scoped lang="scss">
+.app-container {
+  padding: 20px;
+  height: 100%;
+}
+
 .card {
   padding: 10px;
   margin-bottom: 20px;
@@ -382,9 +458,8 @@ export default {
 }
 
 .foot_btn {
-  position: absolute;
-  right: 37px;
-  bottom: 24px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .el-row {
