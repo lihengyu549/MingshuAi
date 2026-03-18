@@ -1100,8 +1100,8 @@ export default {
     },
     markingCli() {
       this.$confirm(this.$t('dataFrom.confirmScan'), this.$t('dataFrom.tip'), {
-        confirmButtonText: this.$t('dataFrom.confirm'),
-        cancelButtonText: this.$t('dataFrom.cancel'),
+        confirmButtonText: this.$t('confirm'),
+        cancelButtonText: this.$t('cancel'),
         type: 'warning'
       }).then(() => {
         let ck = ''
@@ -1119,7 +1119,7 @@ export default {
         }
         databaseMaskI(data).then((res => {
           this.$alert(this.$t('dataFrom.dataAlreadySubmitted'), this.$t('dataFrom.dataScanning'), {
-            confirmButtonText: this.$t('dataFrom.confirm'),
+            confirmButtonText: this.$t('confirm'),
             type: 'success'
           });
           this.markingVisible = false
@@ -1371,8 +1371,8 @@ export default {
         }
         if (flagList.includes('COMPLETE')) {
           this.$confirm(this.$t('dataFrom.confirmDeleteWithResult'), this.$t('dataFrom.tip'), {
-            confirmButtonText: this.$t('dataFrom.confirm'),
-            cancelButtonText: this.$t('dataFrom.cancel'),
+            confirmButtonText: this.$t('confirm'),
+            cancelButtonText: this.$t('cancel'),
             type: 'warning'
           }).then(() => {
             let ids = dataS.map(item => {
@@ -1389,8 +1389,8 @@ export default {
           return
         }
         this.$confirm(this.$t('dataFrom.confirmDelete'), this.$t('dataFrom.tip'), {
-          confirmButtonText: this.$t('dataFrom.confirm'),
-          cancelButtonText: this.$t('dataFrom.cancel'),
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {
@@ -1412,8 +1412,8 @@ export default {
       if (this.btnLoading) return;
       if (row.scanState == 'COMPLETE') {
         this.$confirm(this.$t('dataFrom.confirmRescan'), this.$t('dataFrom.tip'), {
-          confirmButtonText: this.$t('dataFrom.confirm'),
-          cancelButtonText: this.$t('dataFrom.cancel'),
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           this.btnLoading = true;
@@ -1442,8 +1442,8 @@ export default {
     stopScan(row) {
       if (this.btnLoading) return;
       this.$confirm(this.$t('dataFrom.confirmStopScan', { name: row.sourceName }), this.$t('dataFrom.tip'), {
-        confirmButtonText: this.$t('dataFrom.confirm'),
-        cancelButtonText: this.$t('dataFrom.cancel'),
+        confirmButtonText: this.$t('confirm'),
+        cancelButtonText: this.$t('cancel'),
         type: 'warning'
       }).then(() => {
         this.btnLoading = true;
