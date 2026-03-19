@@ -5,7 +5,7 @@
         <el-card class="left-card" shadow="never">
           <!-- 1. 原有搜索输入框(保持不变,位于最上方) -->
           <div class="head-container" style="margin-bottom: 15px;">
-            <el-input v-model="filterText" placeholder="请输入库名搜索" clearable>
+            <el-input v-model="filterText" :placeholder="$t('assetCatalog.pleaseInputLibraryName')" clearable>
               <i slot="prefix" class="el-input__icon el-icon-search"></i>
             </el-input>
           </div>
@@ -16,13 +16,13 @@
             <!-- 左侧全选框(带文字说明) -->
             <el-checkbox v-model="isTreeAllChecked" @change="handleTreeAllCheck"
               :indeterminate="isTreeAllChecked === null" style="font-size: 14px; margin-left: 20px;">
-              全选
+              {{ $t('assetCatalog.selectAll') }}
             </el-checkbox>
             <!-- 右侧导出按钮(无选中节点时禁用) -->
             <el-button type="text" @click="handleTreeExport" :disabled="selectedTreeNodeIds.length === 0"
               style="color: #26244ce0;">
               <svg-icon icon-class="导出" />
-              导出
+              {{ $t('assetCatalog.export') }}
             </el-button>
           </div>
 
@@ -44,27 +44,26 @@
           <el-card class="search-card" shadow="never">
             <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="false"
               label-width="100px">
-              <el-form-item label="表名" prop="tableName">
-                <el-input v-model="queryParams.tableName" placeholder="请输入表名搜索" @input="handleInputChange" clearable>
+              <el-form-item :label="$t('assetCatalog.tableName')" prop="tableName">
+                <el-input v-model="queryParams.tableName" :placeholder="$t('assetCatalog.pleaseInputTableName')" @input="handleInputChange" clearable>
                   <i slot="prefix" class="el-input__icon el-icon-search"></i>
                 </el-input>
               </el-form-item>
-              <el-form-item label="语义填充" prop="paddingStatus">
-                <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange" placeholder="全部"
-                  clearable>
-                  <el-option label="未开始" value="1"></el-option>
-                  <el-option label="成功" value="2"></el-option>
-                  <el-option label="失败" value="3"></el-option>
-                  <el-option label="执行中" value="4"></el-option>
+              <el-form-item :label="$t('assetCatalog.semanticFilling')" prop="paddingStatus">
+                <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange" :placeholder="$t('assetCatalog.all')" clearable>
+                  <el-option :label="$t('assetCatalog.notStarted')" value="1"></el-option>
+                  <el-option :label="$t('assetCatalog.success')" value="2"></el-option>
+                  <el-option :label="$t('assetCatalog.failed')" value="3"></el-option>
+                  <el-option :label="$t('assetCatalog.executing')" value="4"></el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item label="样本特征提取" prop="featureExtractionStatus">
+              <el-form-item :label="$t('assetCatalog.sampleFeatureExtraction')" prop="featureExtractionStatus">
                 <el-select v-model="queryParams.featureExtractionStatus" @change="selectProjectIdChange"
-                  placeholder="全部" clearable>
-                  <el-option label="未开始" value="1"></el-option>
-                  <el-option label="成功" value="2"></el-option>
-                  <el-option label="失败" value="3"></el-option>
-                  <el-option label="执行中" value="4"></el-option>
+                  :placeholder="$t('assetCatalog.all')" clearable>
+                  <el-option :label="$t('assetCatalog.notStarted')" value="1"></el-option>
+                  <el-option :label="$t('assetCatalog.success')" value="2"></el-option>
+                  <el-option :label="$t('assetCatalog.failed')" value="3"></el-option>
+                  <el-option :label="$t('assetCatalog.executing')" value="4"></el-option>
                 </el-select>
               </el-form-item>
             </el-form>
@@ -79,7 +78,7 @@
                     {{ item.tableName }}
                   </h3>
                   <button class="field-info-btn" @click="fieldInformationFn(item)">
-                    <i class="el-icon-warning-outline" style="margin-right: 5px;"></i>字段信息
+                    <i class="el-icon-warning-outline" style="margin-right: 5px;"></i>{{ $t('assetCatalog.fieldInformation') }}
                   </button>
                 </div>
 
@@ -89,7 +88,7 @@
                   <div class="row row-1">
                     <!-- CHANGE: 添加点击事件打开评估详情弹窗 -->
                     <div class="col col-4" @click="showScoreDialog(item)" style="cursor: pointer;">
-                      <div class="label">数据质量评分</div>
+                      <div class="label">{{ $t('assetCatalog.dataQualityScore') }}</div>
                       <div class="value" :title="item.score || '--'">{{ item.score ? item.score : '--' }}</div>
                       <svg-icon icon-class="xingxing" class="info-icon" />
                       <div class="progress-bar">
@@ -97,7 +96,7 @@
                       </div>
                     </div>
                     <div class="col col-1">
-                      <div class="label">表注释</div>
+                      <div class="label">{{ $t('assetCatalog.tableComment') }}</div>
                       <div class="value" :title="item.oldTableRemark || '--'">{{ item.oldTableRemark ?
                         item.oldTableRemark
                         :
@@ -105,12 +104,12 @@
                       <svg-icon icon-class="xinxi" class="info-icon" />
                     </div>
                     <div class="col col-2">
-                      <div class="label">数据大小</div>
+                      <div class="label">{{ $t('assetCatalog.dataSize') }}</div>
                       <div class="value" :title="item.dataSize || '--'">{{ item.dataSize ? item.dataSize : '--' }}</div>
                       <svg-icon icon-class="database" class="info-icon" />
                     </div>
                     <div class="col col-3">
-                      <div class="label">数据量级</div>
+                      <div class="label">{{ $t('assetCatalog.dataVolume') }}</div>
                       <div class="value" :title="item.dataMagnitude ? item.dataMagnitude + ' 行' : '--'">{{
                         item.dataMagnitude ? item.dataMagnitude + ' 行' : '--' }}</div>
                       <svg-icon icon-class="list2" class="info-icon" />
@@ -120,32 +119,32 @@
                   <!-- 第二行：6 列 -->
                   <div class="row row-2">
                     <div class="col">
-                      <div class="label">AI表注释</div>
+                      <div class="label">{{ $t('assetCatalog.aiTableComment') }}</div>
                       <div class="value" :title="item.craftTableRemark || '--'">{{ item.craftTableRemark ?
                         item.craftTableRemark : '--' }}</div>
                     </div>
                     <div class="col">
-                      <div class="label">数据源名称</div>
+                      <div class="label">{{ $t('assetCatalog.dataSourceName') }}</div>
                       <div class="value" :title="item.dataSourceName || '--'">{{ item.dataSourceName ?
                         item.dataSourceName : '--' }}</div>
                     </div>
                     <div class="col">
-                      <div class="label">分类分级标准</div>
+                      <div class="label">{{ $t('assetCatalog.classificationLevelStandard') }}</div>
                       <div class="value" :title="item.categoryName || '--'">{{ item.categoryName ?
                         item.categoryName : '--' }}</div>
                     </div>
                     <div class="col">
-                      <div class="label">来源业务系统</div>
+                      <div class="label">{{ $t('assetCatalog.businessSystem') }}</div>
                       <div class="value" :title="item.businessName || '--'">{{ item.businessName ?
                         item.businessName : '--' }}</div>
                     </div>
                     <div class="col">
-                      <div class="label">所属库名</div>
+                      <div class="label">{{ $t('assetCatalog.libraryName') }}</div>
                       <div class="value" :title="item.affiliationDatabaseName || '--'">{{ item.affiliationDatabaseName ?
                         item.affiliationDatabaseName : '--' }}</div>
                     </div>
                     <div class="col">
-                      <div class="label">表分类</div>
+                      <div class="label">{{ $t('assetCatalog.tableClassification') }}</div>
                       <div class="value" :title="item.tableCategoryName || '--'">{{ item.tableCategoryName ?
                         item.tableCategoryName : '--' }}</div>
                     </div>
@@ -154,44 +153,44 @@
                   <!-- 第三行：6 列 -->
                   <div class="row row-3">
                     <div class="col">
-                      <div class="label">表分级</div>
+                      <div class="label">{{ $t('assetCatalog.tableLevel') }}</div>
                       <div class="value" :title="item.tableSecurityLevel || '--'">{{ item.tableSecurityLevel ?
                         item.tableSecurityLevel : '--' }}</div>
                     </div>
                     <div class="col">
-                      <div class="label">个人信息条数</div>
+                      <div class="label">{{ $t('assetCatalog.personalInfoCount') }}</div>
                       <div class="value green"
                         :title="item.personalInformation ? item.personalInformation + ' 条' : '--'">
                         {{
                           item.personalInformation ? item.personalInformation + ' 条' : '--' }}</div>
                     </div>
                     <div class="col">
-                      <div class="label">未成年人信息条数</div>
+                      <div class="label">{{ $t('assetCatalog.minorInfoCount') }}</div>
                       <div class="value" :title="item.minorsInformation || '--'">{{ item.minorsInformation ?
                         item.minorsInformation : '--' }}</div>
                     </div>
                     <div class="col">
-                      <div class="label">字段数量</div>
+                      <div class="label">{{ $t('assetCatalog.fieldCount') }}</div>
                       <div class="value" :title="item.fieldCount || '--'">{{ item.fieldCount ? item.fieldCount : '--' }}
                       </div>
                     </div>
                     <div class="col">
-                      <div class="label">语义填充</div>
+                      <div class="label">{{ $t('assetCatalog.semanticFilling') }}</div>
                       <el-tag
-                        :type="item.paddingStatus == '未开始' ? 'info' : item.paddingStatus == '成功' ? 'success' : item.paddingStatus == '失败' ? 'danger' : item.paddingStatus == '执行中' ? 'primary' : 'info'"
+                        :type="item.paddingStatus == $t('assetCatalog.notStarted') ? 'info' : item.paddingStatus == $t('assetCatalog.success') ? 'success' : item.paddingStatus == $t('assetCatalog.failed') ? 'danger' : item.paddingStatus == $t('assetCatalog.executing') ? 'primary' : 'info'"
                         class="status-tag" :title="item.paddingStatus">
                         <i
-                          :class="item.paddingStatus == '未开始' ? 'el-icon-time' : item.paddingStatus == '成功' ? 'el-icon-circle-check' : item.paddingStatus == '失败' ? 'el-icon-warning-outline' : item.paddingStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
+                          :class="item.paddingStatus == $t('assetCatalog.notStarted') ? 'el-icon-time' : item.paddingStatus == $t('assetCatalog.success') ? 'el-icon-circle-check' : item.paddingStatus == $t('assetCatalog.failed') ? 'el-icon-warning-outline' : item.paddingStatus == $t('assetCatalog.executing') ? 'el-icon-refresh' : 'el-icon-time'"></i>
                         {{ item.paddingStatus }}
                       </el-tag>
                     </div>
                     <div class="col">
-                      <div class="label">样本特征提取</div>
+                      <div class="label">{{ $t('assetCatalog.sampleFeatureExtraction') }}</div>
                       <el-tag
-                        :type="item.featureExtractionStatus == '未开始' ? 'info' : item.featureExtractionStatus == '成功' ? 'success' : item.featureExtractionStatus == '失败' ? 'danger' : item.featureExtractionStatus == '执行中' ? 'primary' : 'primary'"
+                        :type="item.featureExtractionStatus == $t('assetCatalog.notStarted') ? 'info' : item.featureExtractionStatus == $t('assetCatalog.success') ? 'success' : item.featureExtractionStatus == $t('assetCatalog.failed') ? 'danger' : item.featureExtractionStatus == $t('assetCatalog.executing') ? 'primary' : 'primary'"
                         class="status-tag" :title="item.featureExtractionStatus">
                         <i
-                          :class="item.featureExtractionStatus == '未开始' ? 'el-icon-time' : item.featureExtractionStatus == '成功' ? 'el-icon-circle-check' : item.featureExtractionStatus == '失败' ? 'el-icon-warning-outline' : item.featureExtractionStatus == '执行中' ? 'el-icon-refresh' : 'el-icon-time'"></i>
+                          :class="item.featureExtractionStatus == $t('assetCatalog.notStarted') ? 'el-icon-time' : item.featureExtractionStatus == $t('assetCatalog.success') ? 'el-icon-circle-check' : item.featureExtractionStatus == $t('assetCatalog.failed') ? 'el-icon-warning-outline' : item.featureExtractionStatus == $t('assetCatalog.executing') ? 'el-icon-refresh' : 'el-icon-time'"></i>
                         {{ item.featureExtractionStatus }}
                       </el-tag>
                     </div>
@@ -199,7 +198,7 @@
                 </div>
               </div>
               <div v-if="dataAll.length === 0" class="no-data">
-                <el-empty description="暂无数据"></el-empty>
+                <el-empty :description="$t('assetCatalog.noData')"></el-empty>
               </div>
             </div>
             <!-- type = 0 时才显示此分页组件 -->
@@ -230,7 +229,7 @@
               <div class="folder-header">
                 <div class="folder-title">
                   <span class="folder-name">{{ currentFolderName }}</span>
-                  <span class="folder-count">{{ totalItems }} 项</span>
+                  <span class="folder-count">{{ totalItems }} {{ $t('assetCatalog.item') }}</span>
                 </div>
                 <!-- (3) 排序组件 -->
                 <!-- 修改排序组件，支持所有字段的升降序 -->
@@ -242,15 +241,15 @@
                     </span>
                     <el-dropdown-menu slot="dropdown">
                       <el-dropdown-item command="add_time">
-                        <span>上传时间</span>
+                        <span>{{ $t('assetCatalog.uploadTime') }}</span>
                         <i :class="getSortIcon('add_time')"></i>
                       </el-dropdown-item>
                       <el-dropdown-item command="file_name">
-                        <span>文件名称</span>
+                        <span>{{ $t('assetCatalog.fileName') }}</span>
                         <i :class="getSortIcon('file_name')"></i>
                       </el-dropdown-item>
                       <el-dropdown-item command="file_size">
-                        <span>文件大小</span>
+                        <span>{{ $t('assetCatalog.fileSize') }}</span>
                         <i :class="getSortIcon('file_size')"></i>
                       </el-dropdown-item>
                     </el-dropdown-menu>
@@ -260,7 +259,7 @@
 
               <!-- (4) 文件夹展示区域 -->
               <div class="folder-section">
-                <div class="section-title">文件夹</div>
+                <div class="section-title">{{ $t('assetCatalog.folder') }}</div>
                 <div v-if="folderList.length > 0" class="folder-grid">
                   <div v-for="folder in folderList" :key="folder.id" class="folder-item"
                     @click="handleFolderClick(folder)">
@@ -272,7 +271,7 @@
 
               <!-- (5) 文件列表展示 -->
               <div class="file-section">
-                <div class="section-title">文件</div>
+                <div class="section-title">{{ $t('assetCatalog.file') }}</div>
                 <div class="file-list">
                   <div v-for="file in paginatedFileList" :key="file.id" class="file-item">
                     <div class="file-content">
@@ -285,7 +284,7 @@
                         <span class="file-size">{{ file.fileSize }}</span>
                       </div>
                     </div>
-                    <span class="file-footer"><b>摘要：</b>{{ file.digest }}</span>
+                    <span class="file-footer"><b>{{ $t('assetCatalog.summary') }}：</b>{{ file.digest }}</span>
                   </div>
                 </div>
 
@@ -305,16 +304,16 @@
         <el-card class="search-card" shadow="never">
           <el-form :model="drawerQueryParams" class="yuanDataClass" ref="drawerQueryForm" size="small" :inline="true"
             label-width="80px">
-            <el-form-item label="字段名称" prop="fieldName"> <!-- 添加prop -->
-              <el-input v-model="drawerQueryParams.fieldName" placeholder="请输入字段名称搜索" @input="handleDrawerSearch"
+            <el-form-item :label="$t('assetCatalog.fieldName')" prop="fieldName">
+              <el-input v-model="drawerQueryParams.fieldName" :placeholder="$t('assetCatalog.pleaseInputFieldName')" @input="handleDrawerSearch"
                 size="mini"></el-input>
             </el-form-item>
-            <el-form-item label="字段类型" prop="fieldType"> <!-- 添加prop -->
-              <el-input v-model="drawerQueryParams.fieldType" placeholder="请输入字段类型搜索" @input="handleDrawerSearch"
+            <el-form-item :label="$t('assetCatalog.fieldType')" prop="fieldType">
+              <el-input v-model="drawerQueryParams.fieldType" :placeholder="$t('assetCatalog.pleaseInputFieldType')" @input="handleDrawerSearch"
                 size="mini"></el-input>
             </el-form-item>
-            <el-form-item label="字段注释" prop="oldFieldRemark"> <!-- 添加prop -->
-              <el-input v-model="drawerQueryParams.oldFieldRemark" placeholder="请输入字段注释搜索" @input="handleDrawerSearch"
+            <el-form-item :label="$t('assetCatalog.fieldComment')" prop="oldFieldRemark">
+              <el-input v-model="drawerQueryParams.oldFieldRemark" :placeholder="$t('assetCatalog.pleaseInputFieldComment')" @input="handleDrawerSearch"
                 size="mini"></el-input>
             </el-form-item>
             <!-- <el-form-item label="脏数据" prop="dirtyData">
@@ -338,14 +337,14 @@
         </el-card>
         <el-card class="table-card drawer-table-card" shadow="never">
           <el-table :data="filteredDrawerData" ref="tableRef" :key="tableKey" border class="tableBox">
-            <el-table-column label="字段名称" align="center" prop="fieldName" width="200" show-overflow-tooltip />
-            <el-table-column label="字段类型" align="center" prop="fieldType" width="200" show-overflow-tooltip />
-            <el-table-column label="字段注释" align="center" width="200" prop="oldFieldRemark" show-overflow-tooltip>
+            <el-table-column :label="$t('assetCatalog.fieldName')" align="center" prop="fieldName" width="200" show-overflow-tooltip />
+            <el-table-column :label="$t('assetCatalog.fieldType')" align="center" prop="fieldType" width="200" show-overflow-tooltip />
+            <el-table-column :label="$t('assetCatalog.fieldComment')" align="center" width="200" prop="oldFieldRemark" show-overflow-tooltip>
               <template slot-scope="scope">
                 <span>{{ scope.row.oldFieldRemark }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="AI字段注释" align="center" prop="aiFieldRemark" min-width="200" show-overflow-tooltip>
+            <el-table-column :label="$t('assetCatalog.aiFieldComment')" align="center" prop="aiFieldRemark" min-width="200" show-overflow-tooltip>
               <template slot-scope="scope">
                 <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, 'aiFieldRemark')">{{
                   scope.row.aiFieldRemark }}</span>
@@ -371,17 +370,17 @@
             </el-select>
           </template>
         </el-table-column> -->
-            <el-table-column label="样本" align="center" width="80" class-name="small-padding fixed-width">
+            <el-table-column :label="$t('assetCatalog.sample')" align="center" width="80" class-name="small-padding fixed-width">
               <template slot-scope="scope">
                 <el-tooltip placement="bottom" effect="light">
                   <div slot="content">
                     <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
-                      <el-table-column type="index" label="序号" width="50" />
-                      <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
+                      <el-table-column type="index" :label="$t('assetCatalog.sequenceNumber')" width="50" />
+                      <el-table-column prop="value" :label="$t('assetCatalog.fieldValue')" width="100" show-overflow-tooltip>
                       </el-table-column>
                     </el-table>
                   </div>
-                  <el-button size="mini" type="text">查看</el-button>
+                  <el-button size="mini" type="text">{{ $t('assetCatalog.view') }}</el-button>
                 </el-tooltip>
               </template>
             </el-table-column>
@@ -399,7 +398,7 @@
     </Drawer>
 
     <!-- 导出列配置弹窗 -->
-    <el-dialog title="调整导出列" :visible.sync="exportColumnDialog.visible" width="760px"
+    <el-dialog :title="$t('assetCatalog.exportColumn')" :visible.sync="exportColumnDialog.visible" width="760px"
       custom-class="export-column-dialog-wrapper" @close="cancelExport">
       <!-- <div slot="title" class="dialog-header">
         <span class="title-text"><b>调整导出列</b></span>
@@ -416,12 +415,12 @@
 
         <div class="dialog-footer-custom">
           <div class="footer-left">
-            <el-checkbox v-model="exportColumnDialog.saveAsDefault">保存为默认配置</el-checkbox>
-            <a class="restore-link" @click="restoreInitialConfig"><i class="el-icon-refresh-right"></i>恢复初始</a>
+            <el-checkbox v-model="exportColumnDialog.saveAsDefault">{{ $t('assetCatalog.saveAsDefault') }}</el-checkbox>
+            <a class="restore-link" @click="restoreInitialConfig"><i class="el-icon-refresh-right"></i>{{ $t('assetCatalog.restoreInitial') }}</a>
           </div>
           <div class="footer-right">
-            <el-button @click="cancelExport">取消</el-button>
-            <el-button type="primary" plain @click="confirmExport">确定</el-button>
+            <el-button @click="cancelExport">{{ $t('assetCatalog.cancel') }}</el-button>
+            <el-button type="primary" plain @click="confirmExport">{{ $t('assetCatalog.confirm') }}</el-button>
           </div>
         </div>
       </div>
@@ -432,55 +431,50 @@
       :close-on-click-modal="false">
 
       <div slot="title" class="score-dialog-title">
-        <span class="title-text">评估详情</span>
-        <el-tag type="primary" style="border-radius: 10px;"><b>满分 100</b></el-tag>
+        <span class="title-text">{{ $t('assetCatalog.evaluationDetails') }}</span>
+        <el-tag type="primary" style="border-radius: 10px;"><b>{{ $t('assetCatalog.fullScore') }} 100</b></el-tag>
       </div>
 
       <div class="score-content">
-        <!-- 字段注释 -->
         <div class="score-item">
           <div class="max-score">60</div>
           <div class="score-detail">
-            <div class="detail-title">字段注释</div>
-            <div class="detail-desc">有效的字段注释（注释中包含中英文字符，并非完全乱码）</div>
+            <div class="detail-title">{{ $t('assetCatalog.fieldComment') }}</div>
+            <div class="detail-desc">{{ $t('assetCatalog.detailValidFieldComment') }}</div>
           </div>
-          <div class="actual-score">{{ scoreDialog.data.fieldCommentActual }}<span class="score-unit">分</span></div>
+          <div class="actual-score">{{ scoreDialog.data.fieldCommentActual }}<span class="score-unit">{{ $t('assetCatalog.scoreUnit') }}</span></div>
         </div>
 
-        <!-- 表注释 -->
         <div class="score-item">
           <div class="max-score">5</div>
           <div class="score-detail">
-            <div class="detail-title">表注释</div>
-            <div class="detail-desc">有效的表注释（注释中包含中英文字符，并非完全乱码）</div>
+            <div class="detail-title">{{ $t('assetCatalog.tableAnnotation') }}</div>
+            <div class="detail-desc">{{ $t('assetCatalog.detailValidTableComment') }}</div>
           </div>
-          <div class="actual-score">{{ scoreDialog.data.tableCommentActual }}<span class="score-unit">分</span></div>
+          <div class="actual-score">{{ scoreDialog.data.tableCommentActual }}<span class="score-unit">{{ $t('assetCatalog.scoreUnit') }}</span></div>
         </div>
 
-        <!-- 命名规范 -->
         <div class="score-item">
           <div class="max-score">30</div>
           <div class="score-detail">
-            <div class="detail-title">命名规范</div>
-            <div class="detail-desc">字段的命名方式规范</div>
+            <div class="detail-title">{{ $t('assetCatalog.namingConvention') }}</div>
+            <div class="detail-desc">{{ $t('assetCatalog.detailNamingConvention') }}</div>
           </div>
-          <div class="actual-score">{{ scoreDialog.data.namingActual }}<span class="score-unit">分</span></div>
+          <div class="actual-score">{{ scoreDialog.data.namingActual }}<span class="score-unit">{{ $t('assetCatalog.scoreUnit') }}</span></div>
         </div>
 
-        <!-- 结构唯一性 -->
         <div class="score-item">
           <div class="max-score">5</div>
           <div class="score-detail">
-            <div class="detail-title">结构唯一性</div>
-            <div class="detail-desc">与库中其他的表结构不重复</div>
+            <div class="detail-title">{{ $t('assetCatalog.structuralUniqueness') }}</div>
+            <div class="detail-desc">{{ $t('assetCatalog.detailStructuralUniqueness') }}</div>
           </div>
-          <div class="actual-score">{{ scoreDialog.data.uniquenessActual }}<span class="score-unit">分</span></div>
+          <div class="actual-score">{{ scoreDialog.data.uniquenessActual }}<span class="score-unit">{{ $t('assetCatalog.scoreUnit') }}</span></div>
         </div>
       </div>
 
-      <!-- 底部总分 -->
       <div class="score-footer">
-        <span class="footer-label">当前总分</span>
+        <span class="footer-label">{{ $t('assetCatalog.totalScore') }}</span>
         <span class="footer-score">{{ scoreDialog.data.totalScore }}</span>
       </div>
     </el-dialog>
@@ -506,7 +500,7 @@ export default {
       currentFolderName: '', // 当前文件夹名称
       breadcrumbList: [], // 面包屑路径数组
       currentSortField: 'add_time', // 当前排序字段
-      currentSortLabel: '上传时间', // 当前排序显示文本
+      currentSortLabel: this.$t('assetCatalog.uploadTime'), // 当前排序显示文本
       sortOrders: {
         add_time: 'asc',
         file_name: 'asc',
@@ -783,11 +777,11 @@ export default {
       }
 
       const labelMap = {
-        'add_time': '上传时间',
-        'file_name': '文件名称',
-        'file_size': '文件大小'
+        'add_time': this.$t('assetCatalog.uploadTime'),
+        'file_name': this.$t('assetCatalog.fileName'),
+        'file_size': this.$t('assetCatalog.fileSize')
       };
-      this.currentSortLabel = labelMap[field] || '上传时间';
+      this.currentSortLabel = labelMap[field] || this.$t('assetCatalog.uploadTime');
 
       if (this.currentNodeData) {
         this.loadFileListData(this.currentNodeData);
@@ -859,7 +853,7 @@ export default {
         }
       }).catch(err => {
         console.error('加载文件列表失败:', err);
-        this.$message.error('加载文件列表失败');
+        this.$message.error(this.$t('assetCatalog.loadFileListFailed'));
       });
     },
 
@@ -1013,7 +1007,7 @@ export default {
      */
     handleTreeExport() {
       if (this.selectedTreeNodeIds.length === 0) {
-        this.$message.warning("请先勾选要导出的节点");
+        this.$message.warning(this.$t('assetCatalog.pleaseSelectNodeFirst'));
         return;
       }
 
@@ -1043,7 +1037,7 @@ export default {
 
       } catch (error) {
         console.error('获取导出列配置失败:', error);
-        this.$message.warning('获取导出列配置失败，使用默认配置');
+        this.$message.warning(this.$t('assetCatalog.getExportColumnConfigFailed'));
         this.exportColumnDialog.selectedColumns = [...this.initialDefaultColumns];
       } finally {
         this.exportColumnDialog.loading = false;
@@ -1064,7 +1058,7 @@ export default {
     restoreInitialConfig() {
       this.exportColumnDialog.selectedColumns = [...this.initialDefaultColumns];
       this.exportColumnDialog.saveAsDefault = false;
-      this.$message.success('已恢复初始配置');
+      this.$message.success(this.$t('assetCatalog.restoreInitialConfig'));
     },
 
     cancelExport() {
@@ -1074,7 +1068,7 @@ export default {
 
     async confirmExport() {
       if (this.exportColumnDialog.selectedColumns.length === 0) {
-        this.$message.warning('请至少选择一个导出列');
+        this.$message.warning(this.$t('assetCatalog.selectAtLeastOneColumn'));
         return;
       }
 
@@ -1083,7 +1077,7 @@ export default {
 
       try {
         if (this.exportColumnDialog.saveAsDefault) {
-          this.$message.success('已保存为默认配置');
+          this.$message.success(this.$t('assetCatalog.saveAsDefaultConfig'));
         }
 
         this.exportColumnDialog.visible = false;
@@ -1142,11 +1136,11 @@ export default {
         //  document.body.removeChild(link);
         //  window.URL.revokeObjectURL(url);
         this.loading = false;
-        this.$message.success('导出成功');
+        this.$message.success(this.$t('assetCatalog.exportSuccess'));
 
       } catch (error) {
         this.loading = false;
-        this.$message.error('导出失败,请稍后再试');
+        this.$message.error(this.$t('assetCatalog.exportFailed'));
       }
     },
 
@@ -1337,14 +1331,14 @@ export default {
 
       try {
         await updateFieldListByFieldId(params);
-        this.$message.success('修改成功!');
+        this.$message.success(this.$t('assetCatalog.modifySuccess'));
         row.drawerEdit = false;
         row.dirtyDataEditMsg = '';
         this.editMsg = '';
         this.tableKey += 1;
         this.fieldInformationFn(this.filedRowData);
       } catch (error) {
-        this.$message.error('修改失败');
+        this.$message.error(this.$t('assetCatalog.modifyFailed'));
       }
     },
     // 字段信息
