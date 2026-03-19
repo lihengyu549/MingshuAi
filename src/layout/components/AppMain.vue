@@ -35,14 +35,11 @@ export default {
   position: relative;
   overflow: hidden;
   border: 1px solid #e6e8ee;
+  padding-top: 50px;
   // border-radius: 10px 0 0 0;
 
   // overflow-y: hidden;
   // background-color: #F0F2F5;
-}
-
-.fixed-header + .app-main {
-  padding-top: 50px;
 }
 
 .hasTagsView {

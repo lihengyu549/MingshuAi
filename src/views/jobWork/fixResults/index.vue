@@ -119,7 +119,7 @@
                             <span class="header-confidence">{{ '当前置信度：' + item.value * 100 + '%' }}</span>
                         </template>
                         <div class="info-item">
-                            <label class="info-label">推理过程：</label>
+                            <label class="info-label">AI推理：</label>
                             <div class="info-content">{{ item.text }}</div>
                         </div>
                     </el-card>
@@ -131,7 +131,7 @@
                                 style="border-radius: 8px; float: inline-end; color: #dc478f;">就高原则</el-tag>
                         </template>
                         <div class="info-item">
-                            <label class="info-label">推理过程：</label>
+                            <label class="info-label">AI推理：</label>
                             <div class="info-content">
                                 <template v-if="row.oldSecurityLevel || row.newSecurityLevel || row.piiLevel">
                                     分类级别为<el-tag size="small" type="primary" style="border-radius: 8px;">{{

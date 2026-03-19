@@ -2,10 +2,9 @@
   <div :class="classObj" class="app-wrapper" :style="{'--current-color': theme}">
     <div v-if="device==='mobile'&&sidebar.opened" class="drawer-bg" @click="handleClickOutside"/>
     <sidebar v-if="!sidebar.hide" class="sidebar-container" />
-    <div :class="{hasTagsView:needTagsView,sidebarHide:sidebar.hide}" class="main-container">
+    <div :class="{sidebarHide:sidebar.hide}" class="main-container">
       <div :class="{'fixed-header':fixedHeader}">
         <navbar />
-        <tags-view v-if="needTagsView" />
       </div>
       <app-main />
       <right-panel>
@@ -17,7 +16,7 @@
 
 <script>
 import RightPanel from '@/components/RightPanel'
-import { AppMain, Navbar, Settings, Sidebar, TagsView } from './components'
+import { AppMain, Navbar, Settings, Sidebar } from './components'
 import ResizeMixin from './mixin/ResizeHandler'
 import { mapState } from 'vuex'
 import variables from '@/assets/styles/variables.scss'
@@ -29,8 +28,7 @@ export default {
     Navbar,
     RightPanel,
     Settings,
-    Sidebar,
-    TagsView
+    Sidebar
   },
   mixins: [ResizeMixin],
   computed: {
@@ -96,6 +94,7 @@ export default {
     right: 0;
     z-index: 9;
     width: calc(100% - #{$base-sidebar-width});
+    height: 60px;
     transition: width 0.28s;
   }
 
