@@ -73,7 +73,10 @@ export function addResultPush(data) {
   return request({
     url: '/system/result/push/addResultPush',
     method: 'post',
-    data:data
+    data: data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
   })
 }
 
@@ -82,7 +85,10 @@ export function updateResultPush(data) {
   return request({
     url: '/system/result/push/updateResultPush',
     method: 'post',
-    data:data
+    data: data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
   })
 }
 
@@ -119,5 +125,14 @@ export function selectFieldIdByDatabaseId(data) {
     url: '/system/result/push/selectFieldIdByDatabaseId',
     method: 'get',
     params:data
+  })
+}
+
+// 结果推送-测试链接接口
+export function testLink(data) {
+  return request({
+    url: '/system/result/push/testLink',
+    method: 'post',
+    data:data
   })
 }

@@ -36,23 +36,34 @@
         <template slot="empty">
           <el-empty description="暂无数据"></el-empty>
         </template>
-        <el-table-column type="selection" width="60" align="center" />
-        <el-table-column label="任务名称" prop="taskName" width="150" show-overflow-tooltip>
+        <el-table-column type="selection" width="60" align="center" :selectable="checkSelectable" />
+        <el-table-column label="任务名称" prop="taskName" width="250" show-overflow-tooltip>
           <template slot-scope="scope">
             <svg-icon icon-class="jobs" style="font-size: 16px; margin-right: 5px;" />
             {{ scope.row.taskName }}
           </template>
         </el-table-column>
-        <el-table-column label="对接厂商" align="center" prop="providerName" width="150" show-overflow-tooltip />
-        <el-table-column label="推送类型" align="center" prop="pushTypeName" width="150" show-overflow-tooltip />
-        <el-table-column label="发布数据源名称" align="center" prop="sourceName" width="250" show-overflow-tooltip />
-        <el-table-column label="分类分级标准" align="center" prop="standardName" show-overflow-tooltip />
+        <el-table-column label="任务类型" align="center" prop="taskType" width="150" show-overflow-tooltip>
+          <template slot-scope="scope">
+            {{ scope.row.taskType == '0' ? '内置' : scope.row.taskType == '1' ? '自定义' : '--' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="对接平台" align="center" prop="providerName" width="150" show-overflow-tooltip />
+        <el-table-column label="分类分级结果" align="center" prop="pushTypeName" width="150" show-overflow-tooltip />
+        <!-- <el-table-column label="发布数据源名称" align="center" prop="sourceName" width="250" show-overflow-tooltip /> -->
+        <!-- <el-table-column label="分类分级标准" align="center" prop="standardName" show-overflow-tooltip /> -->
+        <el-table-column label="连接状态" align="center" prop="connectStatus" width="150" show-overflow-tooltip>
+          <template slot-scope="scope">
+            {{ scope.row.connectStatus == '0' ? '未连接' : scope.row.connectStatus == '1' ? '已连接' : scope.row.connectStatus == '2' ? '断开' : '--' }}
+          </template>
+        </el-table-column>
         <el-table-column label="推送状态" align="center" prop="pushStatusName" width="150" show-overflow-tooltip />
-        <el-table-column label="更新时间" align="center" prop="updateTime" width="250" show-overflow-tooltip />
+        <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
         <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="150">
           <template slot-scope="scope">
             <el-button size="mini" type="text" @click="handleEcelFn(scope.row)">编辑</el-button>
-            <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)">推送</el-button>
+            <el-button size="mini" type="text" @click="testClick(scope.row)">测试</el-button>
+            <el-button size="mini" type="text" :disabled="scope.row.taskType == '0'" @click="scanStateClickFn(scope.row)">推送</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -64,12 +75,12 @@
       <el-form class="dialogForm" :rules="dialogDataRules" :model="dialogData" size="medium" ref="dialogData"
         :inline="true" label-width="110px" label-position="top">
         <el-form-item label="任务名称" prop="taskName">
-          <el-input v-model="dialogData.taskName" placeholder="请输入任务名称"></el-input>
+          <el-input v-model="dialogData.taskName" :disabled="dialogData.taskType == '0'" placeholder="请输入任务名称"></el-input>
         </el-form-item>
         <el-row>
           <el-col :span="12">
             <el-form-item label="推送类型" prop="pushType">
-              <el-select clearable v-model="dialogData.pushType" placeholder="请选择">
+              <el-select clearable v-model="dialogData.pushType" :disabled="dialogData.taskType == '0'" placeholder="请选择" @change="handlePushTypeChange">
                 <el-option v-for="item in dict.type.sys_push_type" :key="item.value" :label="item.label"
                   :value="item.value">
                 </el-option>
@@ -77,8 +88,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="对接厂商" prop="provider">
-              <el-select clearable v-model="dialogData.provider" placeholder="请选择">
+            <el-form-item label="对接平台">
+              <el-select clearable v-model="dialogData.provider" disabled placeholder="请选择">
                 <el-option v-for="item in dict.type.sys_provider_type" :key="item.value" :label="item.label"
                   :value="item.value">
                 </el-option>
@@ -124,13 +135,28 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="推送内容" prop="pushBodyList">
-          <el-input readonly placeholder="请选择推送内容">
+        <el-form-item label="推送内容">
+          <el-input disabled placeholder="默认推送内容">
           </el-input>
-          <el-tag type="info" style="position: absolute; top: 3px;left: 2px; background-color: #e5e5e5;"
+          <!-- <el-tag type="info" style="position: absolute; top: 3px;left: 2px; background-color: #e5e5e5;"
             @click="pushBodyClickFn">已选{{ dialogData.pushBodyList && dialogData.pushBodyList.length
-              ? dialogData.pushBodyList.length : 0 }}个子类</el-tag>
+              ? dialogData.pushBodyList.length : 0 }}个子类</el-tag> -->
         </el-form-item>
+        <el-form-item label="证书来源" prop="useInnerCert">
+          <div style="display: flex; align-items: center;">
+            <span>使用内置证书</span>
+            <el-switch v-model="dialogData.useInnerCert" style="margin: 0 15px;" />
+            <span>当前：{{ dialogData.useInnerCert ? '内置证书' : '手动上传' }}</span>
+          </div>
+          <el-upload v-if="!dialogData.useInnerCert" ref="p12Upload" class="upload-demo" action="" :limit="1" drag :auto-upload="false" accept=".p12">
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text" style="color: #999;"><em style="font-size: 16px;">选择.p12文件</em> <span>仅支持p12文件，重复选择即替换已上传证书</span></div>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="证书密钥" prop="p12Password">
+          <el-input type="password" v-model="dialogData.p12Password" placeholder="请输入证书密钥"></el-input>
+        </el-form-item>
+
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" plain @click="submitFormFn">确 定</el-button>
@@ -161,6 +187,7 @@ import {
   pushResult,
   deleteResultPush,
   selectPublishDataBase,
+  testLink,
 } from "@/api/APIAbutment";
 import { treeListI } from "@/api/system/protectCategory";
 import Result from './components/result.vue'
@@ -205,7 +232,7 @@ export default {
       dialogData: {
         taskName: '',//任务名称
         pushType: '',//推送类型（字典表维护）
-        provider: '',//对接厂商（字典表维护）
+        provider: '',//对接平台（字典表维护）
         pushVersion: '',//对接版本（字段表维护）
         host: '',//主机
         port: '',//端口
@@ -216,6 +243,8 @@ export default {
         sourceId: '',//数据源ID
         pushBodyList: [],//推送内容
         pushVersion: '',
+        useInnerCert: true,//证书来源（开关）
+        p12Password: '',//证书密钥
       },
       debounceTimeout: null,
       // 表单校验
@@ -232,7 +261,7 @@ export default {
         ],
         provider: [
           {
-            required: true, message: "请选择对接厂商", trigger: "blur"
+            required: true, message: "请选择对接平台", trigger: "blur"
           }
         ],
         host: [
@@ -272,6 +301,9 @@ export default {
     this.getList();
   },
   methods: {
+    checkSelectable(row) {
+      return row.taskType != '0'
+    },
     initList() {
       // 分类分级标准列表
       this.getStandardListFn()
@@ -323,6 +355,9 @@ export default {
       this.loading = true;
       getResultPushList(this.queryParams).then(res => {
         this.proxysList = res.data.rows;
+        this.proxysList.forEach(item => {
+          item.useInnerCert = item.useInnerCert == '1'
+        })
         this.total = res.data.total;
         this.loading = false;
       });
@@ -368,28 +403,48 @@ export default {
     async submitFormFn() {
       this.$refs["dialogData"].validate(async valid => {
         if (valid) {
-          let data = {
-            ...this.dialogData,
-            pushBody: this.dialogData.pushBodyList.join()
+          const isEdit = !!this.dialogData.id
+          const formData = new FormData()
+
+          if (!this.dialogData.useInnerCert) {
+            const uploadFiles = this.$refs.p12Upload.uploadFiles
+            if (uploadFiles && uploadFiles.length > 0) {
+              const file = uploadFiles[0].raw
+              formData.append('file', file)
+            }
           }
-          delete data.pushBodyList
+
+          formData.append('useInnerCert', this.dialogData.useInnerCert ? '1' : '0')
+          formData.append('pushBody', this.dialogData.pushBodyList.join())
+          formData.append('taskName', this.dialogData.taskName)
+          formData.append('pushType', this.dialogData.pushType)
+          formData.append('provider', this.dialogData.provider)
+          formData.append('host', this.dialogData.host)
+          formData.append('port', this.dialogData.port)
+          formData.append('userName', this.dialogData.userName)
+          formData.append('passWord', this.dialogData.passWord)
+          formData.append('p12Password', this.dialogData.p12Password)
+
+          if (isEdit) {
+            formData.append('id', this.dialogData.id)
+          }
 
           if (this.dialogData.pushType == '2') {
             const selectedSource = this.sourceNameList.find(item => item.id == this.dialogData.sourceId)
             if (selectedSource) {
-              data.standardId = this.dialogData.sourceId
-              data.sourceName = selectedSource.sourceName
+              formData.append('standardId', this.dialogData.sourceId)
+              formData.append('sourceName', selectedSource.sourceName)
             }
           }
 
-          if (this.dialogData.id) {
-            updateResultPush(data).then(response => {
+          if (isEdit) {
+            updateResultPush(formData).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.dialogDataShow = false;
               this.getList();
             });
           } else {
-            addResultPush(data).then(response => {
+            addResultPush(formData).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.dialogDataShow = false;
               this.getList();
@@ -411,6 +466,21 @@ export default {
       }
       this.dialogData.pushBodyList = row.pushBody ? row.pushBody.split(',') : []
       this.title = '编辑'
+    },
+    handlePushTypeChange(value) {
+      if (value === '1' || value === '2') {
+        this.dialogData.provider = '1'
+      } else if (value === '3') {
+        this.dialogData.provider = '2'
+      }
+    },
+    // 测试链接
+    testClick(row) {
+      testLink({ id: row.id }).then(res => {
+        if (res.code == 200) {
+          this.$message.success('测试成功')
+        }
+      })
     },
     handleSourceIdChange(value) {
       this.$set(this.dialogData, 'sourceId', String(value))
@@ -446,7 +516,7 @@ export default {
       this.dialogData = {
         taskName: '',//任务名称
         pushType: '',//推送类型（字典表维护）
-        provider: '',//对接厂商（字典表维护）
+        provider: '',//对接平台（字典表维护）
         pushVersion: '',//对接版本（字段表维护）
         host: '',//主机
         port: '',//端口
@@ -456,6 +526,8 @@ export default {
         standardId: '',//行业标准ID
         sourceId: '',//数据源ID
         pushBodyList: [],//推送内容
+        useInnerCert: true,//证书来源（开关）
+        p12Password: '',//证书密钥
         pushVersion: '',
       }
     },
@@ -615,5 +687,17 @@ input[aria-hidden=true] {
 
 .addMsg ::v-deep.el-form {
   margin-bottom: 0;
+}
+
+.upload-demo {
+  margin-top: 20px;
+
+  .el-upload--text {
+    width: 100%;
+  }
+
+  .el-upload-dragger {
+    width: 100%;
+  }
 }
 </style>
