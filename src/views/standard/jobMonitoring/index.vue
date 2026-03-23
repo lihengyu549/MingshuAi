@@ -1218,7 +1218,7 @@ export default {
           minSecurityLevel: this.addOrEditDataRuls.minSecurityLevel,
           attributeType: this.addOrEditDataRuls.attributeType,
           attachDescribe: this.addOrEditDataRuls.additional,
-          featureLabel: this.tags.join(),
+          coreTags: this.tags.join(),
           confirmProtectMethod: this.addOrEditDataRuls.confirmProtectMethod.join(),
           dataOwner: this.addOrEditDataRuls.dataOwner,
           protectMethod: this.addOrEditDataRuls.minSecurityLevel,
@@ -1319,7 +1319,7 @@ export default {
       this.addOrEditDataRuls.demotionRule = row.demotionRule == '1' ? true : false
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
       this.addOrEditDataRuls.attributeType = row.attributeType
-      this.tags = row.featureLabel ? row.featureLabel.split(',') : []
+      this.tags = row.coreTags ? row.coreTags.split(',') : []
       this.addOrEditDataRuls.confirmProtectMethod = Array.isArray(row.confirmProtectMethod)
         ? row.confirmProtectMethod
         : (row.confirmProtectMethod ? row.confirmProtectMethod.split(',') : []);
@@ -1351,7 +1351,7 @@ export default {
       this.addOrEditDataRuls.additional = row.attachDescribe
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
       this.addOrEditDataRuls.attributeType = row.attributeType
-      this.tags = row.featureLabel ? row.featureLabel.split(',') : []
+      this.tags = row.coreTags ? row.coreTags.split(',') : []
       this.addNodeName = row.owner
       this.addOrEdit.show = true
       this.addOrEdit.title = '查看'
