@@ -136,13 +136,13 @@
           </el-select>
         </el-form-item>
         <el-form-item label="推送内容">
-          <el-input disabled placeholder="默认推送内容">
+          <el-input :disabled="dialogData.pushType == '3'" :placeholder="dialogData.pushType == '3' ? '默认推送内容' : ''">
           </el-input>
-          <!-- <el-tag type="info" style="position: absolute; top: 3px;left: 2px; background-color: #e5e5e5;"
+          <el-tag v-if="dialogData.pushType != '3'" type="info" style="position: absolute; top: 2px;left: 2px; background-color: #e5e5e5;"
             @click="pushBodyClickFn">已选{{ dialogData.pushBodyList && dialogData.pushBodyList.length
-              ? dialogData.pushBodyList.length : 0 }}个子类</el-tag> -->
+              ? dialogData.pushBodyList.length : 0 }}个子类</el-tag>
         </el-form-item>
-        <el-form-item label="证书来源" prop="useInnerCert">
+        <el-form-item v-if="dialogData.pushType == '3'" label="证书来源" prop="useInnerCert">
           <div style="display: flex; align-items: center;">
             <span>使用内置证书</span>
             <el-switch v-model="dialogData.useInnerCert" style="margin: 0 15px;" />
@@ -153,7 +153,7 @@
             <div class="el-upload__text" style="color: #999;"><em style="font-size: 16px;">选择.p12文件</em> <span>仅支持p12文件，重复选择即替换已上传证书</span></div>
           </el-upload>
         </el-form-item>
-        <el-form-item label="证书密钥" prop="p12Password">
+        <el-form-item v-if="dialogData.pushType == '3'" label="证书密钥" prop="p12Password">
           <el-input type="password" v-model="dialogData.p12Password" placeholder="请输入证书密钥"></el-input>
         </el-form-item>
 
