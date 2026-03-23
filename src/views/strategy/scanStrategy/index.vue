@@ -155,16 +155,13 @@
         <el-table-column prop="dictValue" label="分级数字" align="center" />
         <el-table-column label="分级名称" align="center">
           <template slot-scope="scope">
-            <el-select v-if="editingIndex === scope.$index" v-model="scope.row.dictLabel" placeholder="请选择">
-              <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-                :value="item.value" />
-            </el-select>
+            <el-input size="small" v-if="editingIndex === scope.$index" v-model="scope.row.dictLabel" placeholder="请输入"></el-input>
             <span v-else>{{ scope.row.dictLabel }}</span>
           </template>
         </el-table-column>
         <el-table-column label="分级定义" align="center">
           <template slot-scope="scope">
-            <el-input v-if="editingIndex === scope.$index" v-model="scope.row.remark" placeholder="请输入" />
+            <el-input size="small" v-if="editingIndex === scope.$index" v-model="scope.row.remark" placeholder="请输入" />
             <span v-else>{{ scope.row.remark }}</span>
           </template>
         </el-table-column>
