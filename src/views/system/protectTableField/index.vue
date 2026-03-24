@@ -293,10 +293,10 @@ export default {
         { label: "来源业务系统", prop: "businessName", width: "150" },
         { label: "数据源", prop: "sourceName", width: "150" },
         { label: "所属库", prop: "databaseName", width: "200" },
-        { label: "所属表", prop: "tableName", width: "250" },
+        { label: "所属表", prop: "tableName" },
         { label: "分类", prop: "categoryName", width: "250" },
         { label: "个保法合规审查", prop: "piiDetectionName", width: "200" },
-        { label: "安全分级", prop: "securityLevelName" },
+        { label: "安全分级", prop: "securityLevelName", width: "200" },
         { label: "建议防护措施", prop: "protectMethod", width: "200" },
         { label: "样本", prop: "sampleData", width: "100" }
       ],

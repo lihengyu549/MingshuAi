@@ -1563,7 +1563,7 @@ export default {
   padding-right: 15px;
 }
 
-.el-select.el-select--medium {
+.el-select {
   width: 100%;
 }
 
