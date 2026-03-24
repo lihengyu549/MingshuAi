@@ -4,150 +4,66 @@
       <div style="display: flex;justify-content: space-between;align-items: center;padding: 10px;">
         <div style="height: 36px;display: flex;">
           <span class="selectLabel">所属标准</span>
-          <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
-            placeholder="全部">
+          <el-select v-model="queryParams.categoryId" class="serachInput" filterable placeholder="全部">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </div>
-        <div style="height: 100%;"><el-button type="primary" plain size="medium" @click="handleExport()">导出报告</el-button>
+        <div style="height: 100%;"><el-button type="primary" plain size="medium"
+            @click="handleExport()">导出报告</el-button>
         </div>
       </div>
-      <div class="pdf-cell" ref="pdfDownload" v-loading="echarsLoding">
-        <div class="hede_bgc">
-          <div class="hede_bgc-text">数据资产概览 分类分级报告</div>
-        </div>
-        <div class="box1 page-break">
-          <div class="head">
-            <div>数据资产概况</div>
-            <div>01</div>
-          </div>
-          <el-table v-loading="tableBoxloading" :data="tableData" id="table" class="tableBox" ref="tableRef">
-            <el-table-column label="数据源（个）" align="center" prop="datasourceCount" show-overflow-tooltip />
-            <el-table-column label="数据库（个）" align="center" prop="databaseCount" show-overflow-tooltip />
-            <el-table-column label="数据表（张）" align="center" prop="dataTableCount" show-overflow-tooltip />
-            <el-table-column label="字段（个）" align="center" prop="dataFieldCount" show-overflow-tooltip />
-            <el-table-column label="未梳理字段（个）" align="center" prop="notConfirmFieldCount" show-overflow-tooltip />
-            <el-table-column label="梳理率（%）" align="center" prop="confirmProportion" show-overflow-tooltip />
-          </el-table>
-          <div style="display: flex;justify-content: space-between;align-items: center;padding:10px;">
-            <div id="echartsOne" class="echartsOneClass"></div>
-            <div id="echartsTwo" class="echartsTwoClass"></div>
-          </div>
-        </div>
-        <div class="box1">
-          <div class="head">
-            <div>数据资产统计</div>
-            <div>02</div>
-          </div>
-          <div class="ul_box">
-            <div style="display: flex; justify-content: space-between;">
-              <div style="margin-right: 20px;">
-                <h4 style="color: #696969;margin: 10px 0;">库数量排行</h4>
-                <ul>
-                  <li v-for="(item, i) in datasourceTop" :key="i" :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
-                    <span :class="i >= 3 ? 'pentagon' : `pentagon${i + 1}`"> <span>{{ i + 1 }}</span></span>
-                    <span class="sort-name-count">
-                      <span> {{ item.source_name }}</span>
-                      <span style="float: right;"> {{ item.item_count }}</span>
-                    </span>
-                  </li>
-                </ul>
-              </div>
-              <div style="margin-right: 20px;">
-                <h4 style="color: #696969;margin: 10px 0;">表数量排行</h4>
-                <ul>
-                  <li v-for="(item, i) in tableTop" :key="i" :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
-                    <span :class="i >= 3 ? 'pentagon' : `pentagon${i + 1}`"> <span>{{ i + 1 }}</span></span>
-                    <span class="sort-name-count">
-                      <span> {{ item.sourceName }}</span>
-                      <span style="float: right;"> {{ item.tableCount }}</span>
-                    </span>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 style="color: #696969;margin: 10px 0;">字段数量排行</h4>
-                <ul>
-                  <li v-for="(item, i) in fieldTop" :key="i" :class="{ 'even': i % 2 === 0, 'odd': i % 2 !== 0 }">
-                    <span :class="i >= 3 ? 'pentagon' : `pentagon${i + 1}`"> <span>{{ i + 1 }}</span></span>
-                    <span class="sort-name-count">
-                      <span> {{ item.sourceName }}</span>
-                      <span style="float: right;"> {{ item.fieldCount }}</span>
-                    </span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div class="progress_echarts">
-            <div class="progress-box left-box">
-              <h4 style="margin-bottom: 20px;" class="progress_echarts_text">数据库主机排行</h4>
-              <div v-for="item in ipTop">
-                <span>{{ item.label }}</span>
-                <el-progress :stroke-width="26" :percentage="item.value" :format="format">
-                </el-progress>
-              </div>
-            </div>
-            <div class="progress-box right-box">
-              <h4 class="progress_echarts_text">数据库类型数量排行</h4>
-              <div id="echartsThree" class="echartsBoxThree"></div>
-            </div>
-          </div>
-        </div>
-        <div class="box1">
+      <el-tabs v-model="activeName" @tab-click="handleClick" :stretch="true">
+        <el-tab-pane label="分类分级报告" name="分类分级报告">
           <div>
-            <div class="head">
-              <div>分类分级统计</div>
-              <div>03</div>
+            <div class="hede_bgc">
+              <div class="hede_bgc-text">{{ activeName }}</div>
             </div>
-            <div class="boxThreeMain">
-              <div style="width: 48%;">
-                <h4 style="color: #696969;">数据分类分布</h4>
-                <div id="zhuSort" style="width: 100%;height: 300px;"></div>
-              </div>
-              <div style="width: 48%;">
-                <h4 style="color: #696969;">数据分级分布</h4>
-                <div id="chartDomLast" style="width: 100%;height: 300px;"></div>
-              </div>
-            </div>
+            <oneReport v-model="queryParams.categoryId" ref="pdfDownload" class="aaa" />
           </div>
+        </el-tab-pane>
+        <el-tab-pane label="数据摸底调查表" name="数据摸底调查表">
+          <div class="hede_bgc">
+            <div class="hede_bgc-text">{{ activeName }}</div>
+          </div>
+          <dataBaseline :categoryId="queryParams.categoryId" ref="dataBaseline" />
+        </el-tab-pane>
+      </el-tabs>
+
+      <!-- 添加加载提示 -->
+      <el-dialog title="导出中" :visible.sync="exportLoading" :close-on-click-modal="false" :show-close="false"
+        width="30%">
+        <div style="text-align: center; padding: 20px;">
+          <el-loading-spinner class="loading-spinner"></el-loading-spinner>
+          <p style="margin-top: 15px;">{{ exportMessage }}</p>
         </div>
-      </div>
+      </el-dialog>
     </div>
   </div>
 </template>
 
 <script>
-import { getFrameworks, dashboardList } from "@/api/system/protectCategory";
+import { getFrameworks } from "@/api/system/protectCategory";
 import { downloadPDF } from "@/utils/pdf.js"  //工具方法，导出操作
-import html2pdf from 'html2pdf.js';
+import oneReport from './components/oneReport.vue';
+import dataBaseline from './components/dataBaseline.vue';
 export default {
   name: "Post",
   dicts: ['sys_normal_disable'],
+  components: { oneReport, dataBaseline },
   data() {
     return {
       echarsLoding: false,
       // 查询参数
       queryParams: {
-        categoryId: '',
+        categoryId: 0,
       },
+      activeName: '分类分级报告',
       allData: {},
       treeOptions: [],
-      tableBoxloading: false,
-      months: [],
-      last6MonthsConfirmCounts: [],
-      last6MonthsAddCounts: [],
-      tableData: [],
-      fieldTop: [],
-      tableTop: [],
-      datasourceTop: [],
-      ipTop: [],
-      dataTypeList: [],
-      dataTypeListData: [],
-      securityTop: [],
-      securityTotal: 0,
-      subclassTop: []
+      xiaohuiFlag: true,
+      exportLoading: false, // 导出加载状态
+      exportMessage: '正在准备导出内容，请稍候...' // 导出提示信息
     }
   },
   created() {
@@ -157,422 +73,308 @@ export default {
   },
   methods: {
     handleExport() {
-      const table = document.getElementById('table');
-      table.style.width = '100%';
-      const element = this.$refs.pdfDownload;
-      html2pdf()
-        .from(element)
-        .set({
-          // margin: 0,
-          margin: [10, 10, 10, 10],
-          filename: '分类分级分析报告.pdf',
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: 'mm', format: [280,350], orientation: 'portrait' },
-          pagebreak: { mode: ['avoid-all'] }
-        })
-        .save();
-      // downloadPDF(this.$refs.pdfDownload)
-    },
-    earchsInit() {
-      var echarts = require('echarts');
-      var chartDomOne = document.getElementById('echartsOne');
-      var myChartOne = echarts.init(chartDomOne);
-      var optionOne;
-      optionOne = {
-        title: {
-          text: '资产/梳理新增趋势（最近6个月）',
-          textStyle: {
-            fontSize: '14'
-          }
-        },
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'cross',
-            crossStyle: {
-              color: '#999'
-            }
-          }
-        },
-        legend: {
-          data: ['新增字段数', '梳理字段数'],
-          right: 0,
-          top: 20,
-        },
-        xAxis: [
-          {
-            type: 'category',
-            data: this.months,
-            axisPointer: {
-              type: 'shadow'
-            }
-          }
-        ],
-        yAxis: [
-          {
-            type: 'value',
-            name: '',
-            axisLabel: {
-              formatter: '{value}'
-            }
-          },
-          {
-            type: 'value',
-            name: '',
-            axisLabel: {
-              formatter: '{value}'
-            }
-          }
-        ],
-        series: [
-          {
-            name: '新增字段数',
-            type: 'bar',
-            color: '#3d86ff',
-            tooltip: {
-              valueFormatter: function (value) {
-                return value + ' ml';
-              }
-            },
-            // 最近6个月得数据
-            data: this.getLast6MonthsAddCounts()
-          },
-          {
-            name: '梳理字段数',
-            type: 'bar',
-            color: '#0fd2f7',
-            tooltip: {
-              valueFormatter: function (value) {
-                return value + ' ml';
-              }
-            },
-            // 最近6个月得数据
-            data: this.getLast6MonthsConfirmCounts()
-          }
-        ]
-      };
-      optionOne && myChartOne.setOption(optionOne);
-
-      var chartDomTwo = document.getElementById('echartsTwo');
-      var myChartTwo = echarts.init(chartDomTwo);
-      var optionTwo;
-
-      optionTwo = {
-        color: ['#1e8ff8', '#32c5ff'],
-        title: {
-          text: '资产/梳理新增趋势（最近6个月）',
-          textStyle: {
-            fontSize: '14'
-          }
-        },
-        tooltip: {
-          trigger: 'item'
-        },
-        legend: {
-          orient: 'vertical',
-          top: '50%',
-          right: '-1px'
-        },
-        series: [
-          {
-            type: 'pie',
-            radius: ['55%', '70%'],
-            avoidLabelOverlap: false,
-            padAngle: 5,
-            itemStyle: {
-              borderRadius: 10
-            },
-            label: {
-              show: false,
-              position: 'center'
-            },
-            emphasis: {
-              label: {
-                show: false,
-                fontSize: 40,
-                fontWeight: 'bold'
-              }
-            },
-            labelLine: {
-              show: false
-            },
-            data: [
-              { value: this.allData.notConfirmFieldCount, name: `未梳理 ${this.allData.notConfirmFieldCount}` },
-              { value: this.allData.confirmCount, name: `已梳理 ${this.allData.confirmCount}` }
-            ]
-          }
-        ],
-        graphic: [
-          {
-            type: 'circle',
-            shape: {
-              r: 75 // 外层空心圆的半径
-            },
-            style: {
-              fill: 'none', // 填充颜色为无
-              stroke: '#d2e9fe', // 边框颜色
-              lineWidth: 2 // 边框宽度
-            },
-            left: 'center',
-            top: 'center'
-          },
-          {
-            type: 'circle',
-            shape: {
-              r: 70 // 内层空心圆的半径
-            },
-            style: {
-              fill: 'none', // 填充颜色为无
-              stroke: '#d2e9fe', // 边框颜色
-              lineWidth: 2 // 边框宽度
-            },
-            left: 'center',
-            top: 'center'
-          },
-          {
-            type: 'text',
-            left: 'center',
-            top: 'center',
-            style: {
-              text: `${this.allData.confirmProportion}
-
-已梳理`, // 你想要显示的文字
-              textAlign: 'center',
-              fill: '#333',
-              fontSize: 20,
-              fontWeight: 600,
-              overflow: 'break',
-            }
-          }
-        ]
-      };
-      optionTwo && myChartTwo.setOption(optionTwo);
-
-      var chartDomThree = document.getElementById('echartsThree');
-      var myChartThree = echarts.init(chartDomThree);
-      var optionThree;
-
-      optionThree = {
-        xAxis: {
-          axisLabel: { interval: 0, rotate: 30 },
-          name: '类型',
-          type: 'category',
-          data: this.dataTypeList
-        },
-        yAxis: {
-          name: '数量',
-          type: 'value'
-        },
-        series: [
-          {
-            data: this.dataTypeListData,
-            type: 'bar'
-          }
-        ]
-      };
-
-      optionThree && myChartThree.setOption(optionThree);
-
-      var chartDomSort = document.getElementById('zhuSort');
-      var myChartSort = echarts.init(chartDomSort);
-      var optionSort;
-
-      optionSort = {
-        dataset: [
-          {
-            dimensions: ['name', 'score'],
-            source: this.subclassTop
-          },
-
-          {
-            transform: {
-              type: 'sort',
-              config: { dimension: 'score', order: 'asc' }
-            }
-          }
-        ],
-        xAxis: {
-          type: 'category',
-          axisLabel: { interval: 0, rotate: 30 }
-        },
-        yAxis: {},
-        series: {
-          type: 'bar',
-          encode: { x: 'name', y: 'score' },
-          datasetIndex: 1,
-
-          // label: {
-          //   show: true,
-          //   position: 'top',
-          //   textStyle: {
-          //     color: 'black',
-          //     fontSize: 16
-          //   }
-          // },
-        }
-      };
-
-      optionSort && myChartSort.setOption(optionSort);
-
-      var chartDomLast = document.getElementById('chartDomLast');
-      var myChartLast = echarts.init(chartDomLast);
-      var optionLast;
-
-      optionLast = {
-        color: ['#50d7dc', '#61bee5', '#fabe3d', '#fa893d', '#fb461d', '#eee'],
-        tooltip: {
-          trigger: 'item',
-          color: '#000',
-        },
-        legend: {
-          icon: 'circle',
-          //（顺时针左上，右上，右下，左下）
-          orient: 'vertical',
-          top: 'center',
-          right: '10%',
-          textStyle: {
-            color: '#000',
-          },
-        },
-        series: [
-          {
-            name: '',
-            type: 'pie',
-            radius: ['40%', '60%'],
-            center: ['30%', '50%'], // 第一个值调整左右，第二个值调整上下
-            avoidLabelOverlap: false,
-            label: {
-              show: false,
-            },
-            emphasis: {
-              label: {
-                show: false,
-                fontSize: 40,
-                fontWeight: 'bold',
-              }
-            },
-            labelLine: {
-              show: false
-            },
-            data: this.securityTop
-          }
-        ],
-        graphic: [
-          {
-            type: 'text',
-            left: '21%', // 设置文字的水平位置
-            top: '43%', // 设置文字的垂直位置
-            style: {
-              text: `${this.securityTotal}
-数据总量`,
-              textAlign: 'center',
-              fill: '#000',
-              fontSize: 20,
-              fontWeight: 600,
-            },
-            z: 100 // 确保文字在饼图之上
-          }
-        ]
-      };
-
-      optionLast && myChartLast.setOption(optionLast);
-    },
-    // getPreviousMonths() {
-    //   const months = [];
-    //   const currentDate = new Date();
-    //   for (let i = 0; i < 6; i++) {
-    //     const date = new Date(currentDate);
-    //     date.setMonth(currentDate.getMonth() - i);
-    //     const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需要加1，并补零
-    //     months.push(`${month}月`);
-    //   }
-    //   return months.reverse(); // 反转数组，使当前月份在最后
-    // },
-    getLast6MonthsAddCounts() {
-      return this.last6MonthsAddCounts
-    },
-    getLast6MonthsConfirmCounts() {
-      return this.last6MonthsConfirmCounts
-    },
-    getAddMonthAndData(data) {
-      for (let key in data) {
-        this.last6MonthsAddCounts.push(data[key])
-        this.months.push(key.slice(-2) + '月')
-      }
-    },
-    getMonthAndData(data) {
-      for (let key in data) {
-        this.last6MonthsConfirmCounts.push(data[key])
-      }
-    },
-    dashboardList() {
-      this.echarsLoding = true
-      this.resetList()
-      dashboardList({ categoryId: this.queryParams.categoryId }).then(res => {
-        this.allData = res.data
-        let item = res.data
+      if (this.activeName === '分类分级报告') {
         let obj = {
-          dataTableCount: item.dataTableCount,
-          databaseCount: item.databaseCount,
-          datasourceCount: item.datasourceCount,
-          dataFieldCount: item.dataFieldCount,
-          notConfirmFieldCount: item.notConfirmFieldCount,
-          confirmCount: item.confirmCount,
-          confirmCount: item.confirmCount,
-          confirmProportion: item.confirmProportion
+          title: '分类分级分析报告',
+          className: 'aaa'
         }
-        this.tableData = [obj]
-        this.getAddMonthAndData(res.data.last6MonthsAddCounts)
-        this.getMonthAndData(res.data.last6MonthsConfirmCounts)
-        this.getIpAndData(res.data.ipTop)
-        this.getDataTypeAndData(res.data.dataTypeTop)
-        this.getSecurityTopData(res.data.securityTop)
-        this.getSortTopData(res.data.subclassTop)
-        this.datasourceTop = res.data.datasourceTop
-        this.fieldTop = res.data.fieldTop
-        this.tableTop = res.data.tableTop
-        this.earchsInit()
-        this.echarsLoding = false
-      })
-        .catch(err => {
-          this.echarsLoding = false
-        });
-    },
-
-    getSortTopData(data) {
-      this.subclassTop = data.map(item => {
-        return [item.subclassName, item.count]
-      })
-    },
-    getSecurityTopData(data) {
-      this.securityTop = data.map(item => {
-        return {
-          name: item.securityLevel + '：' + item.count,
-          value: item.count,
-        }
-      })
-      for (let value of data) {
-        this.securityTotal += value.count
-      }
-    },
-    getIpAndData(data) {
-      for (let key in data) {
-        this.ipTop.push({
-          value: data[key] * 10,
-          label: key
-        })
+        downloadPDF(obj)
+      } else if (this.activeName === '数据摸底调查表') {
+        this.dataBaselineExport();
       }
     },
 
-    getDataTypeAndData(data) {
-      for (let key in data) {
-        this.dataTypeList.push(key)
-        this.dataTypeListData.push(data[key])
+    async dataBaselineExport() {
+      // 1. 获取子组件实例
+      const dataBaselineComp = this.$refs.dataBaseline;
+      if (!dataBaselineComp) return;
+
+      // 2. 获取所有数据
+      const allData = await dataBaselineComp.getAllOptionsData();
+      if (allData.length === 0) {
+        this.$message.warning('没有可导出的数据');
+        return;
       }
+
+      // 3. 生成HTML内容
+      const htmlContent = this.generateExportHtml(allData);
+
+      // 4. 导出为HTML文件
+      this.exportToHtml(htmlContent);
     },
-    format(percentage) {
-      return `${percentage / 10}个`;
+
+    // 生成导出的HTML结构（复用页面样式）
+    generateExportHtml(allData) {
+      // 添加完整的HTML文档结构
+      let html = `
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>数据摸底调查表</title>
+  `;
+
+      // 引入页面使用的主样式
+      html += this.generateBaseStyles();
+
+      html += `
+    </head>
+    <body>
+      <div class="export-container" style="padding: 20px; font-family: sans-serif; max-width: 1000px; margin: 0 auto;">
+  `;
+
+      allData.forEach(item => {
+        // 每个下拉项作为一个section
+        html += `
+      <div class="export-section" style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+        <h2 style="color: #01a7f0; margin-bottom: 15px;">${item.title}</h2>
+        ${this.generateFormHtml(item.formData)}
+      </div>
+    `;
+      });
+
+      html += `
+      </div>
+    </body>
+    </html>
+  `;
+      return html;
+    },
+
+    // 生成基础样式
+    generateBaseStyles() {
+      return `
+      <style>
+        .form-section { margin-bottom: 24px; padding: 16px; border-radius: 4px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .form-section-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px; padding-left: 8px; border-left: 3px solid #3b82f6; }
+        .form-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+        .form-table th, .form-table td { border: 1px solid #e0e0e0; padding: 12px 16px; text-align: left; }
+        .form-table th { background-color: #f5f7fa; font-weight: 500; width: 20%; }
+        .form-table td { width: 80%; }
+        .sub-table { margin-left: 20px; margin-top: 8px; width: calc(100% - 20px); }
+        .tag { display: inline-block; padding: 2px 8px; margin-right: 8px; border-radius: 4px; font-size: 12px; }
+        .tag-primary { background: #ecf5ff; color: #3b82f6; }
+        .list-item { margin-bottom: 8px; padding: 8px; border: 1px solid #f0f0f0; border-radius: 4px; }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 16px; }
+        .checkbox-item { display: inline-flex; align-items: center; }
+        .checkbox-item::before { content: "☑️"; margin-right: 4px; }
+      </style>
+    `;
+    },
+
+    // 生成表格与页面样式完全一致的表单HTML
+    generateFormHtml(formData) {
+      // 基础数据信息表格
+      const basicInfoTable = `
+    <div class="form-section">
+      <div class="form-section-title">基础数据信息</div>
+      <table class="form-table">
+        <tr>
+          <th>数据名称</th>
+          <td>${formData.dataName || '-'}</td>
+        </tr>
+        <tr>
+          <th>拟定数据级别</th>
+          <td>
+            <span class="tag tag-primary">${formData.dataLevel}</span>
+          </td>
+        </tr>
+        <tr>
+          <th>数据类别</th>
+          <td>${formData.dataType || '-'}</td>
+        </tr>
+        <tr>
+          <th>数据安全责任部门</th>
+          <td>${formData.deptName || '-'}</td>
+        </tr>
+        <tr>
+          <th>数据安全负责人</th>
+          <td>${formData.dataOwner || '-'}</td>
+        </tr>
+        <tr>
+          <th>个人信息涉及情况</th>
+          <td>
+            <div class="checkbox-group">
+              ${formData.sensitivePersonalData ? '<div class="checkbox-item">涉及敏感个人信息</div><br>' : ''}
+              ${formData.noPersonalData ? '<div class="checkbox-item">涉及未成年人的个人信息</div><br>' : ''}
+              ${formData.ordinaryPersonalData ? '<div class="checkbox-item">涉及一般个人信息</div><br>' : ''}
+              ${formData.personalData ? '<div class="checkbox-item">不涉及</div>' : ''}
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <th>数据总量</th>
+          <td>
+            数据总量：<span class="tag tag-primary">${formData.dataSize || '-'}</span><br>
+            涉及个人信息：<span class="tag tag-primary">${formData.piiCount || '-'}</span>
+          </td>
+        </tr>
+        <tr>
+          <th>数据月增长量</th>
+          <td>
+            <span class="tag tag-primary">${formData.monthAmountOfIncrease || '-'}</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+  `;
+
+      // 数据来源
+      const dataSourceTable = `
+    <div class="form-section">
+      <div class="form-section-title">数据来源</div>
+      <table class="form-table">
+        <tr>
+          <th>数据的产生方式/获取方式</th>
+          <td>
+            <div class="checkbox-group">
+              ${formData.systemGather ? '<div class="checkbox-item">系统采集</div><br>' : ''}
+              ${formData.systemProduction ? '<div class="checkbox-item">系统生产</div><br>' : ''}
+              ${formData.artificialFillIn ? '<div class="checkbox-item">人工填报</div><br>' : ''}
+              ${formData.dealBuy ? '<div class="checkbox-item">交换购买</div><br>' : ''}
+              ${formData.shareExchange ? '<div class="checkbox-item">共享交换</div><br>' : ''}
+              ${formData.other ? `<div class="checkbox-item">其他: ${formData.otherInput}</div>` : ''}
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  `;
+
+      // 单位间数据流转情况表格
+      let dataSourcesHtml = '';
+      formData.dataSources.forEach((item, index) => {
+        dataSourcesHtml += `
+      <tr>
+        <th>来源 ${index + 1}</th>
+        <td>${item.content || '-'}</td>
+      </tr>
+    `;
+      });
+      // 数据流出表格
+      let dataflowHtml = '';
+      formData.dataflow.forEach((item, index) => {
+        dataflowHtml += `
+      <tr>
+        <th>流转节点 ${index + 1}</th>
+        <td>${item.content || '-'}</td>
+      </tr>
+    `;
+      });
+      const dataFlowTable = `
+        <div class="form-section">
+          <div class="form-section-title">单位间数据流转情况</div>
+          ${dataSourcesHtml ? `
+            <table class="form-table">
+              <tr><th colspan="2">数据来源单位</th></tr>
+              ${dataSourcesHtml}
+            </table>
+          ` : ''}
+        </div>
+        <div class="form-section">
+          ${dataflowHtml ? `
+            <table class="form-table">
+              <tr><th colspan="2">数据流出单位</th></tr>
+              ${dataflowHtml}
+            </table>
+          ` : ''}
+        </div>
+      `;
+
+      // 与其他数据处理者的交互表格
+      const interactionTable = `
+    <div class="form-section">
+      <div class="form-section-title">与其他数据处理者的交互</div>
+      <table class="form-table">
+        <tr>
+          <th>交互类型</th>
+          <td>
+            <div class="checkbox-group">
+              ${formData.externalProvisionBox ? `<div class="checkbox-item">对外提供给: ${formData.externalProvision || '-'}</div><br>` : ''}
+              ${formData.entrustBox ? `<div class="checkbox-item">委托: ${formData.entrust || '-'}</div><br>` : ''}
+              ${formData.jointDisposalBox ? `<div class="checkbox-item">与....共同处理: ${formData.jointDisposal || '-'}</div><br>` : ''}
+              ${formData.noInteraction ? '<div class="checkbox-item">无交互</div>' : ''}
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  `;
+
+      // 数据存储位置表格
+      const storageLocationTable = `
+    <div class="form-section">
+      <div class="form-section-title">数据存储位置</div>
+      <table class="form-table">
+        <tr>
+          <th>云类型</th>
+          <td>
+            <div class="checkbox-group">
+              ${formData.privateCloudBox ? `<div class="checkbox-item">私有云: ${formData.privateCloud || '-'}</div>` : ''}
+              ${formData.publicCloudBox ? `<div class="checkbox-item">公有云: ${formData.publicCloud || '-'}</div>` : ''}
+              ${formData.mixtureCloudBox ? `<div class="checkbox-item">混合云: ${formData.mixtureCloud || '-'}</div>` : ''}
+              ${formData.governmentCloudBox ? `<div class="checkbox-item">政务云: ${formData.governmentCloud || '-'}</div>` : ''}
+              ${formData.noCloudComputingPlatformBox ? `<div class="checkbox-item">非云计算平台: ${formData.noCloudComputingPlatform || '-'}</div>` : ''}
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <table class="form-table">
+        <tr>
+          <th>机房类型</th>
+          <td>
+            <div class="checkbox-group">
+              ${formData.thisUnitMachineRoomBox ? `<div class="checkbox-item">本单位机器机房: ${formData.thisUnitMachineRoom || '-'}</div>` : ''}
+              ${formData.outerUnitMachineRoomBox ? `<div class="checkbox-item">外部单位机器机房: ${formData.outerUnitMachineRoom || '-'}</div>` : ''}
+              ${formData.thirdPartyTrusteeshipMachineRoomBox ? `<div class="checkbox-item">第三方托管机房: ${formData.thirdPartyTrusteeshipMachineRoom || '-'}</div>` : ''}
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <table class="form-table">
+        <tr>
+          <th>存储地域</th>
+          <td>
+            <div class="checkbox-group">
+              ${formData.domesticBox ? `<div class="checkbox-item">境内: ${formData.domestic || '-'}</div>` : ''}
+              ${formData.overseasBox ? `<div class="checkbox-item">境外: ${formData.overseas || '-'}</div>` : ''}
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  `;
+
+      // 组合所有表格部分    
+      return basicInfoTable + dataSourceTable + dataFlowTable + interactionTable + storageLocationTable;
+    },
+
+    // 导出为HTML文件
+    exportToHtml(htmlContent) {
+      // 创建Blob对象
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+
+      // 创建下载链接
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '数据摸底调查表.html';
+      document.body.appendChild(a);
+
+      // 触发下载
+      a.click();
+
+      // 清理资源
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+
+
+    handleClick(tab, event) {
+      console.log(tab, event);
     },
     gettreeOptionsList() {
       this.Loading = true
@@ -580,14 +382,8 @@ export default {
         this.treeOptions = response.data
         if (response.data.length > 0) {
           this.queryParams.categoryId = response.data[0].id;
-          this.dashboardList()
         }
       });
-    },
-
-    // 左侧树下拉选change事件
-    treeOptionsSelectChange(val) {
-      this.dashboardList()
     },
     resetList() {
       this.securityTotal = 0
@@ -631,11 +427,9 @@ export default {
   height: 180px;
   background: url('../../../assets/images/assetReportBgc.png');
   background-size: 100% 100%;
-  /* 修改背景图大小 */
   background-position: 0 60%;
   background-repeat: no-repeat;
   position: relative;
-  /* 添加相对定位 */
 }
 
 .hede_bgc-text {
@@ -643,22 +437,17 @@ export default {
   text-align: center;
   width: 100%;
   position: absolute;
-  /* 使用绝对定位 */
   top: 50%;
-  /* 调整文字垂直位置 */
   left: 50%;
-  /* 调整文字水平位置 */
   transform: translate(-50%, -50%);
-  /* 使文字居中 */
   color: white;
-  /* 设置文字颜色 */
   z-index: 1;
-  /* 确保文字在背景图上面 */
 }
 
 .box1 {
   width: 100%;
   padding: 0 15px;
+  margin-top: 20px;
 
   .head {
     display: flex;
@@ -727,7 +516,7 @@ ul li.odd {
   color: #fff;
   width: 25px;
   height: 25px;
-  background: #1890ff;
+  background: #3b82f6;
   clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
   transition: all 0.3s ease;
   line-height: 25px;
@@ -748,7 +537,6 @@ ul li.odd {
   span {
     color: #fff;
     font-size: 16px;
-    /* 如果文字会旋转,可以添加以下样式保持文字方向 */
     transform: rotate(0deg);
   }
 }
@@ -767,7 +555,6 @@ ul li.odd {
   span {
     color: #fff;
     font-size: 16px;
-    /* 如果文字会旋转,可以添加以下样式保持文字方向 */
     transform: rotate(0deg);
   }
 }
@@ -786,48 +573,8 @@ ul li.odd {
   span {
     color: #fff;
     font-size: 16px;
-    /* 如果文字会旋转,可以添加以下样式保持文字方向 */
     transform: rotate(0deg);
   }
-}
-
-.progress_echarts {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 300px;
-  margin-top: 20px;
-  background-color: #e8f5fe;
-  padding: 20px;
-}
-
-.progress-box {
-  width: 49%;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  background-color: #fff;
-}
-
-.el-progress {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.el-progress /deep/ .el-progress__text {
-  font-size: 16px !important;
-}
-
-.progress_echarts_text {
-  color: #696969;
-  margin: 0;
-}
-
-.echartsBoxThree {
-  width: 100%;
-  height: 100%;
 }
 
 .boxThreeMain {
@@ -857,9 +604,14 @@ h4 {
   width: calc(100% - 25px);
   display: inline-block;
 }
-.tableBox{
+
+.tableBox {
   width: 100%;
-  /* display: flex; */
-  table-layout: fixed; /* 确保表格宽度均匀分配 */
+  table-layout: fixed;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
 }
 </style>
