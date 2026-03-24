@@ -11,11 +11,13 @@
             </el-select>
           </div>
           <div class="head-container" v-loading="treeLoading">
-            <el-input v-model="filterName" placeholder="搜索树节点..." clearable style="margin-bottom: 20px;" />
-            <el-tree style="overflow-y: auto;" :data="categoryList" :props="defaultProps"
-              :default-expanded-keys="[treeID]" :current-node-key="treeID" :expand-on-click-node="false"
-              :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current
-              @node-click="handleNodeClick" />
+            <el-input class="serachInput" v-model="filterName" placeholder="搜索树节点..." clearable />
+            <div class="tree-scroll-container">
+              <el-tree style="overflow-y: auto;" :data="categoryList" :props="defaultProps"
+                :default-expanded-keys="[treeID]" :current-node-key="treeID" :expand-on-click-node="false"
+                :filter-node-method="filterNode" ref="tree" node-key="id" highlight-current
+                @node-click="handleNodeClick" :render-content="renderContent" />
+            </div>
           </div>
         </el-card>
       </el-col>
@@ -631,6 +633,41 @@ export default {
       this.handleQuery();
     },
 
+    renderContent(h, { node, data }) {
+      const labelPart = h('span', {
+        class: 'node-label',
+        attrs: { title: node.label },
+        style: {
+          fontSize: '14px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap'
+        }
+      }, node.label);
+
+      const nodeContent = [
+        h('div', {
+          class: 'node-label-wrapper',
+          style: { flex: '1', minWidth: '0', overflow: 'hidden', display: 'flex', alignItems: 'center' }
+        }, [labelPart])
+      ];
+
+      return h('span', {
+        class: 'custom-tree-node',
+        style: {
+          display: 'flex',
+          alignItems: 'center',
+          width: '100%',
+          minWidth: 0,
+          overflow: 'hidden',
+          paddingTop: '10px',
+          paddingBottom: '10px',
+          borderRadius: '6px',
+          transition: 'background-color 0.2s'
+        }
+      }, nodeContent);
+    },
+
     // 定时器，防抖使用
     inputSearch(data) {
       clearTimeout(this.debounceTimeout);
@@ -924,6 +961,77 @@ export default {
 
 .addTextBtn:hover {
   cursor: pointer;
+}
+
+.serachInput {
+  margin-bottom: 20px;
+
+  .el-input__inner {
+    background-color: #f8fafc;
+  }
+}
+
+::v-deep .el-tree-node__content {
+  height: auto;
+  min-height: 28px;
+  line-height: 1.5;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node.is-current>.el-tree-node__content {
+  background-color: #eff6ff;
+  color: #3b84f6;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node__content:hover {
+  background-color: #f8fafc !important;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node {
+  padding: 0;
+}
+
+.tree-node-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding-bottom: 8px;
+}
+
+.node-level {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.custom-tree-node {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.node-label-wrapper {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.node-label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-scroll-container {
+  overflow-y: auto;
+  max-height: calc(100vh - 350px);
 }
 
 /* ::v-deep

@@ -5,7 +5,7 @@
         <el-card class="left-card" shadow="never">
           <!-- 1. 原有搜索输入框(保持不变,位于最上方) -->
           <div class="head-container" style="margin-bottom: 15px;">
-            <el-input v-model="filterText" :placeholder="$t('assetCatalog.pleaseInputLibraryName')" clearable>
+            <el-input class="serachInput" v-model="filterText" :placeholder="$t('assetCatalog.pleaseInputLibraryName')" clearable>
               <i slot="prefix" class="el-input__icon el-icon-search"></i>
             </el-input>
           </div>
@@ -27,11 +27,13 @@
           </div>
 
           <div class="head-container" v-loading="treeLoading">
-            <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
-              :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
-              node-key="id" highlight-current show-checkbox :check-strictly="false"
-              :default-checked-keys="defaultCheckedKeys" @node-click="handleTreeNodeClick" @check="handleTreeCheck"
-              :render-content="renderContent" />
+            <div class="tree-scroll-container">
+              <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
+                :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
+                node-key="id" highlight-current show-checkbox :check-strictly="false"
+                :default-checked-keys="defaultCheckedKeys" @node-click="handleTreeNodeClick" @check="handleTreeCheck"
+                :render-content="renderContent" />
+            </div>
           </div>
         </el-card>
       </el-col>
@@ -990,16 +992,45 @@ export default {
         iconClass = 'sysBusiness';
       }
 
-      return h('span', { class: 'custom-tree-node' }, [
+      const labelPart = h('span', {
+        class: 'node-label',
+        attrs: { title: node.label },
+        style: {
+          fontSize: '14px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap'
+        }
+      }, node.label);
+
+      const nodeContent = [
         h('svg-icon', {
           class: 'tree-node-icon',
           attrs: {
             iconClass: iconClass
           },
-          style: { marginRight: '8px' }
+          style: { marginRight: '8px', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }
         }),
-        h('span', { class: 'tree-node-label' }, node.label)
-      ]);
+        h('div', {
+          class: 'node-label-wrapper',
+          style: { flex: '1', minWidth: '0', overflow: 'hidden', display: 'flex', alignItems: 'center' }
+        }, [labelPart])
+      ];
+
+      return h('span', {
+        class: 'custom-tree-node',
+        style: {
+          display: 'flex',
+          alignItems: 'center',
+          width: '100%',
+          minWidth: 0,
+          overflow: 'hidden',
+          paddingTop: '10px',
+          paddingBottom: '10px',
+          borderRadius: '6px',
+          transition: 'background-color 0.2s'
+        }
+      }, nodeContent);
     },
 
     /**
@@ -1935,6 +1966,93 @@ export default {
 
 .el-tree-node ::v-deep .el-tree-node {
   display: none;
+}
+
+.serachInput {
+  margin-bottom: 20px;
+
+  .el-input__inner {
+    background-color: #f8fafc;
+  }
+}
+
+::v-deep .el-tree-node__content {
+  height: auto;
+  min-height: 28px;
+  line-height: 1.5;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node.is-current>.el-tree-node__content {
+  background-color: #eff6ff;
+  color: #3b84f6;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node__content:hover {
+  background-color: #f8fafc !important;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node {
+  padding: 0;
+}
+
+.tree-node-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding-bottom: 8px;
+}
+
+.node-level {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.custom-tree-node {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.node-label-wrapper {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.node-label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.treeBox {
+  overflow-y: auto;
+  border: none;
+  border-radius: 0;
+}
+
+.tree-scroll-container {
+  overflow-y: auto;
+  max-height: calc(100vh - 350px);
+}
+
+.treeBox ::v-deep .el-tree__body-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.treeBox ::v-deep .el-tree__body-wrapper::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  transition: all .2s ease-in-out;
 }
 
 .mian_box {

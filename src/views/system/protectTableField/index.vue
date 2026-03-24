@@ -12,9 +12,11 @@
             </el-select>
           </div>
           <div class="head-container" v-loading="treeLoading">
-            <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox :expand-on-click-node="false"
-              :filter-node-method="filterNode" ref="tree" node-key="id" @check="treeCheck"
-              :highlightCurrent="isHighlight" :render-content="renderContent" />
+            <div class="tree-scroll-container">
+              <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox :expand-on-click-node="false"
+                :filter-node-method="filterNode" ref="tree" node-key="id" @check="treeCheck"
+                :highlightCurrent="isHighlight" :render-content="renderContent" />
+            </div>
           </div>
         </el-card>
 
@@ -455,15 +457,25 @@ export default {
      * 第一层：sysBusiness，第二层：database1，第三层：table1
      */
     renderContent(h, { node, data }) {
-      // 根据节点层级确定图标类型
-      let iconClass = 'sysBusiness'; // 默认第一层图标
+      let iconClass = 'sysBusiness';
       if (node.level === 2) {
-        iconClass = 'database1'; // 第二层图标
+        iconClass = 'database1';
       } else if (node.level === 3) {
-        iconClass = 'table1'; // 第三层图标
+        iconClass = 'table1';
       }
 
-      return h('span', { class: 'custom-tree-node' }, [
+      const labelPart = h('span', {
+        class: 'node-label',
+        attrs: { title: node.label },
+        style: {
+          fontSize: '14px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap'
+        }
+      }, node.label);
+
+      const nodeContent = [
         h('svg-icon', {
           class: 'tree-node-icon',
           attrs: {
@@ -471,8 +483,26 @@ export default {
           },
           style: { marginRight: '8px' }
         }),
-        h('span', { class: 'tree-node-label' }, node.label)
-      ]);
+        h('div', {
+          class: 'node-label-wrapper',
+          style: { flex: '1', minWidth: '0', overflow: 'hidden', display: 'flex', alignItems: 'center' }
+        }, [labelPart])
+      ];
+
+      return h('span', {
+        class: 'custom-tree-node',
+        style: {
+          display: 'flex',
+          alignItems: 'center',
+          width: '100%',
+          minWidth: 0,
+          overflow: 'hidden',
+          paddingTop: '10px',
+          paddingBottom: '10px',
+          borderRadius: '6px',
+          transition: 'background-color 0.2s'
+        }
+      }, nodeContent);
     },
     async init() {
       if (this.$route.params && this.$route.params.id) {
@@ -1403,8 +1433,11 @@ Authorization:Bearer ${this.Token}`
 .custom-tree-node {
   display: flex;
   align-items: center;
-  height: 24px;
-  line-height: 24px;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  transition: background-color 0.2s;
 }
 
 .tree-node-icon {
@@ -1418,6 +1451,48 @@ Authorization:Bearer ${this.Token}`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.node-label-wrapper {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.node-label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-scroll-container {
+  overflow-y: auto;
+  max-height: calc(100vh - 350px);
+}
+
+::v-deep .el-tree-node__content {
+  height: auto;
+  min-height: 28px;
+  line-height: 1.5;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node.is-current>.el-tree-node__content {
+  background-color: #eff6ff;
+  color: #3b84f6;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node__content:hover {
+  background-color: #f8fafc !important;
+  border-radius: 10px;
+}
+
+::v-deep .el-tree-node {
+  padding: 0;
 }
 
 /* 添加导出列配置弹窗样式 */
