@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" v-loading="loading">
     <div class="page-header">
       <h2><b>安全合规报告</b></h2>
       <div class="header-operations">
@@ -156,6 +156,7 @@
 
 <script>
 import * as echarts from 'echarts';
+import request from '@/utils/request'
 import CountTo from 'vue-count-to'
 export default {
   name: 'DataAssetReport',
@@ -165,86 +166,23 @@ export default {
   },
   data() {
     return {
-      categoryId: '',
+      loading: false,
+      categoryId: '1',
       standardOptions: [
         { value: '1', label: '国家标准' },
         { value: '2', label: '行业标准' },
         { value: '3', label: '企业标准' },
       ],
       statsData: {
-        dataSourceCount: 6,
-        businessSystemCount: 9,
-        fieldCount: 5585,
-        fileCount: 3140
+        dataSourceCount: 0,
+        businessSystemCount: 0,
+        fieldCount: 0,
+        fileCount: 0
       },
       charts: {},
-      classificationRoot: [
-        { name: '个人信息', value: 920 },
-        { name: '交易数据', value: 760 },
-        { name: '行为数据', value: 610 },
-        { name: '设备信息', value: 420 },
-        { name: '运维日志', value: 350 },
-        { name: '监控指标', value: 300 },
-        { name: '配置数据', value: 260 }
-      ],
-      classificationChildren: {
-        '个人信息': [
-          { name: '姓名', value: 240 },
-          { name: '身份证', value: 210 },
-          { name: '联系方式', value: 180 },
-          { name: '住址', value: 150 },
-          { name: '账户', value: 140 },
-          { name: '人脸', value: 120 }
-        ],
-        '交易数据': [
-          { name: '订单', value: 220 },
-          { name: '支付', value: 200 },
-          { name: '退款', value: 160 },
-          { name: '对账', value: 100 },
-          { name: '发票', value: 80 },
-          { name: '结算', value: 70 }
-        ],
-        '行为数据': [
-          { name: '点击', value: 180 },
-          { name: '浏览', value: 160 },
-          { name: '搜索', value: 120 },
-          { name: '收藏', value: 90 },
-          { name: '分享', value: 60 },
-          { name: '下载', value: 50 }
-        ],
-        '设备信息': [
-          { name: '设备ID', value: 150 },
-          { name: '操作系统', value: 110 },
-          { name: '浏览器', value: 80 },
-          { name: '分辨率', value: 50 },
-          { name: '网络', value: 30 },
-          { name: '位置信息', value: 25 }
-        ],
-        '运维日志': [
-          { name: '应用日志', value: 140 },
-          { name: '访问日志', value: 110 },
-          { name: '安全日志', value: 60 },
-          { name: '错误日志', value: 25 },
-          { name: '审计日志', value: 15 },
-          { name: '系统日志', value: 10 }
-        ],
-        '监控指标': [
-          { name: 'CPU', value: 90 },
-          { name: '内存', value: 80 },
-          { name: '磁盘', value: 60 },
-          { name: '网络', value: 40 },
-          { name: 'IO', value: 30 },
-          { name: '延迟', value: 20 }
-        ],
-        '配置数据': [
-          { name: '参数', value: 120 },
-          { name: '开关', value: 70 },
-          { name: '映射', value: 30 },
-          { name: '规则', value: 25 },
-          { name: '策略', value: 15 },
-          { name: '模板', value: 10 }
-        ]
-      },
+      reportData: null,
+      classificationRoot: [],
+      classificationChildren: {},
       classificationStack: [],
       classificationCurrent: []
     };
@@ -255,6 +193,7 @@ export default {
   mounted() {
     this.$nextTick(() => {
       this.initCharts();
+      this.fetchReportData();
     });
     window.addEventListener('resize', this.handleResize);
   },
@@ -269,6 +208,11 @@ export default {
       return this.classificationStack.length === 0;
     }
   },
+  watch: {
+    categoryId() {
+      this.fetchReportData();
+    }
+  },
   methods: {
     goBack() {
       this.$router.go(-1);
@@ -276,6 +220,101 @@ export default {
 
     loadStatsData() {
       return;
+    },
+
+    fetchReportData() {
+      this.loading = true;
+      request({
+        url: '/system/assetReport/report',
+        method: 'get',
+        params: { standardId: this.categoryId }
+      })
+        .then(res => {
+          const data = res && (res.data || res);
+          if (data) this.applyReportData(data);
+          this.loading = false;
+        })
+        .catch(() => {
+          const fallback = {
+            standardId: this.categoryId,
+            stats: { dataSourceCount: 0, businessSystemCount: 0, fieldCount: 0, fileCount: 0 },
+            assetDistribution: { systems: [] },
+            growthTrend: { x: [], fields: [], files: [] },
+            classification: { root: [], children: {} },
+            levelDistribution: [],
+            heatmap: { levels: [], systems: [], matrix: [] },
+            systemCategory: { categories: [], systems: [], series: [] }
+          };
+          this.applyReportData(fallback);
+          this.loading = false;
+        });
+    },
+
+    applyReportData(data) {
+      this.reportData = data;
+      if (data.stats) this.statsData = Object.assign({}, this.statsData, data.stats);
+      if (data.classification && data.classification.root) {
+        this.classificationRoot = data.classification.root || [];
+        this.classificationChildren = data.classification.children || {};
+        this.classificationStack = [];
+        this.classificationCurrent = this.classificationRoot.slice(0);
+        if (this.charts.classification) this.updateClassificationChart(this.classificationCurrent);
+      }
+      if (data.assetDistribution && data.assetDistribution.systems && this.charts.assetDistribution) {
+        const names = data.assetDistribution.systems.map(i => i.name);
+        const fields = data.assetDistribution.systems.map(i => i.fields);
+        const files = data.assetDistribution.systems.map(i => i.files);
+        this.charts.assetDistribution.setOption({
+          xAxis: { data: names },
+          series: [{ name: '字段数量', data: fields }, { name: '文件数量', data: files }]
+        });
+      }
+      if (data.growthTrend && this.charts.growthTrend) {
+        this.charts.growthTrend.setOption({
+          xAxis: { data: data.growthTrend.x || [] },
+          series: [{ name: '累计字段数量', data: data.growthTrend.fields || [] }, { name: '累计文件数量', data: data.growthTrend.files || [] }]
+        });
+      }
+      if (data.levelDistribution && this.charts.levelDistribution) {
+        const seriesData = (data.levelDistribution || []).map(i => ({ name: i.level, value: i.value }));
+        this.charts.levelDistribution.setOption({ series: [{ name: '数据分级', data: seriesData }] });
+      }
+      if (data.heatmap && this.charts.heatmap) {
+        const levels = data.heatmap.levels || [];
+        const systems = data.heatmap.systems || [];
+        const matrix = data.heatmap.matrix || [];
+        const flat = [];
+        for (let i = 0; i < systems.length; i++) {
+          for (let j = 0; j < levels.length; j++) {
+            const v = matrix[i] && matrix[i][j] ? matrix[i][j] : 0;
+            flat.push([j, i, v]);
+          }
+        }
+        let vmax = 0;
+        flat.forEach(d => { if (d[2] > vmax) vmax = d[2]; });
+        this.charts.heatmap.setOption({
+          xAxis: { data: levels },
+          yAxis: { data: systems },
+          visualMap: { max: vmax || 1 },
+          series: [{ data: flat }]
+        });
+      }
+      if (data.systemCategory && this.charts.systemCategory) {
+        const categories = data.systemCategory.categories || [];
+        const systems = data.systemCategory.systems || [];
+        const series = (data.systemCategory.series || []).map(s => ({
+          name: s.name,
+          type: 'bar',
+          stack: 'total',
+          barWidth: 15,
+          data: s.data
+        }));
+        this.charts.systemCategory.setOption({
+          legend: { data: categories },
+          yAxis: { data: systems },
+          series
+        });
+      }
     },
 
     initCharts() {
