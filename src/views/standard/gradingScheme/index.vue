@@ -7,12 +7,6 @@
                     <el-input v-model="queryParams.schemeName" placeholder="方案名称" clearable
                         @keyup.enter.native="handleQuery" />
                 </el-form-item>
-                <el-form-item label="启用状态" prop="status">
-                    <el-select v-model="queryParams.status" clearable placeholder="启用状态">
-                        <el-option label="启用" value="1" />
-                        <el-option label="停用" value="0" />
-                    </el-select>
-                </el-form-item>
             </el-form>
         </el-card>
 
@@ -23,8 +17,7 @@
         </el-row>
 
         <el-card class="table-card" shadow="never">
-            <el-table v-loading="loading" height="860px" class="tableBox" :data="list"
-                @selection-change="handleSelectionChange" ref="tableRef">
+            <el-table v-loading="loading" height="860px" class="tableBox" :data="list" ref="tableRef">
                 <template slot="empty">
                     <el-empty description="暂无数据"></el-empty>
                 </template>
@@ -125,9 +118,6 @@ export default {
             },
             list: [],
             total: 0,
-            ids: [],
-            single: true,
-            multiple: true
         }
     },
     created() {
@@ -144,15 +134,8 @@ export default {
             this.total = 0
             this.loading = false
         },
-        handleSelectionChange(selection) {
-            this.ids = selection.map(item => item.id)
-            this.single = selection.length !== 1
-            this.multiple = !selection.length
-        },
         handleAdd() {
             this.addVisible = true
-        },
-        handleEdit(row) {
         },
         handleDelete(row) {
             this.$confirm('确定删除该方案吗？', '提示', {
