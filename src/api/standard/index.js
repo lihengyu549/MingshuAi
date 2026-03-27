@@ -107,3 +107,39 @@ export function deleteCategory(data) {
     data:data
   })
 } 
+
+// 分级方案列表接口
+export function getCategorySchemaList(data) {
+  return request({
+    url: '/system/categorySchema/getCategorySchemaList',
+    method: 'get',
+    params:data
+  })
+}
+
+// 新增分级方案接口
+export function addCategorySchema(data) {
+  return request({
+    url: '/system/categorySchema/addCategorySchema',
+    method: 'post',
+    data:data
+  })
+}
+
+// 更新分级方案接口
+export function updateCategorySchema(data) {
+  return request({
+    url: '/system/categorySchema/updateCategorySchema',
+    method: 'post',
+    data:data
+  })
+}
+
+// 删除分级方案接口
+export function deleteCategorySchema(data) {
+  return request({
+    url: '/system/categorySchema/deleteCategorySchema',
+    method: 'post',
+    data:data
+  })
+}
