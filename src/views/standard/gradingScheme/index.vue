@@ -2,10 +2,10 @@
     <div class="app-container" v-loading="mainLoading">
         <el-card shadow="never" class="searchCard">
             <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
-                :inline="true" label-width="auto">
+                :inline="true" label-width="auto" @submit.native.prevent>
                 <el-form-item label="方案名称" prop="schemeName">
                     <el-input v-model="queryParams.schemeName" placeholder="方案名称" clearable
-                        @keyup.enter.native="handleQuery" />
+                        @change="handleQuery" />
                 </el-form-item>
             </el-form>
         </el-card>
