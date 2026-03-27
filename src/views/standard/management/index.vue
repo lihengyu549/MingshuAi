@@ -137,6 +137,16 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item v-if="form && form.id" :label="$t('management.categorySchema')" prop="schemaId">
+              <el-select v-model="form.schemaId" filterable clearable :placeholder="$t('management.categorySchema')" :rules="[{ required: true, message: $t('management.categorySchemaRequired'), trigger: 'change' }]">
+                <el-option v-for="opt in schemaOptions" :key="opt.id" :label="opt.schemeName" :value="opt.id"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
       </el-form>
       <div class="drawer-footer">
         <el-button style="margin-left: 15px;" size="small" type="text" @click="downloadFile" id="btnDownload"
@@ -200,6 +210,7 @@ import dict from "@/utils/dict";
 import {
   listByDataType
 } from "@/api/dictData";
+import { getCategorySchemaListAll } from "@/api/data";
 export default {
   name: "management",
   dicts: ['sys_standard_type', 'sys_classification_state'],
@@ -250,6 +261,7 @@ export default {
         source: '',
         industryCategory: '',
         importFile: '',
+        schemaId: ''
       },
       // 表单校验
       rules: {
@@ -274,7 +286,11 @@ export default {
         importFile: [{
           required: true, validator: this.validateRuleContent, message: this.$t('management.importFileRequired'), trigger: "blur"
         }],
+        schemaId: [{
+          required: true, message: this.$t('management.categorySchemaRequired'), trigger: "blur"
+        }],
       },
+      schemaOptions: [],
       debounceTimeout: null,
       formLoading: false,
     };
@@ -283,6 +299,7 @@ export default {
   created() {
     this.getList()
     this.getDictData()
+    this.fetchSchemaOptions()
   },
   mounted() {
   },
@@ -314,6 +331,13 @@ export default {
       this.reset()
       this.open = true
       this.title = '新增'
+    },
+    fetchSchemaOptions() {
+      getCategorySchemaListAll().then(res => {
+        const payload = res && res.data ? res.data : res
+        const list = payload.records || payload.rows || payload.list || payload || []
+        this.schemaOptions = list
+      })
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -415,6 +439,9 @@ export default {
           }
           formData.append('source', this.form.source);
           formData.append('industryCategory', this.form.industryCategory);
+          if (this.form.schemaId) {
+            formData.append('schemaId', this.form.schemaId);
+          }
           await categoryImport(formData).then(res => {
             this.$message.success('操作成功');
             // this.getList();
