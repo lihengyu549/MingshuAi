@@ -372,20 +372,14 @@ export default {
     FTP: 'FTP',
     folderDirectory: '文件夹目录',
     pleaseInputFolderDirectory: '请输入文件夹目录路径',
-    scanConfigurationTitle: '扫描配置',
-    scanLogic: '扫描逻辑',
-    fullScan: '全量扫描',
-    fullScanTip: '全量扫描：清空，上一次的所有扫描结果，以本次勾选的内容为准',
-    filterConfiguration: '过滤配置',
-    fileSizeFilter: '文件大小过滤器',
-    fileDateFilter: '文件日期过滤器',
+    
     scanFilesWithin: '扫描',
     filesWithin: '个月之内的文件',
     scanFilesBefore: '个月之前的文件',
     filesBetween: '之间的文件',
     executionCycle: '执行周期',
     noData: '暂无数据',
-    basicInfo: '基本信息',
+    
     pleaseSelectFileDirectoryType: '请选择文件目录类型',
     pleaseInputPort: '请输入端口',
     pleaseInputUserName: '请输入用户名',
@@ -396,7 +390,7 @@ export default {
     files: '的文件',
     onlyScan: '仅扫描',
     pleaseSelectTime: '请选择时间',
-    scheduleCycle: '调度周期',
+    
     result: {
       category: '分类',
       securityLevel: '安全分级',

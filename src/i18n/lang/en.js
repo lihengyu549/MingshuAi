@@ -372,20 +372,14 @@ export default {
     FTP: 'FTP',
     folderDirectory: 'Folder Directory',
     pleaseInputFolderDirectory: 'Please enter folder directory path',
-    scanConfigurationTitle: 'Scan Configuration',
-    scanLogic: 'Scan Logic',
-    fullScan: 'Full Scan',
-    fullScanTip: 'Full scan: Clear all previous scan results, use this selection as the standard',
-    filterConfiguration: 'Filter Configuration',
-    fileSizeFilter: 'File Size Filter',
-    fileDateFilter: 'File Date Filter',
+    
     scanFilesWithin: 'Scan',
     filesWithin: 'months within files',
     scanFilesBefore: 'months before files',
     filesBetween: 'between files',
     executionCycle: 'Execution Cycle',
     noData: 'No Data',
-    basicInfo: 'Basic Information',
+    
     pleaseSelectFileDirectoryType: 'Please select file directory type',
     pleaseInputPort: 'Please enter port',
     pleaseInputUserName: 'Please enter username',
@@ -396,7 +390,7 @@ export default {
     files: 'files',
     onlyScan: 'Only scan',
     pleaseSelectTime: 'Please select time',
-    scheduleCycle: 'Schedule Cycle',
+    
     result: {
       category: 'Category',
       securityLevel: 'Security Level',
