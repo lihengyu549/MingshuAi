@@ -34,7 +34,7 @@
         </el-form-item>
         <el-form-item label="安全分级" prop="securityLevel">
           <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch" placeholder="请选择">
-            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+            <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
               :value="item.value">
             </el-option>
           </el-select>
@@ -244,7 +244,7 @@
         </el-form-item>
         <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
           <el-select v-model="resultForm.securityLevel" disabled placeholder="请选择">
-            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+            <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
               :value="item.value">
             </el-option>
           </el-select>
@@ -301,12 +301,14 @@ import {
   forceLogout, updataAttach, nameTesting, addData,
   getFrameworks, listTableByProject
 } from "@/api/system/protectCategory"
+import { getCategorySchemaLevelList } from "@/api/data"
 
 export default {
-  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un'],
+  dicts: ['sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un'],
   name: "ProxysResult",
   data() {
     return {
+      levelOptions: [],
       updataLoading: false,
       isIndeterminate: false,
       checkedColumn: [],
@@ -737,6 +739,7 @@ export default {
     this.checkAll = false;
     this.getList();
     this.getListTableByProject();
+    this.fetchLevelOptions(this.$route.query.drawerData.projectId)
   },
   computed: {
     isFileSource() {
@@ -755,6 +758,18 @@ export default {
 
   },
   methods: {
+    fetchLevelOptions(categoryId) {
+      const params = {}
+      if (categoryId) params.projectId = categoryId
+      getCategorySchemaLevelList(params).then(res => {
+        const payload = res && res.data ? res.data : res
+        const list = payload.records || payload.rows || payload.list || payload || []
+        this.levelOptions = list.map(it => ({
+          value: it.level,
+          label: it.levelName
+        }))
+      })
+    },
     // 获取风险等级颜色
     getRiskStyle(level) {
       const styles = {
@@ -1021,8 +1036,8 @@ export default {
       }
 
       // 为安全分级下拉框设置默认选中第一项
-      if (this.dict && this.dict.type && this.dict.type.sys_risk_level && this.dict.type.sys_risk_level.length > 0) {
-        this.resultForm.securityLevel = this.dict.type.sys_risk_level[0].value;
+      if (this.levelOptions && this.levelOptions.length > 0) {
+        this.resultForm.securityLevel = this.levelOptions[0].value;
       }
 
       this.deleteVisible = true
@@ -1147,8 +1162,8 @@ export default {
       }
 
       // 为安全分级下拉框设置默认选中第一项（如果没有已有值）
-      if (!this.resultForm.securityLevel && this.dict && this.dict.type && this.dict.type.sys_risk_level && this.dict.type.sys_risk_level.length > 0) {
-        this.resultForm.securityLevel = this.dict.type.sys_risk_level[0].value;
+      if (!this.resultForm.securityLevel && this.levelOptions && this.levelOptions.length > 0) {
+        this.resultForm.securityLevel = this.levelOptions[0].value;
       }
 
       this.deleteVisible = true

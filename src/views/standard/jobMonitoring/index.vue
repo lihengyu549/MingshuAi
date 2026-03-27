@@ -45,10 +45,10 @@
               </el-select>
             </el-form-item>
             <el-form-item :label="$t('jobMonitoring.securityLevel')" prop="levelId">
-              <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple
+          <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple
                 :placeholder="$t('jobMonitoring.securityLevel')">
-                <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-                  :value="item.value">
+            <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
+              :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -175,9 +175,9 @@
         <el-row>
           <el-col :span="24">
             <el-form-item class="addSelectClass" :label="$t('jobMonitoring.securityLevel')" prop="minSecurityLevel">
-              <el-select v-model="addOrEditDataRuls.minSecurityLevel" :placeholder="$t('jobMonitoring.securityLevel')" :disabled="addOrEdit.flag == 3">
-                <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-                  :value="item.value">
+          <el-select v-model="addOrEditDataRuls.minSecurityLevel" :placeholder="$t('jobMonitoring.securityLevel')" :disabled="addOrEdit.flag == 3">
+            <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
+              :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -413,7 +413,7 @@
 
         <el-form-item :label="$t('jobMonitoring.securityLevel')" prop="securityLevel">
           <el-select v-model="ruleForm.securityLevel" :placeholder="$t('jobMonitoring.securityLevel')">
-            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+            <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
               :value="item.value" :disabled="!filterSecurityLevels(item)">
               <template #default>
                 <span>
@@ -442,6 +442,7 @@ import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import {
   listByDataType
 } from "@/api/dictData";
+import { getCategorySchemaLevelList } from "@/api/data";
 import {
   addAttachData,
   editAttachData,
@@ -452,9 +453,10 @@ import { treeListI, getAttachData, attachStatus, nameTesting, getFrameworks, get
 export default {
   name: "ProtectTableField",
   components: { Treeselect },
-  dicts: ['sys_risk_level', 'sys_attribute_type'],
+  dicts: ['sys_attribute_type'],
   data() {
     return {
+      levelOptions: [],
       heightSmall: {
         height: '75px',
         overflowY: 'auto'
@@ -718,8 +720,26 @@ export default {
     this.gettreeOptionsList(this.$route.query.id)
     this.getDictData()
     this.getSelectUserListAll()
+    // this.fetchLevelOptions(this.queryParams.categoryId)
+  },
+  watch: {
+    'queryParams.categoryId'(val) {
+      this.fetchLevelOptions(val)
+    }
   },
   methods: {
+    fetchLevelOptions(categoryId) {
+      const params = {}
+      if (categoryId) params.projectId = categoryId
+      getCategorySchemaLevelList(params).then(res => {
+        const payload = res && res.data ? res.data : res
+        const list = payload.records || payload.rows || payload.list || payload || []
+        this.levelOptions = list.map(it => ({
+          value: it.level,
+          label: it.levelName
+        }))
+      })
+    },
     // 处理标签变化的通用方法
     handleTagChange(val, type) {
       if (val.length >= 40) {

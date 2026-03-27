@@ -31,7 +31,7 @@
             </el-form-item>
             <el-form-item label="安全分级" prop="securityLevel">
               <el-select v-model="queryParams.securityLevel" clearable multiple @change="handleQuery" placeholder="全部">
-                <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+                <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
                   :value="item.value">
                 </el-option>
               </el-select>
@@ -183,14 +183,16 @@ import Cookies from "js-cookie";
 import 'vue-json-viewer/style.css'
 import { getDicts } from "@/api/system/dict/data";
 import { attachStatus, forceLogout } from "@/api/system/protectTableField"; // Declare the variables here
+import { getCategorySchemaLevelList } from "@/api/data";
 
 export default {
   name: "ProtectTableField",
   components: { Treeselect },
 
-  dicts: ['sys_risk_level', 'sys_export_column'],
+  dicts: ['sys_export_column'],
   data() {
     return {
+      levelOptions: [],
       importData: {
         importFile: '', // 导入魔板文件名
         fileList: [],//导入模板的文件数据
@@ -423,6 +425,9 @@ export default {
   watch: {
     filterName(val) {
       this.$refs.tree.filter(val);
+    },
+    projectId(val) {
+      this.fetchLevelOptions(val)
     }
   },
   created() {
@@ -432,6 +437,18 @@ export default {
     this.init()
   },
   methods: {
+    fetchLevelOptions(projectId) {
+      const params = {}
+      if (projectId) params.projectId = projectId
+      getCategorySchemaLevelList(params).then(res => {
+        const payload = res && res.data ? res.data : res
+        const list = payload.records || payload.rows || payload.list || payload || []
+        this.levelOptions = list.map(it => ({
+          value: it.level,
+          label: it.levelName
+        }))
+      })
+    },
     // 获取风险等级颜色
     getRiskStyle(level) {
       const styles = {

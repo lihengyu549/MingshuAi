@@ -33,3 +33,20 @@ export function listNew(data) {
     params:data
   })
 }
+
+// 分类分级-分级方案-下拉查询
+export function getCategorySchemaListAll() {
+  return request({
+    url: '/system/categorySchema/getCategorySchemaListAll',
+    method: 'get'
+  })
+}
+
+// 分类分级-安全分级-下拉查询
+export function getCategorySchemaLevelList(data) {
+  return request({
+    url: '/system/categorySchema/getCategorySchemaLevelList',
+    method: 'get',
+    params:data
+  })
+}

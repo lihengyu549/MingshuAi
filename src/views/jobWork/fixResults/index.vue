@@ -177,7 +177,7 @@
                             <div class="info-content">
                                 <el-tag :style="getRiskStyle(Number(row.securityLevel))">{{ row.securityLevelName ||
                                     '--'
-                                    }}</el-tag>
+                                }}</el-tag>
                             </div>
                         </div>
                         <div class="info-item">
@@ -245,7 +245,7 @@
                 </el-form-item>
                 <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
                     <el-select v-model="resultForm.securityLevel" disabled placeholder="请选择">
-                        <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+                        <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
                             :value="item.value">
                         </el-option>
                     </el-select>
@@ -275,15 +275,14 @@
 </template>
 
 <script>
-import {
-    getCategoryAttachData, updateFiledRule, confirmIds
-} from "@/api/system/proxys";
+import { getCategoryAttachData, updateFiledRule, confirmIds } from "@/api/system/proxys";
 import { updateResultByFile, selectLastOrNextByFileId } from "@/api/system/unstructured"
 import {
     treeListI, getProtectTableFieldById
 } from "@/api/system/protectCategory"
+import { getCategorySchemaLevelList } from "@/api/data"
 export default {
-    dicts: ['sys_risk_level'],
+    dicts: [],
     data() {
         return {
             loading: false,
@@ -308,6 +307,7 @@ export default {
                 classificationLogic: '',
             },
             resultFormNodeName: '',
+            levelOptions: [],
             piiNodeName: '',
             piiList: [],
             originalQueryParams: null
@@ -322,6 +322,11 @@ export default {
         }
         this.getPiiList()
     },
+    watch: {
+        'resultForm.categoryId'(val) {
+            this.fetchLevelOptions(val)
+        }
+    },
     computed: {
         isFileSource() {
             return this.$route.query.queryParams.sourceType === 'FILE_CATALOGUE' || this.$route.query.queryParams.sourceType === 'FILE_SERVER';
@@ -331,6 +336,18 @@ export default {
         }
     },
     methods: {
+        fetchLevelOptions(categoryId) {
+            const params = {}
+            if (categoryId) params.projectId = categoryId
+            getCategorySchemaLevelList(params).then(res => {
+                const payload = res && res.data ? res.data : res
+                const list = payload.records || payload.rows || payload.list || payload || []
+                this.levelOptions = list.map(it => ({
+                    value: it.level,
+                    label: it.levelName
+                }))
+            })
+        },
         getRiskStyle(level) {
             const styles = {
                 1: { color: '#16a34a', backgroundColor: '#f0fdf4', border: 'none' },

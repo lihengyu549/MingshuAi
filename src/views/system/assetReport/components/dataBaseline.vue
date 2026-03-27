@@ -11,8 +11,8 @@
             </el-form-item>
             <!-- 拟定数据级别（单选） -->
             <el-form-item label="拟定数据级别">
-                <el-radio v-for="item in dict.type.sys_risk_level" v-model="dataBaselineForm.dataLevel"
-                    :key="item.value" :label="item.value" disabled>{{ item.label }}</el-radio>
+                <el-radio v-for="item in levelOptions" v-model="dataBaselineForm.dataLevel"
+                    :key="item.value" :label="String(item.value)" disabled>{{ item.label }}</el-radio>
             </el-form-item>
             <!-- 数据类别 -->
             <el-form-item label="数据类别">
@@ -153,9 +153,10 @@
 
 <script>
 import { getCategoryAttachDataByCategoryIds, listDataFeelBottomSurvey } from "@/api/system/protectCategory";
+import { getCategorySchemaLevelList } from "@/api/data";
 export default {
     name: 'dataBaseline',
-    dicts: ['sys_risk_level'],
+    dicts: [],
     props: {
         categoryId: {
             type: [String, Number],
@@ -220,8 +221,8 @@ export default {
             selectOptions: [],
             // 当前选中的下拉值
             selectedValue: "",
-            // 不同选项对应的表单数据（这里仅为示例结构，需根据实际业务补充）
-            // 用于表单双向绑定的当前数据
+            // 级别选项
+            levelOptions: [],
         }
     },
     watch: {
@@ -233,6 +234,7 @@ export default {
         }
     },
     created() {
+        this.fetchLevelOptions();
     },
     mounted() {
         // 下拉框查询 等待父组件异步完成
@@ -257,6 +259,17 @@ export default {
             } catch (error) {
                 console.error('下拉框查询失败:', error);
             }
+        },
+        // 获取分级选项
+        fetchLevelOptions() {
+            getCategorySchemaLevelList({projectId: this.categoryId}).then(res => {
+                const payload = res && res.data ? res.data : res;
+                const list = payload.records || payload.rows || payload.list || payload || [];
+                this.levelOptions = list.map(it => ({
+                    value: it.level,
+                    label: it.levelName
+                }));
+            });
         },
         // 下拉框选择变化时触发
         handleSelectChange(newVal) {
@@ -372,7 +385,7 @@ export default {
         formatFormData(rawData) {
             return {
                 dataName: rawData.dataName,
-                dataLevel: this.dict.type.sys_risk_level.find(item => item.value == rawData.dataLevel)?.label,
+                dataLevel: (this.levelOptions.find(item => String(item.value) == String(rawData.dataLevel)) || {}).label || rawData.dataLevel,
                 dataType: rawData.dataType,
                 dataOwner: rawData.dataOwner,
                 deptName: rawData.deptName,

@@ -24,7 +24,7 @@
       </el-form-item>
       <el-form-item label="安全分级" prop="securityLevel">
         <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch" placeholder="请选择">
-          <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
+          <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
@@ -139,8 +139,8 @@
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :page-size.sync="queryParams.pageSize"
-      @pagination="getList" />
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+      :page-size.sync="queryParams.pageSize" @pagination="getList" />
     <el-dialog title="结果修改" v-loading="updataLoading" :visible.sync="deleteVisible" width="650px"
       style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
       <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
@@ -155,8 +155,7 @@
         </el-form-item>
         <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
           <el-select v-model="resultForm.securityLevel" disabled placeholder="请选择">
-            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
-              :value="item.value">
+            <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -215,9 +214,10 @@ import {
   forceLogout, updataAttach, nameTesting, addData,
   getFrameworks, listTableByProject
 } from "@/api/system/protectCategory"
+import { getCategorySchemaLevelList } from "@/api/data"
 
 export default {
-  dicts: ['sys_risk_level', 'sys_classification_state', 'sys_classification_reasons'],
+  dicts: ['sys_classification_state', 'sys_classification_reasons'],
   name: "ProxysResult",
   props: {
     treeOptions: {
@@ -231,6 +231,7 @@ export default {
   },
   data() {
     return {
+      levelOptions: [],
       updataLoading: false,
       isIndeterminate: false,
       checkedColumn: [],
@@ -564,12 +565,12 @@ export default {
       },
     };
   },
-
   created() {
     if (this.drawerData && this.drawerData.targetDatabase) {
       const cleanedDatabase = this.drawerData.targetDatabase.replace(/,$/, '');
       this.surfaceList = cleanedDatabase.split(',')
     }
+    this.fetchLevelOptions()
     this.getProtectCategory()
     this.getPiiList()
     this.checkedColumn = this.setList
@@ -582,6 +583,16 @@ export default {
     this.getListTableByProject()
   },
   methods: {
+    fetchLevelOptions() {
+      getCategorySchemaLevelList({ projectId: this.queryParams.projectId }).then(res => {
+        const payload = res && res.data ? res.data : res
+        const list = payload.records || payload.rows || payload.list || payload || []
+        this.levelOptions = list.map(it => ({
+          value: it.level,
+          label: it.levelName
+        }))
+      })
+    },
     handleSearch(val) {
       this.$refs.treeSelectSec.filter(val);
     },

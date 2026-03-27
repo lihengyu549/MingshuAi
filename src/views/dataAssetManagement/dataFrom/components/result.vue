@@ -14,7 +14,7 @@
       <el-form-item :label="$t('dataFrom.result.securityLevel')" prop="securityLevel">
         <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch"
           :placeholder="$t('dataFrom.result.pleaseSelect')">
-          <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label" :value="item.value">
+          <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
@@ -126,7 +126,7 @@
         <el-form-item :label="$t('dataFrom.result.securityLevelModification')" class="addSelectClass"
           prop="securityLevel">
           <el-select v-model="resultForm.securityLevel" :placeholder="$t('dataFrom.result.pleaseSelectSecurityLevel')">
-            <el-option v-for="item in dict.type.sys_risk_level" :key="item.value" :label="item.label"
+            <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
               :value="item.value">
             </el-option>
           </el-select>
@@ -143,9 +143,7 @@
 </template>
 
 <script>
-import {
-  usersAddI
-} from "@/api/system/proxyUser";
+import { usersAddI } from "@/api/system/proxyUser";
 
 import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
@@ -158,9 +156,10 @@ import {
   forceLogout, updataAttach, nameTesting, addData,
   getFrameworks, listTableByProject
 } from "@/api/system/protectCategory"
+import { getCategorySchemaLevelList } from "@/api/data"
 
 export default {
-  dicts: ['sys_risk_level'],
+  dicts: [],
   name: "ProxysResult",
   props: {
     treeOptions: {
@@ -174,6 +173,7 @@ export default {
   },
   data() {
     return {
+      levelOptions: [],
       updataLoading: false,
       addOptions: [
         {
@@ -420,6 +420,7 @@ export default {
   },
 
   created() {
+    this.fetchLevelOptions()
     if (this.drawerData && this.drawerData.targetDatabase) {
       const cleanedDatabase = this.drawerData.targetDatabase.replace(/,$/, '');
       this.surfaceList = cleanedDatabase.split(',')
@@ -433,6 +434,16 @@ export default {
     this.getListTableByProject()
   },
   methods: {
+    fetchLevelOptions() {
+      getCategorySchemaLevelList({}).then(res => {
+        const payload = res && res.data ? res.data : res
+        const list = payload.records || payload.rows || payload.list || payload || []
+        this.levelOptions = list.map(it => ({
+          value: it.level,
+          label: it.levelName
+        }))
+      })
+    },
     getListTableByProject() {
       let data = {
         databaseId: this.drawerData.id,
