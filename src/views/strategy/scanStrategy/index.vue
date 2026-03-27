@@ -121,7 +121,7 @@
         </div>
       </div> -->
 
-    <el-card class="card" shadow="never">
+    <!-- <el-card class="card" shadow="never">
       <template slot="header">
         <span class="title">
           <div class="icon">
@@ -141,8 +141,9 @@
           </span>
         </div>
       </div>
-    </el-card>
+    </el-card> -->
 
+    <!--
     <el-card class="card" shadow="never">
       <template slot="header">
         <span class="title">
@@ -181,6 +182,7 @@
         </el-table-column>
       </el-table>
     </el-card>
+    -->
 
     <div class="foot_btn">
       <el-button type="primary" plain @click="submit">确 定</el-button>
