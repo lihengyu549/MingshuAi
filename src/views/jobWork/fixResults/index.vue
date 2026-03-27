@@ -135,6 +135,7 @@
                             <label class="info-label"><svg-icon icon-class="home-aiAuto"
                                     style="font-size: 18px; margin-right: 10px; flex-shrink: 0;" />AI推理：</label>
                             <div class="info-content">
+                                {{ row.dynamicGrading }}<br />
                                 <template v-if="row.oldSecurityLevel || row.newSecurityLevel || row.piiLevel">
                                     分类级别为<el-tag size="small" type="primary" style="border-radius: 8px;">{{
                                         row.oldSecurityLevel }}级</el-tag>，
