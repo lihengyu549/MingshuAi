@@ -49,7 +49,7 @@
     </el-card>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-dropdown @command="handleCommand" trigger="click">
+        <el-dropdown @command="handleCommand" trigger="click" placement="bottom-start">
           <el-button type="primary" plain size="medium" icon="el-icon-plus">
             {{ $t('dataFrom.add') }}
           </el-button>
