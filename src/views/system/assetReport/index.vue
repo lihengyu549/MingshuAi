@@ -156,7 +156,8 @@
 
 <script>
 import * as echarts from 'echarts';
-import request from '@/utils/request'
+import { getSafetyComplianceReport } from '@/api/data'
+import { getFrameworks } from '@/api/system/protectCategory'
 import CountTo from 'vue-count-to'
 export default {
   name: 'DataAssetReport',
@@ -167,12 +168,8 @@ export default {
   data() {
     return {
       loading: false,
-      categoryId: '1',
-      standardOptions: [
-        { value: '1', label: '国家标准' },
-        { value: '2', label: '行业标准' },
-        { value: '3', label: '企业标准' },
-      ],
+      categoryId: '',
+      standardOptions: [],
       statsData: {
         dataSourceCount: 0,
         businessSystemCount: 0,
@@ -181,8 +178,7 @@ export default {
       },
       charts: {},
       reportData: null,
-      classificationRoot: [],
-      classificationChildren: {},
+      classificationTree: [],
       classificationStack: [],
       classificationCurrent: []
     };
@@ -192,8 +188,9 @@ export default {
   },
   mounted() {
     this.$nextTick(() => {
+      this.fetchFrameworkOptions();
       this.initCharts();
-      this.fetchReportData();
+      // this.fetchReportData();
     });
     window.addEventListener('resize', this.handleResize);
   },
@@ -222,13 +219,22 @@ export default {
       return;
     },
 
+    fetchFrameworkOptions() {
+      getFrameworks().then((response) => {
+        const list = (response && response.data) ? response.data : [];
+        this.standardOptions = list.map(it => ({
+          value: String(it.id),
+          label: it.categoryName
+        }));
+        if (!this.categoryId && this.standardOptions.length) {
+          this.categoryId = String(this.standardOptions[0].value);
+        }
+      });
+    },
+
     fetchReportData() {
       this.loading = true;
-      request({
-        url: '/system/assetReport/report',
-        method: 'get',
-        params: { standardId: this.categoryId }
-      })
+      getSafetyComplianceReport({ categoryId: this.categoryId })
         .then(res => {
           const data = res && (res.data || res);
           if (data) this.applyReportData(data);
@@ -236,11 +242,11 @@ export default {
         })
         .catch(() => {
           const fallback = {
-            standardId: this.categoryId,
+            categoryId: this.categoryId,
             stats: { dataSourceCount: 0, businessSystemCount: 0, fieldCount: 0, fileCount: 0 },
             assetDistribution: { systems: [] },
             growthTrend: { x: [], fields: [], files: [] },
-            classification: { root: [], children: {} },
+            classification: [],
             levelDistribution: [],
             heatmap: { levels: [], systems: [], matrix: [] },
             systemCategory: { categories: [], systems: [], series: [] }
@@ -253,11 +259,32 @@ export default {
     applyReportData(data) {
       this.reportData = data;
       if (data.stats) this.statsData = Object.assign({}, this.statsData, data.stats);
-      if (data.classification && data.classification.root) {
-        this.classificationRoot = data.classification.root || [];
-        this.classificationChildren = data.classification.children || {};
+      // 支持多层分类树（最多6层），兼容旧结构
+      let classificationTree = null;
+      if (Array.isArray(data.classification)) {
+        classificationTree = data.classification;
+      } else if (data.classification && Array.isArray(data.classification.tree)) {
+        classificationTree = data.classification.tree;
+      } else if (data.classification && data.classification.root) {
+        // 兼容旧结构：{ root: [{name,value}], children: { [name]: [...] } }
+        const childrenMap = data.classification.children || {};
+        const build = (list, depth = 1) => {
+          if (!Array.isArray(list)) return [];
+          return list.map(item => {
+            const ch = childrenMap[item.name] || [];
+            return {
+              name: item.name,
+              value: item.value,
+              children: depth >= 6 ? [] : build(ch, depth + 1)
+            };
+          });
+        };
+        classificationTree = build(data.classification.root, 1);
+      }
+      if (classificationTree) {
+        this.classificationTree = classificationTree;
         this.classificationStack = [];
-        this.classificationCurrent = this.classificationRoot.slice(0);
+        this.classificationCurrent = this.classificationTree.slice(0);
         if (this.charts.classification) this.updateClassificationChart(this.classificationCurrent);
       }
       if (data.assetDistribution && data.assetDistribution.systems && this.charts.assetDistribution) {
@@ -300,9 +327,10 @@ export default {
         });
       }
       if (data.systemCategory && this.charts.systemCategory) {
-        const categories = data.systemCategory.categories || [];
         const systems = data.systemCategory.systems || [];
-        const series = (data.systemCategory.series || []).map(s => ({
+        const rawSeries = data.systemCategory.series || [];
+        const legendNames = rawSeries.map(s => s.name);
+        const series = rawSeries.map(s => ({
           name: s.name,
           type: 'bar',
           stack: 'total',
@@ -310,7 +338,7 @@ export default {
           data: s.data
         }));
         this.charts.systemCategory.setOption({
-          legend: { data: categories },
+          legend: { data: legendNames },
           yAxis: { data: systems },
           series
         });
@@ -421,17 +449,17 @@ export default {
       const chart = echarts.init(dom);
       this.charts.classification = chart;
       this.classificationStack = [];
-      this.classificationCurrent = this.classificationRoot.slice(0);
+      this.classificationCurrent = (this.classificationTree || []).slice(0);
       this.updateClassificationChart(this.classificationCurrent);
       chart.off('click');
       chart.on('click', (params) => {
         const name = params.name;
-        const children = this.classificationChildren[name];
-        if (children && children.length) {
-          this.classificationStack.push(this.classificationCurrent.slice(0));
-          this.classificationCurrent = children.slice(0);
-          this.updateClassificationChart(this.classificationCurrent);
-        }
+        const node = (this.classificationCurrent || []).find(n => n.name === name);
+        const children = node && Array.isArray(node.children) ? node.children : [];
+        if (!children || children.length === 0) return;
+        this.classificationStack.push(this.classificationCurrent.slice(0));
+        this.classificationCurrent = children.slice(0);
+        this.updateClassificationChart(this.classificationCurrent);
       });
     },
 

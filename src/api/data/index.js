@@ -50,3 +50,12 @@ export function getCategorySchemaLevelList(data) {
     params:data
   })
 }
+
+// 安全合规报告-页面查询
+export function getSafetyComplianceReport(data) {
+  return request({
+    url: '/system/dashboard/getSafetyComplianceReport',
+    method: 'get',
+    params:data
+  })
+}
