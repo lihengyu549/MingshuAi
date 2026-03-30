@@ -364,13 +364,8 @@ export default {
       getResultPushList(this.queryParams).then(res => {
         this.proxysList = res.data.rows;
         this.proxysList.forEach(item => {
-          if (item.useInnerCert) {
-            item.useInnerCert = true
-          } else if (item.useInnerCert == '0') {
-            item.useInnerCert = false
-          } else {
-            item.useInnerCert = true
-          }
+          const v = item.useInnerCert
+          item.useInnerCert = !(v === '0' || v === 0 || v === false)
         })
         this.total = res.data.total;
         this.loading = false;
