@@ -24,8 +24,7 @@
                     <template slot-scope="scope">
                         <span style="display:inline-flex;align-items:center;">
                             <i class="el-icon-lock" style="font-size:16px;color:#64748b;margin-right:6px;"></i>
-                            <span v-if="scope.row.schemeType != '0'" @click="handleEdit(scope.row)" style="cursor:pointer;color:#3b82f6;">{{ scope.row.schemeName }}</span>
-                            <span v-else style="color:#334155;cursor:not-allowed;">{{ scope.row.schemeName }}</span>
+                            <span @click="handleEdit(scope.row)" style="cursor:pointer;color:#3b82f6;">{{ scope.row.schemeName }}</span>
                             <el-tag v-if="scope.row.schemeType == '0'" type="primary"
                                 size="mini" effect="plain" style="margin-left:8px;">默认</el-tag>
                         </span>
@@ -48,12 +47,12 @@
             <el-form :model="addForm" :rules="addRules" ref="addForm" label-width="100px" size="medium"
                 label-position="top">
                 <el-form-item label="方案名称" prop="schemeName">
-                    <el-input v-model="addForm.schemeName" placeholder="如：数据安全分级方案" clearable />
+                    <el-input v-model="addForm.schemeName" placeholder="如：数据安全分级方案" clearable :disabled="addForm.schemeType === '0'" />
                 </el-form-item>
                 <el-form-item label="敏感数据定义">
                     <div style="display:flex;align-items:center;gap:10px;">
                         <span>安全分级大于等于</span>
-                        <el-input-number v-model="addForm.threshold" :min="0" :max="5" :step="1" />
+                        <el-input-number v-model="addForm.threshold" :min="0" :max="5" :step="1" :disabled="addForm.schemeType === '0'" />
                         <span>的数据定义为敏感数据</span>
                     </div>
                 </el-form-item>
@@ -62,25 +61,25 @@
                         <el-table-column label="分级数字" prop="level" width="100" align="center" />
                         <el-table-column label="分级名称" align="center" width="150">
                             <template slot-scope="scope">
-                                <el-input v-model="scope.row.name" />
+                                <el-input v-model="scope.row.name" :disabled="addForm.schemeType === '0'" />
                             </template>
                         </el-table-column>
                         <el-table-column label="分级定义" align="center">
                             <template slot-scope="scope">
-                                <el-input v-model="scope.row.definition" />
+                                <el-input v-model="scope.row.definition" :disabled="addForm.schemeType === '0'" />
                             </template>
                         </el-table-column>
                         <el-table-column label="启用" width="120" align="center">
                             <template slot-scope="scope">
-                                <el-switch v-model="scope.row.enabled" :disabled="scope.row.level === 0" />
+                                <el-switch v-model="scope.row.enabled" :disabled="scope.row.level === 0 || addForm.schemeType === '0'" />
                             </template>
                         </el-table-column>
                     </el-table>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="addVisible = false">取消</el-button>
-                <el-button type="primary" @click="submitAdd">保存</el-button>
+                <el-button @click="addVisible = false" :disabled="addForm.schemeType === '0'">取消</el-button>
+                <el-button type="primary" @click="submitAdd" :disabled="addForm.schemeType === '0'">保存</el-button>
             </div>
         </el-dialog>
     </div>

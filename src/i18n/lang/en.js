@@ -77,6 +77,7 @@ export default {
     searchTreeNodes: 'Search Tree Nodes...',
     subclassName: 'Subclass Name',
     confirmProtectMethod: 'Safety Precautions',
+    suggestProtectMethod: 'Suggested Safety Precautions',
     dataSource: 'Data Source',
     securityLevel: 'Security Level',
     dataOwner: 'Data Owner',

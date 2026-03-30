@@ -76,6 +76,7 @@ export default {
   jobMonitoring: {
     searchTreeNodes: '搜索树节点...',
     subclassName: '子类名称',
+    suggestProtectMethod: '建议防护措施',
     confirmProtectMethod: '确认防护措施',
     dataSource: '数据来源',
     securityLevel: '安全分级',

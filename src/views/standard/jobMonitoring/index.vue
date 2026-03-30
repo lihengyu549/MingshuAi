@@ -89,9 +89,9 @@
               </template>
             </el-table-column>
             <el-table-column :label="$t('jobMonitoring.securityLevel')" align="center" prop="securityLevelName" show-overflow-tooltip />
-            <el-table-column :label="$t('jobMonitoring.confirmProtectMethod')" prop="protectMethodName" width="200">
+            <el-table-column :label="$t('jobMonitoring.suggestProtectMethod')" prop="protectMethodName" width="200">
               <template slot="header">
-                <div style="text-align: center;">{{ $t('jobMonitoring.confirmProtectMethod') }}</div>
+                <div style="text-align: center;">{{ $t('jobMonitoring.suggestProtectMethod') }}</div>
               </template>
               <template slot-scope="scope">
                 <el-tag class="tagsBox custom-plain-tag" v-for="(item, index) in scope.row.protectMethodNameList"
