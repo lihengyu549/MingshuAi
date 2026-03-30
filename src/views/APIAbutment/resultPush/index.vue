@@ -54,7 +54,8 @@
         <!-- <el-table-column label="分类分级标准" align="center" prop="standardName" show-overflow-tooltip /> -->
         <el-table-column label="连接状态" align="center" prop="connectStatus" width="150" show-overflow-tooltip>
           <template slot-scope="scope">
-            {{ scope.row.connectStatus == '0' ? '未连接' : scope.row.connectStatus == '1' ? '已连接' : scope.row.connectStatus == '2' ? '断开' : '--' }}
+            {{ scope.row.connectStatus == '0' ? '未连接' : scope.row.connectStatus == '1' ? '已连接' : scope.row.connectStatus
+              == '2' ? '断开' : '--' }}
           </template>
         </el-table-column>
         <el-table-column label="推送状态" align="center" prop="pushStatusName" width="150" show-overflow-tooltip />
@@ -63,7 +64,8 @@
           <template slot-scope="scope">
             <el-button size="mini" type="text" @click="handleEcelFn(scope.row)">编辑</el-button>
             <el-button size="mini" type="text" @click="testClick(scope.row)">测试</el-button>
-            <el-button size="mini" type="text" :disabled="scope.row.taskType == '0'" @click="scanStateClickFn(scope.row)">推送</el-button>
+            <el-button size="mini" type="text" :disabled="scope.row.taskType == '0'"
+              @click="scanStateClickFn(scope.row)">推送</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -75,12 +77,14 @@
       <el-form class="dialogForm" :rules="dialogDataRules" :model="dialogData" size="medium" ref="dialogData"
         :inline="true" label-width="110px" label-position="top">
         <el-form-item label="任务名称" prop="taskName">
-          <el-input v-model="dialogData.taskName" :disabled="dialogData.taskType == '0'" placeholder="请输入任务名称"></el-input>
+          <el-input v-model="dialogData.taskName" :disabled="dialogData.taskType == '0'"
+            placeholder="请输入任务名称"></el-input>
         </el-form-item>
         <el-row>
           <el-col :span="12">
             <el-form-item label="推送类型" prop="pushType">
-              <el-select clearable v-model="dialogData.pushType" :disabled="dialogData.taskType == '0'" placeholder="请选择" @change="handlePushTypeChange">
+              <el-select clearable v-model="dialogData.pushType" :disabled="dialogData.taskType == '0'"
+                placeholder="请选择" @change="handlePushTypeChange">
                 <el-option v-for="item in dict.type.sys_push_type" :key="item.value" :label="item.label"
                   :value="item.value">
                 </el-option>
@@ -138,9 +142,10 @@
         <el-form-item label="推送内容">
           <el-input :disabled="dialogData.pushType == '3'" :placeholder="dialogData.pushType == '3' ? '默认推送内容' : ''">
           </el-input>
-          <el-tag v-if="dialogData.pushType != '3'" type="info" style="position: absolute; top: 2px;left: 2px; background-color: #e5e5e5;"
-            @click="pushBodyClickFn">已选{{ dialogData.pushBodyList && dialogData.pushBodyList.length
-              ? dialogData.pushBodyList.length : 0 }}个子类</el-tag>
+          <el-tag v-if="dialogData.pushType != '3'" type="info"
+            style="position: absolute; top: 2px;left: 2px; background-color: #e5e5e5;" @click="pushBodyClickFn">已选{{
+              dialogData.pushBodyList && dialogData.pushBodyList.length
+                ? dialogData.pushBodyList.length : 0 }}个子类</el-tag>
         </el-form-item>
         <el-form-item v-if="dialogData.pushType == '3'" label="证书来源" prop="useInnerCert">
           <div style="display: flex; align-items: center;">
@@ -148,9 +153,12 @@
             <el-switch v-model="dialogData.useInnerCert" style="margin: 0 15px;" />
             <span>当前：{{ dialogData.useInnerCert ? '内置证书' : '手动上传' }}</span>
           </div>
-          <el-upload v-if="!dialogData.useInnerCert" ref="p12Upload" class="upload-demo" action="" :limit="1" drag :auto-upload="false" accept=".p12">
+          <el-upload v-if="!dialogData.useInnerCert" ref="p12Upload" class="upload-demo" action="" :limit="1" drag
+            :auto-upload="false" accept=".p12">
             <i class="el-icon-upload"></i>
-            <div class="el-upload__text" style="color: #999;"><em style="font-size: 16px;">选择.p12文件</em> <span>仅支持p12文件，重复选择即替换已上传证书</span></div>
+            <div class="el-upload__text" style="color: #999;"><em style="font-size: 16px;">选择.p12文件</em>
+              <span>仅支持p12文件，重复选择即替换已上传证书</span>
+            </div>
           </el-upload>
         </el-form-item>
         <el-form-item v-if="dialogData.pushType == '3' && !dialogData.useInnerCert" label="证书密钥" prop="p12Password">
@@ -356,7 +364,13 @@ export default {
       getResultPushList(this.queryParams).then(res => {
         this.proxysList = res.data.rows;
         this.proxysList.forEach(item => {
-          item.useInnerCert = item.useInnerCert == '1'
+          if (item.useInnerCert) {
+            item.useInnerCert = true
+          } else if (item.useInnerCert == '0') {
+            item.useInnerCert = false
+          } else {
+            item.useInnerCert = true
+          }
         })
         this.total = res.data.total;
         this.loading = false;
