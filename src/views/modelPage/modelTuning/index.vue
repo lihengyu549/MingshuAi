@@ -28,7 +28,7 @@
                 <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">新增任务</el-button>
             </el-col>
             <el-col :span="1.5">
-                <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除任务 </el-button>
+                <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">删除任务 </el-button>
             </el-col>
         </el-row>
         <el-card class="table-card" shadow="never">
@@ -38,7 +38,7 @@
                 <el-empty description="暂无数据"></el-empty>
             </template>
             <el-table-column type="selection" width="60" align="center" />
-            <el-table-column label="任务名称" prop="modelTaskName" align="center" width="200" show-overflow-tooltip>
+            <el-table-column label="任务名称" prop="modelTaskName" align="left" width="200" show-overflow-tooltip>
                 <template slot-scope="scope">
                     <span @click="handleEdit(scope.row)" style="cursor: pointer; color: #409eff;">
                         <svg-icon icon-class="dataset" style="font-size: 16px; margin-right: 5px;" />
