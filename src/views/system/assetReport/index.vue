@@ -366,7 +366,7 @@ export default {
         grid: { left: '3%', right: '4%', bottom: '5%', containLabel: true },
         xAxis: {
           type: 'category',
-          data: ['客户中心库', '订单交易库', '支付结算库', '营销活动库', '风控审计库', '日志分析库'],
+          data: [],
           axisLine: { lineStyle: { color: '#eef0f6' } },
           axisLabel: { color: '#666' }
         },
@@ -383,14 +383,14 @@ export default {
             type: 'bar',
             barWidth: 15,
             itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] },
-            data: [1580, 1230, 980, 760, 620, 410]
+            data: []
           },
           {
             name: '文件数量',
             type: 'bar',
             barWidth: 15,
             itemStyle: { color: '#8bb4f6', borderRadius: [4, 4, 0, 0] },
-            data: [850, 690, 520, 450, 380, 240]
+            data: []
           }
         ]
       });
@@ -409,7 +409,7 @@ export default {
         xAxis: {
           type: 'category',
           boundaryGap: false,
-          data: ['2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03'],
+          data: [],
           axisLine: { lineStyle: { color: '#eef0f6' } },
           axisLabel: { color: '#666' }
         },
@@ -426,7 +426,7 @@ export default {
             type: 'line',
             symbol: 'emptyCircle',
             symbolSize: 6,
-            data: [4200, 5000, 5600, 6500, 7300, 8200],
+            data: [],
             areaStyle: { color: 'rgba(59, 130, 246, 0.1)' },
             itemStyle: { color: '#3b82f6' }
           },
@@ -435,7 +435,7 @@ export default {
             type: 'line',
             symbol: 'emptyCircle',
             symbolSize: 6,
-            data: [2050, 2300, 2500, 2750, 3000, 3300],
+            data: [],
             areaStyle: { color: 'rgba(139, 180, 246, 0.1)' },
             itemStyle: { color: '#8bb4f6' }
           }
@@ -519,13 +519,7 @@ export default {
             avoidLabelOverlap: true,
             itemStyle: { borderColor: '#fff', borderWidth: 2 },
             label: { show: true, formatter: '{b}' },
-            data: [
-              { value: 1048, name: '1级 (公开)', itemStyle: { color: '#bbf7d0' } },
-              { value: 735, name: '2级 (内部)', itemStyle: { color: '#fcd34d' } },
-              { value: 580, name: '3级 (敏感)', itemStyle: { color: '#fbbf24' } },
-              { value: 484, name: '4级 (重要)', itemStyle: { color: '#fca5a5' } },
-              { value: 300, name: '5级 (核心)', itemStyle: { color: '#f87171' } }
-            ]
+            data: []
           }
         ]
       });
@@ -538,22 +532,9 @@ export default {
       const chart = echarts.init(dom);
       this.charts.heatmap = chart;
 
-      const levels = ['1级', '2级', '3级', '4级', '5级'];
-      const systems = ['日志分析库', '风控审计库', '营销活动库', '支付结算库', '订单交易库', '客户中心库'];
-      const rawData = [
-        [130, 210, 170, 80, 20],
-        [65, 120, 170, 140, 90],
-        [95, 180, 200, 110, 35],
-        [80, 160, 220, 130, 40],
-        [100, 190, 260, 140, 45],
-        [120, 240, 310, 150, 60]
-      ];
+      const levels = [];
+      const systems = [];
       const data = [];
-      for (let i = 0; i < systems.length; i++) {
-        for (let j = 0; j < levels.length; j++) {
-          data.push([j, i, rawData[i][j]]);
-        }
-      }
 
       chart.setOption({
         tooltip: {
@@ -612,8 +593,8 @@ export default {
       const chart = echarts.init(dom);
       this.charts.systemCategory = chart;
       
-      const categories = ['个人信息类', '交易类', '行为类', '日志类', '主数据类'];
-      const systems = ['日志分析库', '风控审计库', '营销活动库', '支付结算库', '订单交易库', '客户中心库'];
+      const categories = [];
+      const systems = [];
       
       chart.setOption({
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
@@ -631,48 +612,7 @@ export default {
           axisLine: { lineStyle: { color: '#eef0f6' } },
           axisLabel: { color: '#666' }
         },
-        series: [
-          {
-            name: '个人信息类',
-            type: 'bar',
-            stack: 'total',
-            barWidth: 15,
-            itemStyle: { color: '#dbeafe' },
-            data: [35, 45, 110, 30, 70, 220]
-          },
-          {
-            name: '交易类',
-            type: 'bar',
-            stack: 'total',
-            barWidth: 15,
-            itemStyle: { color: '#bfdbfe' },
-            data: [20, 55, 60, 210, 280, 80]
-          },
-          {
-            name: '行为类',
-            type: 'bar',
-            stack: 'total',
-            barWidth: 15,
-            itemStyle: { color: '#93c5fd' },
-            data: [110, 65, 180, 110, 140, 90]
-          },
-          {
-            name: '日志类',
-            type: 'bar',
-            stack: 'total',
-            barWidth: 15,
-            itemStyle: { color: '#60a5fa' },
-            data: [260, 215, 60, 90, 90, 55]
-          },
-          {
-            name: '主数据类',
-            type: 'bar',
-            stack: 'total',
-            barWidth: 15,
-            itemStyle: { color: '#3b82f6' },
-            data: [25, 40, 35, 50, 55, 50]
-          }
-        ]
+        series: []
       });
     },
 
