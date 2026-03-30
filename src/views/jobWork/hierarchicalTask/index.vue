@@ -51,70 +51,84 @@
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
       <el-col :span="1.5" style="float: inline-end;">
+        <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click"
+          style="margin-right: 10px;">
+          <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+          <el-checkbox-group v-model="checkedColumn" @change="handleCheckedCitiesChange" class="checkboxGroup"
+            style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
+            <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
+              item.label }}</el-checkbox>
+          </el-checkbox-group>
+          <el-button size="medium" slot="reference">列设置</el-button>
+        </el-popover>
         <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="handleQuery">刷新</el-button>
       </el-col>
     </el-row>
     <el-card class="table-card" shadow="never">
-      <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList"
+      <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList" :key="checkedColumn.length"
         @selection-change="handleSelectionChange" ref="tableRef">
         <template slot="empty">
           <el-empty description="暂无数据"></el-empty>
         </template>
         <el-table-column type="selection" width="60" align="center" :selectable="selectableFn" />
-        <el-table-column label="任务名称" width="140" align="left" prop="tasksName" show-overflow-tooltip>
+        
+        <template v-for="item in filteredCheckedColumn">
+          <el-table-column v-if="item.prop === 'tasksName'" :key="item.prop" :label="item.label" width="140" align="left" :prop="item.prop" show-overflow-tooltip>
+            <template slot-scope="scope">
+              <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon icon-class="jobs"
+                  style="font-size: 16px; margin-right: 5px;" />{{ scope.row.tasksName }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column v-else-if="item.prop === 'sourceName'" :key="item.prop" :label="item.label" width="140" align="left" :prop="item.prop" show-overflow-tooltip>
+            <template slot-scope="scope">
+              {{ scope.row.sourceName }}
+            </template>
+          </el-table-column>
+          <el-table-column v-else-if="item.prop === 'businessName'" :key="item.prop" :label="item.label" width="140" align="left" :prop="item.prop" show-overflow-tooltip>
+            <template slot-scope="scope">
+              {{ scope.row.businessName }}
+            </template>
+          </el-table-column>
+          <el-table-column v-else-if="item.prop === 'projectName'" :key="item.prop" :label="item.label" width="240" align="left" :prop="item.prop" show-overflow-tooltip>
+            <template slot-scope="scope">
+              {{ scope.row.projectName }}
+            </template>
+          </el-table-column>
+          <!-- <el-table-column label="AI分析引擎" align="center">
           <template slot-scope="scope">
-            <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon icon-class="jobs"
-                style="font-size: 16px; margin-right: 5px;" />{{ scope.row.tasksName }}</span>
+            <span>{{ scope.row.aiAnalyticsEngine == 1 ? '快速响应' : '深度思考' }}</span>
           </template>
-        </el-table-column>
-        <el-table-column label="数据源" width="140" align="left" prop="sourceName" show-overflow-tooltip>
-          <template slot-scope="scope">
-            {{ scope.row.sourceName }}
-          </template>
-        </el-table-column>
-        <el-table-column label="来源业务系统" width="140" align="left" prop="businessName" show-overflow-tooltip>
-          <template slot-scope="scope">
-            {{ scope.row.businessName }}
-          </template>
-        </el-table-column>
-        <el-table-column label="分类分级标准" width="240" align="left" prop="projectName" show-overflow-tooltip>
-          <template slot-scope="scope">
-            {{ scope.row.projectName }}
-          </template>
-        </el-table-column>
-        <!-- <el-table-column label="AI分析引擎" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.aiAnalyticsEngine == 1 ? '快速响应' : '深度思考' }}</span>
+        </el-table-column> -->
+          <el-table-column v-else-if="item.prop === 'fieldCount'" :key="item.prop" :label="item.label" width="120" align="center" :prop="item.prop" show-overflow-tooltip>
+            <template slot-scope="scope">
+              {{ emptyHandler(scope.row.fieldCount) }}
+            </template>
+          </el-table-column>
+          <el-table-column v-else-if="item.prop === 'fileCount'" :key="item.prop" :label="item.label" width="120" align="center" :prop="item.prop" show-overflow-tooltip>
+            <template slot-scope="scope">
+              {{ emptyHandler(scope.row.fileCount) }}
+            </template>
+          </el-table-column>
+          <el-table-column v-else-if="item.prop === 'maskComplete'" :key="item.prop" :label="item.label" align="center" width="120" :prop="item.prop">
+            <template slot-scope="scope">
+              <div class="runType">
+                <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'"
+                  class="el-icon-loading" style="margin-right: 10px;font-size: 18px;"></i>
+                <svg-icon v-else :icon-class="scope.row.maskComplete" class="runIcon"
+                  style="margin-right: 10px;width: 20px;height: 20px;"></svg-icon>
+                <span>{{ stateMsg(scope.row.maskComplete) }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column v-else-if="item.prop === 'publishStatus'" :key="item.prop" :label="item.label" align="center" :prop="item.prop">
+            <template slot-scope="scope">
+              <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ? '未发布' :
+                '已发布' }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column v-else-if="item.prop === 'updateTime'" :key="item.prop" :label="item.label" align="center" :prop="item.prop" show-overflow-tooltip />
         </template>
-      </el-table-column> -->
-        <el-table-column label="任务字段数" width="120" align="center" prop="fieldCount" show-overflow-tooltip>
-          <template slot-scope="scope">
-            {{ emptyHandler(scope.row.fieldCount) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="任务文件数" width="120" align="center" prop="fileCount" show-overflow-tooltip>
-          <template slot-scope="scope">
-            {{ emptyHandler(scope.row.fileCount) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="执行状态" align="center" width="120" prop="maskComplete">
-          <template slot-scope="scope">
-            <div class="runType">
-              <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'"
-                class="el-icon-loading" style="margin-right: 10px;font-size: 18px;"></i>
-              <svg-icon v-else :icon-class="scope.row.maskComplete" class="runIcon"
-                style="margin-right: 10px;width: 20px;height: 20px;"></svg-icon>
-              <span>{{ stateMsg(scope.row.maskComplete) }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="发布状态" align="center" prop="publishStatus">
-          <template slot-scope="scope">
-            <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ? '未发布' :
-              '已发布' }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip />
+        
         <el-table-column label="任务操作" align="center" width="200" class-name="small-padding fixed-width">
           <template slot-scope="scope">
             <div class="iconBtnBox">
@@ -550,6 +564,47 @@ export default {
         }
       ],
       databaseTypeList: [],
+      checkedColumn: [],
+      checkAll: false,
+      isIndeterminate: false,
+      setList: [
+        {
+          label: '任务名称',
+          prop: 'tasksName'
+        },
+        {
+          label: '数据源',
+          prop: 'sourceName'
+        },
+        {
+          label: '来源业务系统',
+          prop: 'businessName'
+        },
+        {
+          label: '分类分级标准',
+          prop: 'projectName'
+        },
+        {
+          label: '任务字段数',
+          prop: 'fieldCount'
+        },
+        {
+          label: '任务文件数',
+          prop: 'fileCount'
+        },
+        {
+          label: '执行状态',
+          prop: 'maskComplete'
+        },
+        {
+          label: '发布状态',
+          prop: 'publishStatus'
+        },
+        {
+          label: '更新时间',
+          prop: 'updateTime'
+        }
+      ],
       publishStatus: [
         {
           value: 0,
@@ -720,6 +775,10 @@ export default {
   },
 
   created() {
+    this.checkedColumn = this.setList.filter(item => 
+      ['tasksName', 'sourceName', 'projectName', 'maskComplete', 'publishStatus'].includes(item.prop)
+    );
+    this.checkAll = false;
     this.gettreeOptionsList()
     const prevPage = sessionStorage.getItem('prevPage');
     if (prevPage !== 'viewResults') {
@@ -741,6 +800,9 @@ export default {
     this.getScanCompleteDataFn()
   },
   computed: {
+    filteredCheckedColumn() {
+      return this.checkedColumn;
+    },
     isFileSource() {
       return this.form.sourceType === 'FILE_CATALOGUE' || this.form.sourceType === 'FILE_SERVER';
     }
@@ -758,6 +820,15 @@ export default {
     // }
   },
   methods: {
+    handleCheckAllChange(val) {
+      this.checkedColumn = val ? this.setList : [];
+      this.isIndeterminate = false;
+    },
+    handleCheckedCitiesChange(value) {
+      let checkedCount = value.length;
+      this.checkAll = checkedCount === this.setList.length;
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.setList.length;
+    },
     emptyHandler(val) {
       return val === null || val === undefined || val === '' ? '-' : val;
     },

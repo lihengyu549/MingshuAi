@@ -65,13 +65,23 @@
         </el-dropdown>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">{{ $t('dataFrom.delete')
+        <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">{{ $t('dataFrom.delete')
           }}</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
+      <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click"
+        style="float: inline-end; margin-right: 10px;">
+        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+        <el-checkbox-group v-model="checkedColumn" @change="handleCheckedCitiesChange" class="checkboxGroup"
+          style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
+          <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
+            item.label }}</el-checkbox>
+        </el-checkbox-group>
+        <el-button size="medium" slot="reference">列设置</el-button>
+      </el-popover>
     </el-row>
     <el-card shadow="never" class="table-card">
-      <el-table v-loading="loading" height="860px" class="tableBox" :data="proxysList"
+      <el-table v-loading="loading" height="860px" class="tableBox" :data="proxysList" :key="checkedColumn.length"
         @selection-change="handleSelectionChange" ref="tableRef">
         <template slot="empty">
           <el-empty :description="$t('dataFrom.noData')"></el-empty>
@@ -88,47 +98,54 @@
           </template>
         </el-table-column>
 
-        <el-table-column :label="$t('dataFrom.targetIpPort')" align="center" prop="targetIpPort" show-overflow-tooltip>
-          <template slot-scope="scope">
-            <span>{{ scope.row.targetIpPort }}</span>
-          </template>
-        </el-table-column>
+        <template v-for="item in filteredCheckedColumn">
+          <el-table-column v-if="item.prop === 'targetIpPort'" :key="item.prop" :label="item.label" align="center" :prop="item.prop" show-overflow-tooltip>
+            <template slot-scope="scope">
+              <span>{{ scope.row.targetIpPort }}</span>
+            </template>
+          </el-table-column>
 
-        <el-table-column :label="$t('dataFrom.dataSourceType')" align="center" prop="sourceTypeName"
-          show-overflow-tooltip>
-          <template slot-scope="scope">
-            <span>{{ emptyHandler(scope.row.sourceTypeName) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column :label="$t('dataFrom.databaseTypeCol')" align="center" prop="databaseType"
-          show-overflow-tooltip>
-          <template slot-scope="scope">
-            <span>{{ emptyHandler(scope.row.databaseType) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column :label="$t('dataFrom.sourceBusinessSystem')" align="center" prop="businessName"
-          show-overflow-tooltip />
-        <!-- <el-table-column label="分类分级标准" align="center" prop="projectName" /> -->
-        <el-table-column :label="$t('dataFrom.scanStatus')" align="center" prop="scanState">
-          <template slot-scope="scope">
-            <div style="display: flex; align-items: center;justify-content: center;">
-              <img style="display: block; width: 20px;margin-right: 10px;"
-                :src="imgSrc[scope.row.scanState ? scope.row.scanState : 'NONE']" alt="">
-              <span> {{ stateMsg(scope.row.scanState) }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column :label="$t('dataFrom.timeConsuming')" align="center" prop="scanTime" show-overflow-tooltip />
-        <el-table-column :label="$t('dataFrom.updateTime')" align="center" prop="updateTime" show-overflow-tooltip />
-        <el-table-column :label="$t('dataFrom.dataQualityAssessment')" align="center" prop="dataScore"
-          show-overflow-tooltip />
-        <el-table-column :label="$t('dataFrom.tableCount')" align="center" prop="tableCount" show-overflow-tooltip />
-        <el-table-column :label="$t('dataFrom.fieldCount')" align="center" prop="fieldCount" show-overflow-tooltip />
-        <el-table-column :label="$t('dataFrom.dataDictionary')" align="center" show-overflow-tooltip>
-          <template slot-scope="scope">
-            <span>{{ scope.row.feature && scope.row.feature.featureName || '-' }}</span>
-          </template>
-        </el-table-column>
+          <el-table-column v-else-if="item.prop === 'sourceTypeName'" :key="item.prop" :label="item.label" align="center" :prop="item.prop"
+            show-overflow-tooltip>
+            <template slot-scope="scope">
+              <span>{{ emptyHandler(scope.row.sourceTypeName) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column v-else-if="item.prop === 'databaseType'" :key="item.prop" :label="item.label" align="center" :prop="item.prop"
+            show-overflow-tooltip>
+            <template slot-scope="scope">
+              <span>{{ emptyHandler(scope.row.databaseType) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column v-else-if="item.prop === 'businessName'" :key="item.prop" :label="item.label" align="center" :prop="item.prop"
+            show-overflow-tooltip />
+          <!-- <el-table-column label="分类分级标准" align="center" prop="projectName" /> -->
+          <el-table-column v-else-if="item.prop === 'scanState'" :key="item.prop" :label="item.label" align="center" :prop="item.prop">
+            <template slot-scope="scope">
+              <div style="display: flex; align-items: center;justify-content: center;">
+                <img style="display: block; width: 20px;margin-right: 10px;"
+                  :src="imgSrc[scope.row.scanState ? scope.row.scanState : 'NONE']" alt="">
+                <span> {{ stateMsg(scope.row.scanState) }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column v-else-if="item.prop === 'scanTime'" :key="item.prop" :label="item.label" align="center" :prop="item.prop" show-overflow-tooltip />
+          <el-table-column v-else-if="item.prop === 'updateTime'" :key="item.prop" :label="item.label" align="center" :prop="item.prop" show-overflow-tooltip />
+          <el-table-column v-else-if="item.prop === 'dataScore'" :key="item.prop" :label="item.label" align="center" :prop="item.prop"
+            show-overflow-tooltip>
+            <template slot-scope="scope">
+              <el-progress :percentage="Number(scope.row.dataScore) || 0" :stroke-width="6" :show-text="false"></el-progress>
+            </template>
+          </el-table-column>
+          <el-table-column v-else-if="item.prop === 'tableCount'" :key="item.prop" :label="item.label" align="center" :prop="item.prop" show-overflow-tooltip />
+          <el-table-column v-else-if="item.prop === 'fieldCount'" :key="item.prop" :label="item.label" align="center" :prop="item.prop" show-overflow-tooltip />
+          <el-table-column v-else-if="item.prop === 'featureName'" :key="item.prop" :label="item.label" align="center" show-overflow-tooltip>
+            <template slot-scope="scope">
+              <span>{{ scope.row.feature && scope.row.feature.featureName || '-' }}</span>
+            </template>
+          </el-table-column>
+        </template>
+        
         <el-table-column :label="$t('dataFrom.operation')" align="center" class-name="small-padding fixed-width"
           min-width="150">
           <template slot-scope="scope">
@@ -503,6 +520,55 @@ export default {
   data() {
     return {
       databaseTableNameParama: {}, // 数据库表名传参
+      checkedColumn: [],
+      checkAll: false,
+      isIndeterminate: false,
+      setList: [
+        {
+          label: this.$t('dataFrom.targetIpPort'),
+          prop: "targetIpPort"
+        },
+        {
+          label: this.$t('dataFrom.dataSourceType'),
+          prop: "sourceTypeName"
+        },
+        {
+          label: this.$t('dataFrom.databaseTypeCol'),
+          prop: "databaseType"
+        },
+        {
+          label: this.$t('dataFrom.sourceBusinessSystem'),
+          prop: "businessName"
+        },
+        {
+          label: this.$t('dataFrom.scanStatus'),
+          prop: "scanState"
+        },
+        {
+          label: this.$t('dataFrom.timeConsuming'),
+          prop: "scanTime"
+        },
+        {
+          label: this.$t('dataFrom.updateTime'),
+          prop: "updateTime"
+        },
+        {
+          label: this.$t('dataFrom.dataQualityAssessment'),
+          prop: "dataScore"
+        },
+        {
+          label: this.$t('dataFrom.tableCount'),
+          prop: "tableCount"
+        },
+        {
+          label: this.$t('dataFrom.fieldCount'),
+          prop: "fieldCount"
+        },
+        {
+          label: this.$t('dataFrom.dataDictionary'),
+          prop: "featureName"
+        }
+      ],
       scanContentShow: false, // 扫描配置弹框
       scanStateName: false,// 扫描中展示
       scanContentLoading: false,
@@ -847,13 +913,29 @@ export default {
     };
   },
   computed: {
+    filteredCheckedColumn() {
+      return this.checkedColumn;
+    }
   },
   created() {
+    this.checkedColumn = this.setList.filter(item => 
+      ['targetIpPort', 'businessName', 'scanState', 'dataScore'].includes(item.prop)
+    );
+    this.checkAll = false;
     // this.queryParams.projectId = 0
     this.gettreeOptionsList()
     this.getList()
   },
   methods: {
+    handleCheckAllChange(val) {
+      this.checkedColumn = val ? this.setList : [];
+      this.isIndeterminate = false;
+    },
+    handleCheckedCitiesChange(value) {
+      let checkedCount = value.length;
+      this.checkAll = checkedCount === this.setList.length;
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.setList.length;
+    },
     // 自定义校验规则
     tabelCheckedNameRules(rule, value, callback) {
       callback();
