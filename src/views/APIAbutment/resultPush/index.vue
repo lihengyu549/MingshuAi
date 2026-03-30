@@ -406,12 +406,17 @@ export default {
           const isEdit = !!this.dialogData.id
           const formData = new FormData()
 
-          if (!this.dialogData.useInnerCert) {
-            const uploadFiles = this.$refs.p12Upload.uploadFiles
-            if (uploadFiles && uploadFiles.length > 0) {
-              const file = uploadFiles[0].raw
-              formData.append('file', file)
+          // 仅在自定义推送且使用手动证书时读取上传组件文件
+          if (String(this.dialogData.pushType) === '3' && this.dialogData.useInnerCert === false) {
+            const uploader = this.$refs.p12Upload
+            const files = uploader && uploader.uploadFiles ? uploader.uploadFiles : []
+            if (!files || files.length === 0 || !files[0] || !files[0].raw) {
+              this.$message.error('请上传证书文件')
+              return
             }
+            const file = files[0].raw
+            // 同时兼容多种参数名，避免后端对接差异
+            formData.append('file', file)
           }
 
           formData.append('useInnerCert', this.dialogData.useInnerCert ? '1' : '0')
@@ -470,6 +475,13 @@ export default {
     handlePushTypeChange(value) {
       if (value === '1' || value === '2') {
         this.dialogData.provider = '1'
+        // 切换为非“自定义推送”，重置证书相关状态并清空已选文件
+        this.dialogData.useInnerCert = true
+        this.dialogData.p12Password = ''
+        const uploader = this.$refs.p12Upload
+        if (uploader && uploader.clearFiles) {
+          uploader.clearFiles()
+        }
       } else if (value === '3') {
         this.dialogData.provider = '2'
       }
