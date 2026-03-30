@@ -320,6 +320,10 @@ export default {
         let vmax = 0;
         flat.forEach(d => { if (d[2] > vmax) vmax = d[2]; });
         this.charts.heatmap.setOption({
+          tooltip: {
+            position: 'top',
+            formatter: (p) => `${systems[p.data[1]]} - ${levels[p.data[0]]}: ${p.data[2]}`
+          },
           xAxis: { data: levels },
           yAxis: { data: systems },
           visualMap: { max: vmax || 1 },
