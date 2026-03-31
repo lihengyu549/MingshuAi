@@ -12,7 +12,8 @@
             </el-select>
           </div>
           <div class="head-container" v-loading="treeLoading">
-            <el-input class="serachInput" v-model="filterName" :placeholder="$t('jobMonitoring.searchTreeNodes')" clearable />
+            <el-input class="serachInput" v-model="filterName" :placeholder="$t('jobMonitoring.searchTreeNodes')"
+              clearable />
             <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
               :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
               node-key="id" highlight-current @node-click="handleNodeClick" :render-content="renderContent">
@@ -26,8 +27,8 @@
           <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="false"
             v-show="showSearch" label-width="auto">
             <el-form-item :label="$t('jobMonitoring.subclassName')" prop="name">
-              <el-input v-model="queryParams.name" @input="inputSearch" :placeholder="$t('jobMonitoring.subclassName')" clearable
-                @keyup.enter.native="handleQuery" />
+              <el-input v-model="queryParams.name" @input="inputSearch" :placeholder="$t('jobMonitoring.subclassName')"
+                clearable @keyup.enter.native="handleQuery" />
             </el-form-item>
             <el-form-item :label="$t('jobMonitoring.confirmProtectMethod')" prop="confirmProtectMethod">
               <el-select v-model="queryParams.confirmProtectMethod" @change="selectProjectIdChange" multiple
@@ -45,10 +46,9 @@
               </el-select>
             </el-form-item>
             <el-form-item :label="$t('jobMonitoring.securityLevel')" prop="levelId">
-          <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple
+              <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple
                 :placeholder="$t('jobMonitoring.securityLevel')">
-            <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
-              :value="item.value">
+                <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -60,8 +60,8 @@
               </el-select>
             </el-form-item>
             <el-form-item :label="$t('jobMonitoring.baseParent')" prop="baseParent">
-              <el-input v-model="queryParams.baseParent" @input="inputSearch" :placeholder="$t('jobMonitoring.baseParent')" clearable
-                @keyup.enter.native="handleQuery" />
+              <el-input v-model="queryParams.baseParent" @input="inputSearch"
+                :placeholder="$t('jobMonitoring.baseParent')" clearable @keyup.enter.native="handleQuery" />
             </el-form-item>
           </el-form>
         </el-card>
@@ -82,13 +82,20 @@
             </template>
             <el-table-column type="selection" width="60" align="center">
             </el-table-column>
-            <el-table-column :label="$t('jobMonitoring.subclassName')" align="left" width="140" prop="attachData" show-overflow-tooltip>
+            <el-table-column :label="$t('jobMonitoring.subclassName')" align="left" width="140" prop="attachData"
+              show-overflow-tooltip>
               <template slot-scope="scope">
                 <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />
                 {{ scope.row.attachData }}
               </template>
             </el-table-column>
-            <el-table-column :label="$t('jobMonitoring.securityLevel')" align="center" prop="securityLevelName" show-overflow-tooltip />
+            <el-table-column :label="$t('jobMonitoring.securityLevel')" align="center" show-overflow-tooltip>
+              <template slot-scope="scope">
+                <el-tag :style="getRiskStyle(Number(scope.row.minSecurityLevel))">
+                  {{ scope.row.securityLevelName }}
+                </el-tag>
+              </template>
+            </el-table-column>
             <el-table-column :label="$t('jobMonitoring.suggestProtectMethod')" prop="protectMethodName" width="200">
               <template slot="header">
                 <div style="text-align: center;">{{ $t('jobMonitoring.suggestProtectMethod') }}</div>
@@ -100,7 +107,8 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('jobMonitoring.dataOwner')" align="center" prop="dataOwner" show-overflow-tooltip />
+            <el-table-column :label="$t('jobMonitoring.dataOwner')" align="center" prop="dataOwner"
+              show-overflow-tooltip />
             <el-table-column :label="$t('jobMonitoring.confirmProtectMethod')" prop="confirmProtectMethod" width="200">
               <template slot="header">
                 <div style="text-align: center;">{{ $t('jobMonitoring.confirmProtectMethod') }}</div>
@@ -113,7 +121,8 @@
               </template>
             </el-table-column>
             <!-- <el-table-column label="来源" align="center" prop="dataSource" show-overflow-tooltip /> -->
-            <el-table-column :label="$t('jobMonitoring.baseParent')" align="center" prop="baseParent" show-overflow-tooltip />
+            <el-table-column :label="$t('jobMonitoring.baseParent')" align="center" prop="baseParent"
+              show-overflow-tooltip />
             <el-table-column :label="$t('jobMonitoring.operation')" align="center" width="180">
               <template slot-scope="scope">
                 <el-button type="text" size="medium"
@@ -145,12 +154,14 @@
           <el-col :span="12">
             <el-form-item :label="$t('jobMonitoring.subclassName')" prop="attachData">
               <el-input v-model="addOrEditDataRuls.attachData" :disabled="addOrEdit.flag == 3"
-                @input="sonNameTestingFn(addOrEditDataRuls.attachData)" maxlength="50" :placeholder="$t('jobMonitoring.subclassName')"></el-input>
+                @input="sonNameTestingFn(addOrEditDataRuls.attachData)" maxlength="50"
+                :placeholder="$t('jobMonitoring.subclassName')"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item class="addSelectClass" prop="dataOwner" :label="$t('jobMonitoring.dataOwner')">
-              <el-select v-model="addOrEditDataRuls.dataOwner" :placeholder="$t('jobMonitoring.dataOwner')" :disabled="addOrEdit.flag == 3">
+              <el-select v-model="addOrEditDataRuls.dataOwner" :placeholder="$t('jobMonitoring.dataOwner')"
+                :disabled="addOrEdit.flag == 3">
                 <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
                 </el-option>
               </el-select>
@@ -175,9 +186,9 @@
         <el-row>
           <el-col :span="24">
             <el-form-item class="addSelectClass" :label="$t('jobMonitoring.securityLevel')" prop="minSecurityLevel">
-          <el-select v-model="addOrEditDataRuls.minSecurityLevel" :placeholder="$t('jobMonitoring.securityLevel')" :disabled="addOrEdit.flag == 3">
-            <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
-              :value="item.value">
+              <el-select v-model="addOrEditDataRuls.minSecurityLevel" :placeholder="$t('jobMonitoring.securityLevel')"
+                :disabled="addOrEdit.flag == 3">
+                <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -217,7 +228,8 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item class="addSelectClass" :label="$t('jobMonitoring.confirmProtectMethod')" prop="confirmProtectMethod">
+        <el-form-item class="addSelectClass" :label="$t('jobMonitoring.confirmProtectMethod')"
+          prop="confirmProtectMethod">
           <el-select v-model="addOrEditDataRuls.confirmProtectMethod" multiple placeholder="全部"
             :disabled="addOrEdit.flag == 3">
             <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
@@ -384,12 +396,13 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="addCancel">{{ $t('cancel') }}</el-button>
-        <el-button type="primary" plain v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">{{ $t('confirm') }}</el-button>
+        <el-button type="primary" plain v-if="addOrEdit.flag == 1 || addOrEdit.flag == 2" @click="addSubmitForm">{{
+          $t('confirm') }}</el-button>
       </div>
     </Drawer>
     <!-- 新增规则弹窗-->
-    <el-dialog class="addMsg" :title="$t('jobMonitoring.addRule')" :visible.sync="ruleDialogVisible" width="580px" :close-on-click-modal="false"
-      :show-close="false">
+    <el-dialog class="addMsg" :title="$t('jobMonitoring.addRule')" :visible.sync="ruleDialogVisible" width="580px"
+      :close-on-click-modal="false" :show-close="false">
       <el-form :model="ruleForm" ref="ruleForm" label-width="100px" class="rule-dialog-form" size="medium"
         label-position="top" :rules="dialogRules">
         <el-form-item :label="$t('jobMonitoring.ruleType')" prop="ruleType">
@@ -401,7 +414,8 @@
 
         <el-form-item :label="$t('jobMonitoring.matchCondition')" prop="matchType">
           <el-radio-group v-model="ruleForm.matchType" style="display: flex; justify-content: space-between">
-            <el-radio label="greater" v-if="currentRuleType === 'upgrade'">{{ $t('jobMonitoring.greaterEqual') }}</el-radio>
+            <el-radio label="greater" v-if="currentRuleType === 'upgrade'">{{ $t('jobMonitoring.greaterEqual')
+              }}</el-radio>
             <el-radio label="less" v-if="currentRuleType === 'downgrade'">{{ $t('jobMonitoring.lessEqual') }}</el-radio>
           </el-radio-group>
         </el-form-item>
@@ -413,13 +427,14 @@
 
         <el-form-item :label="$t('jobMonitoring.securityLevel')" prop="securityLevel">
           <el-select v-model="ruleForm.securityLevel" :placeholder="$t('jobMonitoring.securityLevel')">
-            <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
-              :value="item.value" :disabled="!filterSecurityLevels(item)">
+            <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value"
+              :disabled="!filterSecurityLevels(item)">
               <template #default>
                 <span>
                   {{ item.label }}
                   <span v-if="!filterSecurityLevels(item)" style="color: #999; margin-left: 8px; font-size: 12px;">
-                    ({{ currentRuleType === 'upgrade' ? $t('jobMonitoring.needGreaterCurrentLevel') : $t('jobMonitoring.needLessCurrentLevel') }})
+                    ({{ currentRuleType === 'upgrade' ? $t('jobMonitoring.needGreaterCurrentLevel') :
+                      $t('jobMonitoring.needLessCurrentLevel') }})
                   </span>
                 </span>
               </template>
@@ -728,6 +743,16 @@ export default {
     }
   },
   methods: {
+    getRiskStyle(level) {
+      const styles = {
+        1: { color: '#16a34a', backgroundColor: '#f0fdf4', border: 'none' },
+        2: { color: '#f97316', backgroundColor: '#fff7ed', border: 'none' },
+        3: { color: '#c2410c', backgroundColor: '#ffedd5', border: 'none' },
+        4: { color: '#dc2626', backgroundColor: '#fee2e2', border: 'none' },
+        5: { color: '#991b1b', backgroundColor: '#fecaca', border: 'none' }
+      };
+      return styles[level] || { color: '#6b7280', backgroundColor: '#f3f4f6', border: 'none' };
+    },
     fetchLevelOptions(categoryId) {
       const params = {}
       if (categoryId) params.projectId = categoryId
