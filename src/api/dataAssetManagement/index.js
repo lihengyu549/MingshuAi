@@ -116,6 +116,14 @@ export function scanIpAndPort(data) {
     data:data
   })
 } 
+// 终止扫描
+export function stopScanIpAndPort(data) {
+  return request({
+    url: '/system/proxyScan/stopScanIpAndPort',
+    method: 'post',
+    data:data
+  })
+} 
 // 结果查看列表接口
 export function getDatabaseProxysScanItemById(data) {
   return request({

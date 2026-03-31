@@ -22,7 +22,7 @@
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="scanSMFn">
+        <el-button type="primary" plain icon="el-icon-video-play" size="medium" @click="scanSMFn">
           {{ $t('dataAssetdiscover.scanTask') }}
         </el-button>
       </el-col>
@@ -39,7 +39,7 @@
         <template slot="empty">
           <el-empty :description="$t('noData')"></el-empty>
         </template>
-        <el-table-column type="selection" width="60" align="center" />
+        <el-table-column type="selection" width="60" align="center" :selectable="selectableFn" />
         <el-table-column :label="$t('dataAssetdiscover.taskName')" align="left" width="140" prop="taskName" show-overflow-tooltip>
           <template slot-scope="scope">
             <svg-icon icon-class="jobs" style="font-size: 16px; margin-right: 5px;" />
@@ -75,6 +75,7 @@
             <el-button size="mini" type="text" :disabled="scope.row.scanState == 'RUNNING'"
               @click="handleEcelFn(scope.row)">{{ $t('dataAssetdiscover.editTask') }}</el-button>
             <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)">{{ $t('dataAssetdiscover.scanResult') }}</el-button>
+            <el-button size="mini" type="text" @click="stopSMFn(scope.row)" :disabled="scope.row.taskState != 'RUNNING'">{{ $t('dataAssetdiscover.stopTask') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -138,6 +139,7 @@ import {
   addDatabaseProxysScan,
   deleteDatabaseProxysScan,
   scanIpAndPort,
+  stopScanIpAndPort,
   updateDatabaseProxysScan,
 } from "@/api/dataAssetManagement"
 import {
@@ -319,6 +321,15 @@ export default {
     this.getList()
   },
   methods: {
+    //控制多选框是否可选
+    selectableFn(row, index) {
+      const processingStates = ['RUNNING', 'STAYEXECUTE', 'PAUSEDING', 'KILLEDING'];
+      if (processingStates.includes(row.taskState)) {
+        return false
+      } else {
+        return true
+      }
+    },
     // 自定义校验规则
     //  validateScheduleTime(rule, value, callback) {
     //   if(this.addOrEditFormData.scheduleType != '0'){
@@ -521,6 +532,23 @@ export default {
       } else {
         this.$message({ message: this.$t('dataAssetdiscover.selectAtLeastOne'), type: 'warning' })
       }
+    },
+    // 终止任务
+    stopSMFn(row) {
+      this.$confirm(this.$t('dataAssetdiscover.confirmStopTask'), this.$t('dataAssetdiscover.tip'), {
+        confirmButtonText: this.$t('dataAssetdiscover.confirm'),
+        cancelButtonText: this.$t('dataAssetdiscover.cancel'),
+        type: 'warning'
+      }).then(() => {
+        let id = row.id
+        
+        stopScanIpAndPort({ id }).then(res => {
+          if (res.code == 200) {
+            this.$message.success(res.msg)
+            this.getList()
+          }
+        })
+      })
     },
     scanStateClickFn(row) {
       this.drawerData = JSON.parse(JSON.stringify(row))
