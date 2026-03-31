@@ -69,6 +69,13 @@
                                 <el-input v-model="scope.row.definition" :disabled="addForm.schemeType === '0'" />
                             </template>
                         </el-table-column>
+                        <el-table-column label="建议防护措施" align="center" width="200">
+                            <template slot-scope="scope">
+                                <el-select v-model="scope.row.defaultProtectMethod" multiple placeholder="" :disabled="addForm.schemeType === '0'">
+                                    <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel" :value="item.dictLabel"></el-option>
+                                </el-select>
+                            </template>
+                        </el-table-column>
                         <el-table-column label="启用" width="120" align="center">
                             <template slot-scope="scope">
                                 <el-switch v-model="scope.row.enabled" :disabled="scope.row.level === 0 || addForm.schemeType === '0'" />
@@ -89,6 +96,7 @@
 import { getCategorySchemaList, addCategorySchema, updateCategorySchema, deleteCategorySchema } from '@/api/standard/index'
 export default {
     name: 'gradingScheme',
+    dicts: ['safe_method_type'],
     data() {
         return {
             mainLoading: false,
@@ -112,9 +120,13 @@ export default {
             },
             list: [],
             total: 0,
+            confirmProtectMethodList: []
         }
     },
     created() {
+        this.getDicts("sys_confirm_protect_method").then(response => {
+            this.confirmProtectMethodList = response.data;
+        });
         this.getList()
     },
     methods: {
@@ -151,12 +163,12 @@ export default {
             this.addVisible = true
             this.addForm = { id: null, schemeName: '', schemeType: '1', threshold: 0 }
             this.levelRows = [
-                { level: 0, name: '未分级', definition: '未定义分级的数据', enabled: true },
-                { level: 1, name: '1级-公开可披露', definition: '一般可被公众获知或使用，数据安全遭到破坏后，对个人隐私或企业合法权益无影响或仅造成微弱影响，不涉及国家安全与公众权益风险。', enabled: true },
-                { level: 2, name: '2级-内部一般', definition: '一般业务数据，通常对内部管理等受限对象开放，不宜广泛公开。数据安全遭到破坏后，会对个人隐私或企业合法权益造成轻微影响，但不影响国家安全与公众权益。', enabled: true },
-                { level: 3, name: '3级-内部敏感', definition: '关键或重要业务数据，仅对 “必须知悉” 的特定人员开放访问。数据安全遭到破坏后，会对公众权益造成轻微影响，或对个人隐私/企业合法权益造成较重影响，但不影响国家安全。', enabled: true },
-                { level: 4, name: '4级-重要敏感', definition: '核心节点类机构的重要业务数据，仅对 “必须知悉” 的特定人员开放访问。数据安全遭到破坏后，会对公众权益造成一般影响，或对个人隐私/企业合法权益造成严重影响，但不影响国家安全。', enabled: true },
-                { level: 5, name: '5级-核心敏感', definition: '核心节点类机构的关键业务数据，仅对 “必须知悉” 的特定人员开放访问。一旦数据安全遭到破坏，将对国家安全或公众权益造成严重影响。', enabled: true }
+                { level: 0, name: '未分级', definition: '未定义分级的数据', enabled: true, defaultProtectMethod: [] },
+                { level: 1, name: '1级-公开可披露', definition: '一般可被公众获知或使用，数据安全遭到破坏后，对个人隐私或企业合法权益无影响或仅造成微弱影响，不涉及国家安全与公众权益风险。', enabled: true, defaultProtectMethod: [] },
+                { level: 2, name: '2级-内部一般', definition: '一般业务数据，通常对内部管理等受限对象开放，不宜广泛公开。数据安全遭到破坏后，会对个人隐私或企业合法权益造成轻微影响，但不影响国家安全与公众权益。', enabled: true, defaultProtectMethod: ['DLP'] },
+                { level: 3, name: '3级-内部敏感', definition: '关键或重要业务数据，仅对 “必须知悉” 的特定人员开放访问。数据安全遭到破坏后，会对公众权益造成轻微影响，或对个人隐私/企业合法权益造成较重影响，但不影响国家安全。', enabled: true, defaultProtectMethod: ['DLP', '脱敏'] },
+                { level: 4, name: '4级-重要敏感', definition: '核心节点类机构的重要业务数据，仅对 “必须知悉” 的特定人员开放访问。数据安全遭到破坏后，会对公众权益造成一般影响，或对个人隐私/企业合法权益造成严重影响，但不影响国家安全。', enabled: true, defaultProtectMethod: ['脱敏', '加密'] },
+                { level: 5, name: '5级-核心敏感', definition: '核心节点类机构的关键业务数据，仅对 “必须知悉” 的特定人员开放访问。一旦数据安全遭到破坏，将对国家安全或公众权益造成严重影响。', enabled: true, defaultProtectMethod: ['脱敏', '加密'] }
             ]
         },
         handleEdit(row) {
@@ -171,7 +183,8 @@ export default {
                 level: it.level,
                 name: it.levelName,
                 definition: it.levelDefinition,
-                enabled: this.toBool(it.status)
+                enabled: this.toBool(it.status),
+                defaultProtectMethod: it.defaultProtectMethod ? it.defaultProtectMethod.split(',') : []
             }))
             if (levels.length) this.levelRows = levels
         },
@@ -200,7 +213,8 @@ export default {
                         level: r.level,
                         levelName: r.name,
                         levelDefinition: r.definition,
-                        status: this.toFlag(r.enabled)
+                        status: this.toFlag(r.enabled),
+                        defaultProtectMethod: r.defaultProtectMethod ? r.defaultProtectMethod.join(',') : ''
                     }))
                 }
                 const req = this.addForm.id ? updateCategorySchema(payload) : addCategorySchema(payload)
