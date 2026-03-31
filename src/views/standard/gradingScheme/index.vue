@@ -167,8 +167,8 @@ export default {
                 { level: 1, name: '1级-公开可披露', definition: '一般可被公众获知或使用，数据安全遭到破坏后，对个人隐私或企业合法权益无影响或仅造成微弱影响，不涉及国家安全与公众权益风险。', enabled: true, defaultProtectMethod: [] },
                 { level: 2, name: '2级-内部一般', definition: '一般业务数据，通常对内部管理等受限对象开放，不宜广泛公开。数据安全遭到破坏后，会对个人隐私或企业合法权益造成轻微影响，但不影响国家安全与公众权益。', enabled: true, defaultProtectMethod: ['DLP'] },
                 { level: 3, name: '3级-内部敏感', definition: '关键或重要业务数据，仅对 “必须知悉” 的特定人员开放访问。数据安全遭到破坏后，会对公众权益造成轻微影响，或对个人隐私/企业合法权益造成较重影响，但不影响国家安全。', enabled: true, defaultProtectMethod: ['DLP', '脱敏'] },
-                { level: 4, name: '4级-重要敏感', definition: '核心节点类机构的重要业务数据，仅对 “必须知悉” 的特定人员开放访问。数据安全遭到破坏后，会对公众权益造成一般影响，或对个人隐私/企业合法权益造成严重影响，但不影响国家安全。', enabled: true, defaultProtectMethod: ['脱敏', '加密'] },
-                { level: 5, name: '5级-核心敏感', definition: '核心节点类机构的关键业务数据，仅对 “必须知悉” 的特定人员开放访问。一旦数据安全遭到破坏，将对国家安全或公众权益造成严重影响。', enabled: true, defaultProtectMethod: ['脱敏', '加密'] }
+                { level: 4, name: '4级-重要敏感', definition: '核心节点类机构的重要业务数据，仅对 “必须知悉” 的特定人员开放访问。数据安全遭到破坏后，会对公众权益造成一般影响，或对个人隐私/企业合法权益造成严重影响，但不影响国家安全。', enabled: true, defaultProtectMethod: ['脱敏', '加密', 'DLP'] },
+                { level: 5, name: '5级-核心敏感', definition: '核心节点类机构的关键业务数据，仅对 “必须知悉” 的特定人员开放访问。一旦数据安全遭到破坏，将对国家安全或公众权益造成严重影响。', enabled: true, defaultProtectMethod: ['脱敏', '加密', 'DLP'] }
             ]
         },
         handleEdit(row) {
