@@ -761,6 +761,7 @@ export default {
             this.overTime = this.routeData.overTime || '';
             this.runTime = this.routeData.runTime || '';
             this.status = this.routeData.maskComplete || '';
+            this.errorReason = this.routeData.errorReason || '';
             this.statusName = this.routeData.maskStatusName || '';
             this.progressTotal = Number(this.routeData.progressTotal) || 0;
             this.progressCurrent = Number(this.routeData.progressCurrent) || 0;
