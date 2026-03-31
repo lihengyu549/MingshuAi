@@ -116,7 +116,7 @@
       <el-form ref="form" :model="form" :rules="rules" label-position="top">
         <el-row>
           <el-col>
-            <el-form-item v-if="form.userId == undefined" label="用户名称" prop="userName">
+            <el-form-item label="用户名称" prop="userName">
               <el-input v-model="form.userName" placeholder="请输入用户名称" maxlength="30" />
             </el-form-item>
           </el-col>
@@ -324,7 +324,7 @@ export default {
         ],
         phonenumber: [
           {
-            required: true,
+            required: false,
             pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
             message: "请输入正确的手机号码",
             trigger: "blur"
