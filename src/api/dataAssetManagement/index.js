@@ -117,9 +117,9 @@ export function scanIpAndPort(data) {
   })
 } 
 // 终止扫描
-export function stopScanIpAndPort(data) {
+export function terminationScan(data) {
   return request({
-    url: '/system/proxyScan/stopScanIpAndPort',
+    url: '/system/proxyScan/terminationScan',
     method: 'post',
     data:data
   })

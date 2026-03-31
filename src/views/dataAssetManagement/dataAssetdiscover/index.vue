@@ -139,7 +139,7 @@ import {
   addDatabaseProxysScan,
   deleteDatabaseProxysScan,
   scanIpAndPort,
-  stopScanIpAndPort,
+  terminationScan,
   updateDatabaseProxysScan,
 } from "@/api/dataAssetManagement"
 import {
@@ -542,7 +542,7 @@ export default {
       }).then(() => {
         let id = row.id
         
-        stopScanIpAndPort({ id }).then(res => {
+        terminationScan({ id }).then(res => {
           if (res.code == 200) {
             this.$message.success(res.msg)
             this.getList()
