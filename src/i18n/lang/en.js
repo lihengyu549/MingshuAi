@@ -371,10 +371,8 @@ export default {
     modifiedTime: 'Modified Time',
     fileDirectoryType: 'File Directory Type',
     SMB: 'SMB',
-    NFS: 'NFS',
     FTP: 'FTP',
-    folderDirectory: 'Folder Directory',
-    pleaseInputFolderDirectory: 'Please enter folder directory path',
+    startingPath: 'Starting path',
     
     scanFilesWithin: 'Scan',
     filesWithin: 'months within files',

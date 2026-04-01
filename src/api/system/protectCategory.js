@@ -458,3 +458,39 @@ export function addOrUpdateFileDataList(params) {
     data: params,
   })
 }
+
+// 新增文件服务器接口
+export function saveFileServer(params) {
+  return request({
+    url: '/system/proxy/database/saveFileServer',
+    method: 'post',
+    data: params,
+  })
+}
+
+//修改文件服务器接口
+export function updateFileServer(params) {
+  return request({
+    url: '/system/proxy/database/updateFileServer',
+    method: 'post',
+    data: params,
+  })
+}
+
+//文件服务器获取扫描内容接口
+export function getScannedContentByFileServer(params) {
+  return request({
+    url: '/system/proxy/database/getScannedContentByFileServer',
+    method: 'post',
+    data: params,
+  })
+}
+
+//文件服务器开始扫描接口
+export function dataScanByFileServer(params) {
+  return request({
+    url: '/system/proxy/database/dataScanByFileServer',
+    method: 'post',
+    data: params,
+  })
+}

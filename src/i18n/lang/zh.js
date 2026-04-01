@@ -371,10 +371,8 @@ export default {
     modifiedTime: '修改时间',
     fileDirectoryType: '文件目录类型',
     SMB: 'SMB',
-    NFS: 'NFS',
     FTP: 'FTP',
-    folderDirectory: '文件夹目录',
-    pleaseInputFolderDirectory: '请输入文件夹目录路径',
+    startingPath: '起始路径',
     
     scanFilesWithin: '扫描',
     filesWithin: '个月之内的文件',

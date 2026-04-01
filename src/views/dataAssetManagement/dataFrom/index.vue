@@ -66,7 +66,7 @@
       </el-col>
       <el-col :span="1.5">
         <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">{{ $t('dataFrom.delete')
-          }}</el-button>
+        }}</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
       <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click"
@@ -99,28 +99,30 @@
         </el-table-column>
 
         <template v-for="item in filteredCheckedColumn">
-          <el-table-column v-if="item.prop === 'targetIpPort'" :key="item.prop" :label="item.label" align="center" :prop="item.prop" show-overflow-tooltip>
+          <el-table-column v-if="item.prop === 'targetIpPort'" :key="item.prop" :label="item.label" align="center"
+            :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               <span>{{ scope.row.targetIpPort }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column v-else-if="item.prop === 'sourceTypeName'" :key="item.prop" :label="item.label" align="center" :prop="item.prop"
-            show-overflow-tooltip>
+          <el-table-column v-else-if="item.prop === 'sourceTypeName'" :key="item.prop" :label="item.label"
+            align="center" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               <span>{{ emptyHandler(scope.row.sourceTypeName) }}</span>
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'databaseType'" :key="item.prop" :label="item.label" align="center" :prop="item.prop"
-            show-overflow-tooltip>
+          <el-table-column v-else-if="item.prop === 'databaseType'" :key="item.prop" :label="item.label" align="center"
+            :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               <span>{{ emptyHandler(scope.row.databaseType) }}</span>
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'businessName'" :key="item.prop" :label="item.label" align="center" :prop="item.prop"
-            show-overflow-tooltip />
+          <el-table-column v-else-if="item.prop === 'businessName'" :key="item.prop" :label="item.label" align="center"
+            :prop="item.prop" show-overflow-tooltip />
           <!-- <el-table-column label="分类分级标准" align="center" prop="projectName" /> -->
-          <el-table-column v-else-if="item.prop === 'scanState'" :key="item.prop" :label="item.label" align="center" :prop="item.prop">
+          <el-table-column v-else-if="item.prop === 'scanState'" :key="item.prop" :label="item.label" align="center"
+            :prop="item.prop">
             <template slot-scope="scope">
               <div style="display: flex; align-items: center;justify-content: center;">
                 <img style="display: block; width: 20px;margin-right: 10px;"
@@ -129,23 +131,29 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'scanTime'" :key="item.prop" :label="item.label" align="center" :prop="item.prop" show-overflow-tooltip />
-          <el-table-column v-else-if="item.prop === 'updateTime'" :key="item.prop" :label="item.label" align="center" :prop="item.prop" show-overflow-tooltip />
-          <el-table-column v-else-if="item.prop === 'dataScore'" :key="item.prop" :label="item.label" align="center" :prop="item.prop"
-            show-overflow-tooltip>
+          <el-table-column v-else-if="item.prop === 'scanTime'" :key="item.prop" :label="item.label" align="center"
+            :prop="item.prop" show-overflow-tooltip />
+          <el-table-column v-else-if="item.prop === 'updateTime'" :key="item.prop" :label="item.label" align="center"
+            :prop="item.prop" show-overflow-tooltip />
+          <el-table-column v-else-if="item.prop === 'dataScore'" :key="item.prop" :label="item.label" align="center"
+            :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
-              <el-progress :percentage="Number(scope.row.dataScore) || 0" :stroke-width="6" :show-text="false"></el-progress>
+              <el-progress :percentage="Number(scope.row.dataScore) || 0" :stroke-width="6"
+                :show-text="false"></el-progress>
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'tableCount'" :key="item.prop" :label="item.label" align="center" :prop="item.prop" show-overflow-tooltip />
-          <el-table-column v-else-if="item.prop === 'fieldCount'" :key="item.prop" :label="item.label" align="center" :prop="item.prop" show-overflow-tooltip />
-          <el-table-column v-else-if="item.prop === 'featureName'" :key="item.prop" :label="item.label" align="center" show-overflow-tooltip>
+          <el-table-column v-else-if="item.prop === 'tableCount'" :key="item.prop" :label="item.label" align="center"
+            :prop="item.prop" show-overflow-tooltip />
+          <el-table-column v-else-if="item.prop === 'fieldCount'" :key="item.prop" :label="item.label" align="center"
+            :prop="item.prop" show-overflow-tooltip />
+          <el-table-column v-else-if="item.prop === 'featureName'" :key="item.prop" :label="item.label" align="center"
+            show-overflow-tooltip>
             <template slot-scope="scope">
               <span>{{ scope.row.feature && scope.row.feature.featureName || '-' }}</span>
             </template>
           </el-table-column>
         </template>
-        
+
         <el-table-column :label="$t('dataFrom.operation')" align="center" class-name="small-padding fixed-width"
           min-width="150">
           <template slot-scope="scope">
@@ -409,7 +417,7 @@
       <el-form class="dialogForm" ref="fileShareServerForm" :model="fileShareServerForm" :rules="fileShareServerRules"
         label-width="auto" @submit.native.prevent label-position="top">
 
-        
+
         <el-row>
           <el-col :span="12">
             <el-form-item :label="$t('dataFrom.sourceName')" prop="sourceName">
@@ -418,11 +426,10 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$t('dataFrom.fileDirectoryType')" prop="fileServerType">
-              <el-select v-model="fileShareServerForm.fileServerType"
+            <el-form-item :label="$t('dataFrom.fileDirectoryType')" prop="databaseType">
+              <el-select v-model="fileShareServerForm.databaseType"
                 :placeholder="$t('dataFrom.pleaseSelectFileDirectoryType')">
                 <el-option :label="$t('dataFrom.SMB')" value="SMB"></el-option>
-                <el-option :label="$t('dataFrom.NFS')" value="NFS"></el-option>
                 <el-option :label="$t('dataFrom.FTP')" value="FTP"></el-option>
               </el-select>
             </el-form-item>
@@ -467,16 +474,23 @@
           </el-col>
         </el-row>
 
-        <el-form-item :label="$t('dataFrom.folderDirectory')" prop="fileDirectory">
-          <el-input v-model="fileShareServerForm.fileDirectory"
-            :placeholder="$t('dataFrom.pleaseInputFolderDirectory')" />
+        <el-form-item :label="$t('dataFrom.startingPath')" prop="targetDatabase">
+          <el-input v-model="fileShareServerForm.targetDatabase" placeholder="例如：/data/foldor/a" />
         </el-form-item>
 
-        <el-form-item :label="$t('dataFrom.scanContent')" prop="scanContent">
-          <el-input v-model="fileShareServerForm.scanContent" :placeholder="$t('dataFrom.pleaseInputScanContent')" />
+        <el-form-item :label="$t('dataFrom.scanContent')" prop="fileDataList">
+          <div @click="openFileDirectoryDialog" style="cursor: pointer;">
+            <el-input style="position: relative;" readonly></el-input>
+            <el-tag style="position: absolute;top: 4px;left: 6px;" v-if="fileShareServerForm.fileDataList">
+              {{ getFileShareScanContentDisplay() }}
+            </el-tag>
+            <el-tag style="position: absolute;top: 4px;left: 6px;" v-else type="info">
+              {{ $t('dataFrom.clickToSelectScanContent') }}
+            </el-tag>
+          </div>
         </el-form-item>
 
-        
+
         <el-form-item :label="$t('dataFrom.executionCycle')" prop="scheduleType">
           <el-select v-model="fileShareServerForm.scheduleType" @change="fileShareServerScheduleTypeChange">
             <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
@@ -495,10 +509,13 @@
 
       </el-form>
       <div slot="footer">
-        <el-button type="primary" plain @click="submitFileShareServerForm" :loading="fileShareServerSubmitLoading">{{ $t('confirm') }}</el-button>
+        <el-button type="primary" plain @click="submitFileShareServerForm" :loading="fileShareServerSubmitLoading">{{
+          $t('confirm') }}</el-button>
         <el-button @click="fileShareServerCancel">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
+
+    <FileDirectoryTransfer ref="fileDirectoryTransferRef" @confirm="handleFileDirectoryConfirm" />
   </div>
 </template>
 
@@ -508,15 +525,16 @@ import {
   importExcel, publish, saveDatabaseAndTables, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI, getDatabaseNameList, getDatabaseTableNameList, stopDataScan
 } from "@/api/system/proxys";
 import {
-  forceLogout, nameTesting, dataSacn, getFrameworks, getDatabaseAndTablesById, updateDatabaseAndTables, addOrUpdateFileDataList, checkSourceName
+  forceLogout, nameTesting, dataSacn, getFrameworks, getDatabaseAndTablesById, updateDatabaseAndTables, addOrUpdateFileDataList, checkSourceName, saveFileServer, updateFileServer
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import TableSelector from './components/TableSelector.vue'
+import FileDirectoryTransfer from "./components/FileDirectoryTransfer.vue";
 import { getFeatureSelect, relevancyDataDict } from "@/api/system/IndustryExperience";
 export default {
   dicts: ['sys_datasource_type', 'sys_db_type'],
   name: "Proxys",
-  components: { Result, TableSelector, },
+  components: { Result, TableSelector, FileDirectoryTransfer },
   data() {
     return {
       databaseTableNameParama: {}, // 数据库表名传参
@@ -856,25 +874,26 @@ export default {
       fileShareServerSubmitLoading: false,
       fileShareServerForm: {
         sourceName: '',
-        fileServerType: 'SMB',
+        databaseType: 'SMB', // 文件目录类型
+        targetDatabase: '', // 文件目录地址(起始路径)
         businessName: '',
         businessComment: '',
         targetIp: '',
         targetPort: '',
         targetUserName: '',
         targetUserPassword: '',
-        fileDirectory: '',
-        scanContent: '',
+        fileDataList: '', // 扫描内容 (存JSON字符串以便表单校验)
         scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '00:00',
-        id: null, // 添加id字段用于编辑
+        proceedOrOverwrite: '0', // 默认传0
+        id: null,
       },
       fileShareServerRules: {
         sourceName: [
           { required: true, message: "数据源名称不能为空", trigger: "blur" }
         ],
-        fileServerType: [
+        databaseType: [
           { required: true, message: "请选择文件目录类型", trigger: "change" }
         ],
         businessName: [
@@ -903,11 +922,11 @@ export default {
         targetUserPassword: [
           { required: true, message: "请输入密码", trigger: "blur" }
         ],
-        fileDirectory: [
-          { required: true, message: "请输入文件夹目录路径", trigger: "blur" }
+        targetDatabase: [
+          { required: true, message: "请输入起始路径", trigger: "blur" }
         ],
-        scheduleType: [
-          { required: true, message: "请选择执行周期", trigger: "change" }
+        fileDataList: [
+          { required: true, message: "请选择扫描内容", trigger: "change" }
         ],
       },
     };
@@ -918,7 +937,7 @@ export default {
     }
   },
   created() {
-    this.checkedColumn = this.setList.filter(item => 
+    this.checkedColumn = this.setList.filter(item =>
       ['targetIpPort', 'businessName', 'scanState', 'dataScore'].includes(item.prop)
     );
     this.checkAll = false;
@@ -927,6 +946,84 @@ export default {
     this.getList()
   },
   methods: {
+    // 获取文件共享扫描内容展示文字
+    getFileShareScanContentDisplay() {
+      if (!this.fileShareServerForm.fileDataList) return '';
+      try {
+        let parsed = this.fileShareServerForm.fileDataList;
+        if (typeof parsed === 'string') {
+          parsed = JSON.parse(parsed);
+        }
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const firstItem = parsed[0].fileName || '';
+          if (parsed.length === 1) return firstItem;
+          return `${firstItem} 等 ${parsed.length} 个项目`;
+        }
+      } catch (e) {
+        return '';
+      }
+      return '';
+    },
+    // 打开文件目录选择弹窗
+    openFileDirectoryDialog() {
+      // 在打开弹窗前先校验这五个字段是否已填
+      const fieldsToValidate = ['targetIp', 'targetPort', 'targetUserName', 'targetUserPassword', 'targetDatabase'];
+      let validCount = 0;
+      let hasError = false;
+
+      this.$refs.fileShareServerForm.validateField(fieldsToValidate, (errorMessage) => {
+        if (errorMessage) {
+          hasError = true;
+        }
+        validCount++;
+        
+        // 当所有字段都校验完毕后，再决定是否打开弹窗
+        if (validCount === fieldsToValidate.length) {
+          if (hasError) {
+            return;
+          }
+
+          let initialSelected = [];
+          if (this.fileShareServerForm.fileDataList) {
+            try {
+              let parsed = this.fileShareServerForm.fileDataList;
+              if (typeof parsed === 'string') {
+                 parsed = JSON.parse(parsed);
+              }
+              initialSelected = parsed;
+              if (!Array.isArray(initialSelected)) {
+                initialSelected = [];
+              }
+            } catch (e) {
+              initialSelected = [];
+            }
+          }
+
+          // 构建请求所需的参数
+          const requestParams = {
+            targetIp: this.fileShareServerForm.targetIp,
+            targetPort: this.fileShareServerForm.targetPort,
+            targetUserName: this.fileShareServerForm.targetUserName,
+            targetUserPassword: this.fileShareServerForm.targetUserPassword,
+            startingPath: this.fileShareServerForm.targetDatabase
+          };
+
+          this.$refs.fileDirectoryTransferRef.open(initialSelected, requestParams);
+        }
+      });
+    },
+    // 处理文件目录选择确认
+    handleFileDirectoryConfirm(selectedData) {
+      if (selectedData && selectedData.length > 0) {
+        this.fileShareServerForm.fileDataList = JSON.stringify(selectedData);
+      } else {
+        this.fileShareServerForm.fileDataList = '';
+      }
+      // 触发校验
+      if (this.$refs.fileShareServerForm) {
+        this.$refs.fileShareServerForm.validateField('fileDataList');
+      }
+    },
     handleCheckAllChange(val) {
       this.checkedColumn = val ? this.setList : [];
       this.isIndeterminate = false;
@@ -1489,7 +1586,6 @@ export default {
       this.$forceUpdate()
     },
     scanContentEdit(row) {
-      console.log('row', row);
       this.passwordVisible = false
       if (row.isAddTasks == 1) {
         this.editIsFlag = true
@@ -1556,30 +1652,19 @@ export default {
         this.titleFileShareServer = "编辑文件共享服务器";
         this.fileShareServerForm.id = row.id;
         this.fileShareServerForm.sourceName = row.sourceName;
-        this.fileShareServerForm.fileServerType = row.fileServerType || 'SMB';
+        this.fileShareServerForm.databaseType = row.databaseType || 'SMB';
         this.fileShareServerForm.businessName = row.businessName;
         this.fileShareServerForm.businessComment = row.businessComment;
         this.fileShareServerForm.targetIp = row.targetIp || '';
         this.fileShareServerForm.targetPort = row.targetPort || '';
         this.fileShareServerForm.targetUserName = row.targetUserName || '';
         this.fileShareServerForm.targetUserPassword = row.targetUserPassword || '';
-        this.fileShareServerForm.fileDirectory = row.fileDirectory || '';
-        this.fileShareServerForm.scanContent = row.scanContent || '';
-        this.fileShareServerForm.enableFileSizeFilter = row.enableFileSizeFilter || false;
-        this.fileShareServerForm.fileSizeMin = row.fileSizeMin || '0';
-        this.fileShareServerForm.fileSizeMinUnit = row.fileSizeMinUnit || 'KB';
-        this.fileShareServerForm.fileSizeMax = row.fileSizeMax || '';
-        this.fileShareServerForm.fileSizeMaxUnit = row.fileSizeMaxUnit || 'KB';
-        this.fileShareServerForm.enableFileDateFilter = row.enableFileDateFilter || false;
-        this.fileShareServerForm.fileDateFilterType = row.fileDateFilterType || 'monthsWithin';
-        this.fileShareServerForm.fileDateMonths = row.fileDateMonths || '3';
-        this.fileShareServerForm.fileDateMonthsBefore = row.fileDateMonthsBefore || '';
-        this.fileShareServerForm.fileDateStart = row.fileDateStart || '';
-        this.fileShareServerForm.fileDateEnd = row.fileDateEnd || '';
+        this.fileShareServerForm.targetDatabase = row.targetDatabase || '';
+        this.fileShareServerForm.fileDataList = row.fileDataList ? (typeof row.fileDataList === 'string' ? row.fileDataList : JSON.stringify(row.fileDataList)) : '';
         this.fileShareServerForm.scheduleType = row.databaseProxysTimer?.scheduleType || '0';
         this.fileShareServerForm.scheduleInterval = row.databaseProxysTimer?.scheduleInterval || '';
         this.fileShareServerForm.scheduleTime = row.databaseProxysTimer?.scheduleTime || '00:00';
-        this.fileShareServerForm.proceedOrOverwrite = row.proceedOrOverwrite || false;
+        this.fileShareServerForm.proceedOrOverwrite = row.proceedOrOverwrite || '0';
         this.fileShareServerOpen = true;
       }
     },
@@ -1808,23 +1893,46 @@ export default {
           this.fileShareServerSubmitLoading = true
 
           // TODO: 调用API保存文件共享服务器数据
+          let fileDataListArray = [];
+          if (this.fileShareServerForm.fileDataList) {
+            try {
+              let parsed = this.fileShareServerForm.fileDataList;
+              if (typeof parsed === 'string') {
+                parsed = JSON.parse(parsed);
+              }
+              fileDataListArray = parsed;
+            } catch (e) {
+              console.error(e);
+            }
+          }
+
           const params = {
             ...this.fileShareServerForm,
             targetIpPort: this.fileShareServerForm.targetIp + ":" + this.fileShareServerForm.targetPort,
-            databaseType: 'FileShareServer',
+            fileDataList: fileDataListArray,
+            sourceType: 'FILE_SERVER', // 如果后端需要区分数据源类型
           }
 
           if (this.fileShareServerForm.id) {
             params.id = this.fileShareServerForm.id;
+            updateFileServer(params).then(res => {
+              this.$modal.msgSuccess("修改成功");
+              this.fileShareServerOpen = false
+              this.fileShareServerSubmitLoading = false
+              this.getList()
+            }).catch(() => {
+              this.fileShareServerSubmitLoading = false
+            })
+          } else {
+            saveFileServer(params).then(res => {
+              this.$modal.msgSuccess("新增成功");
+              this.fileShareServerOpen = false
+              this.fileShareServerSubmitLoading = false
+              this.getList()
+            }).catch(() => {
+              this.fileShareServerSubmitLoading = false
+            })
           }
-
-          // 这里应该调用实际的API，暂时模拟成功
-          setTimeout(() => {
-            this.$modal.msgSuccess(this.fileShareServerForm.id ? "修改成功" : "新增成功");
-            this.fileShareServerOpen = false
-            this.fileShareServerSubmitLoading = false
-            this.getList()
-          }, 500)
         } else {
           this.fileShareServerSubmitLoading = false
           return false
@@ -1847,30 +1955,19 @@ export default {
     resetFileShareServerForm() {
       this.fileShareServerForm = {
         sourceName: '',
-        fileServerType: 'SMB',
+        databaseType: 'SMB',
+        targetDatabase: '',
         businessName: '',
         businessComment: '',
         targetIp: '',
         targetPort: '',
         targetUserName: '',
         targetUserPassword: '',
-        fileDirectory: '',
-        scanContent: '',
-        enableFileSizeFilter: false,
-        fileSizeMin: '0',
-        fileSizeMinUnit: 'KB',
-        fileSizeMax: '',
-        fileSizeMaxUnit: 'KB',
-        enableFileDateFilter: false,
-        fileDateFilterType: 'monthsWithin',
-        fileDateMonths: '3',
-        fileDateMonthsBefore: '',
-        fileDateStart: '',
-        fileDateEnd: '',
+        fileDataList: '',
         scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '00:00',
-        proceedOrOverwrite: false,
+        proceedOrOverwrite: '0',
         id: null,
       }
       if (this.$refs.fileShareServerForm) {
