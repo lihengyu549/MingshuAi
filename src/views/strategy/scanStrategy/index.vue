@@ -109,6 +109,35 @@
         </el-radio-group>
       </div>
     </el-card>
+    <!-- 语义缓存 -->
+    <el-card class="card" shadow="never">
+      <template slot="header">
+        <span class="title">
+          <div class="icon">
+            <i class="el-icon-coin" style="font-size: 20px; color: #2563eb;"></i>
+          </div><span>语义缓存</span>
+        </span>
+      </template>
+      <div class="contBox semantic-cache-box">
+        <div class="semantic-cache-label">
+          <div class="label-text">相似度阈值</div>
+          <div class="label-desc">语义相似度大于该阈值则直接命中缓存</div>
+        </div>
+        <div class="semantic-cache-slider">
+          <el-slider v-model="allData.SemanticCache" :min="0" :max="100" style="flex: 1;"></el-slider>
+          <div class="slider-tip">
+            <el-tag size="small" type="warning" effect="plain" class="min-tag">最小可设 60%</el-tag>
+            <span class="tip-text">低于该值时不允许保存</span>
+          </div>
+        </div>
+        <div class="semantic-cache-input">
+          <el-input-number v-model="allData.SemanticCache" :min="0" :max="100" controls-position="right" size="small"
+            style="width: 100px;"></el-input-number>
+          <span class="percent-sign">%</span>
+        </div>
+      </div>
+    </el-card>
+
     <!-- <div>
         <h4 class="title">
           <div class="blue-circle"></div><span>数据表质量评分</span>
@@ -217,6 +246,7 @@ export default {
         SensitiveData: {},
         SampleExtraction: {},
         DataTableQualityScore: {},
+        SemanticCache: 85,
         SecurityLevelList: {
           sysRiskLevel: []
         }
@@ -309,6 +339,15 @@ export default {
       })
     },
     submit() {
+      // 验证语义缓存的阈值
+      if (this.allData.SemanticCache && this.allData.SemanticCache < 60) {
+        this.$message({
+          message: '语义缓存的相似度阈值不能低于60%',
+          type: 'warning'
+        });
+        return;
+      }
+
       // 验证DirtyData3输入格式
       if (!this.dirtyDataValueValidate()) {
         return;
@@ -454,6 +493,59 @@ export default {
       }
     }
   }
+}
+
+.semantic-cache-box {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  padding: 10px 0;
+}
+
+.semantic-cache-label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 250px;
+}
+
+.semantic-cache-slider {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.slider-tip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.min-tag {
+  background-color: #fff7e6;
+  border-color: #ffd591;
+  color: #fa8c16;
+}
+
+.tip-text {
+  font-size: 12px;
+  color: #999;
+}
+
+.semantic-cache-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  /* 匹配滑块高度使之居中对齐 */
+  margin-bottom: 30px;
+  /* 抵消底部 tip 带来的高度差，保持与滑块本身对齐 */
+}
+
+.percent-sign {
+  color: #666;
+  font-size: 14px;
 }
 
 .foot_btn {
