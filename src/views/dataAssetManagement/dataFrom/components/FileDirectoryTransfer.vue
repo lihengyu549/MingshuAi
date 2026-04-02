@@ -62,7 +62,8 @@
               <div v-for="item in filteredRightList" :key="item.filePath" class="list-item">
                 <div class="item-left">
                   <el-checkbox :label="item.filePath"><span style="display:none"></span></el-checkbox>
-                  <span class="item-name" :class="{ 'is-dir': (item.fileType || item.type) === 'Directory' }">{{ item.fileName }}</span>
+                  <span class="item-name" :class="{ 'is-dir': (item.fileType || item.type) === 'Directory' }">{{
+                    item.fileName }}</span>
                 </div>
                 <div class="item-right">{{ (item.fileType || item.type) === 'Directory' ? '目录' : '文件' }}</div>
               </div>
@@ -98,10 +99,10 @@ export default {
 
       leftChecked: [],
       rightChecked: [],
-      
+
       // 保存从父组件传来的表单参数
       formParams: {},
-      
+
       // 路径栈，存储每一层的 name
       pathStack: [],
     };
@@ -111,7 +112,7 @@ export default {
     currentPathDisplay() {
       let base = this.formParams.startingPath || '';
       if (this.pathStack.length === 0) return base;
-      
+
       let suffix = this.pathStack.join('/');
       if (base.endsWith('/')) {
         return base + suffix;
@@ -121,9 +122,16 @@ export default {
     },
     // 左侧前端搜索过滤
     filteredLeftList() {
-      if (!this.leftSearch) return this.leftList;
+      let list = this.leftList;
+
+      // 显示模式改为前端过滤：dir 仅显示目录，all 显示目录和文件
+      if (this.displayMode === 'dir') {
+        list = list.filter(item => (item.fileType || item.type) === 'Directory');
+      }
+
+      if (!this.leftSearch) return list;
       const lowerSearch = this.leftSearch.toLowerCase();
-      return this.leftList.filter(item => item.fileName.toLowerCase().includes(lowerSearch));
+      return list.filter(item => item.fileName.toLowerCase().includes(lowerSearch));
     },
     // 右侧前端搜索过滤
     filteredRightList() {
@@ -138,7 +146,7 @@ export default {
       this.visible = true;
       // 保存表单传过来的参数
       this.formParams = requestParams;
-      
+
       // 重置状态
       this.pathStack = [];
       this.leftSearch = '';
@@ -147,31 +155,31 @@ export default {
       this.rightChecked = [];
       // 渲染右侧已选数据
       this.rightList = JSON.parse(JSON.stringify(initialSelected));
-      
+
       this.fetchData();
     },
-    
+
     handleClose() {
       this.visible = false;
     },
-    
+
     handleConfirm() {
       this.$emit('confirm', this.rightList);
       this.visible = false;
     },
-    
+
     handleModeChange() {
-      // 切换模式后重新请求当前层级数据
-      this.fetchData();
+      // 切换显示模式时只做前端过滤，不再请求后端
+      this.leftChecked = [];
     },
-    
+
     // 点击目录名字下钻
     handleDirClick(item) {
       this.pathStack.push(item.fileName);
       this.leftChecked = []; // 清空选中
       this.fetchData();
     },
-    
+
     // 返回上一级
     goUp() {
       if (this.pathStack.length === 0) return;
@@ -179,7 +187,7 @@ export default {
       this.leftChecked = [];
       this.fetchData();
     },
-    
+
     // 移到右侧
     moveToRight() {
       const selectedItems = this.leftList.filter(item => this.leftChecked.includes(item.path));
@@ -197,44 +205,43 @@ export default {
       });
       this.leftChecked = [];
     },
-    
+
     // 从右侧删除
     deleteFromRight() {
       this.rightList = this.rightList.filter(item => !this.rightChecked.includes(item.filePath));
       this.rightChecked = [];
     },
-    
+
     // 获取列表数据
     async fetchData() {
       this.leftLoading = true;
       try {
-        // 请求参数：表单填写的四个参数 + 动态计算出来的当前路径 + 显示模式
+        // 请求参数：表单填写的四个参数 + 动态计算出来的当前路径
         const requestPayload = {
           targetIp: this.formParams.targetIp,
           targetPort: this.formParams.targetPort,
           targetUserName: this.formParams.targetUserName,
           targetUserPassword: this.formParams.targetUserPassword,
-          targetDatabase: this.currentPathDisplay, // 将起始路径和下钻拼接后的完整路径传给后端
-          mode: this.displayMode
+          targetDatabase: this.currentPathDisplay // 将起始路径和下钻拼接后的完整路径传给后端
         };
-        
+
         const res = await getScannedContentByFileServer(requestPayload);
         let listData = res.data || [];
-        
+
         // 为了能在左侧多选时唯一标识每一项，我们给每一个 数据拼上当前完整 path
         let currentPrefixPath = this.currentPathDisplay;
         // 保证拼接时的格式，如果最后不是/就加一个
         if (!currentPrefixPath.endsWith('/')) {
-            currentPrefixPath += '/';
+          currentPrefixPath += '/';
         }
-        
+
         this.leftList = listData.map(item => {
           return {
             ...item,
             path: currentPrefixPath + item.fileName
           }
         });
-        
+
       } catch (error) {
         console.error(error);
         this.$message.error('获取目录失败');
@@ -242,7 +249,7 @@ export default {
         this.leftLoading = false;
       }
     },
-    
+
     // 生成假数据方法（后续接入真实接口后可删除）
     generateMockData(depth) {
       let mockData = [];
