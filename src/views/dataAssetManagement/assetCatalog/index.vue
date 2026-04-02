@@ -275,7 +275,7 @@
               <div class="file-section">
                 <div class="section-title">{{ $t('assetCatalog.file') }}</div>
                 <div class="file-list">
-                  <div v-for="file in paginatedFileList" :key="file.id" class="file-item">
+                  <div v-for="file in paginatedFileList" :key="file.id" class="file-item" @click="openFileDetailDrawer(file)">
                     <div class="file-content">
                       <div class="file-info">
                         <i class="el-icon-document file-icon"></i>
@@ -399,6 +399,46 @@
       </template>
     </Drawer>
 
+    <Drawer custom-class="fileDetailDrawer" title="文件详情" :visible.sync="fileDetailDrawerVisible" :destroy-on-close="false"
+      direction="rtl" size="540px">
+      <template slot="body">
+        <div class="file-detail-panel">
+          <div class="file-detail-item">
+            <div class="file-detail-label">文件名称</div>
+            <div class="file-detail-value">{{ fileDetailData.fileName }}</div>
+          </div>
+          <div class="file-detail-item">
+            <div class="file-detail-label">文件大小</div>
+            <div class="file-detail-value">{{ fileDetailData.fileSize }}</div>
+          </div>
+          <div class="file-detail-item">
+            <div class="file-detail-label">文件类型</div>
+            <div class="file-detail-value">{{ fileDetailData.fileType }}</div>
+          </div>
+          <div class="file-detail-item">
+            <div class="file-detail-label">文件绝对路径</div>
+            <div class="file-detail-value">{{ fileDetailData.filePath }}</div>
+          </div>
+          <div class="file-detail-item">
+            <div class="file-detail-label">MD5</div>
+            <div class="file-detail-value">{{ fileDetailData.md5 }}</div>
+          </div>
+          <div class="file-detail-item">
+            <div class="file-detail-label">文件创建时间</div>
+            <div class="file-detail-value">{{ fileDetailData.createTime }}</div>
+          </div>
+          <div class="file-detail-item">
+            <div class="file-detail-label">文件修改时间</div>
+            <div class="file-detail-value">{{ fileDetailData.updateTime }}</div>
+          </div>
+          <div class="file-detail-item">
+            <div class="file-detail-label">最后访问时间</div>
+            <div class="file-detail-value">{{ fileDetailData.accessTime }}</div>
+          </div>
+        </div>
+      </template>
+    </Drawer>
+
     <!-- 导出列配置弹窗 -->
     <el-dialog :title="$t('assetCatalog.exportColumn')" :visible.sync="exportColumnDialog.visible" width="760px"
       custom-class="export-column-dialog-wrapper" @close="cancelExport">
@@ -517,6 +557,18 @@ export default {
         pageSize: 10
       },
       rootFolderTitle: '', // 根文件夹标题（从接口获取）
+      
+      fileDetailDrawerVisible: false,
+      fileDetailData: {
+        fileName: '--',
+        fileSize: '--',
+        fileType: '--',
+        filePath: '--',
+        md5: '--',
+        createTime: '--',
+        updateTime: '--',
+        accessTime: '--'
+      },
 
       drawerShow: false,
       drawerTitle: '',
@@ -795,6 +847,31 @@ export default {
         return 'el-icon-sort';
       }
       return this.sortOrders[field] === 'asc' ? 'el-icon-top' : 'el-icon-bottom';
+    },
+
+    openFileDetailDrawer(file) {
+      const fileName = file.fileName || file.name || '--';
+      const suffixByName = fileName && fileName.includes('.') ? fileName.split('.').pop() : '';
+      const fileType = file.fileType || file.type || file.fileFormat || file.suffix || file.ext || suffixByName || '--';
+
+      this.fileDetailData = {
+        fileName: this.formatFileDetailValue(fileName),
+        fileSize: this.formatFileDetailValue(file.fileSize || file.fileSizeName),
+        fileType: this.formatFileDetailValue(fileType),
+        filePath: this.formatFileDetailValue(file.filePath || file.absolutePath || file.path || file.fileAbsolutePath),
+        md5: this.formatFileDetailValue(file.md5 || file.fileMd5),
+        createTime: this.formatFileDetailValue(file.createTime || file.fileCreateTime),
+        updateTime: this.formatFileDetailValue(file.updateTime || file.modifyTime || file.fileUpdateTime),
+        accessTime: this.formatFileDetailValue(file.accessTime || file.lastAccessTime || file.lastVisitTime)
+      };
+      this.fileDetailDrawerVisible = true;
+    },
+
+    formatFileDetailValue(value) {
+      if (value === null || value === undefined || value === '') {
+        return '--';
+      }
+      return String(value);
     },
 
 
@@ -1855,6 +1932,7 @@ export default {
   background: #fff;
   border-bottom: 1px solid #ebeef5;
   transition: background 0.3s;
+  cursor: pointer;
 
   .file-content {
     display: flex;
@@ -2663,6 +2741,57 @@ export default {
     display: flex;
     flex-direction: column;
   }
+}
+
+::v-deep .fileDetailDrawer {
+  .el-drawer__header {
+    margin-bottom: 0;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e3e8f0;
+    background: #f3f5f8;
+  }
+
+  .el-drawer__header> :first-child {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .el-drawer__close-btn {
+    font-size: 20px;
+    color: #97a3b7;
+  }
+
+  .el-drawer__body {
+    padding: 0;
+    background: #f3f5f8;
+  }
+}
+
+.file-detail-panel {
+  padding: 12px 18px 18px;
+  background: #f3f5f8;
+}
+
+.file-detail-item {
+  padding: 14px 0 12px;
+  border-bottom: 1px dashed #d6dee9;
+}
+
+.file-detail-label {
+  margin-bottom: 8px;
+  color: #9aa6b8;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.file-detail-value {
+  color: #1f2937;
+  font-size: 16px;
+  line-height: 1.45;
+  word-break: break-all;
+  white-space: pre-wrap;
 }
 
 ::v-deep .drawer-table-card {
