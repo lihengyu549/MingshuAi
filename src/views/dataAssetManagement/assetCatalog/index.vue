@@ -440,14 +440,6 @@
             <div class="file-detail-label">文件创建时间</div>
             <div class="file-detail-value">{{ fileDetailData.createTime }}</div>
           </div>
-          <div class="file-detail-item">
-            <div class="file-detail-label">文件修改时间</div>
-            <div class="file-detail-value">{{ fileDetailData.updateTime }}</div>
-          </div>
-          <div class="file-detail-item">
-            <div class="file-detail-label">最后访问时间</div>
-            <div class="file-detail-value">{{ fileDetailData.accessTime }}</div>
-          </div>
         </div>
       </template>
     </Drawer>
