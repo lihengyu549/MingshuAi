@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <el-dialog class="custom-dialog" title="选择目录文件" :visible.sync="visible" width="950px" append-to-body
     @close="handleClose" :close-on-click-modal="false">
     <div class="file-transfer-container">
@@ -222,7 +222,8 @@ export default {
           targetPort: this.formParams.targetPort,
           targetUserName: this.formParams.targetUserName,
           targetUserPassword: this.formParams.targetUserPassword,
-          targetDatabase: this.currentPathDisplay // 将起始路径和下钻拼接后的完整路径传给后端
+          targetDatabase: this.currentPathDisplay,  // 将起始路径和下钻拼接后的完整路径传给后端
+          databaseType: this.formParams.databaseType
         };
 
         const res = await getScannedContentByFileServer(requestPayload);

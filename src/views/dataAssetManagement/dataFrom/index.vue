@@ -1005,7 +1005,8 @@ export default {
             targetPort: this.fileShareServerForm.targetPort,
             targetUserName: this.fileShareServerForm.targetUserName,
             targetUserPassword: this.fileShareServerForm.targetUserPassword,
-            startingPath: this.fileShareServerForm.targetDatabase
+            startingPath: this.fileShareServerForm.targetDatabase,
+            databaseType: this.fileShareServerForm.databaseType
           };
 
           this.$refs.fileDirectoryTransferRef.open(initialSelected, requestParams);
