@@ -5,7 +5,8 @@
         <el-card class="left-card" shadow="never">
           <!-- 1. 原有搜索输入框(保持不变,位于最上方) -->
           <div class="head-container" style="margin-bottom: 15px;">
-            <el-input class="serachInput" v-model="filterText" :placeholder="$t('assetCatalog.pleaseInputLibraryName')" clearable>
+            <el-input class="serachInput" v-model="filterText" :placeholder="$t('assetCatalog.pleaseInputLibraryName')"
+              clearable>
               <i slot="prefix" class="el-input__icon el-icon-search"></i>
             </el-input>
           </div>
@@ -47,12 +48,14 @@
             <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="false"
               label-width="100px">
               <el-form-item :label="$t('assetCatalog.tableName')" prop="tableName">
-                <el-input v-model="queryParams.tableName" :placeholder="$t('assetCatalog.pleaseInputTableName')" @input="handleInputChange" clearable>
+                <el-input v-model="queryParams.tableName" :placeholder="$t('assetCatalog.pleaseInputTableName')"
+                  @input="handleInputChange" clearable>
                   <i slot="prefix" class="el-input__icon el-icon-search"></i>
                 </el-input>
               </el-form-item>
               <el-form-item :label="$t('assetCatalog.semanticFilling')" prop="paddingStatus">
-                <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange" :placeholder="$t('assetCatalog.all')" clearable>
+                <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange"
+                  :placeholder="$t('assetCatalog.all')" clearable>
                   <el-option :label="$t('assetCatalog.notStarted')" value="1"></el-option>
                   <el-option :label="$t('assetCatalog.success')" value="2"></el-option>
                   <el-option :label="$t('assetCatalog.failed')" value="3"></el-option>
@@ -80,7 +83,8 @@
                     {{ item.tableName }}
                   </h3>
                   <button class="field-info-btn" @click="fieldInformationFn(item)">
-                    <i class="el-icon-warning-outline" style="margin-right: 5px;"></i>{{ $t('assetCatalog.fieldInformation') }}
+                    <i class="el-icon-warning-outline" style="margin-right: 5px;"></i>{{
+                      $t('assetCatalog.fieldInformation') }}
                   </button>
                 </div>
 
@@ -275,7 +279,8 @@
               <div class="file-section">
                 <div class="section-title">{{ $t('assetCatalog.file') }}</div>
                 <div class="file-list">
-                  <div v-for="file in paginatedFileList" :key="file.id" class="file-item" @click="openFileDetailDrawer(file)">
+                  <div v-for="file in paginatedFileList" :key="file.id" class="file-item"
+                    @click="openFileDetailDrawer(file)">
                     <div class="file-content">
                       <div class="file-info">
                         <i class="el-icon-document file-icon"></i>
@@ -286,7 +291,7 @@
                         <span class="file-size">{{ file.fileSize }}</span>
                       </div>
                     </div>
-                    <span class="file-footer"><b>{{ $t('assetCatalog.summary') }}：</b>{{ file.digest }}</span>
+                    <!-- <span class="file-footer"><b>{{ $t('assetCatalog.summary') }}：</b>{{ file.digest }}</span> -->
                   </div>
                 </div>
 
@@ -307,15 +312,16 @@
           <el-form :model="drawerQueryParams" class="yuanDataClass" ref="drawerQueryForm" size="small" :inline="true"
             label-width="80px">
             <el-form-item :label="$t('assetCatalog.fieldName')" prop="fieldName">
-              <el-input v-model="drawerQueryParams.fieldName" :placeholder="$t('assetCatalog.pleaseInputFieldName')" @input="handleDrawerSearch"
-                size="mini"></el-input>
+              <el-input v-model="drawerQueryParams.fieldName" :placeholder="$t('assetCatalog.pleaseInputFieldName')"
+                @input="handleDrawerSearch" size="mini"></el-input>
             </el-form-item>
             <el-form-item :label="$t('assetCatalog.fieldType')" prop="fieldType">
-              <el-input v-model="drawerQueryParams.fieldType" :placeholder="$t('assetCatalog.pleaseInputFieldType')" @input="handleDrawerSearch"
-                size="mini"></el-input>
+              <el-input v-model="drawerQueryParams.fieldType" :placeholder="$t('assetCatalog.pleaseInputFieldType')"
+                @input="handleDrawerSearch" size="mini"></el-input>
             </el-form-item>
             <el-form-item :label="$t('assetCatalog.fieldComment')" prop="oldFieldRemark">
-              <el-input v-model="drawerQueryParams.oldFieldRemark" :placeholder="$t('assetCatalog.pleaseInputFieldComment')" @input="handleDrawerSearch"
+              <el-input v-model="drawerQueryParams.oldFieldRemark"
+                :placeholder="$t('assetCatalog.pleaseInputFieldComment')" @input="handleDrawerSearch"
                 size="mini"></el-input>
             </el-form-item>
             <!-- <el-form-item label="脏数据" prop="dirtyData">
@@ -339,14 +345,18 @@
         </el-card>
         <el-card class="table-card drawer-table-card" shadow="never">
           <el-table :data="filteredDrawerData" ref="tableRef" :key="tableKey" border class="tableBox">
-            <el-table-column :label="$t('assetCatalog.fieldName')" align="center" prop="fieldName" width="200" show-overflow-tooltip />
-            <el-table-column :label="$t('assetCatalog.fieldType')" align="center" prop="fieldType" width="200" show-overflow-tooltip />
-            <el-table-column :label="$t('assetCatalog.fieldComment')" align="center" width="200" prop="oldFieldRemark" show-overflow-tooltip>
+            <el-table-column :label="$t('assetCatalog.fieldName')" align="center" prop="fieldName" width="200"
+              show-overflow-tooltip />
+            <el-table-column :label="$t('assetCatalog.fieldType')" align="center" prop="fieldType" width="200"
+              show-overflow-tooltip />
+            <el-table-column :label="$t('assetCatalog.fieldComment')" align="center" width="200" prop="oldFieldRemark"
+              show-overflow-tooltip>
               <template slot-scope="scope">
                 <span>{{ scope.row.oldFieldRemark }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('assetCatalog.aiFieldComment')" align="center" prop="aiFieldRemark" min-width="200" show-overflow-tooltip>
+            <el-table-column :label="$t('assetCatalog.aiFieldComment')" align="center" prop="aiFieldRemark"
+              min-width="200" show-overflow-tooltip>
               <template slot-scope="scope">
                 <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, 'aiFieldRemark')">{{
                   scope.row.aiFieldRemark }}</span>
@@ -372,13 +382,15 @@
             </el-select>
           </template>
         </el-table-column> -->
-            <el-table-column :label="$t('assetCatalog.sample')" align="center" width="80" class-name="small-padding fixed-width">
+            <el-table-column :label="$t('assetCatalog.sample')" align="center" width="80"
+              class-name="small-padding fixed-width">
               <template slot-scope="scope">
                 <el-tooltip placement="bottom" effect="light">
                   <div slot="content">
                     <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
                       <el-table-column type="index" :label="$t('assetCatalog.sequenceNumber')" width="50" />
-                      <el-table-column prop="value" :label="$t('assetCatalog.fieldValue')" width="100" show-overflow-tooltip>
+                      <el-table-column prop="value" :label="$t('assetCatalog.fieldValue')" width="100"
+                        show-overflow-tooltip>
                       </el-table-column>
                     </el-table>
                   </div>
@@ -394,13 +406,14 @@
 
           <!-- 新增分页组件 -->
           <Pagination v-show="drawerTotal > 0" :total="drawerTotal" :page.sync="drawerQueryParams.pageNum"
-            :pageSize.sync="drawerQueryParams.pageSize" @pagination="handleDrawerPagination" style="margin-top: 15px;" />
+            :pageSize.sync="drawerQueryParams.pageSize" @pagination="handleDrawerPagination"
+            style="margin-top: 15px;" />
         </el-card>
       </template>
     </Drawer>
 
-    <Drawer custom-class="fileDetailDrawer" title="文件详情" :visible.sync="fileDetailDrawerVisible" :destroy-on-close="false"
-      direction="rtl" size="540px">
+    <Drawer custom-class="fileDetailDrawer" title="文件详情" :visible.sync="fileDetailDrawerVisible"
+      :destroy-on-close="false" direction="rtl" size="540px">
       <template slot="body">
         <div class="file-detail-panel">
           <div class="file-detail-item">
@@ -458,7 +471,8 @@
         <div class="dialog-footer-custom">
           <div class="footer-left">
             <el-checkbox v-model="exportColumnDialog.saveAsDefault">{{ $t('assetCatalog.saveAsDefault') }}</el-checkbox>
-            <a class="restore-link" @click="restoreInitialConfig"><i class="el-icon-refresh-right"></i>{{ $t('assetCatalog.restoreInitial') }}</a>
+            <a class="restore-link" @click="restoreInitialConfig"><i class="el-icon-refresh-right"></i>{{
+              $t('assetCatalog.restoreInitial') }}</a>
           </div>
           <div class="footer-right">
             <el-button @click="cancelExport">{{ $t('assetCatalog.cancel') }}</el-button>
@@ -484,7 +498,8 @@
             <div class="detail-title">{{ $t('assetCatalog.fieldComment') }}</div>
             <div class="detail-desc">{{ $t('assetCatalog.detailValidFieldComment') }}</div>
           </div>
-          <div class="actual-score">{{ scoreDialog.data.fieldCommentActual }}<span class="score-unit">{{ $t('assetCatalog.scoreUnit') }}</span></div>
+          <div class="actual-score">{{ scoreDialog.data.fieldCommentActual }}<span class="score-unit">{{
+            $t('assetCatalog.scoreUnit') }}</span></div>
         </div>
 
         <div class="score-item">
@@ -493,7 +508,8 @@
             <div class="detail-title">{{ $t('assetCatalog.tableAnnotation') }}</div>
             <div class="detail-desc">{{ $t('assetCatalog.detailValidTableComment') }}</div>
           </div>
-          <div class="actual-score">{{ scoreDialog.data.tableCommentActual }}<span class="score-unit">{{ $t('assetCatalog.scoreUnit') }}</span></div>
+          <div class="actual-score">{{ scoreDialog.data.tableCommentActual }}<span class="score-unit">{{
+            $t('assetCatalog.scoreUnit') }}</span></div>
         </div>
 
         <div class="score-item">
@@ -502,7 +518,8 @@
             <div class="detail-title">{{ $t('assetCatalog.namingConvention') }}</div>
             <div class="detail-desc">{{ $t('assetCatalog.detailNamingConvention') }}</div>
           </div>
-          <div class="actual-score">{{ scoreDialog.data.namingActual }}<span class="score-unit">{{ $t('assetCatalog.scoreUnit') }}</span></div>
+          <div class="actual-score">{{ scoreDialog.data.namingActual }}<span class="score-unit">{{
+            $t('assetCatalog.scoreUnit') }}</span></div>
         </div>
 
         <div class="score-item">
@@ -511,7 +528,8 @@
             <div class="detail-title">{{ $t('assetCatalog.structuralUniqueness') }}</div>
             <div class="detail-desc">{{ $t('assetCatalog.detailStructuralUniqueness') }}</div>
           </div>
-          <div class="actual-score">{{ scoreDialog.data.uniquenessActual }}<span class="score-unit">{{ $t('assetCatalog.scoreUnit') }}</span></div>
+          <div class="actual-score">{{ scoreDialog.data.uniquenessActual }}<span class="score-unit">{{
+            $t('assetCatalog.scoreUnit') }}</span></div>
         </div>
       </div>
 
@@ -557,7 +575,7 @@ export default {
         pageSize: 10
       },
       rootFolderTitle: '', // 根文件夹标题（从接口获取）
-      
+
       fileDetailDrawerVisible: false,
       fileDetailData: {
         fileName: '--',
@@ -1864,6 +1882,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
+  padding: 0 20px;
 }
 
 .folder-item {
@@ -1921,16 +1940,19 @@ export default {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
+  // border: 1px solid #ebeef5;
+  // border-radius: 4px;
   margin-bottom: 20px;
+  padding: 0 20px;
 }
 
 .file-item {
   padding: 16px 20px;
-  margin: 5px;
+  // margin: 5px;
   background: #fff;
-  border-bottom: 1px solid #ebeef5;
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  margin-bottom: 10px;
   transition: background 0.3s;
   cursor: pointer;
 
@@ -1938,7 +1960,7 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    // margin-bottom: 20px;
   }
 
   .file-footer {
@@ -1947,10 +1969,6 @@ export default {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  &:last-child {
-    border-bottom: none;
   }
 
   &:hover {
@@ -1969,7 +1987,8 @@ export default {
     }
 
     .file-name {
-      font-size: 14px;
+      font-size: 18px;
+      font-weight: 600;
       color: #303133;
       overflow: hidden;
       text-overflow: ellipsis;
