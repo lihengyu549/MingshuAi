@@ -372,6 +372,9 @@ export default {
     fileDirectoryType: 'File Directory Type',
     SMB: 'SMB',
     FTP: 'FTP',
+    share: 'Share',
+    shareExample: 'Example: public',
+    pleaseInputShare: 'Please enter share',
     startingPath: 'Starting path',
     
     scanFilesWithin: 'Scan',

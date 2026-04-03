@@ -372,6 +372,9 @@ export default {
     fileDirectoryType: '文件目录类型',
     SMB: 'SMB',
     FTP: 'FTP',
+    share: '共享目录',
+    shareExample: '例如：public',
+    pleaseInputShare: '请输入共享目录',
     startingPath: '起始路径',
     
     scanFilesWithin: '扫描',

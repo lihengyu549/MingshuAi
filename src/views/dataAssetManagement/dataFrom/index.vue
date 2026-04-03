@@ -474,7 +474,11 @@
           </el-col>
         </el-row>
 
-        <el-form-item :label="$t('dataFrom.startingPath')" prop="targetDatabase">
+        <el-form-item v-if="fileShareServerForm.databaseType == 'SMB'" :label="$t('dataFrom.share')" prop="share">
+          <el-input v-model="fileShareServerForm.share" :placeholder="$t('dataFrom.shareExample')" />
+        </el-form-item>
+
+        <el-form-item :label="$t('dataFrom.startingPath')" :prop="fileShareServerForm.databaseType == 'SMB' ? '' : 'targetDatabase'">
           <el-input v-model="fileShareServerForm.targetDatabase" placeholder="例如：/data/foldor/a" />
         </el-form-item>
 
@@ -875,6 +879,7 @@ export default {
       fileShareServerForm: {
         sourceName: '',
         databaseType: 'SMB', // 文件目录类型
+        share: '', // SMB共享目录
         targetDatabase: '', // 文件目录地址(起始路径)
         businessName: '',
         businessComment: '',
@@ -922,6 +927,9 @@ export default {
         targetUserPassword: [
           { required: true, message: "请输入密码", trigger: "blur" }
         ],
+        share: [
+          { required: true, message: this.$t('dataFrom.pleaseInputShare'), trigger: "blur" }
+        ],
         targetDatabase: [
           { required: true, message: "请输入起始路径", trigger: "blur" }
         ],
@@ -967,7 +975,7 @@ export default {
     // 打开文件目录选择弹窗
     openFileDirectoryDialog() {
       // 在打开弹窗前先校验这五个字段是否已填
-      const fieldsToValidate = ['targetIp', 'targetPort', 'targetUserName', 'targetUserPassword', 'targetDatabase'];
+      const fieldsToValidate = ['targetIp', 'targetPort', 'targetUserName', 'targetUserPassword', this.fileShareServerForm.databaseType == 'SMB' ? 'share' : 'targetDatabase' ];
       let validCount = 0;
       let hasError = false;
 
@@ -1006,7 +1014,8 @@ export default {
             targetUserName: this.fileShareServerForm.targetUserName,
             targetUserPassword: this.fileShareServerForm.targetUserPassword,
             startingPath: this.fileShareServerForm.targetDatabase,
-            databaseType: this.fileShareServerForm.databaseType
+            databaseType: this.fileShareServerForm.databaseType,
+            share: this.fileShareServerForm.share,
           };
 
           this.$refs.fileDirectoryTransferRef.open(initialSelected, requestParams);
@@ -1666,6 +1675,7 @@ export default {
         this.fileShareServerForm.scheduleInterval = row.databaseProxysTimer?.scheduleInterval || '';
         this.fileShareServerForm.scheduleTime = row.databaseProxysTimer?.scheduleTime || '00:00';
         this.fileShareServerForm.proceedOrOverwrite = row.proceedOrOverwrite || '0';
+        this.fileShareServerForm.share = row.share || '';
         this.fileShareServerOpen = true;
       }
     },
@@ -1969,6 +1979,7 @@ export default {
         scheduleInterval: '',
         scheduleTime: '00:00',
         proceedOrOverwrite: '0',
+        share: '', // SMB共享目录
         id: null,
       }
       if (this.$refs.fileShareServerForm) {

@@ -223,7 +223,8 @@ export default {
           targetUserName: this.formParams.targetUserName,
           targetUserPassword: this.formParams.targetUserPassword,
           targetDatabase: this.currentPathDisplay,  // 将起始路径和下钻拼接后的完整路径传给后端
-          databaseType: this.formParams.databaseType
+          databaseType: this.formParams.databaseType,
+          share: this.formParams.share,
         };
 
         const res = await getScannedContentByFileServer(requestPayload);
