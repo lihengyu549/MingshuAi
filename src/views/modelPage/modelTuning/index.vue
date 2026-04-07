@@ -296,8 +296,6 @@ export default {
                 if (res.code === 200) {
                     this.proxysList = res.data.records;
                     this.total = res.data.total;
-                    this.queryParams.pageNum = res.data.pages;
-                    this.queryParams.pageSize = res.data.size;
                 }
                 this.loading = false;
             }).catch(error => {
