@@ -29,10 +29,8 @@ module.exports = {
   // 如果你不需要生产环境的 source map，可以将其设置为 false 以加速生产环境构建。
   productionSourceMap: false,
   
-  // 将transpileDependencies配置修改为包含更多相关依赖
+  // 将transpileDependencies配置修改为包含相关依赖
   transpileDependencies: [
-  // 包含html2pdf.js及其所有嵌套依赖
-  /[\\/]node_modules[\\/]html2pdf\.js[\\/]/,
   // 包含jspdf及其所有嵌套依赖
   /[\\/]node_modules[\\/]jspdf[\\/]/,
   // 包含fast-png及其所有嵌套依赖
