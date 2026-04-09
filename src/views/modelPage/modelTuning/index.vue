@@ -230,14 +230,14 @@ export default {
             pushList: [],       // 推送类型列表
             standardList: [],   // 分类分级标准列表
             defaultParamList: [
-                { paramName: "batch_size", paramValue: "2", paramDesc: "批次大小，代表模型训练过程中，模型更新模型参数的数据步长", type: "input" },
-                { paramName: "learning_rate", paramValue: "0.0002", paramDesc: "学习率，代表每次更新数据的增量参数权重，学习率数值越大参数更新越快，可能导致模型训练不稳定", type: "input" },
+                { paramName: "batch_size", paramValue: "16", paramDesc: "批次大小，代表模型训练过程中，模型更新模型参数的数据步长", type: "input" },
+                { paramName: "learning_rate", paramValue: "0.00001", paramDesc: "学习率，代表每次更新数据的增量参数权重，学习率数值越大参数更新越快，可能导致模型训练不稳定", type: "input" },
                 {
-                    paramName: "lr_scheduler_type", paramValue: "1", paramDesc: "学习率调整策略，选择不同的学习率策略，动态地改变模型在训练过程中的学习率", type: "select", options: [
+                    paramName: "lr_scheduler_type", paramValue: "linear", paramDesc: "学习率调整策略，选择不同的学习率策略，动态地改变模型在训练过程中的学习率", type: "select", options: [
                         { label: "linear", value: "1" },
                     ]
                 },
-                { paramName: "max_length", paramValue: "2048", paramDesc: "序列长度，单个训练数据样本的最大长度，超出配置长度将丢弃", type: "input" },
+                { paramName: "max_length", paramValue: "8192", paramDesc: "序列长度，单个训练数据样本的最大长度，超出配置长度将丢弃", type: "input" },
                 { paramName: "weight_decay", paramValue: "0.01", paramDesc: "权重衰减，用于在优化过程中对模型参数施加L2正则化，防止过拟合", type: "input" }
             ]
         };
@@ -328,7 +328,7 @@ export default {
             const now = new Date();
             const dateStr = `${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
             const timeStr = now.toTimeString().slice(0, 5).replace(':', '');
-            this.dialogData.modelOutputName = `Qwen3-4B_${dateStr}_${timeStr}`;
+            this.dialogData.modelOutputName = `MingShu_${dateStr}_${timeStr}`;
             this.dialogDataShow = true;
             this.title = "新增数据集";
             this.isViewMode = false;
