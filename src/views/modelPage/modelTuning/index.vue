@@ -57,7 +57,7 @@
             <el-table-column label="产出模型名称" align="center" prop="modelOutputName" width="300" show-overflow-tooltip />
             <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="200">
                 <template slot-scope="scope">
-                    <el-button size="mini" type="text" @click="startTraining(scope.row)" :disabled="scope.row.modelTrainingStatus == '2'">开始训练</el-button>
+                    <el-button size="mini" type="text" @click="startTraining(scope.row)" :disabled="scope.row.modelTrainingStatus == '2' || scope.row.modelTrainingStatus == '5'">开始训练</el-button>
                     <el-button size="mini" type="text" @click="stopTraining(scope.row)" :disabled="scope.row.modelTrainingStatus != '2'">终止训练</el-button>
                 </template>
             </el-table-column>
@@ -323,6 +323,10 @@ export default {
 
         /** 新增按钮操作 */
         handleAdd() {
+            if (this.proxysList.length >= 5) {
+                this.$message.error("微调模型的上限已达5个，无法新增");
+                return;
+            }
             this.resetAddData();
             this.resetParam();
             const now = new Date();

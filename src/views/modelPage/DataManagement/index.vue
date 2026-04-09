@@ -31,7 +31,7 @@
                     <el-empty description="暂无数据"></el-empty>
                 </template>
                 <el-table-column type="selection" width="60" align="center" />
-                <el-table-column label="数据集名称" prop="dataSetName" align="center" width="300" show-overflow-tooltip>
+                <el-table-column label="数据集名称" prop="dataSetName" align="left" width="300" show-overflow-tooltip>
                     <template slot-scope="scope">
                         <span @click="handleEdit(scope.row)" style="cursor: pointer; color: #409eff;">
                             <svg-icon icon-class="dataset" style="font-size: 16px; margin-right: 5px;" />
