@@ -279,7 +279,7 @@
               <div class="file-section">
                 <div class="section-title">{{ $t('assetCatalog.file') }}</div>
                 <div class="file-list">
-                  <div v-for="file in paginatedFileList" :key="file.id" class="file-item"
+                  <div v-for="file in fileList" :key="file.id" class="file-item"
                     @click="openFileDetailDrawer(file)">
                     <div class="file-content">
                       <div class="file-info">
@@ -295,9 +295,6 @@
                   </div>
                 </div>
 
-                <!-- 文件列表分页 -->
-                <pagination v-show="fileTotal > 0" :total="fileTotal" :page.sync="fileQueryParams.pageNum"
-                  :pageSize.sync="fileQueryParams.pageSize" @pagination="handleFilePagination" />
               </div>
             </div>
           </el-card>
@@ -551,6 +548,7 @@ export default {
       currentNodeType: '0', // 当前节点的type值,默认为'0'
       currentFolderName: '', // 当前文件夹名称
       breadcrumbList: [], // 面包屑路径数组
+      currentFolderId: null, // 当前目录ID（根目录为 null）
       currentSortField: 'add_time', // 当前排序字段
       currentSortLabel: this.$t('assetCatalog.uploadTime'), // 当前排序显示文本
       sortOrders: {
@@ -561,11 +559,7 @@ export default {
       currentNodeData: null, // 存储当前选中的节点数据
       folderList: [], // 文件夹列表
       fileList: [], // 文件列表
-      fileTotal: 0, // 文件总数
-      fileQueryParams: {
-        pageNum: 1,
-        pageSize: 10
-      },
+      fileTotal: 0, // 总条目数（后端 titleNum）
       rootFolderTitle: '', // 根文件夹标题（从接口获取）
 
       fileDetailDrawerVisible: false,
@@ -746,7 +740,7 @@ export default {
   computed: {
     // 文件+文件夹总数
     totalItems() {
-      return this.folderList.length + this.fileTotal;
+      return Number(this.fileTotal) || 0;
     },
     sortOrderIcon() {
       const order = this.sortOrders[this.currentSortField];
@@ -756,11 +750,6 @@ export default {
         return 'el-icon-bottom';
       }
       return 'el-icon-d-caret';
-    },
-    // 直接返回文件列表，不再在前端进行切片
-    // 因为接口已经返回了分页后的数据
-    paginatedFileList() {
-      return this.fileList;
     }
   },
   watch: {
@@ -818,15 +807,19 @@ export default {
       if (item === null) {
         // 点击首页图标,返回根目录（顶层）
         this.breadcrumbList = [];
+        this.currentFolderId = null;
         this.currentFolderName = this.rootFolderTitle;
         // 重新加载顶层数据
         if (this.currentNodeData) {
-          this.fileQueryParams.pageNum = 1;
-          this.loadFileListData(this.currentNodeData);
+          this.loadFileListData(this.currentNodeData, {
+            folderId: null,
+            keepCurrentFolderName: false
+          });
         }
       } else {
         // 点击路径中的某一层
         this.breadcrumbList = this.breadcrumbList.slice(0, index + 1);
+        this.currentFolderId = item.id;
         this.currentFolderName = item.name;
         this.loadFolderData(item.id);
       }
@@ -848,7 +841,10 @@ export default {
       this.currentSortLabel = labelMap[field] || this.$t('assetCatalog.uploadTime');
 
       if (this.currentNodeData) {
-        this.loadFileListData(this.currentNodeData);
+        this.loadFileListData(this.currentNodeData, {
+          folderId: this.currentFolderId,
+          keepCurrentFolderName: this.currentFolderId !== null && this.currentFolderId !== undefined && this.currentFolderId !== ''
+        });
       }
     },
 
@@ -891,28 +887,24 @@ export default {
         id: folder.id,
         name: folder.name
       });
+      this.currentFolderId = folder.id;
       this.currentFolderName = folder.name;
 
       this.loadFolderData(folder.id);
     },
 
     loadFolderData(folderId) {
-      // TODO: 这里需要调用接口获取子文件夹的数据
-      // 暂时清空数据，等待接口实现
-      this.folderList = [];
-      this.fileList = [];
-      this.fileTotal = 0;
-
-      // 如果有接口，应该类似这样调用：
-      // getSubFolderData(folderId).then(res => {
-      //   this.folderList = res.data.folder || [];
-      //   this.fileList = res.data.fileList.records || [];
-      //   this.fileTotal = res.data.fileList.total || 0;
-      // });
+      if (!this.currentNodeData) return;
+      this.currentFolderId = (folderId === null || folderId === undefined || folderId === '') ? null : folderId;
+      this.loadFileListData(this.currentNodeData, {
+        folderId: this.currentFolderId,
+        keepCurrentFolderName: this.currentFolderId !== null && this.currentFolderId !== undefined && this.currentFolderId !== ''
+      });
     },
 
 
-    loadFileListData(data) {
+    loadFileListData(data, options = {}) {
+      const { folderId = null, keepCurrentFolderName = false } = options;
       const sortField = this.currentSortField;
       const order = this.sortOrders[sortField];
       const isAsc = order === 'asc';
@@ -924,20 +916,30 @@ export default {
         databaseList: [{
           parentId: data.id,
           label: data.label
-        }],
-        pageNum: this.fileQueryParams.pageNum,
-        pageSize: this.fileQueryParams.pageSize,
+        }]
       };
+      if (folderId !== null && folderId !== undefined && folderId !== '') {
+        response.folderId = folderId;
+      }
       getProjectFileList(response).then(res => {
         if (res.code === 200) {
-          this.fileList = res.data.fileList?.records || [];
-          this.fileTotal = res.data.fileList?.total || 0;
-          // 处理文件夹数据
-          this.folderList = res.data.folder || [];
+          const data = res.data || {};
+          const rawFileList = data.fileList;
+          const normalizedFileList = Array.isArray(rawFileList)
+            ? rawFileList
+            : (rawFileList && Array.isArray(rawFileList.records) ? rawFileList.records : []);
+          const normalizedFolderList = Array.isArray(data.folder) ? data.folder : [];
+          const parsedTitleNum = Number(data.titleNum);
 
-          if (res.data.title) {
-            this.rootFolderTitle = res.data.title;
-            this.currentFolderName = res.data.title;
+          this.fileList = normalizedFileList;
+          this.folderList = normalizedFolderList;
+          this.fileTotal = Number.isFinite(parsedTitleNum) ? parsedTitleNum : 0;
+
+          if (data.title) {
+            this.rootFolderTitle = data.title;
+            if (!keepCurrentFolderName) {
+              this.currentFolderName = data.title;
+            }
           }
         }
       }).catch(err => {
@@ -1010,10 +1012,12 @@ export default {
       if (this.currentNodeType == '1') {
         // 文件管理模式
         this.breadcrumbList = [];
-        // 重置分页
-        this.fileQueryParams.pageNum = 1;
+        this.currentFolderId = null;
         // 加载文件列表数据（接口会返回 res.data.title 作为顶层标题）
-        this.loadFileListData(data);
+        this.loadFileListData(data, {
+          folderId: null,
+          keepCurrentFolderName: false
+        });
       } else {
         // 原有表格模式
         if (data.children && data.children.length > 0) {
@@ -1026,13 +1030,6 @@ export default {
             label: data.label,
           }]);
         }
-      }
-    },
-
-    handleFilePagination() {
-      // 重新加载当前节点的数据
-      if (this.currentNodeData) {
-        this.loadFileListData(this.currentNodeData);
       }
     },
 
@@ -1603,7 +1600,14 @@ export default {
               const allChildren = this.collectAllChildren([this.categoryList[0]]);
               this.getList(allChildren);
             } else {
-              this.loadFileListData(this.categoryList[0]);
+              this.currentNodeData = this.categoryList[0];
+              this.currentNodeType = this.categoryList[0].type || '0';
+              this.currentFolderId = null;
+              this.breadcrumbList = [];
+              this.loadFileListData(this.categoryList[0], {
+                folderId: null,
+                keepCurrentFolderName: false
+              });
             }
           });
         }
