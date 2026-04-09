@@ -57,7 +57,7 @@
             <el-table-column label="产出模型名称" align="center" prop="modelOutputName" width="300" show-overflow-tooltip />
             <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="200">
                 <template slot-scope="scope">
-                    <el-button size="mini" type="text" @click="startTraining(scope.row)" :disabled="scope.row.modelTrainingStatus == '2'">开始训练</el-button>
+                    <el-button size="mini" type="text" @click="startTraining(scope.row)" :disabled="scope.row.modelTrainingStatus == '2' || scope.row.modelTrainingStatus == '5'">开始训练</el-button>
                     <el-button size="mini" type="text" @click="stopTraining(scope.row)" :disabled="scope.row.modelTrainingStatus != '2'">终止训练</el-button>
                 </template>
             </el-table-column>
