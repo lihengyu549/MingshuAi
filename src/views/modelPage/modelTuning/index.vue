@@ -325,6 +325,10 @@ export default {
 
         /** 新增按钮操作 */
         handleAdd() {
+            if (this.proxysList.length >= 5) {
+                this.$message.error("微调模型的上限已达5个，无法新增");
+                return;
+            }
             this.resetAddData();
             this.resetParam();
             const now = new Date();
