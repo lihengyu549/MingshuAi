@@ -239,7 +239,7 @@
                 </div>
                 <!-- (3) 排序组件 -->
                 <!-- 修改排序组件，支持所有字段的升降序 -->
-                <div class="sort-selector">
+                <!-- <div class="sort-selector">
                   <el-dropdown @command="handleSortChange" trigger="click">
                     <span class="sort-button">
                       {{ currentSortLabel }}
@@ -260,7 +260,7 @@
                       </el-dropdown-item>
                     </el-dropdown-menu>
                   </el-dropdown>
-                </div>
+                </div> -->
               </div>
 
               <!-- (4) 文件夹展示区域 -->
