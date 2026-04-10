@@ -981,8 +981,7 @@ export default {
       return ['FILE_SERVER', 'DATABASE'].includes(row.sourceType);
     },
     triggerDataScan(row) {
-      const params = { proxyIds: row.id };
-      return row.sourceType === 'FILE_SERVER' ? dataScanByFileServer(params) : dataSacn(params);
+      return row.sourceType === 'FILE_SERVER' ? dataScanByFileServer({ id: row.id }) : dataSacn({ proxyIds: row.id });
     },
     async executeScan(row) {
       this.btnLoading = true;
