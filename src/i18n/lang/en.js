@@ -233,6 +233,8 @@ export default {
       selectAtLeastOne: 'Please select at least one record',
       selectScanContent: 'Please select scan content',
       selectDatabaseType: 'Please select database type',
+      selectFileServerType: 'Please select file server type',
+      pleaseSelectFileServerType: 'Please select file server type',
       selectClassificationFramework: 'Please select classification framework',
       inputPassword: 'Please enter password',
       inputPortRange: 'Please enter 5 numbers between 0-65535',

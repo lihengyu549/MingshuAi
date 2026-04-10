@@ -13,9 +13,9 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item :label="$t('dataAssetdiscover.result.fileServer')" prop="databaseType">
-        <el-select v-model="queryParams.databaseType" :placeholder="$t('dataAssetdiscover.result.selectDatabaseType')" @change="inputSearch" clearable>
-          <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
+        <el-form-item :label="$t('dataAssetdiscover.result.fileServerType')" prop="fileServerType">
+        <el-select v-model="queryParams.fileServerType" :placeholder="$t('dataAssetdiscover.result.selectFileServerType')" @change="inputSearch" clearable>
+          <el-option v-for="item in fileServerTypeList" :key="item.id" :label="item.name" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
@@ -411,6 +411,10 @@ export default {
         { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" },
         { name: "达梦", id: 4, value: "DM" },
         { name: "GREENPLUM", id: 5, value: "GREENPLUM" },
+      ],
+      fileServerTypeList: [
+        { name: "FTP", value: "FTP" },
+        { name: "SMB", value: "SMB" },
       ],
       // 表单校验
       importDataRules: {
