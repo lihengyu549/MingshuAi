@@ -570,8 +570,6 @@ export default {
         filePath: '--',
         md5: '--',
         createTime: '--',
-        updateTime: '--',
-        accessTime: '--'
       },
 
       drawerShow: false,
@@ -870,8 +868,6 @@ export default {
         filePath: this.formatFileDetailValue(file.filePath || file.absolutePath || file.path || file.fileAbsolutePath),
         md5: this.formatFileDetailValue(file.md5 || file.fileMd5),
         createTime: this.formatFileDetailValue(file.createTime || file.fileCreateTime),
-        updateTime: this.formatFileDetailValue(file.updateTime || file.modifyTime || file.fileUpdateTime),
-        accessTime: this.formatFileDetailValue(file.accessTime || file.lastAccessTime || file.lastVisitTime)
       };
       this.fileDetailDrawerVisible = true;
     },

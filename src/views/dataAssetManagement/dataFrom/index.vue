@@ -158,10 +158,10 @@
           min-width="150">
           <template slot-scope="scope">
             <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
-              :disabled="scope.row.scanState == 'RUNNING' || scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API' || btnLoading"
+              :disabled="scope.row.scanState == 'RUNNING' || !isScanOperableSource(scope.row) || btnLoading"
               :loading="btnLoading">{{ $t('dataFrom.startScan') }}</el-button>
             <el-button size="mini" type="text" @click="stopScan(scope.row)"
-              :disabled="scope.row.databaseType == 'Excel' || scope.row.databaseType == 'API' || btnLoading"
+              :disabled="!isScanOperableSource(scope.row) || btnLoading"
               :loading="btnLoading">{{ $t('dataFrom.terminateScan') }}</el-button>
             <!-- 添加关联数据字典按钮和下拉菜单 -->
             <el-dropdown trigger="click" @command="handleDictionaryCommand"
@@ -529,7 +529,7 @@ import {
   importExcel, publish, saveDatabaseAndTables, startI, stopI, databaseMaskI, strategyPushI, strategyAll, databaseMask, getListTables, databaseListI, getDatabaseNameList, getDatabaseTableNameList, stopDataScan
 } from "@/api/system/proxys";
 import {
-  forceLogout, nameTesting, dataSacn, getFrameworks, getDatabaseAndTablesById, updateDatabaseAndTables, addOrUpdateFileDataList, checkSourceName, saveFileServer, updateFileServer
+  forceLogout, nameTesting, dataSacn, getFrameworks, getDatabaseAndTablesById, updateDatabaseAndTables, addOrUpdateFileDataList, checkSourceName, saveFileServer, updateFileServer, dataScanByFileServer
 } from "@/api/system/protectCategory"
 import Result from './components/result.vue'
 import TableSelector from './components/TableSelector.vue'
@@ -954,6 +954,24 @@ export default {
     this.getList()
   },
   methods: {
+    isScanOperableSource(row) {
+      return ['FILE_SERVER', 'DATABASE'].includes(row.sourceType);
+    },
+    triggerDataScan(row) {
+      const params = { proxyIds: row.id };
+      return row.sourceType === 'FILE_SERVER' ? dataScanByFileServer(params) : dataSacn(params);
+    },
+    async executeScan(row) {
+      this.btnLoading = true;
+      try {
+        await this.triggerDataScan(row);
+        await this.getList();
+      } catch (error) {
+        this.$message.error('扫描失败');
+      } finally {
+        this.btnLoading = false;
+      }
+    },
     // 获取文件共享扫描内容展示文字
     getFileShareScanContentDisplay() {
       if (!this.fileShareServerForm.fileDataList) return '';
@@ -1537,6 +1555,21 @@ export default {
     },
     scanStateClickFn(row) {
       if (this.btnLoading) return;
+      if (!this.isScanOperableSource(row)) return;
+      if (row.scanState == 'COMPLETE') {
+        this.$confirm(this.$t('dataFrom.confirmRescan'), this.$t('dataFrom.tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
+          type: 'warning'
+        }).then(() => {
+          this.executeScan(row)
+        }).catch(() => {
+        })
+        return;
+      }
+      this.executeScan(row)
+      return;
+      /*
       if (row.scanState == 'COMPLETE') {
         this.$confirm(this.$t('dataFrom.confirmRescan'), this.$t('dataFrom.tip'), {
           confirmButtonText: this.$t('confirm'),
@@ -1565,9 +1598,11 @@ export default {
           this.btnLoading = false;
         })
       }
+      */
     },
     stopScan(row) {
       if (this.btnLoading) return;
+      if (!this.isScanOperableSource(row)) return;
       this.$confirm(this.$t('dataFrom.confirmStopScan', { name: row.sourceName }), this.$t('dataFrom.tip'), {
         confirmButtonText: this.$t('confirm'),
         cancelButtonText: this.$t('cancel'),
