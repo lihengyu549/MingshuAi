@@ -264,9 +264,9 @@
               </div>
 
               <!-- (4) 文件夹展示区域 -->
-              <div class="folder-section">
+              <div v-if="folderList.length > 0" class="folder-section">
                 <div class="section-title">{{ $t('assetCatalog.folder') }}</div>
-                <div v-if="folderList.length > 0" class="folder-grid">
+                <div class="folder-grid">
                   <div v-for="folder in folderList" :key="folder.id" class="folder-item"
                     @click="handleFolderClick(folder)">
                     <i class="el-icon-folder folder-icon"></i>
@@ -276,7 +276,7 @@
               </div>
 
               <!-- (5) 文件列表展示 -->
-              <div class="file-section">
+              <div v-if="fileList.length > 0" class="file-section">
                 <div class="section-title">{{ $t('assetCatalog.file') }}</div>
                 <div class="file-list">
                   <div v-for="file in fileList" :key="file.id" class="file-item"
@@ -287,7 +287,7 @@
                         <span class="file-name"><b>{{ file.fileName }}</b>{{ file.name }}</span>
                       </div>
                       <div class="file-meta">
-                        <span class="file-time">{{ file.createTime }}</span>
+                        <span class="file-time">{{ currentFileTimeLabel }}：{{ file.createTime }}</span>
                         <span class="file-size">{{ file.fileSize }}</span>
                       </div>
                     </div>
@@ -434,7 +434,7 @@
             <div class="file-detail-value">{{ fileDetailData.md5 }}</div>
           </div>
           <div class="file-detail-item">
-            <div class="file-detail-label">文件创建时间</div>
+            <div class="file-detail-label">{{ currentFileTimeLabel }}</div>
             <div class="file-detail-value">{{ fileDetailData.createTime }}</div>
           </div>
         </div>
@@ -741,6 +741,9 @@ export default {
     // 文件+文件夹总数
     totalItems() {
       return Number(this.fileTotal) || 0;
+    },
+    currentFileTimeLabel() {
+      return String(this.currentNodeData && this.currentNodeData.fileType) === '1' ? '最后修改时间' : '上传时间';
     },
     sortOrderIcon() {
       const order = this.sortOrders[this.currentSortField];
