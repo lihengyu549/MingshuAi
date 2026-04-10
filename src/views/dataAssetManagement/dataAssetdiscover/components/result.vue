@@ -869,7 +869,6 @@ addMsg ::v-deep.el-dialog__title {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  flex-wrap: wrap;
 }
 
 .yuanDataClass /deep/ .el-form-item {
