@@ -146,7 +146,7 @@
             :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               <el-progress class="data-score-progress" type="circle" :width="42" color="#e6a23c" :stroke-width="2"
-                :percentage="normalizeProgressValue(scope.row.dataScore)"></el-progress>
+                :percentage="normalizeProgressValue(scope.row.dataScore)" :format="percent"></el-progress>
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'tableCount'" :key="item.prop" :label="item.label" align="center"
@@ -966,6 +966,9 @@ export default {
     this.getList()
   },
   methods: {
+    percent(value) {
+      return value;
+    },
     normalizeProgressValue(value) {
       const rawValue = typeof value === 'string' ? value.replace('%', '').trim() : value;
       const numericValue = Number(rawValue);
