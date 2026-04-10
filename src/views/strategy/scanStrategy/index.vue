@@ -124,14 +124,14 @@
           <div class="label-desc">语义相似度大于该阈值则直接命中缓存</div>
         </div>
         <div class="semantic-cache-slider">
-          <el-slider v-model="allData.SemanticCache" :min="0" :max="100" style="flex: 1;"></el-slider>
+          <el-slider v-model="allData.SemanticCache.value" :min="0" :max="100" style="flex: 1;"></el-slider>
           <div class="slider-tip">
             <el-tag size="small" type="warning" effect="plain" class="min-tag">最小可设 60%</el-tag>
             <span class="tip-text">低于该值时不允许保存</span>
           </div>
         </div>
         <div class="semantic-cache-input">
-          <el-input-number v-model="allData.SemanticCache" :min="0" :max="100" controls-position="right" size="small"
+          <el-input-number v-model="allData.SemanticCache.value" :min="0" :max="100" controls-position="right" size="small"
             style="width: 100px;"></el-input-number>
           <span class="percent-sign">%</span>
         </div>
@@ -246,7 +246,7 @@ export default {
         SensitiveData: {},
         SampleExtraction: {},
         DataTableQualityScore: {},
-        SemanticCache: 85,
+        SemanticCache: {},
         SecurityLevelList: {
           sysRiskLevel: []
         }
@@ -340,7 +340,7 @@ export default {
     },
     submit() {
       // 验证语义缓存的阈值
-      if (this.allData.SemanticCache && this.allData.SemanticCache < 60) {
+      if (this.allData.SemanticCache && this.allData.SemanticCache.value < 60) {
         this.$message({
           message: '语义缓存的相似度阈值不能低于60%',
           type: 'warning'
