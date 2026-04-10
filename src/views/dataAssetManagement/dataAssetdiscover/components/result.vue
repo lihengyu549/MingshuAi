@@ -35,7 +35,7 @@
           </template>
         </el-table-column>
         <el-table-column :label="$t('dataAssetdiscover.result.databaseVersion')" align="center" prop="databaseVersion" show-overflow-tooltip />
-        <el-table-column :label="$t('dataAssetdiscover.result.fileServerType')" align="center" prop="fileServer" show-overflow-tooltip />
+        <el-table-column :label="$t('dataAssetdiscover.result.fileServerType')" align="center" prop="fileServerType" show-overflow-tooltip />
       <el-table-column :label="$t('dataAssetdiscover.result.state')" align="center" min-width="250" prop="state">
           <template slot-scope="scope">
             <div style="display: flex; align-items: center;justify-content: center;">
