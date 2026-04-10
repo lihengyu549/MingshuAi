@@ -37,7 +37,7 @@
             <template slot="empty">
                 <el-empty description="暂无数据"></el-empty>
             </template>
-            <el-table-column type="selection" width="60" align="center" />
+            <el-table-column type="selection" width="60" align="center" :selectable="isRowSelectable" />
             <el-table-column label="任务名称" prop="modelTaskName" align="left" width="200" show-overflow-tooltip>
                 <template slot-scope="scope">
                     <span @click="handleEdit(scope.row)" style="cursor: pointer; color: #409eff;">
@@ -320,6 +320,9 @@ export default {
         // 多选框选中数据
         handleSelectionChange(selection) {
             this.ids = selection.map(item => item.id);
+        },
+        isRowSelectable(row) {
+            return row.modelTrainingStatus != '2';
         },
 
         /** 新增按钮操作 */
