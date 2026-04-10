@@ -135,11 +135,18 @@
             :prop="item.prop" show-overflow-tooltip />
           <el-table-column v-else-if="item.prop === 'updateTime'" :key="item.prop" :label="item.label" align="center"
             :prop="item.prop" show-overflow-tooltip />
+          <el-table-column v-else-if="item.prop === 'scanProgress'" :key="item.prop" :label="item.label" align="center"
+            :prop="item.prop" show-overflow-tooltip>
+            <template slot-scope="scope">
+              <el-progress :percentage="normalizeProgressValue(scope.row.scanProgress)" :stroke-width="6"
+                :show-text="false"></el-progress>
+            </template>
+          </el-table-column>
           <el-table-column v-else-if="item.prop === 'dataScore'" :key="item.prop" :label="item.label" align="center"
             :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
-              <el-progress :percentage="Number(scope.row.dataScore) || 0" :stroke-width="6"
-                :show-text="false"></el-progress>
+              <el-progress class="data-score-progress" type="circle" :width="42" color="#e6a23c" :stroke-width="2"
+                :percentage="normalizeProgressValue(scope.row.dataScore)"></el-progress>
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'tableCount'" :key="item.prop" :label="item.label" align="center"
@@ -161,8 +168,8 @@
               :disabled="scope.row.scanState == 'RUNNING' || !isScanOperableSource(scope.row) || btnLoading"
               :loading="btnLoading">{{ $t('dataFrom.startScan') }}</el-button>
             <el-button size="mini" type="text" @click="stopScan(scope.row)"
-              :disabled="!isScanOperableSource(scope.row) || btnLoading"
-              :loading="btnLoading">{{ $t('dataFrom.terminateScan') }}</el-button>
+              :disabled="!isScanOperableSource(scope.row) || btnLoading" :loading="btnLoading">{{
+                $t('dataFrom.terminateScan') }}</el-button>
             <!-- 添加关联数据字典按钮和下拉菜单 -->
             <el-dropdown trigger="click" @command="handleDictionaryCommand"
               @click.native="handleDropdownClick(scope.row)">
@@ -478,7 +485,8 @@
           <el-input v-model="fileShareServerForm.share" :placeholder="$t('dataFrom.shareExample')" />
         </el-form-item>
 
-        <el-form-item :label="$t('dataFrom.startingPath')" :prop="fileShareServerForm.databaseType == 'SMB' ? '' : 'targetDatabase'">
+        <el-form-item :label="$t('dataFrom.startingPath')"
+          :prop="fileShareServerForm.databaseType == 'SMB' ? '' : 'targetDatabase'">
           <el-input v-model="fileShareServerForm.targetDatabase" placeholder="例如：/data/foldor/a" />
         </el-form-item>
 
@@ -573,6 +581,10 @@ export default {
         {
           label: this.$t('dataFrom.updateTime'),
           prop: "updateTime"
+        },
+        {
+          label: '扫描进度',
+          prop: "scanProgress"
         },
         {
           label: this.$t('dataFrom.dataQualityAssessment'),
@@ -946,7 +958,7 @@ export default {
   },
   created() {
     this.checkedColumn = this.setList.filter(item =>
-      ['targetIpPort', 'businessName', 'scanState', 'dataScore'].includes(item.prop)
+      ['targetIpPort', 'businessName', 'scanState', 'scanProgress'].includes(item.prop)
     );
     this.checkAll = false;
     // this.queryParams.projectId = 0
@@ -954,6 +966,14 @@ export default {
     this.getList()
   },
   methods: {
+    normalizeProgressValue(value) {
+      const rawValue = typeof value === 'string' ? value.replace('%', '').trim() : value;
+      const numericValue = Number(rawValue);
+      if (!Number.isFinite(numericValue)) {
+        return 0;
+      }
+      return Math.min(Math.max(numericValue, 0), 100);
+    },
     isScanOperableSource(row) {
       return ['FILE_SERVER', 'DATABASE'].includes(row.sourceType);
     },
@@ -993,7 +1013,7 @@ export default {
     // 打开文件目录选择弹窗
     openFileDirectoryDialog() {
       // 在打开弹窗前先校验这五个字段是否已填
-      const fieldsToValidate = ['targetIp', 'targetPort', 'targetUserName', 'targetUserPassword', this.fileShareServerForm.databaseType == 'SMB' ? 'share' : 'targetDatabase' ];
+      const fieldsToValidate = ['targetIp', 'targetPort', 'targetUserName', 'targetUserPassword', this.fileShareServerForm.databaseType == 'SMB' ? 'share' : 'targetDatabase'];
       let validCount = 0;
       let hasError = false;
 
@@ -1002,7 +1022,7 @@ export default {
           hasError = true;
         }
         validCount++;
-        
+
         // 当所有字段都校验完毕后，再决定是否打开弹窗
         if (validCount === fieldsToValidate.length) {
           if (hasError) {
@@ -1014,7 +1034,7 @@ export default {
             try {
               let parsed = this.fileShareServerForm.fileDataList;
               if (typeof parsed === 'string') {
-                 parsed = JSON.parse(parsed);
+                parsed = JSON.parse(parsed);
               }
               initialSelected = parsed;
               if (!Array.isArray(initialSelected)) {
@@ -2170,6 +2190,10 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.data-score-progress /deep/ .el-progress__text {
+  font-size: 12px !important;
+  font-weight: 600;
 }
 
 /* 新增表单区块标题样式 */
