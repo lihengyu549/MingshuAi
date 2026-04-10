@@ -459,7 +459,7 @@ export default {
                 return;
             }
 
-            this.$confirm(`确定删除选中的${this.ids.length}条模型吗？`, '提示', {
+            this.$confirm(`确定删除选中的训练任务吗？此操作会同步删除训练成功的模型数据`, '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
