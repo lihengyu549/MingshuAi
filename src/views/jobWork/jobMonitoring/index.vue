@@ -81,7 +81,7 @@
                         <div class="header-divider"></div>
                     </div>
                     <div class="steps-list">
-                        <div v-for="(step, index) in processingSteps" :key="index" class="step-item"
+                        <div v-for="(step, index) in visibleProcessingSteps" :key="index" class="step-item"
                             :class="step.status">
                             <!-- 步骤状态指示器 -->
                             <div class="step-icon">
@@ -125,7 +125,7 @@
                 <div class="tab-card">
                     <el-tabs v-model="activeTab">
                         <!-- AI视图 Tab -->
-                        <el-tab-pane label="AI视图" name="ai-vision">
+                        <el-tab-pane v-if="showAiVision" label="AI视图" name="ai-vision">
                             <div class="ai-vision-container">
                                 <div class="ai-effect-wrapper">
 
@@ -677,6 +677,19 @@ export default {
         isTaskActive() {
             return this.status === 'RUNNING' || this.status === 'PAUSEDING' || this.status === 'KILLEDING';
         },
+        isFileServerTask() {
+            return this.routeData.sourceType === 'FILE_SERVER';
+        },
+        showAiVision() {
+            return !this.isFileServerTask;
+        },
+        visibleProcessingSteps() {
+            if (!this.isFileServerTask) {
+                return this.processingSteps;
+            }
+            const aiClassifyStep = this.processingSteps.find(step => step.name === 'AI分类打标');
+            return aiClassifyStep ? [aiClassifyStep] : [{ name: 'AI分类打标', status: 'null', completedTime: '' }];
+        },
         // 获取当前处理中的步骤索引
         currentStepIndex() {
             const idx = this.processingSteps?.findIndex(s => s.status === 'processing');
@@ -686,7 +699,7 @@ export default {
     watch: {
         status: {
             handler(newStatus) {
-                const newTab = newStatus === 'RUNNING' ? 'ai-vision' : 'analysis';
+                const newTab = newStatus === 'RUNNING' && this.showAiVision ? 'ai-vision' : 'analysis';
                 this.activeTab = newTab;
                 if (newTab === 'analysis') {
                     this.getAnalysisLogs();
@@ -697,14 +710,14 @@ export default {
         activeTab(newTab) {
             if (newTab === 'analysis') {
                 this.getAnalysisLogs();
-            } else if (newTab === 'ai-vision') {
+            } else if (newTab === 'ai-vision' && this.showAiVision) {
                 this.$nextTick(() => {
                     this.startAIAnimations();
                 });
             }
         },
         currentStepIndex() {
-            if (this.activeTab === 'ai-vision') {
+            if (this.activeTab === 'ai-vision' && this.showAiVision) {
                 this.$nextTick(() => {
                     this.startAIAnimations();
                 });
@@ -716,7 +729,7 @@ export default {
         this.initWebSocket();
         this.getAnalysisLogs();
         this.$nextTick(() => {
-            if (this.activeTab === 'ai-vision') {
+            if (this.activeTab === 'ai-vision' && this.showAiVision) {
                 this.startAIAnimations();
             }
         });
