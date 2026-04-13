@@ -1216,16 +1216,22 @@ export default {
     },
     deleteFn() {
       let dataS = this.$refs.tableRef.selection
-      let flagList // 为1 代表选中数据中有执行中的，2为没有执行中，但是有执行完成的
+      const allowDeleteStatus = ['NONE', 'COMPLETE', 'ERR', 'KILLED']
       if (dataS && dataS.length > 0) {
-        flagList = dataS.map(item => {
+        const flagList = dataS.map(item => {
           return item.maskComplete
         })
-        if (flagList.includes('RUNNING')) {
-          this.$message({ message: '选中任务包含执行中任务，无法批量删除', type: 'warning' })
+        const invalidStatusList = [...new Set(flagList
+          .filter(item => !allowDeleteStatus.includes(item))
+          .map(item => this.stateMsg(item) || item))]
+        if (invalidStatusList.length > 0) {
+          this.$message({
+            message: `仅未开始、执行完成、执行失败、终止成功状态的任务可以删除，当前选中包含：${invalidStatusList.join('、')}`,
+            type: 'warning'
+          })
           return
         }
-        if (flagList.includes('COMPLETE')) {
+        if (flagList.some(item => ['COMPLETE', 'ERR', 'KILLED'].includes(item))) {
           this.$confirm(`删除任务，将会删除数据源所关联的所有执行结果,确定删除吗`, '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
