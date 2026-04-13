@@ -1313,6 +1313,7 @@ export default {
     // 新增取消
     addCancel() {
       this.addOrEditDataRuls = {}
+      this.addNodeName = ''
       this.addOrEdit.show = false
     },
     // 递归函数，查找父节点的 label 并返回完整的路径
@@ -1357,6 +1358,18 @@ export default {
         this.$refs.treeSelect.filter(value);
       }
     },
+    getBaseParentDisplayName(row) {
+      if (row.baseParent) {
+        return row.baseParent
+      }
+      if (row.categoryId) {
+        const pathArray = this.getNodePath(this.categoryList, row.categoryId)
+        if (pathArray.length > 0) {
+          return pathArray.join('-')
+        }
+      }
+      return row.owner || ''
+    },
     async editFn(row) {
       this.addOrEdit.flag = 2
       this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
@@ -1368,6 +1381,7 @@ export default {
       this.addOrEditDataRuls.confirmProtectMethod = Array.isArray(row.confirmProtectMethod)
         ? row.confirmProtectMethod
         : (row.confirmProtectMethod ? row.confirmProtectMethod.split(',') : []);
+      this.addNodeName = this.getBaseParentDisplayName(row)
       this.addOrEdit.show = true
       this.addOrEdit.title = '编辑'
       this.tagsShow = false
@@ -1390,14 +1404,17 @@ export default {
     },
     async lookFn(row) {
       this.addOrEdit.flag = 3
-      this.addOrEditDataRuls = row
+      this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
       this.addOrEditDataRuls.upgradeRule = row.upgradeRule == '1' ? true : false
       this.addOrEditDataRuls.demotionRule = row.demotionRule == '1' ? true : false
       this.addOrEditDataRuls.additional = row.attachDescribe
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
       this.addOrEditDataRuls.attributeType = row.attributeType
       this.tags = row.coreTags ? row.coreTags.split(',') : []
-      this.addNodeName = row.owner
+      this.addOrEditDataRuls.confirmProtectMethod = Array.isArray(row.confirmProtectMethod)
+        ? row.confirmProtectMethod
+        : (row.confirmProtectMethod ? row.confirmProtectMethod.split(',') : []);
+      this.addNodeName = this.getBaseParentDisplayName(row)
       this.addOrEdit.show = true
       this.addOrEdit.title = '查看'
       this.tagsShow = false
