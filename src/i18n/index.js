@@ -5,8 +5,8 @@ import Cookies from 'js-cookie'
 // 引入 Element UI 自带的语言包
 import enLocale from 'element-ui/lib/locale/lang/en'
 import zhLocale from 'element-ui/lib/locale/lang/zh-CN'
-import zh from './lang/zh'
-import en from './lang/en'
+import zh from './lang/zh/index'
+import en from './lang/en/index'
 
 Vue.use(VueI18n)
 
