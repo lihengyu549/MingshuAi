@@ -1,5 +1,19 @@
 export default {
-  "noData": "暂无数据",
-  "confirm": "确认",
-  "cancel": "取消"
+  'noData': '暂无数据',
+  'confirm': '确认',
+  'cancel': '取消',
+  'add': '新增',
+  'edit': '修改',
+  'delete': '删除',
+  'operation': '操作',
+  'status': '状态',
+  'createdTime': '创建时间',
+  'tip': '提示',
+  'import': '导入',
+  'export': '导出',
+  'downloadTemplate': '下载模板',
+  'importResult': '导入结果',
+  'resetPassword': '重置密码',
+  'enable': '启用',
+  'disable': '停用'
 }

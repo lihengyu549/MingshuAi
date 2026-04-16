@@ -8,6 +8,7 @@ import hierarchicalStructure from './hierarchicalStructure'
 import dataAssetdiscover from './dataAssetdiscover'
 import dataFrom from './dataFrom'
 import assetCatalog from './assetCatalog'
+import user from './user'
 
 export default {
   ...common,
@@ -20,4 +21,5 @@ export default {
   dataAssetdiscover,
   dataFrom,
   assetCatalog,
+  user
 }
