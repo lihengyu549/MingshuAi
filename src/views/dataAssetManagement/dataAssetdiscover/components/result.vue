@@ -166,6 +166,110 @@
         <el-button @click="cancleFn">{{ $t('dataAssetdiscover.result.cancel') }}</el-button>
       </div>
     </el-dialog>
+    <el-dialog class="addMsg unified-dialog" :title="titleFileShareServer" :visible.sync="fileShareServerOpen"
+      width="700px" append-to-body :close-on-click-modal="false">
+      <el-form class="dialogForm" v-if="fileShareServerOpen" ref="fileShareServerForm" :model="fileShareServerForm"
+        :rules="fileShareServerRules" label-width="auto" label-position="top" @submit.native.prevent>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item :label="$t('dataFrom.sourceName')" prop="sourceName">
+              <el-input v-model="fileShareServerForm.sourceName" maxlength="50"
+                :placeholder="$t('dataFrom.pleaseInputSourceName')" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('dataFrom.fileDirectoryType')" prop="databaseType">
+              <el-select v-model="fileShareServerForm.databaseType"
+                :placeholder="$t('dataFrom.pleaseSelectFileDirectoryType')">
+                <el-option :label="$t('dataFrom.SMB')" value="SMB"></el-option>
+                <el-option :label="$t('dataFrom.FTP')" value="FTP"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item :label="$t('dataFrom.businessName')" prop="businessName">
+          <el-input v-model="fileShareServerForm.businessName" maxlength="50"
+            :placeholder="$t('dataFrom.pleaseInputBusinessName')" />
+        </el-form-item>
+
+        <el-form-item :label="$t('dataFrom.businessSystemDescription')" prop="businessComment">
+          <el-input type="textarea" v-model="fileShareServerForm.businessComment" maxlength="1000" show-word-limit
+            :placeholder="$t('dataFrom.pleaseInputBusinessDescription')" />
+        </el-form-item>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item :label="$t('dataFrom.host')" prop="targetIp">
+              <el-input v-model="fileShareServerForm.targetIp" :placeholder="$t('dataFrom.pleaseInputHostIP')" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('dataFrom.port')" prop="targetPort">
+              <el-input v-model="fileShareServerForm.targetPort" :placeholder="$t('dataFrom.pleaseInputPort')" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item :label="$t('dataFrom.user')" prop="targetUserName">
+              <el-input v-model="fileShareServerForm.targetUserName"
+                :placeholder="$t('dataFrom.pleaseInputUserName')" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('dataFrom.password')" prop="targetUserPassword">
+              <el-input type="password" v-model="fileShareServerForm.targetUserPassword" :show-password="true"
+                maxlength="100" :placeholder="$t('dataFrom.pleaseInputPassword')" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item v-if="fileShareServerForm.databaseType == 'SMB'" :label="$t('dataFrom.share')" prop="share">
+          <el-input v-model="fileShareServerForm.share" :placeholder="$t('dataFrom.shareExample')" />
+        </el-form-item>
+
+        <el-form-item :label="$t('dataFrom.startingPath')"
+          :prop="fileShareServerForm.databaseType == 'SMB' ? '' : 'targetDatabase'">
+          <el-input v-model="fileShareServerForm.targetDatabase" placeholder="例如：/data/foldor/a" />
+        </el-form-item>
+
+        <el-form-item :label="$t('dataFrom.scanContent')" prop="fileDataList">
+          <div @click="openFileDirectoryDialog" style="cursor: pointer;">
+            <el-input style="position: relative;" readonly></el-input>
+            <el-tag style="position: absolute;top: 4px;left: 6px;" v-if="fileShareServerForm.fileDataList">
+              {{ getFileShareScanContentDisplay() }}
+            </el-tag>
+            <el-tag style="position: absolute;top: 4px;left: 6px;" v-else type="info">
+              {{ $t('dataFrom.clickToSelectScanContent') }}
+            </el-tag>
+          </div>
+        </el-form-item>
+
+        <el-form-item :label="$t('dataFrom.executionCycle')" prop="scheduleType">
+          <el-select v-model="fileShareServerForm.scheduleType" @change="fileShareServerScheduleTypeChange">
+            <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+          <el-select v-show="fileShareServerForm.scheduleType == '2' || fileShareServerForm.scheduleType == '3'"
+            v-model="fileShareServerForm.scheduleInterval">
+            <el-option v-for="item in weekList" :key="item" :label="item" :value="item">
+            </el-option>
+          </el-select>
+          <el-time-picker v-show="fileShareServerForm.scheduleType != '0' && fileShareServerForm.scheduleType != ''"
+            v-model="fileShareServerForm.scheduleTime" value-format='HH:mm' format="HH:mm"
+            :placeholder="$t('dataFrom.anyTimePoint')" :append-to-body="true">
+          </el-time-picker>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" plain @click="submitFileShareServerForm" :loading="fileShareServerSubmitLoading">
+          {{ $t('confirm') }}
+        </el-button>
+        <el-button @click="fileShareServerCancel">{{ $t('cancel') }}</el-button>
+      </div>
+    </el-dialog>
     <el-dialog :title="$t('dataAssetdiscover.result.scanConfiguration')" class="addMsg" v-loading="scanContentLoading"
       :visible.sync="scanContentShow" width="950px" append-to-body :close-on-click-modal="false">
       <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData"
@@ -177,14 +281,16 @@
         <el-button @click="scanContentShow = false">{{ $t('dataAssetdiscover.result.cancel') }}</el-button>
       </div>
     </el-dialog>
+    <FileDirectoryTransfer ref="fileDirectoryTransferRef" @confirm="handleFileDirectoryConfirm" />
   </div>
 </template>
 
 <script>
 import TableSelector from './TableSelector.vue'
-import { getListTables, saveDatabaseAndTables, getDatabaseNameList } from "@/api/system/proxys";
+import FileDirectoryTransfer from '../../dataFrom/components/FileDirectoryTransfer.vue'
+import { saveDatabaseAndTables, getDatabaseNameList } from "@/api/system/proxys";
 import {
-  getFrameworks, checkSourceName
+  getFrameworks, checkSourceName, updateDatabaseAndTables, saveFileServer, updateFileServer
 } from "@/api/system/protectCategory"
 import {
   getDatabaseProxysScanItemById
@@ -192,7 +298,7 @@ import {
 
 export default {
   name: "DataAssetdiscoverResult",
-  components: { TableSelector, },
+  components: { TableSelector, FileDirectoryTransfer },
 
   props: {
     drawerData: {
@@ -375,8 +481,11 @@ export default {
       proxysList: [],
       // 弹出层标题
       title: "",
+      titleFileShareServer: '添加文件共享服务器',
       // 是否显示弹出层
       open: false,
+      fileShareServerOpen: false,
+      fileShareServerSubmitLoading: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -402,6 +511,7 @@ export default {
       ],
       // 表单参数
       form: {
+        id: null,
         projectName: '',
         projectId: null,
         sourceName: '',
@@ -413,9 +523,73 @@ export default {
         targetPort: '',
         targetUserName: '',
         targetUserPassword: '',
+        targetDatabase: [],
+        tables: {},
+        tabelCheckedName: '',
         scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '00:00',
+      },
+      fileShareServerForm: {
+        sourceName: '',
+        databaseType: 'SMB',
+        share: '',
+        targetDatabase: '',
+        businessName: '',
+        businessComment: '',
+        targetIp: '',
+        targetPort: '',
+        targetUserName: '',
+        targetUserPassword: '',
+        fileDataList: '',
+        scheduleType: '0',
+        scheduleInterval: '',
+        scheduleTime: '00:00',
+        proceedOrOverwrite: '0',
+        id: null,
+      },
+      fileShareServerRules: {
+        sourceName: [
+          { required: true, message: "数据源名称不能为空", trigger: "blur" }
+        ],
+        databaseType: [
+          { required: true, message: "请选择文件目录类型", trigger: "change" }
+        ],
+        businessName: [
+          { required: true, message: "来源业务系统不能为空", trigger: "blur" }
+        ],
+        businessComment: [
+          { required: true, message: "请输入来源业务系统描述", trigger: "blur" }
+        ],
+        targetIp: [
+          { required: true, message: "请输入主机IP地址", trigger: "blur" },
+          {
+            pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
+            message: "请输入有效的IP地址"
+          },
+        ],
+        targetPort: [
+          { required: true, message: "请输入端口号", trigger: "blur" },
+          {
+            pattern: /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
+            message: "请输入0~65535之间的端口号",
+          },
+        ],
+        targetUserName: [
+          { required: true, message: "请输入用户名", trigger: "blur" }
+        ],
+        targetUserPassword: [
+          { required: true, message: "请输入密码", trigger: "blur" }
+        ],
+        share: [
+          { required: true, message: this.$t('dataFrom.pleaseInputShare'), trigger: "blur" }
+        ],
+        targetDatabase: [
+          { required: true, message: "请输入起始路径", trigger: "blur" }
+        ],
+        fileDataList: [
+          { required: true, message: "请选择扫描内容", trigger: "change" }
+        ],
       },
       addForm: {},
       importDataLoading: false,
@@ -577,6 +751,76 @@ export default {
       this.form.tabelCheckedName = this.$t('dataAssetdiscover.tableSelector.selectedTablesWithCount', { count: this.$refs.scanContentTreeRef.selectedTableCount })
       this.scanContentShow = false
     },
+    getFileShareScanContentDisplay() {
+      if (!this.fileShareServerForm.fileDataList) return ''
+      try {
+        let parsed = this.fileShareServerForm.fileDataList
+        if (typeof parsed === 'string') {
+          parsed = JSON.parse(parsed)
+        }
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const firstItem = parsed[0].fileName || ''
+          if (parsed.length === 1) return firstItem
+          return `${firstItem} 等 ${parsed.length} 个项目`
+        }
+      } catch (e) {
+        return ''
+      }
+      return ''
+    },
+    openFileDirectoryDialog() {
+      const fieldsToValidate = ['targetIp', 'targetPort', 'targetUserName', 'targetUserPassword', this.fileShareServerForm.databaseType == 'SMB' ? 'share' : 'targetDatabase']
+      let validCount = 0
+      let hasError = false
+
+      this.$refs.fileShareServerForm.validateField(fieldsToValidate, (errorMessage) => {
+        if (errorMessage) {
+          hasError = true
+        }
+        validCount++
+
+        if (validCount === fieldsToValidate.length) {
+          if (hasError) {
+            return
+          }
+
+          let initialSelected = []
+          if (this.fileShareServerForm.fileDataList) {
+            try {
+              let parsed = this.fileShareServerForm.fileDataList
+              if (typeof parsed === 'string') {
+                parsed = JSON.parse(parsed)
+              }
+              initialSelected = Array.isArray(parsed) ? parsed : []
+            } catch (e) {
+              initialSelected = []
+            }
+          }
+
+          const requestParams = {
+            targetIp: this.fileShareServerForm.targetIp,
+            targetPort: this.fileShareServerForm.targetPort,
+            targetUserName: this.fileShareServerForm.targetUserName,
+            targetUserPassword: this.fileShareServerForm.targetUserPassword,
+            startingPath: this.fileShareServerForm.targetDatabase,
+            databaseType: this.fileShareServerForm.databaseType,
+            share: this.fileShareServerForm.share,
+          }
+
+          this.$refs.fileDirectoryTransferRef.open(initialSelected, requestParams)
+        }
+      })
+    },
+    handleFileDirectoryConfirm(selectedData) {
+      if (selectedData && selectedData.length > 0) {
+        this.fileShareServerForm.fileDataList = JSON.stringify(selectedData)
+      } else {
+        this.fileShareServerForm.fileDataList = ''
+      }
+      if (this.$refs.fileShareServerForm) {
+        this.$refs.fileShareServerForm.validateField('fileDataList')
+      }
+    },
     handleAdda() {
       this.loading = true
       let dataS = this.$refs.tableRef.selection
@@ -612,7 +856,7 @@ export default {
         let data = JSON.parse(JSON.stringify(this.form))
         delete data.projectName
         if (!Array.isArray(data.targetDatabase)) {
-          let str = data.targetDatabase
+          let str = data.targetDatabase || ''
           data.targetDatabase = str.trim() // 去除字符串首尾的空白字符
             .replace(/^"|"$/g, '') // 移除首尾的引号
             .split(',') // 按逗号分割字符串
@@ -659,6 +903,14 @@ export default {
       let params = {
         sourceName: this.form.sourceName,
         id: this.form.id || ''
+      }
+      let res = await checkSourceName(params)
+      return res.code == 200
+    },
+    async checkFileShareServerNameFn() {
+      let params = {
+        sourceName: this.fileShareServerForm.sourceName,
+        id: this.fileShareServerForm.id || ''
       }
       let res = await checkSourceName(params)
       return res.code == 200
@@ -730,30 +982,59 @@ export default {
       this.multiple = !selection.length
     },
     reset() {
-      // this.form = {
-      //   targetIp: null,
-      //   targetPort: null,
-      //   targetDatabase: [],
-      //   targetUserName: null,
-      //   targetUserPassword: null,
-      //   //  protocolPort: null,
-      //   projectId: null,
-      //   targetDatabase:[],
-      //   tables: {},
-      //   tabelCheckedName:'',
-      //   // proxyStatus: "0"
-      // };
+      this.form = {
+        id: null,
+        projectName: '',
+        projectId: null,
+        sourceName: '',
+        businessName: '',
+        examplesName: '',
+        databaseType: '',
+        connectionValue: '',
+        targetIp: '',
+        targetPort: '',
+        targetUserName: '',
+        targetUserPassword: '',
+        targetDatabase: [],
+        tables: {},
+        tabelCheckedName: '',
+        scheduleType: '0',
+        scheduleInterval: '',
+        scheduleTime: '00:00',
+      }
       this.isServiesNameRequired = false
       this.resetForm("form");
     },
     resultExdit(row) {
-      this.resetForm("form");
+      const isFileServer = (row.databaseType === null || row.databaseType === undefined || row.databaseType === '') && !!row.fileServerType
+      if (isFileServer) {
+        this.resetFileShareServerForm()
+        this.titleFileShareServer = '添加文件共享服务器'
+        this.fileShareServerForm.sourceName = row.sourceName || ''
+        this.fileShareServerForm.databaseType = row.fileServerType || 'SMB'
+        this.fileShareServerForm.businessName = row.businessName || ''
+        this.fileShareServerForm.businessComment = row.businessComment || ''
+        this.fileShareServerForm.targetIp = row.ip || row.targetIp || ''
+        this.fileShareServerForm.targetPort = row.port || row.targetPort || ''
+        this.fileShareServerForm.targetUserName = row.targetUserName || ''
+        this.fileShareServerForm.targetUserPassword = row.targetUserPassword || ''
+        this.fileShareServerForm.targetDatabase = row.targetDatabase || ''
+        this.fileShareServerForm.fileDataList = row.fileDataList ? (typeof row.fileDataList === 'string' ? row.fileDataList : JSON.stringify(row.fileDataList)) : ''
+        this.fileShareServerForm.scheduleType = row.databaseProxysTimer?.scheduleType || '0'
+        this.fileShareServerForm.scheduleInterval = row.databaseProxysTimer?.scheduleInterval || ''
+        this.fileShareServerForm.scheduleTime = row.databaseProxysTimer?.scheduleTime || '00:00'
+        this.fileShareServerForm.share = row.share || ''
+        this.fileShareServerOpen = true
+        return
+      }
+
+      this.reset()
       this.title = "添加数据库";
       this.form.databaseType = row.databaseType || ''
       this.form.sourceName = row.sourceName || ''
       this.form.projectName = row.projectName || ''
-      this.form.targetIp = row.ip || ''
-      this.form.targetPort = row.port || ''
+      this.form.targetIp = row.ip || row.targetIp || ''
+      this.form.targetPort = row.port || row.targetPort || ''
       this.form.connectionValue = row.connectionValue || ''
       this.form.connectionType = row.connectionType || ''
       this.form.examplesName = row.examplesName || ''
@@ -766,6 +1047,87 @@ export default {
       this.form.scheduleTime = row.databaseProxysTimer?.scheduleTime || '00:00'
       this.treeCheckedData = []
       this.open = true;
+    },
+    async submitFileShareServerForm() {
+      if (this.fileShareServerSubmitLoading) return
+
+      this.$refs["fileShareServerForm"].validate(async valid => {
+        if (valid) {
+          if (!await this.checkFileShareServerNameFn()) {
+            this.fileShareServerSubmitLoading = false
+            return
+          }
+
+          this.fileShareServerSubmitLoading = true
+
+          let fileDataListArray = []
+          if (this.fileShareServerForm.fileDataList) {
+            try {
+              let parsed = this.fileShareServerForm.fileDataList
+              if (typeof parsed === 'string') {
+                parsed = JSON.parse(parsed)
+              }
+              fileDataListArray = parsed
+            } catch (e) {
+              console.error(e)
+            }
+          }
+
+          const params = {
+            ...this.fileShareServerForm,
+            targetIpPort: this.fileShareServerForm.targetIp + ":" + this.fileShareServerForm.targetPort,
+            fileDataList: fileDataListArray,
+            sourceType: 'FILE_SERVER',
+          }
+
+          const request = this.fileShareServerForm.id ? updateFileServer({ ...params, id: this.fileShareServerForm.id }) : saveFileServer(params)
+          request.then(() => {
+            this.$modal.msgSuccess(this.fileShareServerForm.id ? "修改成功" : "新增成功")
+            this.fileShareServerOpen = false
+            this.fileShareServerSubmitLoading = false
+            this.resetFileShareServerForm()
+            this.getList()
+          }).catch(() => {
+            this.fileShareServerSubmitLoading = false
+          })
+        } else {
+          this.fileShareServerSubmitLoading = false
+          return false
+        }
+      })
+    },
+    fileShareServerCancel() {
+      this.fileShareServerOpen = false
+      this.resetFileShareServerForm()
+    },
+    fileShareServerScheduleTypeChange(val) {
+      if (val === '0') {
+        this.fileShareServerForm.scheduleInterval = ''
+        this.fileShareServerForm.scheduleTime = '00:00'
+      }
+    },
+    resetFileShareServerForm() {
+      this.fileShareServerForm = {
+        sourceName: '',
+        databaseType: 'SMB',
+        share: '',
+        targetDatabase: '',
+        businessName: '',
+        businessComment: '',
+        targetIp: '',
+        targetPort: '',
+        targetUserName: '',
+        targetUserPassword: '',
+        fileDataList: '',
+        scheduleType: '0',
+        scheduleInterval: '',
+        scheduleTime: '00:00',
+        proceedOrOverwrite: '0',
+        id: null,
+      }
+      if (this.$refs.fileShareServerForm) {
+        this.$refs.fileShareServerForm.resetFields()
+      }
     },
   }
 };
