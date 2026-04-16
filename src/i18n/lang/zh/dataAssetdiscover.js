@@ -59,7 +59,7 @@ export default {
     "fileServer": "文件服务器",
     "port": "端口",
     "databaseVersion": "数据库版本",
-    "fileServerType": "文件服务器类型",
+    "fileServerType": "文件服务器",
     "pleaseSelectFileServerType": "请选择文件服务器类型",
     "state": "状态",
     "completed": "已完成",
