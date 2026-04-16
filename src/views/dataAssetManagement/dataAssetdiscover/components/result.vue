@@ -4,22 +4,24 @@
       <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" label-position="left"
         v-show="showSearch" label-width="auto">
         <el-form-item :label="$t('dataAssetdiscover.result.host')" prop="ip">
-          <el-input v-model="queryParams.ip" @input="inputSearch" :placeholder="$t('dataAssetdiscover.result.pleaseInputIp')" clearable
-            @keyup.enter.native="handleQuery" />
+          <el-input v-model="queryParams.ip" @input="inputSearch"
+            :placeholder="$t('dataAssetdiscover.result.pleaseInputIp')" clearable @keyup.enter.native="handleQuery" />
         </el-form-item>
         <el-form-item :label="$t('dataAssetdiscover.result.databaseType')" prop="databaseType">
-          <el-select v-model="queryParams.databaseType" :placeholder="$t('dataAssetdiscover.result.selectDatabaseType')" @change="inputSearch" clearable>
+          <el-select v-model="queryParams.databaseType" :placeholder="$t('dataAssetdiscover.result.selectDatabaseType')"
+            @change="inputSearch" clearable>
             <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item :label="$t('dataAssetdiscover.result.fileServerType')" prop="fileServerType">
-        <el-select v-model="queryParams.fileServerType" :placeholder="$t('dataAssetdiscover.result.selectFileServerType')" @change="inputSearch" clearable>
-          <el-option v-for="item in fileServerTypeList" :key="item.id" :label="item.name" :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="" class="searchBtn">
+          <el-select v-model="queryParams.fileServerType"
+            :placeholder="$t('dataAssetdiscover.result.selectFileServerType')" @change="inputSearch" clearable>
+            <el-option v-for="item in fileServerTypeList" :key="item.id" :label="item.name" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="" class="searchBtn">
           <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
         </el-form-item>
       </el-form>
@@ -28,27 +30,33 @@
       <el-table class="tableBox" height="860px" v-loading="loading" :data="proxysList"
         @selection-change="handleSelectionChange" ref="tableRef">
         <el-table-column :label="$t('dataAssetdiscover.result.host')" align="center" prop="ip" show-overflow-tooltip />
-        <el-table-column :label="$t('dataAssetdiscover.result.port')" align="center" prop="port" show-overflow-tooltip />
-        <el-table-column :label="$t('dataAssetdiscover.result.databaseType')" align="center" prop="databaseType" show-overflow-tooltip>
+        <el-table-column :label="$t('dataAssetdiscover.result.port')" align="center" prop="port"
+          show-overflow-tooltip />
+        <el-table-column :label="$t('dataAssetdiscover.result.databaseType')" align="center" prop="databaseType"
+          show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ findDatabaseValueByValue(scope.row.databaseType) }}</span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('dataAssetdiscover.result.databaseVersion')" align="center" prop="databaseVersion" show-overflow-tooltip />
-        <el-table-column :label="$t('dataAssetdiscover.result.fileServerType')" align="center" prop="fileServerType" show-overflow-tooltip />
-      <el-table-column :label="$t('dataAssetdiscover.result.state')" align="center" min-width="250" prop="state">
+        <el-table-column :label="$t('dataAssetdiscover.result.databaseVersion')" align="center" prop="databaseVersion"
+          show-overflow-tooltip />
+        <el-table-column :label="$t('dataAssetdiscover.result.fileServerType')" align="center" prop="fileServerType"
+          show-overflow-tooltip />
+        <el-table-column :label="$t('dataAssetdiscover.result.state')" align="center" min-width="250" prop="state">
           <template slot-scope="scope">
             <div style="display: flex; align-items: center;justify-content: center;">
               <img style="display: block; width: 20px;margin-right: 10px;"
                 :src="imgSrc[scope.row.state ? scope.row.state : 'NONE']" alt="">
-              <span> {{ scope.row.state == 1 ? $t('dataAssetdiscover.result.completed') : $t('dataAssetdiscover.result.notCompleted') }}</span>
+              <span> {{ scope.row.state == 1 ? $t('dataAssetdiscover.result.completed') :
+                $t('dataAssetdiscover.result.notCompleted') }}</span>
             </div>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('dataAssetdiscover.result.operation')" align="center" class-name="small-padding fixed-width">
+        <el-table-column :label="$t('dataAssetdiscover.result.operation')" align="center"
+          class-name="small-padding fixed-width">
           <template slot-scope="scope">
-            <el-button size="mini" type="text" :disabled="scope.row.state == '1'"
-              @click="resultExdit(scope.row)">{{ $t('dataAssetdiscover.result.importDataSource') }}</el-button>
+            <el-button size="mini" type="text" :disabled="scope.row.state == '1'" @click="resultExdit(scope.row)">{{
+              $t('dataAssetdiscover.result.importDataSource') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -56,65 +64,78 @@
         :page-size.sync="queryParams.pageSize" @pagination="getList" />
     </el-card>
     <!-- 添加或修改数据库代理对话框 -->
-    <el-dialog class="addMsg" :title="title" :visible.sync="open" width="700px" append-to-body
+    <el-dialog class="addMsg unified-dialog" :title="title" :visible.sync="open" width="700px" append-to-body
       :close-on-click-modal="false">
       <el-form class="dialogForm" v-if="open" ref="form" :model="form" :rules="rules" label-width="auto"
         @submit.native.prevent label-position="top">
-        <el-form-item :label="$t('dataAssetdiscover.result.databaseType')" prop="databaseType" :rules="rules.databaseType">
-          <el-select v-model="form.databaseType" :placeholder="$t('dataAssetdiscover.result.selectDatabaseType')" @change="databaseTypeChange($event)">
+        <el-form-item :label="$t('dataAssetdiscover.result.databaseType')" prop="databaseType"
+          :rules="rules.databaseType">
+          <el-select v-model="form.databaseType" :placeholder="$t('dataAssetdiscover.result.selectDatabaseType')"
+            @change="databaseTypeChange($event)">
             <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item :label="$t('dataAssetdiscover.result.sourceName')" prop="sourceName" :rules="rules.sourceName">
-          <el-input v-model="form.sourceName" maxlength="50" :placeholder="$t('dataAssetdiscover.result.pleaseInputSourceName')" />
+          <el-input v-model="form.sourceName" maxlength="50"
+            :placeholder="$t('dataAssetdiscover.result.pleaseInputSourceName')" />
         </el-form-item>
-        <el-form-item :label="$t('dataAssetdiscover.result.classificationFramework')" prop="projectName" :rules="rules.projectName">
-          <el-select v-model="form.projectName" :placeholder="$t('dataAssetdiscover.result.pleaseSelectClassificationFramework')" clearable @change="projectChangeEdit($event)">
+        <el-form-item :label="$t('dataAssetdiscover.result.classificationFramework')" prop="projectName"
+          :rules="rules.projectName">
+          <el-select v-model="form.projectName"
+            :placeholder="$t('dataAssetdiscover.result.pleaseSelectClassificationFramework')" clearable
+            @change="projectChangeEdit($event)">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item :label="$t('dataAssetdiscover.result.businessSystem')" prop="businessName" :rules="rules.businessName">
-          <el-input v-model="form.businessName" maxlength="50" :placeholder="$t('dataAssetdiscover.result.pleaseInputBusinessSystem')" />
+        <el-form-item :label="$t('dataAssetdiscover.result.businessSystem')" prop="businessName"
+          :rules="rules.businessName">
+          <el-input v-model="form.businessName" maxlength="50"
+            :placeholder="$t('dataAssetdiscover.result.pleaseInputBusinessSystem')" />
           <div style="font-size: 12px; font-style: italic;">{{ $t('dataAssetdiscover.result.example') }}</div>
         </el-form-item>
         <el-row>
           <el-col :span="12">
             <el-form-item :label="$t('dataAssetdiscover.result.targetIp')" prop="targetIp" :rules="rules.targetIp">
-              <el-input v-model="form.targetIp" @input="targetIpRulesFn" :placeholder="$t('dataAssetdiscover.result.pleaseInputHostIP')" />
+              <el-input v-model="form.targetIp" :placeholder="$t('dataAssetdiscover.result.pleaseInputHostIP')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('dataAssetdiscover.result.portField')" prop="targetPort" :rules="rules.targetPort">
-              <el-input v-model="form.targetPort" :placeholder="$t('dataAssetdiscover.result.pleaseInputDatabasePort')" />
+              <el-input v-model="form.targetPort"
+                :placeholder="$t('dataAssetdiscover.result.pleaseInputDatabasePort')" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$t('dataAssetdiscover.result.user')" prop="targetUserName" :rules="rules.targetUserName">
-              <el-input v-model="form.targetUserName" :placeholder="$t('dataAssetdiscover.result.pleaseInputDatabaseUser')" />
+            <el-form-item :label="$t('dataAssetdiscover.result.user')" prop="targetUserName"
+              :rules="rules.targetUserName">
+              <el-input v-model="form.targetUserName"
+                :placeholder="$t('dataAssetdiscover.result.pleaseInputDatabaseUser')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$t('dataAssetdiscover.result.password')" prop="targetUserPassword" :rules="rules.targetUserPassword">
-              <el-input type="password" v-model="form.targetUserPassword" :show-password="passwordVisible"
-                maxlength="100" :placeholder="$t('dataAssetdiscover.result.pleaseInputDatabasePassword')" />
+            <el-form-item :label="$t('dataAssetdiscover.result.password')" prop="targetUserPassword"
+              :rules="rules.targetUserPassword">
+              <el-input type="password" v-model="form.targetUserPassword" maxlength="100"
+                :placeholder="$t('dataAssetdiscover.result.pleaseInputDatabasePassword')" />
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item v-show="form.databaseType == 'ORACLE'" :label="$t('dataAssetdiscover.result.serviceName')" prop="connectionValue"
-          :rules="rules.connectionValue()">
+        <el-form-item v-show="form.databaseType == 'ORACLE'" :label="$t('dataAssetdiscover.result.serviceName')"
+          prop="connectionValue" :rules="rules.connectionValue()">
           <el-input v-model="form.connectionValue" maxlength="50" @input="serviesNameInput(form.connectionValue)"
             :placeholder="$t('dataAssetdiscover.result.pleaseInput')" />
         </el-form-item>
         <el-form-item v-show="form.databaseType == 'ORACLE'" :label="$t('dataAssetdiscover.result.connectionMethod')">
           <el-radio v-model="connectionType" label="0">{{ $t('dataAssetdiscover.result.SID') }}</el-radio>
-          <el-radio v-model="connectionType" label="1">{{ $t('dataAssetdiscover.result.serviceNameConnection') }}</el-radio>
+          <el-radio v-model="connectionType" label="1">{{ $t('dataAssetdiscover.result.serviceNameConnection')
+          }}</el-radio>
         </el-form-item>
-        <el-form-item v-show="form.databaseType != 'ORACLE'" :label="$t('dataAssetdiscover.result.instanceName')" prop="examplesName"
-          :rules="rules.examplesName()">
+        <el-form-item v-show="form.databaseType != 'ORACLE'" :label="$t('dataAssetdiscover.result.instanceName')"
+          prop="examplesName" :rules="rules.examplesName()">
           <el-input v-model="form.examplesName" :placeholder="$t('dataAssetdiscover.result.pleaseInputInstanceName')" />
         </el-form-item>
         <el-form-item :label="$t('dataAssetdiscover.result.scanContent')" prop="tabelCheckedName">
@@ -134,23 +155,25 @@
             </el-option>
           </el-select>
           <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''" v-model="form.scheduleTime"
-            @input="handleTimeChange" value-format='HH:mm' format="HH:mm" :placeholder="$t('dataAssetdiscover.result.anyTimePoint')">
+            @input="handleTimeChange" value-format='HH:mm' format="HH:mm"
+            :placeholder="$t('dataAssetdiscover.result.anyTimePoint')">
           </el-time-picker>
         </el-form-item>
 
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <div slot="footer">
         <el-button type="primary" plain @click="submitForm">{{ $t('dataAssetdiscover.result.confirm') }}</el-button>
         <el-button @click="cancleFn">{{ $t('dataAssetdiscover.result.cancel') }}</el-button>
       </div>
     </el-dialog>
-    <el-dialog :title="$t('dataAssetdiscover.result.scanConfiguration')" class="addMsg" v-loading="scanContentLoading" :visible.sync="scanContentShow" width="950px"
-      append-to-body :close-on-click-modal="false">
+    <el-dialog :title="$t('dataAssetdiscover.result.scanConfiguration')" class="addMsg" v-loading="scanContentLoading"
+      :visible.sync="scanContentShow" width="950px" append-to-body :close-on-click-modal="false">
       <TableSelector v-if="scanContentShow" :treeCheckedData="treeCheckedData"
         :scanContentTreeData="scanContentTreeData" :databaseTableNameParama="databaseTableNameParama"
         ref="scanContentTreeRef" />
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="scanContentSubmitFn">{{ $t('dataAssetdiscover.result.confirm') }}</el-button>
+      <div slot="footer">
+        <el-button type="primary" plain @click="scanContentSubmitFn">{{ $t('dataAssetdiscover.result.confirm')
+        }}</el-button>
         <el-button @click="scanContentShow = false">{{ $t('dataAssetdiscover.result.cancel') }}</el-button>
       </div>
     </el-dialog>
@@ -751,6 +774,7 @@ export default {
 .app-container {
   height: calc(100vh - 70px);
 }
+
 .searchCard {
   border-radius: 10px;
   margin-bottom: 30px;
@@ -782,20 +806,49 @@ export default {
   border-bottom: 1px solid #e2e8f0;
 }
 
-addMsg ::v-deep.el-dialog__title {
+.addMsg ::v-deep .el-dialog__title {
   font-weight: bold;
 }
 
-.addMsg ::v-deep.el-dialog__body {
+.addMsg ::v-deep .el-dialog__body {
   padding: 30px;
 }
 
-.addMsg ::v-deep.el-form {
+.addMsg ::v-deep .el-form {
   margin-bottom: 0;
 }
 
-.addSelectClass /deep/ .el-select {
-  width: calc(100%);
+.dialogForm .el-form-item {
+  width: 100%;
+}
+
+.dialogForm .el-form-item /deep/ .el-form-item__content {
+  width: 100%;
+  padding-right: 15px;
+}
+
+.dialogForm .el-form-item /deep/ .el-select {
+  width: 100%;
+}
+
+.unified-dialog ::v-deep .el-dialog {
+  width: 860px !important;
+  max-width: 92vw;
+  border-radius: 10px;
+}
+
+.unified-dialog ::v-deep .el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.unified-dialog ::v-deep .el-dialog__body {
+  max-height: calc(70vh - 120px);
+  overflow: auto;
+  padding: 20px 24px;
+}
+
+.unified-dialog ::v-deep .el-dialog__footer {
+  border-top: 1px solid #e6e6e6;
 }
 
 .spanClass {
@@ -911,10 +964,6 @@ addMsg ::v-deep.el-dialog__title {
 
 .uploadClass {
   width: 20% !important;
-}
-
-.addSelectClass /deep/ .el-select {
-  width: calc(100%);
 }
 
 .tableCla {
