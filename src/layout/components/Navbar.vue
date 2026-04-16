@@ -74,18 +74,18 @@
             <i class="el-icon-s-tools settings-icon"></i>
           </div>
           <el-dropdown-menu slot="dropdown" class="settings-dropdown-menu">
-            <el-dropdown-item class="settings-item" @click.native="openSettings">
+            <!-- <el-dropdown-item class="settings-item" @click.native="openSettings">
               <i class="el-icon-s-tools settings-item-icon"></i>
               <span>{{ $t('navbar.settings') }}</span>
-            </el-dropdown-item>
+            </el-dropdown-item> -->
             <el-dropdown-item class="settings-item" @click.native="handleSetLanguage(language === 'zh' ? 'en' : 'zh')">
               <i class="el-icon-s-help settings-item-icon"></i>
               <span>语言 / Language</span>
             </el-dropdown-item>
-            <el-dropdown-item class="settings-item settings-item-danger" divided>
+            <!-- <el-dropdown-item class="settings-item settings-item-danger" divided>
               <i class="el-icon-refresh-left settings-item-icon danger"></i>
               <span>{{ $t('navbar.restore') }}</span>
-            </el-dropdown-item>
+            </el-dropdown-item> -->
           </el-dropdown-menu>
         </el-dropdown>
       </template>
