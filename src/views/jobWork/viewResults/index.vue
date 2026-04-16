@@ -157,7 +157,7 @@
           <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
             item.label }}</el-checkbox>
         </el-checkbox-group>
-        <el-button slot="reference">列设置</el-button>
+        <el-button size="medium" slot="reference">列设置</el-button>
       </el-popover>
       <el-button plain size="medium" @click="toggleFilters" style="float: inline-end; margin-right: 10px;">{{
         showMoreFilters ? '收起筛选' : '展开筛选' }}</el-button>
@@ -731,11 +731,12 @@ export default {
     this.getProtectCategory();
     this.getPiiList();
     // 设置默认展示的列
-    if (!this.isFileSource) {
-      this.checkedColumn = this.setList.filter(item =>
-        ['所属表', '表注释', '分类', '安全分级'].includes(item.label)
-      );
-    }
+    const defaultColumnLabels = this.isFileSource
+      ? ['分类', '安全分级']
+      : ['所属表', '表注释', '分类', '安全分级'];
+    this.checkedColumn = this.setList.filter(item =>
+      defaultColumnLabels.includes(item.label)
+    );
     this.checkAll = false;
     this.getList();
     this.getListTableByProject();
@@ -746,12 +747,14 @@ export default {
       return this.queryParams.sourceType === 'FILE_CATALOGUE' || this.queryParams.sourceType === 'FILE_SERVER';
     },
     filteredCheckedColumn() {
+      const checkedLabels = new Set(this.checkedColumn.map(item => item.label));
       if (this.isFileSource) {
-        return this.checkedColumn.filter(item =>
-          !['所属表', '所属库', '样本特征', '字段类型', 'AI字段注释', '表注释', 'AI表注释'].includes(item.label)
+        const hiddenLabels = ['所属表', '所属库', '样本特征', '字段类型', 'AI字段注释', '表注释', 'AI表注释'];
+        return this.setList.filter(item =>
+          checkedLabels.has(item.label) && !hiddenLabels.includes(item.label)
         );
       }
-      return this.checkedColumn;
+      return this.setList.filter(item => checkedLabels.has(item.label));
     }
   },
   mounted() {
