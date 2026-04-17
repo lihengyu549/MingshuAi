@@ -935,12 +935,20 @@ export default {
             if (!id) return;
             getAnalyseLog({ id }).then(res => {
                 if (res.code === 200 && res.data) {
-                    this.analysisLogs = res.data;
+                    this.analysisLogs = this.formatAnalysisLogs(res.data);
                 }
             }).catch(() => {
                 this.$message.error('获取分析日志失败，请稀后重试');
             })
         }, 500),
+        formatAnalysisLogs(logs) {
+            if (!this.isFileServerTask) {
+                return logs || {};
+            }
+            return {
+                classification: logs && logs.classification ? logs.classification : ''
+            };
+        },
         handleRefresh() {
             this.getAnalysisLogs();
         },
