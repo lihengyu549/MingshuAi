@@ -421,8 +421,8 @@
     <!-- 新增文件共享服务器表单对话框 -->
     <el-dialog class="addMsg unified-dialog" :title="titleFileShareServer" :visible.sync="fileShareServerOpen"
       append-to-body :close-on-click-modal="false" width="700px">
-      <el-form class="dialogForm" ref="fileShareServerForm" :model="fileShareServerForm" :rules="fileShareServerRules"
-        label-width="auto" @submit.native.prevent label-position="top">
+      <el-form class="dialogForm" ref="fileShareServerForm" :model="fileShareServerForm"
+        :rules="computedFileShareServerRules" label-width="auto" @submit.native.prevent label-position="top">
 
 
         <el-row>
@@ -485,8 +485,7 @@
           <el-input v-model="fileShareServerForm.share" :placeholder="$t('dataFrom.shareExample')" />
         </el-form-item>
 
-        <el-form-item :label="$t('dataFrom.startingPath')"
-          :prop="fileShareServerForm.databaseType == 'SMB' ? '' : 'targetDatabase'">
+        <el-form-item :label="$t('dataFrom.startingPath')" prop="targetDatabase">
           <el-input v-model="fileShareServerForm.targetDatabase" placeholder="例如：/data/foldor/a" />
         </el-form-item>
 
@@ -954,6 +953,19 @@ export default {
   computed: {
     filteredCheckedColumn() {
       return this.checkedColumn;
+    },
+    // 动态计算 fileShareServerRules，使 targetDatabase 的 required 随 databaseType 变化
+    computedFileShareServerRules() {
+      return {
+        ...this.fileShareServerRules,
+        targetDatabase: [
+          {
+            required: this.fileShareServerForm.databaseType !== 'SMB',
+            message: '请输入起始路径',
+            trigger: 'blur'
+          }
+        ]
+      };
     }
   },
   created() {
@@ -1014,53 +1026,80 @@ export default {
     },
     // 打开文件目录选择弹窗
     openFileDirectoryDialog() {
-      // 在打开弹窗前先校验这五个字段是否已填
-      const fieldsToValidate = ['targetIp', 'targetPort', 'targetUserName', 'targetUserPassword', this.fileShareServerForm.databaseType == 'SMB' ? 'share' : 'targetDatabase'];
-      let validCount = 0;
-      let hasError = false;
+      const form = this.fileShareServerForm;
+      const isSMB = form.databaseType === 'SMB';
 
-      this.$refs.fileShareServerForm.validateField(fieldsToValidate, (errorMessage) => {
-        if (errorMessage) {
-          hasError = true;
-        }
-        validCount++;
+      // 手动校验必填字段，避免 validateField 因动态 prop 导致回调断链
+      const ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+      const portPattern = /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/;
 
-        // 当所有字段都校验完毕后，再决定是否打开弹窗
-        if (validCount === fieldsToValidate.length) {
-          if (hasError) {
-            return;
+      if (!form.targetIp) {
+        this.$message.warning('请输入主机IP地址');
+        this.$refs.fileShareServerForm.validateField('targetIp');
+        return;
+      }
+      if (!ipPattern.test(form.targetIp)) {
+        this.$message.warning('请输入有效的IP地址');
+        this.$refs.fileShareServerForm.validateField('targetIp');
+        return;
+      }
+      if (!form.targetPort) {
+        this.$message.warning('请输入端口号');
+        this.$refs.fileShareServerForm.validateField('targetPort');
+        return;
+      }
+      if (!portPattern.test(String(form.targetPort))) {
+        this.$message.warning('请输入0~65535之间的端口号');
+        this.$refs.fileShareServerForm.validateField('targetPort');
+        return;
+      }
+      if (!form.targetUserName) {
+        this.$message.warning('请输入用户名');
+        this.$refs.fileShareServerForm.validateField('targetUserName');
+        return;
+      }
+      if (!form.targetUserPassword) {
+        this.$message.warning('请输入密码');
+        this.$refs.fileShareServerForm.validateField('targetUserPassword');
+        return;
+      }
+      if (isSMB && !form.share) {
+        this.$message.warning(this.$t('dataFrom.pleaseInputShare') || '请输入共享目录');
+        this.$refs.fileShareServerForm.validateField('share');
+        return;
+      }
+      if (!isSMB && !form.targetDatabase) {
+        this.$message.warning('请输入起始路径');
+        this.$refs.fileShareServerForm.validateField('targetDatabase');
+        return;
+      }
+
+      // 校验通过，解析已有的扫描内容作为初始选中值
+      let initialSelected = [];
+      if (form.fileDataList) {
+        try {
+          let parsed = form.fileDataList;
+          if (typeof parsed === 'string') {
+            parsed = JSON.parse(parsed);
           }
-
-          let initialSelected = [];
-          if (this.fileShareServerForm.fileDataList) {
-            try {
-              let parsed = this.fileShareServerForm.fileDataList;
-              if (typeof parsed === 'string') {
-                parsed = JSON.parse(parsed);
-              }
-              initialSelected = parsed;
-              if (!Array.isArray(initialSelected)) {
-                initialSelected = [];
-              }
-            } catch (e) {
-              initialSelected = [];
-            }
-          }
-
-          // 构建请求所需的参数
-          const requestParams = {
-            targetIp: this.fileShareServerForm.targetIp,
-            targetPort: this.fileShareServerForm.targetPort,
-            targetUserName: this.fileShareServerForm.targetUserName,
-            targetUserPassword: this.fileShareServerForm.targetUserPassword,
-            startingPath: this.fileShareServerForm.targetDatabase,
-            databaseType: this.fileShareServerForm.databaseType,
-            share: this.fileShareServerForm.share,
-          };
-
-          this.$refs.fileDirectoryTransferRef.open(initialSelected, requestParams);
+          initialSelected = Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          initialSelected = [];
         }
-      });
+      }
+
+      // 构建请求所需的参数
+      const requestParams = {
+        targetIp: form.targetIp,
+        targetPort: form.targetPort,
+        targetUserName: form.targetUserName,
+        targetUserPassword: form.targetUserPassword,
+        startingPath: form.targetDatabase,
+        databaseType: form.databaseType,
+        share: form.share,
+      };
+
+      this.$refs.fileDirectoryTransferRef.open(initialSelected, requestParams);
     },
     // 处理文件目录选择确认
     handleFileDirectoryConfirm(selectedData) {
@@ -2193,6 +2232,7 @@ export default {
   align-items: center;
   justify-content: space-between;
 }
+
 .data-score-progress /deep/ .el-progress__text {
   font-size: 12px !important;
   font-weight: 600;
