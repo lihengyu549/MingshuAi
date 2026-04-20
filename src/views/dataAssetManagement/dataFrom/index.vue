@@ -475,7 +475,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('dataFrom.password')" prop="targetUserPassword">
-              <el-input type="password" v-model="fileShareServerForm.targetUserPassword" :show-password="true"
+              <el-input type="password" v-model="fileShareServerForm.targetUserPassword" :show-password="passwordVisible"
                 maxlength="100" :placeholder="$t('dataFrom.pleaseInputPassword')" />
             </el-form-item>
           </el-col>
