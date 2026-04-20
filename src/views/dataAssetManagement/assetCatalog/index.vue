@@ -429,14 +429,14 @@
             <div class="file-detail-label">文件绝对路径</div>
             <div class="file-detail-value">{{ fileDetailData.filePath }}</div>
           </div>
-          <div class="file-detail-item">
+          <!-- <div class="file-detail-item">
             <div class="file-detail-label">MD5</div>
             <div class="file-detail-value">{{ fileDetailData.md5 }}</div>
           </div>
           <div class="file-detail-item">
             <div class="file-detail-label">{{ currentFileTimeLabel }}</div>
             <div class="file-detail-value">{{ fileDetailData.createTime }}</div>
-          </div>
+          </div> -->
         </div>
       </template>
     </Drawer>
