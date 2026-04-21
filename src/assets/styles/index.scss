@@ -252,3 +252,10 @@ aside {
   border-radius: 10px;
   border: 1px solid #e2e8f0;
 }
+
+//.el-form-item__label 全局样式
+.el-form-item__label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -28,5 +28,12 @@ export default {
   no: '否',
   loading: '加载中...',
   type: '类型',
-  required: '必填'
+  required: '必填',
+  close: '关闭',
+  selectAll: '全选',
+  upload: '上传',
+  reupload: '重新上传',
+  saveAsDefault: '保存为默认配置',
+  restoreInitial: '恢复初始',
+  backToParent: '返回上级'
 }

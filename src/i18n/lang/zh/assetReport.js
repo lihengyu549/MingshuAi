@@ -1,0 +1,22 @@
+export default {
+  title: '安全合规报告',
+  standardBelong: '所属标准',
+  exportReport: '导出报告',
+  dataSourceCount: '数据源总数',
+  businessSystemCount: '业务系统数量',
+  fieldCount: '字段总数',
+  fileCount: '文件总数',
+  assetDistribution: '数据资产分布',
+  growthTrend: '数据增长趋势',
+  classificationDistribution: '数据分类分布',
+  dataLevelDistribution: '数据分级分布',
+  businessSystemLevelHeatmap: '业务系统分级热力图',
+  businessSystemCategoryProportion: '业务系统分类占比',
+  fieldQuantity: '字段数量',
+  fileQuantity: '文件数量',
+  cumulativeFieldCount: '累计字段数量',
+  cumulativeFileCount: '累计文件数量',
+  quantity: '数量',
+  dataVolume: '数据量',
+  dataLevel: '数据分级'
+}

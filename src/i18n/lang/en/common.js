@@ -28,5 +28,12 @@ export default {
   no: 'No',
   loading: 'Loading...',
   type: 'Type',
-  required: 'Required'
+  required: 'Required',
+  close: 'Close',
+  selectAll: 'Select All',
+  upload: 'Upload',
+  reupload: 'Re-upload',
+  saveAsDefault: 'Save as default',
+  restoreInitial: 'Restore initial',
+  backToParent: 'Back'
 }

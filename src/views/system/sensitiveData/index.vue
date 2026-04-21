@@ -1,88 +1,89 @@
 <template>
-    <div v-loading="loading" element-loading-text="拼命加载中..." class="sensitive-sensitive-data-risk-assessment">
-        <!-- 页面标题与操作区 -->
+    <div v-loading="loading" :element-loading-text="$t('sensitiveData.loadingText')"
+        class="sensitive-sensitive-data-risk-assessment">
         <div class="page-header">
-            <h2><b>敏感数据安全风险评估报告</b></h2>
+            <h2><b>{{ $t('sensitiveData.title') }}</b></h2>
             <div class="header-operations">
-                <!-- 所属标准下拉框 -->
-                <label class="form-label">所属标准</label>
-                <el-select v-model="categoryId" placeholder="所属标准" class="standard-select" size="small"
-                    @change="handleCategoryChange">
+                <label class="form-label">{{ $t('sensitiveData.standardBelong') }}</label>
+                <el-select v-model="categoryId" :placeholder="$t('sensitiveData.standardBelong')"
+                    class="standard-select" size="small" @change="handleCategoryChange">
                     <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
                     </el-option>
                 </el-select>
 
-                <!-- 导出清单按钮 -->
                 <el-button icon="el-icon-download" @click="handleExport" size="small" class="export-btn">
-                    导出清单
+                    {{ $t('sensitiveData.exportList') }}
                 </el-button>
             </div>
         </div>
 
-        <!-- 卡片容器 -->
         <div class="card-container">
-            <!-- 卡片1：数据源列表 -->
             <el-card class="assessment-card data-source-card">
                 <div slot="header" class="card-header">
-                    <h3><svg-icon icon-class="databaseSolid" style="margin-right: 5px;" />数据源列表</h3>
-                    <span class="card-header-span">共 {{ dataSourceList.length }} 个数据源，点击查看详细数据分类和风险情况</span>
+                    <h3><svg-icon icon-class="databaseSolid" style="margin-right: 5px;" />{{
+                        $t('sensitiveData.dataSourceList') }}</h3>
+                    <span class="card-header-span">{{ $t('sensitiveData.totalDataSources', {
+                        count:
+                        dataSourceList.length }) }}</span>
                 </div>
 
-                <!-- 数据源表格 -->
                 <el-table :data="dataSourceList" stripe style="width: 100%;" size="small">
                     <template slot="empty">
-                        <el-empty description="暂无数据"></el-empty>
+                        <el-empty :description="$t('noData')"></el-empty>
                     </template>
-                    <el-table-column prop="sourceName" align="center" label="数据源名称" width="200"></el-table-column>
-                    <el-table-column prop="businessName" align="center" label="业务系统名称"
+                    <el-table-column prop="sourceName" align="center" :label="$t('sensitiveData.dataSourceName')"
+                        width="200"></el-table-column>
+                    <el-table-column prop="businessName" align="center" :label="$t('sensitiveData.businessSystemName')"
                         min-width="200"></el-table-column>
-                    <!-- <el-table-column prop="categoryCount" align="center" label="敏感分类数" width="100"></el-table-column> -->
-                    <el-table-column align="center" label="风险统计" min-width="200">
+                    <el-table-column align="center" :label="$t('sensitiveData.riskStatistics')" min-width="200">
                         <template slot-scope="scope">
                             <div class="risk-stats">
-                                <el-tag :style="getRiskStyle(Number(item.securityLevel))" v-for="(item, index) in scope.row.riskStatistics" :key="index"
+                                <el-tag :style="getRiskStyle(Number(item.securityLevel))"
+                                    v-for="(item, index) in scope.row.riskStatistics" :key="index"
                                     class="risk-level-tag">
                                     {{ item.securityLevelName + ' * ' + item.num }}
                                 </el-tag>
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column align="center" label="操作" width="100">
+                    <el-table-column align="center" :label="$t('operation')" width="100">
                         <template slot-scope="scope">
                             <el-button type="text" @click.stop="handleViewDetails(scope.row)" class="view-details-btn"
                                 size="small">
                                 <i class="el-icon-view"></i>
-                                查看详情
+                                {{ $t('sensitiveData.viewDetails') }}
                             </el-button>
                         </template>
                     </el-table-column>
                 </el-table>
             </el-card>
 
-            <!-- 卡片2：敏感数据安全风险清单（包含所有敏感信息） -->
             <el-card class="assessment-card risk-list-card" v-if="showRiskDetails">
                 <div slot="header" class="card-header list-header">
                     <div>
-                        <h3><svg-icon icon-class="tag" style="margin-right: 5px;" />敏感数据安全风险清单</h3>
-                        <span class="card-header-span">数据源：{{ currentDataSource.sourceName }}</span>
+                        <h3><svg-icon icon-class="tag" style="margin-right: 5px;" />{{ $t('sensitiveData.riskList') }}
+                        </h3>
+                        <span class="card-header-span">{{ $t('sensitiveData.dataSourcePrefix', {
+                            name:
+                            currentDataSource.sourceName
+                            }) }}</span>
                     </div>
                     <el-button type="text" icon="el-icon-close" @click="showRiskDetails = false" class="close-btn"
-                        size="mini">关闭详情</el-button>
+                        size="mini">{{
+                            $t('sensitiveData.closeDetails') }}</el-button>
                 </div>
 
-                <!-- 筛选和搜索区域 -->
                 <div class="filter-section">
                     <div class="filter-header">
-                        <span class="filter-label">筛选：</span>
-                        <el-input placeholder="搜索数据分类..." v-model="searchKeyword" prefix-icon="el-icon-search"
-                            class="category-search" @input="handleSearch" size="small" clearable></el-input>
+                        <span class="filter-label">{{ $t('sensitiveData.filter') }}：</span>
+                        <el-input :placeholder="$t('sensitiveData.searchDataCategory')" v-model="searchKeyword"
+                            prefix-icon="el-icon-search" class="category-search" @input="handleSearch" size="small"
+                            clearable></el-input>
                     </div>
 
-                    <!-- 筛选标签容器 -->
                     <div class="filter-tags-container">
-                        <!-- 风险等级筛选行 -->
                         <div class="filter-group">
-                            <span class="filter-group-label">风险等级：</span>
+                            <span class="filter-group-label">{{ $t('sensitiveData.riskLevel') }}：</span>
                             <div class="filter-tags level-filter">
                                 <el-tag v-for="tag in levelFilterTags" :key="tag.value"
                                     :class="{ 'active-tag': levelFilterValue === tag.value }"
@@ -92,9 +93,8 @@
                             </div>
                         </div>
 
-                        <!-- 防护状态筛选行 -->
                         <div class="filter-group">
-                            <span class="filter-group-label">防护状态：</span>
+                            <span class="filter-group-label">{{ $t('sensitiveData.protectionStatus') }}：</span>
                             <div class="filter-tags status-filter">
                                 <el-tag v-for="tag in statusFilterTags" :key="tag.value"
                                     :class="{ 'active-tag': statusFilterValue === tag.value }"
@@ -106,41 +106,39 @@
                     </div>
                 </div>
 
-                <!-- 敏感分类列表（包含所有分类，不再单独排除手机号信息） -->
                 <div class="sensitive-categories">
                     <div class="category-item" v-for="category in filteredCategories" :key="category.id">
                         <div class="category-header">
-                            <!-- 修改分类标题布局 -->
                             <div class="category-title-row">
                                 <h2 class="full-path">{{ category.attachDataName }}</h2>
                             </div>
                             <div class="category-tags-row">
-                                <el-tag class="security-level"
-                                    :style="getRiskStyle(category.securityLevel)" size="mini">
+                                <el-tag class="security-level" :style="getRiskStyle(category.securityLevel)"
+                                    size="mini">
                                     {{ category.securityLevelName }}
                                 </el-tag>
                                 <el-tag class="protection-status"
                                     :type="category.protectionMeasure === '1' ? 'success' : 'warning'" size="mini">
                                     <i
                                         :class="category.protectionMeasure === '1' ? 'el-icon-success' : 'el-icon-warning'"></i>{{
-                                            category.protectionMeasure === '1' ? '已防护' : '未防护' }}
+                                            getProtectionStatusText(category.protectionMeasure) }}
                                 </el-tag>
                             </div>
                         </div>
 
                         <div class="category-description">
-                            <p><strong>分类描述：</strong></p>
+                            <p><strong>{{ $t('sensitiveData.categoryDescription') }}：</strong></p>
                             <span>{{ category.attachDataDescribe }}</span>
                         </div>
 
                         <div class="legal-basis">
-                            <p><strong>法规依据：</strong></p>
+                            <p><strong>{{ $t('sensitiveData.legalBasis') }}：</strong></p>
                             <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.regulatoryBasis
-                            }}</span>
+                                }}</span>
                         </div>
 
                         <div class="database-filter">
-                            <p><strong>涉及数据库：</strong></p>
+                            <p><strong>{{ $t('sensitiveData.relatedDatabases') }}：</strong></p>
                             <el-tag v-for="(db, index) in category.databaseNameList" :key="index"
                                 @click="handleDatabaseFilter(db)"
                                 :class="['database-tag', { 'active-tag': activeDatabaseId === db }]" size="medium">
@@ -150,40 +148,42 @@
 
                         <el-table :data="category.fields" style="width: 100%; margin-top: 10px;" size="mini">
                             <template slot="empty">
-                                <el-empty description="暂无数据"></el-empty>
+                                <el-empty :description="$t('noData')"></el-empty>
                             </template>
-                            <el-table-column prop="tableName" align="center" label="数据表名称"
+                            <el-table-column prop="tableName" align="center" :label="$t('sensitiveData.dataTableName')"
                                 min-width="220"></el-table-column>
-                            <el-table-column prop="fieldRemark" align="center" label="字段注释"
+                            <el-table-column prop="fieldRemark" align="center" :label="$t('sensitiveData.fieldRemark')"
                                 show-overflow-tooltip></el-table-column>
-                            <el-table-column prop="dataValue" align="center" label="样本值" width="180"></el-table-column>
-                            <el-table-column prop="riskDisposeSuggest" label="风险处置建议" width="160">
+                            <el-table-column prop="dataValue" align="center" :label="$t('sensitiveData.sampleValue')"
+                                width="180"></el-table-column>
+                            <el-table-column prop="riskDisposeSuggest"
+                                :label="$t('sensitiveData.riskDisposeSuggestion')" width="160">
                                 <template slot="header">
-                                    <div style="text-align: center;">建议防护措施</div>
+                                    <div style="text-align: center;">{{ $t('sensitiveData.suggestedProtection') }}</div>
                                 </template>
                                 <template slot-scope="scope">
                                     <div v-if="scope.row.riskDisposeSuggest.length > 0">
                                         <el-tag v-for="suggestion in scope.row.riskDisposeSuggest" :key="suggestion"
                                             class="risk-tag"
-                                            :class="{ 'tm-tag': suggestion === '脱敏', 'jm-tag': suggestion === '加密' }"
+                                            :class="{ 'tm-tag': isDesensitizeSuggestion(suggestion), 'jm-tag': isEncryptSuggestion(suggestion) }"
                                             size="mini">
-                                            {{ suggestion }}
+                                            {{ getSuggestionLabel(suggestion) }}
                                         </el-tag>
                                     </div>
                                 </template>
                             </el-table-column>
-                            <!-- 是否脱敏列 - 下拉框 -->
-                            <el-table-column prop="isMask" label="是否脱敏" align="center" width="100">
+                            <el-table-column prop="isMask" :label="$t('sensitiveData.isDesensitized')" align="center"
+                                width="100">
                                 <template slot-scope="scope">
                                     <el-select v-model="scope.row.isMask" size="mini"
                                         @change="handleDesensitizeChange(scope.row, scope.$index)" style="width: 100%;">
-                                        <el-option label="是" value="1"></el-option>
-                                        <el-option label="否" value="0"></el-option>
+                                        <el-option :label="$t('yes')" value="1"></el-option>
+                                        <el-option :label="$t('no')" value="0"></el-option>
                                     </el-select>
                                 </template>
                             </el-table-column>
-                            <!-- 证明材料列 - 上传按钮 -->
-                            <el-table-column prop="proofMaterial" label="证明材料" align="center" width="200">
+                            <el-table-column prop="proofMaterial" :label="$t('sensitiveData.proofMaterial')"
+                                align="center" width="200">
                                 <template slot-scope="scope">
                                     <div class="proof-upload-container">
                                         <el-upload class="upload-btn" action="#" :auto-upload="false"
@@ -191,11 +191,10 @@
                                             :on-change="handleFileUpload(scope.row, scope.$index)"
                                             :show-file-list="false">
                                             <el-button size="mini" icon="el-icon-upload" type="text">
-                                                {{ scope.row.proofUrl ? '重新上传' : '上传' }}
+                                                {{ scope.row.proofUrl ? $t('reupload') : $t('upload') }}
                                             </el-button>
                                         </el-upload>
 
-                                        <!-- 新增缩略图展示区域 -->
                                         <el-image v-if="getProofUrl(scope.row.fieldId)"
                                             :src="getProofUrl(scope.row.fieldId)"
                                             :preview-src-list="[getProofUrl(scope.row.fieldId)]" class="proof-thumbnail"
@@ -203,18 +202,18 @@
                                     </div>
                                 </template>
                             </el-table-column>
-                            <el-table-column prop="isEncrypt" label="是否加密" align="center" width="100">
+                            <el-table-column prop="isEncrypt" :label="$t('sensitiveData.isEncrypted')" align="center"
+                                width="100">
                                 <template slot-scope="scope">
                                     <div style="display: flex; align-items: center; justify-content: center;">
                                         <i :class="scope.row.isEncrypt == '1' ? 'el-icon-success' : 'el-icon-error'"
                                             style="margin-right: 5px;" />
-                                        {{ scope.row.isEncrypt == '1' ? '是' : '否' }}
+                                        {{ scope.row.isEncrypt == '1' ? $t('yes') : $t('no') }}
                                     </div>
                                 </template>
                             </el-table-column>
                         </el-table>
                     </div>
-                    <!-- 分页 -->
                     <Pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
                         :current-page="pagination.currentPage" :page-sizes="[5, 10, 15, 20]"
                         :page-size="pagination.pageSize" layout="total, sizes, prev, pager, next, jumper"
@@ -282,23 +281,8 @@ export default {
     data() {
         return {
             dataSourceList: [],
-
-            // 风险等级筛选标签（移除"全部"）
-            levelFilterTags: [
-                { label: '5级-核心数据', value: 'level5' },
-                { label: '4级-重要数据', value: 'level4' },
-                { label: '3级-机密数据', value: 'level3' },
-                { label: '2级-内部公开', value: 'level2' }
-            ],
-            // 防护状态筛选标签
-            statusFilterTags: [
-                { label: '未防护项', value: 'unprotected' },
-                { label: '已防护项', value: 'protected' }
-            ],
-
             categoryId: 0,
             treeOptions: [],
-            // 单选筛选值存储
             levelFilterValue: '',
             statusFilterValue: '',
             searchKeyword: '',
@@ -310,7 +294,6 @@ export default {
             datasourceId: null,
             proofUrlList: [],
             loading: false,
-            // 分页参数
             pagination: {
                 currentPage: 1,
                 pageSize: 5,
@@ -319,7 +302,20 @@ export default {
         };
     },
     computed: {
-
+        levelFilterTags() {
+            return [
+                { label: this.$t('sensitiveData.levelTags.level5'), value: 'level5' },
+                { label: this.$t('sensitiveData.levelTags.level4'), value: 'level4' },
+                { label: this.$t('sensitiveData.levelTags.level3'), value: 'level3' },
+                { label: this.$t('sensitiveData.levelTags.level2'), value: 'level2' }
+            ]
+        },
+        statusFilterTags() {
+            return [
+                { label: this.$t('sensitiveData.unprotectedItem'), value: 'unprotected' },
+                { label: this.$t('sensitiveData.protectedItem'), value: 'protected' }
+            ]
+        }
     },
     created() {
         this.gettreeOptionsList()
@@ -327,16 +323,27 @@ export default {
     mounted() {
     },
     methods: {
-        // 获取图片URL的方法
         getProofUrl(fieldId) {
             const item = this.proofUrlList.find(item => item.fieldId === fieldId);
             return item ? item.url : null;
         },
-        // 图片加载失败处理
         handleImageError(fieldId) {
-            this.$message.error('图片加载失败');
-            // 可以在这里移除无效的URL记录
+            this.$message.error(this.$t('sensitiveData.imageLoadFailed'));
             this.proofUrlList = this.proofUrlList.filter(item => item.fieldId !== fieldId);
+        },
+        getProtectionStatusText(value) {
+            return value === '1' ? this.$t('sensitiveData.protected') : this.$t('sensitiveData.unprotected')
+        },
+        isDesensitizeSuggestion(value) {
+            return value === '脱敏' || value === this.$t('sensitiveData.desensitize')
+        },
+        isEncryptSuggestion(value) {
+            return value === '加密' || value === this.$t('sensitiveData.encrypt')
+        },
+        getSuggestionLabel(value) {
+            if (value === '脱敏') return this.$t('sensitiveData.desensitize')
+            if (value === '加密') return this.$t('sensitiveData.encrypt')
+            return value
         },
         handleCategoryChange(val) {
             this.categoryId = val
@@ -351,7 +358,6 @@ export default {
                 this.getSensitiveDataList(response.data[0].id)
             });
         },
-        // 敏感数据列表
         getSensitiveDataList(categoryId) {
             try {
                 listSensitiveDataRiskAssessmentReport({ categoryId: categoryId }).then((response) => {
@@ -361,7 +367,6 @@ export default {
                 console.error('获取敏感数据列表失败', error);
             }
         },
-        // 处理脱敏状态变更
         handleDesensitizeChange(row, index) {
             const params = {
                 fieldId: row.fieldId,
@@ -370,66 +375,52 @@ export default {
             try {
                 changeIsMask(params).then((response) => {
                     if (response.code === 200) {
-                        this.$message.success('脱敏状态更新成功');
-                        // 刷新列表数据
+                        this.$message.success(this.$t('sensitiveData.desensitizeStatusUpdatedSuccess'));
                         this.loadRiskDetails(this.datasourceId);
                     }
                 });
             } catch (error) {
-                this.$message.error('更新脱敏状态失败');
+                this.$message.error(this.$t('sensitiveData.updateDesensitizeStatusFailed'));
             }
-            // 这里可以添加保存状态的逻辑
         },
-        // 阻止默认上传行为
         beforeUpload() {
             return false;
         },
 
-        // 处理文件上传
         handleFileUpload(row, index) {
             return (file, fileList) => {
-                // 定义允许的图片类型
                 const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
-                // 检查文件类型是否在允许列表中
                 if (!allowedTypes.includes(file.raw.type)) {
-                    this.$message.error('只能上传图片文件（JPG、PNG、GIF、BMP、WEBP）');
+                    this.$message.error(this.$t('sensitiveData.imageOnlyUpload'));
                     return false;
                 }
 
-                // 限制文件大小为5M
-                const maxSize = 5 * 1024 * 1024; // 5MB
+                const maxSize = 5 * 1024 * 1024;
                 if (file.raw.size > maxSize) {
-                    this.$message.error('文件大小不能超过5MB');
+                    this.$message.error(this.$t('sensitiveData.fileSizeLimit5MB'));
                     return false;
                 }
 
-                // 创建FormData对象
                 const formData = new FormData();
                 formData.append('file', file.raw);
                 formData.append('fieldId', row.fieldId);
 
-                // 显示上传中状态
                 const loading = this.$loading({
                     lock: true,
-                    text: '正在上传证明材料...',
+                    text: this.$t('sensitiveData.uploadingProofMaterial'),
                     spinner: 'el-icon-loading',
                     background: 'rgba(0, 0, 0, 0.7)'
                 });
 
-                // 调用上传接口
                 uploadEvidentiaryMaterialFile(formData).then((response) => {
                     loading.close();
                     if (response.code === 200) {
-                        this.$message.success('证明材料上传成功');
-
-                        // 查找proofUrlList中是否已存在相同fieldId的条目
+                        this.$message.success(this.$t('sensitiveData.proofMaterialUploadSuccess'));
                         const existingIndex = this.proofUrlList.findIndex(item => item.fieldId === row.fieldId);
 
                         if (existingIndex !== -1) {
-                            // 如果存在，替换该条目的URL
                             this.proofUrlList[existingIndex].url = response.msg;
                         } else {
-                            // 如果不存在，添加新条目
                             this.proofUrlList.push({
                                 fieldId: row.fieldId,
                                 url: response.msg
@@ -440,20 +431,17 @@ export default {
                     }
                 }).catch(error => {
                     loading.close();
-                    this.$message.error('证明证明材料上传失败，请稍后重试');
+                    this.$message.error(this.$t('sensitiveData.proofMaterialUploadFailed'));
                 });
             };
         },
-        // 导出清单
         handleExport() {
-            this.$message.success('正在导出所有数据源的风险清单...');
+            this.$message.success(this.$t('sensitiveData.exportingAllDataSourceRiskList'));
         },
 
-        // 查看详情
         handleViewDetails(row) {
             this.currentDataSource = row;
             this.datasourceId = row.datasourceId;
-            // 重置分页和筛选条件
             this.pagination.currentPage = 1;
             this.levelFilterValue = '';
             this.statusFilterValue = '';
@@ -463,7 +451,6 @@ export default {
             this.showRiskDetails = true;
         },
 
-        // 获取风险等级颜色
         getRiskStyle(level) {
             const styles = {
                 1: { color: '#16a34a', backgroundColor: '#f0fdf4', border: 'none' },
@@ -475,15 +462,12 @@ export default {
             return styles[level] || { color: '#6b7280', backgroundColor: '#f3f4f6', border: 'none' };
         },
 
-        // 加载风险详情数据（添加分页和筛选参数）
         loadRiskDetails(dataSourceId) {
             this.loading = true;
-            // 构建筛选参数
             const params = {
                 datasourceId: dataSourceId,
                 pageNum: this.pagination.currentPage,
                 pageSize: this.pagination.pageSize,
-                // 风险等级筛选（转换为数字，空则不筛选）
                 level: this.levelFilterValue ?
                     {
                         'level5': 5,
@@ -492,24 +476,17 @@ export default {
                         'level2': 2
                     }[this.levelFilterValue]
                     : '',
-                // 防护状态筛选（空则不筛选）
                 protectionMeasure: this.statusFilterValue ?
                     this.statusFilterValue === 'protected' ? '1' : '0'
                     : '',
-                // 搜索关键词
                 categoryName: this.searchKeyword || '',
-                // 数据库筛选（空字符串表示不筛选）
-                // databaseName: this.activeDatabaseId || ''
             };
 
             try {
                 getViewDetails(params).then((response) => {
-                    // 保存原始数据并初始化过滤结果
                     this.sensitiveCategories = response.data.pageInfo;
                     this.filteredCategories = [...this.sensitiveCategories];
-                    // 更新分页总数
                     this.pagination.total = response.data.total;
-                    // 初始化分页
                     this.pagination.currentPage = response.data.pageNum;
                     this.pagination.pageSize = response.data.pageSize;
                     this.loading = false;
@@ -517,85 +494,65 @@ export default {
             } catch (error) {
                 console.error('获取风险详情失败', error);
                 this.loading = false;
-                // 错误处理：清空数据避免筛选异常
                 this.sensitiveCategories = [];
                 this.filteredCategories = [];
                 this.pagination.total = 0;
             }
         },
 
-        // 切换风险等级筛选（单选）
         toggleLevelFilter(value) {
-            // 如果点击已选中的值，则取消选择
             if (this.levelFilterValue === value) {
                 this.levelFilterValue = '';
             } else {
-                // 否则选中当前值
                 this.levelFilterValue = value;
             }
-            // 重置页码为1
             this.pagination.currentPage = 1;
             this.loadRiskDetails(this.datasourceId);
         },
 
-        // 切换防护状态筛选（单选）
         toggleStatusFilter(value) {
-            // 如果点击已选中的值，则取消选择
             if (this.statusFilterValue === value) {
                 this.statusFilterValue = '';
             } else {
-                // 否则选中当前值
                 this.statusFilterValue = value;
             }
-            // 重置页码为1
             this.pagination.currentPage = 1;
             this.loadRiskDetails(this.datasourceId);
         },
 
-        // 处理搜索
         handleSearch() {
-            // 重置页码为1
             this.pagination.currentPage = 1;
             this.loadRiskDetails(this.datasourceId);
         },
 
-        // 数据库过滤
         handleDatabaseFilter(dbName) {
-            // 切换选中状态
             this.activeDatabaseId = this.activeDatabaseId === dbName ? null : dbName;
 
             if (this.activeDatabaseId) {
-                // 筛选当前分类中字段所属数据库匹配的记录
                 this.filteredCategories = this.sensitiveCategories.map(category => {
-                    // 过滤字段列表，只保留匹配当前数据库名的字段
                     const filteredFields = category.fields.filter(field =>
                         field.databaseName === dbName
                     );
-                    // 返回新的分类对象，保持其他属性不变，只更新fields
                     return {
                         ...category,
                         fields: filteredFields
                     };
                 }).filter(category =>
-                    // 过滤掉字段列表为空的分类
                     category.fields.length > 0
                 );
-                this.$message.info(`已筛选出数据库为 ${dbName} 的所有字段`);
+                this.$message.info(this.$t('sensitiveData.filteredDatabaseFields', { name: dbName }));
             } else {
-                // 取消筛选，恢复原始数据
                 this.filteredCategories = [...this.sensitiveCategories];
-                this.$message.info('已取消数据库筛选');
+                this.$message.info(this.$t('sensitiveData.canceledDatabaseFilter'));
             }
         },
 
-        // 分页大小改变
         handleSizeChange(val) {
             this.pagination.pageSize = val;
-            this.pagination.currentPage = 1; // 重置页码为1
+            this.pagination.currentPage = 1;
             this.loadRiskDetails(this.datasourceId);
         },
 
-        // 当前页码改变
         handleCurrentChange(val) {
             this.pagination.currentPage = val;
             this.loadRiskDetails(this.datasourceId);

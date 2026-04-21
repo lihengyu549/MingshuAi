@@ -4,9 +4,9 @@
       <el-col :span="5" :xs="24">
         <el-card class="left-card" shadow="never">
           <div class="head-container select-container">
-            <span class="select-label">所属标准：</span>
-            <el-select v-model="projectId" class="serachInput" @change="treeOptionsSelectChange" placeholder="全部"
-              filterable>
+            <span class="select-label">{{ $t('protectTableField.standardBelong') }}：</span>
+            <el-select v-model="projectId" class="serachInput" @change="treeOptionsSelectChange"
+              :placeholder="$t('all')" filterable>
               <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
               </el-option>
             </el-select>
@@ -21,24 +21,23 @@
         </el-card>
 
       </el-col>
-      <!--用户数据-->
       <el-col :span="19" :xs="24">
         <el-card class="search-card" shadow="never">
           <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true">
-            <el-form-item label="来源业务系统" prop="businessName">
-              <el-input v-model="queryParams.businessName" clearable @input="inputSearch" placeholder="请输入来源业务系统"
-                @keyup.enter.native="handleQuery" />
+            <el-form-item :label="$t('protectTableField.sourceBusinessSystem')" prop="businessName">
+              <el-input v-model="queryParams.businessName" clearable @input="inputSearch"
+                :placeholder="$t('protectTableField.enterSourceBusinessSystem')" @keyup.enter.native="handleQuery" />
             </el-form-item>
-            <el-form-item label="安全分级" prop="securityLevel">
-              <el-select v-model="queryParams.securityLevel" clearable multiple @change="handleQuery" placeholder="全部">
-                <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
-                  :value="item.value">
+            <el-form-item :label="$t('protectTableField.securityLevel')" prop="securityLevel">
+              <el-select v-model="queryParams.securityLevel" clearable multiple @change="handleQuery"
+                :placeholder="$t('all')">
+                <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="分类" class="addSelectClass">
+            <el-form-item :label="$t('protectTableField.category')" class="addSelectClass">
               <el-select ref="categorySelectRef" v-model="resultFormNodeName" @change="handleQuery" filterable
-                placeholder="搜索分类..." :filter-method="handleCategoryFilter">
+                :placeholder="$t('protectTableField.searchCategory')" :filter-method="handleCategoryFilter">
                 <el-option style="height: 100%; padding: 0" value="">
                   <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
                     :filter-node-method="filterCategoryNode" ref="categoryTreeRef" node-key="id" highlight-current
@@ -46,9 +45,9 @@
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="个保法合规审查" class="addSelectClass">
-              <el-select ref="piiSelectRef" v-model="piiNodeName" filterable placeholder="搜索个保法合规审查..."
-                :filter-method="handlePiiFilter">
+            <el-form-item :label="$t('protectTableField.piiComplianceReview')" class="addSelectClass">
+              <el-select ref="piiSelectRef" v-model="piiNodeName" filterable
+                :placeholder="$t('protectTableField.searchPiiComplianceReview')" :filter-method="handlePiiFilter">
                 <el-option style="height: 100%; padding: 0" value="">
                   <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
                     :filter-node-method="filterPiiNode" ref="piiTreeRef" node-key="id" highlight-current
@@ -56,55 +55,61 @@
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="表名" prop="tableName">
-              <el-input v-model="queryParams.tableName" clearable @input="inputSearch" placeholder="请输入表名"
-                @keyup.enter.native="handleQuery" />
+            <el-form-item :label="$t('protectTableField.tableName')" prop="tableName">
+              <el-input v-model="queryParams.tableName" clearable @input="inputSearch"
+                :placeholder="$t('protectTableField.enterTableName')" @keyup.enter.native="handleQuery" />
             </el-form-item>
           </el-form>
         </el-card>
         <div>
-          <el-button type="primary" plain icon="el-icon-document" size="medium" @click="downloadFile()">清单导出</el-button>
+          <el-button type="primary" plain icon="el-icon-document" size="medium" @click="downloadFile()">{{
+            $t('protectTableField.exportList') }}</el-button>
           <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click"
             style="float: inline-end; margin-right: 10px;">
-            <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
-            <el-checkbox-group v-model="checkedColumn" @change="handleCheckedCitiesChange" class="checkboxGroup"
+            <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{
+              $t('selectAll') }}</el-checkbox>
+            <el-checkbox-group v-model="checkedColumnProps" @change="handleCheckedCitiesChange" class="checkboxGroup"
               style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
-              <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
+              <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item.prop" :key="item.prop">{{
                 item.label }}</el-checkbox>
             </el-checkbox-group>
-            <el-button slot="reference">列设置</el-button>
+            <el-button slot="reference">{{ $t('protectTableField.columnSettings') }}</el-button>
           </el-popover>
         </div>
         <el-card class="table-card" shadow="never">
           <el-table v-loading="loading" height="620px" :data="protectTableFieldList"
-            @selection-change="handleSelectionChange" class="tableBox" ref="tableRef" :key="checkedColumn.length">
+            @selection-change="handleSelectionChange" class="tableBox" ref="tableRef" :key="checkedColumnProps.length">
             <template slot="empty">
-              <el-empty description="暂无数据"></el-empty>
+              <el-empty :description="$t('noData')"></el-empty>
             </template>
             <!-- <el-table-column type="selection" width="60" align="center" /> -->
-            <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label" :align="item.label === '分类' ? 'left' : 'center'" :prop="item.prop" :width="item.width" show-overflow-tooltip>
+            <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label"
+              :align="item.prop === 'categoryName' ? 'left' : 'center'" :prop="item.prop" :width="item.width"
+              show-overflow-tooltip>
               <template slot-scope="scope">
-                <template v-if="item.label === '安全分级'">
+                <template v-if="item.prop === 'securityLevelName'">
                   <el-tag :style="getRiskStyle(Number(scope.row.securityLevel))">
                     {{ scope.row.securityLevelName }}
                   </el-tag>
                 </template>
-                <template v-else-if="item.label === '分类'">
-                  <el-tag :type="scope.row.categoryName == '未分类' || scope.row.categoryName == '噪音数据' ? 'info' : 'primary'">
+                <template v-else-if="item.prop === 'categoryName'">
+                  <el-tag :type="isNeutralCategory(scope.row.categoryName) ? 'info' : 'primary'">
                     {{ scope.row.categoryName }}
                   </el-tag>
                 </template>
-                <template v-else-if="item.label === '建议防护措施'">
-                  <el-tag class="protect-tag" v-for="(protectItem, index) in scope.row.protectMethodNameList" :key="protectItem + index" type="primary">
+                <template v-else-if="item.prop === 'protectMethod'">
+                  <el-tag class="protect-tag" v-for="(protectItem, index) in scope.row.protectMethodNameList"
+                    :key="protectItem + index" type="primary">
                     {{ protectItem }}
                   </el-tag>
                 </template>
-                <template v-else-if="item.label === '样本'">
+                <template v-else-if="item.prop === 'sampleData'">
                   <el-tooltip placement="bottom" effect="light">
                     <div slot="content">
                       <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
-                        <el-table-column type="index" label="序号" width="50" />
-                        <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
+                        <el-table-column type="index" :label="$t('protectTableField.columnLabels.index')" width="50" />
+                        <el-table-column prop="value" :label="$t('protectTableField.columnLabels.fieldValue')"
+                          width="100" show-overflow-tooltip>
                         </el-table-column>
                       </el-table>
                     </div>
@@ -122,38 +127,38 @@
         </el-card>
       </el-col>
     </el-row>
-    <!-- 新增编辑框 -->
-    <el-dialog title="获取打标结果" v-loading="apiDialogLoading" :visible.sync="apiDialogShow" width="800px" append-to-body
-      :close-on-click-modal="true">
+    <el-dialog :title="$t('protectTableField.getLabelResult')" v-loading="apiDialogLoading"
+      :visible.sync="apiDialogShow" width="800px" append-to-body :close-on-click-modal="true">
       <div class="apiDialogMain">
         <div class="apiDialogMain_head">
-          <div>请求示例：</div>
-          <div><el-input type="textarea" :rows="7" readonly placeholder="请输入内容" v-model="textarea">
+          <div>{{ $t('protectTableField.requestExample') }}：</div>
+          <div><el-input type="textarea" :rows="7" readonly :placeholder="$t('protectTableField.enterContent')"
+              v-model="textarea">
             </el-input></div>
         </div>
         <div class="apiDialogMain_body">
-          <div>响应示例：</div>
+          <div>{{ $t('protectTableField.responseExample') }}：</div>
           <!-- <pre v-html="textarea2"></pre>
           <div><el-input readonly resize="none" type="textarea" :rows="16" placeholder="请输入内容" v-model="textarea2">
             </el-input></div> -->
-          <vue-json-viewer preview-mode :value="textarea2" :copyable="copyable">
+          <vue-json-viewer preview-mode :value="textarea2" :copyable="copyableConfig">
             <template slot="copy">
-              <i class="el-icon-document-copy" title="复制" @click="mgsElemesFn"></i>
+              <i class="el-icon-document-copy" :title="$t('copy')" @click="mgsElemesFn"></i>
             </template>
           </vue-json-viewer>
         </div>
       </div>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="apiCancel">取 消</el-button>
+        <el-button @click="apiCancel">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
-    <!-- 导出列配置弹窗 -->
-    <el-dialog title="调整导出列" :visible.sync="exportColumnDialog.visible" width="760px" append-to-body
-      :close-on-click-modal="false" custom-class="export-column-dialog-wrapper" @close="cancelExport">
+    <el-dialog :title="$t('protectTableField.adjustExportColumns')" :visible.sync="exportColumnDialog.visible"
+      width="760px" append-to-body :close-on-click-modal="false" custom-class="export-column-dialog-wrapper"
+      @close="cancelExport">
 
       <div v-loading="exportColumnDialog.loading" class="export-column-dialog">
         <div class="column-options">
-          <div v-for="column in exportColumnDialog.allColumns" :key="column.value"
+          <div v-for="column in exportAllColumns" :key="column.value"
             :class="['column-btn', { active: exportColumnDialog.selectedColumns.includes(column.value) }]"
             @click="toggleExportColumn(column)">
             {{ column.label }}
@@ -162,12 +167,13 @@
 
         <div class="dialog-footer-custom">
           <div class="footer-left">
-            <el-checkbox v-model="exportColumnDialog.saveAsDefault">保存为默认配置</el-checkbox>
-            <a class="restore-link" @click="restoreInitialConfig"><i class="el-icon-refresh-right"></i>恢复初始</a>
+            <el-checkbox v-model="exportColumnDialog.saveAsDefault">{{ $t('saveAsDefault') }}</el-checkbox>
+            <a class="restore-link" @click="restoreInitialConfig"><i class="el-icon-refresh-right"></i>{{
+              $t('restoreInitial') }}</a>
           </div>
           <div class="footer-right">
-            <el-button @click="cancelExport">取消</el-button>
-            <el-button type="primary" plain @click="confirmExport">确定</el-button>
+            <el-button @click="cancelExport">{{ $t('cancel') }}</el-button>
+            <el-button type="primary" plain @click="confirmExport">{{ $t('confirm') }}</el-button>
           </div>
         </div>
       </div>
@@ -281,132 +287,59 @@ export default {
       piiNodeName: '',
       Token: '',
       textarea: ``,
-      copyable: { copyText: '复制', copiedText: '复制成功' },
       routeDataShow: false,
       treeIds: [],
       databaseNames: [], // 新增：存储选中的数据库名称
       // 列设置相关数据
       isIndeterminate: false,
-      checkedColumn: [],
+      checkedColumnProps: [],
       checkAll: false,
-      setList: [
-        { label: "字段名", prop: "fieldName", width: "200" },
-        { label: "字段注释", prop: "fieldRemark", width: "200" },
-        { label: "来源业务系统", prop: "businessName", width: "150" },
-        { label: "数据源", prop: "sourceName", width: "150" },
-        { label: "所属库", prop: "databaseName", width: "200" },
-        { label: "所属表", prop: "tableName" },
-        { label: "分类", prop: "categoryName", width: "250" },
-        { label: "个保法合规审查", prop: "piiDetectionName", width: "200" },
-        { label: "安全分级", prop: "securityLevelName", width: "200" },
-        { label: "建议防护措施", prop: "protectMethod", width: "200" },
-        { label: "样本", prop: "sampleData", width: "100" }
+      columnList: [
+        { labelKey: "fieldName", prop: "fieldName", width: "200" },
+        { labelKey: "fieldRemark", prop: "fieldRemark", width: "200" },
+        { labelKey: "sourceBusinessSystem", prop: "businessName", width: "150" },
+        { labelKey: "dataSource", prop: "sourceName", width: "150" },
+        { labelKey: "databaseName", prop: "databaseName", width: "200" },
+        { labelKey: "tableName", prop: "tableName" },
+        { labelKey: "category", prop: "categoryName", width: "250" },
+        { labelKey: "piiComplianceReview", prop: "piiDetectionName", width: "200" },
+        { labelKey: "securityLevel", prop: "securityLevelName", width: "200" },
+        { labelKey: "suggestedProtection", prop: "protectMethod", width: "200" },
+        { labelKey: "sample", prop: "sampleData", width: "100" }
       ],
       // 导出列配置相关数据
       exportColumnDialog: {
         visible: false,
         loading: false,
         selectedColumns: [], // 当前选中的导出列
-        allColumns: [
-          {
-            "label": "字段名",
-            "value": "fieldName"
-          },
-          {
-            "label": "字段类型",
-            "value": "fieldType"
-          },
-          {
-            "label": "字段注释",
-            "value": "fieldRemark"
-          },
-          {
-            "label": "AI字段注释",
-            "value": "craftRemark"
-          },
-          {
-            "label": "来源业务系统",
-            "value": "businessName"
-          },
-          {
-            "label": "所属库",
-            "value": "databaseName"
-          },
-          {
-            "label": "所属表",
-            "value": "tableName"
-          },
-          {
-            "label": "表注释",
-            "value": "tableRemark"
-          },
-          {
-            "label": "AI表注释",
-            "value": "tableCraftRemark"
-          },
-          {
-            "label": "分类",
-            "value": "categoryName"
-          },
-          {
-            "label": "分类状态",
-            "value": "classificationStateName"
-          },
-          {
-            "label": "归类原因",
-            "value": "classificationReasons"
-          },
-          {
-            "label": "推理过程",
-            "value": "reasoningProcess"
-          },
-          {
-            "label": "个保法合规审查",
-            "value": "piiDetectionName"
-          },
-          {
-            "label": "识别过程",
-            "value": "detectionProcess"
-          },
-          {
-            "label": "置信度",
-            "value": "confidenceLevel"
-          },
-          {
-            "label": "置信度分数",
-            "value": "confidenceScore"
-          },
-          {
-            "label": "安全级别",
-            "value": "securityLevelName"
-          },
-          {
-            "label": "敏感数据",
-            "value": "sensitiveDataName"
-          },
-          {
-            "label": "样本",
-            "value": "sampleData"
-          },
-          {
-            "label": "人工确认状态",
-            "value": "confirmName"
-          },
-          {
-            "label": "样本特征",
-            "value": "regularExpression"
-          },
-          {
-            "label": "表主题词",
-            "value": "tableTopic"
-          },
-          {
-            "label": "字段主题词",
-            "value": "fieldTopic"
-          },
-        ], // 所有可选的导出列
         saveAsDefault: false, // 是否保存为默认配置
       },
+      exportColumnList: [
+        { labelKey: "fieldName", value: "fieldName" },
+        { labelKey: "fieldType", value: "fieldType" },
+        { labelKey: "fieldRemark", value: "fieldRemark" },
+        { labelKey: "aiFieldRemark", value: "craftRemark" },
+        { labelKey: "sourceBusinessSystem", value: "businessName" },
+        { labelKey: "databaseName", value: "databaseName" },
+        { labelKey: "tableName", value: "tableName" },
+        { labelKey: "tableRemark", value: "tableRemark" },
+        { labelKey: "aiTableRemark", value: "tableCraftRemark" },
+        { labelKey: "category", value: "categoryName" },
+        { labelKey: "classificationStatus", value: "classificationStateName" },
+        { labelKey: "classificationReason", value: "classificationReasons" },
+        { labelKey: "reasoningProcess", value: "reasoningProcess" },
+        { labelKey: "piiComplianceReview", value: "piiDetectionName" },
+        { labelKey: "detectionProcess", value: "detectionProcess" },
+        { labelKey: "confidenceLevel", value: "confidenceLevel" },
+        { labelKey: "confidenceScore", value: "confidenceScore" },
+        { labelKey: "securityLevel", value: "securityLevelName" },
+        { labelKey: "sensitiveData", value: "sensitiveDataName" },
+        { labelKey: "sample", value: "sampleData" },
+        { labelKey: "manualConfirmStatus", value: "confirmName" },
+        { labelKey: "sampleFeature", value: "regularExpression" },
+        { labelKey: "tableTopic", value: "tableTopic" },
+        { labelKey: "fieldTopic", value: "fieldTopic" },
+      ],
       // 初始默认配置（固定不变，用于恢复初始配置）
       initialDefaultColumns: [
         "fieldName",
@@ -430,10 +363,31 @@ export default {
       this.fetchLevelOptions(val)
     }
   },
+  computed: {
+    copyableConfig() {
+      return {
+        copyText: this.$t('copy'),
+        copiedText: this.$t('protectTableField.copySuccess')
+      }
+    },
+    setList() {
+      return this.columnList.map(item => ({
+        ...item,
+        label: this.$t(`protectTableField.columnLabels.${item.labelKey}`)
+      }))
+    },
+    checkedColumn() {
+      return this.setList.filter(item => this.checkedColumnProps.includes(item.prop))
+    },
+    exportAllColumns() {
+      return this.exportColumnList.map(item => ({
+        ...item,
+        label: this.$t(`protectTableField.columnLabels.${item.labelKey}`)
+      }))
+    }
+  },
   created() {
-    this.checkedColumn = this.setList.filter(item =>
-      ['字段名', '来源业务系统', '数据源', '所属库', '所属表', '分类', '安全分级'].includes(item.label)
-    );
+    this.checkedColumnProps = ['fieldName', 'businessName', 'sourceName', 'databaseName', 'tableName', 'categoryName', 'securityLevelName'];
     this.init()
   },
   methods: {
@@ -460,8 +414,11 @@ export default {
       };
       return styles[level] || { color: '#6b7280', backgroundColor: '#f3f4f6', border: 'none' };
     },
+    isNeutralCategory(categoryName) {
+      return ['未分类', '噪音数据', this.$t('protectTableField.unclassified'), this.$t('protectTableField.noiseData')].includes(categoryName)
+    },
     handleCheckAllChange(val) {
-      this.checkedColumn = val ? [...this.setList] : [];
+      this.checkedColumnProps = val ? this.setList.map(item => item.prop) : [];
       this.isIndeterminate = false;
     },
     handleCheckedCitiesChange(value) {
@@ -536,7 +493,7 @@ accept:application/json, text/plain, */*
 Authorization:Bearer ${this.Token}`
     },
     mgsElemesFn() {
-      this.$message.success('复制成功');
+      this.$message.success(this.$t('protectTableField.copySuccess'));
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
@@ -549,7 +506,7 @@ Authorization:Bearer ${this.Token}`
       this.apiDialogShow = false
     },
     messsucc(res, flag) {
-      this.$message.success(`${res.msg},${flag}${res.data}个`)
+      this.$message.success(`${res.msg},${this.$t('protectTableField.actionCountText', { action: flag, count: res.data })}`)
     },
     //api调用
     apiSumbit() {
@@ -563,9 +520,9 @@ Authorization:Bearer ${this.Token}`
     enabledFn(flag) {
       let dataS = this.$refs.tableRef.selection
       if (dataS && dataS.length > 0) {
-        this.$confirm(`确定批量${flag}吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('protectTableField.batchConfirm', { action: flag }), this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {
@@ -574,7 +531,7 @@ Authorization:Bearer ${this.Token}`
           let data = {
             ids: ids.join(',')
           }
-          if (flag == '启用') {
+          if (flag == '启用' || flag == this.$t('protectTableField.enable')) {
             data.enable = true
             attachStatus(data).then(res => {
               if (res.code == 200) {
@@ -582,7 +539,7 @@ Authorization:Bearer ${this.Token}`
                 this.getList()
               }
             })
-          } else if (flag == '禁用') {
+          } else if (flag == '禁用' || flag == this.$t('protectTableField.disable')) {
             data.enable = false
             attachStatus(data).then(res => {
               if (res.code == 200) {
@@ -590,12 +547,12 @@ Authorization:Bearer ${this.Token}`
                 this.getList()
               }
             })
-          } else if (flag == '删除') {
+          } else if (flag == '删除' || flag == this.$t('delete')) {
             for (let item of dataS) {
-              if (item.dataSource === '内置') {
+              if (item.dataSource === '内置' || item.dataSource === this.$t('protectTableField.builtin')) {
                 this.$message({
                   type: 'warning',
-                  message: '内置数据源不允许删除',
+                  message: this.$t('protectTableField.builtinDataSourceCannotDelete'),
                 });
                 return
               }
@@ -607,14 +564,14 @@ Authorization:Bearer ${this.Token}`
               }
             })
           } else {
-            this.$message({ message: '未知异常', type: 'warning' })
+            this.$message({ message: this.$t('protectTableField.unknownException'), type: 'warning' })
           }
           // 接口
         }).catch(() => {
 
         });
       } else {
-        this.$message({ message: '请选择至少一条数据', type: 'warning' })
+        this.$message({ message: this.$t('protectTableField.pleaseSelectAtLeastOne'), type: 'warning' })
       }
     },
     // 左侧树下拉选change事件 - 添加防抖处理
@@ -1002,7 +959,7 @@ Authorization:Bearer ${this.Token}`
       this.exportColumnDialog.loading = true;
 
       try {
-        const allColumns = this.exportColumnDialog.allColumns;
+        const allColumns = this.exportAllColumns;
         let finalSelectedColumns = [];
 
         const res = await getDicts('sys_export_column');
@@ -1021,7 +978,7 @@ Authorization:Bearer ${this.Token}`
 
       } catch (error) {
         console.error('获取导出列配置失败:', error);
-        this.$message.warning('获取导出列配置失败，使用默认配置');
+        this.$message.warning(this.$t('protectTableField.fetchExportColumnsConfigFailedUsingDefault'));
         this.exportColumnDialog.selectedColumns = [...this.initialDefaultColumns];
       } finally {
         this.exportColumnDialog.loading = false;
@@ -1042,12 +999,12 @@ Authorization:Bearer ${this.Token}`
     restoreInitialConfig() {
       this.exportColumnDialog.selectedColumns = [...this.initialDefaultColumns];
       this.exportColumnDialog.saveAsDefault = false;
-      this.$message.success('已恢复初始配置');
+      this.$message.success(this.$t('protectTableField.restoredInitialConfig'));
     },
 
     async confirmExport() {
       if (this.exportColumnDialog.selectedColumns.length === 0) {
-        this.$message.warning('请至少选择一个导出列');
+        this.$message.warning(this.$t('protectTableField.pleaseSelectAtLeastOneExportColumn'));
         return;
       }
 
@@ -1056,7 +1013,7 @@ Authorization:Bearer ${this.Token}`
 
       try {
         if (this.exportColumnDialog.saveAsDefault) {
-          this.$message.success('已保存为默认配置');
+          this.$message.success(this.$t('protectTableField.savedAsDefaultConfig'));
         }
         this.exportColumnDialog.visible = false;
         await this.performExport();
@@ -1073,7 +1030,7 @@ Authorization:Bearer ${this.Token}`
     async performExport() {
       try {
         this.loading = true;
-        const allColumns = this.exportColumnDialog.allColumns.map(item => item.value);
+        const allColumns = this.exportAllColumns.map(item => item.value);
         const unselectedColumns = allColumns.filter(value => !this.exportColumnDialog.selectedColumns.includes(value));
 
         const params = {
@@ -1113,11 +1070,11 @@ Authorization:Bearer ${this.Token}`
         // this.loading = false;
         this.getList()
         this.loading = false;
-        this.$message.success('导出成功');
+        this.$message.success(this.$t('protectTableField.exportSuccess'));
 
       } catch (error) {
         this.loading = false;
-        this.$message.error('导出失败，请稍后再试');
+        this.$message.error(this.$t('protectTableField.exportFailedRetry'));
       }
     },
     // 返回Promise的异步版本

@@ -1,6 +1,9 @@
 import common from './common'
 import resultPush from './resultPush'
 import capacity from './capacity'
+import protectTableField from './protectTableField'
+import sensitiveData from './sensitiveData'
+import assetReport from './assetReport'
 import navbar from './navbar'
 import home from './home'
 import management from './management'
@@ -26,6 +29,9 @@ export default {
   ...common,
   resultPush,
   capacity,
+  protectTableField,
+  sensitiveData,
+  assetReport,
   navbar,
   home,
   management,

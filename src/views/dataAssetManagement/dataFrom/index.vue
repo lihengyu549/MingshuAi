@@ -2140,7 +2140,7 @@ export default {
 }
 
 .yuanDataClass /deep/ .el-form-item__content {
-  width: 75%;
+  /* width: 75%; */
 }
 
 .yuanDataClass /deep/ .el-select {

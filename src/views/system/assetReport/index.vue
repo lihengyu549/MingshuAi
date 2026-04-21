@@ -1,30 +1,28 @@
 <template>
   <div class="app-container" v-loading="loading">
     <div class="page-header">
-      <h2><b>安全合规报告</b></h2>
+      <h2><b>{{ $t('assetReport.title') }}</b></h2>
       <div class="header-operations">
-        <!-- 所属标准下拉框 -->
-        <label class="form-label">所属标准</label>
-        <el-select v-model="categoryId" placeholder="所属标准" size="small" style="margin-right: 10px;">
+        <label class="form-label">{{ $t('assetReport.standardBelong') }}</label>
+        <el-select v-model="categoryId" :placeholder="$t('assetReport.standardBelong')" size="small"
+          style="margin-right: 10px;">
           <el-option v-for="item in standardOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
 
-        <!-- 导出报告按钮 -->
         <el-button icon="el-icon-download" size="small" class="export-btn">
-          导出报告
+          {{ $t('assetReport.exportReport') }}
         </el-button>
       </div>
     </div>
 
-    <!-- ========== 统计卡片区域 ========== -->
     <el-row :gutter="20" class="stats-row">
-      <!-- 数据源总数 -->
       <el-col :span="6">
         <el-card class="stat-card stat-card-blue" shadow="hover">
           <div class="stat-content">
             <div class="stat-info">
-              <div class="stat-label">数据源总数</div>
-              <count-to :start-val="0" :end-val="statsData.dataSourceCount" :duration="2000" :autoplay="true" class="stat-value" />
+              <div class="stat-label">{{ $t('assetReport.dataSourceCount') }}</div>
+              <count-to :start-val="0" :end-val="statsData.dataSourceCount" :duration="2000" :autoplay="true"
+                class="stat-value" />
             </div>
             <div class="stat-icon stat-icon-blue">
               <i class="el-icon-coin"></i>
@@ -33,13 +31,13 @@
         </el-card>
       </el-col>
 
-      <!-- 业务系统数量 -->
       <el-col :span="6">
         <el-card class="stat-card stat-card-purple" shadow="hover">
           <div class="stat-content">
             <div class="stat-info">
-              <div class="stat-label">业务系统数量</div>
-              <count-to :start-val="0" :end-val="statsData.businessSystemCount" :duration="2000" :autoplay="true" class="stat-value" />
+              <div class="stat-label">{{ $t('assetReport.businessSystemCount') }}</div>
+              <count-to :start-val="0" :end-val="statsData.businessSystemCount" :duration="2000" :autoplay="true"
+                class="stat-value" />
             </div>
             <div class="stat-icon stat-icon-purple">
               <i class="el-icon-s-platform"></i>
@@ -48,13 +46,13 @@
         </el-card>
       </el-col>
 
-      <!-- 字段总数 -->
       <el-col :span="6">
         <el-card class="stat-card stat-card-green" shadow="hover">
           <div class="stat-content">
             <div class="stat-info">
-              <div class="stat-label">字段总数</div>
-              <count-to :start-val="0" :end-val="statsData.fieldCount" :duration="2000" :autoplay="true" class="stat-value" />
+              <div class="stat-label">{{ $t('assetReport.fieldCount') }}</div>
+              <count-to :start-val="0" :end-val="statsData.fieldCount" :duration="2000" :autoplay="true"
+                class="stat-value" />
             </div>
             <div class="stat-icon stat-icon-green">
               <i class="el-icon-s-grid"></i>
@@ -63,13 +61,13 @@
         </el-card>
       </el-col>
 
-      <!-- 文件总数 -->
       <el-col :span="6">
         <el-card class="stat-card stat-card-red" shadow="hover">
           <div class="stat-content">
             <div class="stat-info">
-              <div class="stat-label">文件总数</div>
-              <count-to :start-val="0" :end-val="statsData.fileCount" :duration="2000" :autoplay="true" class="stat-value" />
+              <div class="stat-label">{{ $t('assetReport.fileCount') }}</div>
+              <count-to :start-val="0" :end-val="statsData.fileCount" :duration="2000" :autoplay="true"
+                class="stat-value" />
             </div>
             <div class="stat-icon stat-icon-red">
               <i class="el-icon-document"></i>
@@ -79,39 +77,37 @@
       </el-col>
     </el-row>
 
-    <!-- ========== 数据资产分布 ========== -->
     <el-card class="chart-card" shadow="hover">
       <div slot="header" class="card-header">
         <span class="card-title">
           <span class="title-bar" style="background:#5470c6;"></span>
-          数据资产分布
+          {{ $t('assetReport.assetDistribution') }}
         </span>
       </div>
       <div id="assetDistributionChart" style="height: 350px;"></div>
     </el-card>
 
-    <!-- ========== 数据增长趋势 ========== -->
     <el-card class="chart-card" shadow="hover">
       <div slot="header" class="card-header">
         <span class="card-title">
           <span class="title-bar" style="background:#91cc75;"></span>
-          数据增长趋势
+          {{ $t('assetReport.growthTrend') }}
         </span>
       </div>
       <div id="growthTrendChart" style="height: 350px;"></div>
     </el-card>
 
-    <!-- ========== 数据分类分布 + 数据分级分布 ========== -->
     <el-row :gutter="20">
       <el-col :span="12">
         <el-card class="chart-card" shadow="hover">
           <div slot="header" class="card-header">
             <span class="card-title">
               <span class="title-bar" style="background:#5470c6;"></span>
-              数据分类分布
+              {{ $t('assetReport.classificationDistribution') }}
             </span>
-            <el-link type="primary" :underline="false" size="small" @click="classificationBack" :disabled="isClassificationRoot" class="back-link">
-              返回上级
+            <el-link type="primary" :underline="false" size="small" @click="classificationBack"
+              :disabled="isClassificationRoot" class="back-link">
+              {{ $t('backToParent') }}
             </el-link>
           </div>
           <div id="classificationChart" style="height: 350px;"></div>
@@ -122,7 +118,7 @@
           <div slot="header" class="card-header">
             <span class="card-title">
               <span class="title-bar" style="background:#ee6666;"></span>
-              数据分级分布
+              {{ $t('assetReport.dataLevelDistribution') }}
             </span>
           </div>
           <div id="levelDistributionChart" style="height: 350px;"></div>
@@ -130,23 +126,21 @@
       </el-col>
     </el-row>
 
-    <!-- ========== 业务系统分级热力图 ========== -->
     <el-card class="chart-card" shadow="hover">
       <div slot="header" class="card-header">
         <span class="card-title">
           <span class="title-bar" style="background:#fac858;"></span>
-          业务系统分级热力图
+          {{ $t('assetReport.businessSystemLevelHeatmap') }}
         </span>
       </div>
       <div id="heatmapChart" style="height: 400px;"></div>
     </el-card>
 
-    <!-- ========== 业务系统分类占比 ========== -->
     <el-card class="chart-card" shadow="hover">
       <div slot="header" class="card-header">
         <span class="card-title">
           <span class="title-bar" style="background:#73c0de;"></span>
-          业务系统分类占比
+          {{ $t('assetReport.businessSystemCategoryProportion') }}
         </span>
       </div>
       <div id="systemCategoryChart" style="height: 350px;"></div>
@@ -293,18 +287,24 @@ export default {
         const files = data.assetDistribution.systems.map(i => i.files);
         this.charts.assetDistribution.setOption({
           xAxis: { data: names },
-          series: [{ name: '字段数量', data: fields }, { name: '文件数量', data: files }]
+          series: [
+            { name: this.$t('assetReport.fieldQuantity'), data: fields },
+            { name: this.$t('assetReport.fileQuantity'), data: files }
+          ]
         });
       }
       if (data.growthTrend && this.charts.growthTrend) {
         this.charts.growthTrend.setOption({
           xAxis: { data: data.growthTrend.x || [] },
-          series: [{ name: '累计字段数量', data: data.growthTrend.fields || [] }, { name: '累计文件数量', data: data.growthTrend.files || [] }]
+          series: [
+            { name: this.$t('assetReport.cumulativeFieldCount'), data: data.growthTrend.fields || [] },
+            { name: this.$t('assetReport.cumulativeFileCount'), data: data.growthTrend.files || [] }
+          ]
         });
       }
       if (data.levelDistribution && this.charts.levelDistribution) {
         const seriesData = (data.levelDistribution || []).map(i => ({ name: i.level, value: i.value }));
-        this.charts.levelDistribution.setOption({ series: [{ name: '数据分级', data: seriesData }] });
+        this.charts.levelDistribution.setOption({ series: [{ name: this.$t('assetReport.dataLevel'), data: seriesData }] });
       }
       if (data.heatmap && this.charts.heatmap) {
         const levels = data.heatmap.levels || [];
@@ -366,7 +366,7 @@ export default {
       this.charts.assetDistribution = chart;
       chart.setOption({
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-        legend: { data: ['字段数量', '文件数量'], top: 10, icon: 'roundRect' },
+        legend: { data: [this.$t('assetReport.fieldQuantity'), this.$t('assetReport.fileQuantity')], top: 10, icon: 'roundRect' },
         grid: { left: '3%', right: '4%', bottom: '5%', containLabel: true },
         xAxis: {
           type: 'category',
@@ -374,8 +374,8 @@ export default {
           axisLine: { lineStyle: { color: '#eef0f6' } },
           axisLabel: { color: '#666' }
         },
-        yAxis: { 
-          name: '数量',
+        yAxis: {
+          name: this.$t('assetReport.quantity'),
           nameTextStyle: { color: '#999', padding: [0, 20, 0, 0] },
           type: 'value',
           splitLine: { lineStyle: { type: 'dashed', color: '#eef0f6' } },
@@ -383,14 +383,14 @@ export default {
         },
         series: [
           {
-            name: '字段数量',
+            name: this.$t('assetReport.fieldQuantity'),
             type: 'bar',
             barWidth: 15,
             itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] },
             data: []
           },
           {
-            name: '文件数量',
+            name: this.$t('assetReport.fileQuantity'),
             type: 'bar',
             barWidth: 15,
             itemStyle: { color: '#8bb4f6', borderRadius: [4, 4, 0, 0] },
@@ -408,7 +408,11 @@ export default {
       this.charts.growthTrend = chart;
       chart.setOption({
         tooltip: { trigger: 'axis' },
-        legend: { data: ['累计字段数量', '累计文件数量'], top: 10, icon: 'emptyCircle' },
+        legend: {
+          data: [this.$t('assetReport.cumulativeFieldCount'), this.$t('assetReport.cumulativeFileCount')],
+          top: 10,
+          icon: 'emptyCircle'
+        },
         grid: { left: '3%', right: '4%', bottom: '5%', containLabel: true },
         xAxis: {
           type: 'category',
@@ -417,8 +421,8 @@ export default {
           axisLine: { lineStyle: { color: '#eef0f6' } },
           axisLabel: { color: '#666' }
         },
-        yAxis: { 
-          name: '数量',
+        yAxis: {
+          name: this.$t('assetReport.quantity'),
           nameTextStyle: { color: '#999', padding: [0, 20, 0, 0] },
           type: 'value',
           splitLine: { lineStyle: { type: 'dashed', color: '#eef0f6' } },
@@ -426,7 +430,7 @@ export default {
         },
         series: [
           {
-            name: '累计字段数量',
+            name: this.$t('assetReport.cumulativeFieldCount'),
             type: 'line',
             symbol: 'emptyCircle',
             symbolSize: 6,
@@ -435,7 +439,7 @@ export default {
             itemStyle: { color: '#3b82f6' }
           },
           {
-            name: '累计文件数量',
+            name: this.$t('assetReport.cumulativeFileCount'),
             type: 'line',
             symbol: 'emptyCircle',
             symbolSize: 6,
@@ -473,7 +477,7 @@ export default {
       this.charts.classification.setOption({
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
         grid: { left: '3%', right: '8%', bottom: '5%', top: '5%', containLabel: true },
-        xAxis: { 
+        xAxis: {
           type: 'value',
           splitLine: { lineStyle: { type: 'dashed', color: '#eef0f6' } },
           axisLabel: { color: '#666' }
@@ -487,7 +491,7 @@ export default {
         },
         series: [
           {
-            name: '数据量',
+            name: this.$t('assetReport.dataVolume'),
             type: 'bar',
             barWidth: 15,
             itemStyle: { color: '#3b82f6', borderRadius: [0, 4, 4, 0] },
@@ -516,7 +520,7 @@ export default {
         legend: { orient: 'vertical', right: '5%', top: 'center', icon: 'roundRect' },
         series: [
           {
-            name: '数据分级',
+            name: this.$t('assetReport.dataLevel'),
             type: 'pie',
             radius: ['45%', '70%'],
             center: ['40%', '50%'],
@@ -574,7 +578,7 @@ export default {
         },
         series: [
           {
-            name: '数据量',
+            name: this.$t('assetReport.dataVolume'),
             type: 'heatmap',
             data: data,
             label: { show: true, color: '#333' },
@@ -596,15 +600,15 @@ export default {
       if (!dom) return;
       const chart = echarts.init(dom);
       this.charts.systemCategory = chart;
-      
+
       const categories = [];
       const systems = [];
-      
+
       chart.setOption({
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
         legend: { data: categories, top: 10, icon: 'roundRect' },
         grid: { left: '3%', right: '4%', bottom: '5%', top: '15%', containLabel: true },
-        xAxis: { 
+        xAxis: {
           type: 'value',
           splitLine: { lineStyle: { type: 'dashed', color: '#eef0f6' } },
           axisLabel: { color: '#666' }
@@ -634,6 +638,7 @@ export default {
   padding: 40px;
   height: 100%;
 }
+
 /* ===== 页面头部 ===== */
 .form-label {
   font-weight: 600;
