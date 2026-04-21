@@ -15,5 +15,7 @@ export default {
   'importResult': 'Import Result',
   'resetPassword': 'Reset Password',
   'enable': 'Enable',
-  'disable': 'Disable'
+  'disable': 'Disable',
+  'clean': 'Clean',
+  'unlock': 'Unlock'
 }

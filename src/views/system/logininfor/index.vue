@@ -6,12 +6,12 @@
           <el-input v-model="queryParams.ipaddr" placeholder="请输入登录地址" clearable style="width: 240px;"
             @change="handleQuery" />
         </el-form-item> -->
-        <el-form-item label="用户名称" prop="userName">
-          <el-input v-model="queryParams.userName" placeholder="请输入用户名称" clearable style="width: 240px;"
+        <el-form-item :label="$t('logininfor.userName')" prop="userName">
+          <el-input v-model="queryParams.userName" :placeholder="$t('logininfor.inputUserName')" clearable style="width: 240px;"
             @change="handleQuery" />
         </el-form-item>
-        <el-form-item label="登录状态" prop="status">
-          <el-select v-model="queryParams.status" placeholder="登录状态" clearable style="width: 240px"
+        <el-form-item :label="$t('logininfor.loginStatus')" prop="status">
+          <el-select v-model="queryParams.status" :placeholder="$t('logininfor.loginStatus')" clearable style="width: 240px"
             @change="handleQuery">
             <el-option v-for="dict in dict.type.sys_common_status" :key="dict.value" :label="dict.label"
               :value="dict.value" />
@@ -27,19 +27,19 @@
       <el-row :gutter="10" class="mb8">
         <!-- <el-col :span="1.5">
           <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
-            v-hasPermi="['system:logininfor:remove']">删除</el-button>
+            v-hasPermi="['system:logininfor:remove']">{{ $t('delete') }}</el-button>
         </el-col>
         <el-col :span="1.5">
           <el-button type="danger" plain icon="el-icon-delete" size="mini" @click="handleClean"
-            v-hasPermi="['system:logininfor:remove']">清空</el-button>
+            v-hasPermi="['system:logininfor:remove']">{{ $t('clean') }}</el-button>
         </el-col>
         <el-col :span="1.5">
           <el-button type="primary" plain icon="el-icon-unlock" size="mini" :disabled="single" @click="handleUnlock"
-            v-hasPermi="['system:logininfor:unlock']">解锁</el-button>
+            v-hasPermi="['system:logininfor:unlock']">{{ $t('unlock') }}</el-button>
         </el-col> -->
         <el-col :span="1.5">
           <el-button type="info" plain icon="el-icon-download" @click="handleExport"
-            v-hasPermi="['system:logininfor:export']">导出</el-button>
+            v-hasPermi="['system:logininfor:export']">{{ $t('export') }}</el-button>
         </el-col>
       </el-row>
     </div>
@@ -48,16 +48,16 @@
         :default-sort="defaultSort" @sort-change="handleSortChange">
         <el-table-column type="selection" width="55" align="center" />
         <!-- <el-table-column label="访问编号" align="center" prop="infoId" /> -->
-        <el-table-column label="用户名称" align="center" prop="userName" width="300" :show-overflow-tooltip="true"
+        <el-table-column :label="$t('logininfor.userName')" align="center" prop="userName" width="300" :show-overflow-tooltip="true"
           sortable="custom" :sort-orders="['descending', 'ascending']" />
-        <el-table-column label="IP地址" align="center" prop="ipaddr" width="260" :show-overflow-tooltip="true" />
-        <el-table-column label="登录状态" align="center" prop="status">
+        <el-table-column :label="$t('logininfor.ipAddress')" align="center" prop="ipaddr" width="260" :show-overflow-tooltip="true" />
+        <el-table-column :label="$t('logininfor.loginStatus')" align="center" prop="status">
           <template slot-scope="scope">
             <dict-tag :options="dict.type.sys_common_status" :value="scope.row.status" />
           </template>
         </el-table-column>
         <!-- <el-table-column label="描述" align="center" prop="msg" /> -->
-        <el-table-column label="访问时间" align="center" prop="accessTime" sortable="custom"
+        <el-table-column :label="$t('logininfor.accessTime')" align="center" prop="accessTime" sortable="custom"
           :sort-orders="['descending', 'ascending']">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.accessTime) }}</span>
@@ -151,29 +151,29 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const infoIds = row.infoId || this.ids;
-      this.$modal.confirm('是否确认删除访问编号为"' + infoIds + '"的数据项？').then(function () {
+      this.$modal.confirm(this.$t('logininfor.confirmDelete', { ids: infoIds })).then(function () {
         return delLogininfor(infoIds);
       }).then(() => {
         this.getList();
-        this.$modal.msgSuccess("删除成功");
+        this.$modal.msgSuccess(this.$t('logininfor.deleteSuccess'));
       }).catch(() => { });
     },
     /** 清空按钮操作 */
     handleClean() {
-      this.$modal.confirm('是否确认清空所有登录日志数据项？').then(function () {
+      this.$modal.confirm(this.$t('logininfor.confirmClean')).then(function () {
         return cleanLogininfor();
       }).then(() => {
         this.getList();
-        this.$modal.msgSuccess("清空成功");
+        this.$modal.msgSuccess(this.$t('logininfor.cleanSuccess'));
       }).catch(() => { });
     },
     /** 解锁按钮操作 */
     handleUnlock() {
       const username = this.selectName;
-      this.$modal.confirm('是否确认解锁用户"' + username + '"数据项?').then(function () {
+      this.$modal.confirm(this.$t('logininfor.confirmUnlock', { username: username })).then(function () {
         return unlockLogininfor(username);
       }).then(() => {
-        this.$modal.msgSuccess("用户" + username + "解锁成功");
+        this.$modal.msgSuccess(this.$t('logininfor.unlockSuccess', { username: username }));
       }).catch(() => { });
     },
     /** 导出按钮操作 */

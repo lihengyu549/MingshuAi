@@ -10,6 +10,8 @@ import dataFrom from './dataFrom'
 import assetCatalog from './assetCatalog'
 import user from './user'
 import role from './role'
+import operlog from './operlog'
+import logininfor from './logininfor'
 
 export default {
   ...common,
@@ -23,5 +25,7 @@ export default {
   dataFrom,
   assetCatalog,
   user,
-  role
+  role,
+  operlog,
+  logininfor
 }

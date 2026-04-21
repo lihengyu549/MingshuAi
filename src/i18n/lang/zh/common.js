@@ -15,5 +15,7 @@ export default {
   'importResult': '导入结果',
   'resetPassword': '重置密码',
   'enable': '启用',
-  'disable': '停用'
+  'disable': '停用',
+  'clean': '清空',
+  'unlock': '解锁'
 }
