@@ -321,24 +321,6 @@ export default {
         { name: "低", id: 1, value: "1" },
         { name: "高", id: 2, value: "2" },
       ],
-      addOptions: [
-        {
-          value: 1,
-          label: "1级"
-        }, {
-          value: 2,
-          label: "2级"
-        }, {
-          value: 3,
-          label: "3级"
-        }, {
-          value: 4,
-          label: "4级"
-        }, {
-          value: 5,
-          label: "5级"
-        },
-      ],
       resultFormNodeName: '',
       treeID: '',
       categoryList: [],
@@ -377,13 +359,6 @@ export default {
           label: "5级"
         },
       ],
-      databaseTypeList: [
-        { name: "MYSQL", id: 0, value: "MYSQL" },
-        { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
-        { name: "TIDB", id: 2, value: "TIDB" },
-        { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" },
-        { name: "达梦", id: 4, value: "DM" },
-        { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       drawerShow: false,
       samplingNum: 10,
       checkList: true,
@@ -454,6 +429,16 @@ export default {
       // 数据库代理表格数据
       setList: [
         {
+          label: "字段名",
+          prop: "fieldName",
+          width: "150"
+        },
+        {
+          label: "文件名",
+          prop: "fileName",
+          width: "150"
+        },
+        {
           label: "来源业务系统",
           prop: "businessName",
           width: "150"
@@ -503,11 +488,6 @@ export default {
           prop: "classificationReasons",
           width: "150"
         },
-        // {
-        //   label: "推理过程",
-        //   prop: "reasoningProcess",
-        //   width: "250"
-        // },
         {
           label: "个保法合规审查",
           prop: "piiDetectionName",
@@ -663,6 +643,8 @@ export default {
     const targetPath = to.path || '';
     if (!targetPath.startsWith('/fixResults')) {
       sessionStorage.removeItem('viewResults_queryParams');
+      // 【修复】导航到非页面3时，同步清除原始参数缓存，避免下次从页面1进入时读到脏数据
+      sessionStorage.removeItem('viewResults_originalQueryParams');
       sessionStorage.removeItem('prevPage');
     }
     next();
@@ -678,10 +660,25 @@ export default {
     const drawerData = this.$route.query?.drawerData;
     let queryParams = this.$route.query?.queryParams;
 
-    if (queryParams) {
+    // 【修复核心】originalQueryParams 只记录页面1传来的原始查询参数：
+    // - 首次从页面1进入时：提取路由参数中页面1的字段并持久化到 sessionStorage
+    // - 从页面3返回时：复用 sessionStorage 中已持久化的原始参数，不被页面2自身的 queryParams 覆盖
+    const savedOriginalParams = sessionStorage.getItem('viewResults_originalQueryParams');
+    if (savedOriginalParams) {
+      // 从页面3返回：直接复用之前保存的纯净原始参数
+      try {
+        this.originalQueryParams = JSON.parse(savedOriginalParams);
+      } catch (e) {
+        this.originalQueryParams = {};
+      }
+    } else if (queryParams) {
+      // 首次从页面1进入：排除页面2专属字段（projectId/databaseId/sourceType 由 drawerData 注入）
+      // 只保留页面1搜索框真正传过来的查询字段
       const params = typeof queryParams === 'string' ? JSON.parse(queryParams) : queryParams;
-      const { pageNum, pageSize, ...rest } = params;
+      const { pageNum, pageSize, projectId, databaseId, sourceType, ...rest } = params;
       this.originalQueryParams = { ...rest };
+      // 持久化原始参数，以便从页面3返回时仍能正确取到
+      sessionStorage.setItem('viewResults_originalQueryParams', JSON.stringify(this.originalQueryParams));
     }
 
     // 页面加载时优先检查sessionStorage中是否有保存的查询条件（从fixResults返回的情况）
@@ -815,25 +812,16 @@ export default {
 
     nameTestingFn(val) {
       this.form.sourceName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-      // nameTesting().then(res=>{
-      //   console.log(res);
-      // })
     },
 
     businessNameFn(val) {
       this.form.businessName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-      // nameTesting().then(res=>{
-      //   console.log(res);
-      // })
     },
     targetIpRulesFn() {
 
     },
     importNameTestingFn(val) {
       this.importData.sourceName = val.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-      // nameTesting().then(res=>{
-      //   console.log(res);
-      // })
     },
 
     handleAdd() {
@@ -919,9 +907,12 @@ export default {
         })
     },
     handleBack() {
-      const paramsToSave = this.originalQueryParams || this.$route.query.queryParams || {};
+      // 【修复】只使用 originalQueryParams（页面1的原始查询字段），不传入页面2专属字段
+      const paramsToSave = this.originalQueryParams || {};
       sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(paramsToSave));
       sessionStorage.setItem('prevPage', 'viewResults');
+      // 离开页面2时清除原始参数缓存，避免下次从页面1进入时错误复用
+      sessionStorage.removeItem('viewResults_originalQueryParams');
       this.$router.push({
         path: 'classificationTask/hierarchicalTask',
         query: {
@@ -978,11 +969,6 @@ export default {
             targetUserName: this.form.targetUserName,
             targetUserPassword: this.form.targetUserPassword,
             databaseType: this.findDatabaseValueByName(this.form.databaseType)
-            // targetIp: "192.168.3.14",
-            // targetPort: "3306",
-            // targetUserName: "root",
-            // targetUserPassword: "Mysql123!@#",
-            // databaseType: "MYSQL"
           }
           databaseListI(data).then((res => {
             if (res.code == 200) {
@@ -1143,7 +1129,6 @@ export default {
       this.multiple = !selection.length
     },
     resultExdit(row) {
-      console.log('row', row);
       // 保存当前页面的查询条件到sessionStorage
       sessionStorage.setItem('viewResults_queryParams', JSON.stringify(this.queryParams));
       // 记录跳转来源为viewResults，用于fixResults页面返回时判断
@@ -1692,8 +1677,6 @@ export default {
 }
 
 .searchBtn /deep/ .el-form-item__content {
-  /* margin-left: 385px */
-  /* width: 75%; */
   display: flex;
   justify-content: flex-end
 }
