@@ -1,0 +1,15 @@
+export default {
+  dataSetName: '数据集名称',
+  inputDataSetName: '请输入数据集名称',
+  dataSetType: '数据集类型',
+  selectDataSetType: '请选择数据集类型',
+  addDataSet: '新增数据集',
+  deleteDataSet: '删除数据集',
+  dataSize: '数据量',
+  view: '查看',
+  selectContent: '选择内容',
+  selectContentPlaceholder: '请选择内容',
+  noData: '暂无数据',
+  editDataSet: '编辑数据集',
+  viewDataSet: '查看数据集',
+}

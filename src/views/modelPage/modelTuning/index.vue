@@ -3,21 +3,24 @@
         <el-card class="search-card" shadow="never">
             <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
                 :inline="true" label-width="auto">
-                <el-form-item label="任务名称" prop="modelTaskName">
-                    <el-input v-model="queryParams.modelTaskName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+                <el-form-item :label="$t('modelTuning.taskName')" prop="modelTaskName">
+                    <el-input v-model="queryParams.modelTaskName" @input="inputSearch"
+                        :placeholder="$t('modelTuning.inputDataSourceName')" clearable
                         @keyup.enter.native="handleQuery" />
                 </el-form-item>
-                <el-form-item label="训练状态 " prop="modelTrainingStatus">
+                <el-form-item :label="$t('modelTuning.trainingStatus')" prop="modelTrainingStatus">
                     <el-select clearable v-model="queryParams.modelTrainingStatus" @change="inputSearch"
-                        placeholder="请选择训练状态">
+                        :placeholder="$t('modelTuning.selectTrainingStatus')">
                         <el-option v-for="item in dict.type.sys_model_drill" :key="item.value" :label="item.label"
                             :value="item.value">
                         </el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="数据集 " prop="dataSetId">
-                    <el-select clearable v-model="queryParams.dataSetId" @change="inputSearch" placeholder="请选择数据集">
-                        <el-option v-for="item in dataSetList" :key="item.id" :label="item.dataSetName" :value="item.id">
+                <el-form-item :label="$t('modelTuning.dataSet')" prop="dataSetId">
+                    <el-select clearable v-model="queryParams.dataSetId" @change="inputSearch"
+                        :placeholder="$t('modelTuning.selectDataSet')">
+                        <el-option v-for="item in dataSetList" :key="item.id" :label="item.dataSetName"
+                            :value="item.id">
                         </el-option>
                     </el-select>
                 </el-form-item>
@@ -25,62 +28,75 @@
         </el-card>
         <el-row :gutter="10" class="mb8">
             <el-col :span="1.5">
-                <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">新增任务</el-button>
+                <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">{{
+                    $t('modelTuning.addTask') }}</el-button>
             </el-col>
             <el-col :span="1.5">
-                <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">删除任务 </el-button>
+                <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">{{
+                    $t('modelTuning.deleteTask') }}</el-button>
             </el-col>
         </el-row>
         <el-card class="table-card" shadow="never">
-            <el-table v-loading="loading" class="tableBox" :data="proxysList"
-            @selection-change="handleSelectionChange" ref="tableRef">
-            <template slot="empty">
-                <el-empty description="暂无数据"></el-empty>
-            </template>
-            <el-table-column type="selection" width="60" align="center" :selectable="isRowSelectable" />
-            <el-table-column label="任务名称" prop="modelTaskName" align="left" width="200" show-overflow-tooltip>
-                <template slot-scope="scope">
-                    <span @click="handleEdit(scope.row)" style="cursor: pointer; color: #409eff;">
-                        <svg-icon icon-class="dataset" style="font-size: 16px; margin-right: 5px;" />
-                        {{ scope.row.modelTaskName }}
-                    </span>
+            <el-table v-loading="loading" class="tableBox" :data="proxysList" @selection-change="handleSelectionChange"
+                ref="tableRef">
+                <template slot="empty">
+                    <el-empty :description="$t('dataManagement.noData')"></el-empty>
                 </template>
-            </el-table-column>
-            <el-table-column label="基座类型" align="center" prop="modelBase" width="150" show-overflow-tooltip />
-            <el-table-column label="训练方法" align="center" prop="modelTrainingMethod" width="150" show-overflow-tooltip />
-            <el-table-column label="训练状态" align="center" prop="modelTrainingStatusName" width="150" show-overflow-tooltip />
-            <el-table-column label="数据集" align="center" prop="dataSetId" width="150" show-overflow-tooltip>
-                <template slot-scope="scope">
-                    {{ scope.row.dataSet ? scope.row.dataSet.dataSetName : '-' }}
-                </template>
-            </el-table-column>
-            <el-table-column label="产出模型名称" align="center" prop="modelOutputName" width="300" show-overflow-tooltip />
-            <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="200">
-                <template slot-scope="scope">
-                    <el-button size="mini" type="text" @click="startTraining(scope.row)" :disabled="scope.row.modelTrainingStatus == '2' || scope.row.modelTrainingStatus == '5'">开始训练</el-button>
-                    <el-button size="mini" type="text" @click="stopTraining(scope.row)" :disabled="scope.row.modelTrainingStatus != '2'">终止训练</el-button>
-                </template>
-            </el-table-column>
-        </el-table>
-        <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-            :pageSize.sync="queryParams.pageSize" @pagination="getList" />
+                <el-table-column type="selection" width="60" align="center" :selectable="isRowSelectable" />
+                <el-table-column :label="$t('modelTuning.taskName')" prop="modelTaskName" align="left" width="200"
+                    show-overflow-tooltip>
+                    <template slot-scope="scope">
+                        <span @click="handleEdit(scope.row)" style="cursor: pointer; color: #409eff;">
+                            <svg-icon icon-class="dataset" style="font-size: 16px; margin-right: 5px;" />
+                            {{ scope.row.modelTaskName }}
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column :label="$t('modelTuning.baseType')" align="center" prop="modelBase" width="150"
+                    show-overflow-tooltip />
+                <el-table-column :label="$t('modelTuning.trainingMethod')" align="center" prop="modelTrainingMethod"
+                    width="150" show-overflow-tooltip />
+                <el-table-column :label="$t('modelTuning.trainingStatus')" align="center" prop="modelTrainingStatusName"
+                    width="150" show-overflow-tooltip />
+                <el-table-column :label="$t('modelTuning.dataSet')" align="center" prop="dataSetId" width="150"
+                    show-overflow-tooltip>
+                    <template slot-scope="scope">
+                        {{ scope.row.dataSet ? scope.row.dataSet.dataSetName : '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column :label="$t('modelTuning.outputModelName')" align="center" prop="modelOutputName"
+                    width="300" show-overflow-tooltip />
+                <el-table-column :label="$t('operation')" align="center" class-name="small-padding fixed-width"
+                    min-width="200">
+                    <template slot-scope="scope">
+                        <el-button size="mini" type="text" @click="startTraining(scope.row)"
+                            :disabled="scope.row.modelTrainingStatus == '2' || scope.row.modelTrainingStatus == '5'">{{
+                                $t('modelTuning.startTraining') }}</el-button>
+                        <el-button size="mini" type="text" @click="stopTraining(scope.row)"
+                            :disabled="scope.row.modelTrainingStatus != '2'">{{ $t('modelTuning.stopTraining')
+                            }}</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+                :pageSize.sync="queryParams.pageSize" @pagination="getList" />
         </el-card>
-        <Drawer :title="title" v-loading="dialogLoading" :visible.sync="dialogDataShow" append-to-body
+        <Drawer :title="dialogTitle" v-loading="dialogLoading" :visible.sync="dialogDataShow" append-to-body
             :close-on-click-modal="false">
             <el-form slot="body" class="dialogForm" :rules="dialogDataRules" :model="dialogData" size="medium"
                 ref="dialogData" :inline="true" label-width="110px" label-position="top">
-                <Title title="基本信息" />
+                <Title :title="$t('modelTuning.basicInfo')" />
                 <el-row>
                     <el-col :span="12">
-                        <el-form-item label="任务名称" prop="modelTaskName">
-                            <el-input v-model="dialogData.modelTaskName" placeholder="请输入任务名称"
+                        <el-form-item :label="$t('modelTuning.taskName')" prop="modelTaskName">
+                            <el-input v-model="dialogData.modelTaskName" :placeholder="$t('modelTuning.inputTaskName')"
                                 :disabled="isViewMode"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="训练方式" prop="modelTrainingMethod">
-                            <el-select clearable v-model="dialogData.modelTrainingMethod" placeholder="请选择训练方式"
-                                :disabled="true">
+                        <el-form-item :label="$t('modelTuning.trainingMethod2')" prop="modelTrainingMethod">
+                            <el-select clearable v-model="dialogData.modelTrainingMethod"
+                                :placeholder="$t('modelTuning.selectTrainingMethod')" :disabled="true">
                                 <el-option label="SFT微调训练" value="SFT微调训练"></el-option>
                             </el-select>
                         </el-form-item>
@@ -88,17 +104,17 @@
                 </el-row>
                 <el-row>
                     <el-col :span="12">
-                        <el-form-item label="基座模型" prop="modelBase">
-                            <el-select clearable v-model="dialogData.modelBase" placeholder="请选择基座模型"
-                                :disabled="true">
+                        <el-form-item :label="$t('modelTuning.baseModel')" prop="modelBase">
+                            <el-select clearable v-model="dialogData.modelBase"
+                                :placeholder="$t('modelTuning.selectBaseModel')" :disabled="true">
                                 <el-option label="Qwen3-4B" value="Qwen3-4B"></el-option>
                             </el-select>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="训练数据集" prop="dataSetId">
-                            <el-select clearable v-model="dialogData.dataSetId" placeholder="请选择训练数据集"
-                                :disabled="isViewMode">
+                        <el-form-item :label="$t('modelTuning.trainingDataSet')" prop="dataSetId">
+                            <el-select clearable v-model="dialogData.dataSetId"
+                                :placeholder="$t('modelTuning.selectTrainingDataSet')" :disabled="isViewMode">
                                 <el-option v-for="item in dataSetList" :key="item.id" :label="item.dataSetName"
                                     :value="item.id">
                                 </el-option>
@@ -106,46 +122,43 @@
                         </el-form-item>
                     </el-col>
                 </el-row>
-                <el-form-item label="模型导出名称" prop="modelOutputName">
-                    <el-input v-model="dialogData.modelOutputName" placeholder="请输入模型导出名称"
+                <el-form-item :label="$t('modelTuning.modelExportName')" prop="modelOutputName">
+                    <el-input v-model="dialogData.modelOutputName" :placeholder="$t('modelTuning.inputModelExportName')"
                         :disabled="true"></el-input>
                 </el-form-item>
-                <Title title="参数配置">
+                <Title :title="$t('modelTuning.paramConfig')">
                     <el-button type="text" icon="el-icon-refresh-right" size="mini" style="float: inline-end;"
-                        @click="resetParam">恢复默认配置</el-button>
+                        @click="resetParam">{{ $t('modelTuning.restoreDefaultConfig') }}</el-button>
                 </Title>
                 <el-form-item prop="modelParameterConfigJson">
                     <el-table :data="dialogData.modelParameterConfigJson" style="width: 100%">
                         <template slot="empty">
-                            <el-empty description="暂无数据"></el-empty>
+                            <el-empty :description="$t('dataManagement.noData')"></el-empty>
                         </template>
-                        <el-table-column label="参数名称" prop="paramName" align="center" width="150"
-                            show-overflow-tooltip />
-                        <el-table-column label="配置" prop="paramValue" align="center" width="150">
+                        <el-table-column :label="$t('modelTuning.paramName')" prop="paramName" align="center"
+                            width="150" show-overflow-tooltip />
+                        <el-table-column :label="$t('modelTuning.config')" prop="paramValue" align="center" width="150">
                             <template slot-scope="scope">
                                 <!-- 根据参数类型动态渲染输入组件 -->
-                                <el-select v-if="scope.row.type === 'select'" v-model="scope.row.paramValue" 
-                                    placeholder="请选择配置" :disabled="isViewMode" style="width: 100%;">
-                                    <el-option 
-                                        v-for="option in scope.row.options" 
-                                        :key="option.value" 
-                                        :label="option.label" 
-                                        :value="option.value">
+                                <el-select v-if="scope.row.type === 'select'" v-model="scope.row.paramValue"
+                                    :placeholder="$t('modelTuning.selectConfig')" :disabled="isViewMode"
+                                    style="width: 100%;">
+                                    <el-option v-for="option in scope.row.options" :key="option.value"
+                                        :label="option.label" :value="option.value">
                                     </el-option>
                                 </el-select>
-                                <el-input v-else v-model="scope.row.paramValue" 
-                                    placeholder="请输入配置" 
-                                    :disabled="isViewMode"></el-input>
+                                <el-input v-else v-model="scope.row.paramValue"
+                                    :placeholder="$t('modelTuning.inputConfig')" :disabled="isViewMode"></el-input>
                             </template>
                         </el-table-column>
-                        <el-table-column label="说明" prop="paramDesc" align="center" min-width="150"
-                            show-overflow-tooltip />
+                        <el-table-column :label="$t('modelTuning.description')" prop="paramDesc" align="center"
+                            min-width="150" show-overflow-tooltip />
                     </el-table>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button type="primary" plain @click="submitFormFn" v-if="!isViewMode">确 定</el-button>
-                <el-button @click="importcancel">取 消</el-button>
+                <el-button type="primary" plain @click="submitFormFn" v-if="!isViewMode">{{ $t('confirm') }}</el-button>
+                <el-button @click="importcancel">{{ $t('cancel') }}</el-button>
             </div>
         </Drawer>
     </div>
@@ -183,7 +196,7 @@ export default {
             // 数据集表格数据
             proxysList: [],
             // 弹出层标题
-            title: "",
+            dialogTitle: "",
             // 是否显示弹出层
             dialogDataShow: false,
             // 当前是否为查看模式
@@ -215,7 +228,7 @@ export default {
                 modelTrainingMethod: [
                     { required: true, message: "请选择训练方式", trigger: "blur" }
                 ],
-                modelBase: [    
+                modelBase: [
                     { required: true, message: "请选择基座模型", trigger: "blur" }
                 ],
                 dataSetId: [
@@ -230,16 +243,16 @@ export default {
             pushList: [],       // 推送类型列表
             standardList: [],   // 分类分级标准列表
             defaultParamList: [
-                { paramName: "batch_size", paramValue: "1", paramDesc: "批次大小，代表模型训练过程中，模型更新模型参数的数据步长", type: "input" },
-                { paramName: "learning_rate", paramValue: "0.0001", paramDesc: "学习率，代表每次更新数据的增量参数权重，学习率数值越大参数更新越快，可能导致模型训练不稳定", type: "input" },
+                { paramName: "batch_size", paramValue: "1", paramDesc: this.$t('modelTuning.batchSizeDesc'), type: "input" },
+                { paramName: "learning_rate", paramValue: "0.0001", paramDesc: this.$t('modelTuning.learningRateDesc'), type: "input" },
                 {
-                    paramName: "lr_scheduler_type", paramValue: "cosine", paramDesc: "学习率调整策略，选择不同的学习率策略，动态地改变模型在训练过程中的学习率", type: "select", options: [
+                    paramName: "lr_scheduler_type", paramValue: "cosine", paramDesc: this.$t('modelTuning.lrSchedulerTypeDesc'), type: "select", options: [
                         { label: "linear", value: "linear" },
                         { label: "cosine", value: "cosine" },
                     ]
                 },
-                { paramName: "max_length", paramValue: "2048", paramDesc: "序列长度，单个训练数据样本的最大长度，超出配置长度将丢弃", type: "input" },
-                { paramName: "weight_decay", paramValue: "0.01", paramDesc: "权重衰减，用于在优化过程中对模型参数施加L2正则化，防止过拟合", type: "input" }
+                { paramName: "max_length", paramValue: "2048", paramDesc: this.$t('modelTuning.maxLengthDesc'), type: "input" },
+                { paramName: "weight_decay", paramValue: "0.01", paramDesc: this.$t('modelTuning.weightDecayDesc'), type: "input" }
             ]
         };
     },
@@ -338,10 +351,10 @@ export default {
             const timeStr = now.toTimeString().slice(0, 5).replace(':', '');
             this.dialogData.modelOutputName = `MingShu_${dateStr}_${timeStr}`;
             this.dialogDataShow = true;
-            this.title = "新增数据集";
+            this.dialogTitle = this.$t('modelTuning.addDataSet');
             this.isViewMode = false;
         },
-        
+
         /** 编辑按钮操作 */
         handleEdit(row) {
             this.resetAddData();
@@ -352,10 +365,10 @@ export default {
                 this.dialogData.modelParameterConfigJson = [];
             }
             this.dialogDataShow = true;
-            this.title = "编辑数据集";
+            this.dialogTitle = this.$t('modelTuning.editDataSet');
             this.isViewMode = false;
         },
-        
+
         /** 查看按钮操作 */
         handleView(row) {
             this.resetAddData();
@@ -366,7 +379,7 @@ export default {
                 this.dialogData.modelParameterConfigJson = [];
             }
             this.dialogDataShow = true;
-            this.title = "查看数据集";
+            this.dialogTitle = this.$t('modelTuning.viewDataSet');
             this.isViewMode = true;
         },
 
@@ -411,7 +424,7 @@ export default {
                 }).catch(error => {
                     console.error("终止训练失败:", error);
                     this.$message.error("终止训练失败");
-                }); 
+                });
             }).catch(() => {
                 // 取消操作
             });
@@ -507,35 +520,35 @@ export default {
 </script>
 <style scoped>
 .search-card {
-  border-radius: 10px;
-  margin-bottom: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
 
-  .el-form-item {
-    margin-bottom: 0;
-  }
+    .el-form-item {
+        margin-bottom: 0;
+    }
 }
 
 .table-card {
-  border-radius: 10px;
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-
-  .el-card__body {
-    padding: 0;
+    border-radius: 10px;
     flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-  }
+
+    .el-card__body {
+        padding: 0;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
 }
 
 .tableBox {
-  overflow-y: auto;
-  border: none;
-  border-radius: 0;
-  border-bottom: 1px solid #e2e8f0;
+    overflow-y: auto;
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .yuanDataClass {

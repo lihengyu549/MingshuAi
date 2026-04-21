@@ -16,6 +16,9 @@ import systemInformation from './systemInformation'
 import dict from './dict'
 import sysDesign from './sysDesign'
 import menu from './menu'
+import textModel from './textModel'
+import dataManagement from './dataManagement'
+import modelTuning from './modelTuning'
 
 export default {
   ...common,
@@ -35,5 +38,8 @@ export default {
   systemInformation,
   dict,
   sysDesign,
-  menu
+  menu,
+  textModel,
+  dataManagement,
+  modelTuning
 }

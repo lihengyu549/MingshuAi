@@ -1,0 +1,23 @@
+export default {
+  minutes: 'Minutes',
+  seconds: 'Seconds',
+  searchModel: 'Search model...',
+  interfaceAddress: 'API Address',
+  inputInterfaceAddress: 'Please enter API address',
+  apiKey: 'API Key',
+  inputApiKey: 'Please enter API key',
+  modelName: 'Model Name',
+  selectModel: 'Please select model',
+  refreshModelList: 'Refresh Model List',
+  modelTemperature: 'Model Temperature',
+  requestTimeout: 'Request Timeout',
+  testConnection: 'Test Connection',
+  saveConfig: 'Save Configuration',
+  seconds30: '30 Seconds',
+  seconds60: '60 Seconds',
+  minutes2: '2 Minutes',
+  minutes5: '5 Minutes',
+  pleaseSelectModel: 'Please select model',
+  requestTimeoutTooltip: 'Set the maximum waiting time for API requests. If the request exceeds this time without responding, the connection will be automatically interrupted. Suggested to adjust based on the network environment and task complexity.',
+  temperatureTooltip: 'Control the randomness and creativity of the model output. Lower values (0.1-0.3) produce more deterministic answers, while higher values (0.7-1.0) produce more creative answers.'
+}

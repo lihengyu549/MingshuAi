@@ -1,0 +1,16 @@
+export default {
+  dataSetName: 'Dataset Name',
+  inputDataSetName: 'Please enter dataset name',
+  dataSetType: 'Dataset Type',
+  selectDataSetType: 'Please select dataset type',
+  addDataSet: 'Add Dataset',
+  deleteDataSet: 'Delete Dataset',
+  dataSize: 'Data Size',
+  view: 'View',
+  selectContent: 'Select Content',
+  selectContentPlaceholder: 'Please select content',
+  noData: 'No Data',
+  addDataSet: 'Add Dataset',
+  editDataSet: 'Edit Dataset',
+  viewDataSet: 'View Dataset',
+}

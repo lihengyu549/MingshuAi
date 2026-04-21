@@ -12,7 +12,7 @@
                     <div class="left-sidebar">
                         <!-- 搜索框 -->
                         <div style="padding: 5%;">
-                            <el-input placeholder="搜索模型..." v-model="searchKeyword" clearable class="search-input">
+                            <el-input :placeholder="$t('textModel.searchModel')" v-model="searchKeyword" clearable class="search-input">
                                 <i slot="prefix" class="el-input__icon el-icon-search"></i>
                             </el-input>
                         </div>
@@ -43,7 +43,7 @@
                             <svg-icon
                                 :icon-class="currentModel.label == 'Ollama' ? 'Ollama' : currentModel.label == '阿里云百炼' ? 'alybl' : currentModel.label == 'Deepseek深度求索' ? 'deepseek' : 'lingqi'"
                                 style="margin-right: 10px;"></svg-icon>
-                            <span>{{ currentModel.label || '请选择模型' }}</span>
+                            <span>{{ currentModel.label || $t('textModel.pleaseSelectModel') }}</span>
                             <!-- 右侧主开关 - 调整为内部显示ON/OFF，右侧开关只读展示 -->
                             <el-switch v-model="currentModel.enabled" active-color="#13ce66" inactive-color="#e9ecef"
                                 class="inner-text-switch" style="margin-left: auto;" disabled></el-switch>
@@ -51,26 +51,24 @@
 
                         <!-- 表单内容 -->
                         <el-form label-width="100px" class="config-form" :disabled="!currentModel.enabled">
-                            <el-form-item label="接口地址">
-                                <el-input v-model="currentModel.apiUrl" placeholder="请输入接口地址"
+                            <el-form-item :label="$t('textModel.interfaceAddress')">
+                                <el-input v-model="currentModel.apiUrl" :placeholder="$t('textModel.inputInterfaceAddress')"
                                     style="width: 100%;"></el-input>
                             </el-form-item>
                             <el-form-item
                                 v-if="currentModel.name == 'aliyun' || currentModel.name == 'deepseek' || currentModel.name == 'lingqi'"
-                                label="API密钥">
-                                <el-input v-model="currentModel.apiKey" placeholder="请输入API密钥" type="password"
+                                :label="$t('textModel.apiKey')">
+                                <el-input v-model="currentModel.apiKey" :placeholder="$t('textModel.inputApiKey')" type="password"
                                     style="width: 100%;"></el-input>
                             </el-form-item>
 
-                            <el-form-item label="模型名称">
-                                <el-select v-model="currentModel.modelName" placeholder="请选择模型" style="width: 70%;">
+                            <el-form-item :label="$t('textModel.modelName')">
+                                <el-select v-model="currentModel.modelName" :placeholder="$t('textModel.pleaseSelectModel')" style="width: 70%;">
                                     <el-option v-for="item in currentModel.availableModels" :key="item.value"
                                         :label="item.label" :value="item.value"></el-option>
                                 </el-select>
                                 <el-button type="primary" plain style="margin-left: 10px;"
-                                    @click="refreshModelList(currentModel.id)">
-                                    刷新模型列表
-                                </el-button>
+                                    @click="refreshModelList(currentModel.id)">{{ $t('textModel.refreshModelList') }}</el-button>
                             </el-form-item>
 
                             <!-- <el-form-item v-if="currentModel.name == 'ollama'" label="模型特性">
@@ -82,27 +80,27 @@
                         </el-tooltip>
                     </el-form-item> -->
 
-                            <el-form-item label="模型温度">
+                            <el-form-item :label="$t('textModel.modelTemperature')">
                                 <div class="slider-container">
                                     <el-slider v-model="currentModel.temperature" :max="1" :min="0" :step="0.1"
                                         show-tooltip style="flex: 1;" class="temperature"></el-slider>
                                     <!-- .toFixed(1) -->
                                     <span class="slider-value">{{ currentModel.temperature }}</span>
-                                    <el-tooltip content="控制模型输出的随机性和创造性。较低的值（0.1-0.3）产生更确定性的回答，较高的值（0.7-1.0）产生更创造性的回答"
+                                    <el-tooltip :content="$t('textModel.temperatureTooltip')"
                                         placement="top" transition="el-fade-in-linear">
                                         <svg-icon icon-class="dengpao" style="margin-left: 10px;"></svg-icon>
                                     </el-tooltip>
                                 </div>
                             </el-form-item>
 
-                            <el-form-item label="请求超时">
+                            <el-form-item :label="$t('textModel.requestTimeout')">
                                 <div class="slider-container">
                                     <el-slider v-model="currentModel.timeout" :max="300" :min="30" :step="30"
                                         show-tooltip style="flex: 1;" class="timeout"></el-slider>
                                     <span class="slider-value">
                                         {{ formatTimeout(currentModel.timeout) }}
                                     </span>
-                                    <el-tooltip content="设置API请求的最大等待时间。如果请求超过此时间仍未响应，将自动中断连接。建议根据网络环境和任务复杂度调整"
+                                    <el-tooltip :content="$t('textModel.requestTimeoutTooltip')"
                                         placement="top" transition="el-fade-in-linear">
                                         <svg-icon icon-class="dengpao" style="margin-left: 10px;"></svg-icon>
                                     </el-tooltip>
@@ -119,12 +117,8 @@
 
                         <!-- 新增按钮容器 -->
                         <div class="button-container">
-                            <el-button plain @click="handleTest" :disabled="!currentModel.enabled">
-                                测试连接
-                            </el-button>
-                            <el-button type="primary" plain style="margin-left: 10px;" @click="handleSave">
-                                保存配置
-                            </el-button>
+                            <el-button plain @click="handleTest" :disabled="!currentModel.enabled">{{ $t('textModel.testConnection') }}</el-button>
+                            <el-button type="primary" plain style="margin-left: 10px;" @click="handleSave">{{ $t('textModel.saveConfig') }}</el-button>
                         </div>
                     </div>
                 </el-card>
@@ -148,10 +142,10 @@ export default {
             ],
             // 超时选项
             timeoutOptions: [
-                { label: '30秒', value: 30 },
-                { label: '60秒', value: 60 },
-                { label: '2分钟', value: 120 },
-                { label: '5分钟', value: 300 }
+                { label: this.$t('textModel.seconds30'), value: 30 },
+                { label: this.$t('textModel.seconds60'), value: 60 },
+                { label: this.$t('textModel.minutes2'), value: 120 },
+                { label: this.$t('textModel.minutes5'), value: 300 }
             ]
         };
     },
@@ -171,7 +165,17 @@ export default {
             return this.models.find(model => model.name === this.activeModel) || {};
         }
     },
-    methods: {
+    watch: {
+    '$i18n.locale'() {
+      this.timeoutOptions = [
+        { label: this.$t('textModel.seconds30'), value: 30 },
+        { label: this.$t('textModel.seconds60'), value: 60 },
+        { label: this.$t('textModel.minutes2'), value: 120 },
+        { label: this.$t('textModel.minutes5'), value: 300 }
+      ]
+    }
+  },
+  methods: {
         // 初始化
         async init() {
             // 初始化当前模型的列表
@@ -278,9 +282,9 @@ export default {
         // 格式化超时显示
         formatTimeout(seconds) {
             if (seconds >= 60) {
-                return `${seconds / 60}分钟`;
+                return `${seconds / 60}${this.$t('minutes')}`;
             }
-            return `${seconds}秒`;
+            return `${seconds}${this.$t('seconds')}`;
         },
         // 设置超时时间
         setTimeout(value) {

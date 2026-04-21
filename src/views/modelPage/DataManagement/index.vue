@@ -3,12 +3,12 @@
         <el-card class="search-card" shadow="never">
             <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
                 :inline="true" label-width="auto">
-                <el-form-item label="数据集名称" prop="dataSetName">
-                    <el-input v-model="queryParams.dataSetName" @input="inputSearch" placeholder="请输入数据集名称" clearable
+                <el-form-item :label="$t('dataManagement.dataSetName')" prop="dataSetName">
+                    <el-input v-model="queryParams.dataSetName" @input="inputSearch" :placeholder="$t('dataManagement.inputDataSetName')" clearable
                         @keyup.enter.native="handleQuery" />
                 </el-form-item>
-                <el-form-item label="数据集类型" prop="dataSetType">
-                    <el-select clearable v-model="queryParams.dataSetType" @change="inputSearch" placeholder="请选择数据集类型">
+                <el-form-item :label="$t('dataManagement.dataSetType')" prop="dataSetType">
+                    <el-select clearable v-model="queryParams.dataSetType" @change="inputSearch" :placeholder="$t('dataManagement.selectDataSetType')">
                         <el-option v-for="item in dict.type.sys_data_set" :key="item.value" :label="item.label"
                             :value="item.value">
                         </el-option>
@@ -18,20 +18,20 @@
         </el-card>
         <el-row :gutter="10" class="mb8">
             <el-col :span="1.5">
-                <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">新增数据集</el-button>
+                <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">{{ $t('dataManagement.addDataSet') }}</el-button>
             </el-col>
             <el-col :span="1.5">
-                <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">删除数据集</el-button>
+                <el-button type="primary" plain icon="el-icon-close" size="medium" @click="deleteFn">{{ $t('dataManagement.deleteDataSet') }}</el-button>
             </el-col>
         </el-row>
         <el-card class="table-card" shadow="never">
             <el-table v-loading="loading" class="tableBox" :data="proxysList" @selection-change="handleSelectionChange"
                 ref="tableRef">
                 <template slot="empty">
-                    <el-empty description="暂无数据"></el-empty>
+                    <el-empty :description="$t('dataManagement.noData')"></el-empty>
                 </template>
                 <el-table-column type="selection" width="60" align="center" />
-                <el-table-column label="数据集名称" prop="dataSetName" align="left" width="300" show-overflow-tooltip>
+                <el-table-column :label="$t('dataManagement.dataSetName')" prop="dataSetName" align="left" width="300" show-overflow-tooltip>
                     <template slot-scope="scope">
                         <span @click="handleEdit(scope.row)" style="cursor: pointer; color: #409eff;">
                             <svg-icon icon-class="dataset" style="font-size: 16px; margin-right: 5px;" />
@@ -39,32 +39,32 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column label="数据集类型" align="center" prop="dataSetTypeName" width="300"
+                <el-table-column :label="$t('dataManagement.dataSetType')" align="center" prop="dataSetTypeName" width="300"
                     show-overflow-tooltip />
-                <el-table-column label="数据量" align="center" prop="dataSize" width="300" show-overflow-tooltip />
-                <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
+                <el-table-column :label="$t('dataManagement.dataSize')" align="center" prop="dataSize" width="300" show-overflow-tooltip />
+                <el-table-column :label="$t('operation')" align="center" class-name="small-padding fixed-width" min-width="150">
                     <template slot-scope="scope">
-                        <el-button size="mini" type="text" @click="handlePreview(scope.row)">查看</el-button>
+                        <el-button size="mini" type="text" @click="handlePreview(scope.row)">{{ $t('dataManagement.view') }}</el-button>
                     </template>
                 </el-table-column>
             </el-table>
             <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
                 :pageSize.sync="queryParams.pageSize" @pagination="getList" />
         </el-card>
-        <el-dialog :title="title" class="addMsg" v-loading="dialogLoading" :visible.sync="dialogDataShow" append-to-body
+        <el-dialog :title="dialogTitle" class="addMsg" v-loading="dialogLoading" :visible.sync="dialogDataShow" append-to-body
             :close-on-click-modal="false" width="700px">
             <el-form class="dialogForm" :rules="dialogDataRules" :model="dialogData" size="medium" ref="dialogData"
                 :inline="true" label-width="110px" label-position="top">
                 <el-row>
                     <el-col :span="12">
-                        <el-form-item label="数据集名称" prop="dataSetName">
-                            <el-input v-model="dialogData.dataSetName" placeholder="请输入数据集名称"
+                        <el-form-item :label="$t('dataManagement.dataSetName')" prop="dataSetName">
+                            <el-input v-model="dialogData.dataSetName" :placeholder="$t('dataManagement.inputDataSetName')"
                                 :disabled="isViewMode"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="数据集类型" prop="dataSetType">
-                            <el-select clearable v-model="dialogData.dataSetType" placeholder="请选择数据集类型"
+                        <el-form-item :label="$t('dataManagement.dataSetType')" prop="dataSetType">
+                            <el-select clearable v-model="dialogData.dataSetType" :placeholder="$t('dataManagement.selectDataSetType')"
                                 :disabled="true">
                                 <el-option v-for="item in dict.type.sys_data_set" :key="item.value" :label="item.label"
                                     :value="item.value">
@@ -73,17 +73,17 @@
                         </el-form-item>
                     </el-col>
                 </el-row>
-                <el-form-item label="选择内容" prop="databaseProxyListId">
+                <el-form-item :label="$t('dataManagement.selectContent')" prop="databaseProxyListId">
                     <el-select v-model="dialogData.databaseProxyListId" multiple clearable filterable
-                        placeholder="请选择内容" :disabled="isViewMode">
+                        :placeholder="$t('dataManagement.selectContentPlaceholder')" :disabled="isViewMode">
                         <el-option v-for="item in sourceContentList" :key="item.id" :label="item.tasksName"
                             :value="item.id"></el-option>
                     </el-select>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button type="primary" plain @click="submitFormFn" v-if="!isViewMode">确 定</el-button>
-                <el-button @click="importcancel">取 消</el-button>
+                <el-button type="primary" plain @click="submitFormFn" v-if="!isViewMode">{{ $t('confirm') }}</el-button>
+                <el-button @click="importcancel">{{ $t('cancel') }}</el-button>
             </div>
         </el-dialog>
 
@@ -111,7 +111,7 @@ export default {
             // 数据集表格数据
             proxysList: [],
             // 弹出层标题
-            title: "",
+            dialogTitle: "",
             // 是否显示弹出层
             dialogDataShow: false,
             // 当前是否为查看模式
@@ -133,14 +133,11 @@ export default {
             debounceTimeout: null,
             // 表单校验规则
             dialogDataRules: {
-                dataSetName: [
-                    { required: true, message: "请输入数据集名称", trigger: "blur" }
+                dataSetName: [{ required: true, message: this.$t('dataManagement.inputDataSetName'), trigger: "blur" }
                 ],
-                dataSetTypeName: [
-                    { required: true, message: "请选择数据集类型", trigger: "blur" }
+                dataSetTypeName: [{ required: true, message: this.$t('dataManagement.selectDataSetType'), trigger: "blur" }
                 ],
-                databaseProxyListId: [
-                    { required: true, message: "请选择内容", trigger: "blur" }
+                databaseProxyListId: [{ required: true, message: this.$t('dataManagement.selectContentPlaceholder'), trigger: "blur" }
                 ],
             },
             // 数据字典列表
@@ -234,7 +231,7 @@ export default {
         handleAdd() {
             this.resetAddData();
             this.dialogDataShow = true;
-            this.title = "新增数据集";
+            this.dialogTitle = this.$t('dataManagement.addDataSet');
             this.isViewMode = false;
         },
 
@@ -242,7 +239,7 @@ export default {
         handleEdit(row) {
             this.dialogData = JSON.parse(JSON.stringify(row));
             this.dialogDataShow = true;
-            this.title = "编辑数据集";
+            this.dialogTitle = this.$t('dataManagement.editDataSet');
             this.isViewMode = false;
         },
 
@@ -250,7 +247,7 @@ export default {
         handlePreview(row) {
             this.dialogData = JSON.parse(JSON.stringify(row));
             this.dialogDataShow = true;
-            this.title = "查看数据集";
+            this.dialogTitle = this.$t('dataManagement.viewDataSet');
             this.isViewMode = true;
         },
 

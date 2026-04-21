@@ -1,0 +1,23 @@
+export default {
+  minutes: '分钟',
+  seconds: '秒',
+  searchModel: '搜索模型...',
+  interfaceAddress: '接口地址',
+  inputInterfaceAddress: '请输入接口地址',
+  apiKey: 'API密钥',
+  inputApiKey: '请输入API密钥',
+  modelName: '模型名称',
+  selectModel: '请选择模型',
+  refreshModelList: '刷新模型列表',
+  modelTemperature: '模型温度',
+  requestTimeout: '请求超时',
+  testConnection: '测试连接',
+  saveConfig: '保存配置',
+  seconds30: '30秒',
+  seconds60: '60秒',
+  minutes2: '2分钟',
+  minutes5: '5分钟',
+  pleaseSelectModel: '请选择模型',
+  requestTimeoutTooltip: '设置API请求的最大等待时间。如果请求超过此时间仍未响应，将自动中断连接。建议根据网络环境和任务复杂度调整。',
+  temperatureTooltip: '控制模型输出的随机性和创造性。较低的值（0.1-0.3）产生更确定性的回答，较高的值（0.7-1.0）产生更创造性的回答。'
+}
