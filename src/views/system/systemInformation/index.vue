@@ -3,16 +3,16 @@
     <el-card class="card" shadow="never">
       <template slot="header">
         <span class="title">
-          产品信息
+          {{ $t('systemInformation.productInfo') }}
         </span>
       </template>
       <div class="contBox">
         <div class="title_txt">
-          <p class="text">产品名称</p>
+          <p class="text">{{ $t('systemInformation.productName') }}</p>
           <span style="color:#545454 ;">{{ $store.state.user.projectData.projectName }}</span>
         </div>
         <div class="title_txt">
-          <p class="text">系统版本</p>
+          <p class="text">{{ $t('systemInformation.systemVersion') }}</p>
           <span style="color:#545454 ;">V1.0</span>
         </div>
       </div>
@@ -21,34 +21,34 @@
     <el-card class="card" shadow="never">
       <template slot="header">
         <span class="title">
-          许可证信息
+          {{ $t('systemInformation.licenseInfo') }}
         </span>
       </template>
       <div class="contBox">
         <div class="title_txt">
-          <p class="text">被授权单位</p>
+          <p class="text">{{ $t('systemInformation.authorizedUnit') }}</p>
           <span style="color:#545454 ;">{{ unit }}</span>
         </div>
         <div class="title_txt">
-          <p class="text">证书状态</p>
+          <p class="text">{{ $t('systemInformation.certStatus') }}</p>
           <span style="color:#545454 ;">{{ certificate }}</span>
         </div>
         <div class="title_txt">
-          <p class="text">授权时间</p>
-          <span style="color:#545454 ;">{{ satrtTiem }} 起</span> ——
-          <span style="color:#545454 ;">{{ endTiem }} 止</span>
+          <p class="text">{{ $t('systemInformation.authTime') }}</p>
+          <span style="color:#545454 ;">{{ satrtTiem }} {{ $t('systemInformation.start') }}</span> ——
+          <span style="color:#545454 ;">{{ endTiem }} {{ $t('systemInformation.end') }}</span>
         </div>
         <div class="title_txt">
-          <p class="text">当前机器码</p>
+          <p class="text">{{ $t('systemInformation.currentMachineCode') }}</p>
           <el-input v-model="machineNum" disabled class="machine-input machine-input-disabled">
             <template slot="suffix">
-              <span class="copy-btn" @click="outerBtn">复制</span>
+              <span class="copy-btn" @click="outerBtn">{{ $t('systemInformation.copy') }}</span>
             </template>
           </el-input>
         </div>
         <div class="title_txt">
-          <p class="text">授权功能</p>
-          <span style="color:#545454 ; margin-right: 10px;">AI数据打标</span>
+          <p class="text">{{ $t('systemInformation.authFunctions') }}</p>
+          <span style="color:#545454 ; margin-right: 10px;">{{ $t('systemInformation.aiDataMarking') }}</span>
         </div>
       </div>
     </el-card>
@@ -56,7 +56,7 @@
     <el-card class="card" shadow="never">
       <template slot="header">
         <span class="title">
-          上传新许可证
+          {{ $t('systemInformation.uploadNewLicense') }}
         </span>
       </template>
       <div class="contBox">
@@ -68,9 +68,9 @@
               <i>
                 <svg-icon class="filePic" slot="prefix" icon-class="file" />
               </i>
-              <div>点击或将文件拖拽到这里上传</div>
-              <div class="el-upload__text">文件大小不超过 500kb</div>
-              <el-button type="primary" plain @click="submitUpload" style="margin-top: 20px;">点击上传</el-button>
+              <div>{{ $t('systemInformation.clickOrDrag') }}</div>
+              <div class="el-upload__text">{{ $t('systemInformation.fileSizeLimit') }}</div>
+              <el-button type="primary" plain @click="submitUpload" style="margin-top: 20px;">{{ $t('systemInformation.clickToUpload') }}</el-button>
             </el-upload>
           </div>
         </div>
@@ -80,17 +80,17 @@
     <el-card class="card" shadow="never">
       <template slot="header">
         <span class="title">
-          技术支持
+          {{ $t('systemInformation.techSupport') }}
         </span>
       </template>
       <div class="contBox">
         <div class="title_txt">
-          <p class="text">技术支持邮箱</p>
+          <p class="text">{{ $t('systemInformation.supportEmail') }}</p>
           <span style="color:#545454 ; margin-right: 20px;">{{ $store.state.user.projectData.email || 'support@demo.com'
           }}</span>
         </div>
         <div class="title_txt">
-          <p class="text">技术支持电话</p>
+          <p class="text">{{ $t('systemInformation.supportPhone') }}</p>
           <span style="color:#545454 ; margin-right: 20px;">{{ $store.state.user.projectData.phone || '400-000-0000'
           }}</span>
         </div>
@@ -128,14 +128,14 @@ export default {
       input.select();
       document.execCommand("Copy");
       document.body.removeChild(input);
-      this.$message.success("复制成功！");
+      this.$message.success(this.$t('systemInformation.copySuccess'));
     },
     licenseVerify() {
       licenseVerifyI().then((res => {
         if (res.data.verify == true) {
-          this.certificate = "可用"
+          this.certificate = this.$t('systemInformation.available')
         } else {
-          this.certificate = "过期"
+          this.certificate = this.$t('systemInformation.expired')
         }
         this.machineNum = res.data.code
         this.endTiem = res.data.expiry
@@ -156,20 +156,20 @@ export default {
       if (res.code == 200) {
         licenseVerifyI().then((res => {
           if (res.data.verify == true) {
-            this.$message.success('文件上传成功。')
+            this.$message.success(this.$t('systemInformation.uploadSuccess'))
             location.reload();
           } else {
-            this.$message.error('文件已过期,请重新上传')
+            this.$message.error(this.$t('systemInformation.fileExpired'))
           }
         }))
       } else {
-        this.$message.error('上传文件失败。')
+        this.$message.error(this.$t('systemInformation.uploadFailed'))
       }
     },
     beforeUpload(file) {
       const isLt500k = file.size / 1024 < 500
       if (!isLt500k) {
-        this.$message.error('上传文件大小不能超过500kb。')
+        this.$message.error(this.$t('systemInformation.fileSizeError'))
       }
       return isLt500k
     }

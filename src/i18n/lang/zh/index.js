@@ -12,6 +12,7 @@ import user from './user'
 import role from './role'
 import operlog from './operlog'
 import logininfor from './logininfor'
+import systemInformation from './systemInformation'
 
 export default {
   ...common,
@@ -27,5 +28,6 @@ export default {
   user,
   role,
   operlog,
-  logininfor
+  logininfor,
+  systemInformation
 }
