@@ -2,51 +2,55 @@
     <div v-loading="loading">
         <div class="mainBox">
             <div class="leftBox">
-                <div class="leftBox_header">可选</div>
+                <div class="leftBox_header">{{ $t('resultPush.available') }}</div>
                 <div class="leftBox_body">
-                    <el-table :data="paginatedTableData" ref="resultTable" border style="width: 100%"
-                        element-loading-text="加载中..."
-                        @selection-change="handleSelectionChange" :height="420" size="small">
+                    <el-table ref="resultTable" :data="paginatedTableData" border style="width: 100%"
+                        :element-loading-text="$t('loading')" :height="420" size="small"
+                        @selection-change="handleSelectionChange">
                         <template slot="empty">
-                            <el-empty description="暂无数据"></el-empty>
+                            <el-empty :description="$t('noData')"></el-empty>
                         </template>
                         <el-table-column type="selection" width="55"></el-table-column>
-                        <el-table-column label="数据路径" prop="dataPath" align="center"></el-table-column>
-                        <el-table-column label="字段名称" prop="fieldName" align="center"></el-table-column>
-                        <el-table-column label="字段注释" prop="fileRemark" align="center"></el-table-column>
-                        <el-table-column label="AI字段注释" prop="fileAiRemark" align="center"></el-table-column>
-                        <el-table-column label="样本" align="center" prop="sampleData" show-overflow-tooltip>
+                        <el-table-column :label="$t('resultPush.dataPath')" prop="dataPath"
+                            align="center"></el-table-column>
+                        <el-table-column :label="$t('resultPush.fieldName')" prop="fieldName"
+                            align="center"></el-table-column>
+                        <el-table-column :label="$t('resultPush.fieldRemark')" prop="fileRemark"
+                            align="center"></el-table-column>
+                        <el-table-column :label="$t('resultPush.aiFieldRemark')" prop="fileAiRemark"
+                            align="center"></el-table-column>
+                        <el-table-column :label="$t('resultPush.sample')" align="center" prop="sampleData"
+                            show-overflow-tooltip>
                             <template slot-scope="scope">
                                 <el-tooltip placement="bottom" effect="light">
                                     <div slot="content">
                                         <el-table :data="scope.row.sampleList" height="250" border class="tableCla"
                                             style="width: 100%">
-                                            <el-table-column type="index" label="序号" width="50" />
-                                            <el-table-column prop="value" label="字段值" width="100"
-                                                show-overflow-tooltip>
-                                            </el-table-column>
+                                            <el-table-column type="index" :label="$t('resultPush.index')" width="50" />
+                                            <el-table-column prop="value" :label="$t('resultPush.fieldValue')"
+                                                width="100" show-overflow-tooltip />
                                         </el-table>
                                     </div>
-                                    <el-button size="mini" type="text">查看</el-button>
+                                    <el-button size="mini" type="text">{{ $t('view') }}</el-button>
                                 </el-tooltip>
                             </template>
                         </el-table-column>
-                        <el-table-column label="样本特征" prop="regularExpression" align="center"></el-table-column>
+                        <el-table-column :label="$t('resultPush.sampleFeature')" prop="regularExpression"
+                            align="center"></el-table-column>
                     </el-table>
-                    <pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
-                        :current-page="currentPage" :page-sizes="[10, 20, 50, 100]" :page-size="pageSize" :pagerCount="5"
-                        layout="total, sizes, prev, pager, next" :total="total"
-                        style="margin-top: 10px; text-align: right;" size="small"></pagination>
+                    <pagination :current-page="currentPage" :page-sizes="[10, 20, 50, 100]" :page-size="pageSize"
+                        :pagerCount="5" layout="total, sizes, prev, pager, next" :total="total"
+                        style="margin-top: 10px; text-align: right;" size="small" @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange"></pagination>
                 </div>
             </div>
             <div class="rightBox">
                 <div class="rightBox_header">
-                    <span>已选<span style="font-weight: normal; color:#818181;">（{{ lastChildList.length
-                    }}个子类）</span></span>
-                    <span class="reset" @click="emptyFn">清空</span>
+                    <span>{{ $t('resultPush.selectedCount', { count: lastChildList.length }) }}</span>
+                    <span class="reset" @click="emptyFn">{{ $t('clean') }}</span>
                 </div>
                 <div class="rightBox_body">
-                    <div class="childList" v-for="(item, index) in lastChildList" :key="item.id">
+                    <div v-for="(item, index) in lastChildList" :key="item.id" class="childList">
                         <span class="data-path" :title="item.dataPath">{{ item.dataPath }}</span>
                         <span class="field-name" :title="item.fieldName">{{ item.fieldName }}</span>
                         <i class="el-icon-error" @click="deleteChildFn(item, index)"></i>
@@ -133,20 +137,20 @@ export default {
     methods: {
         getTableData() {
             if (!this.databaseId) return
-            
+
             this.loading = true
-            selectFieldIdByDatabaseId({ 
-                id: this.id || '', 
-                databaseId: this.databaseId, 
-                pageNum: this.currentPage, 
-                pageSize: this.pageSize 
+            selectFieldIdByDatabaseId({
+                id: this.id || '',
+                databaseId: this.databaseId,
+                pageNum: this.currentPage,
+                pageSize: this.pageSize
             }).then(res => {
                 if (this.databaseId) {
                     const data = res.data || {
                         list: [],
                         page: { records: [], total: 0, current: 1, size: 10 }
                     }
-                    
+
                     if (data.page && data.page.records) {
                         data.page.records = data.page.records.map(item => {
                             if (item.sampleData) {
@@ -162,7 +166,7 @@ export default {
                             return item
                         })
                     }
-                    
+
                     this.sourceTableData = data
                     this.$nextTick(() => {
                         this.initCheckedRows()
@@ -175,53 +179,52 @@ export default {
         },
         initCheckedRows() {
             const selectedIds = this.selectedList.map(item => item.id)
-            if (selectedIds.length === 0) return;
+            if (selectedIds.length === 0) return
 
-            const checkedRows = this.parsedTableData.filter(row =>
-                selectedIds.includes(row.id)
-            );
+            const checkedRows = this.parsedTableData.filter(row => selectedIds.includes(row.id))
 
             checkedRows.forEach(row => {
-                this.$refs.resultTable?.toggleRowSelection(row, true);
-            });
+                this.$refs.resultTable?.toggleRowSelection(row, true)
+            })
         },
         handleSelectionChange(selectedRows) {
             const selectedIds = selectedRows.map(item => item.id)
             const currentPageIds = this.parsedTableData.map(item => item.id)
-            
+
             this.lastChildList = this.lastChildList.filter(item => {
                 const isInCurrentPage = currentPageIds.includes(item.id)
-                
+
                 if (isInCurrentPage) {
                     return selectedIds.includes(item.id)
                 }
                 return true
             })
-            
+
             selectedRows.forEach(row => {
                 if (!this.lastChildList.find(item => item.id === row.id)) {
                     this.lastChildList.push(row)
                 }
             })
-            
+
             this.selectedList = [...this.lastChildList]
             this.$emit('selection-change', this.lastChildList)
         },
         deleteChildFn(row, index) {
-            this.$refs.resultTable?.toggleRowSelection(row, false);
-            this.lastChildList.splice(index, 1);
+            this.$refs.resultTable?.toggleRowSelection(row, false)
+            this.lastChildList.splice(index, 1)
         },
         emptyFn() {
-            this.lastChildList = [];
-            this.$refs.resultTable?.clearSelection();
+            this.lastChildList = []
+            this.selectedList = []
+            this.$refs.resultTable?.clearSelection()
         },
         handleSizeChange(val) {
-            this.pageSize = val;
-            this.currentPage = 1;
+            this.pageSize = val
+            this.currentPage = 1
             this.getTableData()
         },
         handleCurrentChange(val) {
-            this.currentPage = val;
+            this.currentPage = val
             this.getTableData()
         }
     }
@@ -232,7 +235,7 @@ export default {
 .mainBox {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; // 改为顶部对齐，避免分页被挤压
+    align-items: flex-start;
 
     .leftBox {
         flex: 1;
@@ -279,7 +282,6 @@ export default {
     }
 }
 
-// 滚动条样式优化
 ::v-deep .el-table__body-wrapper::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -341,7 +343,6 @@ export default {
     margin-top: 10px;
 }
 
-// 表格样式优化
 ::v-deep .el-table th {
     background-color: #f5f5f5;
     font-weight: 600;

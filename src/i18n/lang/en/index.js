@@ -1,4 +1,6 @@
 import common from './common'
+import resultPush from './resultPush'
+import capacity from './capacity'
 import navbar from './navbar'
 import home from './home'
 import management from './management'
@@ -22,6 +24,8 @@ import modelTuning from './modelTuning'
 
 export default {
   ...common,
+  resultPush,
+  capacity,
   navbar,
   home,
   management,

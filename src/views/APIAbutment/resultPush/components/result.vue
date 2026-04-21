@@ -2,20 +2,25 @@
   <div v-loading="loading">
     <div class="mainBox">
       <div class="leftBox">
-        <div class="leftBox_header">可选</div>
+        <div class="leftBox_header">{{ $t('resultPush.available') }}</div>
         <div class="leftBox_body">
-          <el-tree :props="defaultProps" ref="resultTree" :data="treeData" show-checkbox @check="handleCheckChange"
-            node-key="id">
-          </el-tree>
+          <el-tree
+            ref="resultTree"
+            :props="defaultProps"
+            :data="treeData"
+            show-checkbox
+            node-key="id"
+            @check="handleCheckChange"
+          />
         </div>
       </div>
       <div class="rightBox">
         <div class="rightBox_header">
-          <span>已选<span style="font-weight: normal; color:#818181;">（{{ lastChildList.length }}个子类）</span></span>
-          <span class="reset" @click="emptyFn">清空</span>
+          <span>{{ $t('resultPush.selectedCount', { count: lastChildList.length }) }}</span>
+          <span class="reset" @click="emptyFn">{{ $t('clean') }}</span>
         </div>
         <div class="rightBox_body">
-          <div class="childList" v-for="(item, index) in this.lastChildList" :key="item.id">
+          <div v-for="(item, index) in lastChildList" :key="item.id" class="childList">
             <span>{{ item.categoryName }}</span>
             <i class="el-icon-error" @click="deleteChildFn(item, index)"></i>
           </div>
@@ -26,17 +31,16 @@
 </template>
 
 <script>
-
 export default {
   name: "resultPushResult",
   props: {
     treeData: {
       type: Array,
-      default: [],
+      default: () => [],
     },
     checkList: {
       type: Array,
-      default: [],
+      default: () => [],
     }
   },
   data() {
@@ -49,30 +53,28 @@ export default {
       lastChildList: [],
     }
   },
-
-  created() {
-  },
   mounted() {
     if (this.checkList && this.checkList.length) {
       this.$refs.resultTree.setCheckedKeys(this.checkList, true)
-      this.lastChildList = this.$refs.resultTree.getCheckedNodes().filter(item => !item.children || item.children.length == 0)
+      this.lastChildList = this.$refs.resultTree.getCheckedNodes().filter(item => !item.children || item.children.length === 0)
     }
   },
   methods: {
     handleCheckChange(arrData, treeData) {
-      this.lastChildList = treeData.checkedNodes.filter(item => !item.children || item.children.length == 0)
+      this.lastChildList = treeData.checkedNodes.filter(item => !item.children || item.children.length === 0)
     },
     deleteChildFn(row, index) {
       this.$refs.resultTree.setChecked(row.id, false)
       this.lastChildList.splice(index, 1)
     },
-    emptyFn(){
+    emptyFn() {
       this.lastChildList = []
       this.$refs.resultTree.setCheckedKeys(this.treeData, false)
     }
   }
 };
 </script>
+
 <style scoped lang="scss">
 .mainBox {
   display: flex;
@@ -163,7 +165,7 @@ export default {
   }
 }
 
-.childList+.childList {
+.childList + .childList {
   margin-top: 10px;
 }
 </style>

@@ -1,149 +1,154 @@
 <template>
-    <el-drawer title="API接口文档" :visible="visible" size="100%" :with-header="true" @close="handleClose">
+    <el-drawer :title="$t('capacity.apiDocument')" :visible="visible" size="100%" :with-header="true"
+        @close="handleClose">
         <div class="api-document-container">
-            <!-- 左侧API列表 -->
             <div class="api-list-container">
                 <el-menu :default-active="activeApiIndex" class="api-menu" @select="handleApiSelect">
                     <el-menu-item v-for="(api, index) in apiData" :key="index" :index="index.toString()">
-                        <el-tag
-                            :type="api.method == 'POST' ? 'success' : api.method == 'GET' ? 'primary' : api.method == 'PUT' ? 'warning' : api.method == 'DELETE' ? 'danger' : 'info'"
-                            style="margin-right: 10px;">{{ api.method }}</el-tag>
+                        <el-tag :type="getMethodTagType(api.method)" style="margin-right: 10px;">{{ api.method
+                        }}</el-tag>
                         <span class="api-name">{{ api.name }}</span>
                     </el-menu-item>
                 </el-menu>
             </div>
 
-            <!-- 右侧API详情 -->
             <div class="api-detail-container">
                 <div v-if="currentApi" class="api-detail-content">
-                    <!-- API基本信息 -->
                     <div class="api-basic-info">
                         <h2>{{ currentApi.name }}</h2>
                         <div class="api-request-info">
-                            <el-tag
-                                :type="currentApi.method == 'POST' ? 'success' : currentApi.method == 'GET' ? 'primary' : currentApi.method == 'PUT' ? 'warning' : currentApi.method == 'DELETE' ? 'danger' : 'info'"
-                                style="margin-right: 10px;">{{ currentApi.method }}</el-tag>
+                            <el-tag :type="getMethodTagType(currentApi.method)" style="margin-right: 10px;">
+                                {{ currentApi.method }}
+                            </el-tag>
                             <span class="request-url">{{ currentApi.url }}</span>
-                            <!-- <span class="request-type" v-if="currentApi.dataType">数据类型: {{ currentApi.dataType }}</span> -->
                         </div>
                     </div>
 
-                    <!-- 请求参数 -->
                     <el-card class="api-section">
                         <div slot="header">
-                            <h3>请求参数</h3>
+                            <h3>{{ $t('capacity.requestParams') }}</h3>
                         </div>
-                        <div class="param-section" v-if="currentApi.params.path.length > 0">
-                            <h4>Path参数</h4>
+                        <div v-if="currentApi.params.path.length > 0" class="param-section">
+                            <h4>{{ $t('capacity.pathParams') }}</h4>
                             <el-table :data="currentApi.params.path" border size="small" class="api-params-table">
-                                <el-table-column prop="name" label="参数名" width="150"></el-table-column>
-                                <el-table-column prop="type" label="类型" width="100"></el-table-column>
-                                <el-table-column prop="required" label="必填" width="80">
-                                    <template slot-scope="scope">{{ scope.row.required ? '是' : '否' }}</template>
+                                <el-table-column prop="name" :label="$t('capacity.paramName')"
+                                    width="150"></el-table-column>
+                                <el-table-column prop="type" :label="$t('type')" width="100"></el-table-column>
+                                <el-table-column prop="required" :label="$t('required')" width="80">
+                                    <template slot-scope="scope">{{ scope.row.required ? $t('yes') : $t('no')
+                                    }}</template>
                                 </el-table-column>
-                                <el-table-column prop="description" label="说明"></el-table-column>
+                                <el-table-column prop="description" :label="$t('description')"></el-table-column>
                             </el-table>
                         </div>
-                        <div class="param-section" v-else-if="currentApi.params.query.length > 0">
-                            <h4>Query参数</h4>
+                        <div v-else-if="currentApi.params.query.length > 0" class="param-section">
+                            <h4>{{ $t('capacity.queryParams') }}</h4>
                             <el-table :data="currentApi.params.query" border size="small" class="api-params-table">
-                                <el-table-column prop="name" label="参数名" width="150"></el-table-column>
-                                <el-table-column prop="type" label="类型" width="100"></el-table-column>
-                                <el-table-column prop="required" label="必填" width="80">
-                                    <template slot-scope="scope">{{ scope.row.required ? '是' : '否' }}</template>
+                                <el-table-column prop="name" :label="$t('capacity.paramName')"
+                                    width="150"></el-table-column>
+                                <el-table-column prop="type" :label="$t('type')" width="100"></el-table-column>
+                                <el-table-column prop="required" :label="$t('required')" width="80">
+                                    <template slot-scope="scope">{{ scope.row.required ? $t('yes') : $t('no')
+                                    }}</template>
                                 </el-table-column>
-                                <el-table-column prop="description" label="说明"></el-table-column>
+                                <el-table-column prop="description" :label="$t('description')"></el-table-column>
                             </el-table>
                         </div>
-                        <!-- Header参数 -->
+
                         <div class="param-section">
-                            <h4>Header参数</h4>
+                            <h4>{{ $t('capacity.headerParams') }}</h4>
                             <template v-if="currentApi.params.header.length">
                                 <el-table :data="currentApi.params.header" border size="small" class="api-params-table">
-                                    <el-table-column prop="name" label="参数名" width="150"></el-table-column>
-                                    <el-table-column prop="type" label="类型" width="100"></el-table-column>
-                                    <el-table-column prop="required" label="必填" width="80">
-                                        <template slot-scope="scope">{{ scope.row.required ? '是' : '否' }}</template>
+                                    <el-table-column prop="name" :label="$t('capacity.paramName')"
+                                        width="150"></el-table-column>
+                                    <el-table-column prop="type" :label="$t('type')" width="100"></el-table-column>
+                                    <el-table-column prop="required" :label="$t('required')" width="80">
+                                        <template slot-scope="scope">{{ scope.row.required ? $t('yes') : $t('no')
+                                        }}</template>
                                     </el-table-column>
-                                    <el-table-column prop="description" label="说明"></el-table-column>
+                                    <el-table-column prop="description" :label="$t('description')"></el-table-column>
                                 </el-table>
                             </template>
                             <template v-else>
-                                <p class="empty-text">无Header参数</p>
+                                <p class="empty-text">{{ $t('capacity.noHeaderParams') }}</p>
                             </template>
                         </div>
-                        <!-- Body参数 -->
+
                         <div class="param-section">
-                            <h4>Body参数</h4>
+                            <h4>{{ $t('capacity.bodyParams') }}</h4>
                             <template v-if="currentApi.params.body.length">
                                 <el-table :data="currentApi.params.body" border size="small" class="api-params-table">
-                                    <el-table-column prop="name" label="参数名" width="150"></el-table-column>
-                                    <el-table-column prop="type" label="类型" width="100"></el-table-column>
-                                    <el-table-column prop="required" label="必填" width="80">
-                                        <template slot-scope="scope">{{ scope.row.required ? '是' : '否' }}</template>
+                                    <el-table-column prop="name" :label="$t('capacity.paramName')"
+                                        width="150"></el-table-column>
+                                    <el-table-column prop="type" :label="$t('type')" width="100"></el-table-column>
+                                    <el-table-column prop="required" :label="$t('required')" width="80">
+                                        <template slot-scope="scope">{{ scope.row.required ? $t('yes') : $t('no')
+                                        }}</template>
                                     </el-table-column>
-                                    <el-table-column prop="description" label="说明"></el-table-column>
+                                    <el-table-column prop="description" :label="$t('description')"></el-table-column>
                                 </el-table>
 
-                                <span class="body-data-type-tag" v-if="currentApi.dataType">请求数据类型: {{
-                                    currentApi.dataType }}</span>
+                                <span v-if="currentApi.dataType" class="body-data-type-tag">
+                                    {{ $t('capacity.requestDataType') }}: {{ currentApi.dataType }}
+                                </span>
                             </template>
                             <template v-else>
-                                <p class="empty-text">无Body参数</p>
+                                <p class="empty-text">{{ $t('capacity.noBodyParams') }}</p>
                             </template>
                         </div>
                     </el-card>
 
-                    <!-- 请求示例 -->
                     <el-card class="api-section">
                         <div slot="header">
-                            <h3>请求示例</h3>
+                            <h3>{{ $t('capacity.requestExample') }}</h3>
                         </div>
                         <template v-if="currentApi.requestExample">
                             <pre class="code-block"><code>{{ currentApi.requestExample }}</code></pre>
                         </template>
                         <template v-else>
-                            <p class="empty-text">无请求示例</p>
+                            <p class="empty-text">{{ $t('capacity.noRequestExample') }}</p>
                         </template>
                     </el-card>
 
-                    <!-- 响应示例 -->
                     <el-card class="api-section">
                         <div slot="header">
-                            <h3>响应示例</h3>
+                            <h3>{{ $t('capacity.responseExample') }}</h3>
                         </div>
                         <template v-if="currentApi.responseExample">
                             <pre class="code-block"><code>{{ currentApi.responseExample }}</code></pre>
                         </template>
                         <template v-else>
-                            <p class="empty-text">无响应示例</p>
+                            <p class="empty-text">{{ $t('capacity.noResponseExample') }}</p>
                         </template>
                     </el-card>
 
-                    <!-- 响应数据结构 -->
                     <el-card class="api-section">
                         <div slot="header">
-                            <h3>响应数据结构</h3>
+                            <h3>{{ $t('capacity.responseDataStructure') }}</h3>
                         </div>
                         <template v-if="currentApi.responseStructure.length">
                             <el-table :data="currentApi.responseStructure" border size="small" class="api-params-table">
-                                <el-table-column prop="field" label="参数名" width="120"></el-table-column>
-                                <el-table-column prop="type" label="类型" width="100"></el-table-column>
-                                <el-table-column prop="required" label="必选" width="80">
-                                    <template slot-scope="scope">{{ scope.row.required ? '是' : '否' }}</template>
+                                <el-table-column prop="field" :label="$t('capacity.paramName')"
+                                    width="120"></el-table-column>
+                                <el-table-column prop="type" :label="$t('type')" width="100"></el-table-column>
+                                <el-table-column prop="required" :label="$t('required')" width="80">
+                                    <template slot-scope="scope">{{ scope.row.required ? $t('yes') : $t('no')
+                                    }}</template>
                                 </el-table-column>
-                                <el-table-column prop="constraint" label="约束" width="100"></el-table-column>
-                                <el-table-column prop="chineseName" label="中文名" width="120"></el-table-column>
-                                <el-table-column prop="description" label="说明"></el-table-column>
+                                <el-table-column prop="constraint" :label="$t('capacity.constraint')"
+                                    width="100"></el-table-column>
+                                <el-table-column prop="chineseName" :label="$t('capacity.chineseName')"
+                                    width="120"></el-table-column>
+                                <el-table-column prop="description" :label="$t('description')"></el-table-column>
                             </el-table>
                         </template>
                         <template v-else>
-                            <p class="empty-text">无响应数据结构说明</p>
+                            <p class="empty-text">{{ $t('capacity.noResponseDataStructure') }}</p>
                         </template>
                     </el-card>
                 </div>
                 <div v-else class="api-empty-state">
-                    请选择一个API接口查看详情
+                    {{ $t('capacity.pleaseSelectApi') }}
                 </div>
             </div>
         </div>
@@ -154,13 +159,11 @@
 export default {
     name: 'ApiDocumentDrawer',
     props: {
-        // 接收的md文件解析后的数据
         apiData: {
             type: Array,
             required: true,
             default: () => []
         },
-        // 控制抽屉显示/隐藏
         visible: {
             type: Boolean,
             default: false
@@ -168,12 +171,11 @@ export default {
     },
     data() {
         return {
-            activeApiIndex: '0', // 当前选中的API索引
-            currentApi: null // 当前展示的API详情
+            activeApiIndex: '0',
+            currentApi: null
         };
     },
     watch: {
-        // 当apiData变化时，初始化显示第一个API
         apiData: {
             immediate: true,
             handler() {
@@ -182,7 +184,6 @@ export default {
                 }
             }
         },
-        // 当visible变化时，如果显示则选中第一个API
         visible(val) {
             if (val && this.apiData && this.apiData.length > 0) {
                 this.activeApiIndex = '0';
@@ -191,28 +192,25 @@ export default {
         }
     },
     methods: {
-        // 处理API选择
         handleApiSelect(index) {
             this.activeApiIndex = index;
             this.currentApi = this.apiData[index];
         },
-        // 处理抽屉关闭
         handleClose() {
             this.$emit('update:visible', false);
         },
-        // 根据请求方法获取对应的样式类
-        getMethodClass(method) {
-            switch (method.toUpperCase()) {
-                case 'GET':
-                    return 'method-get';
+        getMethodTagType(method) {
+            switch ((method || '').toUpperCase()) {
                 case 'POST':
-                    return 'method-post';
+                    return 'success';
+                case 'GET':
+                    return 'primary';
                 case 'PUT':
-                    return 'method-put';
+                    return 'warning';
                 case 'DELETE':
-                    return 'method-delete';
+                    return 'danger';
                 default:
-                    return 'method-default';
+                    return 'info';
             }
         }
     }
@@ -226,7 +224,6 @@ export default {
     overflow: hidden;
 }
 
-/* 左侧列表样式 */
 .api-list-container {
     width: 280px;
     border-right: 1px solid #e6e6e6;
@@ -249,18 +246,6 @@ export default {
     white-space: nowrap;
 }
 
-.api-method {
-    display: inline-block;
-    width: 50px;
-    text-align: center;
-    border-radius: 4px;
-    color: #fff;
-    font-size: 12px;
-    padding: 2px 0;
-    margin-right: 10px;
-}
-
-/* 右侧详情样式 */
 .api-detail-container {
     flex: 1;
     padding: 20px;
@@ -285,16 +270,10 @@ export default {
     border-radius: 4px;
 }
 
-
 .request-url {
     color: #3b82f6;
     word-break: break-all;
     margin-right: 15px;
-}
-
-.request-type {
-    color: #666;
-    font-size: 14px;
 }
 
 .api-section {
@@ -331,6 +310,7 @@ export default {
     font-size: 13px;
     line-height: 1.5;
     margin: 0;
+    font-family: monospace;
 }
 
 .api-empty-state {
@@ -340,27 +320,6 @@ export default {
     font-size: 16px;
 }
 
-/* 请求方法样式 */
-.method-get {
-    background-color: #52c41a;
-}
-
-.method-post {
-    background-color: #1890ff;
-}
-
-.method-put {
-    background-color: #faad14;
-}
-
-.method-delete {
-    background-color: #ff4d4f;
-}
-
-.method-default {
-    background-color: #777;
-}
-
 .body-data-type-tag {
     display: block;
     margin-top: 10px;
@@ -368,7 +327,6 @@ export default {
     color: #666;
 }
 
-/* 新增/调整样式 */
 .param-section {
     margin-bottom: 20px;
     padding-bottom: 10px;
@@ -385,36 +343,18 @@ export default {
     margin: 0;
 }
 
-.api-method {
-    width: 55px;
-    /* 调整方法标签宽度，避免文字溢出 */
-}
-
 .api-name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     flex: 1;
     font-weight: 500;
-    /* 让名称占满剩余空间 */
 }
 
 .api-menu .el-menu-item {
     display: flex;
     align-items: center;
     border-radius: 10px;
-}
-
-.code-block {
-    background-color: #f5f5f5;
-    border-radius: 4px;
-    padding: 15px;
-    overflow-x: auto;
-    font-size: 13px;
-    line-height: 1.5;
-    margin: 0;
-    font-family: monospace;
-    /* 确保JSON格式显示正确 */
 }
 
 /deep/.el-drawer__header {
