@@ -245,43 +245,13 @@ export default {
         });
 
       } catch (error) {
+        this.leftList = [];
         console.error(error);
         this.$message.error('获取目录失败');
       } finally {
         this.leftLoading = false;
       }
     },
-
-    // 生成假数据方法（后续接入真实接口后可删除）
-    generateMockData(depth) {
-      let mockData = [];
-      if (depth === 0) {
-        mockData = [
-          { fileName: 'CNSEC-安全服务', type: 'Directory' },
-          { fileName: 'ZTNA-零信任网络接入', type: 'Directory' },
-          { fileName: 'Filestore', type: 'Directory' },
-          { fileName: 'jianghaixin', type: 'Directory' },
-          { fileName: 'test', type: 'Directory' },
-          { fileName: 'readme.txt', type: 'File' },
-          { fileName: 'CASB.pdf', type: 'File' },
-          { fileName: 'app', type: 'Directory' }
-        ];
-      } else {
-        const currentPrefix = this.pathStack[this.pathStack.length - 1] || 'dir';
-        mockData = [
-          { fileName: currentPrefix + '的子目录_A', type: 'Directory' },
-          { fileName: currentPrefix + '的子目录_B', type: 'Directory' },
-          { fileName: '数据报表.xlsx', type: 'File' },
-          { fileName: '配置文件.json', type: 'File' }
-        ];
-      }
-
-      // 根据显示模式过滤
-      if (this.displayMode === 'dir') {
-        return mockData.filter(item => item.type === 'Directory');
-      }
-      return mockData;
-    }
   }
 };
 </script>
