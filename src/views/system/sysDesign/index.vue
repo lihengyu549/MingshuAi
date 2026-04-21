@@ -1,19 +1,19 @@
 <template>
   <div class="app-container">
-    <!-- LOGO设计 -->
+    <!-- {{ $t('sysDesign.logoDesign') }} -->
     <el-card class="module-card" shadow="never">
       <template slot="header">
         <div class="module-title">
           <i class="el-icon-picture" style="color: #3B82F6; font-size: 20px;"></i>
-          <span>LOGO设计</span>
+          <span>{{ $t('sysDesign.logoDesign') }}</span>
         </div>
       </template>
       <div class="contBox">
         <el-form :model="formData" ref="formData" class="formDataClass" size="small" label-width="120px">
-          <el-form-item label="产品名称" prop="appTitle">
-            <el-input v-model="formData.appTitle" placeholder="数据安全预警管理中心" clearable />
+          <el-form-item :label="$t('sysDesign.productName')" prop="appTitle">
+            <el-input v-model="formData.appTitle" :placeholder="$t('sysDesign.inputProductName')" clearable />
           </el-form-item>
-          <el-form-item label="产品LOGO" prop="appFacvion">
+          <el-form-item :label="$t('sysDesign.productLogo')" prop="appFacvion">
             <div class="upload-area">
               <div class="thumbnail-wrapper" v-if="fileList.length > 0 && fileList[0].url">
                 <img :src="fileList[0].url" class="thumbnail" />
@@ -22,7 +22,7 @@
                 :show-file-list="false" :multiple="false" :limit="1" :on-change="handleFileChange"
                 :on-exceed="handleFileExceed" accept=".jpg,.jpeg,.png,.JPG,.JPEG,.PNG,.ico" :auto-upload="false"
                 :http-request="submit">
-                <el-button size="small" type="info" icon="el-icon-upload2">点击上传</el-button>
+                <el-button size="small" type="info" icon="el-icon-upload2">{{ $t('sysDesign.clickToUpload') }}</el-button>
               </el-upload>
             </div>
           </el-form-item>
@@ -46,17 +46,17 @@
       </div>
     </el-card>
 
-    <!-- 主题设计 -->
+    <!-- {{ $t('sysDesign.themeDesign') }} -->
     <el-card class="module-card" shadow="never">
       <template slot="header">
         <div class="module-title">
           <i class="el-icon-brush" style="color: #3B82F6; font-size: 20px;"></i>
-          <span>主题设计</span>
+          <span>{{ $t('sysDesign.themeDesign') }}</span>
         </div>
       </template>
       <div class="contBox">
         <el-form :model="colorForm" ref="colorForm" class="formDataClass" size="small" label-width="120px">
-          <el-form-item label="主题色" prop="color">
+          <el-form-item :label="$t('sysDesign.themeColor')" prop="color">
             <div class="color-picker-area">
               <div v-for="(color, index) in themeColors" :key="index"
                 :class="['color-circle', colorForm.color === color ? 'selected' : '']"
@@ -67,20 +67,20 @@
       </div>
     </el-card>
 
-    <!-- 技术支持 -->
+    <!-- {{ $t('sysDesign.techSupport') }} -->
     <el-card class="module-card" shadow="never">
       <template slot="header">
         <div class="module-title">
           <i class="el-icon-phone" style="color: #3B82F6; font-size: 20px;"></i>
-          <span>技术支持</span>
+          <span>{{ $t('sysDesign.techSupport') }}</span>
         </div>
       </template>
       <div class="contBox">
         <el-form :model="technologyData" ref="technologyData" class="formDataClass" size="small" label-width="120px">
-          <el-form-item label="技术支持邮箱" prop="email">
+          <el-form-item :label="$t('sysDesign.supportEmail')" prop="email">
             <el-input v-model="technologyData.email" placeholder="jzhiming@qq.com" clearable />
           </el-form-item>
-          <el-form-item label="技术支持电话" prop="phone">
+          <el-form-item :label="$t('sysDesign.supportPhone')" prop="phone">
             <el-input v-model="technologyData.phone" placeholder="18310408043" clearable />
           </el-form-item>
         </el-form>
@@ -89,7 +89,7 @@
 
     <!-- 底部按钮 -->
     <div class="foot_btn">
-      <el-button type="primary" plain @click="submit">保存配置</el-button>
+      <el-button type="primary" plain @click="submit">{{ $t('sysDesign.saveConfig') }}</el-button>
     </div>
   </div>
 </template>

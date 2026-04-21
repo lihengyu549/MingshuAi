@@ -13,6 +13,9 @@ import role from './role'
 import operlog from './operlog'
 import logininfor from './logininfor'
 import systemInformation from './systemInformation'
+import dict from './dict'
+import sysDesign from './sysDesign'
+import menu from './menu'
 
 export default {
   ...common,
@@ -29,5 +32,8 @@ export default {
   role,
   operlog,
   logininfor,
-  systemInformation
+  systemInformation,
+  dict,
+  sysDesign,
+  menu
 }
