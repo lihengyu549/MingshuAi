@@ -12,10 +12,6 @@ export default {
   dataLevelDistribution: '数据分级分布',
   businessSystemLevelHeatmap: '业务系统分级热力图',
   businessSystemCategoryProportion: '业务系统分类占比',
-  fieldQuantity: '字段数量',
-  fileQuantity: '文件数量',
-  cumulativeFieldCount: '累计字段数量',
-  cumulativeFileCount: '累计文件数量',
   quantity: '数量',
   dataVolume: '数据量',
   dataLevel: '数据分级'

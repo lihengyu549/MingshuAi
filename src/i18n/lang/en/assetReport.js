@@ -12,10 +12,6 @@ export default {
   dataLevelDistribution: 'Data Level Distribution',
   businessSystemLevelHeatmap: 'Business System Level Heatmap',
   businessSystemCategoryProportion: 'Business System Category Proportion',
-  fieldQuantity: 'Field Count',
-  fileQuantity: 'File Count',
-  cumulativeFieldCount: 'Cumulative Field Count',
-  cumulativeFileCount: 'Cumulative File Count',
   quantity: 'Quantity',
   dataVolume: 'Data Volume',
   dataLevel: 'Data Level'

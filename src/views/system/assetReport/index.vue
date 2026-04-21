@@ -1,5 +1,6 @@
 <template>
   <div class="app-container" v-loading="loading">
+    <!-- 页面头部：标题、所属标准、导出按钮 -->
     <div class="page-header">
       <h2><b>{{ $t('assetReport.title') }}</b></h2>
       <div class="header-operations">
@@ -15,6 +16,7 @@
       </div>
     </div>
 
+    <!-- 模块一：顶部统计卡片 -->
     <el-row :gutter="20" class="stats-row">
       <el-col :span="6">
         <el-card class="stat-card stat-card-blue" shadow="hover">
@@ -77,6 +79,7 @@
       </el-col>
     </el-row>
 
+    <!-- 模块二：数据资产分布图表 -->
     <el-card class="chart-card" shadow="hover">
       <div slot="header" class="card-header">
         <span class="card-title">
@@ -87,6 +90,7 @@
       <div id="assetDistributionChart" style="height: 350px;"></div>
     </el-card>
 
+    <!-- 模块三：数据增长趋势图表 -->
     <el-card class="chart-card" shadow="hover">
       <div slot="header" class="card-header">
         <span class="card-title">
@@ -97,6 +101,7 @@
       <div id="growthTrendChart" style="height: 350px;"></div>
     </el-card>
 
+    <!-- 模块四：数据分类分布 + 数据分级分布 -->
     <el-row :gutter="20">
       <el-col :span="12">
         <el-card class="chart-card" shadow="hover">
@@ -126,6 +131,7 @@
       </el-col>
     </el-row>
 
+    <!-- 模块五：业务系统分级热力图 -->
     <el-card class="chart-card" shadow="hover">
       <div slot="header" class="card-header">
         <span class="card-title">
@@ -136,6 +142,7 @@
       <div id="heatmapChart" style="height: 400px;"></div>
     </el-card>
 
+    <!-- 模块六：业务系统分类占比 -->
     <el-card class="chart-card" shadow="hover">
       <div slot="header" class="card-header">
         <span class="card-title">
@@ -288,8 +295,8 @@ export default {
         this.charts.assetDistribution.setOption({
           xAxis: { data: names },
           series: [
-            { name: this.$t('assetReport.fieldQuantity'), data: fields },
-            { name: this.$t('assetReport.fileQuantity'), data: files }
+            { name: '字段数量', data: fields },
+            { name: '文件数量', data: files }
           ]
         });
       }
@@ -297,8 +304,8 @@ export default {
         this.charts.growthTrend.setOption({
           xAxis: { data: data.growthTrend.x || [] },
           series: [
-            { name: this.$t('assetReport.cumulativeFieldCount'), data: data.growthTrend.fields || [] },
-            { name: this.$t('assetReport.cumulativeFileCount'), data: data.growthTrend.files || [] }
+            { name: '累计字段数量', data: data.growthTrend.fields || [] },
+            { name: '累计文件数量', data: data.growthTrend.files || [] }
           ]
         });
       }
@@ -366,7 +373,7 @@ export default {
       this.charts.assetDistribution = chart;
       chart.setOption({
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-        legend: { data: [this.$t('assetReport.fieldQuantity'), this.$t('assetReport.fileQuantity')], top: 10, icon: 'roundRect' },
+        legend: { data: ['字段数量', '文件数量'], top: 10, icon: 'roundRect' },
         grid: { left: '3%', right: '4%', bottom: '5%', containLabel: true },
         xAxis: {
           type: 'category',
@@ -383,14 +390,14 @@ export default {
         },
         series: [
           {
-            name: this.$t('assetReport.fieldQuantity'),
+            name: '字段数量',
             type: 'bar',
             barWidth: 15,
             itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] },
             data: []
           },
           {
-            name: this.$t('assetReport.fileQuantity'),
+            name: '文件数量',
             type: 'bar',
             barWidth: 15,
             itemStyle: { color: '#8bb4f6', borderRadius: [4, 4, 0, 0] },
@@ -409,7 +416,7 @@ export default {
       chart.setOption({
         tooltip: { trigger: 'axis' },
         legend: {
-          data: [this.$t('assetReport.cumulativeFieldCount'), this.$t('assetReport.cumulativeFileCount')],
+          data: ['累计字段数量', '累计文件数量'],
           top: 10,
           icon: 'emptyCircle'
         },
@@ -430,7 +437,7 @@ export default {
         },
         series: [
           {
-            name: this.$t('assetReport.cumulativeFieldCount'),
+            name: '累计字段数量',
             type: 'line',
             symbol: 'emptyCircle',
             symbolSize: 6,
@@ -439,7 +446,7 @@ export default {
             itemStyle: { color: '#3b82f6' }
           },
           {
-            name: this.$t('assetReport.cumulativeFileCount'),
+            name: '累计文件数量',
             type: 'line',
             symbol: 'emptyCircle',
             symbolSize: 6,
