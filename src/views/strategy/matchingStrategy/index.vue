@@ -5,13 +5,14 @@
         <el-card class="left-card" shadow="never">
           <div class="head-container">
             <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
-              placeholder="全部" style="margin-bottom: 20px; width: 100%;">
+              :placeholder="$t('all')" style="margin-bottom: 20px; width: 100%;">
               <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
               </el-option>
             </el-select>
           </div>
           <div class="head-container" v-loading="treeLoading">
-            <el-input class="serachInput" v-model="filterName" placeholder="搜索树节点..." clearable />
+            <el-input class="serachInput" v-model="filterName"
+              :placeholder="$t('matchingStrategy.treeSearchPlaceholder')" clearable />
             <div class="tree-scroll-container">
               <el-tree style="overflow-y: auto;" :data="categoryList" :props="defaultProps"
                 :default-expanded-keys="[treeID]" :current-node-key="treeID" :expand-on-click-node="false"
@@ -26,20 +27,20 @@
         <el-card class="search-card" shadow="never">
           <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="false"
             v-show="showSearch" label-width="90px">
-            <el-form-item label="规则名称" prop="ruleName">
-              <el-input v-model="queryParams.ruleName" @input="inputSearch" placeholder="请输入规则名称" clearable
-                @keyup.enter.native="handleQuery" />
+            <el-form-item :label="$t('matchingStrategy.ruleName')" prop="ruleName">
+              <el-input v-model="queryParams.ruleName" @input="inputSearch"
+                :placeholder="$t('matchingStrategy.pleaseInputRuleName')" clearable @keyup.enter.native="handleQuery" />
             </el-form-item>
-            <el-form-item label="识别对象" prop="recognizeObject">
-              <el-select v-model="queryParams.recognizeObject" clearable @change="dataSourceIdIdChange" placeholder="全部"
-                :loading="loading">
+            <el-form-item :label="$t('matchingStrategy.recognizeObject')" prop="recognizeObject">
+              <el-select v-model="queryParams.recognizeObject" clearable @change="dataSourceIdIdChange"
+                :placeholder="$t('all')" :loading="loading">
                 <el-option v-for="item in recognizeObjectList" :key="item.value" :label="item.label"
                   :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="识别方式" prop="recognizeWay">
-              <el-select v-model="queryParams.recognizeWay" @change="selectProjectIdChange" placeholder="全部">
+            <el-form-item :label="$t('matchingStrategy.recognizeWay')" prop="recognizeWay">
+              <el-select v-model="queryParams.recognizeWay" @change="selectProjectIdChange" :placeholder="$t('all')">
                 <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
@@ -52,49 +53,55 @@
         </el-card>
         <div class="search-actions">
           <el-button type="primary" plain icon="el-icon-plus" size="medium" :disabled="isChildrenNode !== 4"
-            @click="addFn">新增</el-button>
-          <el-button type="danger" plain icon="el-icon-close" size="medium" @click="enabledFn('删除')">删除</el-button>
-          <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="enabledFn('启用')">启用</el-button>
-          <el-button type="danger" plain icon="el-icon-warning-outline" size="medium"
-            @click="enabledFn('禁用')">禁用</el-button>
+            @click="addFn">{{ $t('add') }}</el-button>
+          <el-button type="danger" plain icon="el-icon-close" size="medium" @click="enabledFn('delete')">{{ $t('delete')
+            }}</el-button>
+          <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="enabledFn('enable')">{{
+            $t('enable') }}</el-button>
+          <el-button type="danger" plain icon="el-icon-warning-outline" size="medium" @click="enabledFn('disable')">{{
+            $t('disable') }}</el-button>
         </div>
         <el-card class="table-card" shadow="never">
           <el-table v-loading="loading" :data="protectTableFieldList" ref="tableRef" height="630px" class="tableBox">
             <!-- <el-table-column width="55" align="center" /> -->
             <template slot="empty">
-              <el-empty description="暂无数据"></el-empty>
+              <el-empty :description="$t('noData')"></el-empty>
             </template>
             <el-table-column type="selection" width="60" align="center">
             </el-table-column>
-            <el-table-column label="规则名称" align="center" prop="ruleName" show-overflow-tooltip />
-            <el-table-column label="所属标准" align="center" prop="attachData" show-overflow-tooltip />
-            <el-table-column label="识别对象" align="center" prop="recognizeObject" show-overflow-tooltip>
+            <el-table-column :label="$t('matchingStrategy.ruleName')" align="center" prop="ruleName"
+              show-overflow-tooltip />
+            <el-table-column :label="$t('matchingStrategy.standardBelong')" align="center" prop="attachData"
+              show-overflow-tooltip />
+            <el-table-column :label="$t('matchingStrategy.recognizeObject')" align="center" prop="recognizeObject"
+              show-overflow-tooltip>
               <template slot-scope="scope">
                 <span>
                   {{ recognizeObjectMsg(scope.row.recognizeObject) }}
                 </span>
               </template>
             </el-table-column>
-            <el-table-column label="识别方式" align="center" prop="recognizeWay" show-overflow-tooltip>
+            <el-table-column :label="$t('matchingStrategy.recognizeWay')" align="center" prop="recognizeWay"
+              show-overflow-tooltip>
               <template slot-scope="scope">
                 <span>
                   {{ recognizeWayMsg(scope.row.recognizeWay) }}
                 </span>
               </template>
             </el-table-column>
-            <el-table-column label="状态" align="center" prop="state">
+            <el-table-column :label="$t('status')" align="center" prop="state">
               <template slot-scope="scope">
                 <span>
-                  {{ scope.row.state === '0' ? '启用' : '禁用' }}
+                  {{ scope.row.state === '0' ? $t('enable') : $t('disable') }}
                 </span>
               </template>
             </el-table-column>
-            <el-table-column label="更新时间" align="center" prop="updateTime" />
-            <el-table-column label="操作" align="center">
+            <el-table-column :label="$t('updateTime')" align="center" prop="updateTime" />
+            <el-table-column :label="$t('operation')" align="center">
               <template slot-scope="scope">
                 <el-button type="text" size="medium" :disabled="scope.row.dataSource === '内置'"
-                  @click="editFn(scope.row)">编辑</el-button>
-                <el-button type="text" size="medium" @click="lookFn(scope.row)">查看</el-button>
+                  @click="editFn(scope.row)">{{ $t('edit') }}</el-button>
+                <el-button type="text" size="medium" @click="lookFn(scope.row)">{{ $t('view') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -108,42 +115,45 @@
       append-to-body :close-on-click-modal="addOrEdit.flag == 3" width="700px">
       <el-form :model="addOrEditDataRuls" size="medium" v-if="addOrEdit.show" :rules="addOrEditRules" ref="addOrEdit"
         label-width="120px" label-position="top">
-        <el-form-item label="规则名称" prop="ruleName">
+        <el-form-item :label="$t('matchingStrategy.ruleName')" prop="ruleName">
           <el-input v-model="addOrEditDataRuls.ruleName" :disabled="addOrEdit.flag == 3" maxlength="50"
-            placeholder="请输入规则名称"></el-input>
+            :placeholder="$t('matchingStrategy.pleaseInputRuleName')"></el-input>
         </el-form-item>
-        <el-form-item label="识别对象" class="addSelectClass" prop="recognizeObject">
-          <el-select v-model="addOrEditDataRuls.recognizeObject" :disabled="addOrEdit.flag == 3" placeholder="全部">
+        <el-form-item :label="$t('matchingStrategy.recognizeObject')" class="addSelectClass" prop="recognizeObject">
+          <el-select v-model="addOrEditDataRuls.recognizeObject" :disabled="addOrEdit.flag == 3"
+            :placeholder="$t('all')">
             <el-option v-for="item in recognizeObjectList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item prop="recognizeWay" class="addSelectClass" label="识别方式">
-          <el-select v-model="addOrEditDataRuls.recognizeWay" :disabled="addOrEdit.flag == 3" placeholder="全部">
+        <el-form-item prop="recognizeWay" class="addSelectClass" :label="$t('matchingStrategy.recognizeWay')">
+          <el-select v-model="addOrEditDataRuls.recognizeWay" :disabled="addOrEdit.flag == 3" :placeholder="$t('all')">
             <el-option v-for="item in addOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="相似度" v-if="addOrEditDataRuls.recognizeObject == '3'" prop="ruleValue"
-          class="ruleValueClass">
-          <el-input v-model="addOrEditDataRuls.ruleValue" :disabled="addOrEdit.flag == 3" placeholder="请输入"
-            @input="numberInputFn" />
+        <el-form-item :label="$t('matchingStrategy.similarity')" v-if="addOrEditDataRuls.recognizeObject == '3'"
+          prop="ruleValue" class="ruleValueClass">
+          <el-input v-model="addOrEditDataRuls.ruleValue" :disabled="addOrEdit.flag == 3"
+            :placeholder="$t('matchingStrategy.pleaseInputSimilarity')" @input="numberInputFn" />
           <span style="font-size: 18px;margin-left: 10px;">%</span>
           <span style="margin-left: 30px;font-size: 14px;"><i class="el-icon-warning"></i>
-            设置与字段内容匹配的阈值</span>
+            {{ $t('matchingStrategy.contentMatchThreshold') }}</span>
         </el-form-item>
         <el-form-item class="rulesContClass" prop="ruleContent">
           <template slot="label">
-            <span style="margin-right: 10px;">规则内容</span>
-            <span style="color: rgb(188 188 188);font-size:12px;font-style: italic;">(匹配以下任意一条)</span>
-            <span class="addTextBtn" v-if="addOrEdit.flag !== 3" @click="rulesContAddFn">添加</span>
+            <span style="margin-right: 10px;">{{ $t('matchingStrategy.ruleContent') }}</span>
+            <span style="color: rgb(188 188 188);font-size:12px;font-style: italic;">{{
+              $t('matchingStrategy.matchAnyRule') }}</span>
+            <span class="addTextBtn" v-if="addOrEdit.flag !== 3" @click="rulesContAddFn">{{ $t('add') }}</span>
           </template>
           <div class="forDiv">
             <div v-for="(item, index) in ruleContent" :key="index" style="margin-bottom: 15px;">
               <!-- 当识别方式为正则(3)时显示带建议的输入框 -->
               <el-autocomplete v-if="addOrEditDataRuls.recognizeWay === '3'" v-model="item.name"
-                :disabled="addOrEdit.flag == 3" :fetch-suggestions="queryRegexSuggestions" placeholder="请输入正则表达式"
-                clearable value-key="name" :popper-append-to-body="false">
+                :disabled="addOrEdit.flag == 3" :fetch-suggestions="queryRegexSuggestions"
+                :placeholder="$t('matchingStrategy.pleaseInputRegex')" clearable value-key="name"
+                :popper-append-to-body="false">
                 <template slot-scope="{ item }">
                   <div class="value-text">{{ item.value }}</div>
                 </template>
@@ -153,15 +163,14 @@
               <el-input v-else v-model="item.name" :disabled="addOrEdit.flag == 3"
                 :placeholder="getInputPlaceholder()" />
               <span @click="delAddSelect(index)" v-if="addOrEdit.flag !== 3"
-                style="margin-left: 20px; color: red;cursor: pointer;">删除</span>
+                style="margin-left: 20px; color: red;cursor: pointer;">{{ $t('delete') }}</span>
             </div>
           </div>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="addSubmitForm">确
-          定</el-button>
-        <el-button @click="addCancel">取 消</el-button>
+        <el-button type="primary" plain @click="addSubmitForm">{{ $t('confirm') }}</el-button>
+        <el-button @click="addCancel">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -189,7 +198,7 @@ export default {
       debounceTimeout: null,//防抖动
       treeOptions: [],
       addOrEdit: {
-        title: '新增',
+        title: this.$t('add'),
         show: false,
         flag: 1,// 1新增 2编辑 3查看
       },
@@ -199,17 +208,17 @@ export default {
       // 表单校验
       addOrEditRules: {
         ruleName: [
-          { required: true, message: "请输入规则名称", trigger: "blur" }
+          { required: true, message: this.$t('matchingStrategy.pleaseInputRuleName'), trigger: "blur" }
         ],
         recognizeObject: [
-          { required: true, message: "请选择识别对象", trigger: "change" }
+          { required: true, message: this.$t('matchingStrategy.pleaseSelectRecognizeObject'), trigger: "change" }
         ],
         recognizeWay: [
-          { required: true, message: "请选择识别方式", trigger: "change" }
+          { required: true, message: this.$t('matchingStrategy.pleaseSelectRecognizeWay'), trigger: "change" }
         ],
         ruleValue: [
-          { required: true, message: "请输入相似度", trigger: "blur" },
-          { pattern: /^(?:[1-9]|[1-9][0-9]|100)$/, message: "请输入1到100之间的正整数", trigger: "blur" }
+          { required: true, message: this.$t('matchingStrategy.pleaseInputSimilarity'), trigger: "blur" },
+          { pattern: /^(?:[1-9]|[1-9][0-9]|100)$/, message: this.$t('matchingStrategy.pleaseInputPositiveInt1To100'), trigger: "blur" }
         ],
         ruleContent: [
           { required: true, validator: this.validateRuleContent, trigger: "change" }
@@ -219,11 +228,11 @@ export default {
       importDataRules: {
         categoryName: [
           {
-            required: true, message: "请输入框架名称", trigger: "blur"
+            required: true, message: this.$t('matchingStrategy.pleaseInputFrameworkName'), trigger: "blur"
           }
         ],
         importFile: [
-          { required: true, message: "请选择导入框架文件", trigger: "blur" },
+          { required: true, message: this.$t('matchingStrategy.pleaseSelectImportFrameworkFile'), trigger: "blur" },
         ],
       },
       treeID: '',
@@ -255,43 +264,43 @@ export default {
       recognizeObjectList: [
         {
           value: '1',
-          label: '字段名称匹配'
+          label: this.$t('matchingStrategy.fieldNameMatch')
         },
         {
           value: '2',
-          label: '字段注释匹配'
+          label: this.$t('matchingStrategy.fieldRemarkMatch')
         },
         {
           value: '3',
-          label: '字段内容匹配'
+          label: this.$t('matchingStrategy.fieldContentMatch')
         },
         {
           value: '4',
-          label: 'AI字段注释匹配'
+          label: this.$t('matchingStrategy.aiFieldRemarkMatch')
         },
         {
           value: '5',
-          label: '表名匹配'
+          label: this.$t('matchingStrategy.tableNameMatch')
         },
         {
           value: '6',
-          label: '表注释匹配'
+          label: this.$t('matchingStrategy.tableRemarkMatch')
         },
         {
           value: '7',
-          label: 'AI表注释匹配'
+          label: this.$t('matchingStrategy.aiTableRemarkMatch')
         },
       ],
       addOptions: [
         {
           value: '1',
-          label: "精准"
+          label: this.$t('matchingStrategy.exact')
         }, {
           value: '2',
-          label: "包含"
+          label: this.$t('matchingStrategy.contains')
         }, {
           value: '3',
-          label: "正则"
+          label: this.$t('matchingStrategy.regex')
         }
       ],
       // 遮罩层
@@ -326,7 +335,7 @@ export default {
   methods: {
     addFn() {
       this.addOrEdit.flag = 1
-      this.addOrEdit.title = '新增匹配规则'
+      this.addOrEdit.title = this.$t('matchingStrategy.addMatchingRule')
       this.addOrEdit.show = true
       this.addOrEditDataRuls = {}
       this.ruleContent = []
@@ -345,7 +354,7 @@ export default {
         })
       } catch (error) {
         console.error('获取特性项目选择数据失败:', error);
-        this.$message.error('获取数据失败，请稍后重试');
+        this.$message.error(this.$t('matchingStrategy.getDataFailedRetry'));
       }
 
       // 根据输入过滤建议 - 仍然基于value进行过滤
@@ -363,11 +372,11 @@ export default {
     getInputPlaceholder() {
       switch (this.addOrEditDataRuls.recognizeWay) {
         case '1':
-          return '请输入精准匹配内容';
+          return this.$t('matchingStrategy.pleaseInputExactMatchContent');
         case '2':
-          return '请输入包含匹配内容';
+          return this.$t('matchingStrategy.pleaseInputContainsMatchContent');
         default:
-          return '请输入内容';
+          return this.$t('matchingStrategy.pleaseInputContent');
       }
     },
     // 数字输入框input事件
@@ -407,7 +416,7 @@ export default {
         return item.name
       })
       if (this.ruleContent.length === 0 || nameList.length === 0) {
-        callback(new Error("至少需要一条规则内容"));
+        callback(new Error(this.$t('matchingStrategy.atLeastOneRuleContent')));
       } else {
         callback();
       }
@@ -437,7 +446,7 @@ export default {
           if (this.addOrEditDataRuls.id) {
             params.id = this.addOrEditDataRuls.id
             updateAttachDataItme(params).then((response) => {
-              this.$modal.msgSuccess("修改成功");
+              this.$modal.msgSuccess(this.$t('matchingStrategy.updatedSuccess'));
               this.getList();
               this.addOrEdit.show = false
               this.importDataLoading = false
@@ -447,7 +456,7 @@ export default {
               })
           } else {
             addAttachDataItme(params).then((response) => {
-              this.$modal.msgSuccess("新增成功");
+              this.$modal.msgSuccess(this.$t('matchingStrategy.addedSuccess'));
               this.getList();
               this.addOrEdit.show = false
               this.importDataLoading = false
@@ -475,7 +484,7 @@ export default {
         return { name: item }
       })
       this.addOrEdit.show = true
-      this.addOrEdit.title = '编辑'
+      this.addOrEdit.title = this.$t('edit')
     },
     lookFn(row) {
       this.addOrEdit.flag = 3
@@ -485,17 +494,21 @@ export default {
         return { name: item }
       })
       this.addOrEdit.show = true
-      this.addOrEdit.title = '查看'
+      this.addOrEdit.title = this.$t('view')
     },
     messsucc(res, flag) {
-      this.$message.success(`${res.msg},${flag}${res.data}个`)
+      this.$message.success(this.$t('matchingStrategy.batchActionSuccess', {
+        msg: res.msg,
+        action: this.$t(flag),
+        count: res.data
+      }))
     },
     enabledFn(flag) {
       let dataS = this.$refs.tableRef.selection
       if (dataS && dataS.length > 0) {
-        this.$confirm(`确定批量${flag}吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('matchingStrategy.confirmBatchAction', { action: this.$t(flag) }), this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {
@@ -504,7 +517,7 @@ export default {
           let data = {
             ids: ids
           }
-          if (flag == '启用') {
+          if (flag == 'enable') {
             data.state = '0'
             enableDataItem(data).then(res => {
               if (res.code == 200) {
@@ -512,7 +525,7 @@ export default {
                 this.getList()
               }
             })
-          } else if (flag == '禁用') {
+          } else if (flag == 'disable') {
             data.state = '1'
             enableDataItem(data).then(res => {
               if (res.code == 200) {
@@ -520,7 +533,7 @@ export default {
                 this.getList()
               }
             })
-          } else if (flag == '删除') {
+          } else if (flag == 'delete') {
             // for (let item of dataS) {
             //   if (item.dataSource === '内置') {
             //     this.$message({
@@ -537,14 +550,14 @@ export default {
               }
             })
           } else {
-            this.$message({ message: '未知异常', type: 'warning' })
+            this.$message({ message: this.$t('matchingStrategy.unknownException'), type: 'warning' })
           }
           // 接口
         }).catch(() => {
 
         });
       } else {
-        this.$message({ message: '请选择至少一条数据', type: 'warning' })
+        this.$message({ message: this.$t('matchingStrategy.pleaseSelectAtLeastOneData'), type: 'warning' })
       }
     },
     // 左侧树下拉选change事件
@@ -755,7 +768,7 @@ export default {
       }
       let res = await nameRules(params)
       if (res.data) {
-        this.$message.error('该规则名称已存在');
+        this.$message.error(this.$t('matchingStrategy.ruleNameExists'));
       }
       this.importDataLoading = false
       return res.data

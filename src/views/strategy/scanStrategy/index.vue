@@ -5,7 +5,7 @@
         <span class="title">
           <div class="icon">
             <svg-icon icon-class="scanStrategy-1" style="font-size: 20px;"></svg-icon>
-          </div><span>噪音数据过滤</span>
+          </div><span>{{ $t('scanStrategy.dirtyDataFilter') }}</span>
         </span>
       </template>
       <div class="contBox">
@@ -56,7 +56,7 @@
               <div class="switch-content">
                 <div class="switch-label">
                   <div class="label-text">{{ allData.DirtyData.DirtyData4.label }}</div>
-                  <div class="label-desc">包含主键，外键，编码方式等</div>
+                  <div class="label-desc">{{ $t('scanStrategy.containsKeyEtc') }}</div>
                 </div>
                 <el-switch v-model="allData.DirtyData.DirtyData4.state" active-color="#009dff"
                   inactive-color="#e0e0e0"></el-switch>
@@ -68,7 +68,7 @@
               <div class="switch-content">
                 <div class="switch-label">
                   <div class="label-text">{{ allData.DirtyData.DirtyData7.label }}</div>
-                  <div class="label-desc">重复表结构</div>
+                  <div class="label-desc">{{ $t('scanStrategy.duplicateTableStructure') }}</div>
                 </div>
                 <el-switch v-model="allData.DirtyData.DirtyData7.state" active-color="#009dff"
                   inactive-color="#e0e0e0"></el-switch>
@@ -80,7 +80,7 @@
               <div class="switch-content">
                 <div class="switch-label">
                   <div class="label-text">{{ allData.DirtyData.DirtyData6.label }}</div>
-                  <div class="label-desc">包含备份字段，自定义字段等</div>
+                  <div class="label-desc">{{ $t('scanStrategy.containsBackupEtc') }}</div>
                 </div>
                 <el-switch v-model="allData.DirtyData.DirtyData6.state" active-color="#009dff"
                   inactive-color="#e0e0e0"></el-switch>
@@ -95,11 +95,11 @@
         <span class="title">
           <div class="icon">
             <svg-icon icon-class="scanStrategy-2" style="font-size: 20px;"></svg-icon>
-          </div><span>样本抽取</span>
+          </div><span>{{ $t('scanStrategy.sampleExtraction') }}</span>
         </span>
       </template>
       <div class="contBox">
-        <span class="sample-label">抽样数量</span>
+        <span class="sample-label">{{ $t('scanStrategy.sampleCount') }}</span>
         <el-radio-group v-model="allData.SampleExtraction.value" class="sample-radio-group">
           <el-radio label="0" border>0</el-radio>
           <el-radio label="5" border>5</el-radio>
@@ -115,24 +115,25 @@
         <span class="title">
           <div class="icon">
             <i class="el-icon-coin" style="font-size: 20px; color: #2563eb;"></i>
-          </div><span>语义缓存</span>
+          </div><span>{{ $t('scanStrategy.semanticCache') }}</span>
         </span>
       </template>
       <div class="contBox semantic-cache-box">
         <div class="semantic-cache-label">
-          <div class="label-text">相似度阈值</div>
-          <div class="label-desc">语义相似度大于该阈值则直接命中缓存</div>
+          <div class="label-text">{{ $t('scanStrategy.similarityThreshold') }}</div>
+          <div class="label-desc">{{ $t('scanStrategy.semanticCacheDesc') }}</div>
         </div>
         <div class="semantic-cache-slider">
           <el-slider v-model="allData.SemanticCache.value" :min="0" :max="100" style="flex: 1;"></el-slider>
           <div class="slider-tip">
-            <el-tag size="small" type="warning" effect="plain" class="min-tag">最小可设 60%</el-tag>
-            <span class="tip-text">低于该值时不允许保存</span>
+            <el-tag size="small" type="warning" effect="plain" class="min-tag">{{ $t('scanStrategy.minSetting')
+              }}</el-tag>
+            <span class="tip-text">{{ $t('scanStrategy.disallowSaveBelow') }}</span>
           </div>
         </div>
         <div class="semantic-cache-input">
-          <el-input-number v-model="allData.SemanticCache.value" :min="0" :max="100" controls-position="right" size="small"
-            style="width: 100px;"></el-input-number>
+          <el-input-number v-model="allData.SemanticCache.value" :min="0" :max="100" controls-position="right"
+            size="small" style="width: 100px;"></el-input-number>
           <span class="percent-sign">%</span>
         </div>
       </div>
@@ -214,7 +215,7 @@
     -->
 
     <div class="foot_btn">
-      <el-button type="primary" plain @click="submit">确 定</el-button>
+      <el-button type="primary" plain @click="submit">{{ $t('confirm') }}</el-button>
     </div>
   </div>
 </template>
@@ -274,7 +275,7 @@ export default {
       if (this.allData.DataTableQualityScore.value > 100) {
         this.allData.DataTableQualityScore.value = 100
         this.$message({
-          message: '输入范围在0 ~ 100之间',
+          message: this.$t('scanStrategy.inputRangeWarning'),
           type: 'warning'
         });
       }
@@ -307,7 +308,7 @@ export default {
         const value = this.allData.DirtyData.DirtyData3.value;
         if (!value) {
           this.$message({
-            message: '请输入数值',
+            message: this.$t('scanStrategy.pleaseInputValue'),
             type: 'warning'
           });
           return false;
@@ -316,7 +317,7 @@ export default {
         const regex = /^(100|[1-9]?[0-9])(%)$/;
         if (!regex.test(value)) {
           this.$message({
-            message: '此位置不规则，请输入0-100的数字加上%',
+            message: this.$t('scanStrategy.invalidPercentFormat'),
             type: 'warning'
           });
           return false;
@@ -342,7 +343,7 @@ export default {
       // 验证语义缓存的阈值
       if (this.allData.SemanticCache && this.allData.SemanticCache.value < 60) {
         this.$message({
-          message: '语义缓存的相似度阈值不能低于60%',
+          message: this.$t('scanStrategy.semanticCacheMinWarning'),
           type: 'warning'
         });
         return;
@@ -365,7 +366,7 @@ export default {
       updateByTactics(submitData).then(res => {
         if (res.code == 200) {
           this.$message({
-            message: '修改成功',
+            message: this.$t('scanStrategy.updateSuccess'),
             type: 'success'
           });
           this.getlistData()

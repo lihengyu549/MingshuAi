@@ -1,0 +1,18 @@
+export default {
+  dirtyDataFilter: 'Noise Data Filtering',
+  containsKeyEtc: 'Includes primary keys, foreign keys, encoding methods, etc.',
+  duplicateTableStructure: 'Duplicate table structure',
+  containsBackupEtc: 'Includes backup fields, custom fields, etc.',
+  sampleExtraction: 'Sample Extraction',
+  sampleCount: 'Sample Size',
+  semanticCache: 'Semantic Cache',
+  similarityThreshold: 'Similarity Threshold',
+  semanticCacheDesc: 'Cache is hit directly when semantic similarity exceeds this threshold',
+  minSetting: 'Minimum 60%',
+  disallowSaveBelow: 'Saving is not allowed below this value',
+  inputRangeWarning: 'Input range must be between 0 and 100',
+  pleaseInputValue: 'Please enter a value',
+  invalidPercentFormat: 'Invalid format. Please enter a number from 0 to 100 followed by %',
+  semanticCacheMinWarning: 'The semantic cache similarity threshold cannot be lower than 60%',
+  updateSuccess: 'Updated successfully'
+}

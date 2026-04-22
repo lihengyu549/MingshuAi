@@ -1,0 +1,18 @@
+export default {
+  dirtyDataFilter: '噪音数据过滤',
+  containsKeyEtc: '包含主键，外键，编码方式等',
+  duplicateTableStructure: '重复表结构',
+  containsBackupEtc: '包含备份字段，自定义字段等',
+  sampleExtraction: '样本抽取',
+  sampleCount: '抽样数量',
+  semanticCache: '语义缓存',
+  similarityThreshold: '相似度阈值',
+  semanticCacheDesc: '语义相似度大于该阈值则直接命中缓存',
+  minSetting: '最小可设 60%',
+  disallowSaveBelow: '低于该值时不允许保存',
+  inputRangeWarning: '输入范围在0 ~ 100之间',
+  pleaseInputValue: '请输入数值',
+  invalidPercentFormat: '此位置不规则，请输入0-100的数字加上%',
+  semanticCacheMinWarning: '语义缓存的相似度阈值不能低于60%',
+  updateSuccess: '修改成功'
+}

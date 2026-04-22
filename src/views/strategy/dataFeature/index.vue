@@ -3,18 +3,18 @@
         <!-- 搜索区域卡片 -->
         <el-card shadow="never" class="searchCard">
             <el-form :inline="true" :model="searchForm" class="yuanDataClass">
-                <el-form-item label="特征名称">
-                    <el-input v-model="searchForm.featureName" placeholder="请输入特征名称" clearable @input="handleSearch" />
+                <el-form-item :label="$t('dataFeature.featureName')">
+                    <el-input v-model="searchForm.featureName" :placeholder="$t('dataFeature.pleaseInputFeatureName')" clearable @input="handleSearch" />
                 </el-form-item>
-                <el-form-item label="特征类型">
-                    <el-select v-model="searchForm.featureType" placeholder="请选择特征类型" clearable @change="handleSearch">
+                <el-form-item :label="$t('dataFeature.featureType')">
+                    <el-select v-model="searchForm.featureType" :placeholder="$t('dataFeature.pleaseSelectFeatureType')" clearable @change="handleSearch">
                         <el-option v-for="item in dict.type.sys_feature_type" :key="item.value" :label="item.label"
                             :value="item.value">
                         </el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="来源">
-                    <el-select v-model="searchForm.source" placeholder="请选择来源" clearable @change="handleSearch">
+                <el-form-item :label="$t('dataFeature.source')">
+                    <el-select v-model="searchForm.source" :placeholder="$t('dataFeature.pleaseSelectSource')" clearable @change="handleSearch">
                         <el-option v-for="item in dict.type.sys_source" :key="item.value" :label="item.label"
                             :value="item.value">
                         </el-option>
@@ -26,10 +26,10 @@
         <!-- 操作按钮区域 -->
         <div class="operation-buttons">
             <el-button type="primary" plain @click="handleAdd">
-                <i class="el-icon-plus"></i> 新增
+                <i class="el-icon-plus"></i> {{ $t('add') }}
             </el-button>
             <el-button type="danger" plain @click="handleDelete" :disabled="selectedRows.length === 0">
-                <i class="el-icon-close"></i> 删除
+                <i class="el-icon-close"></i> {{ $t('delete') }}
             </el-button>
         </div>
 
@@ -38,24 +38,24 @@
             <el-table v-loading="loading" :data="tableData" class="tableBox" style="width: 100%;"
                 @selection-change="handleSelectionChange">
                 <template slot="empty">
-                    <el-empty description="暂无数据"></el-empty>
+                    <el-empty :description="$t('noData')"></el-empty>
                 </template>
                 <el-table-column type="selection" align="center" width="45" />
-                <el-table-column prop="featureName" label="特征名称" width="160" show-overflow-tooltip>
+                <el-table-column prop="featureName" :label="$t('dataFeature.featureName')" width="160" show-overflow-tooltip>
                     <template slot-scope="scope">
                         <svg-icon icon-class="zhiwen" style="font-size: 16px; margin-right: 5px;" />
                         {{ scope.row.featureName }}
                     </template>
                 </el-table-column>
-                <el-table-column prop="featureTypeName" align="center" label="特征类型" width="100" show-overflow-tooltip />
-                <el-table-column prop="featureSourceName" align="center" label="来源" width="120" show-overflow-tooltip />
-                <el-table-column prop="featureDescribe" align="center" label="描述" min-width="200"
+                <el-table-column prop="featureTypeName" align="center" :label="$t('dataFeature.featureType')" width="100" show-overflow-tooltip />
+                <el-table-column prop="featureSourceName" align="center" :label="$t('dataFeature.source')" width="120" show-overflow-tooltip />
+                <el-table-column prop="featureDescribe" align="center" :label="$t('description')" min-width="200"
                     show-overflow-tooltip />
-                <el-table-column prop="updateTime" align="center" label="更新时间" width="160" show-overflow-tooltip />
-                <el-table-column align="center" label="操作" width="120" fixed="right">
+                <el-table-column prop="updateTime" align="center" :label="$t('updateTime')" width="160" show-overflow-tooltip />
+                <el-table-column align="center" :label="$t('operation')" width="120" fixed="right">
                     <template slot-scope="scope">
-                        <el-button type="text" size="small" @click="handleView(scope.row)">查看</el-button>
-                        <el-button type="text" size="small" @click="handleEdit(scope.row)">编辑</el-button>
+                        <el-button type="text" size="small" @click="handleView(scope.row)">{{ $t('view') }}</el-button>
+                        <el-button type="text" size="small" @click="handleEdit(scope.row)">{{ $t('edit') }}</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -66,29 +66,29 @@
         </el-card>
 
         <!-- 抽屉：查看/编辑 -->
-        <Drawer v-loading="drawerLoading" title="数据特征" :visible.sync="drawerVisible" direction="rtl" size="35%"
+        <Drawer v-loading="drawerLoading" :title="$t('dataFeature.drawerTitle')" :visible.sync="drawerVisible" direction="rtl" size="35%"
             :before-close="handleDrawerClose" :wrapperClosable="false">
             <!-- 根据特征类型动态渲染不同表单 -->
             <template v-if="form.featureType == '1'">
                 <el-form slot="body" :model="form" label-width="100px" :disabled="isView" size="small"
                     class="feature-form" label-position="top" :rules="rules">
-                    <Title title="基本信息"></Title>
+                    <Title :title="$t('dataFeature.basicInfo')"></Title>
                     <el-row>
                         <el-col :span="12">
-                            <el-form-item label="编号:" prop="id">
-                                <el-input class="form-input" v-model="form.id" disabled />
+                            <el-form-item :label="$t('dataFeature.idLabel')" prop="id">
+                                <el-input class="form-input" :value="displayFeatureId" disabled />
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="名称:" prop="featureName">
-                                <el-input class="form-input" v-model="form.featureName" placeholder="请输入名称" />
+                            <el-form-item :label="$t('dataFeature.nameLabel')" prop="featureName">
+                                <el-input class="form-input" v-model="form.featureName" :placeholder="$t('dataFeature.pleaseInputName')" />
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row>
                         <el-col :span="12">
-                            <el-form-item label="类型:" prop="featureType">
-                                <el-select v-model="form.featureType" placeholder="请选择特征类型" @change="handleTypeChange"
+                            <el-form-item :label="$t('dataFeature.typeLabel')" prop="featureType">
+                                <el-select v-model="form.featureType" :placeholder="$t('dataFeature.pleaseSelectFeatureType')" @change="handleTypeChange"
                                     class="form-input">
                                     <el-option v-for="item in dict.type.sys_feature_type" :key="item.value"
                                         :label="item.label" :value="item.value">
@@ -97,8 +97,8 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="来源:" prop="source">
-                                <el-select v-model="form.source" placeholder="请选择来源" class="form-input">
+                            <el-form-item :label="$t('dataFeature.sourceLabel')" prop="source">
+                                <el-select v-model="form.source" :placeholder="$t('dataFeature.pleaseSelectSource')" class="form-input">
                                     <el-option v-for="item in dict.type.sys_source" :key="item.value"
                                         :label="item.label" :value="item.value">
                                     </el-option>
@@ -106,11 +106,11 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <el-form-item label="描述:" prop="description">
-                        <el-input type="textarea" v-model="form.description" placeholder="请输入描述" rows="3" />
+                    <el-form-item :label="$t('dataFeature.descriptionLabel')" prop="description">
+                        <el-input type="textarea" v-model="form.description" :placeholder="$t('dataFeature.pleaseInputDescription')" rows="3" />
                     </el-form-item>
-                    <el-form-item label="特征值:" prop="featureValue">
-                        <el-input type="textarea" v-model="form.featureValue" placeholder="请输入正则表达式" rows="3" />
+                    <el-form-item :label="$t('dataFeature.featureValueLabel')" prop="featureValue">
+                        <el-input type="textarea" v-model="form.featureValue" :placeholder="$t('dataFeature.pleaseInputRegex')" rows="3" />
                     </el-form-item>
                 </el-form>
             </template>
@@ -118,23 +118,23 @@
             <template v-else-if="form.featureType == '2' || form.featureType == '3'">
                 <el-form slot="body" :model="form" label-width="100px" :disabled="isView" size="small"
                     class="feature-form" :rules="rules" label-position="top">
-                    <Title title="基本信息"></Title>
+                    <Title :title="$t('dataFeature.basicInfo')"></Title>
                     <el-row>
                         <el-col :span="12">
-                            <el-form-item label="编号:" prop="id">
-                                <el-input class="form-input" v-model="form.id" disabled />
+                            <el-form-item :label="$t('dataFeature.idLabel')" prop="id">
+                                <el-input class="form-input" :value="displayFeatureId" disabled />
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="名称:" prop="featureName">
-                                <el-input class="form-input" v-model="form.featureName" placeholder="请输入名称" />
+                            <el-form-item :label="$t('dataFeature.nameLabel')" prop="featureName">
+                                <el-input class="form-input" v-model="form.featureName" :placeholder="$t('dataFeature.pleaseInputName')" />
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row>
                         <el-col :span="12">
-                            <el-form-item label="类型:" prop="featureType">
-                                <el-select v-model="form.featureType" placeholder="请选择特征类型" @change="handleTypeChange"
+                            <el-form-item :label="$t('dataFeature.typeLabel')" prop="featureType">
+                                <el-select v-model="form.featureType" :placeholder="$t('dataFeature.pleaseSelectFeatureType')" @change="handleTypeChange"
                                     class="form-input">
                                     <el-option v-for="item in dict.type.sys_feature_type" :key="item.value"
                                         :label="item.label" :value="item.value">
@@ -143,8 +143,8 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="来源:" prop="source">
-                                <el-select v-model="form.source" placeholder="请选择来源" class="form-input">
+                            <el-form-item :label="$t('dataFeature.sourceLabel')" prop="source">
+                                <el-select v-model="form.source" :placeholder="$t('dataFeature.pleaseSelectSource')" class="form-input">
                                     <el-option v-for="item in dict.type.sys_source" :key="item.value"
                                         :label="item.label" :value="item.value">
                                     </el-option>
@@ -152,10 +152,10 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <el-form-item label="描述:" prop="description">
-                        <el-input type="textarea" v-model="form.description" placeholder="请输入描述" rows="3" />
+                    <el-form-item :label="$t('dataFeature.descriptionLabel')" prop="description">
+                        <el-input type="textarea" v-model="form.description" :placeholder="$t('dataFeature.pleaseInputDescription')" rows="3" />
                     </el-form-item>
-                    <el-form-item label="特征值:" prop="mappingList">
+                    <el-form-item :label="$t('dataFeature.featureValueLabel')" prop="mappingList">
                         <div class="mapping-table-container">
                             <!-- 新增：表格与右侧按钮组容器 -->
                             <div class="table-with-actions">
@@ -163,38 +163,38 @@
                                 <div class="table-container">
                                     <template v-if="form.featureType == '2'">
                                         <div style="display: flex; justify-content: space-between;">
-                                            <el-input v-model="tempFeatureKey" placeholder="请输入特征值" :disabled="isView"
+                                            <el-input v-model="tempFeatureKey" :placeholder="$t('dataFeature.pleaseInputMappingValue')" :disabled="isView"
                                                 style="width: 48%;" />
-                                            <el-input v-model="tempFeatureVal" placeholder="请输入对照含义" :disabled="isView"
+                                            <el-input v-model="tempFeatureVal" :placeholder="$t('dataFeature.pleaseInputMappingMeaning')" :disabled="isView"
                                                 style="width: 48%;" />
                                         </div>
                                         <el-table :data="currentMappingPageData" style="margin-top: 10px; width: 100%"
                                             size="small" @selection-change="handleMappingSelectionChange">
                                             <!-- 新增：复选框列 -->
                                             <el-table-column type="selection" width="45" />
-                                            <el-table-column prop="itemKey" label="特征值" width="180" />
-                                            <el-table-column prop="itemValue" label="对照含义" min-width="180" />
+                                            <el-table-column prop="itemKey" :label="$t('dataFeature.featureValueLabel')" width="180" />
+                                            <el-table-column prop="itemValue" :label="$t('dataFeature.mappingMeaning')" min-width="180" />
                                         </el-table>
                                     </template>
                                     <template v-else-if="form.featureType == '3'">
                                         <div style="display: flex; justify-content: space-between;">
-                                            <el-input v-model="tempFeatureKey" placeholder="请输入表名" :disabled="isView"
+                                            <el-input v-model="tempFeatureKey" :placeholder="$t('dataFeature.pleaseInputTableName')" :disabled="isView"
                                                 style="width: 24%;" />
-                                            <el-input v-model="tempFeatureVal" placeholder="请输入表注释" :disabled="isView"
+                                            <el-input v-model="tempFeatureVal" :placeholder="$t('dataFeature.pleaseInputTableRemark')" :disabled="isView"
                                                 style="width: 24%;" />
-                                            <el-input v-model="tempFeatureName" placeholder="请输入字段名称" :disabled="isView"
+                                            <el-input v-model="tempFeatureName" :placeholder="$t('dataFeature.pleaseInputFieldName')" :disabled="isView"
                                                 style="width: 24%;" />
-                                            <el-input v-model="tempFeatureType" placeholder="请输入字段注释" :disabled="isView"
+                                            <el-input v-model="tempFeatureType" :placeholder="$t('dataFeature.pleaseInputFieldRemark')" :disabled="isView"
                                                 style="width: 24%;" />
                                         </div>
                                         <el-table :data="currentMappingPageData" style="margin-top: 10px; width: 100%"
                                             size="small" @selection-change="handleMappingSelectionChange">
                                             <!-- 新增：复选框列 -->
                                             <el-table-column type="selection" width="45" />
-                                            <el-table-column prop="tableName" label="表名" width="180" />
-                                            <el-table-column prop="tableRemark" label="表注释" min-width="180" />
-                                            <el-table-column prop="fieldName" label="字段名称" min-width="180" />
-                                            <el-table-column prop="fieldRemark" label="字段注释" min-width="180" />
+                                            <el-table-column prop="tableName" :label="$t('dataFeature.tableName')" width="180" />
+                                            <el-table-column prop="tableRemark" :label="$t('dataFeature.tableRemark')" min-width="180" />
+                                            <el-table-column prop="fieldName" :label="$t('dataFeature.fieldName')" min-width="180" />
+                                            <el-table-column prop="fieldRemark" :label="$t('dataFeature.fieldRemark')" min-width="180" />
                                         </el-table>
                                     </template>
 
@@ -202,8 +202,8 @@
                                     <div class="import-format-tip"
                                         style="margin: 15px 0; padding: 10px; line-height: 1.5; font-size: 12px; color: #666; background-color: #f9f9f9; border: 1px solid #eee; border-radius: 4px;">
                                         <i class="el-icon-warning-outline" type="info" />
-                                        支持UTF-8编码的txt文件,每行一条请用英文逗号分隔关键字和对照值, 例如:{{ form.featureType == '3' ?
-                                            '表名,表注释,字段名称,字段注释' : '特征值,对照含义' }}
+                                        {{ $t('dataFeature.utf8ImportTip') }}{{ form.featureType == '3' ?
+                                            $t('dataFeature.tableImportExample') : $t('dataFeature.featureImportExample') }}
                                     </div>
 
                                     <!-- 对照表分页 -->
@@ -230,7 +230,7 @@
                                     <svg-icon icon-class="导入" @click="handleImport" :class="{ 'icon-disabled': isView }"
                                         class="icon" @click.native="isView && $event.stopPropagation()" />
                                     <svg-icon icon-class="导出" @click="handleExport"
-                                        :class="{ 'icon-disabled': isView || form.id == '系统默认生成' }" class="icon"
+                                        :class="{ 'icon-disabled': isView || form.id == defaultFeatureId }" class="icon"
                                         @click.native="isView && $event.stopPropagation()" />
                                     <svg-icon icon-class="清空" @click="clearAllRows"
                                         :class="{ 'icon-disabled': isView || form.mappingList.length === 0 }"
@@ -241,7 +241,7 @@
 
                             <!-- 原有新增行输入框 -->
                             <div class="table-hint" v-if="form.mappingList.length === 0">
-                                <span>暂无数据，请点击"添加"按钮新增</span>
+                                <span>{{ $t('dataFeature.emptyMappingTip') }}</span>
                             </div>
                         </div>
                     </el-form-item>
@@ -250,9 +250,9 @@
 
             <!-- 抽屉底部按钮 -->
             <div slot="footer" class="drawer-footer">
-                <el-button @click="handleCancel" size="small">取消</el-button>
+                <el-button @click="handleCancel" size="small">{{ $t('cancel') }}</el-button>
                 <el-button type="primary" plain @click="handleConfirm" v-if="!isView" size="small"
-                    style="margin-left: 10px;">确认</el-button>
+                    style="margin-left: 10px;">{{ $t('confirm') }}</el-button>
             </div>
         </Drawer>
     </div>
@@ -265,6 +265,7 @@ export default {
     dicts: ['sys_feature_type', 'sys_source'],
     data() {
         return {
+            defaultFeatureId: '__SYSTEM_DEFAULT_GENERATED__',
             // 遮罩层
             loading: false,
             // 明确初始化drawerLoading为false
@@ -290,7 +291,7 @@ export default {
             isView: false, // 是否为“查看”模式（true: 只读；false: 可编辑）
             // 表单数据（抽屉用）
             form: {
-                id: '系统默认生成',
+                id: '__SYSTEM_DEFAULT_GENERATED__',
                 featureName: '',
                 source: '1',
                 featureType: '1',
@@ -304,12 +305,12 @@ export default {
             tempFeatureName: '',
             tempFeatureType: '',
             rules: {
-                id: { required: true, message: '请输入id', trigger: 'blur' },
-                featureName: { required: true, message: '请输入名称', trigger: 'blur' },
-                source: { required: true, message: '请输入来源', trigger: 'blur' },
-                featureType: { required: true, message: '请输入类型', trigger: 'blur' },
-                description: { required: true, message: '请输入描述', trigger: 'blur' },
-                featureValue: { required: true, message: '请输入特征值', trigger: 'blur' },
+                id: { required: true, message: this.$t('dataFeature.pleaseInputId'), trigger: 'blur' },
+                featureName: { required: true, message: this.$t('dataFeature.pleaseInputName'), trigger: 'blur' },
+                source: { required: true, message: this.$t('dataFeature.pleaseSelectSource'), trigger: 'blur' },
+                featureType: { required: true, message: this.$t('dataFeature.pleaseSelectFeatureType'), trigger: 'blur' },
+                description: { required: true, message: this.$t('dataFeature.pleaseInputDescription'), trigger: 'blur' },
+                featureValue: { required: true, message: this.$t('dataFeature.pleaseInputFeatureValue'), trigger: 'blur' },
             },
             // 新增：存储选中的对照行
             selectedMappingRows: [],
@@ -333,6 +334,9 @@ export default {
             const start = (this.mappingPagination.currentPage - 1) * this.mappingPagination.pageSize
             const end = start + this.mappingPagination.pageSize
             return this.form.mappingList.slice(start, end)
+        },
+        displayFeatureId() {
+            return this.form.id === this.defaultFeatureId ? this.$t('dataFeature.systemGenerated') : this.form.id
         }
     },
     methods: {
@@ -352,7 +356,9 @@ export default {
                 this.pagination.pageSize = res.data.size;
                 this.pagination.total = res.data.total;
             } catch (error) {
-                this.$message.error('数据加载失败：' + (error.message || '未知错误'));
+                this.$message.error(this.$t('dataFeature.loadDataFailed', {
+                    message: error.message || this.$t('dataFeature.unknownError')
+                }));
                 this.tableData = []; // 加载失败时清空表格
                 this.pagination.total = 0;
             } finally {
@@ -376,7 +382,7 @@ export default {
         handleAdd() {
             this.isView = false
             this.form = {
-                id: '系统默认生成',
+                id: this.defaultFeatureId,
                 featureName: '',
                 source: '1',
                 featureType: '1',
@@ -399,11 +405,11 @@ export default {
         async handleDelete() {
             try {
                 await this.$confirm(
-                    `确定要删除选中的${this.selectedRows.length}条数据吗?`,
-                    '提示',
+                    this.$t('dataFeature.confirmDeleteSelected', { count: this.selectedRows.length }),
+                    this.$t('tip'),
                     {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
+                        confirmButtonText: this.$t('confirm'),
+                        cancelButtonText: this.$t('cancel'),
                         type: 'warning'
                     }
                 );
@@ -413,14 +419,16 @@ export default {
                     ids: this.selectedRows.map(item => item.id)
                 };
                 await deleteFeature(params);
-                this.$message.success('删除成功');
+                this.$message.success(this.$t('dataFeature.deleteSuccess'));
                 await this.init(); // 重新加载数据
                 this.selectedRows = [];
             } catch (error) {
                 if (error !== 'cancel') {
-                    this.$message.error('删除失败：' + (error.message || '未知错误'));
+                    this.$message.error(this.$t('dataFeature.deleteFailed', {
+                        message: error.message || this.$t('dataFeature.unknownError')
+                    }));
                 } else {
-                    this.$message.info('已取消删除');
+                    this.$message.info(this.$t('dataFeature.deleteCancelled'));
                 }
             } finally {
                 this.loading = false; // 无论成功失败都关闭loading
@@ -505,13 +513,13 @@ export default {
             if (this.form.featureType === '2') {
                 // 当featureType为2时，只校验前两个值
                 if (!this.tempFeatureKey || !this.tempFeatureVal) {
-                    this.$message.warning('特征值、对照含义不能为空');
+                    this.$message.warning(this.$t('dataFeature.mappingRequiredType2'));
                     return;
                 }
             } else if (this.form.featureType === '3') {
                 // 当featureType为3时，校验所有四个值
                 if (!this.tempFeatureKey || !this.tempFeatureVal || !this.tempFeatureName || !this.tempFeatureType) {
-                    this.$message.warning('表名、表注释、字段名、字段备注不能为空');
+                    this.$message.warning(this.$t('dataFeature.mappingRequiredType3'));
                     return;
                 }
             }
@@ -523,7 +531,10 @@ export default {
                     item.tableName === this.tempFeatureKey && item.fieldName === this.tempFeatureName
                 );
                 if (isDuplicate) {
-                    this.$message.warning(`表名"${this.tempFeatureKey}"下已存在字段"${this.tempFeatureName}"，同一个表名下不能有重复字段`);
+                    this.$message.warning(this.$t('dataFeature.duplicateFieldInTable', {
+                        tableName: this.tempFeatureKey,
+                        fieldName: this.tempFeatureName
+                    }));
                     return;
                 }
             } else {
@@ -532,7 +543,7 @@ export default {
                     item.itemKey === this.tempFeatureKey
                 );
                 if (isDuplicate) {
-                    this.$message.warning('已存在相同的特征值，请不要重复添加');
+                    this.$message.warning(this.$t('dataFeature.duplicateFeatureValue'));
                     return;
                 }
             }
@@ -560,25 +571,25 @@ export default {
         async handleConfirm() {
             // 表单验证
             if (this.form.featureType === '1' && !this.form.featureValue) {
-                this.$message.warning('请输入特征值')
+                this.$message.warning(this.$t('dataFeature.pleaseAddFeatureValue'))
                 return
             }
 
             if ((this.form.featureType === '2' || this.form.featureType === '3') && this.form.mappingList.length === 0) {
-                this.$message.warning('请添加至少一条对照数据')
+                this.$message.warning(this.$t('dataFeature.pleaseAddAtLeastOneMapping'))
                 return
             }
 
             this.loading = true;
 
             // 实际项目中这里会调用保存接口
-            if (this.form.id === '系统默认生成') {
+            if (this.form.id === this.defaultFeatureId) {
                 // 验证特征名称是否存在
                 const params = { featureName: this.form.featureName }
                 try {
                     await verifyFeatureName(params)
                 } catch (error) {
-                    this.$message.error(error.message || '未知错误')
+                    this.$message.error(error.message || this.$t('dataFeature.unknownError'))
                     this.loading = false;
                     return
                 }
@@ -594,7 +605,7 @@ export default {
                         : this.form.mappingList
                 }
                 await addFeature(submitData)
-                this.$message.success('新增成功')
+                this.$message.success(this.$t('dataFeature.addSuccess'))
                 this.init()
             } else {
                 // 验证特征名称是否存在
@@ -602,7 +613,7 @@ export default {
                 try {
                     await verifyFeatureName(params)
                 } catch (error) {
-                    this.$message.error(error.message || '未知错误')
+                    this.$message.error(error.message || this.$t('dataFeature.unknownError'))
                     this.loading = false;
                     return
                 }
@@ -618,7 +629,7 @@ export default {
                         : this.form.mappingList
                 }
                 await updateFeature(submitData)
-                this.$message.success('编辑成功')
+                this.$message.success(this.$t('dataFeature.editSuccess'))
                 this.init()
             }
 
@@ -685,9 +696,9 @@ export default {
         },
         // 删除选中的对照行
         deleteSelectedRows() {
-            this.$confirm(`确定要删除选中的${this.selectedMappingRows.length}条数据吗?`, '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
+            this.$confirm(this.$t('dataFeature.confirmDeleteMapping', { count: this.selectedMappingRows.length }), this.$t('tip'), {
+                confirmButtonText: this.$t('confirm'),
+                cancelButtonText: this.$t('cancel'),
                 type: 'warning'
             }).then(() => {
                 // 获取选中行的唯一标识（根据实际数据结构调整）
@@ -716,16 +727,16 @@ export default {
                     this.mappingPagination.currentPage--;
                 }
 
-                this.$message.success('删除成功');
+                this.$message.success(this.$t('dataFeature.deleteSuccess'));
             }).catch(() => {
-                this.$message.info('已取消删除');
+                this.$message.info(this.$t('dataFeature.deleteCancelled'));
             });
         },
         // 清空所有对照行
         clearAllRows() {
-            this.$confirm('确定要清空所有数据吗?', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
+            this.$confirm(this.$t('dataFeature.confirmClearAll'), this.$t('tip'), {
+                confirmButtonText: this.$t('confirm'),
+                cancelButtonText: this.$t('cancel'),
                 type: 'warning'
             }).then(() => {
                 // 直接清空本地表格数据
@@ -739,9 +750,9 @@ export default {
                 // 重置选中状态
                 this.selectedMappingRows = [];
 
-                this.$message.success('清空成功');
+                this.$message.success(this.$t('dataFeature.clearSuccess'));
             }).catch(() => {
-                this.$message.info('已取消清空');
+                this.$message.info(this.$t('dataFeature.clearCancelled'));
             });
         },
         // 导入功能实现
@@ -750,7 +761,7 @@ export default {
 
             // 检查是否已选择特征类型
             if (!['2', '3'].includes(this.form.featureType)) {
-                this.$message.warning('请先选择特征类型（2或3）');
+                this.$message.warning(this.$t('dataFeature.selectFeatureTypeBeforeImport'));
                 return;
             }
 
@@ -771,7 +782,7 @@ export default {
 
                 // 校验文件大小（不超过1MB）
                 if (file.size > 1 * 1024 * 1024) {
-                    this.$message.error('文件大小不能超过1MB');
+                    this.$message.error(this.$t('dataFeature.fileSizeLimit'));
                     document.body.removeChild(fileInput);
                     return;
                 }
@@ -801,7 +812,7 @@ export default {
                                                 itemValue: parts.slice(1).join(',').trim()
                                             });
                                         } else {
-                                            this.$message.warning(`第${index + 1}行格式不正确，已跳过`);
+                                            this.$message.warning(this.$t('dataFeature.lineFormatError', { line: index + 1 }));
                                         }
                                     }
                                 });
@@ -819,7 +830,7 @@ export default {
                                                 fieldRemark: parts.slice(3).join(',').trim()
                                             });
                                         } else {
-                                            this.$message.warning(`第${index + 1}行格式不正确，已跳过`);
+                                            this.$message.warning(this.$t('dataFeature.lineFormatError', { line: index + 1 }));
                                         }
                                     }
                                 });
@@ -885,7 +896,7 @@ export default {
 
                             // 如果所有数据都是重复的，直接提示
                             if (uniqueData.length === 0) {
-                                this.$message.warning(`导入的${newData.length}条数据全部已存在，未添加新数据`);
+                                this.$message.warning(this.$t('dataFeature.allImportedDataExists', { count: newData.length }));
                                 this.drawerLoading = false;
                                 return;
                             }
@@ -909,9 +920,9 @@ export default {
                                     this.mappingPagination.currentPage = 1; // 重置到第一页
 
                                     // 显示导入结果提示
-                                    let message = `成功导入${uniqueData.length}条数据`;
+                                    let message = this.$t('dataFeature.importSuccess', { count: uniqueData.length });
                                     if (duplicateCount > 0) {
-                                        message += `，跳过了${duplicateCount}条重复数据`;
+                                        message += this.$t('dataFeature.importSkipDuplicates', { count: duplicateCount });
                                     }
                                     this.$message.success(message);
 
@@ -924,14 +935,14 @@ export default {
                             processBatch();
 
                         } catch (error) {
-                            this.$message.error('文件解析失败: ' + error.message);
+                            this.$message.error(this.$t('dataFeature.parseFileFailed', { message: error.message }));
                             // 处理失败，设置加载状态为false
                             this.drawerLoading = false;
                         }
                     };
 
                     reader.onerror = () => {
-                        this.$message.error('文件读取失败');
+                        this.$message.error(this.$t('dataFeature.readFileFailed'));
                         // 读取失败，设置加载状态为false
                         this.drawerLoading = false;
                     };
@@ -939,7 +950,7 @@ export default {
                     reader.readAsText(file, 'UTF-8'); // 明确指定UTF-8编码
 
                 } catch (error) {
-                    this.$message.error('导入失败: ' + error.message);
+                    this.$message.error(this.$t('dataFeature.importFailed', { message: error.message }));
                     // 导入异常，设置加载状态为false
                     this.drawerLoading = false;
                 } finally {
@@ -953,7 +964,7 @@ export default {
         // 导出功能（保留原功能）
         handleExport() {
             // 原导出功能实现
-            if (this.isView || this.form.id === '系统默认生成') return;
+            if (this.isView || this.form.id === this.defaultFeatureId) return;
 
             const params = {
                 id: this.form.id,
@@ -974,9 +985,11 @@ export default {
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                this.$message.success('导出成功');
+                this.$message.success(this.$t('dataFeature.exportSuccess'));
             }).catch(error => {
-                this.$message.error('导出失败: ' + (error.message || '未知错误'));
+                this.$message.error(this.$t('dataFeature.exportFailed', {
+                    message: error.message || this.$t('dataFeature.unknownError')
+                }));
             });
         }
     },

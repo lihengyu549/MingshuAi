@@ -4,6 +4,9 @@ import capacity from './capacity'
 import protectTableField from './protectTableField'
 import sensitiveData from './sensitiveData'
 import assetReport from './assetReport'
+import dataFeature from './dataFeature'
+import matchingStrategy from './matchingStrategy'
+import scanStrategy from './scanStrategy'
 import navbar from './navbar'
 import home from './home'
 import management from './management'
@@ -32,6 +35,9 @@ export default {
   protectTableField,
   sensitiveData,
   assetReport,
+  dataFeature,
+  matchingStrategy,
+  scanStrategy,
   navbar,
   home,
   management,
