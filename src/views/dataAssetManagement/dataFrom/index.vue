@@ -435,7 +435,8 @@
           <el-col :span="12">
             <el-form-item :label="$t('dataFrom.fileDirectoryType')" prop="databaseType">
               <el-select v-model="fileShareServerForm.databaseType"
-                :placeholder="$t('dataFrom.pleaseSelectFileDirectoryType')">
+                :placeholder="$t('dataFrom.pleaseSelectFileDirectoryType')"
+                @change="fileShareServerTypeChange">
                 <el-option :label="$t('dataFrom.SMB')" value="SMB"></el-option>
                 <el-option :label="$t('dataFrom.FTP')" value="FTP"></el-option>
               </el-select>
@@ -895,7 +896,7 @@ export default {
         businessName: '',
         businessComment: '',
         targetIp: '',
-        targetPort: '',
+        targetPort: '445',
         targetUserName: '',
         targetUserPassword: '',
         fileDataList: '', // 扫描内容 (存JSON字符串以便表单校验)
@@ -2059,6 +2060,22 @@ export default {
       }
     },
 
+    getFileShareServerDefaultPort(type) {
+      const portMap = {
+        SMB: '445',
+        FTP: '21'
+      }
+      return portMap[type] || ''
+    },
+
+    fileShareServerTypeChange(val) {
+      if (this.fileShareServerForm.id) return
+      this.fileShareServerForm.targetPort = this.getFileShareServerDefaultPort(val)
+      if (this.$refs.fileShareServerForm) {
+        this.$refs.fileShareServerForm.clearValidate('targetPort')
+      }
+    },
+
     resetFileShareServerForm() {
       this.fileShareServerForm = {
         sourceName: '',
@@ -2067,7 +2084,7 @@ export default {
         businessName: '',
         businessComment: '',
         targetIp: '',
-        targetPort: '',
+        targetPort: this.getFileShareServerDefaultPort('SMB'),
         targetUserName: '',
         targetUserPassword: '',
         fileDataList: '',
