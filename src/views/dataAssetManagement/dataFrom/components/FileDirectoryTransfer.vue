@@ -1,5 +1,5 @@
 ﻿<template>
-  <el-dialog class="custom-dialog" title="选择目录文件" :visible.sync="visible" width="950px" append-to-body
+  <el-dialog class="custom-dialog" :title="$t('dataFrom.fileTransfer.title')" :visible.sync="visible" width="950px" append-to-body
     @close="handleClose" :close-on-click-modal="false">
     <div class="file-transfer-container">
       <!-- 顶部面包屑和显示模式 -->
@@ -11,10 +11,10 @@
           <span class="path-text">{{ currentPathDisplay }}</span>
         </div>
         <div class="display-mode">
-          <span class="mode-label">显示模式</span>
+          <span class="mode-label">{{ $t('dataFrom.fileTransfer.displayMode') }}</span>
           <el-select v-model="displayMode" size="small" @change="handleModeChange" style="width: 140px;">
-            <el-option label="仅显示目录" value="dir"></el-option>
-            <el-option label="显示目录和文件" value="all"></el-option>
+            <el-option :label="$t('dataFrom.fileTransfer.onlyDirectories')" value="dir"></el-option>
+            <el-option :label="$t('dataFrom.fileTransfer.directoriesAndFiles')" value="all"></el-option>
           </el-select>
         </div>
       </div>
@@ -24,8 +24,8 @@
         <!-- 左侧面板 -->
         <div class="panel left-panel" v-loading="leftLoading">
           <div class="panel-header">
-            <el-input v-model="leftSearch" placeholder="请输入搜索内容" size="small" clearable></el-input>
-            <el-button size="small" :disabled="pathStack.length === 0" @click="goUp">上级</el-button>
+            <el-input v-model="leftSearch" :placeholder="$t('dataFrom.fileTransfer.searchPlaceholder')" size="small" clearable></el-input>
+            <el-button size="small" :disabled="pathStack.length === 0" @click="goUp">{{ $t('backToParent') }}</el-button>
           </div>
           <div class="panel-list">
             <el-checkbox-group v-model="leftChecked">
@@ -37,9 +37,9 @@
                     {{ item.fileName }}
                   </span>
                 </div>
-                <div class="item-right">{{ item.type === 'Directory' ? '目录' : '文件' }}</div>
+                <div class="item-right">{{ item.type === 'Directory' ? $t('dataFrom.fileTransfer.directory') : $t('dataFrom.fileTransfer.file') }}</div>
               </div>
-              <el-empty v-if="filteredLeftList.length === 0" description="暂无数据" :image-size="60"></el-empty>
+              <el-empty v-if="filteredLeftList.length === 0" :description="$t('noData')" :image-size="60"></el-empty>
             </el-checkbox-group>
           </div>
         </div>
@@ -53,9 +53,9 @@
         <!-- 右侧面板 -->
         <div class="panel right-panel">
           <div class="panel-header">
-            <el-input v-model="rightSearch" placeholder="请输入搜索内容" size="small" clearable></el-input>
+            <el-input v-model="rightSearch" :placeholder="$t('dataFrom.fileTransfer.searchPlaceholder')" size="small" clearable></el-input>
             <el-button size="small" type="danger" plain @click="deleteFromRight"
-              :disabled="rightChecked.length === 0">删除</el-button>
+              :disabled="rightChecked.length === 0">{{ $t('delete') }}</el-button>
           </div>
           <div class="panel-list">
             <el-checkbox-group v-model="rightChecked">
@@ -65,17 +65,17 @@
                   <span class="item-name" :class="{ 'is-dir': (item.fileType || item.type) === 'Directory' }">{{
                     item.fileName }}</span>
                 </div>
-                <div class="item-right">{{ (item.fileType || item.type) === 'Directory' ? '目录' : '文件' }}</div>
+                <div class="item-right">{{ (item.fileType || item.type) === 'Directory' ? $t('dataFrom.fileTransfer.directory') : $t('dataFrom.fileTransfer.file') }}</div>
               </div>
-              <el-empty v-if="filteredRightList.length === 0" description="暂无数据" :image-size="60"></el-empty>
+              <el-empty v-if="filteredRightList.length === 0" :description="$t('noData')" :image-size="60"></el-empty>
             </el-checkbox-group>
           </div>
         </div>
       </div>
     </div>
     <span slot="footer">
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="handleConfirm">确定</el-button>
+      <el-button @click="handleClose">{{ $t('cancel') }}</el-button>
+      <el-button type="primary" @click="handleConfirm">{{ $t('confirm') }}</el-button>
     </span>
   </el-dialog>
 </template>
@@ -247,7 +247,7 @@ export default {
       } catch (error) {
         this.leftList = [];
         console.error(error);
-        this.$message.error('获取目录失败');
+        this.$message.error(this.$t('dataFrom.fileTransfer.loadDirectoryFailed'));
       } finally {
         this.leftLoading = false;
       }

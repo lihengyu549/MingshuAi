@@ -321,55 +321,55 @@ export default {
       weekTimeList: [
         {
           value: '0',
-          label: '手动'
+          label: this.$t('dataAssetdiscover.manual')
         }, {
           value: '1',
-          label: '每天'
+          label: this.$t('dataAssetdiscover.daily')
         }, {
           value: '2',
-          label: '每周'
+          label: this.$t('dataAssetdiscover.weekly')
         }, {
           value: '3',
-          label: '每月'
+          label: this.$t('dataAssetdiscover.monthly')
         }
       ],
-      weekList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日',],
+      weekList: [this.$t('dataAssetdiscover.monday'), this.$t('dataAssetdiscover.tuesday'), this.$t('dataAssetdiscover.wednesday'), this.$t('dataAssetdiscover.thursday'), this.$t('dataAssetdiscover.friday'), this.$t('dataAssetdiscover.saturday'), this.$t('dataAssetdiscover.sunday')],
       // 表单校验
       rules: {
         userPassword: [
-          { required: true, message: "用户密码不能为空", trigger: "blur" },
+          { required: true, message: this.$t('dataAssetdiscover.result.inputPassword'), trigger: 'blur' },
         ],
         userName: [
-          { required: true, message: "用户名称不能为空", trigger: "blur" },
+          { required: true, message: this.$t('dataAssetdiscover.result.pleaseInputDatabaseUser'), trigger: 'blur' },
         ],
         sourceName: [{
-          required: true, message: "数据源名称不能为空", trigger: "blur"
+          required: true, message: this.$t('dataAssetdiscover.result.pleaseInputSourceName'), trigger: 'blur'
         }],
         businessName: [{
-          required: true, message: "来源业务系统不能为空", trigger: "blur"
+          required: true, message: this.$t('dataAssetdiscover.result.pleaseInputBusinessSystem'), trigger: 'blur'
         }],
-        databaseType: [{ required: true, message: '请选择数据库类型', trigger: 'blur' }],
-        projectName: [{ required: true, message: '请选择选分类分级框架', trigger: 'blur' }],
+        databaseType: [{ required: true, message: this.$t('dataAssetdiscover.result.selectDatabaseType'), trigger: 'blur' }],
+        projectName: [{ required: true, message: this.$t('dataAssetdiscover.result.pleaseSelectClassificationFramework'), trigger: 'blur' }],
         targetUserName: [
-          { required: true, message: "请输入数据库用户名称", trigger: "change" },
+          { required: true, message: this.$t('dataAssetdiscover.result.pleaseInputDatabaseUser'), trigger: 'change' },
         ],
         targetDatabase: [
-          { required: true, message: "请选择数据库名称", trigger: "change" },
+          { required: true, message: this.$t('dataFrom.pleaseSelectDatabaseName'), trigger: 'change' },
         ],
         targetUserPassword: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
+          { required: true, message: this.$t('dataAssetdiscover.result.inputPassword'), trigger: 'blur' }
         ],
         examplesName: () => {
           return [{
             required: this.form.databaseType == 'DM' || this.form.databaseType == 'POSTGRESQL',
-            message: '请输入',
+            message: this.$t('dataAssetdiscover.result.pleaseInput'),
             trigger: 'blur'
           }]
         },
         connectionValue: () => {
           return [{
             required: this.isServiesNameRequired,
-            message: '请输入',
+            message: this.$t('dataAssetdiscover.result.pleaseInput'),
             trigger: 'blur'
           }]
         },
@@ -380,28 +380,27 @@ export default {
         }],
         scheduleType: [{
           required: true,
-          message: '请选择扫描周期',
+          message: this.$t('dataAssetdiscover.result.selectScanPeriod'),
           trigger: 'blur'
         }],
         targetIp: [
-          { required: true, message: "请输入数据库地址", trigger: "blur" },
+          { required: true, message: this.$t('dataAssetdiscover.result.pleaseInputHostIP'), trigger: 'blur' },
           {
             pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-            message: "请输入有效的IP地址"
+            message: this.$t('dataAssetdiscover.result.inputValidIP')
           },
         ],
         targetPort: [
-          { required: true, message: "请输入端口号", trigger: "blur" },
+          { required: true, message: this.$t('dataAssetdiscover.result.inputPortNumber'), trigger: 'blur' },
           {
             pattern:
               /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
-            message:
-              "请输入0~65535之间的5个数字",
+            message: this.$t('dataAssetdiscover.result.inputPortRange'),
           },
           // {
           //   min: 1,
           //   max: 5,
-          //   message: "长度在 1 ~ 5 个字符",
+          //   message: 'Length should be between 1 and 5 characters',
           // },
         ],
       },
@@ -435,16 +434,16 @@ export default {
       dataType: "",
       maskCompleteStatus: [{
         value: 'COMPLETE',
-        label: '扫描完成'
+        label: this.$t('dataAssetdiscover.scanComplete')
       }, {
         value: 'RUNNING',
-        label: '扫描中'
+        label: this.$t('dataAssetdiscover.scanning')
       }, {
         value: 'NONE',
-        label: '未扫描'
+        label: this.$t('dataAssetdiscover.pendingScan')
       }, {
         value: 'ERR',
-        label: '扫描失败'
+        label: this.$t('dataAssetdiscover.scanFailed')
       }
       ],
       surfaceList: [
@@ -452,20 +451,20 @@ export default {
       executeStatus: [
         {
           value: 'COMPLETE',
-          label: '待执行'
+          label: this.$t('dataAssetdiscover.pendingScan')
         }, {
           value: 'RUNNING',
-          label: '执行中'
+          label: this.$t('dataAssetdiscover.scanning')
         }, {
           value: 'NONE',
-          label: '执行完成'
+          label: this.$t('dataAssetdiscover.scanComplete')
         }, {
           value: 'ERR',
-          label: '执行失败'
+          label: this.$t('dataAssetdiscover.scanFailed')
         }
       ],
       formProjectListEdit: [],
-      selectProjectListEdit: [{ name: "全部", id: 0 }],
+      selectProjectListEdit: [{ name: this.$t('all'), id: 0 }],
       // 遮罩层
       loading: true,
       // 选中数组
@@ -480,7 +479,7 @@ export default {
       proxysList: [],
       // 弹出层标题
       title: "",
-      titleFileShareServer: '添加文件共享服务器',
+      titleFileShareServer: this.$t('dataFrom.addFileShareServer'),
       // 是否显示弹出层
       open: false,
       fileShareServerOpen: false,
@@ -501,11 +500,11 @@ export default {
       confirmList: [
         {
           value: '1',
-          label: '已确认'
+          label: this.$t('dataFrom.result.confirmed')
         },
         {
           value: '0',
-          label: '未确认'
+          label: this.$t('dataFrom.result.notConfirmed')
         },
       ],
       // 表单参数
@@ -549,45 +548,45 @@ export default {
       },
       fileShareServerRules: {
         sourceName: [
-          { required: true, message: "数据源名称不能为空", trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputSourceName'), trigger: 'blur' }
         ],
         databaseType: [
-          { required: true, message: "请选择文件目录类型", trigger: "change" }
+          { required: true, message: this.$t('dataFrom.pleaseSelectFileDirectoryType'), trigger: 'change' }
         ],
         businessName: [
-          { required: true, message: "来源业务系统不能为空", trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputBusinessName'), trigger: 'blur' }
         ],
         businessComment: [
-          { required: true, message: "请输入来源业务系统描述", trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputBusinessDescription'), trigger: 'blur' }
         ],
         targetIp: [
-          { required: true, message: "请输入主机IP地址", trigger: "blur" },
+          { required: true, message: this.$t('dataFrom.pleaseInputHostIP'), trigger: 'blur' },
           {
             pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-            message: "请输入有效的IP地址"
+            message: this.$t('dataFrom.pleaseInputValidIp')
           },
         ],
         targetPort: [
-          { required: true, message: "请输入端口号", trigger: "blur" },
+          { required: true, message: this.$t('dataFrom.pleaseInputPort'), trigger: 'blur' },
           {
             pattern: /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
-            message: "请输入0~65535之间的端口号",
+            message: this.$t('dataFrom.pleaseInputValidPort'),
           },
         ],
         targetUserName: [
-          { required: true, message: "请输入用户名", trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputUserName'), trigger: 'blur' }
         ],
         targetUserPassword: [
-          { required: true, message: "请输入密码", trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputPassword'), trigger: 'blur' }
         ],
         share: [
-          { required: true, message: this.$t('dataFrom.pleaseInputShare'), trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputShare'), trigger: 'blur' }
         ],
         targetDatabase: [
-          { required: true, message: "请输入起始路径", trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputFolderPath'), trigger: 'blur' }
         ],
         fileDataList: [
-          { required: true, message: "请选择扫描内容", trigger: "change" }
+          { required: true, message: this.$t('dataFrom.pleaseInputScanContent'), trigger: 'change' }
         ],
       },
       addForm: {},
@@ -616,16 +615,16 @@ export default {
       importDataRules: {
         sourceName: [
           {
-            required: true, message: "请输入数据源名称", trigger: "blur"
+            required: true, message: this.$t('dataAssetdiscover.result.pleaseInputSourceName'), trigger: 'blur'
           }
         ],
         categoryId: [
           {
-            required: true, message: "请选择所属分类", trigger: "blur"
+            required: true, message: this.$t('dataAssetdiscover.result.selectCategory'), trigger: 'blur'
           }
         ],
         importFile: [
-          { required: true, message: "请选择导入框架文件", trigger: "blur" },
+          { required: true, message: this.$t('dataAssetdiscover.result.importFrameworkFile'), trigger: 'blur' },
         ],
       },
     };
@@ -639,7 +638,7 @@ export default {
         targetDatabase: [
           {
             required: this.fileShareServerForm.databaseType !== 'SMB',
-            message: '请输入起始路径',
+            message: this.$t('dataFrom.pleaseInputFolderPath'),
             trigger: 'blur'
           }
         ]
@@ -662,8 +661,8 @@ export default {
         // 将天数转换为数组
         this.weekList = this.createDaysArray(daysInMonth);
       } else if (val == '2') {
-        this.form.scheduleInterval = '周一'
-        this.weekList = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        this.form.scheduleInterval = this.$t('dataAssetdiscover.monday')
+        this.weekList = [this.$t('dataAssetdiscover.monday'), this.$t('dataAssetdiscover.tuesday'), this.$t('dataAssetdiscover.wednesday'), this.$t('dataAssetdiscover.thursday'), this.$t('dataAssetdiscover.friday'), this.$t('dataAssetdiscover.saturday'), this.$t('dataAssetdiscover.sunday')]
       } else {
         this.form.scheduleInterval = ''
       }
@@ -775,7 +774,7 @@ export default {
         if (Array.isArray(parsed) && parsed.length > 0) {
           const firstItem = parsed[0].fileName || ''
           if (parsed.length === 1) return firstItem
-          return `${firstItem} 等 ${parsed.length} 个项目`
+          return this.$t('dataFrom.fileShareSelectedSummary', { name: firstItem, count: parsed.length - 1 })
         }
       } catch (e) {
         return ''
@@ -791,42 +790,42 @@ export default {
       const portPattern = /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/;
 
       if (!form.targetIp) {
-        this.$message.warning('请输入主机IP地址');
+        this.$message.warning(this.$t('dataFrom.pleaseInputHostIP'));
         this.$refs.fileShareServerForm.validateField('targetIp');
         return;
       }
       if (!ipPattern.test(form.targetIp)) {
-        this.$message.warning('请输入有效的IP地址');
+        this.$message.warning(this.$t('dataFrom.pleaseInputValidIp'));
         this.$refs.fileShareServerForm.validateField('targetIp');
         return;
       }
       if (!form.targetPort) {
-        this.$message.warning('请输入端口号');
+        this.$message.warning(this.$t('dataFrom.pleaseInputPort'));
         this.$refs.fileShareServerForm.validateField('targetPort');
         return;
       }
       if (!portPattern.test(String(form.targetPort))) {
-        this.$message.warning('请输入0~65535之间的端口号');
+        this.$message.warning(this.$t('dataFrom.pleaseInputValidPort'));
         this.$refs.fileShareServerForm.validateField('targetPort');
         return;
       }
       if (!form.targetUserName) {
-        this.$message.warning('请输入用户名');
+        this.$message.warning(this.$t('dataFrom.pleaseInputUserName'));
         this.$refs.fileShareServerForm.validateField('targetUserName');
         return;
       }
       if (!form.targetUserPassword) {
-        this.$message.warning('请输入密码');
+        this.$message.warning(this.$t('dataFrom.pleaseInputPassword'));
         this.$refs.fileShareServerForm.validateField('targetUserPassword');
         return;
       }
       if (isSMB && !form.share) {
-        this.$message.warning(this.$t('dataFrom.pleaseInputShare') || '请输入共享目录');
+        this.$message.warning(this.$t('dataFrom.pleaseInputShare'));
         this.$refs.fileShareServerForm.validateField('share');
         return;
       }
       if (!isSMB && !form.targetDatabase) {
-        this.$message.warning('请输入起始路径');
+        this.$message.warning(this.$t('dataFrom.pleaseInputFolderPath'));
         this.$refs.fileShareServerForm.validateField('targetDatabase');
         return;
       }
@@ -933,7 +932,7 @@ export default {
             });
           } else {
             saveDatabaseAndTables(data).then(response => {
-              this.$modal.msgSuccess("新增成功");
+              this.$modal.msgSuccess(this.$t('dataAssetdiscover.addSuccess'));
               this.open = false;
               this.getList();
             });
@@ -997,9 +996,9 @@ export default {
       clearTimeout(this.debounceTimeout);
       this.debounceTimeout = setTimeout(() => {
         this.handleQuery()
-      }, 500); // 设置防抖的时间间隔为300毫秒
+      }, 500); // 闂佽崵濮崇粈浣规櫠娴犲鍋柛鈩冪⊕閳锋捇鏌涘▎蹇ｆЦ妞ゎ偄绉归弻锝夊Ω閵夈儺浠惧┑锛勫仜閸婂灝顫忔繝姘妞ゆ梹鏋荤槐鐢告⒒閸屾碍鍣洪柡灞熷懏瀚?00婵犳鍣紞鍡涘磻閸℃冻缍?
     },
-    /** 查询数据库代理列表 */
+    /** 闂備礁鎼悮顐﹀磿閹绢噮鏁嬫俊銈呮噹閺嬩線鏌ｅΔ鈧悧鍡欑矈閿曞倸绠归悗娑櫳戠亸顐︽煕閻戝棗澧撮柟顔肩埣瀹曞崬螖閳ь剟鎮樺▎鎾村仩?*/
     getList() {
       this.loading = true;
       let params = {
@@ -1055,7 +1054,7 @@ export default {
       const isFileServer = (row.databaseType === null || row.databaseType === undefined || row.databaseType === '') && !!row.fileServerType
       if (isFileServer) {
         this.resetFileShareServerForm()
-        this.titleFileShareServer = '添加文件共享服务器'
+        this.titleFileShareServer = this.$t('dataFrom.editFileShareServerTitle')
         this.fileShareServerForm.sourceName = row.sourceName || ''
         this.fileShareServerForm.databaseType = row.fileServerType || 'SMB'
         this.fileShareServerForm.businessName = row.businessName || ''
@@ -1075,7 +1074,7 @@ export default {
       }
 
       this.reset()
-      this.title = "添加数据库";
+      this.title = this.$t('dataAssetdiscover.result.importDataSource')
       this.form.databaseType = row.databaseType || ''
       this.form.sourceName = row.sourceName || ''
       this.form.projectName = row.projectName || ''

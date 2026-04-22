@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="app-container" v-loading="mainLoading">
     <el-card shadow="never" class="searchCard">
       <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
@@ -54,7 +54,7 @@
       <el-col :span="1.5">
         <el-dropdown @command="handleCommand" trigger="hover" placement="bottom-start">
           <el-button type="primary" plain size="medium" icon="el-icon-plus">
-            {{ $t('dataFrom.add') }}
+            {{ $t('add') }}
           </el-button>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item command="database">{{ $t('dataFrom.databaseType') }}</el-dropdown-item>
@@ -65,26 +65,26 @@
         </el-dropdown>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">{{ $t('dataFrom.delete')
+        <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">{{ $t('delete')
         }}</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
       <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click"
         style="float: inline-end; margin-right: 10px;">
-        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{ $t('selectAll') }}</el-checkbox>
         <el-checkbox-group v-model="checkedColumn" @change="handleCheckedCitiesChange" class="checkboxGroup"
           style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
           <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
             item.label }}</el-checkbox>
         </el-checkbox-group>
-        <el-button size="medium" slot="reference">列设置</el-button>
+        <el-button size="medium" slot="reference">{{ $t('columnSettings') }}</el-button>
       </el-popover>
     </el-row>
     <el-card shadow="never" class="table-card">
       <el-table v-loading="loading" height="860px" class="tableBox" :data="proxysList" :key="checkedColumn.length"
         @selection-change="handleSelectionChange" ref="tableRef">
         <template slot="empty">
-          <el-empty :description="$t('dataFrom.noData')"></el-empty>
+          <el-empty :description="$t('noData')"></el-empty>
         </template>
         <el-table-column type="selection" width="60" align="center" />
         <el-table-column :label="$t('dataFrom.sourceName')" align="left" width="140" prop="sourceName"
@@ -161,7 +161,7 @@
           </el-table-column>
         </template>
 
-        <el-table-column :label="$t('dataFrom.operation')" align="center" class-name="small-padding fixed-width"
+        <el-table-column :label="$t('operation')" align="center" class-name="small-padding fixed-width"
           min-width="150">
           <template slot-scope="scope">
             <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
@@ -583,7 +583,7 @@ export default {
           prop: "updateTime"
         },
         {
-          label: '扫描进度',
+          label: this.$t('dataFrom.scanProgress'),
           prop: "scanProgress"
         },
         {
@@ -685,7 +685,7 @@ export default {
         }
       ],
       formProjectListEdit: [],
-      selectProjectListEdit: [{ name: "全部", id: 0 }],
+      selectProjectListEdit: [{ name: this.$t('all'), id: 0 }],
       projectNameEdit: "",
       // 遮罩层
       loading: true,
@@ -1002,7 +1002,7 @@ export default {
         await this.triggerDataScan(row);
         await this.getList();
       } catch (error) {
-        this.$message.error('扫描失败');
+        this.$message.error(this.$t('dataFrom.scanFailedMessage'));
       } finally {
         this.btnLoading = false;
       }
@@ -1018,7 +1018,7 @@ export default {
         if (Array.isArray(parsed) && parsed.length > 0) {
           const firstItem = parsed[0].fileName || '';
           if (parsed.length === 1) return firstItem;
-          return `${firstItem} 等 ${parsed.length} 个项目`;
+          return this.$t('dataFrom.fileShareSelectedSummary', { name: firstItem, count: parsed.length });
         }
       } catch (e) {
         return '';
@@ -1035,42 +1035,42 @@ export default {
       const portPattern = /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/;
 
       if (!form.targetIp) {
-        this.$message.warning('请输入主机IP地址');
+        this.$message.warning(this.$t('dataFrom.pleaseInputHostIP'));
         this.$refs.fileShareServerForm.validateField('targetIp');
         return;
       }
       if (!ipPattern.test(form.targetIp)) {
-        this.$message.warning('请输入有效的IP地址');
+        this.$message.warning(this.$t('dataFrom.pleaseInputValidIp'));
         this.$refs.fileShareServerForm.validateField('targetIp');
         return;
       }
       if (!form.targetPort) {
-        this.$message.warning('请输入端口号');
+        this.$message.warning(this.$t('dataFrom.pleaseInputPort'));
         this.$refs.fileShareServerForm.validateField('targetPort');
         return;
       }
       if (!portPattern.test(String(form.targetPort))) {
-        this.$message.warning('请输入0~65535之间的端口号');
+        this.$message.warning(this.$t('dataFrom.pleaseInputValidPort'));
         this.$refs.fileShareServerForm.validateField('targetPort');
         return;
       }
       if (!form.targetUserName) {
-        this.$message.warning('请输入用户名');
+        this.$message.warning(this.$t('dataFrom.pleaseInputUserName'));
         this.$refs.fileShareServerForm.validateField('targetUserName');
         return;
       }
       if (!form.targetUserPassword) {
-        this.$message.warning('请输入密码');
+        this.$message.warning(this.$t('dataFrom.pleaseInputPassword'));
         this.$refs.fileShareServerForm.validateField('targetUserPassword');
         return;
       }
       if (isSMB && !form.share) {
-        this.$message.warning(this.$t('dataFrom.pleaseInputShare') || '请输入共享目录');
+        this.$message.warning(this.$t('dataFrom.pleaseInputShare'));
         this.$refs.fileShareServerForm.validateField('share');
         return;
       }
       if (!isSMB && !form.targetDatabase) {
-        this.$message.warning('请输入起始路径');
+        this.$message.warning(this.$t('dataFrom.pleaseInputFolderPath'));
         this.$refs.fileShareServerForm.validateField('targetDatabase');
         return;
       }
@@ -1306,7 +1306,7 @@ export default {
       });
     },
     markingCli() {
-      this.$confirm(this.$t('dataFrom.confirmScan'), this.$t('dataFrom.tip'), {
+      this.$confirm(this.$t('dataFrom.confirmScan'), this.$t('tip'), {
         confirmButtonText: this.$t('confirm'),
         cancelButtonText: this.$t('cancel'),
         type: 'warning'
@@ -1423,7 +1423,7 @@ export default {
       this.connectionType = '1'
       this.reset();
       this.open = true;
-      this.title = "添加数据库";
+      this.title = this.$t('dataFrom.addDatabaseTitle');
     },
     /** 提交按钮 */
     async submitForm() {
@@ -1496,7 +1496,7 @@ export default {
       this.importData.sourceName = ''
       this.importData.businessName = ''
       this.importData.id = ''
-      this.titleExcel = '新增Excel文件'
+      this.titleExcel = this.$t('dataFrom.addExcelFile')
       this.importData.fileList = []
     },
     handleFileChange(file, fileList) {
@@ -1515,7 +1515,7 @@ export default {
     downloadFile() {
       const link = document.createElement('a');
       link.href = '/importFile.xlsx'; // 替换为你的文件路径
-      link.download = '元数据导入样例.xlsx'; // 设置下载后的文件名
+      link.download = this.$t('dataFrom.sampleTemplateFileName'); // 设置下载后的文件名
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1534,13 +1534,13 @@ export default {
         // 将天数转换为数组
         this.weekList = this.createDaysArray(daysInMonth);
       } else if (val == '2') {
-        this.form.scheduleInterval = '周一'
-        this.weekList = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        this.form.scheduleInterval = this.$t('dataFrom.monday')
+        this.weekList = [this.$t('dataFrom.monday'), this.$t('dataFrom.tuesday'), this.$t('dataFrom.wednesday'), this.$t('dataFrom.thursday'), this.$t('dataFrom.friday'), this.$t('dataFrom.saturday'), this.$t('dataFrom.sunday')]
       } else {
         // 对于手动(0)和每天(1)类型，清空scheduleInterval并重置weekList
         this.form.scheduleInterval = ''
         // 重置为默认的星期数组，确保Vue响应式系统正确更新
-        this.weekList = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        this.weekList = [this.$t('dataFrom.monday'), this.$t('dataFrom.tuesday'), this.$t('dataFrom.wednesday'), this.$t('dataFrom.thursday'), this.$t('dataFrom.friday'), this.$t('dataFrom.saturday'), this.$t('dataFrom.sunday')]
         // 强制更新视图
         this.$forceUpdate()
       }
@@ -1573,11 +1573,11 @@ export default {
           return item.scanState
         })
         if (flagList.includes('RUNNING')) {
-          this.$message({ message: '选中任务包含执行中任务，无法批量删除', type: 'warning' })
+          this.$message({ message: this.$t('dataFrom.runningTaskDeleteWarning'), type: 'warning' })
           return
         }
         if (flagList.includes('COMPLETE')) {
-          this.$confirm(this.$t('dataFrom.confirmDeleteWithResult'), this.$t('dataFrom.tip'), {
+          this.$confirm(this.$t('dataFrom.confirmDeleteWithResult'), this.$t('tip'), {
             confirmButtonText: this.$t('confirm'),
             cancelButtonText: this.$t('cancel'),
             type: 'warning'
@@ -1595,7 +1595,7 @@ export default {
           })
           return
         }
-        this.$confirm(this.$t('dataFrom.confirmDelete'), this.$t('dataFrom.tip'), {
+        this.$confirm(this.$t('dataFrom.confirmDelete'), this.$t('tip'), {
           confirmButtonText: this.$t('confirm'),
           cancelButtonText: this.$t('cancel'),
           type: 'warning'
@@ -1612,14 +1612,14 @@ export default {
           })
         })
       } else {
-        this.$message({ message: '至少选择一条数据', type: 'warning' })
+        this.$message({ message: this.$t('dataFrom.selectAtLeastOneData'), type: 'warning' })
       }
     },
     scanStateClickFn(row) {
       if (this.btnLoading) return;
       if (!this.isScanOperableSource(row)) return;
       if (row.scanState == 'COMPLETE') {
-        this.$confirm(this.$t('dataFrom.confirmRescan'), this.$t('dataFrom.tip'), {
+        this.$confirm(this.$t('dataFrom.confirmRescan'), this.$t('tip'), {
           confirmButtonText: this.$t('confirm'),
           cancelButtonText: this.$t('cancel'),
           type: 'warning'
@@ -1633,7 +1633,7 @@ export default {
       return;
       /*
       if (row.scanState == 'COMPLETE') {
-        this.$confirm(this.$t('dataFrom.confirmRescan'), this.$t('dataFrom.tip'), {
+        this.$confirm(this.$t('dataFrom.confirmRescan'), this.$t('tip')), {
           confirmButtonText: this.$t('confirm'),
           cancelButtonText: this.$t('cancel'),
           type: 'warning'
@@ -1665,17 +1665,17 @@ export default {
     stopScan(row) {
       if (this.btnLoading) return;
       if (!this.isScanOperableSource(row)) return;
-      this.$confirm(this.$t('dataFrom.confirmStopScan', { name: row.sourceName }), this.$t('dataFrom.tip'), {
+      this.$confirm(this.$t('dataFrom.confirmStopScan', { name: row.sourceName }), this.$t('tip'), {
         confirmButtonText: this.$t('confirm'),
         cancelButtonText: this.$t('cancel'),
         type: 'warning'
       }).then(() => {
         this.btnLoading = true;
         stopDataScan({ proxyIds: row.id }).then(async res => {
-          this.$message.success(res.msg || '终止扫描成功')
+          this.$message.success(res.msg || this.$t('dataFrom.stopScanSuccess'))
           await this.getList()
         }).catch(() => {
-          this.$message.error('终止扫描失败')
+          this.$message.error(this.$t('dataFrom.stopScanFailed'))
         }).finally(() => {
           this.btnLoading = false;
         })
@@ -1719,7 +1719,7 @@ export default {
         }
         // this.form.targetDatabase = targetDatabaseArr
         this.form.tables = row.tables || {}
-        this.title = "编辑数据库";
+        this.title = this.$t('dataFrom.editDatabaseTitle');
         this.open = true
         this.scanContentLoading = true
         this.form.scheduleInterval = row.databaseProxysTimer?.scheduleInterval || ''
@@ -1745,7 +1745,7 @@ export default {
 
       } else if (row.sourceType == "FILE_CATALOGUE") { // 添加文件目录编辑支持
         // 文件目录编辑：回显数据到表单并打开弹窗
-        this.titleFileDirectory = "编辑文件目录";
+        this.titleFileDirectory = this.$t('dataFrom.editFileDirectoryTitle');
         this.fileDirectoryData.id = row.id;
         this.fileDirectoryData.sourceName = row.sourceName;
         this.fileDirectoryData.businessName = row.businessName;
@@ -1756,7 +1756,7 @@ export default {
 
       } else if (row.sourceType == "FILE_SERVER") { // 添加文件共享服务器编辑支持
         // 文件共享服务器编辑：回显数据到表单并打开弹窗
-        this.titleFileShareServer = "编辑文件共享服务器";
+        this.titleFileShareServer = this.$t('dataFrom.editFileShareServerTitle');
         this.fileShareServerForm.id = row.id;
         this.fileShareServerForm.sourceName = row.sourceName;
         this.fileShareServerForm.databaseType = row.databaseType || 'SMB';
@@ -1793,11 +1793,11 @@ export default {
           }
           let res = await getDatabaseNameList(this.databaseTableNameParama)
           if (res.data.length == 0) {
-            this.$message({ message: '暂无数据，请稍后再试', type: 'warning' })
+            this.$message({ message: this.$t('dataFrom.noDataTryLater'), type: 'warning' })
           } else {
             this.scanContentTreeData = res.data
             this.scanContentShow = true
-            if (this.title == "添加数据库") {
+            if (this.title === this.$t('dataFrom.addDatabaseTitle')) {
               this.treeCheckedData = ['0']
             }
           }
@@ -1838,7 +1838,7 @@ export default {
       }
       relevancyDataDict(data).then(res => {
         if (res.code == 200) {
-          this.$message.success(res.msg || '关联数据字典成功')
+          this.$message.success(res.msg || this.$t('dataFrom.linkDictionarySuccess'))
           this.getList()
         }
       })
@@ -1851,13 +1851,13 @@ export default {
         this.dictionaryList = refResponse.data;
 
       } catch (error) {
-        this.$message.error('获取数据字典列表失败');
+        this.$message.error(this.$t('dataFrom.getDictionaryListFailed'));
         this.dictionaryList = [];
       }
     },
 
     handleFileDirectoryFn() {
-      this.titleFileDirectory = '上传文件'
+      this.titleFileDirectory = this.$t('dataFrom.uploadFileTitle')
       this.fileDirectoryData.show = true
       this.fileDirectoryData.sourceName = ''
       this.fileDirectoryData.businessName = ''
@@ -1872,7 +1872,7 @@ export default {
       const maxSize = 50 * 1024 * 1024; // 50MB
 
       if (totalSize > maxSize) {
-        this.$message.warning('文件总大小不能超过50MB');
+        this.$message.warning(this.$t('dataFrom.fileTotalSizeExceeded'));
         fileList.pop(); // 移除最后添加的文件
         return;
       }
@@ -1888,7 +1888,7 @@ export default {
     },
 
     handleFileDirectoryExceed(files, fileList) {
-      this.$message.warning(`最多只能上传20个文件，当前已选择${fileList.length}个文件`);
+      this.$message.warning(this.$t('dataFrom.fileUploadLimitExceeded', { count: fileList.length }));
     },
 
     removeFileDirectoryFile(index) {

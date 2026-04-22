@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="app-container" v-loading="mainLoading">
     <el-card shadow="never" class="searchCard">
       <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
@@ -487,9 +487,9 @@ export default {
     deleteFn() {
       let dataS = this.$refs.tableRef.selection
       if (dataS && dataS.length > 0) {
-        this.$confirm(this.$t('dataAssetdiscover.confirmDelete'), this.$t('dataAssetdiscover.tip'), {
-          confirmButtonText: this.$t('dataAssetdiscover.confirm'),
-          cancelButtonText: this.$t('dataAssetdiscover.cancel'),
+        this.$confirm(this.$t('dataAssetdiscover.confirmDelete'), this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {
@@ -512,9 +512,9 @@ export default {
     scanSMFn() {
       let dataS = this.$refs.tableRef.selection
       if (dataS && dataS.length > 0) {
-        this.$confirm(this.$t('dataAssetdiscover.confirmScan'), this.$t('dataAssetdiscover.tip'), {
-          confirmButtonText: this.$t('dataAssetdiscover.confirm'),
-          cancelButtonText: this.$t('dataAssetdiscover.cancel'),
+        this.$confirm(this.$t('dataAssetdiscover.confirmScan'), this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {
@@ -535,9 +535,9 @@ export default {
     },
     // 终止任务
     stopSMFn(row) {
-      this.$confirm(this.$t('dataAssetdiscover.confirmStopTask'), this.$t('dataAssetdiscover.tip'), {
-        confirmButtonText: this.$t('dataAssetdiscover.confirm'),
-        cancelButtonText: this.$t('dataAssetdiscover.cancel'),
+      this.$confirm(this.$t('dataAssetdiscover.confirmStopTask'), this.$t('tip'), {
+        confirmButtonText: this.$t('confirm'),
+        cancelButtonText: this.$t('cancel'),
         type: 'warning'
       }).then(() => {
         let id = row.id
@@ -784,3 +784,6 @@ input[aria-hidden=true] {
   width: 100%;
 }
 </style>
+
+
+

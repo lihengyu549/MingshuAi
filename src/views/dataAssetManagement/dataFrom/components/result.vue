@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="app-container" v-loading="loading">
     <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
       v-show="showSearch" label-width="auto">
@@ -50,7 +50,7 @@
       <el-form-item>
       </el-form-item>
       <!-- <el-form-item label=" " class="searchBtn">
-        <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
+        <el-button icon="el-icon-refresh" size="small" @click="resetQuery">{{ $t('dataFrom.result.reset') }}</el-button>
       </el-form-item> -->
     </el-form>
     <el-row :gutter="10" class="mb8">
@@ -178,19 +178,19 @@ export default {
       addOptions: [
         {
           value: 1,
-          label: "1级"
+          label: this.$t('dataFrom.result.level1')
         }, {
           value: 2,
-          label: "2级"
+          label: this.$t('dataFrom.result.level2')
         }, {
           value: 3,
-          label: "3级"
+          label: this.$t('dataFrom.result.level3')
         }, {
           value: 4,
-          label: "4级"
+          label: this.$t('dataFrom.result.level4')
         }, {
           value: 5,
-          label: "5级"
+          label: this.$t('dataFrom.result.level5')
         },
       ],
       resultFormNodeName: '',
@@ -232,19 +232,19 @@ export default {
       addOptions: [
         {
           value: 1,
-          label: "1级"
+          label: this.$t('dataFrom.result.level1')
         }, {
           value: 2,
-          label: "2级"
+          label: this.$t('dataFrom.result.level2')
         }, {
           value: 3,
-          label: "3级"
+          label: this.$t('dataFrom.result.level3')
         }, {
           value: 4,
-          label: "4级"
+          label: this.$t('dataFrom.result.level4')
         }, {
           value: 5,
-          label: "5级"
+          label: this.$t('dataFrom.result.level5')
         },
       ],
       databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
@@ -264,16 +264,16 @@ export default {
       databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       maskCompleteStatus: [{
         value: 'COMPLETE',
-        label: '扫描完成'
+        label: this.$t('dataFrom.scanComplete')
       }, {
         value: 'RUNNING',
-        label: '扫描中'
+        label: this.$t('dataFrom.scanning')
       }, {
         value: 'NONE',
-        label: '未扫描'
+        label: this.$t('dataFrom.toBeScanned')
       }, {
         value: 'ERR',
-        label: '扫描失败'
+        label: this.$t('dataFrom.scanFailed')
       }
       ],
       surfaceList: [
@@ -281,20 +281,20 @@ export default {
       executeStatus: [
         {
           value: 'COMPLETE',
-          label: '待执行'
+          label: this.$t('dataFrom.toBeScanned')
         }, {
           value: 'RUNNING',
-          label: '执行中'
+          label: this.$t('dataFrom.scanning')
         }, {
           value: 'NONE',
-          label: '执行完成'
+          label: this.$t('dataFrom.scanComplete')
         }, {
           value: 'ERR',
-          label: '执行失败'
+          label: this.$t('dataFrom.scanFailed')
         }
       ],
       formProjectListEdit: [],
-      selectProjectListEdit: [{ name: "全部", id: 0 }],
+      selectProjectListEdit: [{ name: this.$t('all'), id: 0 }],
       projectNameEdit: "",
       // 遮罩层
       loading: true,
@@ -329,11 +329,11 @@ export default {
       confirmList: [
         {
           value: '1',
-          label: '已确认'
+          label: this.$t('dataFrom.result.confirmed')
         },
         {
           value: '0',
-          label: '未确认'
+          label: this.$t('dataFrom.result.notConfirmed')
         },
       ],
       // 表单参数
@@ -504,7 +504,7 @@ export default {
           this.loading = false
         });
       } else {
-        this.$message({ message: '请选择至少一条数据', type: 'warning' })
+        this.$message({ message: this.$t('dataFrom.selectAtLeastOneData'), type: 'warning' })
       }
     },
     handleEcelFn() {
@@ -568,7 +568,7 @@ export default {
               for (let i = 0; i < list.length; i++) {
                 this.targetDataList.push({ id: i, value: list[i], label: list[i] })
               }
-              this.targetDataList.unshift({ id: -1, value: -1, label: '全部' })
+              this.targetDataList.unshift({ id: -1, value: -1, label: this.$t('dataFrom.result.all') })
               this.$message({
                 message: res.msg,
                 type: 'success'
@@ -622,7 +622,7 @@ export default {
       this.resetForm('resultForm')
     },
     messsucc(res, flag) {
-      this.$message.success(`${res.msg},${flag}${res.data}个`)
+      this.$message.success(`${res.msg},${flag}${res.data}${this.$t('dataFrom.countSuffix')}`)
     },
 
     // 定时器，防抖使用

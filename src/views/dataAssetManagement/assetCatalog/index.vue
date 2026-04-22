@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="app-container" v-loading="Loading">
     <el-row :gutter="20">
       <el-col :span="5" :xs="24">
@@ -116,8 +116,9 @@
                     </div>
                     <div class="col col-3">
                       <div class="label">{{ $t('assetCatalog.dataVolume') }}</div>
-                      <div class="value" :title="item.dataMagnitude ? item.dataMagnitude + ' 行' : '--'">{{
-                        item.dataMagnitude ? item.dataMagnitude + ' 行' : '--' }}</div>
+                      <div class="value"
+                        :title="item.dataMagnitude ? item.dataMagnitude + ' ' + $t('assetCatalog.row') : '--'">{{
+                          item.dataMagnitude ? item.dataMagnitude + ' ' + $t('assetCatalog.row') : '--' }}</div>
                       <svg-icon icon-class="list2" class="info-icon" />
                     </div>
                   </div>
@@ -166,9 +167,10 @@
                     <div class="col">
                       <div class="label">{{ $t('assetCatalog.personalInfoCount') }}</div>
                       <div class="value green"
-                        :title="item.personalInformation ? item.personalInformation + ' 条' : '--'">
+                        :title="item.personalInformation ? item.personalInformation + ' ' + $t('assetCatalog.recordUnit') : '--'">
                         {{
-                          item.personalInformation ? item.personalInformation + ' 条' : '--' }}</div>
+                          item.personalInformation ? item.personalInformation + ' ' + $t('assetCatalog.recordUnit') : '--'
+                        }}</div>
                     </div>
                     <div class="col">
                       <div class="label">{{ $t('assetCatalog.minorInfoCount') }}</div>
@@ -279,15 +281,14 @@
               <div v-if="fileList.length > 0" class="file-section">
                 <div class="section-title">{{ $t('assetCatalog.file') }}</div>
                 <div class="file-list">
-                  <div v-for="file in fileList" :key="file.id" class="file-item"
-                    @click="openFileDetailDrawer(file)">
+                  <div v-for="file in fileList" :key="file.id" class="file-item" @click="openFileDetailDrawer(file)">
                     <div class="file-content">
                       <div class="file-info">
                         <i class="el-icon-document file-icon"></i>
                         <span class="file-name"><b>{{ file.fileName }}</b>{{ file.name }}</span>
                       </div>
                       <div class="file-meta">
-                        <span class="file-time">{{ currentFileTimeLabel }}：{{ file.createTime }}</span>
+                        <span class="file-time">{{ currentFileTimeLabel }}: {{ file.createTime }}</span>
                         <span class="file-size">{{ file.fileSize }}</span>
                       </div>
                     </div>
@@ -409,24 +410,24 @@
       </template>
     </Drawer>
 
-    <Drawer custom-class="fileDetailDrawer" title="文件详情" :visible.sync="fileDetailDrawerVisible"
-      :destroy-on-close="false" direction="rtl" size="540px">
+    <Drawer custom-class="fileDetailDrawer" :title="$t('assetCatalog.fileDetailsTitle')"
+      :visible.sync="fileDetailDrawerVisible" :destroy-on-close="false" direction="rtl" size="540px">
       <template slot="body">
         <div class="file-detail-panel">
           <div class="file-detail-item">
-            <div class="file-detail-label">文件名称</div>
+            <div class="file-detail-label">{{ $t('assetCatalog.fileName') }}</div>
             <div class="file-detail-value">{{ fileDetailData.fileName }}</div>
           </div>
           <div class="file-detail-item">
-            <div class="file-detail-label">文件大小</div>
+            <div class="file-detail-label">{{ $t('assetCatalog.fileSize') }}</div>
             <div class="file-detail-value">{{ fileDetailData.fileSize }}</div>
           </div>
           <div class="file-detail-item">
-            <div class="file-detail-label">文件类型</div>
+            <div class="file-detail-label">{{ $t('assetCatalog.fileType') }}</div>
             <div class="file-detail-value">{{ fileDetailData.fileType }}</div>
           </div>
           <div class="file-detail-item">
-            <div class="file-detail-label">文件绝对路径</div>
+            <div class="file-detail-label">{{ $t('assetCatalog.absolutePath') }}</div>
             <div class="file-detail-value">{{ fileDetailData.filePath }}</div>
           </div>
           <!-- <div class="file-detail-item">
@@ -641,75 +642,75 @@ export default {
         selectedColumns: [], // 当前选中的导出列
         allColumns: [
           {
-            "label": "数据库",
+            "label": this.$t('assetCatalog.database'),
             "value": "databaseName"
           },
           {
-            "label": "表名",
+            "label": this.$t('assetCatalog.tableName'),
             "value": "tableName"
           },
           {
-            "label": "表注释",
+            "label": this.$t('assetCatalog.tableComment'),
             "value": "tableRemark"
           },
           {
-            "label": "数据大小",
+            "label": this.$t('assetCatalog.dataSize'),
             "value": "dataSize"
           },
           {
-            "label": "数据量级",
+            "label": this.$t('assetCatalog.dataVolume'),
             "value": "dataMagnitude"
           },
           {
-            "label": "数据质量评分",
+            "label": this.$t('assetCatalog.dataQualityScore'),
             "value": "dataQualityScore"
           },
           {
-            "label": "AI表注释",
+            "label": this.$t('assetCatalog.aiTableComment'),
             "value": "aiTableRemark"
           },
           {
-            "label": "数据源名称",
+            "label": this.$t('assetCatalog.dataSourceName'),
             "value": "dataSourceName"
           },
           {
-            "label": "分类分级标准",
+            "label": this.$t('assetCatalog.classificationLevelStandard'),
             "value": "categoryName"
           },
           {
-            "label": "来源业务系统",
+            "label": this.$t('assetCatalog.businessSystem'),
             "value": "businessName"
           },
           {
-            "label": "所属库名",
+            "label": this.$t('assetCatalog.libraryName'),
             "value": "affiliationDatabaseName"
           },
           {
-            "label": "表分类",
+            "label": this.$t('assetCatalog.tableClassification'),
             "value": "tableClassify"
           },
           {
-            "label": "表分级",
+            "label": this.$t('assetCatalog.tableLevel'),
             "value": "tableLevel"
           },
           {
-            "label": "个人信息条数",
+            "label": this.$t('assetCatalog.personalInfoCount'),
             "value": "personalInformationNum"
           },
           {
-            "label": "未成年人信息条数",
+            "label": this.$t('assetCatalog.minorInfoCount'),
             "value": "nonagePersonalInformationNum"
           },
           {
-            "label": "字段数量",
+            "label": this.$t('assetCatalog.fieldCount'),
             "value": "fieldNum"
           },
           {
-            "label": "注释填充",
+            "label": this.$t('assetCatalog.semanticFilling'),
             "value": "annotationFill"
           },
           {
-            "label": "样本特征提取",
+            "label": this.$t('assetCatalog.sampleFeatureExtraction'),
             "value": "featureExtractionStatus"
           }
         ],
@@ -741,7 +742,7 @@ export default {
       return Number(this.fileTotal) || 0;
     },
     currentFileTimeLabel() {
-      return String(this.currentNodeData && this.currentNodeData.fileType) === '1' ? '最后修改时间' : '上传时间';
+      return String(this.currentNodeData && this.currentNodeData.fileType) === '1' ? this.$t('assetCatalog.lastModifiedTime') : this.$t('assetCatalog.uploadTime');
     },
     sortOrderIcon() {
       const order = this.sortOrders[this.currentSortField];
@@ -1291,9 +1292,9 @@ export default {
 
     //一键填充
     allFill() {
-      this.$confirm('确定执行一键填充操作？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('assetCatalog.oneKeyFillConfirm'), this.$t('tip'), {
+        confirmButtonText: this.$t('confirm'),
+        cancelButtonText: this.$t('cancel'),
         type: 'warning'
       })
         // 用户点击确定按钮,执行相关操作
@@ -1307,7 +1308,7 @@ export default {
             // 获取已选节点数据并传入
             const checkedNodeData = this.getCheckedNodeData(this.selectedTreeNodeIds);
             this.getList(checkedNodeData)
-            this.$message.success(`填充成功`)
+            this.$message.success(this.$t('assetCatalog.fillSuccess'))
             this.loading = false
           })
             .catch(() => {
@@ -1319,9 +1320,9 @@ export default {
     },
     //一键评估
     allAssess() {
-      this.$confirm('确定执行一键评估操作？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('assetCatalog.oneKeyEvaluationConfirm'), this.$t('tip'), {
+        confirmButtonText: this.$t('confirm'),
+        cancelButtonText: this.$t('cancel'),
         type: 'warning'
       })
         // 用户点击确定按钮,执行相关操作
@@ -1335,7 +1336,7 @@ export default {
             // 获取已选节点数据并传入
             const checkedNodeData = this.getCheckedNodeData(this.selectedTreeNodeIds);
             this.getList(checkedNodeData)
-            this.$message.success(`评估成功`)
+            this.$message.success(this.$t('assetCatalog.evaluationSuccess'))
             this.loading = false
           })
             .catch(() => {
@@ -1368,7 +1369,7 @@ export default {
       }
     },
     messsucc(res, flag) {
-      this.$message.success(`${res.msg},${flag}${res.data}个`)
+      this.$message.success(`${res.msg},${flag}${res.data}${this.$t('assetCatalog.countSuffix')}`)
     },
     // ai数据填充
     aiDataSetFn(row) {
@@ -1383,7 +1384,7 @@ export default {
           const checkedNodeData = this.getCheckedNodeData(this.selectedTreeNodeIds);
           this.getList(checkedNodeData)
           this.loading = false
-          this.$message.success(`填充成功`)
+          this.$message.success(this.$t('assetCatalog.fillSuccess'))
         }
       }).catch(err => {
         this.loading = false
@@ -1402,7 +1403,7 @@ export default {
           const checkedNodeData = this.getCheckedNodeData(this.selectedTreeNodeIds);
           this.getList(checkedNodeData)
           this.loading = false
-          this.$message.success(`评估完成`)
+          this.$message.success(this.$t('assetCatalog.evaluationCompleted'))
         }
       })
         .catch(err => {
