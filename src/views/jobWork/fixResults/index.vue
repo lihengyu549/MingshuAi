@@ -2,12 +2,13 @@
     <div class="container" v-loading="loading">
         <!-- 顶部标题和按钮区域 -->
         <el-card class="top-section" shadow="never">
-            <h2><el-tag type="info" style="font-size: 18px;">ID：{{ row.id }}</el-tag> {{ row.fieldName }}</h2>
+            <h2><el-tag type="info" style="font-size: 18px;">ID：{{ row.id }}</el-tag> {{ titleText }}</h2>
             <div class="top-buttons">
-                <el-button plain @click="handleReturn">返回</el-button>
-                <el-button @click="handleNext('0')">上一个</el-button>
-                <el-button @click="handleNext('1')">下一个</el-button>
-                <el-button type="primary" plain @click="handleManualConfirm">人工确认</el-button>
+                <el-button plain @click="handleReturn">{{ $t('return') }}</el-button>
+                <el-button @click="handleNext('0')">{{ $t('previous') }}</el-button>
+                <el-button @click="handleNext('1')">{{ $t('next') }}</el-button>
+                <el-button type="primary" plain @click="handleManualConfirm">{{ $t('fixResults.top.manualConfirm')
+                    }}</el-button>
             </div>
         </el-card>
 
@@ -17,37 +18,37 @@
                 <el-card class="box-card" shadow="never" style="border: none;">
                     <template v-if="isFileSource">
                         <div class="info-item">
-                            <label class="info-label">文件类型：</label>
+                            <label class="info-label">{{ $t('fixResults.top.fileType') }}：</label>
                             <div class="info-content">{{ row.fileFormat || '--' }}</div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">文件大小：</label>
+                            <label class="info-label">{{ $t('fixResults.top.fileSize') }}：</label>
                             <div class="info-content">{{ row.fileSizeName || '--' }}</div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">上传时间：</label>
+                            <label class="info-label">{{ $t('fixResults.top.uploadTime') }}：</label>
                             <div class="info-content">{{ row.createTime || '--' }}</div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">文件摘要：</label>
+                            <label class="info-label">{{ $t('fixResults.top.fileSummary') }}：</label>
                             <div class="info-content">{{ row.fileContext || '--' }}</div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">文件路径：</label>
+                            <label class="info-label">{{ $t('fixResults.top.filePath') }}：</label>
                             <div class="info-content">{{ row.filePath || '--' }}</div>
                         </div>
                     </template>
                     <template v-else>
                         <div class="info-item">
-                            <label class="info-label">字段注释：</label>
+                            <label class="info-label">{{ $t('fixResults.top.fieldRemark') }}：</label>
                             <div class="info-content">{{ row.fieldRemark || '--' }}</div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">AI字段注释：</label>
+                            <label class="info-label">{{ $t('fixResults.top.aiFieldRemark') }}：</label>
                             <div class="info-content">{{ row.craftRemark || '--' }}</div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">字段主题词：</label>
+                            <label class="info-label">{{ $t('fixResults.top.fieldTopic') }}：</label>
                             <div class="info-content">
                                 <el-tag v-for="tag in (row.fieldTopic ? JSON.parse(row.fieldTopic) : [])" :key="tag"
                                     style="margin-right: 5px; border-radius: 8px;">{{ tag ||
@@ -55,23 +56,23 @@
                             </div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">数据路径：</label>
+                            <label class="info-label">{{ $t('fixResults.top.dataPath') }}：</label>
                             <div class="info-content">
                                 {{ row.businessName + ' / ' + row.databaseName + ' / ' + row.tableName }}
                             </div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">表注释：</label>
+                            <label class="info-label">{{ $t('fixResults.top.tableRemark') }}：</label>
                             <div class="info-content">
                                 {{ row.tableRemark || '--' }}
                             </div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">AI表注释：</label>
+                            <label class="info-label">{{ $t('fixResults.top.aiTableRemark') }}：</label>
                             <div class="info-content">{{ row.tableCraftRemark || '--' }}</div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">表主题词：</label>
+                            <label class="info-label">{{ $t('fixResults.top.tableTopic') }}：</label>
                             <div class="info-content">
                                 <el-tag type="success" v-for="tag in (row.tableTopic ? JSON.parse(row.tableTopic) : [])"
                                     :key="tag" style="margin-right: 5px; border-radius: 8px;">{{ tag ||
@@ -83,23 +84,24 @@
                         <div class="info-content">{{ row.databaseName }}</div>
                     </div> -->
                         <div class="info-item">
-                            <label class="info-label">样本抽样：</label>
+                            <label class="info-label">{{ $t('fixResults.top.samplePreview') }}：</label>
                             <div class="info-content">
                                 <el-tooltip placement="bottom" effect="light">
                                     <div slot="content">
                                         <el-table :data="row.sampleList" height="250" border class="tableCla"
                                             style="width: 100%">
-                                            <el-table-column type="index" label="序号" width="50" />
-                                            <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
+                                            <el-table-column type="index" :label="$t('index')" width="50" />
+                                            <el-table-column prop="value" :label="$t('fieldValue')" width="100"
+                                                show-overflow-tooltip>
                                             </el-table-column>
                                         </el-table>
                                     </div>
-                                    <el-button size="mini" type="text">查看</el-button>
+                                    <el-button size="mini" type="text">{{ $t('view') }}</el-button>
                                 </el-tooltip>
                             </div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">样本特征：</label>
+                            <label class="info-label">{{ $t('fixResults.top.sampleFeature') }}：</label>
                             <div class="info-content">
                                 <el-tag type="info" style="margin-right: 5px; border-radius: 8px;">{{
                                     row.regularExpression
@@ -111,48 +113,55 @@
 
                 </el-card>
                 <el-card shadow="never" style="margin-top: 20px; border-radius: 10px;">
-                    <Title title="推理过程"></Title>
+                    <Title :title="$t('fixResults.sections.reasoningProcess')"></Title>
                     <el-card class="box-card" shadow="never" v-for="(item, index) in row.inferenceProcessList"
                         :key="index" style="margin-bottom: 20px;">
                         <template slot="header">
                             <span class="header-name">{{ item.name }}</span>
-                            <span class="header-confidence">{{ '当前置信度：' + item.value * 100 + '%' }}</span>
+                            <span class="header-confidence">{{
+                                `${$t('fixResults.sections.currentConfidence')}：${item.value * 100}%` }}</span>
                         </template>
                         <div class="info-item">
                             <label class="info-label"><svg-icon icon-class="home-aiAuto"
-                                    style="font-size: 18px; margin-right: 10px; flex-shrink: 0;" />AI推理：</label>
+                                    style="font-size: 18px; margin-right: 10px; flex-shrink: 0;" />{{
+                                        $t('fixResults.sections.aiReasoning') }}：</label>
                             <div class="info-content">{{ item.text }}</div>
                         </div>
                     </el-card>
 
                     <el-card class="box-card" shadow="never" style="margin-top: 20px;">
                         <template slot="header">
-                            <span class="header-name">最终定级：{{ row.securityLevelName }}</span>
+                            <span class="header-name">{{ $t('fixResults.sections.finalGrade') }}：{{
+                                row.securityLevelName }}</span>
                             <el-tag size="small" type="primary" color="#ffc5e0"
-                                style="border-radius: 8px; float: inline-end; color: #dc478f;">就高原则</el-tag>
+                                style="border-radius: 8px; float: inline-end; color: #dc478f;">{{
+                                    $t('fixResults.sections.higherLevelRule') }}</el-tag>
                         </template>
                         <div class="info-item">
                             <label class="info-label"><svg-icon icon-class="home-aiAuto"
-                                    style="font-size: 18px; margin-right: 10px; flex-shrink: 0;" />AI推理：</label>
+                                    style="font-size: 18px; margin-right: 10px; flex-shrink: 0;" />{{
+                                        $t('fixResults.sections.aiReasoning') }}：</label>
                             <div class="info-content">
                                 {{ row.dynamicGrading }}<br />
                                 <template v-if="row.oldSecurityLevel || row.newSecurityLevel || row.piiLevel">
-                                    分类级别为<el-tag size="small" type="primary" style="border-radius: 8px;">{{
-                                        row.oldSecurityLevel }}级</el-tag>，
+                                    {{ $t('fixResults.sections.classificationResult') }}<el-tag size="small"
+                                        type="primary" style="border-radius: 8px;">{{
+                                            row.oldSecurityLevel }}{{ $t('fixResults.texts.level') }}</el-tag>，
                                     <template v-if="row.newSecurityLevel">
-                                        触发动态安全分级规则，分类级别调整为<el-tag size="small" type="success"
-                                            style="border-radius: 8px;">{{
-                                                row.newSecurityLevel }}级</el-tag>
+                                        {{ $t('fixResults.texts.dynamicRuleTriggered') }}<el-tag size="small"
+                                            type="success" style="border-radius: 8px;">{{
+                                                row.newSecurityLevel }}{{ $t('fixResults.texts.level') }}</el-tag>
                                     </template>
                                     <template v-else>
-                                        未触发动态安全分级规则
+                                        {{ $t('fixResults.texts.dynamicRuleNotTriggered') }}
                                     </template>。
                                     <template v-if="row.piiLevel">
-                                        个人信息识别结果为<el-tag size="small" type="info" style="border-radius: 8px;">{{
-                                            row.piiLevel }}级</el-tag>
+                                        {{ $t('fixResults.texts.piiResultLevel') }}<el-tag size="small" type="info"
+                                            style="border-radius: 8px;">{{
+                                                row.piiLevel }}{{ $t('fixResults.texts.level') }}</el-tag>
                                     </template>
                                     <template v-else>
-                                        未开启个人信息识别
+                                        {{ $t('fixResults.texts.piiNotEnabled') }}
                                     </template>
                                 </template>
                             </div>
@@ -163,43 +172,45 @@
 
             <div class="right-section">
                 <el-card class="box-card" shadow="never">
-                    <Title title="人工审核" iconClass="seal"></Title>
+                    <Title :title="$t('fixResults.sections.manualReview')" iconClass="seal"></Title>
                     <div class="audit-status">
-                        <span>{{ row.confirm == '1' ? '已确认' : '未确认' }}</span>
+                        <span>{{ row.confirm == '1' ? $t('fixResults.texts.confirmed') :
+                            $t('fixResults.texts.unconfirmed')
+                            }}</span>
                         <el-badge is-dot></el-badge>
                     </div>
                     <div class="info-container" style="margin-top: 20px;">
                         <div class="info-item">
-                            <label class="info-label">分类结果：</label>
+                            <label class="info-label">{{ $t('fixResults.sections.classificationResult') }}：</label>
                             <div class="info-content">{{ row.categoryName || '--' }}</div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">定级结果：</label>
+                            <label class="info-label">{{ $t('fixResults.sections.gradingResult') }}：</label>
                             <div class="info-content">
                                 <el-tag :style="getRiskStyle(Number(row.securityLevel))">{{ row.securityLevelName ||
                                     '--'
-                                }}</el-tag>
+                                    }}</el-tag>
                             </div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">综合置信度：</label>
+                            <label class="info-label">{{ $t('fixResults.sections.overallConfidence') }}：</label>
                             <div class="info-content">
                                 <el-progress :percentage="Number(row.confidenceScore) * 100"></el-progress>
                             </div>
                         </div>
                         <div class="info-item">
-                            <label class="info-label">个人信息识别：</label>
+                            <label class="info-label">{{ $t('fixResults.sections.piiReview') }}：</label>
                             <div class="info-content">{{ row.piiDetectionName || '--' }}</div>
                         </div>
                         <div class="info-item">
-                            <el-button type="primary" plain class="full-width-btn"
-                                @click="handleModifyResult">修改结果</el-button>
+                            <el-button type="primary" plain class="full-width-btn" @click="handleModifyResult">{{
+                                $t('fixResults.sections.modifyResult') }}</el-button>
                         </div>
                     </div>
                 </el-card>
 
                 <el-card class="box-card" shadow="never" style="margin-top: 20px;">
-                    <Title title="AI建议分类" iconClass="suggest"></Title>
+                    <Title :title="$t('fixResults.sections.aiSuggestedCategory')" iconClass="suggest"></Title>
                     <template v-if="row.suggestClassifyJson">
                         <el-card
                             style="padding: 20px; line-height: 1.8; border-radius: 10px; background-color: rgb(249 249 250);"
@@ -212,7 +223,8 @@
                                 {{ row.suggestClassifyJson.categoryDescription }}
                             </p>
                             <h5 style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold;"><svg-icon
-                                    icon-class="star-hollow" style="margin-right: 5px;" />推荐理由:</h5>
+                                    icon-class="star-hollow" style="margin-right: 5px;" />{{
+                                        $t('fixResults.sections.recommendationReason') }}:</h5>
                             <p style="margin: 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
                                 {{ row.suggestClassifyJson.createReason }}
                             </p>
@@ -224,17 +236,19 @@
                             <div style="margin-bottom: 15px; color: #c0c4cc;">
                                 <svg-icon icon-class="info" style="font-size: 32px;" />
                             </div>
-                            <p style="font-size: 14px; color: #606266; margin: 0;">暂无AI建议分类结果</p>
-                            <p style="font-size: 12px; color: #909399; margin-top: 8px;">该数据暂无可用的AI分类建议</p>
+                            <p style="font-size: 14px; color: #606266; margin: 0;">{{
+                                $t('fixResults.sections.noSuggestedCategory') }}</p>
+                            <p style="font-size: 12px; color: #909399; margin-top: 8px;">{{
+                                $t('fixResults.sections.noSuggestedCategoryDesc') }}</p>
                         </div>
                     </template>
                 </el-card>
             </div>
         </div>
 
-        <el-dialog class="addMsg" title="结果修改" :visible.sync="dialogVisible" width="700px">
+        <el-dialog class="addMsg" :title="$t('fixResults.dialog.title')" :visible.sync="dialogVisible" width="700px">
             <el-form :model="resultForm" ref="resultForm" size="small" label-width="auto" label-position="top">
-                <el-form-item label="分类" class="addSelectClass">
+                <el-form-item :label="$t('fixResults.dialog.category')" class="addSelectClass">
                     <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable
                         :filter-method="handleSearch" clearable @focus="clearResultFilter">
                         <el-option style="height: 100%; padding: 0" value="">
@@ -244,14 +258,15 @@
                         </el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
-                    <el-select v-model="resultForm.securityLevel" disabled placeholder="请选择">
+                <el-form-item :label="$t('fixResults.dialog.securityLevel')" class="addSelectClass"
+                    prop="securityLevel">
+                    <el-select v-model="resultForm.securityLevel" disabled :placeholder="$t('pleaseSelect')">
                         <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
                             :value="item.value">
                         </el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="个人信息识别" class="addSelectClass" prop="piiDetection">
+                <el-form-item :label="$t('fixResults.dialog.piiReview')" class="addSelectClass" prop="piiDetection">
                     <el-select ref="piiSelectRef" v-model="piiNodeName" clearable>
                         <el-option style="height: 100%; padding: 0" value="">
                             <el-tree :data="piiList" :props="defaultProps" :expand-on-click-node="true"
@@ -267,8 +282,8 @@
             </el-form>
             <template #footer>
                 <span>
-                    <el-button type="primary" plain @click="updataResultFn"> 确定 </el-button>
-                    <el-button @click="updataResultCanelFn">取消</el-button>
+                    <el-button type="primary" plain @click="updataResultFn">{{ $t('confirm') }}</el-button>
+                    <el-button @click="updataResultCanelFn">{{ $t('cancel') }}</el-button>
                 </span>
             </template>
         </el-dialog>
@@ -535,7 +550,7 @@ export default {
             }).catch(() => {
                 this.loading = false;
                 this.$message({
-                    message: '数据加载失败，请稍后重试',
+                    message: this.$t('fixResults.messages.loadFailed'),
                     type: 'error'
                 });
             });
@@ -558,17 +573,17 @@ export default {
 
                 if (lastOrNext === '0') {
                     this.$message({
-                        message: '已切换到上一个结果',
+                        message: this.$t('fixResults.messages.switchedPrevious'),
                         type: 'success'
                     });
                 } else if (lastOrNext === '1') {
                     this.$message({
-                        message: '已切换到下一个结果',
+                        message: this.$t('fixResults.messages.switchedNext'),
                         type: 'success'
                     });
                 } else if (lastOrNext === '2') {
                     this.$message({
-                        message: '已刷新当前结果',
+                        message: this.$t('fixResults.messages.refreshedCurrent'),
                         type: 'success'
                     });
                 }
@@ -576,16 +591,16 @@ export default {
                 let message;
                 switch (lastOrNext) {
                     case '0':
-                        message = '没有上一个结果！';
+                        message = this.$t('fixResults.messages.noPrevious');
                         break;
                     case '1':
-                        message = '没有下一个结果！';
+                        message = this.$t('fixResults.messages.noNext');
                         break;
                     case '2':
-                        message = '无法获取当前结果数据！';
+                        message = this.$t('fixResults.messages.currentUnavailable');
                         break;
                     default:
-                        message = '操作失败，请重试！';
+                        message = this.$t('fixResults.messages.operationFailed');
                 }
                 this.$message({
                     message: message,
@@ -599,20 +614,20 @@ export default {
             confirmIds([this.row?.id]).then(res => {
                 if (res.code === 200) {
                     this.$message({
-                        message: '人工确认成功',
+                        message: this.$t('fixResults.messages.manualConfirmSuccess'),
                         type: 'success'
                     });
                     // 刷新当前数据
                     this.handleNext('2');
                 } else {
                     this.$message({
-                        message: res.msg || '人工确认失败',
+                        message: res.msg || this.$t('fixResults.messages.manualConfirmFailed'),
                         type: 'error'
                     });
                 }
             }).catch(error => {
                 this.$message({
-                    message: '人工确认请求失败，请稍后重试',
+                    message: this.$t('fixResults.messages.manualConfirmRequestFailed'),
                     type: 'error'
                 });
             });

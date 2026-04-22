@@ -4,46 +4,46 @@
         <div class="task-info-card">
             <div class="task-info">
                 <div class="task-header">
-                    <p class="task-name">任务名称：{{ tasksName }}</p>
+                    <p class="task-name">{{ $t('jobWorkMonitoring.taskName') }}：{{ tasksName }}</p>
                     <el-tag :type="statusType" class="status-tag">{{ statusName }}</el-tag>
                 </div>
                 <div class="other-info">
                     <div class="info-item">
-                        <span class="info-label">开始时间：{{ startTime }}</span>
+                        <span class="info-label">{{ $t('jobWorkMonitoring.startTime') }}：{{ startTime }}</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">结束时间：{{ overTime }}</span>
+                        <span class="info-label">{{ $t('jobWorkMonitoring.endTime') }}：{{ overTime }}</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">运行时间：{{ runTime }}</span>
+                        <span class="info-label">{{ $t('jobWorkMonitoring.runTime') }}：{{ runTime }}</span>
                     </div>
                     <div class="force-terminate-btn">
-                        <el-button type="danger" size="mini"
-                            @click="forceTerminateDialogVisible = true">强制终止</el-button>
+                        <el-button type="danger" size="mini" @click="forceTerminateDialogVisible = true">{{
+                            $t('jobWorkMonitoring.forceTerminate') }}</el-button>
                     </div>
                 </div>
                 <p v-if="status === 'ERR'" class="error-reason">
-                    <span>失败原因</span>：
-                    <span class="error-text">{{ errorReason || '未知错误' }}</span>
+                    <span>{{ $t('jobWorkMonitoring.failureReason') }}</span>：
+                    <span class="error-text">{{ errorReason || $t('jobWorkMonitoring.unknownError') }}</span>
                 </p>
             </div>
         </div>
 
         <!-- 强制终止弹窗 -->
-        <el-dialog class="custom-dialog" title="强制终止任务" :visible.sync="forceTerminateDialogVisible" width="500px"
-            :close-on-click-modal="false">
+        <el-dialog class="custom-dialog" :title="$t('jobWorkMonitoring.forceTerminateTask')"
+            :visible.sync="forceTerminateDialogVisible" width="500px" :close-on-click-modal="false">
             <div class="force-terminate-content">
                 <p class="warning-message">
-                    该操作将强制终止任务，可能导致数据状态不一致或需要人工修复。
+                    {{ $t('jobWorkMonitoring.forceTerminateWarning') }}
                 </p>
                 <el-checkbox v-model="forceTerminateConfirm">
-                    我已确认这是特殊情况，需要强制终止。
+                    {{ $t('jobWorkMonitoring.forceTerminateConfirm') }}
                 </el-checkbox>
             </div>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="forceTerminateDialogVisible = false">取消</el-button>
-                <el-button type="danger" :disabled="!forceTerminateConfirm"
-                    @click="handleForceTerminate">确认终止</el-button>
+                <el-button @click="forceTerminateDialogVisible = false">{{ $t('cancel') }}</el-button>
+                <el-button type="danger" :disabled="!forceTerminateConfirm" @click="handleForceTerminate">{{
+                    $t('jobWorkMonitoring.confirmTerminate') }}</el-button>
             </span>
         </el-dialog>
 
@@ -54,7 +54,7 @@
                 <!-- 表名轮播卡片 -->
                 <div class="table-carousel-card">
                     <!-- <div class="card-header">
-            <span class="header-title">当前处理表</span>
+                        <span class="header-title">{{ $t('jobWorkMonitoring.currentProcessingTable') }}</span>
             <div class="header-divider"></div>
           </div> -->
                     <!-- 表名轮播容器 -->
@@ -64,7 +64,7 @@
                         </div>
                         <div class="carousel-item current">
                             <div class="table-name-main">{{ isTaskActive ? currentTableName : (currentTableName ||
-                                '无正在处理的表') }}</div>
+                                $t('jobWorkMonitoring.noProcessingTable')) }}</div>
                         </div>
                         <div class="carousel-item next" v-show="isTaskActive && nextTableName">
                             <div class="table-name-small">{{ nextTableName }}</div>
@@ -77,7 +77,7 @@
                 <div class="steps-card">
                     <div class="card-header">
                         <i class="el-icon-d-list"></i>
-                        <span class="header-title">处理步骤</span>
+                        <span class="header-title">{{ $t('jobWorkMonitoring.processingSteps') }}</span>
                         <div class="header-divider"></div>
                     </div>
                     <div class="steps-list">
@@ -92,12 +92,15 @@
                             </div>
                             <!-- 步骤内容 -->
                             <div class="step-content">
-                                <div class="step-name">{{ step.name }}</div>
+                                <div class="step-name">{{ getStepLabel(step.name) }}</div>
                                 <div v-if="step.status === 'completed'" class="step-time">{{ step.completedTime }}</div>
-                                <div v-else-if="step.status === 'processing'" class="step-status">处理中...</div>
-                                <div v-else-if="step.status === 'error'" class="step-status">失败</div>
-                                <div v-else-if="step.status === 'skip'" class="step-status">跳过</div>
-                                <div v-else class="step-status">待开始</div>
+                                <div v-else-if="step.status === 'processing'" class="step-status">{{
+                                    $t('jobWorkMonitoring.processing') }}</div>
+                                <div v-else-if="step.status === 'error'" class="step-status">{{
+                                    $t('jobWorkMonitoring.failed') }}</div>
+                                <div v-else-if="step.status === 'skip'" class="step-status">{{
+                                    $t('jobWorkMonitoring.skipped') }}</div>
+                                <div v-else class="step-status">{{ $t('jobWorkMonitoring.pending') }}</div>
                             </div>
                         </div>
                     </div>
@@ -109,9 +112,9 @@
                 <!-- 整体进度条 -->
                 <div class="progress-card">
                     <div class="progress-header">
-                        <span class="progress-label">整体进度</span>
+                        <span class="progress-label">{{ $t('jobWorkMonitoring.overallProgress') }}</span>
                         <span class="progress-text">{{ progressCurrent }}/{{ progressTotal }} ({{ progressPercent
-                            }}%)</span>
+                        }}%)</span>
                     </div>
                     <div class="custom-progress-container">
                         <el-progress
@@ -125,7 +128,7 @@
                 <div class="tab-card">
                     <el-tabs v-model="activeTab">
                         <!-- AI视图 Tab -->
-                        <el-tab-pane v-if="showAiVision" label="AI视图" name="ai-vision">
+                        <el-tab-pane v-if="showAiVision" :label="$t('jobWorkMonitoring.aiVision')" name="ai-vision">
                             <div class="ai-vision-container">
                                 <div class="ai-effect-wrapper">
 
@@ -137,7 +140,8 @@
                                             <div class="effect-overlay">
                                                 <div class="filter-gate">
                                                     <div class="gate-line"></div>
-                                                    <span class="gate-label">AI过滤器</span>
+                                                    <span class="gate-label">{{ $t('jobWorkMonitoring.aiFilter')
+                                                        }}</span>
                                                     <div class="gate-line"></div>
                                                 </div>
                                             </div>
@@ -181,7 +185,7 @@
                                                         <circle :cx="80" :cy="50 + idx * 60" r="20" class="node-circle"
                                                             :class="{ active: node.matched }" />
                                                         <text :x="80" :y="55 + idx * 60" class="node-text">{{ node.label
-                                                            }}</text>
+                                                        }}</text>
                                                     </g>
                                                 </g>
                                                 <!-- 右侧规则节点 -->
@@ -461,19 +465,20 @@
                                             <div class="pii-stats">
                                                 <div class="stat-item">
                                                     <span class="stat-value">{{ piiStats.phone }}</span>
-                                                    <span class="stat-label">手机号</span>
+                                                    <span class="stat-label">{{ $t('jobWorkMonitoring.phone') }}</span>
                                                 </div>
                                                 <div class="stat-item">
                                                     <span class="stat-value">{{ piiStats.idCard }}</span>
-                                                    <span class="stat-label">身份证</span>
+                                                    <span class="stat-label">{{ $t('jobWorkMonitoring.idCard') }}</span>
                                                 </div>
                                                 <div class="stat-item">
                                                     <span class="stat-value">{{ piiStats.email }}</span>
-                                                    <span class="stat-label">邮箱</span>
+                                                    <span class="stat-label">{{ $t('jobWorkMonitoring.email') }}</span>
                                                 </div>
                                                 <div class="stat-item">
                                                     <span class="stat-value">{{ piiStats.address }}</span>
-                                                    <span class="stat-label">地址</span>
+                                                    <span class="stat-label">{{ $t('jobWorkMonitoring.address')
+                                                        }}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -482,7 +487,8 @@
                                         <div v-show="currentStepIndex === 5" class="effect-panel feature-extract">
                                             <canvas ref="neuralCanvas" class="effect-canvas"></canvas>
                                             <div class="feature-output">
-                                                <div class="output-label">提取特征 {{ featureDataNum || 0 }}</div>
+                                                <div class="output-label">{{ $t('jobWorkMonitoring.featureExtracted') }}
+                                                    {{ featureDataNum || 0 }}</div>
                                                 <div class="feature-bars">
                                                     <div v-for="(bar, idx) in featureBars" :key="idx"
                                                         class="feature-bar" :style="{ height: bar.height + '%' }"></div>
@@ -495,7 +501,7 @@
                         </el-tab-pane>
 
                         <!-- 实时日志 Tab -->
-                        <el-tab-pane label="实时日志" name="realtime">
+                        <el-tab-pane :label="$t('jobWorkMonitoring.realtimeLog')" name="realtime">
                             <div class="log-container" ref="logContainer">
                                 <div v-if="realtimeLogs.length" class="log-list">
                                     <div v-for="(log, index) in realtimeLogs" :key="index" class="log-item">
@@ -505,13 +511,13 @@
                                     </div>
                                 </div>
                                 <div v-else class="empty-state">
-                                    <el-empty description="暂无实时日志"></el-empty>
+                                    <el-empty :description="$t('jobWorkMonitoring.noRealtimeLog')"></el-empty>
                                 </div>
                             </div>
                         </el-tab-pane>
 
                         <!-- 分析日志 Tab -->
-                        <el-tab-pane label="分析日志" name="analysis">
+                        <el-tab-pane :label="$t('jobWorkMonitoring.analysisLog')" name="analysis">
                             <div class="analysis-log-container">
                                 <div v-if="Object.keys(analysisLogs).length > 0" class="analysis-list">
                                     <div v-for="(value, key, index) in analysisLogs" :key="key" class="analysis-item">
@@ -520,11 +526,12 @@
                                         <div class="timeline-connector"
                                             v-if="index < Object.keys(analysisLogs).length - 1"></div>
                                         <span class="analysis-label">{{ getLabelByKey(key) }}:</span>
-                                        <span class="analysis-value">{{ analysisLogs[key] || "暂无" }}</span>
+                                        <span class="analysis-value">{{ analysisLogs[key] ||
+                                            $t('jobWorkMonitoring.none') }}</span>
                                     </div>
                                 </div>
                                 <div v-else class="empty-state">
-                                    <el-empty description="暂无分析日志数据"></el-empty>
+                                    <el-empty :description="$t('jobWorkMonitoring.noAnalysisLog')"></el-empty>
                                 </div>
                             </div>
                         </el-tab-pane>
@@ -535,9 +542,9 @@
 
         <!-- 操作按钮 -->
         <div class="button-group">
-            <el-button type="primary" @click="handleReturn">返回</el-button>
+            <el-button type="primary" @click="handleReturn">{{ $t('return') }}</el-button>
             <el-button @click="handleRefresh" v-if="activeTab === 'analysis'">
-                <i class="el-icon-refresh"></i> 刷新
+                <i class="el-icon-refresh"></i> {{ $t('refresh') }}
             </el-button>
         </div>
     </div>
@@ -597,16 +604,16 @@ export default {
             cursorBlink: true,
             // 匹配规则数据
             leftNodes: [
-                { label: '字段A', matched: true },
-                { label: '字段B', matched: false },
-                { label: '字段C', matched: true },
-                { label: '字段D', matched: false },
+                { label: this.$t('jobWorkMonitoring.fieldA'), matched: true },
+                { label: this.$t('jobWorkMonitoring.fieldB'), matched: false },
+                { label: this.$t('jobWorkMonitoring.fieldC'), matched: true },
+                { label: this.$t('jobWorkMonitoring.fieldD'), matched: false },
             ],
             rightNodes: [
-                { label: '规则1', matched: true },
-                { label: '规则2', matched: true },
-                { label: '规则3', matched: false },
-                { label: '规则4', matched: false },
+                { label: this.$t('jobWorkMonitoring.rule1'), matched: true },
+                { label: this.$t('jobWorkMonitoring.rule2'), matched: true },
+                { label: this.$t('jobWorkMonitoring.rule3'), matched: false },
+                { label: this.$t('jobWorkMonitoring.rule4'), matched: false },
             ],
             matchLines: [
                 { path: 'M100,50 Q400,20 680,50', active: true },
@@ -617,7 +624,7 @@ export default {
             labelingBoxes: [],
             nextBoxId: 1,
             robotStamping: false,
-            robotStatus: '等待字段进入...',
+            robotStatus: this.$t('jobWorkMonitoring.robotWaiting'),
             fieldQueue: [],
             isProcessingField: false,
             // 个人信息扫描数据
@@ -748,12 +755,12 @@ export default {
             }).then(res => {
                 if (res.code === 200) {
                     this.$message({
-                        message: '强制终止成功',
+                        message: this.$t('jobWorkMonitoring.forcedTerminationSuccess'),
                         type: 'success',
                     })
                 } else {
                     this.$message({
-                        message: res.msg || '强制终止失败',
+                        message: res.msg || this.$t('jobWorkMonitoring.forcedTerminationFailed'),
                         type: 'danger',
                     })
                 }
@@ -769,7 +776,7 @@ export default {
             });
         },
         initTaskInfo() {
-            this.tasksName = this.routeData.tasksName || '未知任务';
+            this.tasksName = this.routeData.tasksName || this.$t('jobWorkMonitoring.unknownTask');
             this.startTime = this.routeData.startTime || '';
             this.overTime = this.routeData.overTime || '';
             this.runTime = this.routeData.runTime || '';
@@ -890,7 +897,7 @@ export default {
                 if (!event.wasClean) {
                     // 只在首次连接失败时显示错误提示
                     if (this.showSocketError) {
-                        this.$message.error('日志连接异常，请刷新页面重试');
+                        this.$message.error(this.$t('jobWorkMonitoring.logConnectionError'));
                         this.showSocketError = false;
                     }
                     setTimeout(() => this.initWebSocket(), 3000);
@@ -938,7 +945,7 @@ export default {
                     this.analysisLogs = this.formatAnalysisLogs(res.data);
                 }
             }).catch(() => {
-                this.$message.error('获取分析日志失败，请稀后重试');
+                this.$message.error(this.$t('jobWorkMonitoring.analysisLogFailed'));
             })
         }, 500),
         formatAnalysisLogs(logs) {
@@ -968,13 +975,16 @@ export default {
         },
         getLabelByKey(key) {
             const labelMap = {
-                dirtyDataNum: '噪音数据过滤字段数量',
-                classification: '分类情况',
-                aiNoteFilling: '语义填充情况',
-                classificationNum: '命中匹配规则字段数量',
-                featureDataNum: '样本特征提取数量'
+                dirtyDataNum: this.$t('jobWorkMonitoring.analysisLabels.dirtyDataNum'),
+                classification: this.$t('jobWorkMonitoring.analysisLabels.classification'),
+                aiNoteFilling: this.$t('jobWorkMonitoring.analysisLabels.aiNoteFilling'),
+                classificationNum: this.$t('jobWorkMonitoring.analysisLabels.classificationNum'),
+                featureDataNum: this.$t('jobWorkMonitoring.analysisLabels.featureDataNum')
             };
             return labelMap[key] || key;
+        },
+        getStepLabel(name) {
+            return this.$t(`jobWorkMonitoring.stepLabels.${name}`);
         },
         // ========== AI动效方法 ==========
         stopAllAnimations() {
@@ -1150,7 +1160,7 @@ export default {
 
             // 如果没有源文本，显示默认文本并启动演示动画
             if (!this.typewriterText) {
-                this.typewriterText = 'AI正在进行语义分析和填充...';
+                this.typewriterText = this.$t('jobWorkMonitoring.semanticFillDemo');
             }
 
             // 如果打字机已完成且数据没变，不重复执行
@@ -1241,7 +1251,7 @@ export default {
             // 如果队列为空，重置状态并等待
             if (!this.fieldQueue.length) {
                 this.labelingBoxes = [];
-                this.robotStatus = '等待字段进入...';
+                this.robotStatus = this.$t('jobWorkMonitoring.robotWaiting');
                 this.isProcessingField = false;
                 return;
             }
@@ -1262,7 +1272,7 @@ export default {
                 stamped: false
             };
             this.labelingBoxes = [box];
-            this.robotStatus = `字段 "${fieldName}" 进入中...`;
+            this.robotStatus = this.$t('jobWorkMonitoring.fieldEntering', { field: fieldName });
 
             let startTime = null;
             const moveDuration = 1500; // 移动到机器人位置的时间
@@ -1283,21 +1293,21 @@ export default {
                     this.labelingAnimationId = requestAnimationFrame(moveToRobot);
                 } else {
                     // 到达机器人位置，开始分析
-                    this.robotStatus = `正在分析字段 "${fieldName}"...`;
+                    this.robotStatus = this.$t('jobWorkMonitoring.fieldAnalyzing', { field: fieldName });
                     setTimeout(() => {
                         // 开始打标
-                        this.robotStatus = `为字段 "${fieldName}" 打标签...`;
+                        this.robotStatus = this.$t('jobWorkMonitoring.fieldLabeling', { field: fieldName });
                         this.robotStamping = true;
                         setTimeout(() => {
                             // 打标完成
                             box.stamped = true;
                             this.labelingBoxes = [{ ...box }];
                             this.robotStamping = false;
-                            this.robotStatus = `字段 "${fieldName}" 标记完成!`;
+                            this.robotStatus = this.$t('jobWorkMonitoring.fieldMarked', { field: fieldName });
 
                             // 等待一会儿后移出
                             setTimeout(() => {
-                                this.robotStatus = `字段 "${fieldName}" 移出中...`;
+                                this.robotStatus = this.$t('jobWorkMonitoring.fieldLeaving', { field: fieldName });
                                 let moveOutStart = null;
                                 const moveOutDuration = 1200;
                                 const exitTargetX = 900; // 移出到右侧
@@ -1319,7 +1329,7 @@ export default {
                                             setTimeout(() => this.startAIClassifyAnimation(), 500);
                                         } else {
                                             this.labelingBoxes = [];
-                                            this.robotStatus = '等待字段进入...';
+                                            this.robotStatus = this.$t('jobWorkMonitoring.robotWaiting');
                                         }
                                     }
                                 };

@@ -2,11 +2,12 @@
   <div class="app-container" v-loading="loading">
     <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
       v-show="showSearch" label-width="auto">
-      <el-form-item label="字段名" prop="fieldName">
-        <el-input v-model="queryParams.fieldName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+      <el-form-item :label="$t('hierarchicalTask.result.fieldName')" prop="fieldName">
+        <el-input v-model="queryParams.fieldName" @input="inputSearch"
+          :placeholder="$t('hierarchicalTask.search.taskNamePlaceholder')" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="分类" prop="categoryId">
+      <el-form-item :label="$t('hierarchicalTask.result.category')" prop="categoryId">
         <el-select ref="addSelectRef" v-model="addNodeName" :filter-method="filterCategoryTree">
           <el-option style="height: 100%; padding: 0" value="">
             <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
@@ -15,34 +16,39 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="分类状态" class="addSelectClass" prop="classificationStateIds">
-        <el-select v-model="queryParams.classificationStateIds" multiple @change="inputSearch" placeholder="请选择">
+      <el-form-item :label="$t('hierarchicalTask.result.classificationStatus')" class="addSelectClass"
+        prop="classificationStateIds">
+        <el-select v-model="queryParams.classificationStateIds" multiple @change="inputSearch"
+          :placeholder="$t('pleaseSelect')">
           <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
             :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="安全分级" prop="securityLevel">
-        <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch" placeholder="请选择">
+      <el-form-item :label="$t('hierarchicalTask.result.securityLevel')" prop="securityLevel">
+        <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch"
+          :placeholder="$t('pleaseSelect')">
           <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="确认状态" prop="confirm">
-        <el-select clearable v-model="queryParams.confirm" @change="inputSearch" placeholder="请选择">
+      <el-form-item :label="$t('hierarchicalTask.result.confirmStatus')" prop="confirm">
+        <el-select clearable v-model="queryParams.confirm" @change="inputSearch"
+          :placeholder="$t('pleaseSelect')">
           <el-option v-for="item in confirmList" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="所属库" prop="databaseName">
-        <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn" placeholder="请选择">
+      <el-form-item :label="$t('hierarchicalTask.result.database')" prop="databaseName">
+        <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn"
+          :placeholder="$t('pleaseSelect')">
           <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="所属表" prop="tableName">
+      <el-form-item :label="$t('hierarchicalTask.result.table')" prop="tableName">
         <el-select clearable v-model="queryParams.tableName" filterable :disabled="!queryParams.databaseName"
-          @change="inputSearch" placeholder="全部">
+          @change="inputSearch" :placeholder="$t('all')">
           <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.tableName">
           </el-option>
         </el-select>
@@ -51,20 +57,22 @@
         <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入来源业务系统" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item> -->
-      <el-form-item label="归类原因" prop="classificationReasons">
-        <el-select clearable v-model="queryParams.classificationReasons" @change="inputSearch" placeholder="请选择">
+      <el-form-item :label="$t('hierarchicalTask.result.classificationReason')" prop="classificationReasons">
+        <el-select clearable v-model="queryParams.classificationReasons" @change="inputSearch"
+          :placeholder="$t('pleaseSelect')">
           <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
             :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="置信度" prop="confidenceLevel">
-        <el-select clearable v-model="queryParams.confidenceLevel" @change="inputSearch" placeholder="请选择">
+      <el-form-item :label="$t('hierarchicalTask.result.confidenceLevel')" prop="confidenceLevel">
+        <el-select clearable v-model="queryParams.confidenceLevel" @change="inputSearch"
+          :placeholder="$t('pleaseSelect')">
           <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="个人信息识别" prop="piiDetection">
+      <el-form-item :label="$t('hierarchicalTask.result.piiReview')" prop="piiDetection">
         <el-select ref="addSelectRef" v-model="piiNodeName">
           <el-option style="height: 100%; padding: 0" value="">
             <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
@@ -79,72 +87,83 @@
     </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-aim" size="medium" @click="handleAdd">确认勾选项</el-button>
+        <el-button type="primary" plain icon="el-icon-aim" size="medium" @click="handleAdd">{{
+          $t('hierarchicalTask.result.confirmChecked') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-more" size="medium" @click="handleEcelFn">确认过滤项</el-button>
+        <el-button type="primary" plain icon="el-icon-more" size="medium" @click="handleEcelFn">{{
+          $t('hierarchicalTask.result.confirmFiltered') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-refresh-left" size="medium"
-          @click="handleAddFnClose">取消勾选项</el-button>
+        <el-button type="primary" plain icon="el-icon-refresh-left" size="medium" @click="handleAddFnClose">{{
+          $t('hierarchicalTask.result.cancelChecked') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-magic-stick" size="medium"
-          @click="handleEcelFnClose">取消过滤项</el-button>
+        <el-button type="primary" plain icon="el-icon-magic-stick" size="medium" @click="handleEcelFnClose">{{
+          $t('hierarchicalTask.result.cancelFiltered') }}</el-button>
       </el-col>
       <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
-        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{
+          $t('selectAll') }}</el-checkbox>
         <el-checkbox-group v-model="checkedColumn" @change="handleCheckedCitiesChange" class="checkboxGroup"
           style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
           <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
             item.label }}</el-checkbox>
         </el-checkbox-group>
-        <el-button slot="reference">列设置</el-button>
+        <el-button slot="reference">{{ $t('columnSettings') }}</el-button>
       </el-popover>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
     <el-table class="tableBox" v-loading="loading" :key="checkedColumn.length" :data="proxysList"
       @selection-change="handleSelectionChange" ref="tableRef">
       <el-table-column type="selection" width="60" align="center" />
-      <el-table-column label="字段名" align="center" prop="fieldName" width="150" show-overflow-tooltip fixed />
-      <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip fixed />
-      <el-table-column label="字段注释" align="center" prop="fieldRemark" width="150" show-overflow-tooltip fixed />
-      <el-table-column label="AI字段注释" align="center" prop="craftRemark" width="100" show-overflow-tooltip fixed />
+      <el-table-column :label="$t('hierarchicalTask.result.fieldName')" align="center" prop="fieldName" width="150"
+        show-overflow-tooltip fixed />
+      <el-table-column :label="$t('hierarchicalTask.result.fieldType')" align="center" prop="fieldType" width="150"
+        show-overflow-tooltip fixed />
+      <el-table-column :label="$t('hierarchicalTask.result.fieldRemark')" align="center" prop="fieldRemark" width="150"
+        show-overflow-tooltip fixed />
+      <el-table-column :label="$t('hierarchicalTask.result.aiFieldRemark')" align="center" prop="craftRemark"
+        width="100" show-overflow-tooltip fixed />
       <template>
         <el-table-column v-for="item in checkedColumn" :label="item.label" align="center" :prop="item.prop"
           :width="item.width" show-overflow-tooltip />
       </template>
-      <el-table-column label="样本" align="center" prop="sampleData" fixed="right" show-overflow-tooltip>
+      <el-table-column :label="$t('hierarchicalTask.result.sample')" align="center" prop="sampleData" fixed="right"
+        show-overflow-tooltip>
         <template slot-scope="scope">
           <el-tooltip placement="bottom" effect="light">
             <div slot="content">
               <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
-                <el-table-column type="index" label="序号" width="50" />
-                <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip>
+                <el-table-column type="index" :label="$t('index')" width="50" />
+                <el-table-column prop="value" :label="$t('fieldValue')" width="100" show-overflow-tooltip>
                 </el-table-column>
               </el-table>
             </div>
-            <el-button size="mini" type="text">查看</el-button>
+            <el-button size="mini" type="text">{{ $t('view') }}</el-button>
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="确认状态" fixed="right" align="center" prop="confirm">
+      <el-table-column :label="$t('hierarchicalTask.result.confirmStatus')" fixed="right" align="center" prop="confirm">
         <template slot-scope="scope">
-          <span>{{ scope.row.confirm == 1 ? '已确认' : '未确认' }}</span>
+          <span>{{ scope.row.confirm == 1 ? $t('hierarchicalTask.options.confirm.confirmed') :
+            $t('hierarchicalTask.options.confirm.unconfirmed') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" fixed="right" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('operation')" fixed="right" align="center"
+        class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="resultExdit(scope.row)">结果修改</el-button>
+          <el-button size="mini" type="text" @click="resultExdit(scope.row)">{{ $t('hierarchicalTask.result.resultEdit')
+            }}</el-button>
         </template>
       </el-table-column>
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
       :page-size.sync="queryParams.pageSize" @pagination="getList" />
-    <el-dialog title="结果修改" v-loading="updataLoading" :visible.sync="deleteVisible" width="650px"
-      style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
+    <el-dialog :title="$t('hierarchicalTask.result.resultEdit')" v-loading="updataLoading" :visible.sync="deleteVisible"
+      width="650px" style="padding: 0 20px;" append-to-body :close-on-click-modal="false">
       <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto">
-        <el-form-item label="分类" class="addSelectClass">
+        <el-form-item :label="$t('hierarchicalTask.result.category')" class="addSelectClass">
           <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable :filter-method="handleSearch">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" :props="defaultProps" filterable :expand-on-click-node="true"
@@ -153,27 +172,27 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
-          <el-select v-model="resultForm.securityLevel" disabled placeholder="请选择">
+        <el-form-item :label="$t('hierarchicalTask.result.securityLevel')" class="addSelectClass" prop="securityLevel">
+          <el-select v-model="resultForm.securityLevel" disabled :placeholder="$t('pleaseSelect')">
             <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="推理过程" prop="reasoningProcess">
+        <el-form-item :label="$t('hierarchicalTask.result.reasoningProcess')" prop="reasoningProcess">
           <el-input v-model="resultForm.reasoningProcess" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
-            maxlength="500" placeholder="请输入推理过程"></el-input>
+            maxlength="500" :placeholder="$t('hierarchicalTask.result.reasoningProcessPlaceholder')"></el-input>
         </el-form-item>
         <!-- <el-form-item label="审核建议" prop="auditRecommendation">
           <el-input v-model="resultForm.auditRecommendation" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             maxlength="500" placeholder="请输入审核建议"></el-input>
         </el-form-item> -->
-        <el-form-item label="置信度" prop="confidenceLevel">
+        <el-form-item :label="$t('hierarchicalTask.result.confidenceLevel')" prop="confidenceLevel">
           <el-select v-model="resultForm.confidenceLevel" clearable>
             <el-option v-for="item in confidenceLevelList" :key="item.id" :label="item.name" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="个人信息识别" class="addSelectClass" prop="piiDetection">
+        <el-form-item :label="$t('hierarchicalTask.result.piiReview')" class="addSelectClass" prop="piiDetection">
           <el-select ref="piiSelectRef" v-model="piiNodeName">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="piiList" :props="defaultProps" :expand-on-click-node="true"
@@ -182,15 +201,15 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="识别方式" prop="detectionProcess">
+        <el-form-item :label="$t('hierarchicalTask.result.detectionMethod')" prop="detectionProcess">
           <el-input v-model="resultForm.detectionProcess" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
-            maxlength="500" placeholder="请输入识别方式"></el-input>
+            maxlength="500" :placeholder="$t('hierarchicalTask.result.detectionMethodPlaceholder')"></el-input>
         </el-form-item>
       </el-form>
       <template #footer>
         <span>
-          <el-button type="primary" plain @click="updataResultFn"> 确定 </el-button>
-          <el-button @click="updataResultCanelFn">取消</el-button>
+          <el-button type="primary" plain @click="updataResultFn">{{ $t('confirm') }}</el-button>
+          <el-button @click="updataResultCanelFn">{{ $t('cancel') }}</el-button>
         </span>
       </template>
     </el-dialog>
@@ -238,25 +257,25 @@ export default {
       checkAll: false,
       // classificationReasonsList: ['策略匹配', 'AI推理', '脏数据识别'],
       confidenceLevelList: [
-        { name: "低", id: 1, value: "1" },
-        { name: "高", id: 2, value: "2" },
+        { name: this.$t('hierarchicalTask.options.confidence.low'), id: 1, value: "1" },
+        { name: this.$t('hierarchicalTask.options.confidence.high'), id: 2, value: "2" },
       ],
       addOptions: [
         {
           value: 1,
-          label: "1级"
+          label: "1"
         }, {
           value: 2,
-          label: "2级"
+          label: "2"
         }, {
           value: 3,
-          label: "3级"
+          label: "3"
         }, {
           value: 4,
-          label: "4级"
+          label: "4"
         }, {
           value: 5,
-          label: "5级"
+          label: "5"
         },
       ],
       resultFormNodeName: '',
@@ -301,7 +320,7 @@ export default {
         { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
         { name: "TIDB", id: 2, value: "TIDB" },
         { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" },
-        { name: "达梦", id: 4, value: "DM" },
+        { name: "DM", id: 4, value: "DM" },
         { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       drawerShow: false,
       samplingNum: 10,
@@ -325,16 +344,16 @@ export default {
         { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       maskCompleteStatus: [{
         value: 'COMPLETE',
-        label: '扫描完成'
+        label: 'COMPLETE'
       }, {
         value: 'RUNNING',
-        label: '扫描中'
+        label: 'RUNNING'
       }, {
         value: 'NONE',
-        label: '未扫描'
+        label: 'NONE'
       }, {
         value: 'ERR',
-        label: '扫描失败'
+        label: 'ERR'
       }
       ],
       surfaceList: [
@@ -342,20 +361,20 @@ export default {
       executeStatus: [
         {
           value: 'COMPLETE',
-          label: '待执行'
+          label: 'PENDING'
         }, {
           value: 'RUNNING',
-          label: '执行中'
+          label: 'RUNNING'
         }, {
           value: 'NONE',
-          label: '执行完成'
+          label: 'COMPLETE'
         }, {
           value: 'ERR',
-          label: '执行失败'
+          label: 'ERR'
         }
       ],
       formProjectListEdit: [],
-      selectProjectListEdit: [{ name: "全部", id: 0 }],
+      selectProjectListEdit: [{ name: this.$t('all'), id: 0 }],
       projectNameEdit: "",
       // 遮罩层
       loading: true,
@@ -373,82 +392,82 @@ export default {
       // 数据库代理表格数据
       setList: [
         {
-          label: "来源业务系统",
+          label: this.$t('hierarchicalTask.result.sourceBusinessSystem'),
           prop: "businessName",
           width: "150"
         },
         {
-          label: "所属库",
+          label: this.$t('hierarchicalTask.result.database'),
           prop: "databaseName",
           width: "150"
         },
         {
-          label: "所属表",
+          label: this.$t('hierarchicalTask.result.table'),
           prop: "tableName",
           width: "150"
         },
         {
-          label: "表注释",
+          label: this.$t('viewResults.columnLabels.tableRemark'),
           prop: "tableRemark",
           width: "200"
         },
         {
-          label: "AI表注释",
+          label: this.$t('viewResults.columnLabels.aiTableRemark'),
           prop: "tableCraftRemark",
           width: "200"
         },
         {
-          label: "分类",
+          label: this.$t('hierarchicalTask.result.category'),
           prop: "categoryName",
           width: "250"
         },
         {
-          label: "分类状态",
+          label: this.$t('hierarchicalTask.result.classificationStatus'),
           prop: "classificationStateName",
           width: "250"
         },
         {
-          label: "归类原因",
+          label: this.$t('hierarchicalTask.result.classificationReason'),
           prop: "classificationReasons",
           width: "150"
         },
         {
-          label: "推理过程",
+          label: this.$t('hierarchicalTask.result.reasoningProcess'),
           prop: "reasoningProcess",
           width: "250"
         },
         {
-          label: "个人信息识别",
+          label: this.$t('hierarchicalTask.result.piiReview'),
           prop: "piiDetectionName",
           width: "250"
         },
         {
-          label: "识别过程",
+          label: this.$t('hierarchicalTask.result.detectionMethod'),
           prop: "detectionProcess",
           width: "250"
         },
         {
-          label: "置信度分数",
+          label: this.$t('viewResults.columnLabels.confidenceScore'),
           prop: "confidenceScore",
           width: "100"
         },
         {
-          label: "置信度",
+          label: this.$t('hierarchicalTask.result.confidenceLevel'),
           prop: "confidenceLevel",
           width: "100"
         },
         {
-          label: "安全分级",
+          label: this.$t('hierarchicalTask.result.securityLevel'),
           prop: "securityLevelName",
           width: "150"
         },
         {
-          label: "敏感数据",
+          label: this.$t('viewResults.columnLabels.sensitiveData'),
           prop: "sensitiveDataName",
           width: "150"
         },
         {
-          label: "样本特征",
+          label: this.$t('viewResults.columnLabels.sampleFeature'),
           prop: "regularExpression",
           width: "150"
 
@@ -475,11 +494,11 @@ export default {
       confirmList: [
         {
           value: '1',
-          label: '已确认'
+          label: this.$t('hierarchicalTask.options.confirm.confirmed')
         },
         {
           value: '0',
-          label: '未确认'
+          label: this.$t('hierarchicalTask.options.confirm.unconfirmed')
         },
       ],
       // 表单参数
@@ -645,9 +664,9 @@ export default {
       this.loading = true
       let dataS = this.$refs.tableRef.selection
       if (dataS && dataS.length > 0) {
-        this.$confirm(`确定当前勾选项吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('hierarchicalTask.result.confirmChecked'), this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {
@@ -669,7 +688,7 @@ export default {
           this.loading = false
         });
       } else {
-        this.$message({ message: '请选择至少一条数据', type: 'warning' })
+        this.$message({ message: this.$t('hierarchicalTask.messages.selectAtLeastOne'), type: 'warning' })
         this.loading = false
       }
     },
@@ -677,9 +696,9 @@ export default {
       this.loading = true
       let dataS = this.$refs.tableRef.selection
       if (dataS && dataS.length > 0) {
-        this.$confirm(`确定取消当前勾选项吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('hierarchicalTask.result.cancelChecked'), this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {
@@ -701,7 +720,7 @@ export default {
           this.loading = false
         });
       } else {
-        this.$message({ message: '请选择至少一条数据', type: 'warning' })
+        this.$message({ message: this.$t('hierarchicalTask.messages.selectAtLeastOne'), type: 'warning' })
         this.loading = false
       }
     },
@@ -784,7 +803,7 @@ export default {
               for (let i = 0; i < list.length; i++) {
                 this.targetDataList.push({ id: i, value: list[i], label: list[i] })
               }
-              this.targetDataList.unshift({ id: -1, value: -1, label: '全部' })
+              this.targetDataList.unshift({ id: -1, value: -1, label: this.$t('all') })
               this.$message({
                 message: res.msg,
                 type: 'success'
@@ -913,7 +932,7 @@ export default {
       this.resultForm = JSON.parse(JSON.stringify(row))
       this.resultForm.tableFieldId = row.id
       this.piiNodeName = row.piiDetectionName
-      this.resultForm.confidenceLevel = row.confidenceLevel == '高' ? '2' : '1'
+      this.resultForm.confidenceLevel = row.confidenceLevel == this.$t('hierarchicalTask.options.confidence.high') ? '2' : '1'
       this.resultFormNodeName = row.categoryName
       this.deleteVisible = true
     },

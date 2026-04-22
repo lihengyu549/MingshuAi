@@ -4,6 +4,10 @@ import capacity from './capacity'
 import protectTableField from './protectTableField'
 import sensitiveData from './sensitiveData'
 import assetReport from './assetReport'
+import jobWorkMonitoring from './jobWorkMonitoring'
+import hierarchicalTask from './hierarchicalTask'
+import viewResults from './viewResults'
+import fixResults from './fixResults'
 import dataFeature from './dataFeature'
 import matchingStrategy from './matchingStrategy'
 import scanStrategy from './scanStrategy'
@@ -35,6 +39,10 @@ export default {
   protectTableField,
   sensitiveData,
   assetReport,
+  jobWorkMonitoring,
+  hierarchicalTask,
+  viewResults,
+  fixResults,
   dataFeature,
   matchingStrategy,
   scanStrategy,

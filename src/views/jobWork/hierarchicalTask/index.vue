@@ -2,37 +2,43 @@
   <div class="app-container" v-loading="mainLoading">
     <el-card class="searchCard" shadow="never">
       <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
-        :inline="false" label-width="auto">
-        <el-form-item label="任务名称" prop="tasksName">
-          <el-input v-model="queryParams.tasksName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+        :inline="true">
+        <el-form-item :label="$t('hierarchicalTask.search.taskName')" prop="tasksName">
+          <el-input v-model="queryParams.tasksName" @input="inputSearch"
+            :placeholder="$t('hierarchicalTask.search.taskNamePlaceholder')" clearable
             @keyup.enter.native="handleQuery" />
         </el-form-item>
-        <el-form-item label="数据源类型" prop="sourceType">
-          <el-select clearable v-model="queryParams.sourceType" @change="inputSearch" placeholder="请选择数据库类型">
+        <el-form-item :label="$t('hierarchicalTask.search.sourceType')" prop="sourceType">
+          <el-select clearable v-model="queryParams.sourceType" @change="inputSearch"
+            :placeholder="$t('hierarchicalTask.search.sourceTypePlaceholder')">
             <el-option v-for="item in dataYTpeList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="来源业务系统" prop="businessName">
-          <el-input v-model="queryParams.businessName" @input="inputSearch" placeholder="请输入数据源名称" clearable
+        <el-form-item :label="$t('hierarchicalTask.search.businessName')" prop="businessName">
+          <el-input v-model="queryParams.businessName" @input="inputSearch"
+            :placeholder="$t('hierarchicalTask.search.businessNamePlaceholder')" clearable
             @keyup.enter.native="handleQuery" />
         </el-form-item>
 
-        <el-form-item label="分类分级框架" prop="projectId">
-          <el-select clearable v-model="queryParams.projectId" filterable @change="inputSearch" placeholder="请选择分类分级框架">
+        <el-form-item :label="$t('hierarchicalTask.search.framework')" prop="projectId">
+          <el-select clearable v-model="queryParams.projectId" filterable @change="inputSearch"
+            :placeholder="$t('hierarchicalTask.search.frameworkPlaceholder')">
             <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="执行状态" prop="maskComplete">
-          <el-select clearable v-model="queryParams.maskComplete" @change="inputSearch" placeholder="请选择执行状态">
+        <el-form-item :label="$t('hierarchicalTask.search.executionStatus')" prop="maskComplete">
+          <el-select clearable v-model="queryParams.maskComplete" @change="inputSearch"
+            :placeholder="$t('hierarchicalTask.search.executionStatusPlaceholder')">
             <el-option v-for="item in dict.type.sys_executing_state" :key="item.value" :label="item.label"
               :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="发布状态" prop="publishStatus">
-          <el-select clearable v-model="queryParams.publishStatus" @change="inputSearch" placeholder="请选择扫描状态">
+        <el-form-item :label="$t('hierarchicalTask.search.publishStatus')" prop="publishStatus">
+          <el-select clearable v-model="queryParams.publishStatus" @change="inputSearch"
+            :placeholder="$t('hierarchicalTask.search.publishStatusPlaceholder')">
             <el-option v-for="item in publishStatus" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -44,52 +50,60 @@
     </el-card>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">新增任务</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">{{
+          $t('hierarchicalTask.buttons.addTask') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">删除任务</el-button>
+        <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">{{
+          $t('hierarchicalTask.buttons.deleteTask') }}</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
       <el-col :span="1.5" style="float: inline-end;">
         <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click"
           style="margin-right: 10px;">
-          <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+          <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{
+            $t('selectAll') }}</el-checkbox>
           <el-checkbox-group v-model="checkedColumn" @change="handleCheckedCitiesChange" class="checkboxGroup"
             style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
             <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
               item.label }}</el-checkbox>
           </el-checkbox-group>
-          <el-button size="medium" slot="reference">列设置</el-button>
+          <el-button size="medium" slot="reference">{{ $t('columnSettings') }}</el-button>
         </el-popover>
-        <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="handleQuery">刷新</el-button>
+        <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="handleQuery">{{
+          $t('refresh') }}</el-button>
       </el-col>
     </el-row>
     <el-card class="table-card" shadow="never">
       <el-table v-loading="loading" height="570px" class="tableBox" :data="proxysList" :key="checkedColumn.length"
         @selection-change="handleSelectionChange" ref="tableRef">
         <template slot="empty">
-          <el-empty description="暂无数据"></el-empty>
+          <el-empty :description="$t('noData')"></el-empty>
         </template>
         <el-table-column type="selection" width="60" align="center" :selectable="selectableFn" />
-        
+
         <template v-for="item in filteredCheckedColumn">
-          <el-table-column v-if="item.prop === 'tasksName'" :key="item.prop" :label="item.label" width="140" align="left" :prop="item.prop" show-overflow-tooltip>
+          <el-table-column v-if="item.prop === 'tasksName'" :key="item.prop" :label="item.label" width="140"
+            align="left" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon icon-class="jobs"
                   style="font-size: 16px; margin-right: 5px;" />{{ scope.row.tasksName }}</span>
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'sourceName'" :key="item.prop" :label="item.label" width="140" align="left" :prop="item.prop" show-overflow-tooltip>
+          <el-table-column v-else-if="item.prop === 'sourceName'" :key="item.prop" :label="item.label" width="140"
+            align="left" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               {{ scope.row.sourceName }}
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'businessName'" :key="item.prop" :label="item.label" width="140" align="left" :prop="item.prop" show-overflow-tooltip>
+          <el-table-column v-else-if="item.prop === 'businessName'" :key="item.prop" :label="item.label" width="140"
+            align="left" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               {{ scope.row.businessName }}
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'projectName'" :key="item.prop" :label="item.label" width="240" align="left" :prop="item.prop" show-overflow-tooltip>
+          <el-table-column v-else-if="item.prop === 'projectName'" :key="item.prop" :label="item.label" width="240"
+            align="left" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               {{ scope.row.projectName }}
             </template>
@@ -99,17 +113,20 @@
             <span>{{ scope.row.aiAnalyticsEngine == 1 ? '快速响应' : '深度思考' }}</span>
           </template>
         </el-table-column> -->
-          <el-table-column v-else-if="item.prop === 'fieldCount'" :key="item.prop" :label="item.label" width="120" align="center" :prop="item.prop" show-overflow-tooltip>
+          <el-table-column v-else-if="item.prop === 'fieldCount'" :key="item.prop" :label="item.label" width="120"
+            align="center" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               {{ emptyHandler(scope.row.fieldCount) }}
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'fileCount'" :key="item.prop" :label="item.label" width="120" align="center" :prop="item.prop" show-overflow-tooltip>
+          <el-table-column v-else-if="item.prop === 'fileCount'" :key="item.prop" :label="item.label" width="120"
+            align="center" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               {{ emptyHandler(scope.row.fileCount) }}
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'maskComplete'" :key="item.prop" :label="item.label" align="center" width="120" :prop="item.prop">
+          <el-table-column v-else-if="item.prop === 'maskComplete'" :key="item.prop" :label="item.label" align="center"
+            width="120" :prop="item.prop">
             <template slot-scope="scope">
               <div class="runType">
                 <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'"
@@ -120,31 +137,39 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'publishStatus'" :key="item.prop" :label="item.label" align="center" :prop="item.prop">
+          <el-table-column v-else-if="item.prop === 'publishStatus'" :key="item.prop" :label="item.label" align="center"
+            :prop="item.prop">
             <template slot-scope="scope">
-              <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ? '未发布' :
-                '已发布' }}</el-tag>
+              <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ?
+                $t('hierarchicalTask.options.publishStatus.unpublished') :
+                $t('hierarchicalTask.options.publishStatus.published') }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'updateTime'" :key="item.prop" :label="item.label" align="center" :prop="item.prop" show-overflow-tooltip />
+          <el-table-column v-else-if="item.prop === 'updateTime'" :key="item.prop" :label="item.label" align="center"
+            :prop="item.prop" show-overflow-tooltip />
         </template>
-        
-        <el-table-column label="任务操作" align="center" width="200" class-name="small-padding fixed-width">
+
+        <el-table-column :label="$t('hierarchicalTask.columns.taskActions')" align="center" width="200"
+          class-name="small-padding fixed-width">
           <template slot-scope="scope">
             <div class="iconBtnBox">
-              <el-tooltip class="item" effect="dark" content="执行任务" placement="top-start">
+              <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.executeTask')"
+                placement="top-start">
                 <i class="el-icon-video-play" @click="scope.row.publishStatus != 1 && implementFn(scope.row)"
                   :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
-              <el-tooltip class="item" effect="dark" content="暂停任务" placement="top-start">
+              <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.pauseTask')"
+                placement="top-start">
                 <i class="el-icon-video-pause" @click="scope.row.publishStatus != 1 && suspendWorkFn(scope.row)"
                   :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
-              <el-tooltip class="item" effect="dark" content="终止任务" placement="top-start">
+              <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.terminateTask')"
+                placement="top-start">
                 <i class="el-icon-switch-button" @click="scope.row.publishStatus != 1 && terminationWorkFn(scope.row)"
                   :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
-              <el-tooltip class="item" effect="dark" content="任务监控" placement="top-start">
+              <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.taskMonitoring')"
+                placement="top-start">
                 <i class="el-icon-view" @click="scope.row.publishStatus != 1 && toJobMonitoring(scope.row)"
                   :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
@@ -152,13 +177,15 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="结果操作" align="center" width="230" class-name="small-padding fixed-width">
+        <el-table-column :label="$t('hierarchicalTask.columns.resultActions')" align="center" width="230"
+          class-name="small-padding fixed-width">
           <template slot-scope="scope">
-            <el-button size="mini" type="text" @click="resultLookFn(scope.row)">结果查看</el-button>
+            <el-button size="mini" type="text" @click="resultLookFn(scope.row)">{{
+              $t('hierarchicalTask.buttons.resultView') }}</el-button>
             <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
-              @click="resultReleaseFn(scope.row)">结果发布</el-button>
+              @click="resultReleaseFn(scope.row)">{{ $t('hierarchicalTask.buttons.resultPublish') }}</el-button>
             <el-button size="mini" type="text" :disabled="scope.row.publishStatus != 1"
-              @click="resultWithdraw(scope.row)">发布撤回</el-button>
+              @click="resultWithdraw(scope.row)">{{ $t('hierarchicalTask.buttons.publishWithdraw') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -169,15 +196,16 @@
     <Drawer :title="title" v-loading="formLoading" :visible.sync="open">
       <el-form slot="body" ref="form" :model="form" :rules="rules" label-width="auto" @submit.native.prevent
         label-position="top">
-        <Title title="基本信息" />
+        <Title :title="$t('hierarchicalTask.titles.basicInfo')" />
         <el-row>
           <el-col :span="12">
-            <el-form-item label="任务名称" prop="tasksName" :rules="rules.tasksName">
-              <el-input v-model="form.tasksName" maxlength="50" placeholder="请输入任务名称" />
+            <el-form-item :label="$t('hierarchicalTask.form.taskName')" prop="tasksName" :rules="rules.tasksName">
+              <el-input v-model="form.tasksName" maxlength="50"
+                :placeholder="$t('hierarchicalTask.form.taskNamePlaceholder')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="数据源名称" prop="id" :rules="rules.id">
+            <el-form-item :label="$t('hierarchicalTask.form.dataSourceName')" prop="id" :rules="rules.id">
               <el-select v-model="form.id" clearable @change="projectChangeEdit($event)">
                 <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.sourceName" :value="item.id">
                 </el-option>
@@ -187,9 +215,10 @@
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="分类分级框架" prop="projectId" :rules="rules.projectId">
+            <el-form-item :label="$t('hierarchicalTask.form.framework')" prop="projectId" :rules="rules.projectId">
               <!-- <el-input v-model="form.projectName" :disabled="true" /> -->
-              <el-select clearable v-model="form.projectId" filterable placeholder="请选择分类分级框架">
+              <el-select clearable v-model="form.projectId" filterable
+                :placeholder="$t('hierarchicalTask.search.frameworkPlaceholder')">
                 <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
                 </el-option>
               </el-select>
@@ -317,13 +346,13 @@
         </div> -->
 
         <!-- 启用功能 -->
-        <Title title="启用功能" />
+        <Title :title="$t('hierarchicalTask.titles.enableFeatures')" />
         <div class="feature-container">
           <div class="feature-grid" v-if="isFileSource">
             <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
               <div class="feature-content">
-                <div class="feature-title">AI分类打标</div>
-                <div class="feature-desc">结合字段上下文对数据进行智能打标</div>
+                <div class="feature-title">{{ $t('hierarchicalTask.features.aiTag') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.aiTagDesc') }}</div>
                 <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
               </div>
             </div>
@@ -332,8 +361,8 @@
             <div class="feature-item" :class="{ highlight: form.ifStartAiFill }"
               @click="toggleFeature('ifStartAiFill')">
               <div class="feature-content">
-                <div class="feature-title">语义填充</div>
-                <div class="feature-desc">结合字段/表上下文信息填充业务语义</div>
+                <div class="feature-title">{{ $t('hierarchicalTask.features.semanticFill') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.semanticFillDesc') }}</div>
                 <el-checkbox v-model="form.ifStartAiFill" class="checkbox-right round-checkbox"
                   @click.stop></el-checkbox>
               </div>
@@ -341,8 +370,8 @@
             <div class="feature-item" :class="{ highlight: form.ifStartDirtyDataFilter }"
               @click="toggleFeature('ifStartDirtyDataFilter')">
               <div class="feature-content">
-                <div class="feature-title">噪音数据过滤</div>
-                <div class="feature-desc">识别并过滤无效干扰数据，保障数据分类质量</div>
+                <div class="feature-title">{{ $t('hierarchicalTask.features.dirtyFilter') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.dirtyFilterDesc') }}</div>
                 <el-checkbox v-model="form.ifStartDirtyDataFilter" class="checkbox-right round-checkbox"
                   @click.stop></el-checkbox>
               </div>
@@ -350,8 +379,8 @@
             <div class="feature-item" :class="{ highlight: form.ifStartRuleMatching }"
               @click="toggleFeature('ifStartRuleMatching')">
               <div class="feature-content">
-                <div class="feature-title">匹配规则引擎</div>
-                <div class="feature-desc">通过关键字和正则对数据进行精准匹配</div>
+                <div class="feature-title">{{ $t('hierarchicalTask.features.ruleMatch') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.ruleMatchDesc') }}</div>
                 <el-checkbox v-model="form.ifStartRuleMatching" class="checkbox-right round-checkbox"
                   @click.stop></el-checkbox>
               </div>
@@ -359,16 +388,16 @@
             <div class="feature-item" :class="{ highlight: form.piiDetectionFlag }"
               @click="toggleFeature('piiDetectionFlag')">
               <div class="feature-content">
-                <div class="feature-title">个保法合规审查</div>
-                <div class="feature-desc">智能识别姓名、身份证号等个人敏感信息</div>
+                <div class="feature-title">{{ $t('hierarchicalTask.features.piiReview') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.piiReviewDesc') }}</div>
                 <el-checkbox v-model="form.piiDetectionFlag" class="checkbox-right round-checkbox"
                   @click.stop></el-checkbox>
               </div>
             </div>
             <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
               <div class="feature-content">
-                <div class="feature-title">AI分类打标</div>
-                <div class="feature-desc">结合字段上下文对数据进行智能打标</div>
+                <div class="feature-title">{{ $t('hierarchicalTask.features.aiTag') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.aiTagDesc') }}</div>
                 <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
               </div>
             </div>
@@ -384,8 +413,8 @@
             <div class="feature-item" :class="{ highlight: form.ifStartFeatureExtract }"
               @click="toggleFeature('ifStartFeatureExtract')">
               <div class="feature-content">
-                <div class="feature-title">样本特征提取</div>
-                <div class="feature-desc">从数据样本中提取关键特征</div>
+                <div class="feature-title">{{ $t('hierarchicalTask.features.featureExtract') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.featureExtractDesc') }}</div>
                 <el-checkbox v-model="form.ifStartFeatureExtract" class="checkbox-right round-checkbox"
                   @click.stop></el-checkbox>
               </div>
@@ -393,9 +422,9 @@
           </div>
         </div>
 
-        <Title title="执行范围与周期">
+        <Title :title="$t('hierarchicalTask.titles.executeScopeAndCycle')">
           <el-button type="text" @click="searchExpand = !searchExpand" style="float:inline-end">
-            {{ searchExpand ? '收起' : '展开' }}
+            {{ searchExpand ? $t('collapse') : $t('expand') }}
             <i :class="searchExpand ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
           </el-button>
         </Title>
@@ -404,28 +433,30 @@
           <div v-show="searchExpand">
             <el-row>
               <el-col :span="24">
-                <el-form-item label="语义填充状态">
-                  <el-select v-model="form.paddingStatus" multiple clearable placeholder="请选择内容"
-                    :disabled="isFileSource">
-                    <el-option label="未开始" value="1" />
-                    <el-option label="成功" value="2" />
-                    <el-option label="失败" value="3" />
+                <el-form-item :label="$t('hierarchicalTask.form.semanticFillStatus')">
+                  <el-select v-model="form.paddingStatus" multiple clearable
+                    :placeholder="$t('hierarchicalTask.form.contentPlaceholder')" :disabled="isFileSource">
+                    <el-option :label="$t('hierarchicalTask.options.paddingStatus.notStarted')" value="1" />
+                    <el-option :label="$t('hierarchicalTask.options.paddingStatus.success')" value="2" />
+                    <el-option :label="$t('hierarchicalTask.options.paddingStatus.failed')" value="3" />
                   </el-select>
                 </el-form-item>
               </el-col>
             </el-row>
             <el-row>
               <el-col :span="12">
-                <el-form-item label="分类状态">
-                  <el-select v-model="form.classificationState" multiple clearable placeholder="请选择内容">
+                <el-form-item :label="$t('hierarchicalTask.form.classificationStatus')">
+                  <el-select v-model="form.classificationState" multiple clearable
+                    :placeholder="$t('hierarchicalTask.form.contentPlaceholder')">
                     <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
                       :value="item.value" />
                   </el-select>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="归类原因">
-                  <el-select v-model="form.classificationReasons" multiple clearable placeholder="请选择内容">
+                <el-form-item :label="$t('hierarchicalTask.form.classificationReason')">
+                  <el-select v-model="form.classificationReasons" multiple clearable
+                    :placeholder="$t('hierarchicalTask.form.contentPlaceholder')">
                     <template v-if="isFileSource">
                       <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value"
                         :label="item.label" :value="item.value" />
@@ -440,7 +471,8 @@
             </el-row>
             <el-row>
               <el-col :span="12">
-                <el-form-item label="置信度" prop="confidenceLevel" :rules="rules.confidenceLevel">
+                <el-form-item :label="$t('hierarchicalTask.form.confidenceLevel')" prop="confidenceLevel"
+                  :rules="rules.confidenceLevel">
                   <el-select v-model="form.confidenceLevel">
                     <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name"
                       :value="item.value">
@@ -449,8 +481,8 @@
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="确认状态" prop="confirm" :rules="rules.confirm">
-                  <el-select v-model="form.confirm" placeholder="全部" clearable>
+                <el-form-item :label="$t('hierarchicalTask.form.confirmStatus')" prop="confirm" :rules="rules.confirm">
+                  <el-select v-model="form.confirm" :placeholder="$t('all')" clearable>
                     <el-option v-for="item in confirmList" :key="item.value" :label="item.name" :value="item.value">
                     </el-option>
                   </el-select>
@@ -459,7 +491,8 @@
             </el-row>
             <el-row>
               <el-col :span="24">
-                <el-form-item label="执行周期" prop="executeCycle" :rules="rules.executeCycle">
+                <el-form-item :label="$t('hierarchicalTask.form.executeCycle')" prop="executeCycle"
+                  :rules="rules.executeCycle">
                   <el-select v-model="form.scheduleType" @change="scheduleTypeChange">
                     <el-option v-for="item in weekTimeList" :key="item.value" :label="item.label" :value="item.value">
                     </el-option>
@@ -470,7 +503,8 @@
                     </el-option>
                   </el-select>
                   <el-time-picker v-show="form.scheduleType != '0' && form.scheduleType != ''"
-                    v-model="form.scheduleTime" value-format='HH:mm' format="HH:mm" placeholder="任意时间点">
+                    v-model="form.scheduleTime" value-format='HH:mm' format="HH:mm"
+                    :placeholder="$t('hierarchicalTask.form.anyTime')">
                   </el-time-picker>
                 </el-form-item>
               </el-col>
@@ -499,8 +533,8 @@
 
       </el-form>
       <div slot="footer" class="dialog-footer" style="display: flex;justify-content: flex-end;">
-        <el-button type="primary" plain @click="submitForm">确 定</el-button>
-        <el-button @click="closeFn">取消</el-button>
+        <el-button type="primary" plain @click="submitForm">{{ $t('hierarchicalTask.buttons.save') }}</el-button>
+        <el-button @click="closeFn">{{ $t('cancel') }}</el-button>
       </div>
     </Drawer>
     <!-- <Drawer title="结果查看" class="dialogClass" :visible.sync="drawerShow" :destroy-on-close="true" direction="rtl"
@@ -545,22 +579,22 @@ export default {
       searchExpand: false,
       // aiAnalyticsEngine: '1',
       confidenceLevelList: [
-        { name: "全部", value: "0" },
-        { name: "低", value: "1" },
-        { name: "高", value: "2" },
+        { name: this.$t('hierarchicalTask.options.confidence.all'), value: "0" },
+        { name: this.$t('hierarchicalTask.options.confidence.low'), value: "1" },
+        { name: this.$t('hierarchicalTask.options.confidence.high'), value: "2" },
       ],
       confirmList: [
-        { name: "全部", value: "-1" },
-        { name: "未确认", value: "0" },
-        { name: "已确认", value: "1" },
+        { name: this.$t('hierarchicalTask.options.confirm.all'), value: "-1" },
+        { name: this.$t('hierarchicalTask.options.confirm.unconfirmed'), value: "0" },
+        { name: this.$t('hierarchicalTask.options.confirm.confirmed'), value: "1" },
       ],
       dataYTpeList: [
         {
           value: 'DATABASE',
-          label: '数据库'
+          label: this.$t('hierarchicalTask.options.dataSourceType.database')
         }, {
           value: 'FILE',
-          label: 'Excel表'
+          label: this.$t('hierarchicalTask.options.dataSourceType.file')
         }
       ],
       databaseTypeList: [],
@@ -569,61 +603,61 @@ export default {
       isIndeterminate: false,
       setList: [
         {
-          label: '任务名称',
+          label: this.$t('hierarchicalTask.columns.taskName'),
           prop: 'tasksName'
         },
         {
-          label: '数据源',
+          label: this.$t('hierarchicalTask.columns.dataSource'),
           prop: 'sourceName'
         },
         {
-          label: '来源业务系统',
+          label: this.$t('hierarchicalTask.columns.sourceBusinessSystem'),
           prop: 'businessName'
         },
         {
-          label: '分类分级标准',
+          label: this.$t('hierarchicalTask.columns.framework'),
           prop: 'projectName'
         },
         {
-          label: '任务字段数',
+          label: this.$t('hierarchicalTask.columns.taskFieldCount'),
           prop: 'fieldCount'
         },
         {
-          label: '任务文件数',
+          label: this.$t('hierarchicalTask.columns.taskFileCount'),
           prop: 'fileCount'
         },
         {
-          label: '执行状态',
+          label: this.$t('hierarchicalTask.columns.executionStatus'),
           prop: 'maskComplete'
         },
         {
-          label: '发布状态',
+          label: this.$t('hierarchicalTask.columns.publishStatus'),
           prop: 'publishStatus'
         },
         {
-          label: '更新时间',
+          label: this.$t('hierarchicalTask.columns.updateTime'),
           prop: 'updateTime'
         }
       ],
       publishStatus: [
         {
           value: 0,
-          label: '未发布'
+          label: this.$t('hierarchicalTask.options.publishStatus.unpublished')
         }, {
           value: 1,
-          label: '已发布'
+          label: this.$t('hierarchicalTask.options.publishStatus.published')
         },
       ],
       executeStatus: [
-        { value: 'NONE', label: '未开始' },       // 字典键值NONE → 标签未开始
-        { value: 'STAYEXECUTE', label: '待执行' },       // 字典键值NONE → 标签未开始
-        { value: 'RUNNING', label: '执行中' },    // 字典键值RUNNING → 标签执行中
-        { value: 'COMPLETE', label: '执行完成' }, // 字典键值COMPLETE → 标签执行完成
-        { value: 'ERR', label: '执行失败' },      // 字典键值ERR → 标签执行失败
-        { value: 'PAUSEDING', label: '正在暂停中' },// 字典键值PAUSING → 标签正在暂停中
-        { value: 'PAUSED', label: '暂停成功' },   // 字典键值PAUSED → 标签暂停成功
-        { value: 'KILLEDING', label: '正在终止中' },// 字典键值KILLING → 标签正在终止中
-        { value: 'KILLED', label: '终止成功' }    // 字典键值KILLED → 标签终止成功
+        { value: 'NONE', label: this.$t('hierarchicalTask.options.executeStatus.none') },
+        { value: 'STAYEXECUTE', label: this.$t('hierarchicalTask.options.executeStatus.stayExecute') },
+        { value: 'RUNNING', label: this.$t('hierarchicalTask.options.executeStatus.running') },
+        { value: 'COMPLETE', label: this.$t('hierarchicalTask.options.executeStatus.complete') },
+        { value: 'ERR', label: this.$t('hierarchicalTask.options.executeStatus.error') },
+        { value: 'PAUSEDING', label: this.$t('hierarchicalTask.options.executeStatus.pausing') },
+        { value: 'PAUSED', label: this.$t('hierarchicalTask.options.executeStatus.paused') },
+        { value: 'KILLEDING', label: this.$t('hierarchicalTask.options.executeStatus.killing') },
+        { value: 'KILLED', label: this.$t('hierarchicalTask.options.executeStatus.killed') }
       ],
       // 遮罩层
       loading: true,
@@ -659,19 +693,27 @@ export default {
       weekTimeList: [
         {
           value: '0',
-          label: '手动'
+          label: this.$t('hierarchicalTask.options.scheduleType.manual')
         }, {
           value: '1',
-          label: '每天'
+          label: this.$t('hierarchicalTask.options.scheduleType.daily')
         }, {
           value: '2',
-          label: '每周'
+          label: this.$t('hierarchicalTask.options.scheduleType.weekly')
         }, {
           value: '3',
-          label: '每月'
+          label: this.$t('hierarchicalTask.options.scheduleType.monthly')
         }
       ],
-      weekList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日',],
+      weekList: [
+        this.$t('hierarchicalTask.options.weekDays.monday'),
+        this.$t('hierarchicalTask.options.weekDays.tuesday'),
+        this.$t('hierarchicalTask.options.weekDays.wednesday'),
+        this.$t('hierarchicalTask.options.weekDays.thursday'),
+        this.$t('hierarchicalTask.options.weekDays.friday'),
+        this.$t('hierarchicalTask.options.weekDays.saturday'),
+        this.$t('hierarchicalTask.options.weekDays.sunday'),
+      ],
       // 表单参数
       form: {
         confidenceLevel: '',
@@ -707,16 +749,16 @@ export default {
       // 表单校验
       rules: {
         tasksName: [
-          { required: true, message: "任务名称不能为空", trigger: "blur" },
+          { required: true, message: this.$t('hierarchicalTask.validation.taskNameRequired'), trigger: "blur" },
         ],
         id: [
-          { required: true, message: "数据源名称不能为空", trigger: "blur" },
+          { required: true, message: this.$t('hierarchicalTask.validation.dataSourceRequired'), trigger: "blur" },
         ],
         projectId: [
-          { required: true, message: "分类分级框架不能为空", trigger: "blur" },
+          { required: true, message: this.$t('hierarchicalTask.validation.frameworkRequired'), trigger: "blur" },
         ],
         classificationLogic: [{
-          required: true, message: "分类逻辑不能为空", trigger: "blur"
+          required: true, message: this.$t('hierarchicalTask.validation.classificationLogicRequired'), trigger: "blur"
         }],
         // classificationState: [{
         //   validator: (rule, value, callback) => {
@@ -731,10 +773,10 @@ export default {
         //   trigger: ['blur', 'change']
         // }],
         confidenceLevel: [{
-          required: true, message: "置信度不能为空", trigger: "blur"
+          required: true, message: this.$t('hierarchicalTask.validation.confidenceRequired'), trigger: "blur"
         }],
         confirm: [{
-          required: true, message: "确认状态不能为空", trigger: "blur"
+          required: true, message: this.$t('hierarchicalTask.validation.confirmRequired'), trigger: "blur"
         }],
         dataRepetitionValue: [
           {
@@ -743,12 +785,12 @@ export default {
               if (this.form.ifStartDataRepetition) {
                 // 验证是否为空
                 if (!value) {
-                  return callback(new Error('请输入样本重复率阈值'));
+                  return callback(new Error(this.$t('hierarchicalTask.validation.repetitionThresholdRequired')));
                 }
                 // 验证数值是否在1-100之间
                 const num = parseInt(value);
                 if (num < 1 || num > 100) {
-                  return callback(new Error('请输入1-100之间的数值'));
+                  return callback(new Error(this.$t('hierarchicalTask.validation.repetitionThresholdRange')));
                 }
               }
               callback();
@@ -775,7 +817,7 @@ export default {
   },
 
   created() {
-    this.checkedColumn = this.setList.filter(item => 
+    this.checkedColumn = this.setList.filter(item =>
       ['tasksName', 'sourceName', 'projectName', 'maskComplete', 'publishStatus'].includes(item.prop)
     );
     this.checkAll = false;
@@ -844,8 +886,16 @@ export default {
         // 将天数转换为数组
         this.weekList = this.createDaysArray(daysInMonth);
       } else if (val == '2') {
-        this.form.scheduleInterval = '周一'
-        this.weekList = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        this.form.scheduleInterval = this.$t('hierarchicalTask.options.weekDays.monday')
+        this.weekList = [
+          this.$t('hierarchicalTask.options.weekDays.monday'),
+          this.$t('hierarchicalTask.options.weekDays.tuesday'),
+          this.$t('hierarchicalTask.options.weekDays.wednesday'),
+          this.$t('hierarchicalTask.options.weekDays.thursday'),
+          this.$t('hierarchicalTask.options.weekDays.friday'),
+          this.$t('hierarchicalTask.options.weekDays.saturday'),
+          this.$t('hierarchicalTask.options.weekDays.sunday')
+        ]
       } else {
         this.form.scheduleInterval = ''
       }
@@ -894,9 +944,9 @@ export default {
     },
     // 发布撤回
     resultWithdraw(row) {
-      this.$confirm(`确定撤回已发布的结果？`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('hierarchicalTask.messages.withdrawReleaseConfirm'), this.$t('tip'), {
+        confirmButtonText: this.$t('confirm'),
+        cancelButtonText: this.$t('cancel'),
         type: 'warning'
       }).then(() => {
         withdrawReleaseState({ proxyId: row.id }).then(res => {
@@ -952,15 +1002,15 @@ export default {
       // 核心：拦截「正在进行中」的状态（执行中/正在暂停/正在终止），禁止执行操作
       const processingStates = ['RUNNING', 'PAUSING', 'KILLING', 'STAYEXECUTE'];
       if (processingStates.includes(row.maskComplete)) {
-        this.$message.warning(`当前任务${this.stateMsg(row.maskComplete)}，请等待操作完成后再执行`);
+        this.$message.warning(this.$t('hierarchicalTask.messages.currentTaskWait', { status: this.stateMsg(row.maskComplete) }));
         return;
       }
 
       // 暂停成功（PAUSED）：执行 = 恢复任务
       if (row.maskComplete === 'PAUSED') {
-        this.$confirm(`当前任务已暂停，确定继续执行？`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('hierarchicalTask.messages.continueExecutionConfirm'), this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           recoveryTask({ proxyId: row.id }).then(res => {
@@ -975,9 +1025,9 @@ export default {
 
       // 终止成功（KILLED）：执行 = 重新执行
       if (row.maskComplete === 'KILLED') {
-        this.$confirm(`当前任务已终止，确定重新执行？`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('hierarchicalTask.messages.restartExecutionConfirm'), this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           dataMark(row.id).then(res => {
@@ -992,9 +1042,9 @@ export default {
 
       // 非初始状态（如执行完成/失败）：执行 = 覆盖历史结果
       if (row.maskComplete !== 'NONE') {
-        this.$confirm(`重新执行任务前，⚠️ 请注意任务细节，否则可能将会覆盖该数据源上一次执行的所有结果`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('hierarchicalTask.messages.rerunWarningConfirm'), this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           dataMark(row.id).then(res => {
@@ -1008,9 +1058,9 @@ export default {
       }
 
       // 初始状态（NONE）：直接执行
-      this.$confirm(`确定执行所选中的项吗`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('hierarchicalTask.messages.executeConfirm'), this.$t('tip'), {
+        confirmButtonText: this.$t('confirm'),
+        cancelButtonText: this.$t('cancel'),
         type: 'warning'
       }).then(() => {
         dataMark(row.id).then(res => {
@@ -1079,7 +1129,7 @@ export default {
       this.reset();
       this.getScanCompleteDataFn()
       this.open = true;
-      this.title = "添加任务";
+      this.title = this.$t('hierarchicalTask.titles.addTask');
       this.editIsFlag = false
     },
     /** 修改按钮操作 */
@@ -1132,7 +1182,7 @@ export default {
       }
       this.open = true;
       this.editIsFlag = true;
-      this.title = "编辑任务";
+      this.title = this.$t('hierarchicalTask.titles.editTask');
     },
     /** 提交按钮 */
     submitForm() {
@@ -1168,14 +1218,14 @@ export default {
             if (this.isFileSource) {
               editScanCompleteDataByFile(params).then(response => {
                 this.formLoading = false
-                this.$modal.msgSuccess("修改成功");
+                this.$modal.msgSuccess(this.$t('hierarchicalTask.messages.editSuccess'));
                 this.open = false;
                 this.getList();
               })
             } else {
               editScanCompleteDataTasks(params).then(response => {
                 this.formLoading = false
-                this.$modal.msgSuccess("修改成功");
+                this.$modal.msgSuccess(this.$t('hierarchicalTask.messages.editSuccess'));
                 this.open = false;
                 this.getList();
               })
@@ -1184,7 +1234,7 @@ export default {
             if (this.isFileSource) {
               addScanCompleteDataTasksByFile(params).then(response => {
                 this.formLoading = false
-                this.$modal.msgSuccess("新增成功");
+                this.$modal.msgSuccess(this.$t('hierarchicalTask.messages.addSuccess'));
                 this.open = false;
                 this.getList();
               })
@@ -1194,7 +1244,7 @@ export default {
               // data.piiDetectionFlag = this.form.piiDetectionFlag + ''
               addScanCompleteDataTasks(params).then(response => {
                 this.formLoading = false
-                this.$modal.msgSuccess("新增成功");
+                this.$modal.msgSuccess(this.$t('hierarchicalTask.messages.addSuccess'));
                 this.open = false;
                 this.getList();
               });
@@ -1211,7 +1261,7 @@ export default {
       }
       deleteScanCompleteDataTasks(params).then(() => {
         this.getList();
-        this.$modal.msgSuccess("删除成功");
+        this.$modal.msgSuccess(this.$t('hierarchicalTask.messages.deleteSuccess'));
       }).catch(() => { })
     },
     deleteFn() {
@@ -1226,15 +1276,15 @@ export default {
           .map(item => this.stateMsg(item) || item))]
         if (invalidStatusList.length > 0) {
           this.$message({
-            message: `仅未开始、执行完成、执行失败、终止成功状态的任务可以删除，当前选中包含：${invalidStatusList.join('、')}`,
+            message: this.$t('hierarchicalTask.messages.deleteStatusRestriction', { statuses: invalidStatusList.join('、') }),
             type: 'warning'
           })
           return
         }
         if (flagList.some(item => ['COMPLETE', 'ERR', 'KILLED'].includes(item))) {
-          this.$confirm(`删除任务，将会删除数据源所关联的所有执行结果,确定删除吗`, '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+          this.$confirm(this.$t('hierarchicalTask.messages.deleteTaskWithResultsConfirm'), this.$t('tip'), {
+            confirmButtonText: this.$t('confirm'),
+            cancelButtonText: this.$t('cancel'),
             type: 'warning'
           }).then(() => {
             let ids = dataS.map(item => {
@@ -1250,9 +1300,9 @@ export default {
           })
           return
         }
-        this.$confirm(`确定删除所选中的项吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('hierarchicalTask.messages.deleteSelectedConfirm'), this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {
@@ -1267,7 +1317,7 @@ export default {
           })
         })
       } else {
-        this.$message({ message: '至少选择一条数据', type: 'warning' })
+        this.$message({ message: this.$t('hierarchicalTask.messages.selectAtLeastOne'), type: 'warning' })
       }
     },
     resultLookFn(row) {
@@ -1291,7 +1341,7 @@ export default {
     },
     resultReleaseFn(row) {
       if (row.state == 'RUNNING') {
-        this.$message({ message: '当前状态为运行中，无法发布', type: 'warning' })
+        this.$message({ message: this.$t('hierarchicalTask.messages.cannotPublishWhenRunning'), type: 'warning' })
         return
       }
       this.loading = true
@@ -1320,17 +1370,17 @@ export default {
     suspendWorkFn(row) {
       const processingStates = ['RUNNING', 'KILLING'];
       if (!processingStates.includes(row.maskComplete)) {
-        this.$message.warning(`当前任务${this.stateMsg(row.maskComplete)}，请等待操作完成后再执行`);
+        this.$message.warning(this.$t('hierarchicalTask.messages.currentTaskWait', { status: this.stateMsg(row.maskComplete) }));
         return;
       }
 
       if (row.maskComplete !== 'RUNNING') {
-        this.$message({ message: `当前状态为${this.stateMsg(row.maskComplete)}，无法执行暂停操作`, type: 'warning' })
+        this.$message({ message: this.$t('hierarchicalTask.messages.cannotPauseInStatus', { status: this.stateMsg(row.maskComplete) }), type: 'warning' })
         return
       } else {
-        this.$confirm(`确定暂停任务吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('hierarchicalTask.messages.pauseTaskConfirm'), this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           pauseTask({ proxyId: row.id }).then(res => {
@@ -1349,14 +1399,14 @@ export default {
     terminationWorkFn(row) {
       const processingStates = ['RUNNING', 'PAUSING'];
       if (!processingStates.includes(row.maskComplete)) {
-        this.$message.warning(`当前任务${this.stateMsg(row.maskComplete)}，请等待操作完成后再执行`);
+        this.$message.warning(this.$t('hierarchicalTask.messages.currentTaskWait', { status: this.stateMsg(row.maskComplete) }));
         return;
       }
 
       if (row.maskComplete === 'PAUSED' || row.maskComplete === 'RUNNING') {
-        this.$confirm(`确定终止任务吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('hierarchicalTask.messages.terminateTaskConfirm'), this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           terminateTask({ proxyId: row.id }).then(res => {
@@ -1367,7 +1417,7 @@ export default {
           })
         })
       } else {
-        this.$message({ message: `当前状态为${this.stateMsg(row.maskComplete)}，无法执行终止操作`, type: 'warning' })
+        this.$message({ message: this.$t('hierarchicalTask.messages.cannotTerminateInStatus', { status: this.stateMsg(row.maskComplete) }), type: 'warning' })
         return
       }
     },
@@ -1375,7 +1425,7 @@ export default {
     // 跳转任务监控
     toJobMonitoring(row) {
       if (row.maskComplete == 'NONE') {
-        this.$message({ message: `当前状态为${this.stateMsg(row.maskComplete)}，无法查看任务监控`, type: 'warning' })
+        this.$message({ message: this.$t('hierarchicalTask.messages.cannotViewMonitoringInStatus', { status: this.stateMsg(row.maskComplete) }), type: 'warning' })
         return
       }
       row.stateName = this.stateMsg(row.maskComplete)
@@ -1553,16 +1603,8 @@ export default {
   width: 100%;
 }
 
-.yuanDataClass {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
 .yuanDataClass /deep/ .el-form-item {
   width: 30%;
-  margin-bottom: 18px;
 }
 
 .yuanDataClass /deep/ .el-form-item:nth-child(3n) {
@@ -1575,6 +1617,7 @@ export default {
 
 .yuanDataClass /deep/ .el-form-item__label {
   width: 25%;
+  white-space: nowrap;
 }
 
 .yuanDataClass /deep/ .el-form-item__content {
