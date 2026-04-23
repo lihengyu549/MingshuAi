@@ -52,7 +52,7 @@
                 <el-form-item label="敏感数据定义">
                     <div style="display:flex;align-items:center;gap:10px;">
                         <span>安全分级大于等于</span>
-                        <el-input-number v-model="addForm.threshold" :min="0" :max="5" :step="1" :disabled="addForm.schemeType === '0'" />
+                        <el-input-number v-model="addForm.threshold" :min="0" :max="5" :step="1" />
                         <span>的数据定义为敏感数据</span>
                     </div>
                 </el-form-item>
@@ -61,7 +61,7 @@
                         <el-table-column label="分级数字" prop="level" width="100" align="center" />
                         <el-table-column label="分级名称" align="center" width="150">
                             <template slot-scope="scope">
-                                <el-input v-model="scope.row.name" :disabled="addForm.schemeType === '0'" />
+                                <el-input v-model="scope.row.name" />
                             </template>
                         </el-table-column>
                         <el-table-column label="分级定义" align="center">
@@ -85,8 +85,8 @@
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="addVisible = false" :disabled="addForm.schemeType === '0'">取消</el-button>
-                <el-button type="primary" @click="submitAdd" :disabled="addForm.schemeType === '0'">保存</el-button>
+                <el-button @click="addVisible = false">取消</el-button>
+                <el-button type="primary" @click="submitAdd">保存</el-button>
             </div>
         </el-dialog>
     </div>
