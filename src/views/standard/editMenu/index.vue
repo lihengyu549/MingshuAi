@@ -1,10 +1,10 @@
 <template>
     <div class="app-container" v-loading="loading">
-        <div class="page-title">分类管理</div>
+        <div class="page-title">{{ $t('editMenu.title') }}</div>
         <!-- 新增搜索和展开控件区域 -->
         <div class="tree-controls">
-            <el-input v-model="searchKeyword" :placeholder="$t('editMenu.searchNodeName')" clearable size="small" class="search-input"
-                @input="handleSearch"></el-input>
+            <el-input v-model="searchKeyword" :placeholder="$t('editMenu.searchNodeName')" clearable size="small"
+                class="search-input" @input="handleSearch"></el-input>
             <el-button type="primary" plain size="small" @click="toggleExpandAll">
                 {{ isAllExpanded ? $t('editMenu.collapseAll') : $t('editMenu.expandAll') }}
             </el-button>
@@ -43,24 +43,24 @@
             </el-tree>
         </div>
         <div class="page-actions">
-            <el-button type="primary" plain @click="goBack">{{ $t('editMenu.back') }}</el-button>
+            <el-button type="primary" plain @click="goBack">{{ $t('return') }}</el-button>
         </div>
 
         <!-- 新增/编辑分类Dialog -->
-        <el-dialog class="edit-menu-dialog" :title="$t('editMenu.editCategory')" :visible.sync="dialogVisible" width="500px"
+        <el-dialog class="edit-menu-dialog" :title="dialogTitle" :visible.sync="dialogVisible" width="500px"
             :before-close="handleDialogClose" :close-on-click-modal="false">
             <el-form ref="categoryForm" :model="formData" :rules="formRules" label-width="100px" class="category-form"
                 label-position="top">
                 <!-- 名称输入框 -->
                 <el-form-item :label="$t('editMenu.categoryName')" prop="name">
-                    <el-input v-model="formData.name" :placeholder="$t('editMenu.categoryName')" maxlength="15" show-word-limit
-                        size="small"></el-input>
+                    <el-input v-model="formData.name" :placeholder="$t('editMenu.categoryName')" maxlength="15"
+                        show-word-limit size="small"></el-input>
                 </el-form-item>
 
                 <!-- 描述输入框 -->
                 <el-form-item :label="$t('editMenu.categoryDescribe')" prop="categoryDescribe">
-                    <el-input v-model="formData.categoryDescribe" :placeholder="$t('editMenu.categoryDescribe')" maxlength="255"
-                        show-word-limit type="textarea" rows="3" size="small"></el-input>
+                    <el-input v-model="formData.categoryDescribe" :placeholder="$t('editMenu.categoryDescribe')"
+                        maxlength="255" show-word-limit type="textarea" rows="3" size="small"></el-input>
                 </el-form-item>
 
                 <!-- 特征标签组件 -->
@@ -157,6 +157,11 @@ import { addCategory, updateCategory, deleteCategory } from "@/api/standard";
 import { treeListI } from "@/api/system/protectCategory";
 export default {
     name: "EditMenu",
+    computed: {
+        dialogTitle() {
+            return this.formType === 'add' ? this.$t('editMenu.addCategory') : this.$t('editMenu.editCategory')
+        }
+    },
     data() {
         return {
             loading: false,
@@ -201,17 +206,17 @@ export default {
             // 表单校验规则
             formRules: {
                 name: [
-                    { required: true, message: '请输入分类名称', trigger: 'blur' },
-                    { max: 15, message: '名称长度不能超过15个字符', trigger: 'blur' }
+                    { required: true, message: this.$t('inputRequired', { field: this.$t('editMenu.categoryName') }), trigger: 'blur' },
+                    { max: 15, message: this.$t('editMenu.nameLengthRange', { max: 15 }), trigger: 'blur' }
                 ],
                 categoryDescribe: [
-                    { max: 255, message: '描述长度不能超过255个字符', trigger: 'blur' }
+                    { max: 255, message: this.$t('editMenu.descriptionMaxLength', { max: 255 }), trigger: 'blur' }
                 ],
                 coreTags: [
                     {
                         validator: (rule, value, callback) => {
                             if (value.length > 40) {
-                                callback(new Error('特征标签数量不能超过40个'));
+                                callback(new Error(this.$t('editMenu.tagCountExceeded', { field: this.$t('editMenu.featureTags'), max: 40 })));
                             } else {
                                 callback();
                             }
@@ -223,7 +228,7 @@ export default {
                     {
                         validator: (rule, value, callback) => {
                             if (value.length > 40) {
-                                callback(new Error('核心主题词数量不能超过40个'));
+                                callback(new Error(this.$t('editMenu.tagCountExceeded', { field: this.$t('editMenu.coreTopic'), max: 40 })));
                             } else {
                                 callback();
                             }
@@ -235,7 +240,7 @@ export default {
                     {
                         validator: (rule, value, callback) => {
                             if (value.length > 40) {
-                                callback(new Error('入口词数量不能超过40个'));
+                                callback(new Error(this.$t('editMenu.tagCountExceeded', { field: this.$t('editMenu.entryTerm'), max: 40 })));
                             } else {
                                 callback();
                             }
@@ -247,7 +252,7 @@ export default {
                     {
                         validator: (rule, value, callback) => {
                             if (value.length > 40) {
-                                callback(new Error('关联词数量不能超过40个'));
+                                callback(new Error(this.$t('editMenu.tagCountExceeded', { field: this.$t('editMenu.relatedTerms'), max: 40 })));
                             } else {
                                 callback();
                             }
@@ -259,7 +264,7 @@ export default {
                     {
                         validator: (rule, value, callback) => {
                             if (value.length > 40) {
-                                callback(new Error('反向参照数量不能超过40个'));
+                                callback(new Error(this.$t('editMenu.tagCountExceeded', { field: this.$t('editMenu.reverseRef'), max: 40 })));
                             } else {
                                 callback();
                             }
@@ -275,7 +280,7 @@ export default {
             this.currentNodeId = this.$route.query.id * 1;
             this.getTreeData(this.currentNodeId);
         } else {
-            this.$message.error("未找到菜单数据");
+            this.$message.error(this.$t('editMenu.menuDataNotFound'));
             this.goBack();
         }
     },
@@ -378,7 +383,7 @@ export default {
                 if (!this.isShowingWarning) {
                     this.$message({
                         type: 'warning',
-                        message: '当前节点未展开，请展开后再添加子节点',
+                        message: this.$t('editMenu.nodeNotExpandedWarning'),
                     });
                     this.isShowingWarning = true;
                     setTimeout(() => {
@@ -517,17 +522,17 @@ export default {
         handleInputConfirm(field) {
             const inputValue = this.formData[`${field}InputValue`].trim();
             const fieldLabels = {
-                coreTags: '特征标签',
-                coreTopic: '核心主题词',
-                entryTerm: '入口词',
-                relatedTerms: '关联词',
-                reverseRef: '反向参照'
+                coreTags: this.$t('editMenu.featureTags'),
+                coreTopic: this.$t('editMenu.coreTopic'),
+                entryTerm: this.$t('editMenu.entryTerm'),
+                relatedTerms: this.$t('editMenu.relatedTerms'),
+                reverseRef: this.$t('editMenu.reverseRef')
             };
 
             if (inputValue && !this.formData[field].includes(inputValue)) {
                 // 校验标签数量
                 if (this.formData[field].length >= 40) {
-                    this.$message.warning(`${fieldLabels[field]}数量不能超过40个`);
+                    this.$message.warning(this.$t('editMenu.tagCountExceeded', { field: fieldLabels[field], max: 40 }));
                     return;
                 }
                 this.formData[field].push(inputValue);
@@ -576,18 +581,20 @@ export default {
                         // 编辑：添加ID
                         params.id = this.formData.id;
                         await updateCategory(params);
-                        this.$message.success('更新成功');
+                        this.$message.success(this.$t('editSuccess'));
                     } else {
                         // 新增
                         await addCategory(params);
-                        this.$message.success('添加成功');
+                        this.$message.success(this.$t('addSuccess'));
                     }
 
                     // 关闭Dialog并刷新树
                     this.dialogVisible = false;
                     this.getTreeData(this.$route.query.id);
                 } catch (error) {
-                    this.$message.error('操作失败：' + (error.message || '未知错误'));
+                    this.$message.error(this.$t('editMenu.operationFailed', {
+                        message: error.message || this.$t('editMenu.unknownError')
+                    }));
                 } finally {
                     this.loading = false;
                 }
@@ -647,9 +654,9 @@ export default {
             return ids;
         },
         async remove(node, data) {
-            this.$confirm(`确定删除当前节点及其下所有子节点吗？`, '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
+            this.$confirm(this.$t('editMenu.deleteConfirm'), this.$t('tip'), {
+                confirmButtonText: this.$t('confirm'),
+                cancelButtonText: this.$t('cancel'),
                 type: 'warning'
             }).then(async () => {
                 this.loading = true;
@@ -659,10 +666,12 @@ export default {
                     const children = parent.data.children || parent.data;
                     const index = children.findIndex(d => d.id === data.id);
                     children.splice(index, 1);
-                    this.$message.success('删除成功');
+                    this.$message.success(this.$t('deleteSuccess'));
                     this.getTreeData(this.$route.query.id);
                 } catch (error) {
-                    this.$message.error('删除失败：' + (error.message || '未知错误'));
+                    this.$message.error(this.$t('editMenu.deleteFailed', {
+                        message: error.message || this.$t('editMenu.unknownError')
+                    }));
                 } finally {
                     this.loading = false;
                 }
@@ -794,17 +803,17 @@ export default {
     border-radius: 6px;
 }
 
-::v-deep .el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
-  background-color: #eff6ff;
+::v-deep .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
+    background-color: #eff6ff;
 }
 
-::v-deep .el-tree-node.is-current > .el-tree-node__content .tree-node-icon {
-  color: #3b82f6;
+::v-deep .el-tree-node.is-current>.el-tree-node__content .tree-node-icon {
+    color: #3b82f6;
 }
 
-::v-deep .el-tree-node.is-current > .el-tree-node__content .node-label {
-  color: #3b82f6;
-  font-weight: 600;
+::v-deep .el-tree-node.is-current>.el-tree-node__content .node-label {
+    color: #3b82f6;
+    font-weight: 600;
 }
 
 .edit-menu-dialog /deep/.el-dialog__body {
