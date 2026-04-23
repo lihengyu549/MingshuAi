@@ -302,6 +302,8 @@
         <el-button @click="scanContentCanlce">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
+
+    <!-- 新增Excel文件 -->
     <el-dialog class="addMsg unified-dialog" :title="titleExcel" v-loading="importDataLoading"
       :visible.sync="importData.importShow" append-to-body :close-on-click-modal="false" width="700px">
       <el-form class="dialogForm" :rules="importDataRules" :model="importData" size="medium" ref="importData"
@@ -487,7 +489,7 @@
         </el-form-item>
 
         <el-form-item :label="$t('dataFrom.startingPath')" prop="targetDatabase">
-          <el-input v-model="fileShareServerForm.targetDatabase" placeholder="例如：/data/foldor/a" />
+          <el-input v-model="fileShareServerForm.targetDatabase" :placeholder="$t('dataFrom.folderPathExample')" />
         </el-form-item>
 
         <el-form-item :label="$t('dataFrom.scanContent')" prop="fileDataList">
@@ -735,44 +737,44 @@ export default {
         proceedOrOverwrite: '0',
       },
       connectionType: '1',
-      titleExcel: '新增Excel文件',
+      titleExcel: this.$t('dataFrom.addExcelFile'),
       addForm: {},
       // 表单校验
       rules: {
         userPassword: [
-          { required: true, message: "用户密码不能为空", trigger: "blur" },
+          { required: true, message: this.$t('cannotBeEmpty', { field: this.$t('dataFrom.password') }), trigger: "blur" },
         ],
         userName: [
-          { required: true, message: "用户名称不能为空", trigger: "blur" },
+          { required: true, message: this.$t('cannotBeEmpty', { field: this.$t('dataFrom.userName') }), trigger: "blur" },
         ],
         sourceName: [{
-          required: true, message: "数据源名称不能为空", trigger: "blur"
+          required: true, message: this.$t('cannotBeEmpty', { field: this.$t('dataFrom.sourceName') }), trigger: "blur"
         }],
         businessName: [{
-          required: true, message: "来源业务系统不能为空", trigger: "blur"
+          required: true, message: this.$t('cannotBeEmpty', { field: this.$t('dataFrom.businessName') }), trigger: "blur"
         }],
-        databaseType: [{ required: true, message: '请选择数据库类型', trigger: 'blur' }],
-        projectName: [{ required: true, message: '请选择选分类分级框架', trigger: 'blur' }],
+        databaseType: [{ required: true, message: this.$t('dataFrom.pleaseSelectDatabaseType'), trigger: 'blur' }],
+        projectName: [{ required: true, message: this.$t('dataFrom.pleaseSelectClassificationFramework'), trigger: 'blur' }],
         targetUserName: [
-          { required: true, message: "请输入数据库用户名称", trigger: "change" },
+          { required: true, message: this.$t('dataFrom.pleaseInputDatabaseUser'), trigger: "change" },
         ],
         targetDatabase: [
-          { required: true, message: "请选择数据库名称", trigger: "change" },
+          { required: true, message: this.$t('dataFrom.pleaseSelectDatabaseName'), trigger: "change" },
         ],
         targetUserPassword: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
+          { required: true, message: this.$t('dataFrom.pleaseInputPassword'), trigger: 'blur' }
         ],
         examplesName: () => {
           return [{
             required: ['SQL_SERVER', 'POSTGRESQL', 'GREENPLUM', 'KING_BASE'].includes(this.form.databaseType),
-            message: '请输入',
+            message: this.$t('inputRequired', { field: this.$t('dataFrom.instanceName') }),
             trigger: 'blur'
           }]
         },
         connectionValue: () => {
           return [{
             required: this.isServiesNameRequired,
-            message: '请输入',
+            message: this.$t('inputRequired', { field: this.$t('dataFrom.serviceName') }),
             trigger: 'blur'
           }]
         },
@@ -781,23 +783,22 @@ export default {
           validator: this.tabelCheckedNameRules,
           trigger: 'blur'
         }],
-        scheduleType: [{ required: true, message: '请选择周期', trigger: 'blur' }],
-        scheduleInterval: [{ required: true, message: '请选择间隔', trigger: 'blur' }],
-        scheduleTime: [{ required: true, message: '请选择时间', trigger: 'blur' }],
+        scheduleType: [{ required: true, message: this.$t('selectRequired', { field: this.$t('dataFrom.cycle') }), trigger: 'blur' }],
+        scheduleInterval: [{ required: true, message: this.$t('selectRequired', { field: this.$t('interval') }), trigger: 'blur' }],
+        scheduleTime: [{ required: true, message: this.$t('dataFrom.pleaseSelectTime'), trigger: 'blur' }],
         targetIp: [
-          { required: true, message: "请输入数据库地址", trigger: "blur" },
+          { required: true, message: this.$t('dataFrom.pleaseInputIpAddress'), trigger: "blur" },
           {
             pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-            message: "请输入有效的IP地址"
+            message: this.$t('dataFrom.pleaseInputValidIp')
           },
         ],
         targetPort: [
-          { required: true, message: "请输入端口号", trigger: "blur" },
+          { required: true, message: this.$t('dataFrom.pleaseInputPort'), trigger: "blur" },
           {
             pattern:
               /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
-            message:
-              "请输入0~65535之间的5个数字",
+            message: this.$t('dataFrom.pleaseInputValidPort'),
           },
           // {
           //   min: 1,
@@ -806,7 +807,7 @@ export default {
           // },
         ],
         businessComment: [
-          { required: true, message: "请输入来源业务系统描述", trigger: "blur" },
+          { required: true, message: this.$t('dataFrom.pleaseInputBusinessSystemDescription'), trigger: "blur" },
         ],
       },
       importDataLoading: false,
@@ -825,32 +826,32 @@ export default {
       // 表单校验
       importDataRules: {
         businessComment: [
-          { required: true, message: "请输入来源业务系统描述", trigger: "blur" },
+          { required: true, message: this.$t('dataFrom.pleaseInputBusinessSystemDescription'), trigger: "blur" },
         ],
         sourceName: [
           {
-            required: true, message: "请输入数据源名称", trigger: "blur"
+            required: true, message: this.$t('dataFrom.pleaseInputDataSourceName'), trigger: "blur"
           }
         ],
         businessName: [
           {
-            required: true, message: "请输入来源业务系统", trigger: "blur"
+            required: true, message: this.$t('dataFrom.pleaseInputSourceBusinessSystem'), trigger: "blur"
           }
         ],
         categoryId: [
           {
-            required: true, message: "请选择所属分类", trigger: "blur"
+            required: true, message: this.$t('dataFrom.pleaseSelectClassificationFramework'), trigger: "blur"
           }
         ],
         importFile: [
-          { required: true, message: "请选择导入文件", trigger: "blur" },
+          { required: true, message: this.$t('selectRequired', { field: this.$t('dataFrom.importFile') }), trigger: "blur" },
         ],
       },
       tabelCheckedName: '',
       dictionaryList: [], // 数据字典列表
       currentRow: null, // 当前操作的行数据
 
-      titleFileDirectory: '上传文件',
+      titleFileDirectory: this.$t('dataFrom.uploadFileTitle'),
       fileDirectoryLoading: false,
       fileDirectoryData: {
         show: false,
@@ -862,20 +863,20 @@ export default {
       },
       fileDirectoryRules: {
         sourceName: [
-          { required: true, message: "请输入数据源名称", trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputDataSourceName'), trigger: "blur" }
         ],
         businessName: [
-          { required: true, message: "请输入来源业务系统", trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputSourceBusinessSystem'), trigger: "blur" }
         ],
         businessComment: [
-          { required: true, message: "请输入来源业务系统描述", trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputBusinessSystemDescription'), trigger: "blur" }
         ],
         uploadFiles: [
           {
             required: true,
             validator: (rule, value, callback) => {
               if (!value || value.length === 0) {
-                callback(new Error('请上传文件'));
+                callback(new Error(this.$t('dataFrom.pleaseUploadFile')));
               } else {
                 callback();
               }
@@ -885,7 +886,7 @@ export default {
         ],
       },
 
-      titleFileShareServer: '添加文件共享服务器',
+      titleFileShareServer: this.$t('dataFrom.addFileShareServer'),
       fileShareServerOpen: false,
       fileShareServerSubmitLoading: false,
       fileShareServerForm: {
@@ -908,45 +909,45 @@ export default {
       },
       fileShareServerRules: {
         sourceName: [
-          { required: true, message: "数据源名称不能为空", trigger: "blur" }
+          { required: true, message: this.$t('cannotBeEmpty', { field: this.$t('dataFrom.sourceName') }), trigger: "blur" }
         ],
         databaseType: [
-          { required: true, message: "请选择文件目录类型", trigger: "change" }
+          { required: true, message: this.$t('dataFrom.pleaseSelectFileDirectoryType'), trigger: "change" }
         ],
         businessName: [
-          { required: true, message: "来源业务系统不能为空", trigger: "blur" }
+          { required: true, message: this.$t('cannotBeEmpty', { field: this.$t('dataFrom.businessName') }), trigger: "blur" }
         ],
         businessComment: [
-          { required: true, message: "请输入来源业务系统描述", trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputBusinessDescription'), trigger: "blur" }
         ],
         targetIp: [
-          { required: true, message: "请输入主机IP地址", trigger: "blur" },
+          { required: true, message: this.$t('dataFrom.pleaseInputIpAddress'), trigger: "blur" },
           {
             pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-            message: "请输入有效的IP地址"
+            message: this.$t('dataFrom.pleaseInputValidIp')
           },
         ],
         targetPort: [
-          { required: true, message: "请输入端口号", trigger: "blur" },
+          { required: true, message: this.$t('dataFrom.pleaseInputPort'), trigger: "blur" },
           {
             pattern: /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
-            message: "请输入0~65535之间的端口号",
+            message: this.$t('dataFrom.pleaseInputValidPort'),
           },
         ],
         targetUserName: [
-          { required: true, message: "请输入用户名", trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputUserName'), trigger: "blur" }
         ],
         targetUserPassword: [
-          { required: true, message: "请输入密码", trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputPassword'), trigger: "blur" }
         ],
         share: [
           { required: true, message: this.$t('dataFrom.pleaseInputShare'), trigger: "blur" }
         ],
         targetDatabase: [
-          { required: true, message: "请输入起始路径", trigger: "blur" }
+          { required: true, message: this.$t('dataFrom.pleaseInputFolderPath'), trigger: "blur" }
         ],
         fileDataList: [
-          { required: true, message: "请选择扫描内容", trigger: "change" }
+          { required: true, message: this.$t('dataFrom.scanContentRequired'), trigger: "change" }
         ],
       },
     };
@@ -962,7 +963,7 @@ export default {
         targetDatabase: [
           {
             required: this.fileShareServerForm.databaseType !== 'SMB',
-            message: '请输入起始路径',
+            message: this.$t('dataFrom.pleaseInputFolderPath'),
             trigger: 'blur'
           }
         ]
@@ -1247,7 +1248,7 @@ export default {
     },
 
     messsucc(res, flag) {
-      this.$message.success(`${res.msg},${flag}${res.data}个`)
+      this.$message.success(`${res.msg},${flag}${res.data}${this.$t('dataFrom.countSuffix')}`)
     },
     async submitFormExcelFn() {
       this.$refs["importData"].validate(async valid => {
@@ -1271,7 +1272,7 @@ export default {
           formData.append('businessComment', this.importData.businessComment);
           formData.append('tabelCheckedName', this.importData.importFile);
           await importExcel(formData).then(res => {
-            this.messsucc(res, '导入条目数量共');
+            this.messsucc(res, this.$t('dataFrom.importItemCountPrefix'));
             // this.getList();
             this.importData.categoryName = ''
             this.importData.importFile = ''
@@ -1445,11 +1446,11 @@ export default {
           data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
           console.log(data);
           if (!this.editIsFlag && !data.tables) {
-            this.$message({ message: '请选择扫描内容', type: 'warning' })
+            this.$message({ message: this.$t('dataFrom.scanContentRequired'), type: 'warning' })
             this.submitLoading = false;
             return
           } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
-            this.$message({ message: '请选择扫描内容', type: 'warning' })
+            this.$message({ message: this.$t('dataFrom.scanContentRequired'), type: 'warning' })
             this.submitLoading = false;
             return
           }
@@ -1461,12 +1462,12 @@ export default {
             if (this.form.id != null) {
               data.id = this.form.id
               await updateDatabaseAndTables(data)
-              this.$modal.msgSuccess("修改成功");
+              this.$modal.msgSuccess(this.$t('editSuccess'));
               this.open = false;
               this.getList();
             } else {
               await saveDatabaseAndTables(data)
-              this.$modal.msgSuccess("新增成功");
+              this.$modal.msgSuccess(this.$t('addSuccess'));
               this.open = false;
               this.getList();
             }
@@ -1484,7 +1485,7 @@ export default {
     deleteClick(ids) {
       delProxys(ids).then(() => {
         this.getList();
-        this.$modal.msgSuccess("删除成功");
+        this.$modal.msgSuccess(this.$t('deleteSuccess'));
         this.deleteVisible = false
       }).catch(() => { })
     },
@@ -1642,7 +1643,7 @@ export default {
           dataSacn({ proxyIds: row.id }).then(async res => {
             await this.getList()
           }).catch(() => {
-            this.$message.error('扫描失败')
+            this.$message.error(this.$t('dataFrom.scanFailedMessage'))
           }).finally(() => {
             this.btnLoading = false;
           })
@@ -1655,7 +1656,7 @@ export default {
         dataSacn({ proxyIds: row.id }).then(async res => {
           await this.getList()
         }).catch(() => {
-          this.$message.error('扫描失败')
+          this.$message.error(this.$t('dataFrom.scanFailedMessage'))
         }).finally(() => {
           this.btnLoading = false;
         })
@@ -1701,7 +1702,7 @@ export default {
       }
       if (row.sourceType == "FILE") {
         this.importData.importFile = row.fileName
-        this.titleExcel = "编辑Excel";
+        this.titleExcel = this.$t('dataFrom.editExcelTitle');
         this.importData.categoryId = row.projectId
         this.importData.id = row.id
         this.importData.sourceName = row.sourceName
@@ -1951,7 +1952,7 @@ export default {
           // 这里应该调用实际的API，暂时模拟成功
           addOrUpdateFileDataList(formData).then(res => {
             if (res.code == 200) {
-              this.$modal.msgSuccess(this.fileDirectoryData.id ? "修改成功" : "新增成功");
+              this.$modal.msgSuccess(this.fileDirectoryData.id ? this.$t('editSuccess') : this.$t('addSuccess'));
               this.fileDirectoryData.show = false
               this.fileDirectoryLoading = false
               this.resetFileDirectoryForm()
@@ -1983,7 +1984,7 @@ export default {
     },
 
     handleFileShareServerFn() {
-      this.titleFileShareServer = '添加文件共享服务器'
+      this.titleFileShareServer = this.$t('dataFrom.addFileShareServer')
       this.fileShareServerOpen = true
       this.resetFileShareServerForm()
     },
@@ -2024,7 +2025,7 @@ export default {
           if (this.fileShareServerForm.id) {
             params.id = this.fileShareServerForm.id;
             updateFileServer(params).then(res => {
-              this.$modal.msgSuccess("修改成功");
+              this.$modal.msgSuccess(this.$t('editSuccess'));
               this.fileShareServerOpen = false
               this.fileShareServerSubmitLoading = false
               this.getList()
@@ -2033,7 +2034,7 @@ export default {
             })
           } else {
             saveFileServer(params).then(res => {
-              this.$modal.msgSuccess("新增成功");
+              this.$modal.msgSuccess(this.$t('addSuccess'));
               this.fileShareServerOpen = false
               this.fileShareServerSubmitLoading = false
               this.getList()

@@ -45,5 +45,14 @@ export default {
   reupload: '重新上传',
   saveAsDefault: '保存为默认配置',
   restoreInitial: '恢复初始',
-  backToParent: '返回上级'
+  backToParent: '返回上级',
+  addSuccess: '新增成功',
+  editSuccess: '修改成功',
+  deleteSuccess: '删除成功',
+  inputRequired: '请输入{field}',
+  selectRequired: '请选择{field}',
+  cannotBeEmpty: '{field}不能为空',
+  lengthRange: '长度在 {min} ~ {max} 个字符',
+  interval: '间隔',
+  dameng: '达梦'
 }

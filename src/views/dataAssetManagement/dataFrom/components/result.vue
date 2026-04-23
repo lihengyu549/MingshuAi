@@ -247,7 +247,7 @@ export default {
           label: this.$t('dataFrom.result.level5')
         },
       ],
-      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
+      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" }, { name: this.$t('dameng'), id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       drawerShow: false,
       samplingNum: 10,
       checkList: true,
@@ -261,7 +261,7 @@ export default {
       addUserVisible: false,
       dataType: "",
       targetDataList: [],
-      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" }, { name: "达梦", id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
+      databaseTypeList: [{ name: "MYSQL", id: 0, value: "MYSQL" }, { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" }, { name: "TIDB", id: 2, value: "TIDB" }, { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" }, { name: this.$t('dameng'), id: 4, value: "DM" }, { name: "PolarDB For Mysql", id: 5, value: "MYSQL" }],
       maskCompleteStatus: [{
         value: 'COMPLETE',
         label: this.$t('dataFrom.scanComplete')
@@ -346,48 +346,47 @@ export default {
       // 表单校验
       rules: {
         userPassword: [
-          { required: true, message: "用户密码不能为空", trigger: "blur" },
+          { required: true, message: this.$t('cannotBeEmpty', { field: this.$t('dataFrom.password') }), trigger: "blur" },
         ],
         userName: [
-          { required: true, message: "用户名称不能为空", trigger: "blur" },
+          { required: true, message: this.$t('cannotBeEmpty', { field: this.$t('dataFrom.userName') }), trigger: "blur" },
         ],
         sourceName: [{
-          required: true, message: "数据源名称不能为空", trigger: "blur"
+          required: true, message: this.$t('cannotBeEmpty', { field: this.$t('dataFrom.sourceName') }), trigger: "blur"
         }],
         businessName: [{
-          required: true, message: "来源业务系统不能为空", trigger: "blur"
+          required: true, message: this.$t('cannotBeEmpty', { field: this.$t('dataFrom.businessName') }), trigger: "blur"
         }],
-        databaseType: [{ required: true, message: '请选择数据库类型', trigger: 'blur' }],
-        projectName: [{ required: true, message: '请选择选分类分级框架', trigger: 'blur' }],
+        databaseType: [{ required: true, message: this.$t('dataFrom.pleaseSelectDatabaseType'), trigger: 'blur' }],
+        projectName: [{ required: true, message: this.$t('dataFrom.pleaseSelectClassificationFramework'), trigger: 'blur' }],
         targetUserName: [
-          { required: true, message: "请输入数据库用户名称", trigger: "change" },
+          { required: true, message: this.$t('dataFrom.pleaseInputDatabaseUser'), trigger: "change" },
         ],
         targetDatabase: [
-          { required: true, message: "请选择数据库名称", trigger: "change" },
+          { required: true, message: this.$t('dataFrom.pleaseSelectDatabaseName'), trigger: "change" },
         ],
         targetUserPassword: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
+          { required: true, message: this.$t('dataFrom.pleaseInputPassword'), trigger: 'blur' }
         ],
         targetIp: [
-          { required: true, message: "请输入数据库地址", trigger: "change" },
+          { required: true, message: this.$t('dataFrom.pleaseInputIpAddress'), trigger: "change" },
           {
             pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-            message: "请输入有效的IP地址"
+            message: this.$t('dataFrom.pleaseInputValidIp')
           },
         ],
         targetPort: [
-          { required: true, message: "请输入端口号", trigger: "change" },
+          { required: true, message: this.$t('dataFrom.pleaseInputPort'), trigger: "change" },
           {
             pattern:
               /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/,
-            message:
-              "请输入0~65535之间的5个数字",
+            message: this.$t('dataFrom.pleaseInputValidPort'),
           },
 
           {
             min: 1,
             max: 5,
-            message: "长度在 1 ~ 5 个字符",
+            message: this.$t('lengthRange', { min: 1, max: 5 }),
           },
         ],
       },
@@ -404,16 +403,16 @@ export default {
       importDataRules: {
         sourceName: [
           {
-            required: true, message: "请输入数据源名称", trigger: "blur"
+            required: true, message: this.$t('dataFrom.pleaseInputDataSourceName'), trigger: "blur"
           }
         ],
         categoryId: [
           {
-            required: true, message: "请选择所属分类", trigger: "blur"
+            required: true, message: this.$t('dataFrom.pleaseSelectClassificationFramework'), trigger: "blur"
           }
         ],
         importFile: [
-          { required: true, message: "请选择导入框架文件", trigger: "blur" },
+          { required: true, message: this.$t('selectRequired', { field: this.$t('dataFrom.importFile') }), trigger: "blur" },
         ],
       },
     };

@@ -45,5 +45,14 @@ export default {
   reupload: 'Re-upload',
   saveAsDefault: 'Save as default',
   restoreInitial: 'Restore initial',
-  backToParent: 'Back'
+  backToParent: 'Back',
+  addSuccess: 'Added successfully',
+  editSuccess: 'Modified successfully',
+  deleteSuccess: 'Deleted successfully',
+  inputRequired: 'Please enter {field}',
+  selectRequired: 'Please select {field}',
+  cannotBeEmpty: '{field} cannot be empty',
+  lengthRange: 'Length should be between {min} and {max} characters',
+  interval: 'Interval',
+  dameng: 'Dameng'
 }

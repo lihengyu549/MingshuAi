@@ -446,7 +446,7 @@
     <el-dialog :title="$t('assetCatalog.exportColumn')" :visible.sync="exportColumnDialog.visible" width="760px"
       custom-class="export-column-dialog-wrapper" @close="cancelExport">
       <!-- <div slot="title" class="dialog-header">
-        <span class="title-text"><b>调整导出列</b></span>
+        <span class="title-text"><b>{{ $t('assetCatalog.exportColumn') }}</b></span>
       </div> -->
 
       <div v-loading="exportColumnDialog.loading" class="export-column-dialog">
@@ -588,11 +588,11 @@ export default {
       ],
       dirtyDataList: [
         {
-          label: '是',
+          label: this.$t('assetCatalog.yes'),
           value: 1,
         },
         {
-          label: '否',
+          label: this.$t('assetCatalog.no'),
           value: 0,
         }
       ],
@@ -1459,7 +1459,7 @@ export default {
     // 字段信息
     async fieldInformationFn(row) {
       this.filedRowData = row
-      this.drawerTitle = '表名称：' + row.tableName
+      this.drawerTitle = this.$t('assetCatalog.tableNameLabel') + row.tableName
       let params = {
         tableId: row.tableId,
         databaseId: row.databaseId,
@@ -1476,8 +1476,8 @@ export default {
             ele.aiFieldRemarkEdit = ''
             ele.dirtyDataEditMsg = ''
             // 确保状态字段有默认值
-            ele.dirtyData = ele.dirtyData || '否'
-            ele.featureData = ele.featureData || '不包含'
+            ele.dirtyData = ele.dirtyData || this.$t('assetCatalog.no')
+            ele.featureData = ele.featureData || this.$t('assetCatalog.notInclude')
             return ele
           })
           this.drawerShow = true

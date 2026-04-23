@@ -231,7 +231,7 @@
         </el-form-item>
 
         <el-form-item :label="$t('dataFrom.startingPath')" prop="targetDatabase">
-          <el-input v-model="fileShareServerForm.targetDatabase" placeholder="例如：/data/foldor/a" />
+          <el-input v-model="fileShareServerForm.targetDatabase" :placeholder="$t('dataFrom.folderPathExample')" />
         </el-form-item>
 
         <el-form-item :label="$t('dataFrom.scanContent')" prop="fileDataList">
@@ -604,7 +604,7 @@ export default {
         { name: "SQL_SERVER", id: 1, value: "SQL_SERVER" },
         { name: "ORACLE", id: 2, value: "ORACLE" },
         { name: "POSTGRESQL", id: 3, value: "POSTGRESQL" },
-        { name: "达梦", id: 4, value: "DM" },
+        { name: this.$t('dameng'), id: 4, value: "DM" },
         { name: "GREENPLUM", id: 5, value: "GREENPLUM" },
       ],
       fileServerTypeList: [
@@ -926,7 +926,7 @@ export default {
           if (this.form.id != null) {
             data.id = this.form.id
             updateDatabaseAndTables(data).then(response => {
-              this.$modal.msgSuccess("修改成功");
+              this.$modal.msgSuccess(this.$t('editSuccess'));
               this.open = false;
               this.getList();
             });
@@ -1127,7 +1127,7 @@ export default {
 
           const request = this.fileShareServerForm.id ? updateFileServer({ ...params, id: this.fileShareServerForm.id }) : saveFileServer(params)
           request.then(() => {
-            this.$modal.msgSuccess(this.fileShareServerForm.id ? "修改成功" : "新增成功")
+            this.$modal.msgSuccess(this.fileShareServerForm.id ? this.$t('editSuccess') : this.$t('addSuccess'))
             this.fileShareServerOpen = false
             this.fileShareServerSubmitLoading = false
             this.resetFileShareServerForm()

@@ -267,7 +267,7 @@ export default {
         tables: {},
       },
       connectionType: '1',
-      titleExcel: '新增Excel文件',
+      titleExcel: this.$t('dataFrom.addExcelFile'),
       addOrEditLoading: false,
       importData: {
         importFile: '', // 导入魔板文件名
