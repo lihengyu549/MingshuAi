@@ -24,7 +24,8 @@
                         $t('sensitiveData.dataSourceList') }}</h3>
                     <span class="card-header-span">{{ $t('sensitiveData.totalDataSources', {
                         count:
-                        dataSourceList.length }) }}</span>
+                            dataSourceList.length
+                    }) }}</span>
                 </div>
 
                 <el-table :data="dataSourceList" stripe style="width: 100%;" size="small">
@@ -65,8 +66,8 @@
                         </h3>
                         <span class="card-header-span">{{ $t('sensitiveData.dataSourcePrefix', {
                             name:
-                            currentDataSource.sourceName
-                            }) }}</span>
+                                currentDataSource.sourceName
+                        }) }}</span>
                     </div>
                     <el-button type="text" icon="el-icon-close" @click="showRiskDetails = false" class="close-btn"
                         size="mini">{{
@@ -134,7 +135,7 @@
                         <div class="legal-basis">
                             <p><strong>{{ $t('sensitiveData.legalBasis') }}：</strong></p>
                             <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.regulatoryBasis
-                                }}</span>
+                            }}</span>
                         </div>
 
                         <div class="database-filter">
@@ -152,6 +153,8 @@
                             </template>
                             <el-table-column prop="tableName" align="center" :label="$t('sensitiveData.dataTableName')"
                                 min-width="220"></el-table-column>
+                            <el-table-column prop="fieldName" align="center" :label="$t('sensitiveData.fieldName')"
+                                show-overflow-tooltip></el-table-column>
                             <el-table-column prop="fieldRemark" align="center" :label="$t('sensitiveData.fieldRemark')"
                                 show-overflow-tooltip></el-table-column>
                             <el-table-column prop="dataValue" align="center" :label="$t('sensitiveData.sampleValue')"

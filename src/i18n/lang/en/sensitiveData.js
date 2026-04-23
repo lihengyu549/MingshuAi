@@ -24,6 +24,7 @@ export default {
   legalBasis: 'Legal Basis',
   relatedDatabases: 'Related Databases',
   dataTableName: 'Data Table Name',
+  fieldName: 'Field Name',
   fieldRemark: 'Field Remark',
   sampleValue: 'Sample Value',
   riskDisposeSuggestion: 'Risk Disposal Suggestion',

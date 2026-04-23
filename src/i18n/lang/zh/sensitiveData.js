@@ -24,6 +24,7 @@ export default {
   legalBasis: '法规依据',
   relatedDatabases: '涉及数据库',
   dataTableName: '数据表名称',
+  fieldName: '字段名称',
   fieldRemark: '字段注释',
   sampleValue: '样本值',
   riskDisposeSuggestion: '风险处置建议',
