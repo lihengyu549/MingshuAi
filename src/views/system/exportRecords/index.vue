@@ -2,21 +2,21 @@
     <div class="export-records-page app-container">
         <el-card class="main-card">
             <div class="page-header">
-                <h1 class="page-title">导出记录</h1>
+                <h1 class="page-title">{{ $t('exportRecords.title') }}</h1>
                 <div class="page-actions">
-                    <el-input v-model="searchKeyword" placeholder="搜索导出历史" prefix-icon="el-icon-search"
-                        class="search-input" @input="handleSearch"></el-input>
-                    <el-button class="clear-btn" @click="clearAll">全部清除</el-button>
+                    <el-input v-model="searchKeyword" :placeholder="$t('exportRecords.searchPlaceholder')"
+                        prefix-icon="el-icon-search" class="search-input" @input="handleSearch"></el-input>
+                    <el-button class="clear-btn" @click="clearAll">{{ $t('exportRecords.clearAll') }}</el-button>
                 </div>
             </div>
 
             <div class="records-container">
                 <div v-if="loading" class="loading-container">
-                    <i class="el-icon-loading"></i> 加载中...
+                    <i class="el-icon-loading"></i> {{ $t('loading') }}
                 </div>
                 <div v-else-if="filteredRecords.length === 0" class="empty-container">
                     <i class="el-icon-document"></i>
-                    <p>暂无导出记录</p>
+                    <p>{{ $t('exportRecords.emptyText') }}</p>
                 </div>
                 <div v-else class="records-list">
                     <div v-for="record in filteredRecords" :key="record.id" class="record-item" :class="{
@@ -31,11 +31,11 @@
                             <div class="file-status">
                                 <!-- 导出超时 -->
                                 <span v-if="record.status === '5'" class="status-timeout">
-                                    <el-tag type="danger">导出超时</el-tag>
+                                    <el-tag type="danger">{{ $t('exportRecords.statusTimeout') }}</el-tag>
                                 </span>
                                 <!-- 导出失败 -->
                                 <span v-else-if="record.status === '4'" class="status-failed">
-                                    <el-tag type="danger">导出失败</el-tag>
+                                    <el-tag type="danger">{{ $t('exportRecords.statusFailed') }}</el-tag>
                                 </span>
                                 <!-- 导出完成 -->
                                 <span v-else-if="record.status === '3'" class="status-completed">
@@ -55,7 +55,7 @@
 
             <!-- 返回按钮 -->
             <div class="back-button">
-                <el-button type="primary" plain @click="goBack">返回</el-button>
+                <el-button type="primary" plain @click="goBack">{{ $t('return') }}</el-button>
             </div>
         </el-card>
 
@@ -95,7 +95,7 @@ export default {
                 this.allRecords = response.data || []
             } catch (error) {
                 console.error('获取导出记录失败:', error)
-                this.$message.error('获取导出记录失败')
+                this.$message.error(this.$t('exportRecords.fetchFailed'))
             } finally {
                 this.loading = false
             }
@@ -108,7 +108,7 @@ export default {
         },
         downloadFile(record) {
             if (record.status !== '3') {
-                this.$message.warning('仅对已完成导出的记录进行下载')
+                this.$message.warning(this.$t('exportRecords.completedOnlyDownload'))
                 return
             }
             try {
@@ -130,38 +130,38 @@ export default {
                     // 释放URL对象
                     window.URL.revokeObjectURL(url);
                     this.loading = false;
-                    this.$message.success('导出成功');
+                    this.$message.success(this.$t('exportRecords.exportSuccess'));
                 })
             } catch (error) {
                 console.error('下载文件失败:', error)
-                this.$message.error('下载文件失败')
+                this.$message.error(this.$t('exportRecords.downloadFailed'))
             }
         },
         deleteRecord(record) {
-            this.$confirm('确定要删除这条记录吗？', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
+            this.$confirm(this.$t('exportRecords.deleteConfirm'), this.$t('tip'), {
+                confirmButtonText: this.$t('confirm'),
+                cancelButtonText: this.$t('cancel'),
                 type: 'warning'
             }).then(async () => {
                 try {
                     await removeById({ id: record.id })
                     this.allRecords = this.allRecords.filter(r => r.id !== record.id)
-                    this.$message.success('删除成功')
+                    this.$message.success(this.$t('deleteSuccess'))
                 } catch (error) {
                     console.error('删除失败:', error)
-                    this.$message.error('删除失败')
+                    this.$message.error(this.$t('exportRecords.deleteFailed'))
                 }
             }).catch(() => { })
         },
         clearAll() {
             if (this.allRecords.length === 0) {
-                this.$message.info('暂无记录可清除')
+                this.$message.info(this.$t('exportRecords.noRecordsToClear'))
                 return
             }
 
-            this.$confirm('确定要清除所有导出记录吗？', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
+            this.$confirm(this.$t('exportRecords.clearAllConfirm'), this.$t('tip'), {
+                confirmButtonText: this.$t('confirm'),
+                cancelButtonText: this.$t('cancel'),
                 type: 'warning'
             }).then(async () => {
                 try {
@@ -169,10 +169,10 @@ export default {
 
                     this.allRecords = []
                     this.selectedRecord = null
-                    this.$message.success('已清除所有记录')
+                    this.$message.success(this.$t('exportRecords.clearAllSuccess'))
                 } catch (error) {
                     console.error('清除失败:', error)
-                    this.$message.error('清除失败')
+                    this.$message.error(this.$t('exportRecords.clearFailed'))
                 }
             }).catch(() => { })
         },

@@ -31,6 +31,7 @@ import menu from './menu'
 import textModel from './textModel'
 import dataManagement from './dataManagement'
 import modelTuning from './modelTuning'
+import exportRecords from './exportRecords'
 
 export default {
   ...common,
@@ -65,5 +66,6 @@ export default {
   menu,
   textModel,
   dataManagement,
-  modelTuning
+  modelTuning,
+  exportRecords
 }
