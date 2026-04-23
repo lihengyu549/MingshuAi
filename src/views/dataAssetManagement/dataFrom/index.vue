@@ -2,7 +2,7 @@
   <div class="app-container" v-loading="mainLoading">
     <el-card shadow="never" class="searchCard">
       <el-form :model="queryParams" ref="queryForm" v-show="showSearch" class="yuanDataClass" size="small"
-        :inline="false" label-width="auto">
+        :inline="true">
         <el-form-item :label="$t('dataFrom.sourceName')" prop="sourceName">
           <el-input v-model="queryParams.sourceName" @input="inputSearch"
             :placeholder="$t('dataFrom.pleaseInputSourceName')" clearable @keyup.enter.native="handleQuery" />
@@ -71,7 +71,8 @@
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
       <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click"
         style="float: inline-end; margin-right: 10px;">
-        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{ $t('selectAll') }}</el-checkbox>
+        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{
+          $t('selectAll') }}</el-checkbox>
         <el-checkbox-group v-model="checkedColumn" @change="handleCheckedCitiesChange" class="checkboxGroup"
           style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
           <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
@@ -161,8 +162,7 @@
           </el-table-column>
         </template>
 
-        <el-table-column :label="$t('operation')" align="center" class-name="small-padding fixed-width"
-          min-width="150">
+        <el-table-column :label="$t('operation')" align="center" class-name="small-padding fixed-width" min-width="150">
           <template slot-scope="scope">
             <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
               :disabled="scope.row.scanState == 'RUNNING' || !isScanOperableSource(scope.row) || btnLoading"
@@ -437,8 +437,7 @@
           <el-col :span="12">
             <el-form-item :label="$t('dataFrom.fileDirectoryType')" prop="databaseType">
               <el-select v-model="fileShareServerForm.databaseType"
-                :placeholder="$t('dataFrom.pleaseSelectFileDirectoryType')"
-                @change="fileShareServerTypeChange">
+                :placeholder="$t('dataFrom.pleaseSelectFileDirectoryType')" @change="fileShareServerTypeChange">
                 <el-option :label="$t('dataFrom.SMB')" value="SMB"></el-option>
                 <el-option :label="$t('dataFrom.FTP')" value="FTP"></el-option>
               </el-select>
@@ -478,8 +477,8 @@
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('dataFrom.password')" prop="targetUserPassword">
-              <el-input type="password" v-model="fileShareServerForm.targetUserPassword" :show-password="passwordVisible"
-                maxlength="100" :placeholder="$t('dataFrom.pleaseInputPassword')" />
+              <el-input type="password" v-model="fileShareServerForm.targetUserPassword"
+                :show-password="passwordVisible" maxlength="100" :placeholder="$t('dataFrom.pleaseInputPassword')" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -2142,7 +2141,6 @@ export default {
 
 .yuanDataClass /deep/ .el-form-item {
   width: 30%;
-  margin-bottom: 18px;
 }
 
 .yuanDataClass /deep/ .el-form-item:nth-child(3n) {
@@ -2155,10 +2153,11 @@ export default {
 
 .yuanDataClass /deep/ .el-form-item__label {
   width: 25%;
+  white-space: nowrap;
 }
 
 .yuanDataClass /deep/ .el-form-item__content {
-  /* width: 75%; */
+  width: 75%;
 }
 
 .yuanDataClass /deep/ .el-select {

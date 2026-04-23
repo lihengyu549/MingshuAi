@@ -4,25 +4,26 @@
   <div class="app-container management-container" v-loading="mainLoading">
     <el-card class="searchCard" shadow="hover">
       <el-form :model="queryParams" ref="queryParams" v-show="showSearch" class="yuanDataClass" size="small"
-        :inline="true" label-width="auto">
+        :inline="true">
         <!-- <el-form-item label="标准编号" prop="standardDescription">
         <el-input v-model="queryParams.standardDescription" @input="inputSearch" placeholder="请输入标准编号" clearable
           @keyup.enter.native="handleQuery" />
       </el-form-item> -->
         <el-form-item :label="$t('management.standardName')" prop="standardName">
-          <el-input v-model="queryParams.standardName" @input="inputSearch" :placeholder="$t('management.standardName')" clearable
-            @keyup.enter.native="handleQuery" />
+          <el-input v-model="queryParams.standardName" @input="inputSearch" :placeholder="$t('management.standardName')"
+            clearable @keyup.enter.native="handleQuery" />
         </el-form-item>
         <el-form-item :label="$t('management.standardType')" prop="standardType">
-          <el-select clearable v-model="queryParams.standardType" @change="inputSearch" :placeholder="$t('management.standardType')">
+          <el-select clearable v-model="queryParams.standardType" @change="inputSearch"
+            :placeholder="$t('management.standardType')">
             <el-option v-for="item in dict.type.sys_standard_type" :key="item.value" :label="item.label"
               :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item :label="$t('management.industryCategory')" prop="industryCategory">
-          <el-input v-model="queryParams.industryCategory" @input="inputSearch" :placeholder="$t('management.industryCategory')" clearable
-            @keyup.enter.native="handleQuery" />
+          <el-input v-model="queryParams.industryCategory" @input="inputSearch"
+            :placeholder="$t('management.industryCategory')" clearable @keyup.enter.native="handleQuery" />
         </el-form-item>
         <!-- <el-form-item class="searchBtn">
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
@@ -91,7 +92,8 @@
         <el-row>
           <el-col :span="12">
             <el-form-item :label="$t('management.standardType')" prop="standardType">
-              <el-select clearable v-model="form.standardType" @change="inputSearch" :placeholder="$t('management.standardType')">
+              <el-select clearable v-model="form.standardType" @change="inputSearch"
+                :placeholder="$t('management.standardType')">
                 <el-option v-for="item in dict.type.sys_standard_type" :key="item.value" :label="item.label"
                   :value="item.value">
                 </el-option>
@@ -100,7 +102,8 @@
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('management.industryCategory')" prop="industryCategory">
-              <el-input v-model="form.industryCategory" maxlength="50" :placeholder="$t('management.industryCategory')" />
+              <el-input v-model="form.industryCategory" maxlength="50"
+                :placeholder="$t('management.industryCategory')" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -120,8 +123,10 @@
         </el-row>
         <el-row>
           <el-col>
-            <el-form-item :label="$t('management.standardDescription')" prop="standardDescription" :rules="rules.tasksName">
-              <el-input type="textarea" v-model="form.standardDescription" maxlength="1000" :placeholder="$t('management.standardDescription')" />
+            <el-form-item :label="$t('management.standardDescription')" prop="standardDescription"
+              :rules="rules.tasksName">
+              <el-input type="textarea" v-model="form.standardDescription" maxlength="1000"
+                :placeholder="$t('management.standardDescription')" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -140,13 +145,15 @@
         <el-row>
           <el-col :span="24">
             <el-form-item v-if="form && form.id" :label="$t('management.categorySchema')" prop="schemaId">
-              <el-select v-model="form.schemaId" filterable clearable :placeholder="$t('management.categorySchema')" :rules="[{ required: true, message: $t('management.categorySchemaRequired'), trigger: 'change' }]">
-                <el-option v-for="opt in schemaOptions" :key="opt.id" :label="opt.schemeName" :value="opt.id"></el-option>
+              <el-select v-model="form.schemaId" filterable clearable :placeholder="$t('management.categorySchema')"
+                :rules="[{ required: true, message: $t('management.categorySchemaRequired'), trigger: 'change' }]">
+                <el-option v-for="opt in schemaOptions" :key="opt.id" :label="opt.schemeName"
+                  :value="opt.id"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
         </el-row>
-        
+
       </el-form>
       <div class="drawer-footer">
         <el-button style="margin-left: 15px;" size="small" type="text" @click="downloadFile" id="btnDownload"
@@ -565,20 +572,21 @@ input[aria-hidden=true] {
   margin-bottom: 30px;
 }
 
-.yuanDataClass {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
 .yuanDataClass /deep/ .el-form-item {
   width: 30%;
-  margin-bottom: 0px;
+}
+
+.yuanDataClass /deep/ .el-form-item:nth-child(3n) {
+  margin-right: 0;
+}
+
+.yuanDataClass /deep/ .el-form-item:nth-last-child(-n+3) {
+  margin-bottom: 0;
 }
 
 .yuanDataClass /deep/ .el-form-item__label {
   width: 25%;
+  white-space: nowrap;
 }
 
 .yuanDataClass /deep/ .el-form-item__content {
@@ -784,22 +792,6 @@ input[aria-hidden=true] {
 .management-container {
   container-type: size;
   container-name: management;
-}
-
-@media screen and (max-width: 768px) {
-  .yuanDataClass /deep/ .el-form-item {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-  .yuanDataClass /deep/ .el-form-item__label {
-    width: auto;
-    padding-right: 10px;
-  }
-
-  .yuanDataClass /deep/ .el-form-item__content {
-    width: 100%;
-  }
 }
 
 @container management (max-height: 800px) {

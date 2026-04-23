@@ -24,8 +24,8 @@
       <!-- 右侧卡片：搜索表单和数据表格 -->
       <el-col :span="19" :xs="24">
         <el-card class="search-card" shadow="never">
-          <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="false"
-            v-show="showSearch" label-width="auto">
+          <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
+            v-show="showSearch">
             <el-form-item :label="$t('jobMonitoring.subclassName')" prop="name">
               <el-input v-model="queryParams.name" @input="inputSearch" :placeholder="$t('jobMonitoring.subclassName')"
                 clearable @keyup.enter.native="handleQuery" />
@@ -424,7 +424,7 @@
         <el-form-item :label="$t('jobMonitoring.matchCondition')" prop="matchType">
           <el-radio-group v-model="ruleForm.matchType" style="display: flex; justify-content: space-between">
             <el-radio label="greater" v-if="currentRuleType === 'upgrade'">{{ $t('jobMonitoring.greaterEqual')
-              }}</el-radio>
+            }}</el-radio>
             <el-radio label="less" v-if="currentRuleType === 'downgrade'">{{ $t('jobMonitoring.lessEqual') }}</el-radio>
           </el-radio-group>
         </el-form-item>
@@ -1883,16 +1883,8 @@ export default {
   margin-left: 225px
 }
 
-.yuanDataClass {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
 .yuanDataClass /deep/ .el-form-item {
   width: 30%;
-  margin-bottom: 18px;
 }
 
 .yuanDataClass /deep/ .el-form-item:nth-child(3n) {
@@ -1905,10 +1897,11 @@ export default {
 
 .yuanDataClass /deep/ .el-form-item__label {
   width: 25%;
+  white-space: nowrap;
 }
 
 .yuanDataClass /deep/ .el-form-item__content {
-  /* width: 75%; */
+  width: 75%;
 }
 
 .yuanDataClass /deep/ .el-select {
