@@ -6,7 +6,7 @@
         <el-card class="left-card" shadow="never">
           <div class="head-container">
             <el-select v-model="queryParams.categoryId" class="serachSelect" @change="treeOptionsSelectChange"
-              placeholder="全部" style="margin-bottom: 20px" filterable>
+              :placeholder="$t('all')" style="margin-bottom: 20px" filterable>
               <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
               </el-option>
             </el-select>
@@ -41,7 +41,8 @@
             <el-form-item :label="$t('jobMonitoring.dataSource')" prop="dataSourceId">
               <el-select v-model="queryParams.dataSourceId" clearable @change="dataSourceIdIdChange"
                 :placeholder="$t('jobMonitoring.dataSource')" :loading="loading">
-                <el-option v-for="item in sourceList" :key="item.value" :label="item.label" :value="item.value">
+                <el-option v-for="item in sourceList" :key="item.value" :label="translateDataSource(item.label)"
+                  :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -66,13 +67,13 @@
           </el-form>
         </el-card>
         <div class="search-actions">
-          <el-button type="primary" plain icon="el-icon-plus" :disabled="dataSource === '内置'" size="medium"
+          <el-button type="primary" plain icon="el-icon-plus" :disabled="isBuiltInSource(dataSource)" size="medium"
             @click="addFn">
-            {{ $t('jobMonitoring.add') }}
+            {{ $t('add') }}
           </el-button>
-          <el-button type="danger" plain icon="el-icon-close" :disabled="dataSource === '内置'" size="medium"
-            @click="enabledFn('删除')">
-            {{ $t('jobMonitoring.delete') }}
+          <el-button type="danger" plain icon="el-icon-close" :disabled="isBuiltInSource(dataSource)" size="medium"
+            @click="enabledFn('delete')">
+            {{ $t('delete') }}
           </el-button>
         </div>
         <el-card class="table-card" shadow="never">
@@ -123,15 +124,15 @@
             <!-- <el-table-column label="来源" align="center" prop="dataSource" show-overflow-tooltip /> -->
             <el-table-column :label="$t('jobMonitoring.baseParent')" align="center" prop="baseParent"
               show-overflow-tooltip />
-            <el-table-column :label="$t('jobMonitoring.operation')" align="center" width="180">
+            <el-table-column :label="$t('operation')" align="center" width="180">
               <template slot-scope="scope">
                 <el-button type="text" size="medium"
-                  :disabled="(scope.row.dataSource === '内置' || scope.row.dataOwner !== $store.state.user.name) && !$store.state.user.roles.includes('admin')"
+                  :disabled="(isBuiltInSource(scope.row.dataSource) || scope.row.dataOwner !== $store.state.user.name) && !$store.state.user.roles.includes('admin')"
                   @click="editFn(scope.row)">
-                  {{ $t('jobMonitoring.edit') }}
+                  {{ $t('edit') }}
                 </el-button>
                 <el-button type="text" size="medium" @click="lookFn(scope.row)">
-                  {{ $t('jobMonitoring.look') }}
+                  {{ $t('view') }}
                 </el-button>
                 <el-button type="text" size="medium" @click="dataFn(scope.row)">
                   {{ $t('jobMonitoring.dataBenchmark') }}
@@ -217,12 +218,12 @@
               @click="showInput('tags')">{{ $t('jobMonitoring.addTag') }}</el-button>
           </div>
           <el-button class="button-new-tag" size="small" v-show="tags.length > 10" @click="tagsShow = !tagsShow">{{
-            tagsShow ? $t('jobMonitoring.expand') : $t('jobMonitoring.collapse') }}</el-button>
+            tagsShow ? $t('expand') : $t('collapse') }}</el-button>
         </el-form-item>
 
         <Title :title="$t('jobMonitoring.securityLevel')"></Title>
         <el-form-item class="addSelectClass" :label="$t('jobMonitoring.confirmProtectMethod')" prop="minSecurityLevel">
-          <el-select v-model="addOrEditDataRuls.minSecurityLevel" :disabled="true" placeholder="全部">
+          <el-select v-model="addOrEditDataRuls.minSecurityLevel" :disabled="true" :placeholder="$t('all')">
             <el-option v-for="item in protectMethodIdList" :key="item.dictValue" :label="item.dictLabel"
               :value="item.dictValue">
             </el-option>
@@ -230,7 +231,7 @@
         </el-form-item>
         <el-form-item class="addSelectClass" :label="$t('jobMonitoring.confirmProtectMethod')"
           prop="confirmProtectMethod">
-          <el-select v-model="addOrEditDataRuls.confirmProtectMethod" multiple placeholder="全部"
+          <el-select v-model="addOrEditDataRuls.confirmProtectMethod" multiple :placeholder="$t('all')"
             :disabled="addOrEdit.flag == 3">
             <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
               :value="item.dictLabel">
@@ -330,7 +331,11 @@
                     {{ getRuleTypeLabel(scope.row.ruleType) }}
                   </template>
                 </el-table-column>
-                <el-table-column prop="matchingCondition" :label="$t('jobMonitoring.matchCondition')" min-width="180" />
+                <el-table-column prop="matchingCondition" :label="$t('jobMonitoring.matchCondition')" min-width="180">
+                  <template slot-scope="scope">
+                    {{ getMatchingConditionLabel(scope.row.matchingCondition) }}
+                  </template>
+                </el-table-column>
                 <el-table-column prop="ruleContent" :label="$t('jobMonitoring.ruleContent')" min-width="180" />
                 <el-table-column prop="securityLevel" :label="$t('jobMonitoring.securityLevel')" min-width="180" />
               </el-table>
@@ -369,7 +374,11 @@
                     {{ getRuleTypeLabel(scope.row.ruleType) }}
                   </template>
                 </el-table-column>
-                <el-table-column prop="matchingCondition" :label="$t('jobMonitoring.matchCondition')" min-width="180" />
+                <el-table-column prop="matchingCondition" :label="$t('jobMonitoring.matchCondition')" min-width="180">
+                  <template slot-scope="scope">
+                    {{ getMatchingConditionLabel(scope.row.matchingCondition) }}
+                  </template>
+                </el-table-column>
                 <el-table-column prop="ruleContent" :label="$t('jobMonitoring.ruleContent')" min-width="180" />
                 <el-table-column prop="securityLevel" :label="$t('jobMonitoring.securityLevel')" min-width="180" />
               </el-table>
@@ -524,7 +533,7 @@ export default {
       protectMethodIdList: [],
       confirmProtectMethodList: [],
       addOrEdit: {
-        title: '新增',
+        title: this.$t('add'),
         show: false,
         flag: 1,// 1新增 2编辑 3查看
       },
@@ -533,20 +542,20 @@ export default {
       addOrEditRules: {
         categoryId: [
           {
-            required: true, message: "请选择所属父级", trigger: "blur"
+            required: true, message: this.$t('selectRequired', { field: this.$t('jobMonitoring.baseParent') }), trigger: "blur"
           }
         ],
         minSecurityLevel: [
-          { required: true, message: "请选择安全分级", trigger: "blur" },
+          { required: true, message: this.$t('selectRequired', { field: this.$t('jobMonitoring.securityLevel') }), trigger: "blur" },
         ],
         attributeType: [
-          { required: true, message: "请选择属性类型", trigger: "blur" },
+          { required: true, message: this.$t('selectRequired', { field: this.$t('jobMonitoring.attributeType') }), trigger: "blur" },
         ],
         dataOwner: [
-          { required: true, message: "请选择数据持有者", trigger: "blur" },
+          { required: true, message: this.$t('selectRequired', { field: this.$t('jobMonitoring.dataOwner') }), trigger: "blur" },
         ],
         attachData: [
-          { required: true, message: "请输入子类名称", trigger: "blur" }
+          { required: true, message: this.$t('inputRequired', { field: this.$t('jobMonitoring.subclassName') }), trigger: "blur" }
         ],
         tags: [
           { validator: this.tagsRlues, trigger: 'blur', required: true, }
@@ -566,17 +575,17 @@ export default {
       },
       dialogRules: {
         ruleType: [
-          { required: true, message: '请选择规则类型', trigger: 'blur' }
+          { required: true, message: this.$t('selectRequired', { field: this.$t('jobMonitoring.ruleType') }), trigger: 'blur' }
         ],
         matchType: [
-          { required: true, message: '请选择匹配条件', trigger: 'blur' }
+          { required: true, message: this.$t('selectRequired', { field: this.$t('jobMonitoring.matchCondition') }), trigger: 'blur' }
         ],
         ruleContent: [
-          { required: true, message: '请输入内容', trigger: 'blur' },
+          { required: true, message: this.$t('inputRequired', { field: this.$t('jobMonitoring.ruleContent') }), trigger: 'blur' },
           {
             validator: (rule, value, callback) => {
               if (!/^\d+$/.test(value)) {
-                callback(new Error('请输入有效的数字'));
+                callback(new Error(this.$t('jobMonitoring.validNumber')));
               } else {
                 callback();
               }
@@ -585,7 +594,7 @@ export default {
           }
         ],
         securityLevel: [
-          { required: true, message: '请选择安全分级', trigger: 'blur' },
+          { required: true, message: this.$t('selectRequired', { field: this.$t('jobMonitoring.securityLevel') }), trigger: 'blur' },
           {
             validator: (rule, value, callback) => {
               if (!this.currentBaseSecurityLevel) {
@@ -594,9 +603,9 @@ export default {
               }
 
               if (this.currentRuleType === 'upgrade' && value <= this.currentBaseSecurityLevel) {
-                callback(new Error('升级规则的安全分级必须大于等于当前安全分级'));
+                callback(new Error(this.$t('jobMonitoring.upgradeRuleSecurityLevelInvalid')));
               } else if (this.currentRuleType === 'downgrade' && value >= this.currentBaseSecurityLevel) {
-                callback(new Error('降级规则的安全分级必须小于等于当前安全分级'));
+                callback(new Error(this.$t('jobMonitoring.demotionRuleSecurityLevelInvalid')));
               } else {
                 callback();
               }
@@ -677,7 +686,7 @@ export default {
       options: [
         {
           value: '1',
-          label: '数据量级'
+          label: this.$t('jobMonitoring.dataScale')
         },
       ],
       currentBaseSecurityLevel: null,
@@ -769,7 +778,7 @@ export default {
     handleTagChange(val, type) {
       if (val.length >= 40) {
         this[`${type}CountIs40`] = false;
-        this.$modal.msgWarning(`${this.getTagName(type)}最多定义40个标签`);
+        this.$modal.msgWarning(this.$t('jobMonitoring.maxTagsWarning', { name: this.getTagName(type) }));
       } else {
         this[`${type}CountIs40`] = true;
       }
@@ -783,11 +792,11 @@ export default {
     // 获取标签名称
     getTagName(type) {
       const tagNames = {
-        'tags': '特征标签',
-        'coreTopic': '核心主题词',
-        'entryTerm': '入口词',
-        'relatedTerms': '关联词',
-        'reverseRef': '反向参照'
+        tags: this.$t('jobMonitoring.featureTags'),
+        coreTopic: this.$t('jobMonitoring.coreTopic'),
+        entryTerm: this.$t('jobMonitoring.entryTerm'),
+        relatedTerms: this.$t('jobMonitoring.relatedTerms'),
+        reverseRef: this.$t('jobMonitoring.reverseReference')
       };
       return tagNames[type] || '';
     },
@@ -890,6 +899,35 @@ export default {
       const option = this.options.find(item => item.value === ruleType);
       return option ? option.label : '';
     },
+    getMatchingConditionLabel(condition) {
+      if (condition === '大于等于') {
+        return this.$t('jobMonitoring.greaterEqual')
+      }
+      if (condition === '小于等于') {
+        return this.$t('jobMonitoring.lessEqual')
+      }
+      return condition
+    },
+    translateDataSource(value) {
+      if (value === '内置') {
+        return this.$t('jobMonitoring.builtIn')
+      }
+      if (value === '自定义') {
+        return this.$t('jobMonitoring.custom')
+      }
+      return value
+    },
+    isBuiltInSource(value) {
+      return value === '内置'
+    },
+    getActionText(action) {
+      const actionMap = {
+        enable: this.$t('enable'),
+        disable: this.$t('disable'),
+        delete: this.$t('delete')
+      }
+      return actionMap[action] || action
+    },
     /**
    * 打开新增规则弹窗
    * @param {String} type 规则类型：'upgrade'升级/'downgrade'降级
@@ -927,12 +965,12 @@ export default {
         if (!valid) return;
 
         if (!this.ruleForm.ruleContent.trim()) {
-          this.$message.warning('请输入数值');
+          this.$message.warning(this.$t('jobMonitoring.ruleValueRequired'));
           return;
         }
         const content = Number(this.ruleForm.ruleContent);
         if (isNaN(content)) {
-          this.$message.warning('请输入有效的数字');
+          this.$message.warning(this.$t('jobMonitoring.validNumber'));
           return;
         }
 
@@ -943,7 +981,7 @@ export default {
           if (demotionValues.length > 0) {
             const maxDemotion = Math.max(...demotionValues);
             if (content <= maxDemotion) {
-              this.$message.warning(`升级数值不能小于等于降级表格中的最大值(${maxDemotion})`);
+              this.$message.warning(this.$t('jobMonitoring.upgradeValueMustBeGreater', { value: maxDemotion }));
               return;
             }
           }
@@ -953,7 +991,7 @@ export default {
           if (upgradeValues.length > 0) {
             const minUpgrade = Math.min(...upgradeValues);
             if (content >= minUpgrade) {
-              this.$message.warning(`降级数值不能大于等于升级表格中的最小值(${minUpgrade})`);
+              this.$message.warning(this.$t('jobMonitoring.demotionValueMustBeLess', { value: minUpgrade }));
               return;
             }
           }
@@ -975,7 +1013,7 @@ export default {
         }
 
         this.ruleDialogVisible = false;
-        this.$message.success('规则新增成功');
+        this.$message.success(this.$t('jobMonitoring.ruleAddSuccess'));
       });
     },
 
@@ -986,20 +1024,20 @@ export default {
     handleDeleteRule(type) {
       const isSwitchOpen = type === 'upgrade' ? this.addOrEditDataRuls.upgradeRule : this.addOrEditDataRuls.demotionRule;
       if (!isSwitchOpen) {
-        this.$message.warning('请先打开对应规则的开关');
+        this.$message.warning(this.$t('jobMonitoring.openRuleSwitchFirst'));
         return;
       }
 
       const selection = type === 'upgrade' ? this.selectedUpgradeRows : this.selectedDemotionRows;
 
       if (selection.length === 0) {
-        this.$message.warning('请先选择要删除的规则');
+        this.$message.warning(this.$t('jobMonitoring.selectRulesToDelete'));
         return;
       }
 
-      this.$confirm(`确定删除选中的 ${selection.length} 条规则吗？`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('jobMonitoring.deleteRulesConfirm', { count: selection.length }), this.$t('tip'), {
+        confirmButtonText: this.$t('confirm'),
+        cancelButtonText: this.$t('cancel'),
         type: 'warning'
       }).then(() => {
         const contentsToDelete = selection.map(item => item.ruleContent);
@@ -1021,7 +1059,7 @@ export default {
           this.$refs[tableRef].clearSelection();
         }
 
-        this.$message.success('规则删除成功');
+        this.$message.success(this.$t('jobMonitoring.ruleDeleteSuccess'));
       });
     },
 
@@ -1222,14 +1260,14 @@ export default {
     // 自定义校验规则
     tagsRlues(rule, value, callback) {
       if (this.tags.length < 5) {
-        callback(new Error("特征标签需要至少填写5个！"));
+        callback(new Error(this.$t('jobMonitoring.tagsMinRequired')));
       } else {
         callback();
       }
     },
     addFn() {
       this.addOrEdit.flag = 1
-      this.addOrEdit.title = '新增'
+      this.addOrEdit.title = this.$t('add')
       this.addOrEdit.show = true
       // 清空表单数据
       this.addOrEditDataRuls = {
@@ -1277,14 +1315,14 @@ export default {
           this.importDataLoading = true
           await this.rulsNameIsRight(this.addOrEditDataRuls.categoryId, params.attachData, this.addOrEditDataRuls.id)
           if (!this.isName) {
-            this.$modal.msgError("子类名称重复,请更改");
+            this.$modal.msgError(this.$t('jobMonitoring.duplicateSubclassName'));
             this.importDataLoading = false
             return
           }
           if (this.addOrEditDataRuls.id != null) {
             params.id = this.addOrEditDataRuls.id
             editAttachData(params).then((response) => {
-              this.$modal.msgSuccess("修改成功");
+              this.$modal.msgSuccess(this.$t('editSuccess'));
               this.getList();
               this.addOrEdit.show = false
               this.importDataLoading = false
@@ -1294,7 +1332,7 @@ export default {
               })
           } else {
             addAttachData(params).then((response) => {
-              this.$modal.msgSuccess("新增成功");
+              this.$modal.msgSuccess(this.$t('addSuccess'));
               this.getList();
               this.addOrEdit.show = false
               this.importDataLoading = false
@@ -1383,7 +1421,7 @@ export default {
         : (row.confirmProtectMethod ? row.confirmProtectMethod.split(',') : []);
       this.addNodeName = this.getBaseParentDisplayName(row)
       this.addOrEdit.show = true
-      this.addOrEdit.title = '编辑'
+      this.addOrEdit.title = this.$t('edit')
       this.tagsShow = false
       this.$set(this.addOrEditDataRuls, 'additional', row.attachDescribe)
       // 加载核心关键词并解析
@@ -1399,7 +1437,7 @@ export default {
           this.addOrEditDataRuls.demotionList = res.data.demotionList
         }
       } catch (error) {
-        this.$message({ message: '获取子类表格数据失败', type: 'warning' })
+        this.$message({ message: this.$t('jobMonitoring.fetchChildTableFailed'), type: 'warning' })
       }
     },
     async lookFn(row) {
@@ -1416,7 +1454,7 @@ export default {
         : (row.confirmProtectMethod ? row.confirmProtectMethod.split(',') : []);
       this.addNodeName = this.getBaseParentDisplayName(row)
       this.addOrEdit.show = true
-      this.addOrEdit.title = '查看'
+      this.addOrEdit.title = this.$t('view')
       this.tagsShow = false
       // 加载核心关键词并解析
       this.coreKeyWords = row.coreKeyWords || '{"coreTopic":"","entryTerm":"","relatedTerms":"","reverseRef":""}';
@@ -1431,18 +1469,21 @@ export default {
           this.addOrEditDataRuls.demotionList = res.data.demotionList
         }
       } catch (error) {
-        this.$message({ message: '获取子类表格数据失败', type: 'warning' })
+        this.$message({ message: this.$t('jobMonitoring.fetchChildTableFailed'), type: 'warning' })
       }
     },
     messsucc(res, flag) {
-      this.$message.success(`${res.msg},${flag}${res.data}个`)
+      this.$message.success(this.$t('jobMonitoring.batchActionSuccess', {
+        action: this.getActionText(flag),
+        count: res.data
+      }))
     },
     enabledFn(flag) {
       let dataS = this.$refs.tableRef.selection
       if (dataS && dataS.length > 0) {
-        this.$confirm(`确定批量${flag}吗`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm(this.$t('jobMonitoring.batchConfirm', { action: this.getActionText(flag) }), this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
           type: 'warning'
         }).then(() => {
           let ids = dataS.map(item => {
@@ -1451,7 +1492,7 @@ export default {
           let data = {
             ids: ids.join(',')
           }
-          if (flag == '启用') {
+          if (flag == 'enable') {
             data.enable = true
             attachStatus(data).then(res => {
               if (res.code == 200) {
@@ -1459,7 +1500,7 @@ export default {
                 this.handleQuery();
               }
             })
-          } else if (flag == '禁用') {
+          } else if (flag == 'disable') {
             data.enable = false
             attachStatus(data).then(res => {
               if (res.code == 200) {
@@ -1467,12 +1508,12 @@ export default {
                 this.handleQuery();
               }
             })
-          } else if (flag == '删除') {
+          } else if (flag == 'delete') {
             for (let item of dataS) {
-              if (item.dataSource === '内置') {
+              if (this.isBuiltInSource(item.dataSource)) {
                 this.$message({
                   type: 'warning',
-                  message: '内置数据源不允许删除',
+                  message: this.$t('jobMonitoring.builtInDataSourceDeleteForbidden'),
                 });
                 return
               }
@@ -1484,13 +1525,13 @@ export default {
               }
             })
           } else {
-            this.$message({ message: '未知异常', type: 'warning' })
+            this.$message({ message: this.$t('jobMonitoring.unknownException'), type: 'warning' })
           }
         }).catch(() => {
 
         });
       } else {
-        this.$message({ message: '请选择至少一条数据', type: 'warning' })
+        this.$message({ message: this.$t('jobMonitoring.pleaseSelectAtLeastOne'), type: 'warning' })
       }
     },
     // 左侧树下拉选change事件

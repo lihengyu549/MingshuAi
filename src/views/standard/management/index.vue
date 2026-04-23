@@ -51,7 +51,7 @@
             <div class="card-tags">
               <el-tag size="small" type="primary">{{ item.standardTypeName }}</el-tag>
               <el-tag size="small" type="info">{{ $t('management.current') }}</el-tag>
-              <el-tag size="small" type="info">{{ item.dataSource }}</el-tag>
+              <el-tag size="small" type="info">{{ formatDataSource(item.dataSource) }}</el-tag>
             </div>
           </div>
         </div>
@@ -62,14 +62,14 @@
         </div>
         <div class="card-actions">
           <el-button type="text" size="small" class="btn-delete" @click="deleteFn(item)">
-            <i class="el-icon-delete"></i> {{ $t('management.delete') }}
+            <i class="el-icon-delete"></i> {{ $t('delete') }}
           </el-button>
-          <el-button type="text" size="small" class="btn-primary" :disabled="item.dataSource === '内置'"
+          <el-button type="text" size="small" class="btn-primary" :disabled="isBuiltInSource(item.dataSource)"
             @click="editFn(item)">
-            <i class="el-icon-edit-outline"></i> {{ $t('management.edit') }}
+            <i class="el-icon-edit-outline"></i> {{ $t('edit') }}
           </el-button>
           <el-button type="text" size="small" class="btn-primary" @click="detailFn(item)">
-            <i class="el-icon-warning-outline"></i> {{ $t('management.detail') }}
+            <i class="el-icon-warning-outline"></i> {{ $t('view') }}
           </el-button>
         </div>
       </el-card>
@@ -266,28 +266,28 @@ export default {
       // 表单校验
       rules: {
         standardType: [
-          { required: true, message: this.$t('management.standardTypeRequired'), trigger: "blur" },
+          { required: true, message: this.$t('selectRequired', { field: this.$t('management.standardType') }), trigger: "blur" },
         ],
         standardDescription: [
-          { required: true, message: this.$t('management.standardDescriptionRequired'), trigger: "blur" },
+          { required: true, message: this.$t('cannotBeEmpty', { field: this.$t('management.standardDescription') }), trigger: "blur" },
         ],
         categoryName: [{
-          required: true, message: this.$t('management.standardNameRequired'), trigger: "blur"
+          required: true, message: this.$t('cannotBeEmpty', { field: this.$t('management.standardName') }), trigger: "blur"
         }],
         // implementTime: [{
         //   required: true, message: "实施时间不能为空", trigger: "blur"
         // }],
         source: [{
-          required: true, message: this.$t('management.sourceRequired'), trigger: "blur"
+          required: true, message: this.$t('cannotBeEmpty', { field: this.$t('management.source') }), trigger: "blur"
         }],
         industryCategory: [{
-          required: true, message: this.$t('management.industryCategoryRequired'), trigger: "blur"
+          required: true, message: this.$t('cannotBeEmpty', { field: this.$t('management.industryCategory') }), trigger: "blur"
         }],
         importFile: [{
           required: true, validator: this.validateRuleContent, message: this.$t('management.importFileRequired'), trigger: "blur"
         }],
         schemaId: [{
-          required: true, message: this.$t('management.categorySchemaRequired'), trigger: "blur"
+          required: true, message: this.$t('selectRequired', { field: this.$t('management.categorySchema') }), trigger: "blur"
         }],
       },
       schemaOptions: [],
@@ -313,7 +313,7 @@ export default {
       if (this.form.importFile) {
         callback();
       } else {
-        callback(new Error("至少需要一条规则内容"));
+        callback(new Error(this.$t('management.importFileRequired')));
       }
     },
     handleFileExceed(files, fileList) {
@@ -330,7 +330,7 @@ export default {
     managementImport() {
       this.reset()
       this.open = true
-      this.title = '新增'
+      this.title = this.$t('add')
     },
     fetchSchemaOptions() {
       getCategorySchemaListAll().then(res => {
@@ -348,8 +348,10 @@ export default {
     downloadFile() {
       const link = document.createElement('a');
       link.href = '/file.xlsx'; // 替换为你的文件路径
-      link.download = '分类分级框架模板.xlsx'; // 设置下载后的文件名
+      link.download = this.$t('management.templateFileName'); // 设置下载后的文件名
       document.body.appendChild(link);
+      link.download = this.$t('management.templateFileName')
+      document.body.appendChild(link)
       link.click();
       document.body.removeChild(link);
     },
@@ -367,12 +369,9 @@ export default {
       let res = await selectStandardNameVerification(params)
       return res.code == 200
     },
-    messsucc(res, flag) {
-      this.$message.success(`${res.msg},${flag}${res.data}个`)
-    },
     editFn(row) {
       this.open = true
-      this.title = '编辑'
+      this.title = this.$t('edit')
       this.form = JSON.parse(JSON.stringify(row))
       this.form.importFile = row.fileName
     },
@@ -380,14 +379,14 @@ export default {
       this.$router.push({ path: '/standard/jobMonitoring', query: { id: row.id, dataSource: row.dataSource } })
     },
     deleteFn(row) {
-      this.$confirm(`删除任务，将会删除数据源所关联的所有执行结果,确定删除吗`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('management.deleteConfirm'), this.$t('tip'), {
+        confirmButtonText: this.$t('confirm'),
+        cancelButtonText: this.$t('cancel'),
         type: 'warning'
       }).then(() => {
         deleteStandardById({ id: row.id }).then(res => {
           if (res.code == 200) {
-            this.$message.success(res.msg);
+            this.$message.success(this.$t('deleteSuccess'));
 
             // 检查当前页是否只剩一条数据
             const isLastItem = this.proxysList.length === 1;
@@ -443,7 +442,7 @@ export default {
             formData.append('schemaId', this.form.schemaId);
           }
           await categoryImport(formData).then(res => {
-            this.$message.success('操作成功');
+            this.$message.success(this.form.id ? this.$t('editSuccess') : this.$t('addSuccess'));
             // this.getList();
             this.fileList = []
             this.reset()
@@ -461,6 +460,18 @@ export default {
     closeFn() {
       this.open = false
       this.reset()
+    },
+    isBuiltInSource(value) {
+      return value === '内置'
+    },
+    formatDataSource(value) {
+      if (value === '内置') {
+        return this.$t('management.builtIn')
+      }
+      if (value === '自定义') {
+        return this.$t('management.custom')
+      }
+      return value
     },
     // 定时器，防抖使用
     inputSearch(data) {

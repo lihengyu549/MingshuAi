@@ -110,7 +110,7 @@ export default {
   computed: {
     // 顶部面包屑路径展示：起始路径 + 后续下钻的路径
     currentPathDisplay() {
-      let base = this.formParams.startingPath || '';
+      let base = this.formParams.startingPath ? this.formParams.startingPath : '/';
       if (this.pathStack.length === 0) return base;
 
       let suffix = this.pathStack.join('/');
