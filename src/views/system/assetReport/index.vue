@@ -334,7 +334,12 @@ export default {
           xAxis: { data: levels },
           yAxis: { data: systems },
           visualMap: { max: vmax || 1 },
-          series: [{ data: flat }]
+          series: [{
+            data: flat,
+            itemStyle: {
+              color: (params) => (params.data && params.data[2] === 0 ? '#fff6f6' : null)
+            }
+          }]
         });
       }
       if (data.systemCategory && this.charts.systemCategory) {
@@ -590,6 +595,7 @@ export default {
             data: data,
             label: { show: true, color: '#333' },
             itemStyle: {
+              color: (params) => (params.data && params.data[2] === 0 ? '#fff6f6' : null),
               borderColor: '#fff',
               borderWidth: 1
             },
