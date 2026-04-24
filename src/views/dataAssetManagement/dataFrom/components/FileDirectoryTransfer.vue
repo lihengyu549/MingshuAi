@@ -28,6 +28,16 @@
             <el-button size="small" :disabled="pathStack.length === 0" @click="goUp">{{ $t('backToParent') }}</el-button>
           </div>
           <div class="panel-list">
+            <div class="select-all-bar">
+              <el-checkbox
+                :value="isLeftAllChecked"
+                :indeterminate="isLeftIndeterminate"
+                :disabled="leftSelectablePaths.length === 0"
+                @change="handleLeftCheckAllChange"
+              >
+                {{ $t('selectAll') }}
+              </el-checkbox>
+            </div>
             <el-checkbox-group v-model="leftChecked">
               <div v-for="item in filteredLeftList" :key="item.path" class="list-item">
                 <div class="item-left">
@@ -58,6 +68,16 @@
               :disabled="rightChecked.length === 0">{{ $t('delete') }}</el-button>
           </div>
           <div class="panel-list">
+            <div class="select-all-bar">
+              <el-checkbox
+                :value="isRightAllChecked"
+                :indeterminate="isRightIndeterminate"
+                :disabled="rightSelectablePaths.length === 0"
+                @change="handleRightCheckAllChange"
+              >
+                {{ $t('selectAll') }}
+              </el-checkbox>
+            </div>
             <el-checkbox-group v-model="rightChecked">
               <div v-for="item in filteredRightList" :key="item.filePath" class="list-item">
                 <div class="item-left">
@@ -133,11 +153,31 @@ export default {
       const lowerSearch = this.leftSearch.toLowerCase();
       return list.filter(item => item.fileName.toLowerCase().includes(lowerSearch));
     },
+    leftSelectablePaths() {
+      return this.filteredLeftList.map(item => item.path);
+    },
+    isLeftAllChecked() {
+      return this.leftSelectablePaths.length > 0 && this.leftSelectablePaths.every(path => this.leftChecked.includes(path));
+    },
+    isLeftIndeterminate() {
+      const checkedCount = this.leftSelectablePaths.filter(path => this.leftChecked.includes(path)).length;
+      return checkedCount > 0 && checkedCount < this.leftSelectablePaths.length;
+    },
     // 右侧前端搜索过滤
     filteredRightList() {
       if (!this.rightSearch) return this.rightList;
       const lowerSearch = this.rightSearch.toLowerCase();
       return this.rightList.filter(item => item.fileName.toLowerCase().includes(lowerSearch));
+    },
+    rightSelectablePaths() {
+      return this.filteredRightList.map(item => item.filePath);
+    },
+    isRightAllChecked() {
+      return this.rightSelectablePaths.length > 0 && this.rightSelectablePaths.every(path => this.rightChecked.includes(path));
+    },
+    isRightIndeterminate() {
+      const checkedCount = this.rightSelectablePaths.filter(path => this.rightChecked.includes(path)).length;
+      return checkedCount > 0 && checkedCount < this.rightSelectablePaths.length;
     }
   },
   methods: {
@@ -171,6 +211,16 @@ export default {
     handleModeChange() {
       // 切换显示模式时只做前端过滤，不再请求后端
       this.leftChecked = [];
+    },
+
+    handleLeftCheckAllChange(checked) {
+      const hiddenChecked = this.leftChecked.filter(path => !this.leftSelectablePaths.includes(path));
+      this.leftChecked = checked ? [...hiddenChecked, ...this.leftSelectablePaths] : hiddenChecked;
+    },
+
+    handleRightCheckAllChange(checked) {
+      const hiddenChecked = this.rightChecked.filter(path => !this.rightSelectablePaths.includes(path));
+      this.rightChecked = checked ? [...hiddenChecked, ...this.rightSelectablePaths] : hiddenChecked;
     },
 
     // 点击目录名字下钻
@@ -341,6 +391,12 @@ export default {
       flex: 1;
       overflow-y: auto;
       padding: 10px 0;
+
+      .select-all-bar {
+        padding: 0 15px 10px;
+        border-bottom: 1px solid #F2F6FC;
+        margin-bottom: 4px;
+      }
 
       // 自定义滚动条
       &::-webkit-scrollbar {
