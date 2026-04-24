@@ -1,5 +1,5 @@
 export default {
-  pleaseInputLibraryName: 'Please enter library name to search',
+  pleaseInputSearch: 'Please enter to search',
   selectAll: 'Select All',
   export: 'Export',
   tableName: 'Table Name',

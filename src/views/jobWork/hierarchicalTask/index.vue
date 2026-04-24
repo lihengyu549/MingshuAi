@@ -595,6 +595,17 @@ export default {
         }, {
           value: 'FILE',
           label: this.$t('hierarchicalTask.options.dataSourceType.file')
+        },
+        {
+          value: 'API',
+          label: this.$t('hierarchicalTask.options.dataSourceType.api')
+        }, {
+          value: 'FILE_CATALOGUE',
+          label: this.$t('hierarchicalTask.options.dataSourceType.fileCatalogue')
+        },
+        {
+          value: 'FILE_SERVER',
+          label: this.$t('hierarchicalTask.options.dataSourceType.fileServer')
         }
       ],
       databaseTypeList: [],

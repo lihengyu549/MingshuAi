@@ -17,13 +17,13 @@
     </el-card>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">
-          {{ $t('dataAssetdiscover.addTask') }}
+        <el-button type="primary" plain icon="el-icon-video-play" size="medium" @click="scanSMFn">
+          {{ $t('dataAssetdiscover.scanTask') }}
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-video-play" size="medium" @click="scanSMFn">
-          {{ $t('dataAssetdiscover.scanTask') }}
+        <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">
+          {{ $t('dataAssetdiscover.addTask') }}
         </el-button>
       </el-col>
       <el-col :span="1.5">

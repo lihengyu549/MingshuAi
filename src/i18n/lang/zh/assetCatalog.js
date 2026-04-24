@@ -1,5 +1,5 @@
 export default {
-  pleaseInputLibraryName: '请输入库名搜索',
+  pleaseInputSearch: '请输入搜索',
   selectAll: '全选',
   export: '导出',
   tableName: '表名',

@@ -1,7 +1,7 @@
 export default {
   treeSearchPlaceholder: '搜索树节点...',
   ruleName: '规则名称',
-  standardBelong: '所属标准',
+  standardBelong: '所属子类',
   recognizeObject: '识别对象',
   recognizeWay: '识别方式',
   similarity: '相似度',

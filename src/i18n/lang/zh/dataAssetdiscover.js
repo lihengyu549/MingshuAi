@@ -2,7 +2,7 @@ export default {
   taskName: "任务名称",
   taskState: "任务状态",
   addTask: "新增任务",
-  scanTask: "扫描任务",
+  scanTask: "开始扫描",
   deleteTask: "删除任务",
   ipScope: "IP 范围",
   ports: "指定端口",

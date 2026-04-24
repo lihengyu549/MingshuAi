@@ -9,7 +9,7 @@
         </el-form-item>
         <el-form-item :label="$t('dataFrom.sourceType')" prop="sourceType">
           <el-select clearable v-model="queryParams.sourceType" @change="inputSearch"
-            :placeholder="$t('dataFrom.pleaseSelectDatabaseType')">
+            :placeholder="$t('dataFrom.pleaseSelectDataSourceType')">
             <el-option v-for="item in dict.type.sys_datasource_type" :key="item.value" :label="item.label"
               :value="item.value">
             </el-option>
@@ -18,7 +18,7 @@
 
         <el-form-item :label="$t('dataFrom.businessName')" prop="businessName">
           <el-input v-model="queryParams.businessName" @input="inputSearch"
-            :placeholder="$t('dataFrom.pleaseInputSourceName')" clearable @keyup.enter.native="handleQuery" />
+            :placeholder="$t('dataFrom.pleaseInputBusinessName')" clearable @keyup.enter.native="handleQuery" />
         </el-form-item>
 
         <!-- <el-form-item label="分类分级标准" prop="projectId">
@@ -40,7 +40,7 @@
         </el-form-item>
         <el-form-item :label="$t('dataFrom.scanState')" prop="scanState">
           <el-select clearable v-model="queryParams.scanState" @change="inputSearch"
-            :placeholder="$t('dataFrom.pleaseSelectDatabaseType')">
+            :placeholder="$t('dataFrom.pleaseSelectScanState')">
             <el-option v-for="item in executeStatus" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>

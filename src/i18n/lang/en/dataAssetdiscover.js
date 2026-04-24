@@ -2,7 +2,7 @@ export default {
   taskName: "Task Name",
   taskState: "Task State",
   addTask: "Add Task",
-  scanTask: "Scan Task",
+  scanTask: "Start Scan",
   deleteTask: "Delete Task",
   ipScope: "IP Scope",
   ports: "Ports",

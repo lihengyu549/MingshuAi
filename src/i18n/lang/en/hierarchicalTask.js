@@ -52,7 +52,7 @@ export default {
     taskName: 'Task Name',
     taskNamePlaceholder: 'Please enter the task name',
     dataSourceName: 'Data Source Name',
-    framework: 'Classification Framework',
+    framework: 'Classification Standard',
     contentPlaceholder: 'Please select content',
     confidenceLevel: 'Confidence Level',
     confirmStatus: 'Confirmation Status',
@@ -75,7 +75,10 @@ export default {
     },
     dataSourceType: {
       database: 'Database',
-      file: 'Excel File'
+      file: 'Excel File',
+      api: 'API',
+      fileCatalogue: 'File Catalogue',
+      fileServer: 'File Server'
     },
     publishStatus: {
       unpublished: 'Unpublished',
@@ -155,7 +158,7 @@ export default {
   validation: {
     taskNameRequired: 'Task name cannot be empty',
     dataSourceRequired: 'Data source name cannot be empty',
-    frameworkRequired: 'Classification framework cannot be empty',
+    frameworkRequired: 'Classification standard cannot be empty',
     classificationLogicRequired: 'Classification logic cannot be empty',
     confidenceRequired: 'Confidence level cannot be empty',
     confirmRequired: 'Confirmation status cannot be empty',

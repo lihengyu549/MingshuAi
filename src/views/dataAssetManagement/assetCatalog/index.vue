@@ -5,7 +5,7 @@
         <el-card class="left-card" shadow="never">
           <!-- 1. 原有搜索输入框(保持不变,位于最上方) -->
           <div class="head-container" style="margin-bottom: 15px;">
-            <el-input class="serachInput" v-model="filterText" :placeholder="$t('assetCatalog.pleaseInputLibraryName')"
+            <el-input class="serachInput" v-model="filterText" :placeholder="$t('assetCatalog.pleaseInputSearch')"
               clearable>
               <i slot="prefix" class="el-input__icon el-icon-search"></i>
             </el-input>

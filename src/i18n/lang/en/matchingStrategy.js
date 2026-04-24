@@ -1,7 +1,7 @@
 export default {
   treeSearchPlaceholder: 'Search tree nodes...',
   ruleName: 'Rule Name',
-  standardBelong: 'Standard',
+  standardBelong: 'Subclass',
   recognizeObject: 'Recognition Object',
   recognizeWay: 'Recognition Method',
   similarity: 'Similarity',

@@ -10,12 +10,12 @@
           @keyup.enter.native="handleQuery" />
       </el-form-item> -->
         <el-form-item :label="$t('management.standardName')" prop="standardName">
-          <el-input v-model="queryParams.standardName" @input="inputSearch" :placeholder="$t('management.standardName')"
+          <el-input v-model="queryParams.standardName" @input="inputSearch" :placeholder="$t('management.pleaseInputStandardName')"
             clearable @keyup.enter.native="handleQuery" />
         </el-form-item>
         <el-form-item :label="$t('management.standardType')" prop="standardType">
           <el-select clearable v-model="queryParams.standardType" @change="inputSearch"
-            :placeholder="$t('management.standardType')">
+            :placeholder="$t('management.pleaseSelectStandardType')">
             <el-option v-for="item in dict.type.sys_standard_type" :key="item.value" :label="item.label"
               :value="item.value">
             </el-option>
@@ -23,7 +23,7 @@
         </el-form-item>
         <el-form-item :label="$t('management.industryCategory')" prop="industryCategory">
           <el-input v-model="queryParams.industryCategory" @input="inputSearch"
-            :placeholder="$t('management.industryCategory')" clearable @keyup.enter.native="handleQuery" />
+            :placeholder="$t('management.pleaseInputIndustryCategory')" clearable @keyup.enter.native="handleQuery" />
         </el-form-item>
         <!-- <el-form-item class="searchBtn">
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>

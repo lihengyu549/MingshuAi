@@ -6,7 +6,7 @@ export default {
     sourceTypePlaceholder: '请选择数据库类型',
     businessName: '来源业务系统',
     businessNamePlaceholder: '请输入来源业务系统',
-    framework: '分类分级框架',
+    framework: '分类分级标准',
     frameworkPlaceholder: '请选择分类分级标准',
     executionStatus: '执行状态',
     executionStatusPlaceholder: '请选择执行状态',
@@ -52,7 +52,7 @@ export default {
     taskName: '任务名称',
     taskNamePlaceholder: '请输入任务名称',
     dataSourceName: '数据源名称',
-    framework: '分类分级框架',
+    framework: '分类分级标准',
     contentPlaceholder: '请选择内容',
     confidenceLevel: '置信度',
     confirmStatus: '确认状态',
@@ -75,7 +75,10 @@ export default {
     },
     dataSourceType: {
       database: '数据库',
-      file: 'Excel表'
+      file: 'Excel表',
+      api: 'API',
+      fileCatalogue: '文件目录',
+      fileServer: '文件服务器'
     },
     publishStatus: {
       unpublished: '未发布',
@@ -155,7 +158,7 @@ export default {
   validation: {
     taskNameRequired: '任务名称不能为空',
     dataSourceRequired: '数据源名称不能为空',
-    frameworkRequired: '分类分级框架不能为空',
+    frameworkRequired: '分类分级标准不能为空',
     classificationLogicRequired: '分类逻辑不能为空',
     confidenceRequired: '置信度不能为空',
     confirmRequired: '确认状态不能为空',
