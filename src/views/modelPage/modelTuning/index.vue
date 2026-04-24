@@ -5,7 +5,7 @@
                 :inline="true" label-width="auto">
                 <el-form-item :label="$t('modelTuning.taskName')" prop="modelTaskName">
                     <el-input v-model="queryParams.modelTaskName" @input="inputSearch"
-                        :placeholder="$t('modelTuning.inputDataSourceName')" clearable
+                        :placeholder="$t('modelTuning.inputTaskName')" clearable
                         @keyup.enter.native="handleQuery" />
                 </el-form-item>
                 <el-form-item :label="$t('modelTuning.trainingStatus')" prop="modelTrainingStatus">

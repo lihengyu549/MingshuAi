@@ -1,6 +1,6 @@
 export default {
-  targetName: '目标名称',
-  enterTargetName: '请输入目标名称',
+  taskName: '任务名称',
+  enterTaskName: '请输入任务名称',
   pushType: '推送类型',
   selectPushType: '请选择推送类型',
   pleaseSelect: '请选择',

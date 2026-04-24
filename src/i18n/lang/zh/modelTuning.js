@@ -9,7 +9,7 @@ export default {
   selectDataSet: '请选择数据集',
   addTask: '新增任务',
   deleteTask: '删除任务',
-  baseType: '基座类型',
+  baseType: '基座模型',
   trainingMethod: '训练方法',
   outputModelName: '产出模型名称',
   startTraining: '开始训练',

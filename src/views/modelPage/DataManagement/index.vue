@@ -31,7 +31,7 @@
                     <el-empty :description="$t('dataManagement.noData')"></el-empty>
                 </template>
                 <el-table-column type="selection" width="60" align="center" />
-                <el-table-column :label="$t('dataManagement.dataSetName')" prop="dataSetName" align="left" width="300" show-overflow-tooltip>
+                <el-table-column :label="$t('dataManagement.dataSetName')" prop="dataSetName" align="left" show-overflow-tooltip>
                     <template slot-scope="scope">
                         <span @click="handleEdit(scope.row)" style="cursor: pointer; color: #409eff;">
                             <svg-icon icon-class="dataset" style="font-size: 16px; margin-right: 5px;" />
@@ -39,14 +39,14 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column :label="$t('dataManagement.dataSetType')" align="center" prop="dataSetTypeName" width="300"
+                <el-table-column :label="$t('dataManagement.dataSetType')" align="center" prop="dataSetTypeName"
                     show-overflow-tooltip />
-                <el-table-column :label="$t('dataManagement.dataSize')" align="center" prop="dataSize" width="300" show-overflow-tooltip />
-                <el-table-column :label="$t('operation')" align="center" class-name="small-padding fixed-width" min-width="150">
+                <el-table-column :label="$t('dataManagement.dataSize')" align="center" prop="dataSize" show-overflow-tooltip />
+                <!-- <el-table-column :label="$t('operation')" align="center" class-name="small-padding fixed-width" min-width="150">
                     <template slot-scope="scope">
                         <el-button size="mini" type="text" @click="handlePreview(scope.row)">{{ $t('dataManagement.view') }}</el-button>
                     </template>
-                </el-table-column>
+                </el-table-column> -->
             </el-table>
             <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
                 :pageSize.sync="queryParams.pageSize" @pagination="getList" />

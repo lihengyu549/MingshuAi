@@ -3,8 +3,8 @@
     <el-card shadow="never" class="searchCard">
       <el-form ref="queryForm" :model="queryParams" v-show="showSearch" class="yuanDataClass" size="small"
         :inline="true" label-width="auto">
-        <el-form-item :label="$t('resultPush.targetName')" prop="taskName">
-          <el-input v-model="queryParams.taskName" @input="inputSearch" :placeholder="$t('resultPush.enterTargetName')"
+        <el-form-item :label="$t('resultPush.taskName')" prop="taskName">
+          <el-input v-model="queryParams.taskName" @input="inputSearch" :placeholder="$t('resultPush.enterTaskName')"
             clearable @keyup.enter.native="handleQuery" />
         </el-form-item>
         <el-form-item :label="$t('resultPush.pushType')" prop="pushType">

@@ -1,17 +1,17 @@
 export default {
   search: {
     taskName: 'Task Name',
-    taskNamePlaceholder: 'Please enter the data source name',
+    taskNamePlaceholder: 'Please enter the task name',
     sourceType: 'Data Source Type',
     sourceTypePlaceholder: 'Please select the database type',
     businessName: 'Source Business System',
-    businessNamePlaceholder: 'Please enter the data source name',
-    framework: 'Classification Framework',
-    frameworkPlaceholder: 'Please select the classification framework',
+    businessNamePlaceholder: 'Please enter the source business system',
+    framework: 'Classification Standard',
+    frameworkPlaceholder: 'Please select the classification standard',
     executionStatus: 'Execution Status',
     executionStatusPlaceholder: 'Please select the execution status',
     publishStatus: 'Publish Status',
-    publishStatusPlaceholder: 'Please select the scan status'
+    publishStatusPlaceholder: 'Please select the publish status'
   },
   buttons: {
     addTask: 'Add Task',

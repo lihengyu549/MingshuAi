@@ -1,17 +1,17 @@
 export default {
   search: {
     taskName: '任务名称',
-    taskNamePlaceholder: '请输入数据源名称',
+    taskNamePlaceholder: '请输入任务名称',
     sourceType: '数据源类型',
     sourceTypePlaceholder: '请选择数据库类型',
     businessName: '来源业务系统',
-    businessNamePlaceholder: '请输入数据源名称',
+    businessNamePlaceholder: '请输入来源业务系统',
     framework: '分类分级框架',
-    frameworkPlaceholder: '请选择分类分级框架',
+    frameworkPlaceholder: '请选择分类分级标准',
     executionStatus: '执行状态',
     executionStatusPlaceholder: '请选择执行状态',
     publishStatus: '发布状态',
-    publishStatusPlaceholder: '请选择扫描状态'
+    publishStatusPlaceholder: '请选择发布状态'
   },
   buttons: {
     addTask: '新增任务',

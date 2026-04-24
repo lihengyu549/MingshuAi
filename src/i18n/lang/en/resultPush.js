@@ -1,6 +1,6 @@
 export default {
-  targetName: 'Target Name',
-  enterTargetName: 'Please enter the target name',
+  taskName: 'Task Name',
+  enterTaskName: 'Please enter the task name',
   pushType: 'Push Type',
   selectPushType: 'Please select a push type',
   pleaseSelect: 'Please select',
