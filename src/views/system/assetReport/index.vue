@@ -295,8 +295,8 @@ export default {
         this.charts.assetDistribution.setOption({
           xAxis: { data: names },
           series: [
-            { name: '字段数量', data: fields },
-            { name: '文件数量', data: files }
+            { name: this.$t('assetReport.fieldCount'), data: fields },
+            { name: this.$t('assetReport.fileCount'), data: files }
           ]
         });
       }
@@ -304,8 +304,8 @@ export default {
         this.charts.growthTrend.setOption({
           xAxis: { data: data.growthTrend.x || [] },
           series: [
-            { name: '累计字段数量', data: data.growthTrend.fields || [] },
-            { name: '累计文件数量', data: data.growthTrend.files || [] }
+            { name: this.$t('assetReport.fieldCountSum'), data: data.growthTrend.fields || [] },
+            { name: this.$t('assetReport.fileCountSum'), data: data.growthTrend.files || [] }
           ]
         });
       }
@@ -378,7 +378,7 @@ export default {
       this.charts.assetDistribution = chart;
       chart.setOption({
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-        legend: { data: ['字段数量', '文件数量'], top: 10, icon: 'roundRect' },
+        legend: { data: [this.$t('assetReport.fieldCount'), this.$t('assetReport.fileCount')], top: 10, icon: 'roundRect' },
         grid: { left: '3%', right: '4%', bottom: '5%', containLabel: true },
         xAxis: {
           type: 'category',
@@ -395,14 +395,14 @@ export default {
         },
         series: [
           {
-            name: '字段数量',
+            name: this.$t('assetReport.fieldCount'),
             type: 'bar',
             barWidth: 15,
             itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] },
             data: []
           },
           {
-            name: '文件数量',
+            name: this.$t('assetReport.fileCount'),
             type: 'bar',
             barWidth: 15,
             itemStyle: { color: '#8bb4f6', borderRadius: [4, 4, 0, 0] },
@@ -421,7 +421,7 @@ export default {
       chart.setOption({
         tooltip: { trigger: 'axis' },
         legend: {
-          data: ['累计字段数量', '累计文件数量'],
+          data: [this.$t('assetReport.fieldCountSum'), this.$t('assetReport.fileCountSum')],
           top: 10,
           icon: 'emptyCircle'
         },
@@ -442,7 +442,7 @@ export default {
         },
         series: [
           {
-            name: '累计字段数量',
+            name: this.$t('assetReport.fieldCountSum'),
             type: 'line',
             symbol: 'emptyCircle',
             symbolSize: 6,
@@ -451,8 +451,7 @@ export default {
             itemStyle: { color: '#3b82f6' }
           },
           {
-            name: '累计文件数量',
-            type: 'line',
+            name: this.$t('assetReport.fileCountSum'),
             symbol: 'emptyCircle',
             symbolSize: 6,
             data: [],
