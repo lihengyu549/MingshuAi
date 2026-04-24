@@ -16,6 +16,7 @@ import home from './home'
 import management from './management'
 import jobMonitoring from './jobMonitoring'
 import editMenu from './editMenu'
+import gradingScheme from './gradingScheme'
 import hierarchicalStructure from './hierarchicalStructure'
 import dataAssetdiscover from './dataAssetdiscover'
 import dataFrom from './dataFrom'
@@ -52,6 +53,7 @@ export default {
   management,
   jobMonitoring,
   editMenu,
+  gradingScheme,
   hierarchicalStructure,
   dataAssetdiscover,
   dataFrom,

@@ -44,7 +44,7 @@
                         </div>
                         <div class="chat-bubble">
                             {{ msg.content }}
-                            <template v-if="msg.content.includes('请稍等') && isGenerating">
+                            <template v-if="msg.content.includes($t('hierarchicalStructure.pleaseWait')) && isGenerating">
                                 <svg-icon iconClass="loading"
                                     style="width: 20px; height: 20px; margin-left: 5px; animation: spin 1s linear infinite;" />
                             </template>
@@ -117,7 +117,7 @@ export default {
             waitUid: '',
             fullData: {
                 data: {
-                    text: "根节点",
+                    text: '',
                 },
                 children: [],
             },
@@ -159,6 +159,9 @@ export default {
             pendingWebSocketData: [], // 存储页面不可见时接收的数据
             pageVisibilityHandler: null,
         };
+    },
+    created() {
+        this.fullData.data.text = this.$t('hierarchicalStructure.rootNode')
     },
     mounted() {
         this.mindMap = new MindMap({
@@ -636,7 +639,7 @@ export default {
                     // 将新节点加入打字队列
                     this.typingQueue.push({
                         nodeData: newNode.data,
-                        fullText: sourceNode.data.text || "新节点",
+                        fullText: sourceNode.data.text || this.$t('hierarchicalStructure.newNode'),
                         uid: nodeUid
                     });
 
@@ -646,7 +649,7 @@ export default {
                     }
 
                     // 等待当前节点打字完成后再继续
-                    await this.waitForNodeTypingComplete(newNode.data, sourceNode.data.text || "新节点");
+                    await this.waitForNodeTypingComplete(newNode.data, sourceNode.data.text || this.$t('hierarchicalStructure.newNode'));
                 } else {
                     newNode = existingNode;
 
@@ -989,7 +992,7 @@ export default {
 
             // 设置发送中状态，防止重复点击
             this.isSending = true;
-            this.addChatMessage('ai', '请您输入需要定制分类标准的企业名称');
+            this.addChatMessage('ai', this.$t('hierarchicalStructure.enterpriseName'));
             // 添加用户输入的企业名称到聊天记录
             this.addChatMessage('user', this.form.enterpriseName);
 
@@ -1005,8 +1008,10 @@ export default {
                     this.enterpriseNameValid = true;
 
                     // 添加系统反馈
-                    this.addChatMessage('ai', '用户输入的企业名称正确有效，继续生成分类分级标准');
-                    this.addChatMessage('ai', `正在生成${this.form.enterpriseName}企业数据分类分级标准，请稍等`);
+                    this.addChatMessage('ai', this.$t('hierarchicalStructure.enterpriseNameValid'));
+                    this.addChatMessage('ai', this.$t('hierarchicalStructure.generatingMessage', {
+                        enterpriseName: this.form.enterpriseName
+                    }));
 
                     // 切换到聊天界面
                     this.switchToChatView();
@@ -1016,13 +1021,13 @@ export default {
                 } else {
                     // 企业名称无效
                     this.enterpriseNameValid = false;
-                    this.addChatMessage('ai', `错误: ${response.msg || '用户输入的企业名称无效，请重新输入正确有效的企业名称。'}`);
+                    this.addChatMessage('ai', `${this.$t('hierarchicalStructure.errorPrefix')}${response.msg || this.$t('hierarchicalStructure.invalidEnterpriseName')}`);
                     // 清空输入框
                     this.form.enterpriseName = '';
                 }
             } catch (error) {
                 console.error('验证企业名称出错:', error);
-                this.addChatMessage('ai', '系统繁忙，请稍后重试。');
+                this.addChatMessage('ai', this.$t('hierarchicalStructure.systemBusy'));
             } finally {
                 // 无论成功失败，都重置发送状态
                 this.isSending = false;
@@ -1035,7 +1040,7 @@ export default {
             setTimeout(() => {
                 this.showChatSection = true;
                 // 根节点直接显示完整文本
-                this.fullData.data.text = this.form.enterpriseName || "根节点";
+                this.fullData.data.text = this.form.enterpriseName || this.$t('hierarchicalStructure.rootNode');
                 this.updateMindMapWithNewData(this.fullData);
             }, 300);
         },
@@ -1061,7 +1066,7 @@ export default {
                 this.connectWebSocket(resolve);
             }).catch(error => {
                 console.error('WebSocket连接出错:', error);
-                this.addChatMessage('ai', '数据连接失败，请重试。');
+                this.addChatMessage('ai', this.$t('hierarchicalStructure.dataConnectionFailed'));
             });
         },
 
@@ -1085,7 +1090,7 @@ export default {
             this.chatInput = '';
 
             // 这里可以添加对用户指令的处理逻辑
-            this.addChatMessage('ai', '收到指令，正在处理...');
+            this.addChatMessage('ai', this.$t('hierarchicalStructure.commandReceived'));
         },
 
         // 滚动聊天记录到底部
@@ -1098,14 +1103,14 @@ export default {
         // 停止按钮事件
         async handleTermination() {
             if (!this.generate || !this.generate.id) {
-                this.addChatMessage('ai', '没有正在生成的任务');
+                this.addChatMessage('ai', this.$t('hierarchicalStructure.noGeneratingTask'));
                 return;
             }
 
             this.isTerminating = true;
             try {
                 const response = await terminationGenerateStandard({ id: this.generate.id });
-                this.addChatMessage('ai', '生成分类分级任务已停止。');
+                this.addChatMessage('ai', this.$t('hierarchicalStructure.generationStopped'));
                 // 接口发送成功后立即断开websocket
                 if (this.websocket) {
                     this.isExpectedClose = true; // 标记为预期关闭
@@ -1113,7 +1118,7 @@ export default {
                 }
             } catch (error) {
                 console.error('停止请求出错:', error);
-                this.addChatMessage('ai', '停止请求失败，请重试');
+                this.addChatMessage('ai', this.$t('hierarchicalStructure.stopRequestFailed'));
             } finally {
                 this.isTerminating = false;
                 this.cleanupGeneration(false);
@@ -1178,7 +1183,7 @@ export default {
             // 连接成功
             this.websocket.onopen = () => {
                 console.log('WebSocket连接已建立');
-                this.$message.success('开始接收数据...');
+                this.$message.success(this.$t('hierarchicalStructure.startReceivingData'));
                 resolve();
             };
 
@@ -1231,7 +1236,7 @@ export default {
                 }
 
                 if (this.isGenerating) {
-                    this.$message.warning('连接已断开');
+                    this.$message.warning(this.$t('hierarchicalStructure.connectionClosed'));
 
                     // 如果有未处理完的数据，继续处理
                     if (this.latestFullData) {
@@ -1266,7 +1271,7 @@ export default {
             // 连接错误
             this.websocket.onerror = (error) => {
                 console.error('WebSocket错误:', error);
-                this.$message.error('连接出错，请重试');
+                this.$message.error(this.$t('hierarchicalStructure.connectionErrorRetry'));
                 this.cleanupGeneration(false);
                 this.canSave = false;
                 this.canCancel = false;
@@ -1329,17 +1334,17 @@ export default {
                 const response = await saveGenerateStandard({ id: this.generate.id, treeStructureData: saveData });
 
                 if (response.code === 200) {
-                    this.$message.success('保存成功');
+                    this.$message.success(this.$t('hierarchicalStructure.saveSuccess'));
                     // 更新latestFullData为保存的数据，确保状态一致
                     this.latestFullData = saveData;
                     // 保存成功后跳转到管理页面
                     this.$router.push({ path: '/standard/jobMonitoring', query: { id: this.generate.id } });
                 } else {
-                    this.$message.error('保存失败: ' + (response.message || '未知错误'));
+                    this.$message.error(this.$t('hierarchicalStructure.saveFailed') + (response.message || this.$t('hierarchicalStructure.unknownError')));
                 }
             } catch (error) {
                 console.error('保存请求出错:', error);
-                this.$message.error('保存失败，请重试');
+                this.$message.error(this.$t('hierarchicalStructure.saveFailedRetry'));
             }
         },
 
@@ -1347,13 +1352,13 @@ export default {
             try {
                 const response = await cancelGenerateStandard({ id: this.generate.id });
                 if (response.data.success) {
-                    this.addChatMessage('ai', '操作已取消');
+                    this.addChatMessage('ai', this.$t('hierarchicalStructure.operationCanceled'));
                 } else {
-                    this.addChatMessage('ai', '取消失败: ' + (response.data.message || '未知错误'));
+                    this.addChatMessage('ai', this.$t('hierarchicalStructure.cancelFailed') + (response.data.message || this.$t('hierarchicalStructure.unknownError')));
                 }
             } catch (error) {
                 console.error('取消请求出错:', error);
-                this.addChatMessage('ai', '取消失败，请重试');
+                this.addChatMessage('ai', this.$t('hierarchicalStructure.cancelFailedRetry'));
             }
 
             // 重置状态，返回到首屏
@@ -1394,7 +1399,7 @@ export default {
                 // 重置思维导图
                 this.fullData = {
                     data: {
-                        text: "根节点",
+                        text: this.$t('hierarchicalStructure.rootNode'),
                     },
                     children: [],
                 };
@@ -1420,7 +1425,7 @@ export default {
             //     role: 'assistant',
             //     content: '框架生成完成！您可以查看生成的内容。'
             // });
-            this.addChatMessage('ai', '框架生成完成！您可以查看生成的内容。');
+            this.addChatMessage('ai', this.$t('hierarchicalStructure.generationCompleted'));
 
             this.$nextTick(() => {
                 this.scrollToBottom();

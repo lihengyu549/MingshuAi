@@ -80,7 +80,7 @@
             </el-dropdown-item> -->
             <el-dropdown-item class="settings-item" @click.native="handleSetLanguage(language === 'zh' ? 'en' : 'zh')">
               <i class="el-icon-s-help settings-item-icon"></i>
-              <span>语言 / Language</span>
+              <span>{{ $t('navbar.language') }}</span>
             </el-dropdown-item>
             <!-- <el-dropdown-item class="settings-item settings-item-danger" divided>
               <i class="el-icon-refresh-left settings-item-icon danger"></i>
@@ -249,9 +249,9 @@ export default {
       return null
     },
     async logout() {
-      this.$confirm('确定注销并退出系统吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('navbar.logoutConfirm'), this.$t('tip'), {
+        confirmButtonText: this.$t('confirm'),
+        cancelButtonText: this.$t('cancel'),
         type: 'warning'
       }).then(() => {
         this.$store.dispatch('LogOut').then(() => {
@@ -269,7 +269,7 @@ export default {
         this.exportRecords = response.data || []
       } catch (error) {
         console.error('获取导出记录失败:', error)
-        this.$message.error('获取导出记录失败')
+        this.$message.error(this.$t('navbar.fetchExportRecordsFailed'))
       } finally {
         this.loading = false
       }
@@ -289,13 +289,13 @@ export default {
           document.body.removeChild(link);
           window.URL.revokeObjectURL(url);
           this.loading = false;
-          this.$message.success('导出成功');
+          this.$message.success(this.$t('navbar.exportSuccess'));
         }).catch(error => {
-          this.$message.error('文件下载失败')
+          this.$message.error(this.$t('navbar.fileDownloadFailed'))
         })
       } catch (error) {
         console.error('下载文件失败:', error)
-        this.$message.error('下载文件失败')
+        this.$message.error(this.$t('navbar.downloadFileFailed'))
       }
     },
     viewAllRecords() {
