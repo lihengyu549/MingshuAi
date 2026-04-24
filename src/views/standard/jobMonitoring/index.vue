@@ -602,9 +602,9 @@ export default {
                 return;
               }
 
-              if (this.currentRuleType === 'upgrade' && value <= this.currentBaseSecurityLevel) {
+              if (this.currentRuleType === 'upgrade' && Number(value) <= Number(this.currentBaseSecurityLevel)) {
                 callback(new Error(this.$t('jobMonitoring.upgradeRuleSecurityLevelInvalid')));
-              } else if (this.currentRuleType === 'downgrade' && value >= this.currentBaseSecurityLevel) {
+              } else if (this.currentRuleType === 'downgrade' && Number(value) >= Number(this.currentBaseSecurityLevel)) {
                 callback(new Error(this.$t('jobMonitoring.demotionRuleSecurityLevelInvalid')));
               } else {
                 callback();
@@ -769,7 +769,7 @@ export default {
         const payload = res && res.data ? res.data : res
         const list = payload.records || payload.rows || payload.list || payload || []
         this.levelOptions = list.map(it => ({
-          value: it.level,
+          value: String(it.level),
           label: it.levelName
         }))
       })
@@ -950,9 +950,9 @@ export default {
       if (!this.currentBaseSecurityLevel) return true;
 
       if (this.currentRuleType === 'upgrade') {
-        return item.value > this.currentBaseSecurityLevel;
+        return Number(item.value) > Number(this.currentBaseSecurityLevel);
       } else if (this.currentRuleType === 'downgrade') {
-        return item.value < this.currentBaseSecurityLevel;
+        return Number(item.value) < Number(this.currentBaseSecurityLevel);
       }
       return true;
     },
