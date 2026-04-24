@@ -62,7 +62,8 @@
           <span>{{ item.implementTime }} {{ $t('management.implement') }}</span>
         </div>
         <div class="card-actions">
-          <el-button type="text" size="small" class="btn-delete" @click="deleteFn(item)">
+          <el-button type="text" size="small" class="btn-delete" :disabled="isBuiltInSource(item.dataSource)"
+            @click="deleteFn(item)">
             <i class="el-icon-delete"></i> {{ $t('delete') }}
           </el-button>
           <el-button type="text" size="small" class="btn-primary" :disabled="isBuiltInSource(item.dataSource)"

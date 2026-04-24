@@ -554,11 +554,25 @@
 import { getAnalyseLog, forcedTermination } from "@/api/system/protectCategory"
 import { debounce } from '@/utils/index';
 
+const getJobMonitoringRouteData = () => {
+    const storedRouteData = sessionStorage.getItem('jobMonitoring_routeData');
+    if (!storedRouteData) {
+        return null;
+    }
+    try {
+        return JSON.parse(storedRouteData);
+    } catch (error) {
+        console.error('Failed to parse jobMonitoring route data:', error);
+        return null;
+    }
+};
+
 export default {
     name: 'TaskProgress',
     data() {
+        const routeData = getJobMonitoringRouteData() || this.$route.query || {};
         return {
-            routeData: this.$route.query || {},
+            routeData,
             // 任务基本信息
             tasksName: '',
             startTime: '',
@@ -583,7 +597,6 @@ export default {
             analysisLogs: {},
             // 标签页
             activeTab: '',
-            queryParams: this.$route.query || {},
             currentTableName: '',
             prevTableName: '',
             nextTableName: '',
@@ -741,6 +754,10 @@ export default {
             }
         });
     },
+    beforeRouteLeave(to, from, next) {
+        sessionStorage.removeItem('jobMonitoring_routeData');
+        next();
+    },
     beforeDestroy() {
         this.stopAllAnimations();
         if (this.socket) {
@@ -782,7 +799,7 @@ export default {
             this.runTime = this.routeData.runTime || '';
             this.status = this.routeData.maskComplete || '';
             this.errorReason = this.routeData.errorReason || '';
-            this.statusName = this.routeData.maskStatusName || '';
+            this.statusName = this.routeData.maskStatusName || this.routeData.stateName || '';
             this.progressTotal = Number(this.routeData.progressTotal) || 0;
             this.progressCurrent = Number(this.routeData.progressCurrent) || 0;
         },
@@ -960,9 +977,10 @@ export default {
             this.getAnalysisLogs();
         },
         handleReturn() {
+            sessionStorage.setItem('prevPage', 'jobMonitoring');
+            sessionStorage.removeItem('jobMonitoring_routeData');
             this.$router.push({
-                path: 'classificationTask/hierarchicalTask',
-                query: this.queryParams || {}
+                path: 'classificationTask/hierarchicalTask'
             });
         },
         scrollToBottom() {

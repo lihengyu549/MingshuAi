@@ -806,11 +806,12 @@ export default {
 
   beforeRouteLeave(to, from, next) {
     const targetPath = to.path || '';
-    const jobWorkPaths = ['/viewResults', '/fixResults'];
+    const jobWorkPaths = ['/viewResults', '/fixResults', '/jobMonitoring'];
     const isNavigatingWithinJobWork = jobWorkPaths.some(path => targetPath.startsWith(path));
 
     if (!isNavigatingWithinJobWork) {
       sessionStorage.removeItem('hierarchicalTask_queryParams');
+      sessionStorage.removeItem('jobMonitoring_routeData');
       sessionStorage.removeItem('prevPage');
     }
     next();
@@ -823,7 +824,7 @@ export default {
     this.checkAll = false;
     this.gettreeOptionsList()
     const prevPage = sessionStorage.getItem('prevPage');
-    if (prevPage !== 'viewResults') {
+    if (!['viewResults', 'jobMonitoring'].includes(prevPage)) {
       sessionStorage.removeItem('hierarchicalTask_queryParams');
     } else {
       sessionStorage.removeItem('prevPage');
@@ -831,12 +832,18 @@ export default {
     const savedParams = sessionStorage.getItem('hierarchicalTask_queryParams');
     if (savedParams) {
       try {
-        this.queryParams = JSON.parse(savedParams);
+        this.queryParams = {
+          ...this.queryParams,
+          ...JSON.parse(savedParams)
+        };
       } catch (e) {
         console.error('解析保存的查询条件失败:', e);
       }
     } else if (this.$route.query.queryParams) {
-      this.queryParams = this.$route.query.queryParams
+      this.queryParams = {
+        ...this.queryParams,
+        ...this.$route.query.queryParams
+      }
     }
     this.getList()
     this.getScanCompleteDataFn()
@@ -1428,8 +1435,13 @@ export default {
         this.$message({ message: this.$t('hierarchicalTask.messages.cannotViewMonitoringInStatus', { status: this.stateMsg(row.maskComplete) }), type: 'warning' })
         return
       }
-      row.stateName = this.stateMsg(row.maskComplete)
-      this.$router.push({ path: '/jobMonitoring', query: row, queryParams: this.queryParams })
+      const routeData = {
+        ...row,
+        stateName: this.stateMsg(row.maskComplete)
+      }
+      sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(this.queryParams))
+      sessionStorage.setItem('jobMonitoring_routeData', JSON.stringify(routeData))
+      this.$router.push({ path: '/jobMonitoring', query: { id: row.id } })
     },
   }
 };
