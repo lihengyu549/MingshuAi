@@ -3,7 +3,7 @@
     <!-- 分类标题 -->
     <template v-if="item.meta && item.meta.type === 'category'">
       <div class="menu-category">
-        <span class="category-title">{{ item.meta.title }}</span>
+        <span class="category-title">{{ getRouteTitle(item) }}</span>
         <i class="el-icon-arrow-down category-title"></i>
       </div>
       <div class="category-children">
@@ -18,8 +18,8 @@
         v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
         <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
           <el-menu-item :index="resolvePath(onlyOneChild.path)"
-            :class="[{ 'submenu-title-noDropdown': !isNest }, { 'home-menu-item': onlyOneChild.meta.title === '态势感知驾驶舱' }, { 'is-active': onlyOneChild.meta.title === '态势感知驾驶舱' }]">
-            <item :icon="onlyOneChild.meta.icon || (item.meta && item.meta.icon)" :title="onlyOneChild.meta.title" />
+            :class="[{ 'submenu-title-noDropdown': !isNest }, { 'home-menu-item': onlyOneChild.name === 'Index' }, { 'is-active': onlyOneChild.name === 'Index' }]">
+            <item :icon="onlyOneChild.meta.icon || (item.meta && item.meta.icon)" :title="getRouteTitle(onlyOneChild)" />
           </el-menu-item>
         </app-link>
       </template>
@@ -27,14 +27,14 @@
       <template v-else-if="item.meta && item.meta.hideChildrenInNavbar">
         <app-link v-if="item.children && item.children.length > 0" :to="resolvePath(item.children[0].path)">
           <el-menu-item :index="resolvePath(item.children[0].path)" :class="[{ 'submenu-title-noDropdown': !isNest }]">
-            <item :icon="item.meta.icon" :title="item.meta.title" />
+            <item :icon="item.meta.icon" :title="getRouteTitle(item)" />
           </el-menu-item>
         </app-link>
       </template>
 
       <el-submenu v-else ref="subMenu" :index="resolvePath(item.path)" popper-append-to-body>
         <template slot="title">
-          <item v-if="item.meta" :icon="item.meta && item.meta.icon" :title="item.meta.title" />
+          <item v-if="item.meta" :icon="item.meta && item.meta.icon" :title="getRouteTitle(item)" />
         </template>
         <sidebar-item v-for="(child, index) in item.children" :key="child.path + '-nest-' + index" :is-nest="true"
           :item="child" :base-path="resolvePath(item.path) + '/' + child.path" class="nest-menu" />
@@ -113,6 +113,10 @@ export default {
         return { path: path.resolve(this.basePath, routePath), query: query }
       }
       return path.resolve(this.basePath, routePath)
+    },
+    getRouteTitle(route) {
+      if (!route || !route.meta) return ''
+      return route.meta.titleKey ? this.$t(route.meta.titleKey) : route.meta.title
     }
   }
 }

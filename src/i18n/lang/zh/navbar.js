@@ -16,5 +16,6 @@ export default {
   fetchExportRecordsFailed: '获取导出记录失败',
   exportSuccess: '导出成功',
   fileDownloadFailed: '文件下载失败',
-  downloadFileFailed: '下载文件失败'
+  downloadFileFailed: '下载文件失败',
+  menuRefreshFailed: '语言切换后刷新菜单失败'
 }

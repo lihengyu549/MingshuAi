@@ -1,4 +1,12 @@
 export default {
+  homeTitle: 'Situation Awareness Dashboard',
+  dataScreen: 'Data Screen',
+  profile: 'Profile',
+  assignRole: 'Assign Role',
+  assignUser: 'Assign User',
+  dictData: 'Dictionary Data',
+  jobLog: 'Job Log',
+  genEdit: 'Edit Generation Configuration',
   noData: 'No data',
   confirm: 'Confirm',
   cancel: 'Cancel',

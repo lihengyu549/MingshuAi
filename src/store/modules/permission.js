@@ -1,5 +1,5 @@
 import auth from '@/plugins/auth'
-import router, { constantRoutes, dynamicRoutes } from '@/router'
+import router, { constantRoutes, dynamicRoutes, resetRouter } from '@/router'
 import { getRouters } from '@/api/menu'
 import Layout from '@/layout/index'
 import ParentView from '@/components/ParentView'
@@ -30,18 +30,19 @@ const permission = {
   },
   actions: {
     // 生成路由
-    GenerateRoutes({ commit }) {
-      return new Promise(resolve => {
+    GenerateRoutes({ commit, rootState }, payload = {}) {
+      return new Promise((resolve, reject) => {
+        const language = payload.language || rootState.app.language || 'zh'
         // 向后端请求路由数据
-        getRouters().then(res => {
+        getRouters({ language }).then(res => {
           const sdata = JSON.parse(JSON.stringify(res.data))
           const rdata = JSON.parse(JSON.stringify(res.data))
           const sidebarRoutes = filterAsyncRouter(sdata)
           const rewriteRoutes = filterAsyncRouter(rdata, false, true)
           const asyncRoutes = filterDynamicRoutes(dynamicRoutes);
           
-          const categorizedSidebarRoutes = categorizeRoutes(sidebarRoutes)
-          const categorizedRewriteRoutes = categorizeRoutes(rewriteRoutes)
+          const categorizedSidebarRoutes = categorizeRoutes(sidebarRoutes, language)
+          const categorizedRewriteRoutes = categorizeRoutes(rewriteRoutes, language)
           
           rewriteRoutes.push({ path: '*', redirect: '/404', hidden: true })
           router.addRoutes(asyncRoutes);
@@ -50,7 +51,16 @@ const permission = {
           commit('SET_DEFAULT_ROUTES', categorizedSidebarRoutes)
           commit('SET_TOPBAR_ROUTES', categorizedSidebarRoutes)
           resolve(rewriteRoutes)
-        })
+        }).catch(reject)
+      })
+    },
+    RefreshRoutes({ dispatch }, payload = {}) {
+      return new Promise((resolve, reject) => {
+        resetRouter()
+        dispatch('GenerateRoutes', payload).then(accessRoutes => {
+          router.addRoutes(accessRoutes)
+          resolve(accessRoutes)
+        }).catch(reject)
       })
     }
   }
@@ -85,11 +95,13 @@ function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
 }
 
 // 将路由分为核心功能和系统管理两部分
-function categorizeRoutes(routes) {
+function categorizeRoutes(routes, language = 'zh') {
+  const categoryTitles = getCategoryTitles(language)
+
   // 检查是否已经存在系统管理或核心功能的根节点
   const hasSystemRoot = routes.some(route => 
     route.path === '/system' || 
-    (route.meta && route.meta.title === '系统管理')
+    (route.meta && route.meta.title === categoryTitles.systemManagement)
   )
   
   // 如果已经存在系统管理根节点，添加分类标记并创建核心功能分组
@@ -118,16 +130,11 @@ function categorizeRoutes(routes) {
        )
        
        // 检查标题中的关键词，但要排除数据资产相关的
-       const titleContainsSystemKeywords = route.meta && route.meta.title && (
-         (route.meta.title.includes('系统') && !route.meta.title.includes('数据资产')) ||
-         (route.meta.title.includes('管理') && !route.meta.title.includes('数据资产') && !route.meta.title.includes('标准')) ||
-         route.meta.title.includes('监控') ||
-         route.meta.title.includes('工具')
-       )
+       const titleContainsSystemKeywords = route.meta && route.meta.title && hasSystemKeyword(route.meta.title, language)
        
        const finalIsSystemManagement = !isCoreBusiness && (isSystemManagement || titleContainsSystemKeywords)
        
-       if (!finalIsSystemManagement && !(route.path === '/system' || (route.meta && route.meta.title === '系统管理'))) {
+       if (!finalIsSystemManagement && !(route.path === '/system' || (route.meta && route.meta.title === categoryTitles.systemManagement))) {
          // 为核心功能路由添加 hideChildrenInNavbar 标记，用于L型菜单展示
          const routeWithFlag = addHideChildrenFlag(route)
          coreFunctions.push(routeWithFlag)
@@ -137,14 +144,14 @@ function categorizeRoutes(routes) {
      
      // 添加核心功能分组
      if (coreFunctions.length > 0) {
-       result.push({
-         path: '/core-functions-category',
-         component: Layout,
-         meta: { 
-           title: '核心功能', 
+        result.push({
+          path: '/core-functions-category',
+          component: Layout,
+          meta: {
+           title: categoryTitles.coreFunctions,
            icon: '',
            type: 'category'
-         },
+          },
          children: coreFunctions,
          alwaysShow: true
        })
@@ -152,7 +159,7 @@ function categorizeRoutes(routes) {
      
      // 处理系统管理根节点和未处理的路由
      routes.forEach((route, index) => {
-       if (route.path === '/system' || (route.meta && route.meta.title === '系统管理')) {
+       if (route.path === '/system' || (route.meta && route.meta.title === categoryTitles.systemManagement)) {
          // 为系统管理根节点创建新的结构，子菜单添加 hideChildrenInNavbar 标记
          const processedChildren = route.children ? route.children.map(child => {
            const childPath = child.path.startsWith('/') ? child.path : '/' + child.path
@@ -208,12 +215,7 @@ function categorizeRoutes(routes) {
     )
     
     // 检查标题中的关键词，但要排除数据资产相关的
-    const titleContainsSystemKeywords = route.meta && route.meta.title && (
-      (route.meta.title.includes('系统') && !route.meta.title.includes('数据资产')) ||
-      (route.meta.title.includes('管理') && !route.meta.title.includes('数据资产') && !route.meta.title.includes('标准')) ||
-      route.meta.title.includes('监控') ||
-      route.meta.title.includes('工具')
-    )
+    const titleContainsSystemKeywords = route.meta && route.meta.title && hasSystemKeyword(route.meta.title, language)
     
     const finalIsSystemManagement = !isCoreBusiness && (isSystemManagement || titleContainsSystemKeywords)
     
@@ -233,8 +235,8 @@ function categorizeRoutes(routes) {
     categorizedRoutes.push({
       path: '/core-functions',
       component: Layout,
-      meta: { 
-        title: '核心功能', 
+      meta: {
+        title: categoryTitles.coreFunctions,
         icon: '',
         type: 'category'
       },
@@ -248,8 +250,8 @@ function categorizeRoutes(routes) {
     categorizedRoutes.push({
       path: '/system-management',
       component: Layout,
-      meta: { 
-        title: '系统管理', 
+      meta: {
+        title: categoryTitles.systemManagement,
         icon: '',
         type: 'category'
       },
@@ -259,6 +261,39 @@ function categorizeRoutes(routes) {
   }
   
   return categorizedRoutes.length > 0 ? categorizedRoutes : routes
+}
+
+function getCategoryTitles(language) {
+  if (language === 'en') {
+    return {
+      coreFunctions: 'Core Functions',
+      systemManagement: 'System Management'
+    }
+  }
+  return {
+    coreFunctions: '核心功能',
+    systemManagement: '系统管理'
+  }
+}
+
+function hasSystemKeyword(title, language) {
+  if (!title) return false
+
+  if (language === 'en') {
+    return (
+      (title.includes('System') && !title.includes('Data Asset')) ||
+      (title.includes('Management') && !title.includes('Data Asset') && !title.includes('Standard')) ||
+      title.includes('Monitor') ||
+      title.includes('Tool')
+    )
+  }
+
+  return (
+    (title.includes('系统') && !title.includes('数据资产')) ||
+    (title.includes('管理') && !title.includes('数据资产') && !title.includes('标准')) ||
+    title.includes('监控') ||
+    title.includes('工具')
+  )
 }
 
 // 为路由添加 hideChildrenInNavbar 标记，用于L型菜单展示

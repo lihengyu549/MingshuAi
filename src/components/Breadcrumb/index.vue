@@ -3,8 +3,8 @@
     <transition-group name="breadcrumb">
       <el-breadcrumb-item v-for="(item, index) in levelList" :key="item.path" class="breadcrumbBox">
         <span v-if="item.redirect === 'noRedirect' || index == levelList.length - 1" class="no-redirect">{{
-          item.meta.title }}</span>
-        <a v-else @click.prevent="handleLink(item)">{{ item.meta.title }}</a>
+          getRouteTitle(item) }}</span>
+        <a v-else @click.prevent="handleLink(item)">{{ getRouteTitle(item) }}</a>
       </el-breadcrumb-item>
     </transition-group>
   </el-breadcrumb>
@@ -32,13 +32,13 @@ export default {
   methods: {
     getBreadcrumb () {
       // only show routes with meta.title
-      let matched = this.$route.matched.filter(item => item.meta && item.meta.title)
+      let matched = this.$route.matched.filter(item => item.meta && (item.meta.title || item.meta.titleKey))
       const first = matched[0]
 
       if (!this.isDashboard(first)) {
-        matched = [{ path: '/index', meta: { title: '首页' } },].concat(matched)
+        matched = [{ path: '/index', meta: { titleKey: 'homeTitle' } }].concat(matched)
       }
-      this.levelList = matched.filter(item => item.meta && item.meta.title && item.meta.breadcrumb !== false)
+      this.levelList = matched.filter(item => item.meta && (item.meta.title || item.meta.titleKey) && item.meta.breadcrumb !== false)
     },
     isDashboard (route) {
       const name = route && route.name
@@ -54,6 +54,10 @@ export default {
         return
       }
       this.$router.push(path)
+    },
+    getRouteTitle(item) {
+      if (!item || !item.meta) return ''
+      return item.meta.titleKey ? this.$t(item.meta.titleKey) : item.meta.title
     }
   }
 }

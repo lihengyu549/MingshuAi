@@ -3,7 +3,7 @@
     <template v-for="(item, index) in topMenus">
       <el-menu-item :style="{ backgroundColor: $store.state.user.projectData.themeColor || $store.state.settings.bgcColor }" :index="item.path" :key="index" v-if="index < visibleNumber"><svg-icon
           :icon-class="item.meta.icon" />
-        {{ item.meta.title }}</el-menu-item>
+        {{ getRouteTitle(item) }}</el-menu-item>
     </template>
 
     <!-- 顶部菜单超出数量折叠 -->
@@ -12,7 +12,7 @@
       <template v-for="(item, index) in topMenus">
         <el-menu-item :index="item.path" :key="index" v-if="index >= visibleNumber"><svg-icon
             :icon-class="item.meta.icon" />
-          {{ item.meta.title }}</el-menu-item>
+          {{ getRouteTitle(item) }}</el-menu-item>
       </template>
     </el-submenu>
   </el-menu>
@@ -142,6 +142,10 @@ export default {
     },
     ishttp (url) {
       return url.indexOf('http://') !== -1 || url.indexOf('https://') !== -1
+    },
+    getRouteTitle(route) {
+      if (!route || !route.meta) return ''
+      return route.meta.titleKey ? this.$t(route.meta.titleKey) : route.meta.title
     }
   },
 };

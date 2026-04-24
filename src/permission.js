@@ -5,6 +5,7 @@ import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { getToken } from '@/utils/auth'
 import { isRelogin } from '@/utils/request'
+import i18n from '@/i18n'
 
 NProgress.configure({ showSpinner: false })
 
@@ -51,7 +52,9 @@ function shouldAutoRedirectToChild(to, routes) {
 router.beforeEach((to, from, next) => {
   NProgress.start()
   if (getToken()) {
-    to.meta.title && store.dispatch('settings/setTitle', to.meta.title)
+    if (to.meta && (to.meta.title || to.meta.titleKey)) {
+      store.dispatch('settings/setTitle', getRouteTitle(to))
+    }
     /* has token*/
     if (to.path === '/login') {
       next({ path: '/' })
@@ -99,3 +102,8 @@ router.beforeEach((to, from, next) => {
 router.afterEach(() => {
   NProgress.done()
 })
+
+function getRouteTitle(route) {
+  if (!route || !route.meta) return ''
+  return route.meta.titleKey ? i18n.t(route.meta.titleKey) : route.meta.title
+}

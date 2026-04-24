@@ -4,7 +4,7 @@
     <div class="navbar-children" v-if="navbarChildren.length > 0">
       <router-link v-for="item in navbarChildren" :key="item.path" class="navbar-child-item"
         :to="{ path: item.path, query: item.query, fullPath: item.fullPath }">
-        {{ item.meta ? item.meta.title : item.title }}
+        {{ getRouteTitle(item) }}
       </router-link>
     </div>
 
@@ -306,10 +306,33 @@ export default {
         this.viewAllRecords()
       }
     },
-    handleSetLanguage(lang) {
-      this.$i18n.locale = lang
-      this.$store.dispatch('app/setLanguage', lang)
-      this.$message.success(this.$t('navbar.switchSuccess'))
+    getRouteTitle(route) {
+      if (!route) return ''
+      if (route.meta) {
+        return route.meta.titleKey ? this.$t(route.meta.titleKey) : route.meta.title
+      }
+      return route.title
+    },
+    async handleSetLanguage(lang) {
+      if (this.language === lang) {
+        return
+      }
+
+      const previousLanguage = this.language
+
+      try {
+        this.$i18n.locale = lang
+        await this.$store.dispatch('app/setLanguage', lang)
+        await this.$store.dispatch('RefreshRoutes', { language: lang })
+        this.updateNavbarChildren()
+        await this.$router.replace('/redirect' + this.$route.fullPath)
+        this.$message.success(this.$t('navbar.switchSuccess'))
+      } catch (error) {
+        this.$i18n.locale = previousLanguage
+        await this.$store.dispatch('app/setLanguage', previousLanguage)
+        console.error('语言切换后刷新菜单失败:', error)
+        this.$message.error(this.$t('navbar.menuRefreshFailed'))
+      }
     },
     openSettings() {
       this.$router.push({ path: '/system/setting' })

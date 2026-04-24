@@ -43,6 +43,9 @@ export default {
     routes() {
       this.searchPool = this.generateRoutes(this.routes)
     },
+    '$i18n.locale'() {
+      this.searchPool = this.generateRoutes(this.routes)
+    },
     searchPool(list) {
       this.initFuse(list)
     },
@@ -115,8 +118,9 @@ export default {
           title: [...prefixTitle]
         }
 
-        if (router.meta && router.meta.title) {
-          data.title = [...data.title, router.meta.title]
+        if (router.meta && (router.meta.title || router.meta.titleKey)) {
+          const routeTitle = router.meta.titleKey ? this.$t(router.meta.titleKey) : router.meta.title
+          data.title = [...data.title, routeTitle]
 
           if (router.redirect !== 'noRedirect') {
             // only push the routes with title

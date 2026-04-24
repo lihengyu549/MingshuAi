@@ -13,7 +13,7 @@
         @click.middle.native="!isAffix(tag)?closeSelectedTag(tag):''"
         @contextmenu.prevent.native="openMenu(tag,$event)"
       >
-        {{ tag.title }}
+        {{ getTagTitle(tag) }}
         <span v-if="!isAffix(tag)" class="el-icon-close" @click.prevent.stop="closeSelectedTag(tag)" />
       </router-link>
     </scroll-pane>
@@ -84,6 +84,10 @@ export default {
     },
     isAffix(tag) {
       return tag.meta && tag.meta.affix
+    },
+    getTagTitle(tag) {
+      if (!tag || !tag.meta) return tag.title
+      return tag.meta.titleKey ? this.$t(tag.meta.titleKey) : (tag.meta.title || tag.title)
     },
     isFirstView() {
       try {

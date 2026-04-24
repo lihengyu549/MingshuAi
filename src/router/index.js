@@ -70,7 +70,7 @@ export const constantRoutes = [
     path: '/data',
     component: () => import('@/views/data'),
     name: 'data',
-    meta: { title: '数据大屏', icon: 'dashboard', affix: true },
+    meta: { title: '数据大屏', titleKey: 'dataScreen', icon: 'dashboard', affix: true },
     hidden: true
   },
   {
@@ -82,7 +82,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/index'),
         name: 'Index',
-        meta: { title: '态势感知驾驶舱', icon: 'dashboard', affix: true }
+        meta: { title: '态势感知驾驶舱', titleKey: 'homeTitle', icon: 'dashboard', affix: true }
       },
 
     ]
@@ -97,7 +97,7 @@ export const constantRoutes = [
         path: 'profile',
         component: () => import('@/views/system/user/profile/index'),
         name: 'Profile',
-        meta: { title: '个人中心', icon: 'user' }
+        meta: { title: '个人中心', titleKey: 'profile', icon: 'user' }
       }
     ]
   }
@@ -115,7 +115,7 @@ export const dynamicRoutes = [
         path: 'role/:userId(\\d+)',
         component: () => import('@/views/system/user/authRole'),
         name: 'AuthRole',
-        meta: { title: '分配角色', activeMenu: '/system/user' }
+        meta: { title: '分配角色', titleKey: 'assignRole', activeMenu: '/system/user' }
       }
     ]
   },
@@ -129,7 +129,7 @@ export const dynamicRoutes = [
         path: 'user/:roleId(\\d+)',
         component: () => import('@/views/system/role/authUser'),
         name: 'AuthUser',
-        meta: { title: '分配用户', activeMenu: '/system/role' }
+        meta: { title: '分配用户', titleKey: 'assignUser', activeMenu: '/system/role' }
       }
     ]
   },
@@ -143,7 +143,7 @@ export const dynamicRoutes = [
         path: 'index/:dictId(\\d+)',
         component: () => import('@/views/system/dict/data'),
         name: 'Data',
-        meta: { title: '字典数据', activeMenu: '/system/dict' }
+        meta: { title: '字典数据', titleKey: 'dictData', activeMenu: '/system/dict' }
       }
     ]
   },
@@ -157,7 +157,7 @@ export const dynamicRoutes = [
         path: 'index/:jobId(\\d+)',
         component: () => import('@/views/monitor/job/log'),
         name: 'JobLog',
-        meta: { title: '调度日志', activeMenu: '/monitor/job' }
+        meta: { title: '调度日志', titleKey: 'jobLog', activeMenu: '/monitor/job' }
       }
     ]
   },
@@ -171,7 +171,7 @@ export const dynamicRoutes = [
         path: 'index/:tableId(\\d+)',
         component: () => import('@/views/tool/gen/editTable'),
         name: 'GenEdit',
-        meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
+        meta: { title: '修改生成配置', titleKey: 'genEdit', activeMenu: '/tool/gen' }
       }
     ]
   }
@@ -183,8 +183,17 @@ Router.prototype.push = function push(location) {
   return routerPush.call(this, location).catch(err => err)
 }
 
-export default new Router({
+const createRouter = () => new Router({
   mode: 'history', // 去掉url中的#
   scrollBehavior: () => ({ y: 0 }),
   routes: constantRoutes
 })
+
+const router = createRouter()
+
+export function resetRouter() {
+  const newRouter = createRouter()
+  router.matcher = newRouter.matcher
+}
+
+export default router

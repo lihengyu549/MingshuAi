@@ -16,5 +16,6 @@ export default {
   fetchExportRecordsFailed: 'Failed to fetch export records',
   exportSuccess: 'Export succeeded',
   fileDownloadFailed: 'File download failed',
-  downloadFileFailed: 'Failed to download file'
+  downloadFileFailed: 'Failed to download file',
+  menuRefreshFailed: 'Failed to refresh menus after switching language'
 }

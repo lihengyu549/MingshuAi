@@ -1,4 +1,12 @@
 export default {
+  homeTitle: '态势感知驾驶舱',
+  dataScreen: '数据大屏',
+  profile: '个人中心',
+  assignRole: '分配角色',
+  assignUser: '分配用户',
+  dictData: '字典数据',
+  jobLog: '调度日志',
+  genEdit: '修改生成配置',
   noData: '暂无数据',
   confirm: '确认',
   cancel: '取消',
