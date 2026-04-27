@@ -4,7 +4,7 @@ export default {
   suggestProtectMethod: 'Suggested Protection Measures',
   confirmProtectMethod: 'Confirmed Protection Measures',
   dataSource: 'Data Source',
-  securityLevel: 'Security Level',
+  securityLevel: 'Security Protection',
   dataOwner: 'Data Owner',
   baseParent: 'Direct Parent',
   add: 'Add',

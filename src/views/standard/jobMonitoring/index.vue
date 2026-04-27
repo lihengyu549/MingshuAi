@@ -222,8 +222,8 @@
         </el-form-item>
 
         <Title :title="$t('jobMonitoring.securityLevel')"></Title>
-        <el-form-item class="addSelectClass" :label="$t('jobMonitoring.confirmProtectMethod')" prop="minSecurityLevel">
-          <el-select v-model="addOrEditDataRuls.minSecurityLevel" :disabled="true" :placeholder="$t('all')">
+        <el-form-item class="addSelectClass" :label="$t('jobMonitoring.suggestProtectMethod')" prop="protectMethodName">
+          <el-select v-model="addOrEditDataRuls.protectMethodName" :disabled="true" :placeholder="$t('all')">
             <el-option v-for="item in protectMethodIdList" :key="item.dictValue" :label="item.dictLabel"
               :value="item.dictValue">
             </el-option>
@@ -559,6 +559,9 @@ export default {
         ],
         tags: [
           { validator: this.tagsRlues, trigger: 'blur', required: true, }
+        ],
+        protectMethodName: [
+          { required: true, message: this.$t('selectRequired', { field: this.$t('jobMonitoring.suggestProtectMethod') }), trigger: "blur" },
         ],
         // coreTopic: [
         //   { validator: this.tagsRlues, trigger: 'blur' }

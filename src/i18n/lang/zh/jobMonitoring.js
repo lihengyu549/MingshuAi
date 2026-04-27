@@ -4,7 +4,7 @@ export default {
   suggestProtectMethod: '建议防护措施',
   confirmProtectMethod: '确认防护措施',
   dataSource: '数据来源',
-  securityLevel: '安全分级',
+  securityLevel: '安全防护',
   dataOwner: '数据持有者',
   baseParent: '直属父类',
   add: '新增',
