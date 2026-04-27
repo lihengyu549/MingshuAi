@@ -376,7 +376,7 @@
             :multiple="true" :show-file-list="false" :limit="20" :file-list="fileDirectoryData.uploadFiles"
             :on-change="handleFileDirectoryChange" :on-remove="handleFileDirectoryRemove"
             :on-exceed="handleFileDirectoryExceed"
-            accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.bmp,.webp">
+            accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx">
             <div class="upload-dragger-content">
               <i class="el-icon-upload upload-icon"></i>
               <div class="upload-text">{{ $t('dataFrom.clickOrDragToUpload') }}</div>

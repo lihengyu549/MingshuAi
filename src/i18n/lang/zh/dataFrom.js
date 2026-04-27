@@ -95,7 +95,7 @@ export default {
   fileDirectory: '文件目录',
   fileUpload: '文件上传',
   clickOrDragToUpload: '点击或拖拽上传文件',
-  supportFormats: '支持.doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif等格式（支持多文件上传，最多20个，总大小不超过50MB）',
+  supportFormats: '支持.doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx等格式（支持多文件上传，最多20个，总大小不超过50MB）',
   selectedFiles: '已选择文件',
   clearAll: '清空所有',
   fileName: '文件名',

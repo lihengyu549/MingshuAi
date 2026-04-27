@@ -95,7 +95,7 @@ export default {
   fileDirectory: 'File Directory',
   fileUpload: 'File Upload',
   clickOrDragToUpload: 'Click or drag to upload files',
-  supportFormats: 'Support .doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif and other formats (supports multi-file upload, max 20 files, total size not exceeding 50MB)',
+  supportFormats: 'Support .doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx formats (supports multi-file upload, max 20 files, total size not exceeding 50MB)',
   selectedFiles: 'Selected Files',
   clearAll: 'Clear All',
   fileName: 'File Name',
