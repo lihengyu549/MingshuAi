@@ -12,6 +12,7 @@ export default {
   confirmTerminate: '确认终止',
   currentProcessingTable: '当前处理表',
   noProcessingTable: '无正在处理的表',
+  noProcessingFile: '无正在处理文件',
   processingSteps: '处理步骤',
   overallProgress: '整体进度',
   aiVision: 'AI视图',

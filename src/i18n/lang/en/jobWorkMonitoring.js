@@ -12,6 +12,7 @@ export default {
   confirmTerminate: 'Confirm Termination',
   currentProcessingTable: 'Current Processing Table',
   noProcessingTable: 'No table is currently being processed',
+  noProcessingFile: 'No file is currently being processed',
   processingSteps: 'Processing Steps',
   overallProgress: 'Overall Progress',
   aiVision: 'AI View',

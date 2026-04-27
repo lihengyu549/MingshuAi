@@ -64,7 +64,7 @@
                         </div>
                         <div class="carousel-item current">
                             <div class="table-name-main">{{ isTaskActive ? currentTableName : (currentTableName ||
-                                $t('jobWorkMonitoring.noProcessingTable')) }}</div>
+                                (isFileServerTask ? $t('jobWorkMonitoring.noProcessingFile') : $t('jobWorkMonitoring.noProcessingTable'))) }}</div>
                         </div>
                         <div class="carousel-item next" v-show="isTaskActive && nextTableName">
                             <div class="table-name-small">{{ nextTableName }}</div>
