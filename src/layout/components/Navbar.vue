@@ -171,7 +171,7 @@ export default {
       },
     },
     navbarChildren() {
-      return this.$store.state.tagsView.navbarChildren || []
+      return this.$store.state.tagsView.navbarChildren.filter(item => !item.hidden) || []
     },
     language() {
       return this.$store.state.app.language
