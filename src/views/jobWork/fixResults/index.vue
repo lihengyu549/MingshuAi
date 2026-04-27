@@ -25,10 +25,10 @@
                             <label class="info-label">{{ $t('fixResults.top.fileSize') }}：</label>
                             <div class="info-content">{{ row.fileSizeName || '--' }}</div>
                         </div>
-                        <div class="info-item">
+                        <!-- <div class="info-item">
                             <label class="info-label">{{ $t('fixResults.top.uploadTime') }}：</label>
                             <div class="info-content">{{ row.createTime || '--' }}</div>
-                        </div>
+                        </div> -->
                         <div class="info-item">
                             <label class="info-label">{{ $t('fixResults.top.fileSummary') }}：</label>
                             <div class="info-content">{{ row.fileContext || '--' }}</div>
@@ -198,10 +198,10 @@
                                 <el-progress :percentage="Number(row.confidenceScore) * 100"></el-progress>
                             </div>
                         </div>
-                        <div class="info-item">
+                        <!-- <div class="info-item">
                             <label class="info-label">{{ $t('fixResults.sections.piiReview') }}：</label>
                             <div class="info-content">{{ row.piiDetectionName || '--' }}</div>
-                        </div>
+                        </div> -->
                         <div class="info-item">
                             <el-button type="primary" plain class="full-width-btn" @click="handleModifyResult">{{
                                 $t('fixResults.sections.modifyResult') }}</el-button>
