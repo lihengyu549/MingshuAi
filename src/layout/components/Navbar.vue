@@ -68,7 +68,7 @@
           </el-dropdown-menu>
         </el-dropdown>
 
-        <!-- 设置下拉菜单 -->
+        <!-- 设置下拉 菜单 -->
         <el-dropdown class="right-menu-item hover-effect settings-btn" trigger="click">
           <div class="settings-wrapper">
             <i class="el-icon-s-tools settings-icon"></i>
