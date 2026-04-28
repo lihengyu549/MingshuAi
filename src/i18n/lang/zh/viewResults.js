@@ -3,7 +3,7 @@ export default {
     fileName: '文件名',
     fieldName: '字段名',
     enterFileName: '请输入文件名',
-    enterFieldName: '请输入数据源名称',
+    enterFieldName: '请输入字段名',
     category: '分类',
     classificationStatus: '分类状态',
     securityLevel: '安全分级',

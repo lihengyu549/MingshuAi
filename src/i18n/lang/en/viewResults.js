@@ -3,7 +3,7 @@ export default {
     fileName: 'File Name',
     fieldName: 'Field Name',
     enterFileName: 'Please enter the file name',
-    enterFieldName: 'Please enter the data source name',
+    enterFieldName: 'Please enter the field name',
     category: 'Category',
     classificationStatus: 'Classification Status',
     securityLevel: 'Security Level',

@@ -315,7 +315,7 @@
               reverseRefShow ? '展开' : '收起' }}</el-button>
         </el-form-item> -->
 
-        <Title :title="$t('jobMonitoring.upgradeRule')"></Title>
+        <Title :title="$t('jobMonitoring.securityClassification')"></Title>
         <el-form-item prop="">
           <el-switch v-model="addOrEditDataRuls.upgradeRule" @change="handleRuleSwitchChange('upgrade')"
             :active-text="$t('jobMonitoring.upgradeRule')" :disabled="addOrEdit.flag == 3" />
