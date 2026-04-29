@@ -1741,6 +1741,7 @@ export default {
     align-items: center;
     gap: 6px;
     flex: 1;
+    min-width: 0;
 }
 
 /*CURRENT_CHANGE*/
@@ -1754,6 +1755,8 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+    min-width: 0;
 }
 
 /*CURRENT_CHANGE*/
@@ -1837,6 +1840,7 @@ export default {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 /*CURRENT_CHANGE*/
@@ -1849,6 +1853,9 @@ export default {
     background-clip: text;
     letter-spacing: -0.5px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .steps-list {
