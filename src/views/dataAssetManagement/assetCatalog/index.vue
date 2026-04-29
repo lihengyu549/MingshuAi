@@ -1764,20 +1764,29 @@ export default {
 
 .breadcrumb-nav {
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 
   ::v-deep .el-breadcrumb__item {
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
 
     &:hover {
       color: #409eff;
     }
 
     .el-breadcrumb__inner {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      display: inline-block;
+      vertical-align: middle;
       color: #606266;
       font-weight: 400;
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
 
       &:hover {
         color: #409eff;
@@ -1785,7 +1794,13 @@ export default {
 
       i {
         font-size: 16px;
+        vertical-align: middle;
+        margin-right: 4px;
       }
+    }
+
+    .el-breadcrumb__separator {
+      flex-shrink: 0;
     }
 
     &:last-child .el-breadcrumb__inner {
@@ -1810,16 +1825,23 @@ export default {
   display: flex;
   align-items: baseline;
   gap: 12px;
+  flex: 1;
+  min-width: 0;
 
   .folder-name {
     font-size: 20px;
     font-weight: 600;
     color: #303133;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 
   .folder-count {
     font-size: 14px;
     color: #909399;
+    flex-shrink: 0;
   }
 }
 
