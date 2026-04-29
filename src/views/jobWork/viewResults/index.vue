@@ -49,7 +49,7 @@
         </el-form-item>
         <template v-if="isFileSource">
           <el-form-item :label="$t('viewResults.search.folder')" prop="filePath">
-            <el-input v-model="queryParams.filePath" @input="inputSearch"
+            <el-input v-model="queryParams.fileParentPath" @input="inputSearch"
               :placeholder="$t('viewResults.search.enterFolder')" clearable el-ineyup.enter.native="handleQuery" />
           </el-form-item>
         </template>
@@ -188,7 +188,7 @@
         </el-table-column>
         <el-table-column v-if="isFileSource" :label="$t('viewResults.columns.fileType')" align="center"
           prop="fileFormat" width="150" show-overflow-tooltip />
-        <el-table-column v-if="isFileSource" :label="$t('viewResults.columns.folder')" align="center" prop="filePath"
+        <el-table-column v-if="isFileSource" :label="$t('viewResults.columns.folder')" align="center" prop="fileParentPath"
           width="150" show-overflow-tooltip />
         <!-- <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip /> -->
         <el-table-column v-if="!isFileSource" :label="$t('viewResults.columns.fieldRemark')" align="center"
