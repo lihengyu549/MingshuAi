@@ -371,6 +371,7 @@ export default {
 
   .panel {
     flex: 1;
+    min-width: 0;
     border: 1px solid #EBEEF5;
     border-radius: 10px;
     height: 100%;
@@ -424,9 +425,11 @@ export default {
           align-items: center;
           flex: 1;
           overflow: hidden;
+          min-width: 0;
 
           ::v-deep .el-checkbox {
             margin-right: 10px;
+            flex-shrink: 0;
           }
 
           .item-name {
@@ -435,6 +438,8 @@ export default {
             overflow: hidden;
             text-overflow: ellipsis;
             color: #303133;
+            flex: 1;
+            min-width: 0;
 
             &.is-dir {
               color: #409EFF;
@@ -452,6 +457,7 @@ export default {
           font-size: 13px;
           color: #909399;
           margin-left: 15px;
+          flex-shrink: 0;
         }
       }
     }
