@@ -149,7 +149,10 @@
         </span>
       </template>
       <div class="contBox semantic-cache-box" style="justify-content: space-between;">
-        <div class="label-text">{{ $t('scanStrategy.classificationInferenceDesc') }}</div>
+        <div class="semantic-cache-label">
+          <div class="label-text">{{ $t('scanStrategy.classificationInference') }}</div>
+          <div class="label-desc">{{ $t('scanStrategy.classificationInferenceDesc') }}</div>
+        </div>
         <el-switch v-model="allData.ClassificationInference.state" active-color="#009dff" inactive-color="#e0e0e0">
         </el-switch>
       </div>

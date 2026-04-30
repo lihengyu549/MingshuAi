@@ -86,8 +86,9 @@
           <el-table-column v-if="item.prop === 'tasksName'" :key="item.prop" :label="item.label" width="140"
             align="left" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
-              <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon icon-class="jobs"
-                  style="font-size: 16px; margin-right: 5px;" />{{ scope.row.tasksName }}</span>
+              <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon
+                  :icon-class="databaseTypeIcon(scope.row.sourceTypeName)"
+                  style="font-size: 14px; margin-right: 5px;" />{{ scope.row.tasksName }}</span>
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'sourceName'" :key="item.prop" :label="item.label" width="140"
@@ -880,6 +881,21 @@ export default {
     // }
   },
   methods: {
+    databaseTypeIcon(val) {
+      if (val == 'Excel表') {
+        return 'excel-o'
+      } else if (val == 'API') {
+        return 'api-o'
+      } else if (val == '数据库') {
+        return 'mysql-o'
+      } else if (val == '文件目录') {
+        return 'file-o'
+      } else if (val == '文件服务器') {
+        return 'fileServe-o'
+      } else {
+        return 'unknow-o'
+      }
+    },
     handleCheckAllChange(val) {
       this.checkedColumn = val ? this.setList : [];
       this.isIndeterminate = false;
