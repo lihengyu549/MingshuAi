@@ -15,7 +15,7 @@
             <div class="tree-scroll-container">
               <el-tree :data="dataCategoryList" :props="dataDefaultProps" show-checkbox :expand-on-click-node="false"
                 :filter-node-method="filterNode" ref="tree" node-key="id" @check="treeCheck"
-                :highlightCurrent="isHighlight" :render-content="renderContent" />
+                @node-click="handleNodeClick" :highlightCurrent="isHighlight" :render-content="renderContent" />
             </div>
           </div>
         </el-card>
@@ -24,9 +24,14 @@
       <el-col :span="19" :xs="24">
         <el-card class="search-card" shadow="never">
           <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true">
-            <el-form-item :label="$t('protectTableField.sourceBusinessSystem')" prop="businessName">
+            <el-form-item v-if="currentNodeType !== 1" :label="$t('protectTableField.sourceBusinessSystem')"
+              prop="businessName">
               <el-input v-model="queryParams.businessName" clearable @input="inputSearch"
                 :placeholder="$t('protectTableField.enterSourceBusinessSystem')" @keyup.enter.native="handleQuery" />
+            </el-form-item>
+            <el-form-item :label="currentNodeType === 1 ? $t('protectTableField.fileName') : $t('protectTableField.tableName')" prop="tableName">
+              <el-input v-model="queryParams.tableName" clearable @input="inputSearch"
+                :placeholder="currentNodeType === 1 ? $t('protectTableField.enterFileName') : $t('protectTableField.enterTableName')" @keyup.enter.native="handleQuery" />
             </el-form-item>
             <el-form-item :label="$t('protectTableField.securityLevel')" prop="securityLevel">
               <el-select v-model="queryParams.securityLevel" clearable multiple @change="handleQuery"
@@ -45,7 +50,8 @@
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item :label="$t('protectTableField.piiComplianceReview')" class="addSelectClass">
+            <el-form-item v-if="currentNodeType !== 1" :label="$t('protectTableField.piiComplianceReview')"
+              class="addSelectClass">
               <el-select ref="piiSelectRef" v-model="piiNodeName" filterable
                 :placeholder="$t('protectTableField.searchPiiComplianceReview')" :filter-method="handlePiiFilter">
                 <el-option style="height: 100%; padding: 0" value="">
@@ -54,10 +60,6 @@
                     @check="piiHandleNodeCheck" />
                 </el-option>
               </el-select>
-            </el-form-item>
-            <el-form-item :label="$t('protectTableField.tableName')" prop="tableName">
-              <el-input v-model="queryParams.tableName" clearable @input="inputSearch"
-                :placeholder="$t('protectTableField.enterTableName')" @keyup.enter.native="handleQuery" />
             </el-form-item>
           </el-form>
         </el-card>
@@ -115,6 +117,12 @@
                     </div>
                     <i class="el-icon-view"></i>
                   </el-tooltip>
+                </template>
+                <template v-else-if="item.prop === 'confirmName'">
+                  <el-tag v-if="scope.row.confirm !== undefined && scope.row.confirm !== null" :type="scope.row.confirm == 0 ? 'info' : 'primary'">
+                    {{ scope.row.confirm == 0 ? $t('protectTableField.unconfirmed') : $t('protectTableField.confirmed') }}
+                  </el-tag>
+                  <span v-else>{{ scope.row.confirmName }}</span>
                 </template>
                 <template v-else>
                   {{ scope.row[item.prop] }}
@@ -183,7 +191,7 @@
 <script>
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getDatabaseList, protectTableFieldList, exportReport, getDatabaseSource, listByPublished } from "@/api/system/protectTableField";
+import { getDatabaseList, protectTableFieldList, exportReport, getDatabaseSource, listByPublished, listFileByPublished } from "@/api/system/protectTableField";
 import { getFrameworks, treeListI, } from "@/api/system/protectCategory";
 import Cookies from "js-cookie";
 import 'vue-json-viewer/style.css'
@@ -290,6 +298,8 @@ export default {
       routeDataShow: false,
       treeIds: [],
       databaseNames: [], // 新增：存储选中的数据库名称
+      currentNodeType: -1, // -1未初始化，0结构化，1非结构化
+      currentNodeData: null,
       // 列设置相关数据
       isIndeterminate: false,
       checkedColumnProps: [],
@@ -306,6 +316,20 @@ export default {
         { labelKey: "securityLevel", prop: "securityLevelName", width: "200" },
         { labelKey: "suggestedProtection", prop: "protectMethod", width: "200" },
         { labelKey: "sample", prop: "sampleData", width: "100" }
+      ],
+      unstructuredColumnList: [
+        { labelKey: "fileName", prop: "fileName", width: "200" },
+        { labelKey: "fileFormat", prop: "fileFormat", width: "150" },
+        { labelKey: "fileParentPath", prop: "fileParentPath", width: "200" },
+        { labelKey: "fileSize", prop: "fileSize", width: "150" },
+        { labelKey: "category", prop: "categoryName", width: "200" },
+        { labelKey: "securityLevel", prop: "securityLevelName" },
+        { labelKey: "confirmName", prop: "confirmName", width: "150" },
+        { labelKey: "sourceBusinessSystem", prop: "businessName", width: "150" },
+        { labelKey: "classificationReason", prop: "classificationReasons", width: "150" },
+        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "150" },
+        { labelKey: "confidenceScore", prop: "confidenceScore", width: "150" },
+        { labelKey: "sensitiveData", prop: "sensitiveDataName", width: "150" }
       ],
       // 导出列配置相关数据
       exportColumnDialog: {
@@ -339,6 +363,13 @@ export default {
         { labelKey: "sampleFeature", value: "regularExpression" },
         { labelKey: "tableTopic", value: "tableTopic" },
         { labelKey: "fieldTopic", value: "fieldTopic" },
+        { labelKey: "fileName", value: "fileName" },
+        { labelKey: "fileFormat", value: "fileFormat" },
+        { labelKey: "fileSize", value: "fileSize" },
+        { labelKey: "fileAbsolutePath", value: "fileAbsolutePath" },
+        { labelKey: "fileParentPath", value: "fileParentPath" },
+        { labelKey: "updateTime", value: "updateTime" },
+        { labelKey: "createTime", value: "createTime" },
       ],
       // 初始默认配置（固定不变，用于恢复初始配置）
       initialDefaultColumns: [
@@ -352,6 +383,10 @@ export default {
         "piiDetectionName",
         "securityLevelName",
         "sampleData",
+        "fileName",
+        "fileFormat",
+        "fileParentPath",
+        "fileSize",
       ],
     };
   },
@@ -371,6 +406,12 @@ export default {
       }
     },
     setList() {
+      if (this.currentNodeType === 1) {
+        return this.unstructuredColumnList.map(item => ({
+          ...item,
+          label: this.$t(`protectTableField.columnLabels.${item.labelKey}`)
+        }))
+      }
       return this.columnList.map(item => ({
         ...item,
         label: this.$t(`protectTableField.columnLabels.${item.labelKey}`)
@@ -382,7 +423,7 @@ export default {
     exportAllColumns() {
       return this.exportColumnList.map(item => ({
         ...item,
-        label: this.$t(`protectTableField.columnLabels.${item.labelKey}`)
+        label: item.label || this.$t(`protectTableField.columnLabels.${item.labelKey}`)
       }))
     }
   },
@@ -432,7 +473,9 @@ export default {
      */
     renderContent(h, { node, data }) {
       let iconClass = 'sysBusiness';
-      if (node.level === 2) {
+      if (data.type == 1) {
+        iconClass = 'file-o';
+      } else if (node.level === 2) {
         iconClass = 'database1';
       } else if (node.level === 3) {
         iconClass = 'table1';
@@ -599,7 +642,6 @@ Authorization:Bearer ${this.Token}`
           if (this.dataCategoryList.length > 0) {
             this.$nextTick(() => {
               this.selectAllFirstLevelNodes(this.dataCategoryList)
-              this.getList()
             });
           } else {
             this.treeIds = []
@@ -725,16 +767,43 @@ Authorization:Bearer ${this.Token}`
         treeList = list.filter(item => item.level === 1)
         this.treeID = treeList.map(item => item.id).join()
         this.treeIds = treeList.map(item => item.id)
-        // 收集选中的数据库名称，优先使用databaseName字段，如果没有则使用categoryName或name字段
-        this.databaseNames = treeList.map(item => item.name).filter(name => name)
-        this.handleQuery();
+        // 收集选中的数据库名称用于导出，不再触发查询
+        // this.databaseNames = treeList.map(item => item.name).filter(name => name)
+        // this.handleQuery();
       } else {
-        this.protectTableFieldList = []
-        this.queryParams.pageNum = 1
-        this.queryParams.pageSize = 10
-        this.total = 0
-        this.databaseNames = []
+        // this.protectTableFieldList = []
+        // this.queryParams.pageNum = 1
+        // this.queryParams.pageSize = 10
+        // this.total = 0
+        // this.databaseNames = []
+        this.treeIds = []
       }
+    },
+    handleNodeClick(data) {
+      const newType = data.type || 0;
+      const typeChanged = this.currentNodeType !== newType;
+      this.currentNodeType = newType;
+      this.currentNodeData = data;
+      this.databaseNames = [data.databaseName || data.categoryName || data.name || ''];
+
+      // Update checkedColumnProps based on type only if type changed or first load
+      if (typeChanged || this.checkedColumnProps.length === 0) {
+        if (this.currentNodeType === 1) {
+          this.checkedColumnProps = ['fileName', 'fileFormat', 'fileParentPath', 'fileSize', 'categoryName', 'securityLevelName'];
+        } else {
+          this.checkedColumnProps = ['fieldName', 'businessName', 'sourceName', 'databaseName', 'tableName', 'categoryName', 'securityLevelName'];
+        }
+
+        // Ensure checkAll and isIndeterminate states are updated correctly
+        this.$nextTick(() => {
+          this.handleCheckedCitiesChange(this.checkedColumnProps);
+        });
+      }
+
+      // Update queryParams.pageNum to 1 when clicking a node
+      this.queryParams.pageNum = 1;
+      this.queryParams.tableName = ''; // 清空搜索框内容
+      this.handleQuery();
     },
 
     // getSimpleCheckedNodeIds(originData) {
@@ -811,14 +880,33 @@ Authorization:Bearer ${this.Token}`
         })
       }
       // 设置这些节点为选中状态
-      this.$refs.tree.setCheckedNodes(data);
+      this.$nextTick(() => {
+        if (this.$refs.tree) {
+          this.$refs.tree.setCheckedNodes(data);
+        }
+      });
       let treeList = []
-      let list = this.$refs.tree.getCheckedNodes()
+      let list = []
+      if (this.$refs.tree) {
+        list = this.$refs.tree.getCheckedNodes()
+      }
       treeList = list.filter(item => item.level === 1 && item.id && item.id !== '')
       this.treeID = treeList.map(item => item.id).join()
       this.treeIds = treeList.map(item => item.id)
-      // 收集选中的数据库名称，优先使用databaseName字段，如果没有则使用categoryName或name字段
-      this.databaseNames = treeList.map(item => item.databaseName || item.categoryName || item.name || '').filter(name => name)
+
+      // 选中第一条
+      if (this.dataCategoryList && this.dataCategoryList.length > 0) {
+        const firstNode = this.dataCategoryList[0];
+        this.$nextTick(() => {
+          if (this.$refs.tree) {
+            this.$refs.tree.setCurrentKey(firstNode.id);
+          }
+          this.handleNodeClick(firstNode);
+        });
+      } else {
+        this.currentNodeType = 0; // 重置为默认结构化
+        this.getList();
+      }
     },
     // 返回Promise的异步版本
     getProtectCategoryAsync(key) {
@@ -856,7 +944,6 @@ Authorization:Bearer ${this.Token}`
         } else {
           this.$nextTick(() => {
             this.selectAllFirstLevelNodes(this.dataCategoryList)
-            this.getList()
           });
         }
         this.Loading = false
@@ -869,21 +956,32 @@ Authorization:Bearer ${this.Token}`
     getList() {
       this.loading = true;
       let params = {
-        // tableIds: this.treeID,
-        // tableIds: this.treeIds, // 不再使用tableIds，改为使用databaseNames
-        databaseNames: this.databaseNames, // 使用数据库名称数组
         projectId: this.projectId,
         securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel : null,
-        // securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : null,
         businessName: this.queryParams.businessName,
         pageNum: this.queryParams.pageNum,
         pageSize: this.queryParams.pageSize,
-        // categoryId: this.queryParams.categoryId
         categoryIds: this.queryParams.categoryId,
         piiDetection: this.queryParams.piiDetection,
-        tableName: this.queryParams.tableName,
+        sourceType: this.currentNodeType === 1 ? 'FILE_CATALOGUE' : null
       }
-      listByPublished(params).then((response) => {
+
+      // 判断结构化或非结构化，传递不同的参数名称
+      if (this.currentNodeType === 1) {
+        params.fileName = this.queryParams.tableName; // 非结构化时复用了 tableName 变量作为 fileName 输入
+        params.databaseId = this.currentNodeData ? this.currentNodeData.id : null;
+      } else {
+        params.tableName = this.queryParams.tableName;
+        // 如果选中了节点，则传递该节点的databaseId
+        if (this.currentNodeData && this.currentNodeData.id) {
+          params.databaseId = this.currentNodeData.id;
+        }
+      }
+
+      // 根据类型动态判断使用哪个接口
+      const requestApi = this.currentNodeType === 1 ? listFileByPublished : listByPublished;
+
+      requestApi(params).then((response) => {
         try {
           if (response.code == 200 && response.rows) {
             // 确保数组安全
@@ -1033,18 +1131,29 @@ Authorization:Bearer ${this.Token}`
         const allColumns = this.exportAllColumns.map(item => item.value);
         const unselectedColumns = allColumns.filter(value => !this.exportColumnDialog.selectedColumns.includes(value));
 
+        let list = this.$refs.tree.getCheckedNodes();
+        let treeList = list.filter(item => item.level === 1);
+        let checkedDatabaseNames = treeList.map(item => item.databaseName || item.categoryName || item.name || '').filter(name => name);
+        if (checkedDatabaseNames.length === 0) {
+          checkedDatabaseNames = this.databaseNames;
+        }
+        let checkedDatabaseIds = treeList.map(item => item.id);
+        if (checkedDatabaseIds.length === 0) {
+          checkedDatabaseIds = this.dataCategoryList.map(item => item.id);
+        }
+
         const params = {
-          databaseIds: this.dataCategoryList.map(item => item.id),
-          databaseNames: this.databaseNames,
+          databaseIds: checkedDatabaseIds,
+          databaseNames: checkedDatabaseNames,
           projectId: this.projectId,
           securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel : null,
-          // securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel.join() : null,
           businessName: this.queryParams.businessName,
           pageNum: this.queryParams.pageNum,
           pageSize: this.queryParams.pageSize,
           categoryId: this.queryParams.categoryId,
           columnList: unselectedColumns,
-          saveAsDefault: this.exportColumnDialog.saveAsDefault
+          saveAsDefault: this.exportColumnDialog.saveAsDefault,
+          sourceType: this.currentNodeType === 1 ? 'FILE_CATALOGUE' : null
         };
         await exportReport(params);
         // if (res.type != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {

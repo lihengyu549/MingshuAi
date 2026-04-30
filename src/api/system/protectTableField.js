@@ -25,6 +25,16 @@ export function listByPublished (data) {
     data: data
   })
 }
+
+// 列表数据-分页、搜索 非结构化
+export function listFileByPublished (data) {
+  return request({
+    url: `/system/protectTableField/listFileByPublished`,
+    method: 'post',
+    data: data
+  })
+}
+
 // 列表数据-导出Excel
 export function exportReport (data) {
   return request({
