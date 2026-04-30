@@ -127,7 +127,7 @@
           <el-slider v-model="allData.SemanticCache.value" :min="0" :max="100" style="flex: 1;"></el-slider>
           <div class="slider-tip">
             <el-tag size="small" type="warning" effect="plain" class="min-tag">{{ $t('scanStrategy.minSetting')
-              }}</el-tag>
+            }}</el-tag>
             <span class="tip-text">{{ $t('scanStrategy.disallowSaveBelow') }}</span>
           </div>
         </div>
@@ -136,6 +136,22 @@
             size="small" style="width: 100px;"></el-input-number>
           <span class="percent-sign">%</span>
         </div>
+      </div>
+    </el-card>
+
+    <!-- 分类推理 -->
+    <el-card class="card" shadow="never">
+      <template slot="header">
+        <span class="title">
+          <div class="icon">
+            <svg-icon icon-class="scanStrategy-5" style="font-size: 20px;"></svg-icon>
+          </div><span>{{ $t('scanStrategy.classificationInference') }}</span>
+        </span>
+      </template>
+      <div class="contBox semantic-cache-box" style="justify-content: space-between;">
+        <div class="label-text">{{ $t('scanStrategy.classificationInferenceDesc') }}</div>
+        <el-switch v-model="allData.ClassificationInference.state" active-color="#009dff" inactive-color="#e0e0e0">
+        </el-switch>
       </div>
     </el-card>
 
@@ -248,6 +264,7 @@ export default {
         SampleExtraction: {},
         DataTableQualityScore: {},
         SemanticCache: {},
+        ClassificationInference: {},
         SecurityLevelList: {
           sysRiskLevel: []
         }

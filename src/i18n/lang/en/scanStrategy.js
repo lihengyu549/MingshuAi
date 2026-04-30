@@ -14,5 +14,7 @@ export default {
   pleaseInputValue: 'Please enter a value',
   invalidPercentFormat: 'Invalid format. Please enter a number from 0 to 100 followed by %',
   semanticCacheMinWarning: 'The semantic cache similarity threshold cannot be lower than 60%',
-  updateSuccess: 'Updated successfully'
+  updateSuccess: 'Updated successfully',
+  classificationInference: 'Classification Inference',
+  classificationInferenceDesc: 'Enabling this feature will record the classification inference process in the task execution, facilitating tracing and analysis'
 }

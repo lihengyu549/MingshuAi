@@ -14,5 +14,7 @@ export default {
   pleaseInputValue: '请输入数值',
   invalidPercentFormat: '此位置不规则，请输入0-100的数字加上%',
   semanticCacheMinWarning: '语义缓存的相似度阈值不能低于60%',
-  updateSuccess: '修改成功'
+  updateSuccess: '修改成功',
+  classificationInference: '分类推理',
+  classificationInferenceDesc: '开启后，系统将在任务执行时记录详细的分类推理过程，便于溯源与分析'
 }
