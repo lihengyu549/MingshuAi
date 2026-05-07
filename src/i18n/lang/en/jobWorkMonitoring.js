@@ -57,7 +57,9 @@ export default {
     '匹配规则': 'Rule Matching',
     'AI分类打标': 'AI Classification Labeling',
     '个人信息识别': 'Personal Information Recognition',
-    '样本特征提取': 'Sample Feature Extraction'
+    '样本特征提取': 'Sample Feature Extraction',
+    '语义缓存': 'Semantic Caching',
+    '动态定级': 'Dynamic Rating'
   },
   analysisLabels: {
     dirtyDataNum: 'Filtered Noise Fields',

@@ -607,6 +607,8 @@ export default {
                 { name: 'AI分类打标', status: 'null', completedTime: '' },
                 { name: '个人信息识别', status: 'null', completedTime: '' },
                 { name: '样本特征提取', status: 'null', completedTime: '' },
+                { name: '语义缓存', status: 'null', completedTime: '' },
+                { name: '动态定级', status: 'null', completedTime: '' }
             ],
             // AI动效相关数据
             animationId: null,
@@ -698,7 +700,7 @@ export default {
             return this.status === 'RUNNING' || this.status === 'PAUSEDING' || this.status === 'KILLEDING';
         },
         isFileServerTask() {
-            return this.routeData.sourceType === 'FILE_SERVER';
+            return this.routeData.sourceType === 'FILE_CATALOGUE' || this.routeData.sourceType === 'FILE_SERVER';
         },
         showAiVision() {
             return !this.isFileServerTask;
@@ -707,13 +709,28 @@ export default {
             if (!this.isFileServerTask) {
                 return this.processingSteps;
             }
-            const aiClassifyStep = this.processingSteps.find(step => step.name === 'AI分类打标');
-            return aiClassifyStep ? [aiClassifyStep] : [{ name: 'AI分类打标', status: 'null', completedTime: '' }];
+            // 非结构化时，展示四步：语义缓存，AI分类打标，动态定级，样本特征提取
+            const unstructuredSteps = [
+                { name: '语义缓存', status: 'null', completedTime: '' },
+                { name: 'AI分类打标', status: 'null', completedTime: '' },
+                { name: '动态定级', status: 'null', completedTime: '' },
+                { name: '样本特征提取', status: 'null', completedTime: '' }
+            ];
+            
+            // 从 this.processingSteps 中同步状态（如果有的话），因为后端的步骤名称可能匹配
+            return unstructuredSteps.map(step => {
+                const existingStep = this.processingSteps.find(s => s.name === step.name);
+                if (existingStep) {
+                    return { ...existingStep };
+                }
+                return step;
+            });
         },
         // 获取当前处理中的步骤索引
         currentStepIndex() {
-            const idx = this.processingSteps?.findIndex(s => s.status === 'processing');
-            return idx >= 0 ? idx : this.processingSteps?.findIndex(s => s.status === 'pending');
+            const steps = this.visibleProcessingSteps;
+            const idx = steps?.findIndex(s => s.status === 'processing');
+            return idx >= 0 ? idx : steps?.findIndex(s => s.status === 'pending');
         },
     },
     watch: {
@@ -1048,6 +1065,27 @@ export default {
             }
 
             this.stopAllAnimations();
+            
+            // 针对非结构化数据
+            if (this.isFileServerTask) {
+                switch (this.currentStepIndex) {
+                    case 0:
+                        // 语义缓存，暂时不写专属动画
+                        break;
+                    case 1:
+                        this.startAIClassifyAnimation();
+                        break;
+                    case 2:
+                        // 动态定级，暂时不写专属动画
+                        break;
+                    case 3:
+                        this.startFeatureExtractAnimation();
+                        break;
+                }
+                return;
+            }
+            
+            // 针对结构化数据
             switch (this.currentStepIndex) {
                 case 0:
                     this.startNoiseFilterAnimation();
