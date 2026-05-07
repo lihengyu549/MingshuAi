@@ -91,5 +91,16 @@ export default {
   fillSuccess: 'Fill successful',
   evaluationSuccess: 'Evaluation successful',
   evaluationCompleted: 'Evaluation completed',
-  countSuffix: ' items'
+  countSuffix: ' items',
+  fileFormat: 'File Type',
+  fileParentPath: 'Folder',
+  updateTime: 'Last Modified Time',
+  createTime: 'Upload Time',
+  confirmName: 'Confirmation Status',
+  classificationReasons: 'Classification Reason',
+  sensitiveDataName: 'Sensitive Data',
+  confidenceLevel: 'Confidence Level',
+  confidenceScore: 'Confidence Score',
+  categoryName: 'Category',
+  securityLevelName: 'Security Level'
 }

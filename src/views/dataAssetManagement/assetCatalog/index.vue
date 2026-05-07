@@ -712,6 +712,34 @@ export default {
           {
             "label": this.$t('assetCatalog.sampleFeatureExtraction'),
             "value": "featureExtractionStatus"
+          },
+          {
+            "label": this.$t('assetCatalog.fileName'),
+            "value": "fileName"
+          },
+          {
+            "label": this.$t('assetCatalog.fileFormat'),
+            "value": "fileFormat"
+          },
+          {
+            "label": this.$t('assetCatalog.fileSize'),
+            "value": "fileSize"
+          },
+          {
+            "label": this.$t('assetCatalog.absolutePath'),
+            "value": "fileAbsolutePath"
+          },
+          {
+            "label": this.$t('assetCatalog.fileParentPath'),
+            "value": "fileParentPath"
+          },
+          {
+            "label": this.$t('assetCatalog.updateTime'),
+            "value": "updateTime"
+          },
+          {
+            "label": this.$t('assetCatalog.createTime'),
+            "value": "createTime"
           }
         ],
         saveAsDefault: false
@@ -722,7 +750,11 @@ export default {
         "businessName",
         "tableName",
         "tableRemark",
-        "fieldNum"
+        "fieldNum",
+        "fileName",
+        "fileFormat",
+        "fileParentPath",
+        "fileSize"
       ],
       scoreDialog: {
         visible: false,

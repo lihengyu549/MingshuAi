@@ -91,5 +91,16 @@ export default {
   fillSuccess: '填充成功',
   evaluationSuccess: '评估成功',
   evaluationCompleted: '评估完成',
-  countSuffix: '个'
+  countSuffix: '个',
+  fileFormat: '文件类型',
+  fileParentPath: '所属文件夹',
+  updateTime: '最后修改时间',
+  createTime: '上传时间',
+  confirmName: '确认状态',
+  classificationReasons: '归类原因',
+  sensitiveDataName: '敏感数据',
+  confidenceLevel: '置信度',
+  confidenceScore: '置信度分数',
+  categoryName: '分类',
+  securityLevelName: '安全分级'
 }
