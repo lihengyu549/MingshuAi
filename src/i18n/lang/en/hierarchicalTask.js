@@ -37,6 +37,8 @@ export default {
     aiTagDesc: 'Intelligently label data based on field context',
     semanticFill: 'Semantic Filling',
     semanticFillDesc: 'Fill business semantics using field/table context',
+    semanticCaching: 'Semantic Caching',
+    semanticCachingDesc: 'Enable semantic caching acceleration to improve processing efficiency',
     dirtyFilter: 'Noise Data Filtering',
     dirtyFilterDesc: 'Identify and filter invalid noise to improve classification quality',
     ruleMatch: 'Rule Matching Engine',
@@ -46,7 +48,9 @@ export default {
     aiSuggest: 'AI Classification Suggestion',
     aiSuggestDesc: 'Provide intelligent suggestions for fields with unmatched factors',
     featureExtract: 'Sample Feature Extraction',
-    featureExtractDesc: 'Extract key features from data samples'
+    featureExtractDesc: 'Extract key features from data samples',
+    dynamicRating: 'Dynamic Rating',
+    dynamicRatingDesc: 'Dynamically adjust security/sensitivity level based on data content'
   },
   form: {
     taskName: 'Task Name',

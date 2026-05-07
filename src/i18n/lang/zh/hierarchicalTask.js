@@ -37,6 +37,8 @@ export default {
     aiTagDesc: '结合字段上下文对数据进行智能打标',
     semanticFill: '语义填充',
     semanticFillDesc: '结合字段/表上下文信息填充业务语义',
+    semanticCaching: '语义缓存',
+    semanticCachingDesc: '开启语义缓存加速，提升处理效率',
     dirtyFilter: '噪音数据过滤',
     dirtyFilterDesc: '识别并过滤无效干扰数据，保障数据分类质量',
     ruleMatch: '匹配规则引擎',
@@ -46,7 +48,9 @@ export default {
     aiSuggest: 'AI分类建议',
     aiSuggestDesc: '对未匹配因子的字段，提供智能建议',
     featureExtract: '样本特征提取',
-    featureExtractDesc: '从数据样本中提取关键特征'
+    featureExtractDesc: '从数据样本中提取关键特征',
+    dynamicRating: '动态定级',
+    dynamicRatingDesc: '依据数据内容动态调整安全/敏感等级'
   },
   form: {
     taskName: '任务名称',

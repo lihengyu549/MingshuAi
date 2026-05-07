@@ -349,7 +349,15 @@
         <!-- 启用功能 -->
         <Title :title="$t('hierarchicalTask.titles.enableFeatures')" />
         <div class="feature-container">
-          <div class="feature-grid" v-if="isFileSource">
+          <div class="feature-grid" v-if="isFileSource"> <!-- 非结构化 -->
+            <!-- 语义缓存 -->
+            <div class="feature-item" :class="{ highlight: form.ifStartRuleMatching }" @click="toggleFeature('ifStartRuleMatching')">
+              <div class="feature-content">
+                <div class="feature-title">{{ $t('hierarchicalTask.features.semanticCaching') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.semanticCachingDesc') }}</div>
+                <el-checkbox v-model="form.ifStartRuleMatching" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+              </div>
+            </div>
             <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
               <div class="feature-content">
                 <div class="feature-title">{{ $t('hierarchicalTask.features.aiTag') }}</div>
@@ -357,8 +365,22 @@
                 <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
               </div>
             </div>
+            <div class="feature-item" :class="{ highlight: form.ifStartDynamicGrading }" @click="toggleFeature('ifStartDynamicGrading')">
+              <div class="feature-content">
+                <div class="feature-title">{{ $t('hierarchicalTask.features.dynamicRating') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.dynamicRatingDesc') }}</div>
+                <el-checkbox v-model="form.ifStartDynamicGrading" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+              </div>
+            </div>
+            <div class="feature-item" :class="{ highlight: form.ifStartFeatureExtract }" @click="toggleFeature('ifStartFeatureExtract')">
+              <div class="feature-content">
+                <div class="feature-title">{{ $t('hierarchicalTask.features.featureExtract') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.featureExtractDesc') }}</div>
+                <el-checkbox v-model="form.ifStartFeatureExtract" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+              </div>
+            </div>
           </div>
-          <div class="feature-grid" v-else>
+          <div class="feature-grid" v-else> <!-- 结构化 -->
             <div class="feature-item" :class="{ highlight: form.ifStartAiFill }"
               @click="toggleFeature('ifStartAiFill')">
               <div class="feature-content">
@@ -377,6 +399,7 @@
                   @click.stop></el-checkbox>
               </div>
             </div>
+            <!-- 匹配规则引擎 -->
             <div class="feature-item" :class="{ highlight: form.ifStartRuleMatching }"
               @click="toggleFeature('ifStartRuleMatching')">
               <div class="feature-content">
@@ -752,6 +775,7 @@ export default {
         ifStartFeatureExtract: false,
         ifStartAiClassifySuggest: false,
         ifStartDirtyDataFilter: false,
+        ifStartDynamicGrading: false,
         scheduleType: '0',
         scheduleInterval: '',
         scheduleTime: '',
@@ -1107,7 +1131,14 @@ export default {
     },
 
     projectChangeEdit(e) {
-      this.form.sourceType = this.databaseTypeList.find(item => item.id == e).sourceType
+      if (e) {
+        const item = this.databaseTypeList.find(item => item.id == e);
+        if (item) {
+          this.$set(this.form, 'sourceType', item.sourceType);
+        }
+      } else {
+        this.$set(this.form, 'sourceType', '');
+      }
     },
     /** 查询数据库代理列表 */
     getList() {
@@ -1134,6 +1165,7 @@ export default {
       this.$set(this.form, 'ifStartFeatureExtract', true)
       this.$set(this.form, 'ifStartAiClassifySuggest', true)
       this.$set(this.form, 'ifStartDirtyDataFilter', true)
+      this.$set(this.form, 'ifStartDynamicGrading', true)
       this.$set(this.form, 'confidenceLevel', "0")
       this.$set(this.form, 'classificationLogic', "3")
       this.$set(this.form, 'confirm', "-1")
@@ -1180,6 +1212,7 @@ export default {
       this.$set(this.form, 'ifStartRuleMatching', row.ifStartRuleMatching == "1");
       this.$set(this.form, 'ifStartFeatureExtract', row.ifStartFeatureExtract == "1");
       this.$set(this.form, 'ifStartAiClassifySuggest', row.ifStartAiClassifySuggest == "1");
+      this.$set(this.form, 'ifStartDynamicGrading', row.ifStartDynamicGrading == "1");
       this.$set(this.form, 'ifConfigurationParameters', row.ifConfigurationParameters == "1");
       this.$set(this.form, 'ifTechnicalIdentifier', row.ifTechnicalIdentifier == "1");
       this.$set(this.form, 'ifRedundantFields', row.ifRedundantFields == "1");
