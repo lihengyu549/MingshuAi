@@ -79,7 +79,12 @@ export default {
     confidenceLevel: '置信度',
     securityLevel: '安全分级',
     sensitiveData: '敏感数据',
-    sampleFeature: '样本特征'
+    sampleFeature: '样本特征',
+    fileType: '文件类型',
+    folder: '所属文件夹',
+    fieldRemark: '字段注释',
+    sample: '样本',
+    confirmStatus: '确认状态'
   },
   messages: {
     selectAtLeastOne: '请选择至少一条数据',

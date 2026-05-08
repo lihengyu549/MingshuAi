@@ -97,15 +97,17 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item :label="$t('viewResults.search.piiReview')" prop="piiDetection">
-            <el-select ref="addSelectRef" v-model="piiNodeName">
-              <el-option style="height: 100%; padding: 0" value="">
-                <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
-                  :filter-node-method="filterNode" ref="treeSelectPii" node-key="id" highlight-current
-                  @check="piiHandleNodeCheck" />
-              </el-option>
-            </el-select>
-          </el-form-item>
+          <template v-if="!isFileSource">
+            <el-form-item :label="$t('viewResults.search.piiReview')" prop="piiDetection">
+              <el-select ref="addSelectRef" v-model="piiNodeName">
+                <el-option style="height: 100%; padding: 0" value="">
+                  <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
+                    :filter-node-method="filterNode" ref="treeSelectPii" node-key="id" highlight-current
+                    @check="piiHandleNodeCheck" />
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </template>
           <template v-if="!isFileSource">
             <el-form-item :label="$t('viewResults.search.sampleFeature')" prop="featureData">
               <el-select clearable v-model="queryParams.featureData" @change="inputSearch"
@@ -164,7 +166,7 @@
           $t('selectAll') }}</el-checkbox>
         <el-checkbox-group v-model="checkedColumn" @change="handleCheckedCitiesChange" class="checkboxGroup"
           style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
-          <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
+          <el-checkbox style="margin-bottom: 10px;" v-for="item in availableColumns" :label="item" :key="item.label">{{
             item.label }}</el-checkbox>
         </el-checkbox-group>
         <el-button size="medium" slot="reference">{{ $t('columnSettings') }}</el-button>
@@ -177,66 +179,48 @@
       <el-table class="tableBox" v-loading="loading" :key="checkedColumn.length" :data="proxysList"
         @selection-change="handleSelectionChange" ref="tableRef">
         <el-table-column type="selection" width="60" align="center" />
-        <el-table-column
-          :label="isFileSource ? $t('viewResults.columns.fileName') : $t('viewResults.columns.fieldName')" align="left"
-          :prop="isFileSource ? 'fileName' : 'fieldName'" width="150" show-overflow-tooltip>
+        <el-table-column v-for="item in filteredCheckedColumn" :label="item.label"
+          :align="item.label == $t('viewResults.columnLabels.category') ? 'left' : 'center'" :prop="item.prop"
+          :width="item.width" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
-              <svg-icon icon-class="text" style="font-size: 14px; margin-right: 5px;" />
-              {{ isFileSource ? scope.row.fileName : scope.row.fieldName }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="isFileSource" :label="$t('viewResults.columns.fileType')" align="center"
-          prop="fileFormat" width="150" show-overflow-tooltip />
-        <el-table-column v-if="isFileSource" :label="$t('viewResults.columns.folder')" align="center" prop="fileParentPath"
-          width="150" show-overflow-tooltip />
-        <!-- <el-table-column label="字段类型" align="center" prop="fieldType" width="150" show-overflow-tooltip /> -->
-        <el-table-column v-if="!isFileSource" :label="$t('viewResults.columns.fieldRemark')" align="center"
-          prop="fieldRemark" width="150" show-overflow-tooltip />
-        <!-- <el-table-column label="AI字段注释" align="center" prop="craftRemark" width="240" show-overflow-tooltip /> -->
-        <template>
-          <el-table-column v-for="item in filteredCheckedColumn" :label="item.label"
-            :align="item.label == $t('viewResults.columnLabels.category') ? 'left' : 'center'" :prop="item.prop"
-            :width="item.width" show-overflow-tooltip>
-            <template slot-scope="scope">
-              <!-- 分类不再展示，直接显示原始值 -->
-              <template v-if="item.label == $t('viewResults.columnLabels.securityLevel')">
-                <el-tag :style="getRiskStyle(Number(scope.row.securityLevel))">
-                  {{ scope.row.securityLevelName }}
-                </el-tag>
-              </template>
-              <template v-else-if="item.label == $t('viewResults.columnLabels.category')">
-                <el-tag
-                  :type="scope.row.categoryName == $t('viewResults.options.unclassified') || scope.row.categoryName == $t('viewResults.options.noiseData') ? 'info' : 'primary'">{{
-                    scope.row.categoryName }}</el-tag>
-              </template>
-              <template v-else>
-                {{ scope.row[item.prop] }}
-              </template>
+            <!-- 特殊列渲染：文件名/字段名 -->
+            <template v-if="item.label == $t('viewResults.columnLabels.fileName') || item.label == $t('viewResults.columnLabels.fieldName')">
+              <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
+                <svg-icon icon-class="text" style="font-size: 14px; margin-right: 5px;" />
+                {{ isFileSource ? scope.row.fileName : scope.row.fieldName }}
+              </span>
             </template>
-          </el-table-column>
-        </template>
-        <el-table-column v-if="!isFileSource" :label="$t('viewResults.columns.sample')" align="center" prop="sampleData"
-          show-overflow-tooltip>
-          <template slot-scope="scope">
-            <el-tooltip placement="bottom" effect="light">
-              <div slot="content">
-                <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
-                  <el-table-column type="index" :label="$t('index')" width="50" />
-                  <el-table-column prop="value" :label="$t('fieldValue')" width="100" show-overflow-tooltip>
-                  </el-table-column>
-                </el-table>
-              </div>
-              <i class="el-icon-view" style="font-size: 18px; cursor: pointer;"></i>
-            </el-tooltip>
-          </template>
-        </el-table-column>
-        <el-table-column :label="$t('viewResults.columns.confirmStatus')" align="center" prop="confirm">
-          <template slot-scope="scope">
-            <!-- <span>{{ scope.row.confirm == 1 ? '已确认' : '未确认' }}</span> -->
-            <el-tag :type="scope.row.confirm == 0 ? 'info' : 'primary'">{{ scope.row.confirm == 0 ?
-              $t('viewResults.options.confirm.unconfirmed') :
-              $t('viewResults.options.confirm.confirmed') }}</el-tag>
+            <!-- 分类不再展示，直接显示原始值 -->
+            <template v-else-if="item.label == $t('viewResults.columnLabels.securityLevel')">
+              <el-tag :style="getRiskStyle(Number(scope.row.securityLevel))">
+                {{ scope.row.securityLevelName }}
+              </el-tag>
+            </template>
+            <template v-else-if="item.label == $t('viewResults.columnLabels.category')">
+              <el-tag
+                :type="scope.row.categoryName == $t('viewResults.options.unclassified') || scope.row.categoryName == $t('viewResults.options.noiseData') ? 'info' : 'primary'">{{
+                  scope.row.categoryName }}</el-tag>
+            </template>
+            <template v-else-if="item.label == $t('viewResults.columnLabels.confirmStatus')">
+              <el-tag :type="scope.row.confirm == 0 ? 'info' : 'primary'">{{ scope.row.confirm == 0 ?
+                $t('viewResults.options.confirm.unconfirmed') :
+                $t('viewResults.options.confirm.confirmed') }}</el-tag>
+            </template>
+            <template v-else-if="item.label == $t('viewResults.columnLabels.sample')">
+              <el-tooltip placement="bottom" effect="light">
+                <div slot="content">
+                  <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
+                    <el-table-column type="index" :label="$t('index')" width="50" />
+                    <el-table-column prop="value" :label="$t('fieldValue')" width="100" show-overflow-tooltip>
+                    </el-table-column>
+                  </el-table>
+                </div>
+                <i class="el-icon-view" style="font-size: 18px; cursor: pointer;"></i>
+              </el-tooltip>
+            </template>
+            <template v-else>
+              {{ scope.row[item.prop] }}
+            </template>
           </template>
         </el-table-column>
         <!-- 操作列已集成到字段名列中 -->
@@ -277,15 +261,17 @@
             </el-option>
           </el-select>
         </el-form-item> -->
-        <el-form-item :label="$t('viewResults.dialog.piiReview')" class="addSelectClass" prop="piiDetection">
-          <el-select ref="piiSelectRef" v-model="piiNodeName">
-            <el-option style="height: 100%; padding: 0" value="">
-              <el-tree :data="piiList" :props="defaultProps" :expand-on-click-node="true"
-                :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
-                @node-click="piiHandleNodeClick" />
-            </el-option>
-          </el-select>
-        </el-form-item>
+        <template v-if="!isFileSource">
+          <el-form-item :label="$t('viewResults.dialog.piiReview')" class="addSelectClass" prop="piiDetection">
+            <el-select ref="piiSelectRef" v-model="piiNodeName">
+              <el-option style="height: 100%; padding: 0" value="">
+                <el-tree :data="piiList" :props="defaultProps" :expand-on-click-node="true"
+                  :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
+                  @node-click="piiHandleNodeClick" />
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </template>
         <!-- <el-form-item label="识别方式" prop="detectionProcess">
           <el-input v-model="resultForm.detectionProcess" type="textarea" :autosize="{ minRows: 3, maxRows: 10 }"
             maxlength="500" placeholder="请输入识别方式"></el-input>
@@ -333,7 +319,7 @@ export default {
       // classificationReasonsList: ['策略匹配', 'AI推理', '脏数据识别'],
       confidenceLevelList: [
         { name: this.$t('viewResults.options.confidence.low'), id: 1, value: "1" },
-        { name: this.$t('viewResults.options.confidence.high'), id: 2, value: "2" },
+        { name: this.$t('viewResults.options.confidence.high'), id: 2, value: "2" }
       ],
       resultFormNodeName: '',
       treeID: '',
@@ -453,6 +439,21 @@ export default {
           width: "150"
         },
         {
+          label: this.$t('viewResults.columnLabels.fileType'),
+          prop: "fileFormat",
+          width: "150"
+        },
+        {
+          label: this.$t('viewResults.columnLabels.folder'),
+          prop: "fileParentPath",
+          width: "150"
+        },
+        {
+          label: this.$t('viewResults.columns.fieldRemark'),
+          prop: "fieldRemark",
+          width: "150"
+        },
+        {
           label: this.$t('viewResults.columnLabels.sourceBusinessSystem'),
           prop: "businessName",
           width: "150"
@@ -537,6 +538,15 @@ export default {
           prop: "regularExpression",
           width: "150"
 
+        },
+        {
+          label: this.$t('viewResults.columnLabels.sample'),
+          prop: "sampleData",
+          width: "150"
+        },
+        {
+          label: this.$t('viewResults.columnLabels.confirmStatus'),
+          prop: "confirm",
         }
       ],
       // 弹出层标题
@@ -743,9 +753,9 @@ export default {
     this.getPiiList();
     // 设置默认展示的列
     const defaultColumnLabels = this.isFileSource
-      ? [this.$t('viewResults.columnLabels.category'), this.$t('viewResults.columnLabels.securityLevel')]
-      : [this.$t('viewResults.columnLabels.table'), this.$t('viewResults.columnLabels.tableRemark'), this.$t('viewResults.columnLabels.category'), this.$t('viewResults.columnLabels.securityLevel')];
-    this.checkedColumn = this.setList.filter(item =>
+      ? [this.$t('viewResults.columnLabels.fileName'), this.$t('viewResults.columnLabels.fileType'), this.$t('viewResults.columnLabels.folder'), this.$t('viewResults.columnLabels.category'), this.$t('viewResults.columnLabels.securityLevel'), this.$t('viewResults.columnLabels.confirmStatus')]
+      : [this.$t('viewResults.columnLabels.fieldName'), this.$t('viewResults.columnLabels.fieldType'), this.$t('viewResults.columnLabels.table'), this.$t('viewResults.columnLabels.tableRemark'), this.$t('viewResults.columnLabels.category'), this.$t('viewResults.columnLabels.securityLevel'), this.$t('viewResults.columnLabels.sample'), this.$t('viewResults.columnLabels.confirmStatus')];
+    this.checkedColumn = this.availableColumns.filter(item =>
       defaultColumnLabels.includes(item.label)
     );
     this.checkAll = false;
@@ -757,23 +767,50 @@ export default {
     isFileSource() {
       return this.queryParams.sourceType === 'FILE_CATALOGUE' || this.queryParams.sourceType === 'FILE_SERVER';
     },
+    availableColumns() {
+      const unstructuredLabels = [
+        this.$t('viewResults.columnLabels.fileName'),
+        this.$t('viewResults.columnLabels.fileType'),
+        this.$t('viewResults.columnLabels.folder'),
+        this.$t('viewResults.columnLabels.category'),
+        this.$t('viewResults.columnLabels.securityLevel'),
+        this.$t('viewResults.columnLabels.confirmStatus'),
+        this.$t('viewResults.columnLabels.sourceBusinessSystem'),
+        this.$t('viewResults.columnLabels.classificationReason'),
+        this.$t('viewResults.columnLabels.confidenceLevel'),
+        this.$t('viewResults.columnLabels.confidenceScore'),
+        this.$t('viewResults.columnLabels.sensitiveData')
+      ];
+      
+      const structuredLabels = [
+        this.$t('viewResults.columnLabels.fieldName'),
+        this.$t('viewResults.columnLabels.fieldType'),
+        this.$t('viewResults.columnLabels.table'),
+        this.$t('viewResults.columnLabels.category'),
+        this.$t('viewResults.columnLabels.securityLevel'),
+        this.$t('viewResults.columnLabels.sample'),
+        this.$t('viewResults.columnLabels.confirmStatus'),
+        this.$t('viewResults.columnLabels.sourceBusinessSystem'),
+        this.$t('viewResults.columnLabels.database'),
+        this.$t('viewResults.columnLabels.aiFieldRemark'),
+        this.$t('viewResults.columnLabels.tableRemark'),
+        this.$t('viewResults.columnLabels.aiTableRemark'),
+        this.$t('viewResults.columnLabels.classificationStatus'),
+        this.$t('viewResults.columnLabels.classificationReason'),
+        this.$t('viewResults.columnLabels.piiReview'),
+        this.$t('viewResults.columnLabels.detectionProcess'),
+        this.$t('viewResults.columnLabels.confidenceScore'),
+        this.$t('viewResults.columnLabels.confidenceLevel'),
+        this.$t('viewResults.columnLabels.sensitiveData'),
+        this.$t('viewResults.columnLabels.sampleFeature')
+      ];
+
+      const allowedLabels = this.isFileSource ? unstructuredLabels : structuredLabels;
+      return this.setList.filter(item => allowedLabels.includes(item.label));
+    },
     filteredCheckedColumn() {
       const checkedLabels = new Set(this.checkedColumn.map(item => item.label));
-      if (this.isFileSource) {
-        const hiddenLabels = [
-          this.$t('viewResults.columnLabels.table'),
-          this.$t('viewResults.columnLabels.database'),
-          this.$t('viewResults.columnLabels.sampleFeature'),
-          this.$t('viewResults.columnLabels.fieldType'),
-          this.$t('viewResults.columnLabels.aiFieldRemark'),
-          this.$t('viewResults.columnLabels.tableRemark'),
-          this.$t('viewResults.columnLabels.aiTableRemark')
-        ];
-        return this.setList.filter(item =>
-          checkedLabels.has(item.label) && !hiddenLabels.includes(item.label)
-        );
-      }
-      return this.setList.filter(item => checkedLabels.has(item.label));
+      return this.availableColumns.filter(item => checkedLabels.has(item.label));
     }
   },
   mounted() {
@@ -811,13 +848,13 @@ export default {
       this.$refs.treeSelectSec.filter(val);
     },
     handleCheckAllChange(val) {
-      this.checkedColumn = val ? this.setList : [];
+      this.checkedColumn = val ? this.availableColumns : [];
       this.isIndeterminate = false;
     },
     handleCheckedCitiesChange(value) {
       let checkedCount = value.length;
-      this.checkAll = checkedCount === this.setList.length;
-      this.isIndeterminate = checkedCount > 0 && checkedCount < this.setList.length;
+      this.checkAll = checkedCount === this.availableColumns.length;
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.availableColumns.length;
     },
     getListTableByProject() {
       let data = {

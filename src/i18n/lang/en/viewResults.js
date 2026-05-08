@@ -79,7 +79,12 @@ export default {
     confidenceLevel: 'Confidence Level',
     securityLevel: 'Security Level',
     sensitiveData: 'Sensitive Data',
-    sampleFeature: 'Sample Feature'
+    sampleFeature: 'Sample Feature',
+    fileType: 'File Type',
+    folder: 'Folder',
+    fieldRemark: 'Field Remark',
+    sample: 'Sample',
+    confirmStatus: 'Confirmation Status'
   },
   messages: {
     selectAtLeastOne: 'Please select at least one record',
