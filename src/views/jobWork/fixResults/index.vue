@@ -8,7 +8,7 @@
                 <el-button @click="handleNext('0')">{{ $t('previous') }}</el-button>
                 <el-button @click="handleNext('1')">{{ $t('next') }}</el-button>
                 <el-button type="primary" plain @click="handleManualConfirm">{{ $t('fixResults.top.manualConfirm')
-                    }}</el-button>
+                }}</el-button>
             </div>
         </el-card>
 
@@ -37,6 +37,25 @@
                             <label class="info-label">{{ $t('fixResults.top.filePath') }}：</label>
                             <div class="info-content">{{ row.filePath || '--' }}</div>
                         </div>
+                        <div class="info-item">
+                            <label class="info-label">{{ $t('fixResults.top.sampleFeature') }}：</label>
+                            <div class="info-content">
+                                <el-button size="mini" plain @click="isSampleFeatureExpanded = !isSampleFeatureExpanded"
+                                    style="border-radius: 4px;">{{ isSampleFeatureExpanded ?
+                                        $t('fixResults.texts.collapse') : $t('fixResults.texts.expandAll') }}</el-button>
+                            </div>
+                        </div>
+                        <el-collapse-transition>
+                            <div v-show="isSampleFeatureExpanded" style="margin-top: 10px;">
+                                <el-table :data="row.UnSampleList || [{key:'样本特征',value:'123'}]" border class="tableCla"
+                                    style="width: 100%; border-radius: 8px; overflow: hidden;">
+                                    <el-table-column prop="key" :label="$t('fixResults.texts.keyword')"
+                                        show-overflow-tooltip></el-table-column>
+                                    <el-table-column prop="value" :label="$t('fixResults.texts.keyValue')"
+                                        show-overflow-tooltip></el-table-column>
+                                </el-table>
+                            </div>
+                        </el-collapse-transition>
                     </template>
                     <template v-else>
                         <div class="info-item">
@@ -113,29 +132,49 @@
 
                 </el-card>
                 <el-card shadow="never" style="margin-top: 20px; border-radius: 10px;">
-                    <Title :title="$t('fixResults.sections.reasoningProcess')"></Title>
+                    <template slot="header">
+                        <Title :title="$t('fixResults.sections.reasoningProcess')" style="margin-bottom: 0;">
+                            <el-button v-if="isFileSource" size="mini" plain @click="toggleAllReasoning"
+                                style="border-radius: 4px; margin-right: 10px;float: inline-end;">
+                                {{ isAllReasoningExpanded ? $t('fixResults.texts.collapseAll') :
+                                    $t('fixResults.texts.expandAll') }}
+                            </el-button>
+                        </Title>
+                    </template>
                     <el-card class="box-card" shadow="never" v-for="(item, index) in row.inferenceProcessList"
                         :key="index" style="margin-bottom: 20px;">
                         <template slot="header">
                             <span class="header-name">{{ item.name }}</span>
-                            <span class="header-confidence">{{
-                                `${$t('fixResults.sections.currentConfidence')}：${item.value * 100}%` }}</span>
+                            <span style="float: right; display: flex; align-items: center;">
+                                <span class="header-confidence" style="margin-right: 10px;">{{
+                                    `${$t('fixResults.sections.currentConfidence')}：${item.value * 100}%` }}</span>
+                                <i v-if="isFileSource"
+                                    :class="item.expanded ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"
+                                    style="cursor: pointer; padding: 5px; font-weight: bold; color: #909399; font-size: 12px;"
+                                    @click="item.expanded = !item.expanded"></i>
+                            </span>
                         </template>
-                        <div class="info-item">
-                            <label class="info-label"><svg-icon icon-class="home-aiAuto"
-                                    style="font-size: 18px; margin-right: 10px; flex-shrink: 0;" />{{
-                                        $t('fixResults.sections.aiReasoning') }}：</label>
-                            <div class="info-content">{{ item.text }}</div>
-                        </div>
+                        <el-collapse-transition>
+                            <div v-show="!isFileSource || item.expanded">
+                                <div class="info-item">
+                                    <label class="info-label"><svg-icon icon-class="home-aiAuto"
+                                            style="font-size: 18px; margin-right: 10px; flex-shrink: 0;" />{{
+                                                $t('fixResults.sections.aiReasoning') }}：</label>
+                                    <div class="info-content">{{ item.text }}</div>
+                                </div>
+                            </div>
+                        </el-collapse-transition>
                     </el-card>
 
                     <el-card class="box-card" shadow="never" style="margin-top: 20px;">
                         <template slot="header">
                             <span class="header-name">{{ $t('fixResults.sections.finalGrade') }}：{{
                                 row.securityLevelName }}</span>
-                            <el-tag size="small" type="primary" color="#ffc5e0"
-                                style="border-radius: 8px; float: inline-end; color: #dc478f;">{{
-                                    $t('fixResults.sections.higherLevelRule') }}</el-tag>
+                            <span style="float: right; display: flex; align-items: center;">
+                                <el-tag size="small" type="primary" color="#ffc5e0"
+                                    style="border-radius: 8px; color: #dc478f;">{{
+                                        $t('fixResults.sections.higherLevelRule') }}</el-tag>
+                            </span>
                         </template>
                         <div class="info-item">
                             <label class="info-label"><svg-icon icon-class="home-aiAuto"
@@ -156,8 +195,8 @@
                                         {{ $t('fixResults.texts.dynamicRuleNotTriggered') }}
                                     </template>。
                                     <template v-if="row.piiLevel">
-                                        {{ $t('fixResults.texts.piiResultLevel') }}<el-tag size="small" type="info"
-                                            style="border-radius: 8px;">{{
+                                        {{ $t('fixResults.texts.piiResultLevel') }}<el-tag size="small"
+                                            type="info" style="border-radius: 8px;">{{
                                                 row.piiLevel }}{{ $t('fixResults.texts.level') }}</el-tag>
                                     </template>
                                     <template v-else>
@@ -172,11 +211,13 @@
 
             <div class="right-section">
                 <el-card class="box-card" shadow="never">
-                    <Title :title="$t('fixResults.sections.manualReview')" iconClass="seal"></Title>
+                    <template slot="header">
+                        <Title :title="$t('fixResults.sections.manualReview')" iconClass="seal"></Title>
+                    </template>
                     <div class="audit-status">
                         <span>{{ row.confirm == '1' ? $t('fixResults.texts.confirmed') :
                             $t('fixResults.texts.unconfirmed')
-                            }}</span>
+                        }}</span>
                         <el-badge is-dot></el-badge>
                     </div>
                     <div class="info-container" style="margin-top: 20px;">
@@ -189,7 +230,7 @@
                             <div class="info-content">
                                 <el-tag :style="getRiskStyle(Number(row.securityLevel))">{{ row.securityLevelName ||
                                     '--'
-                                    }}</el-tag>
+                                }}</el-tag>
                             </div>
                         </div>
                         <div class="info-item">
@@ -198,10 +239,10 @@
                                 <el-progress :percentage="Number(row.confidenceScore) * 100"></el-progress>
                             </div>
                         </div>
-                        <!-- <div class="info-item">
+                        <div class="info-item" v-if="!isFileSource">
                             <label class="info-label">{{ $t('fixResults.sections.piiReview') }}：</label>
                             <div class="info-content">{{ row.piiDetectionName || '--' }}</div>
-                        </div> -->
+                        </div>
                         <div class="info-item">
                             <el-button type="primary" plain class="full-width-btn" @click="handleModifyResult">{{
                                 $t('fixResults.sections.modifyResult') }}</el-button>
@@ -210,7 +251,9 @@
                 </el-card>
 
                 <el-card class="box-card" shadow="never" style="margin-top: 20px;">
-                    <Title :title="$t('fixResults.sections.aiSuggestedCategory')" iconClass="suggest"></Title>
+                    <template slot="header">
+                        <Title :title="$t('fixResults.sections.aiSuggestedCategory')" iconClass="suggest"></Title>
+                    </template>
                     <template v-if="row.suggestClassifyJson">
                         <el-card
                             style="padding: 20px; line-height: 1.8; border-radius: 10px; background-color: rgb(249 249 250);"
@@ -326,11 +369,20 @@ export default {
             levelOptions: [],
             piiNodeName: '',
             piiList: [],
-            originalQueryParams: null
+            originalQueryParams: null,
+            isSampleFeatureExpanded: false,
+            isAllReasoningExpanded: false,
+            finalGradeExpanded: false
         };
     },
     created() {
         this.row = this.$route.query.row || null;
+        if (this.row && this.row.inferenceProcessList) {
+            this.row.inferenceProcessList = this.row.inferenceProcessList.map(item => ({
+                ...item,
+                expanded: false
+            }));
+        }
         this.categoryList = this.$route.query.categoryList || [];
         if (this.$route.query.queryParams) {
             const { pageNum, pageSize, ...rest } = this.$route.query.queryParams;
@@ -352,6 +404,14 @@ export default {
         }
     },
     methods: {
+        toggleAllReasoning() {
+            this.isAllReasoningExpanded = !this.isAllReasoningExpanded;
+            if (this.row && this.row.inferenceProcessList) {
+                this.row.inferenceProcessList.forEach(item => {
+                    item.expanded = this.isAllReasoningExpanded;
+                });
+            }
+        },
         fetchLevelOptions(categoryId) {
             const params = {}
             if (categoryId) params.projectId = categoryId

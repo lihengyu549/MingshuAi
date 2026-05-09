@@ -46,7 +46,12 @@ export default {
     piiNotEnabled: '未开启个人信息识别',
     level: '级',
     confirmed: '已确认',
-    unconfirmed: '未确认'
+    unconfirmed: '未确认',
+    expandAll: '全部展开',
+    collapseAll: '全部收起',
+    collapse: '收起',
+    keyword: '关键词',
+    keyValue: '关键值'
   },
   messages: {
     loadFailed: '数据加载失败，请稍后重试',

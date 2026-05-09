@@ -46,7 +46,12 @@ export default {
     piiNotEnabled: 'PII recognition is not enabled',
     level: 'Level',
     confirmed: 'Confirmed',
-    unconfirmed: 'Unconfirmed'
+    unconfirmed: 'Unconfirmed',
+    expandAll: 'Expand All',
+    collapseAll: 'Collapse All',
+    collapse: 'Collapse',
+    keyword: 'Keyword',
+    keyValue: 'Key Value'
   },
   messages: {
     loadFailed: 'Failed to load data. Please try again later.',
