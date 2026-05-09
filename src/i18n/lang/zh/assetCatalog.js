@@ -5,7 +5,7 @@ export default {
   tableName: '表名',
   pleaseInputTableName: '请输入表名搜索',
   semanticFilling: '语义填充',
-  sampleFeatureExtraction: '样本特征提取',
+  sampleFeatureExtraction: '特征提取',
   all: '全部',
   notStarted: '未开始',
   success: '成功',

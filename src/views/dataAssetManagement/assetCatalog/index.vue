@@ -45,8 +45,7 @@
         <!-- type = 0 时显示原有表格卡片内容 -->
         <template v-if="currentNodeType == '0'">
           <el-card class="search-card" shadow="never">
-            <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="false"
-              label-width="100px">
+            <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="true">
               <el-form-item :label="$t('assetCatalog.tableName')" prop="tableName">
                 <el-input v-model="queryParams.tableName" :placeholder="$t('assetCatalog.pleaseInputTableName')"
                   @input="handleInputChange" clearable>
@@ -2265,20 +2264,28 @@ export default {
   flex-wrap: wrap;
 }
 
-.yuanDataClass ::v-deep .el-form-item {
+.yuanDataClass::v-deep .el-form-item {
   width: 30%;
-  margin-bottom: 0px;
 }
 
-.yuanDataClass ::v-deep .el-form-item__label {
+.yuanDataClass::v-deep .el-form-item:nth-child(3n) {
+  margin-right: 0;
+}
+
+.yuanDataClass::v-deep .el-form-item:nth-last-child(-n+3) {
+  margin-bottom: 0;
+}
+
+.yuanDataClass::v-deep .el-form-item__label { 
   width: 25%;
+  white-space: nowrap;
 }
 
-.yuanDataClass ::v-deep .el-form-item__content {
+.yuanDataClass::v-deep .el-form-item__content {
   width: 75%;
 }
 
-.yuanDataClass ::v-deep .el-select {
+.yuanDataClass::v-deep .el-select {
   width: 100%;
 }
 
