@@ -563,6 +563,30 @@ export default {
             }
 
             if (res.code === 200 && res.data) {
+                if (this.isFileSource && res.data.sampleData) {
+                    try {
+                        const parsedData = JSON.parse(res.data.sampleData);
+                        if (Array.isArray(parsedData)) {
+                            res.data.sampleList = parsedData.map(item => ({ key: Object.keys(item)[0], value: Object.values(item)[0] }));
+                        }
+                    } catch (e) {
+                        res.data.sampleList = [];
+                    }
+                } else if (res.data.sampleData) {
+                    try {
+                        res.data.sampleList = JSON.parse(res.data.sampleData).map(item => ({ value: item }));
+                    } catch (e) {
+                        res.data.sampleList = [];
+                    }
+                }
+
+                if (res.data.inferenceProcessList) {
+                    res.data.inferenceProcessList = res.data.inferenceProcessList.map(item => ({
+                        ...item,
+                        expanded: this.isAllReasoningExpanded
+                    }));
+                }
+
                 this.row = res.data;
                 this.$route.query.queryParams.pageNum = res.data.pageNum;
                 this.$route.query.queryParams.pageSize = res.data.pageSize;
