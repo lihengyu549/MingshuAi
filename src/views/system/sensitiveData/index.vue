@@ -175,7 +175,7 @@
                                     </div>
                                 </template>
                             </el-table-column>
-                            <el-table-column prop="isMask" :label="$t('sensitiveData.isDesensitized')" align="center"
+                            <!-- <el-table-column prop="isMask" :label="$t('sensitiveData.isDesensitized')" align="center"
                                 width="100">
                                 <template slot-scope="scope">
                                     <el-select v-model="scope.row.isMask" size="mini"
@@ -184,8 +184,8 @@
                                         <el-option :label="$t('no')" value="0"></el-option>
                                     </el-select>
                                 </template>
-                            </el-table-column>
-                            <el-table-column prop="proofMaterial" :label="$t('sensitiveData.proofMaterial')"
+                            </el-table-column> -->
+                            <!-- <el-table-column prop="proofMaterial" :label="$t('sensitiveData.proofMaterial')"
                                 align="center" width="200">
                                 <template slot-scope="scope">
                                     <div class="proof-upload-container">
@@ -204,7 +204,7 @@
                                             fit="cover" @error="handleImageError(scope.row.fieldId)"></el-image>
                                     </div>
                                 </template>
-                            </el-table-column>
+                            </el-table-column> -->
                             <el-table-column prop="isEncrypt" :label="$t('sensitiveData.isEncrypted')" align="center"
                                 width="100">
                                 <template slot-scope="scope">
