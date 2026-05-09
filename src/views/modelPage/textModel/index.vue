@@ -252,7 +252,6 @@ export default {
                 const response = await getAiModelList(id);
                 // 假设接口返回格式为 { data: [{name: "模型名称", value: "模型值"}, ...] }
                 if (response && response.data && Array.isArray(response.data)) {
-                    debugger
                     // 处理接口返回的模型列表
                     const modelList = response.data.map(item => ({
                         label: item.name, // 根据实际字段调整
