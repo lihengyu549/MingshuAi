@@ -1132,8 +1132,8 @@ Authorization:Bearer ${this.Token}`
         const unselectedColumns = allColumns.filter(value => !this.exportColumnDialog.selectedColumns.includes(value));
 
         let list = this.$refs.tree.getCheckedNodes();
-        let treeListLevel0 = list.filter(item => item.level === 0);
-        let treeListLevel1 = list.filter(item => item.level === 1);
+        let treeListLevel0 = list.filter(item => item.level === 0);  // id取0层
+        let treeListLevel1 = list.filter(item => item.level === 1);  // name取1层
         
         let checkedDatabaseNames = treeListLevel1.map(item => item.databaseName || item.categoryName || item.name || '').filter(name => name);
         if (checkedDatabaseNames.length === 0) {
