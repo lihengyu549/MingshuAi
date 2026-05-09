@@ -1132,16 +1132,17 @@ Authorization:Bearer ${this.Token}`
         const unselectedColumns = allColumns.filter(value => !this.exportColumnDialog.selectedColumns.includes(value));
 
         let list = this.$refs.tree.getCheckedNodes();
-        let treeList = list.filter(item => item.level === 1);
-        let checkedDatabaseNames = treeList.map(item => item.databaseName || item.categoryName || item.name || '').filter(name => name);
+        let treeListLevel0 = list.filter(item => item.level === 0);  // id取0层
+        let treeListLevel1 = list.filter(item => item.level === 1);  // name取1层
+        
+        let checkedDatabaseNames = treeListLevel1.map(item => item.databaseName || item.categoryName || item.name || '').filter(name => name);
         if (checkedDatabaseNames.length === 0) {
           checkedDatabaseNames = this.databaseNames;
         }
-        let checkedDatabaseIds = treeList.map(item => item.id);
+        let checkedDatabaseIds = treeListLevel0.map(item => item.id);
         if (checkedDatabaseIds.length === 0) {
           checkedDatabaseIds = this.dataCategoryList.map(item => item.id);
         }
-
         const params = {
           databaseIds: checkedDatabaseIds,
           databaseNames: checkedDatabaseNames,

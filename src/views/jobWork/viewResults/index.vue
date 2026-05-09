@@ -1150,7 +1150,22 @@ export default {
         this.proxysList = response.data.rows;
         this.proxysList.forEach(ele => {
           if (ele.sampleData) {
-            ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })))
+            if (this.isFileSource) {
+              try {
+                const parsedData = JSON.parse(ele.sampleData);
+                if (Array.isArray(parsedData)) {
+                  ele.sampleList = parsedData.map(item => ({ key: Object.keys(item)[0], value: Object.values(item)[0] }));
+                }
+              } catch (e) {
+                ele.sampleList = [];
+              }
+            } else {
+              try {
+                ele.sampleList = JSON.parse(ele.sampleData).map((item => ({ value: item })));
+              } catch (e) {
+                ele.sampleList = [];
+              }
+            }
           }
         })
         this.total = response.data.total;
