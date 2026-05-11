@@ -19,6 +19,7 @@ export default {
   taskMonitor: "任务监控",
   realTimeTransmission: "实时流传输中",
   currentlyProcessingTable: "当前处理的表",
+  currentlyProcessingFile: "当前处理的文件",
   noiseDataFilter: "噪音数据过滤",
   semanticFilling: "语义填充",
   matchingRules: "匹配规则",

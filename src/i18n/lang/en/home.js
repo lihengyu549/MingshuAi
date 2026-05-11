@@ -19,6 +19,7 @@ export default {
   taskMonitor: "Task Monitor",
   realTimeTransmission: "Real-time Transmission",
   currentlyProcessingTable: "Currently Processing Table",
+  currentlyProcessingFile: "Currently Processing File",
   noiseDataFilter: "Noise Data Filter",
   semanticFilling: "Semantic Filling",
   matchingRules: "Matching Rules",

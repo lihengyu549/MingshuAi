@@ -116,7 +116,7 @@
               <div class="monitor-left">
                 <!-- 表格部分 -->
                 <div class="table-section">
-                  <h4 class="section-title">{{ $t('home.currentlyProcessingTable') }}</h4>
+                  <h4 class="section-title">{{ taskMonitor.type == '0' ? $t('home.currentlyProcessingTable') : $t('home.currentlyProcessingFile') }}</h4>
                   <div class="table-item-wrapper">
                     <transition name="slide-up" mode="out-in">
                       <span :key="taskMonitor.currentTableIndex" class="table-item-name">{{
