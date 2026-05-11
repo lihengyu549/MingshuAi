@@ -993,7 +993,7 @@ export default {
     isScanOperableSource(row) {
       return ['FILE_SERVER', 'DATABASE'].includes(row.sourceType);
     },
-    isFileSource(row) {
+    isFileSource(row) { 
       return ['FILE_SERVER', 'FILE_CATALOGUE'].includes(row.sourceType);
     },
     triggerDataScan(row) {
