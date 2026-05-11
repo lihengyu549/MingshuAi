@@ -237,8 +237,8 @@ export default {
       this.loading = true;
       getSafetyComplianceReport({ categoryId: this.categoryId })
         .then(res => {
-          const data = res && (res.data || res);
-          if (data) this.applyReportData(data);
+          const data = (res && (res.data || res)) || {};
+          this.applyReportData(data);
           this.loading = false;
         })
         .catch(() => {
@@ -258,17 +258,21 @@ export default {
     },
 
     applyReportData(data) {
-      this.reportData = data;
-      if (data.stats) this.statsData = Object.assign({}, this.statsData, data.stats);
+      const safeData = data || {};
+      this.reportData = safeData;
+      this.statsData = Object.assign(
+        { dataSourceCount: 0, businessSystemCount: 0, fieldCount: 0, fileCount: 0 },
+        safeData.stats || {}
+      );
       // 支持多层分类树（最多6层），兼容旧结构
       let classificationTree = null;
-      if (Array.isArray(data.classification)) {
-        classificationTree = data.classification;
-      } else if (data.classification && Array.isArray(data.classification.tree)) {
-        classificationTree = data.classification.tree;
-      } else if (data.classification && data.classification.root) {
+      if (Array.isArray(safeData.classification)) {
+        classificationTree = safeData.classification;
+      } else if (safeData.classification && Array.isArray(safeData.classification.tree)) {
+        classificationTree = safeData.classification.tree;
+      } else if (safeData.classification && safeData.classification.root) {
         // 兼容旧结构：{ root: [{name,value}], children: { [name]: [...] } }
-        const childrenMap = data.classification.children || {};
+        const childrenMap = safeData.classification.children || {};
         const build = (list, depth = 1) => {
           if (!Array.isArray(list)) return [];
           return list.map(item => {
@@ -280,18 +284,20 @@ export default {
             };
           });
         };
-        classificationTree = build(data.classification.root, 1);
+        classificationTree = build(safeData.classification.root, 1);
       }
-      if (classificationTree) {
-        this.classificationTree = classificationTree;
-        this.classificationStack = [];
-        this.classificationCurrent = this.classificationTree.slice(0);
-        if (this.charts.classification) this.updateClassificationChart(this.classificationCurrent);
-      }
-      if (data.assetDistribution && data.assetDistribution.systems && this.charts.assetDistribution) {
-        const names = data.assetDistribution.systems.map(i => i.name);
-        const fields = data.assetDistribution.systems.map(i => i.fields);
-        const files = data.assetDistribution.systems.map(i => i.files);
+
+      // 即使后端返回空，也要重置图表，避免保留上一次数据
+      this.classificationTree = classificationTree || [];
+      this.classificationStack = [];
+      this.classificationCurrent = this.classificationTree.slice(0);
+      if (this.charts.classification) this.updateClassificationChart(this.classificationCurrent);
+
+      if (this.charts.assetDistribution) {
+        const systems = (safeData.assetDistribution && safeData.assetDistribution.systems) || [];
+        const names = systems.map(i => i.name);
+        const fields = systems.map(i => i.fields);
+        const files = systems.map(i => i.files);
         this.charts.assetDistribution.setOption({
           xAxis: { data: names },
           series: [
@@ -300,23 +306,28 @@ export default {
           ]
         });
       }
-      if (data.growthTrend && this.charts.growthTrend) {
+
+      if (this.charts.growthTrend) {
+        const growthTrend = safeData.growthTrend || {};
         this.charts.growthTrend.setOption({
-          xAxis: { data: data.growthTrend.x || [] },
+          xAxis: { data: growthTrend.x || [] },
           series: [
-            { name: this.$t('assetReport.fieldCountSum'), data: data.growthTrend.fields || [] },
-            { name: this.$t('assetReport.fileCountSum'), data: data.growthTrend.files || [] }
+            { name: this.$t('assetReport.fieldCountSum'), data: growthTrend.fields || [] },
+            { name: this.$t('assetReport.fileCountSum'), data: growthTrend.files || [] }
           ]
         });
       }
-      if (data.levelDistribution && this.charts.levelDistribution) {
-        const seriesData = (data.levelDistribution || []).map(i => ({ name: i.level, value: i.value }));
+
+      if (this.charts.levelDistribution) {
+        const seriesData = (safeData.levelDistribution || []).map(i => ({ name: i.level, value: i.value }));
         this.charts.levelDistribution.setOption({ series: [{ name: this.$t('assetReport.dataLevel'), data: seriesData }] });
       }
-      if (data.heatmap && this.charts.heatmap) {
-        const levels = data.heatmap.levels || [];
-        const systems = data.heatmap.systems || [];
-        const matrix = data.heatmap.matrix || [];
+
+      if (this.charts.heatmap) {
+        const heatmap = safeData.heatmap || {};
+        const levels = heatmap.levels || [];
+        const systems = heatmap.systems || [];
+        const matrix = heatmap.matrix || [];
         const flat = [];
         for (let i = 0; i < systems.length; i++) {
           for (let j = 0; j < levels.length; j++) {
@@ -342,9 +353,11 @@ export default {
           }]
         });
       }
-      if (data.systemCategory && this.charts.systemCategory) {
-        const systems = data.systemCategory.systems || [];
-        const rawSeries = data.systemCategory.series || [];
+
+      if (this.charts.systemCategory) {
+        const systemCategory = safeData.systemCategory || {};
+        const systems = systemCategory.systems || [];
+        const rawSeries = systemCategory.series || [];
         const legendNames = rawSeries.map(s => s.name);
         const series = rawSeries.map(s => ({
           name: s.name,
