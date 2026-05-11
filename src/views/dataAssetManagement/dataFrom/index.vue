@@ -171,8 +171,8 @@
               :disabled="!isScanOperableSource(scope.row) || btnLoading" :loading="btnLoading">{{
                 $t('dataFrom.terminateScan') }}</el-button>
             <!-- 添加关联数据字典按钮和下拉菜单 -->
-            <el-dropdown trigger="click" @command="handleDictionaryCommand"
-              @click.native="handleDropdownClick(scope.row)">
+            <el-dropdown trigger="click" :disabled="isFileSource(scope.row)" @command="handleDictionaryCommand"
+              @click.native="handleDropdownClick(scope.row)" style="margin-left: 10px;">
               <el-button size="mini" type="text">
                 {{ $t('dataFrom.linkDataDictionary') }}
               </el-button>
@@ -992,6 +992,9 @@ export default {
     },
     isScanOperableSource(row) {
       return ['FILE_SERVER', 'DATABASE'].includes(row.sourceType);
+    },
+    isFileSource(row) {
+      return ['FILE_SERVER', 'FILE_CATALOGUE'].includes(row.sourceType);
     },
     triggerDataScan(row) {
       return row.sourceType === 'FILE_SERVER' ? dataScanByFileServer({ id: row.id }) : dataSacn({ proxyIds: row.id });
