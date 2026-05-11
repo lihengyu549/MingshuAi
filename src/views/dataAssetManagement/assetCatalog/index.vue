@@ -562,6 +562,8 @@ export default {
       fileTotal: 0, // 总条目数（后端 titleNum）
       rootFolderTitle: '', // 根文件夹标题（从接口获取）
 
+      fileListTimer: null, // 防抖定时器
+
       fileDetailDrawerVisible: false,
       fileDetailData: {
         fileName: '--',
@@ -903,48 +905,53 @@ export default {
 
 
     loadFileListData(data, options = {}) {
-      const { folderId = null, keepCurrentFolderName = false } = options;
-      const sortField = this.currentSortField;
-      const order = this.sortOrders[sortField];
-      const isAsc = order === 'asc';
-
-      const response = {
-        sortField: sortField,
-        isAsc: isAsc,
-        // 调整databaseList参数结构,使其符合getProjectFileList接口要求
-        databaseList: [{
-          parentId: data.id,
-          label: data.label
-        }]
-      };
-      if (folderId !== null && folderId !== undefined && folderId !== '') {
-        response.folderId = folderId;
+      if (this.fileListTimer) {
+        clearTimeout(this.fileListTimer);
       }
-      getProjectFileList(response).then(res => {
-        if (res.code === 200) {
-          const data = res.data || {};
-          const rawFileList = data.fileList;
-          const normalizedFileList = Array.isArray(rawFileList)
-            ? rawFileList
-            : (rawFileList && Array.isArray(rawFileList.records) ? rawFileList.records : []);
-          const normalizedFolderList = Array.isArray(data.folder) ? data.folder : [];
-          const parsedTitleNum = Number(data.titleNum);
+      this.fileListTimer = setTimeout(() => {
+        const { folderId = null, keepCurrentFolderName = false } = options;
+        const sortField = this.currentSortField;
+        const order = this.sortOrders[sortField];
+        const isAsc = order === 'asc';
 
-          this.fileList = normalizedFileList;
-          this.folderList = normalizedFolderList;
-          this.fileTotal = Number.isFinite(parsedTitleNum) ? parsedTitleNum : 0;
+        const response = {
+          sortField: sortField,
+          isAsc: isAsc,
+          // 调整databaseList参数结构,使其符合getProjectFileList接口要求
+          databaseList: [{
+            parentId: data.id,
+            label: data.label
+          }]
+        };
+        if (folderId !== null && folderId !== undefined && folderId !== '') {
+          response.folderId = folderId;
+        }
+        getProjectFileList(response).then(res => {
+          if (res.code === 200) {
+            const data = res.data || {};
+            const rawFileList = data.fileList;
+            const normalizedFileList = Array.isArray(rawFileList)
+              ? rawFileList
+              : (rawFileList && Array.isArray(rawFileList.records) ? rawFileList.records : []);
+            const normalizedFolderList = Array.isArray(data.folder) ? data.folder : [];
+            const parsedTitleNum = Number(data.titleNum);
 
-          if (data.title) {
-            this.rootFolderTitle = data.title;
-            if (!keepCurrentFolderName) {
-              this.currentFolderName = data.title;
+            this.fileList = normalizedFileList;
+            this.folderList = normalizedFolderList;
+            this.fileTotal = Number.isFinite(parsedTitleNum) ? parsedTitleNum : 0;
+
+            if (data.title) {
+              this.rootFolderTitle = data.title;
+              if (!keepCurrentFolderName) {
+                this.currentFolderName = data.title;
+              }
             }
           }
-        }
-      }).catch(err => {
-        console.error('加载文件列表失败:', err);
-        this.$message.error(this.$t('assetCatalog.loadFileListFailed'));
-      });
+        }).catch(err => {
+          console.error('加载文件列表失败:', err);
+          this.$message.error(this.$t('assetCatalog.loadFileListFailed'));
+        });
+      }, 500);
     },
 
 
@@ -2264,28 +2271,28 @@ export default {
   flex-wrap: wrap;
 }
 
-.yuanDataClass::v-deep .el-form-item {
+.yuanDataClass ::v-deep .el-form-item {
   width: 30%;
 }
 
-.yuanDataClass::v-deep .el-form-item:nth-child(3n) {
+.yuanDataClass ::v-deep .el-form-item:nth-child(3n) {
   margin-right: 0;
 }
 
-.yuanDataClass::v-deep .el-form-item:nth-last-child(-n+3) {
+.yuanDataClass ::v-deep .el-form-item:nth-last-child(-n+3) {
   margin-bottom: 0;
 }
 
-.yuanDataClass::v-deep .el-form-item__label { 
+.yuanDataClass ::v-deep .el-form-item__label {
   width: 25%;
   white-space: nowrap;
 }
 
-.yuanDataClass::v-deep .el-form-item__content {
+.yuanDataClass ::v-deep .el-form-item__content {
   width: 75%;
 }
 
-.yuanDataClass::v-deep .el-select {
+.yuanDataClass ::v-deep .el-select {
   width: 100%;
 }
 
