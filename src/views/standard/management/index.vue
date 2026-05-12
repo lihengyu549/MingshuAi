@@ -133,7 +133,7 @@
         </el-row>
         <el-row>
           <el-col>
-            <el-form-item :label="$t('management.import')" prop="importFile" class="uploadClassName">
+            <el-form-item v-if="form.dataSource != '智能生成'" :label="$t('management.import')" prop="importFile" class="uploadClassName">
               <el-input v-model="form.importFile" readonly :placeholder="$t('management.selectFileType')"></el-input>
               <el-upload ref="uploadRef" class="upload-demoupload-demo" :limit="1" :file-list="fileList"
                 :auto-upload="false" :http-request="submitForm" action="" accept=".xls,.xlsx" :show-file-list="false"
