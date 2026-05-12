@@ -47,7 +47,7 @@
                         </div>
                         <el-collapse-transition>
                             <div v-show="isSampleFeatureExpanded" style="margin-top: 10px;">
-                                <el-table :data="row.UnSampleList || [{key:'样本特征',value:'123'}]" border class="tableCla"
+                                <el-table :data="row.unSampleList || [{key:'样本特征',value:'123'}]" border class="tableCla"
                                     style="width: 100%; border-radius: 8px; overflow: hidden;">
                                     <el-table-column prop="key" :label="$t('fixResults.texts.keyword')"
                                         show-overflow-tooltip></el-table-column>
