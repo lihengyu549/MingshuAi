@@ -341,7 +341,7 @@
           </el-form>
         </el-card>
         <el-card class="table-card drawer-table-card" shadow="never">
-          <el-table :data="filteredDrawerData" ref="tableRef" :key="tableKey" border class="tableBox">
+          <el-table :data="filteredDrawerData" ref="tableRef" :key="tableKey" border class="tableBox" height="100%">
             <el-table-column :label="$t('assetCatalog.fieldName')" align="center" prop="fieldName" width="200"
               show-overflow-tooltip />
             <el-table-column :label="$t('assetCatalog.fieldType')" align="center" prop="fieldType" width="200"
@@ -2500,6 +2500,21 @@ export default {
 }
 
 /* 调整滚动条样式,提升用户体验 */
+.tableBox ::v-deep .el-table__body-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tableBox ::v-deep .el-table__body-wrapper::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.tableBox ::v-deep .el-table__body-wrapper::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
 .table-info-card::-webkit-scrollbar {
   height: 6px;
 }
