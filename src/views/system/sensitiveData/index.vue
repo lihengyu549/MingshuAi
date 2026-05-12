@@ -135,47 +135,49 @@
                         <div class="legal-basis">
                             <p><strong>{{ $t('sensitiveData.legalBasis') }}：</strong></p>
                             <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.regulatoryBasis
-                            }}</span>
+                                }}</span>
                         </div>
 
-                        <div class="database-filter">
-                            <p><strong>{{ $t('sensitiveData.relatedDatabases') }}：</strong></p>
-                            <el-tag v-for="(db, index) in category.databaseNameList" :key="index"
-                                @click="handleDatabaseFilter(db)"
-                                :class="['database-tag', { 'active-tag': activeDatabaseId === db }]" size="medium">
-                                {{ db }}
-                            </el-tag>
-                        </div>
+                        <template v-if="type == '0'">
+                            <div class="database-filter">
+                                <p><strong>{{ $t('sensitiveData.relatedDatabases') }}：</strong></p>
+                                <el-tag v-for="(db, index) in category.databaseNameList" :key="index"
+                                    @click="handleDatabaseFilter(db)"
+                                    :class="['database-tag', { 'active-tag': activeDatabaseId === db }]" size="medium">
+                                    {{ db }}
+                                </el-tag>
+                            </div>
 
-                        <el-table :data="category.fields" style="width: 100%; margin-top: 10px;" size="mini">
-                            <template slot="empty">
-                                <el-empty :description="$t('noData')"></el-empty>
-                            </template>
-                            <el-table-column prop="tableName" align="center" :label="$t('sensitiveData.dataTableName')"
-                                min-width="220"></el-table-column>
-                            <el-table-column prop="fieldName" align="center" :label="$t('sensitiveData.fieldName')"
-                                show-overflow-tooltip></el-table-column>
-                            <el-table-column prop="fieldRemark" align="center" :label="$t('sensitiveData.fieldRemark')"
-                                show-overflow-tooltip></el-table-column>
-                            <el-table-column prop="dataValue" align="center" :label="$t('sensitiveData.sampleValue')"
-                                width="180"></el-table-column>
-                            <el-table-column prop="riskDisposeSuggest"
-                                :label="$t('sensitiveData.riskDisposeSuggestion')" width="160">
-                                <template slot="header">
-                                    <div style="text-align: center;">{{ $t('sensitiveData.suggestedProtection') }}</div>
+                            <el-table :data="category.fields" style="width: 100%; margin-top: 10px;" size="mini">
+                                <template slot="empty">
+                                    <el-empty :description="$t('noData')"></el-empty>
                                 </template>
-                                <template slot-scope="scope">
-                                    <div v-if="scope.row.riskDisposeSuggest.length > 0">
-                                        <el-tag v-for="suggestion in scope.row.riskDisposeSuggest" :key="suggestion"
-                                            class="risk-tag"
-                                            :class="{ 'tm-tag': isDesensitizeSuggestion(suggestion), 'jm-tag': isEncryptSuggestion(suggestion) }"
-                                            size="mini">
-                                            {{ getSuggestionLabel(suggestion) }}
-                                        </el-tag>
-                                    </div>
-                                </template>
-                            </el-table-column>
-                            <!-- <el-table-column prop="isMask" :label="$t('sensitiveData.isDesensitized')" align="center"
+                                <el-table-column prop="tableName" align="center"
+                                    :label="$t('sensitiveData.dataTableName')" min-width="220"></el-table-column>
+                                <el-table-column prop="fieldName" align="center" :label="$t('sensitiveData.fieldName')"
+                                    show-overflow-tooltip></el-table-column>
+                                <el-table-column prop="fieldRemark" align="center"
+                                    :label="$t('sensitiveData.fieldRemark')" show-overflow-tooltip></el-table-column>
+                                <el-table-column prop="dataValue" align="center"
+                                    :label="$t('sensitiveData.sampleValue')" width="180"></el-table-column>
+                                <el-table-column prop="riskDisposeSuggest"
+                                    :label="$t('sensitiveData.riskDisposeSuggestion')" width="160">
+                                    <template slot="header">
+                                        <div style="text-align: center;">{{ $t('sensitiveData.suggestedProtection') }}
+                                        </div>
+                                    </template>
+                                    <template slot-scope="scope">
+                                        <div v-if="scope.row.riskDisposeSuggest.length > 0">
+                                            <el-tag v-for="suggestion in scope.row.riskDisposeSuggest" :key="suggestion"
+                                                class="risk-tag"
+                                                :class="{ 'tm-tag': isDesensitizeSuggestion(suggestion), 'jm-tag': isEncryptSuggestion(suggestion) }"
+                                                size="mini">
+                                                {{ getSuggestionLabel(suggestion) }}
+                                            </el-tag>
+                                        </div>
+                                    </template>
+                                </el-table-column>
+                                <!-- <el-table-column prop="isMask" :label="$t('sensitiveData.isDesensitized')" align="center"
                                 width="100">
                                 <template slot-scope="scope">
                                     <el-select v-model="scope.row.isMask" size="mini"
@@ -185,7 +187,7 @@
                                     </el-select>
                                 </template>
                             </el-table-column> -->
-                            <!-- <el-table-column prop="proofMaterial" :label="$t('sensitiveData.proofMaterial')"
+                                <!-- <el-table-column prop="proofMaterial" :label="$t('sensitiveData.proofMaterial')"
                                 align="center" width="200">
                                 <template slot-scope="scope">
                                     <div class="proof-upload-container">
@@ -205,17 +207,53 @@
                                     </div>
                                 </template>
                             </el-table-column> -->
-                            <el-table-column prop="isEncrypt" :label="$t('sensitiveData.isEncrypted')" align="center"
-                                width="100">
-                                <template slot-scope="scope">
-                                    <div style="display: flex; align-items: center; justify-content: center;">
-                                        <i :class="scope.row.isEncrypt == '1' ? 'el-icon-success' : 'el-icon-error'"
-                                            style="margin-right: 5px;" />
-                                        {{ scope.row.isEncrypt == '1' ? $t('yes') : $t('no') }}
-                                    </div>
+                                <el-table-column prop="isEncrypt" :label="$t('sensitiveData.isEncrypted')"
+                                    align="center" width="100">
+                                    <template slot-scope="scope">
+                                        <div style="display: flex; align-items: center; justify-content: center;">
+                                            <i :class="scope.row.isEncrypt == '1' ? 'el-icon-success' : 'el-icon-error'"
+                                                style="margin-right: 5px;" />
+                                            {{ scope.row.isEncrypt == '1' ? $t('yes') : $t('no') }}
+                                        </div>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </template>
+                        <template v-else>
+                            <div class="database-filter">
+                                <p><strong>{{ $t('sensitiveData.involvedFiles') }}：</strong></p>
+                            </div>
+
+                            <el-table :data="category.fields" style="width: 100%; margin-top: 10px;" size="mini">
+                                <template slot="empty">
+                                    <el-empty :description="$t('noData')"></el-empty>
                                 </template>
-                            </el-table-column>
-                        </el-table>
+                                <el-table-column prop="fileName" align="center"
+                                    :label="$t('protectTableField.columnLabels.fileName')" min-width="220"></el-table-column>
+                                <el-table-column prop="fileSize" align="center" :label="$t('protectTableField.columnLabels.fileSize')"
+                                    width="150"></el-table-column>
+                                <el-table-column prop="fileRemark" align="center"
+                                    :label="$t('sensitiveData.fileSummary')" show-overflow-tooltip></el-table-column>
+                                <el-table-column prop="riskDisposeSuggest"
+                                    :label="$t('sensitiveData.riskDisposeSuggestion')" width="200">
+                                    <template slot="header">
+                                        <div style="text-align: center;">{{ $t('sensitiveData.suggestedProtection') }}
+                                        </div>
+                                    </template>
+                                    <template slot-scope="scope">
+                                        <div v-if="scope.row.riskDisposeSuggest && scope.row.riskDisposeSuggest.length > 0">
+                                            <el-tag v-for="suggestion in scope.row.riskDisposeSuggest" :key="suggestion"
+                                                class="risk-tag"
+                                                :class="{ 'tm-tag': isDesensitizeSuggestion(suggestion), 'jm-tag': isEncryptSuggestion(suggestion) }"
+                                                size="mini">
+                                                {{ getSuggestionLabel(suggestion) }}
+                                            </el-tag>
+                                        </div>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </template>
+
                     </div>
                     <Pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
                         :current-page="pagination.currentPage" :page-sizes="[5, 10, 15, 20]"
@@ -285,6 +323,7 @@ export default {
         return {
             dataSourceList: [],
             categoryId: 0,
+            type: '',
             treeOptions: [],
             levelFilterValue: '',
             statusFilterValue: '',
@@ -445,6 +484,7 @@ export default {
         handleViewDetails(row) {
             this.currentDataSource = row;
             this.datasourceId = row.datasourceId;
+            this.type = row.type;
             this.pagination.currentPage = 1;
             this.levelFilterValue = '';
             this.statusFilterValue = '';
@@ -469,6 +509,7 @@ export default {
             this.loading = true;
             const params = {
                 datasourceId: dataSourceId,
+                type: this.type,
                 pageNum: this.pagination.currentPage,
                 pageSize: this.pagination.pageSize,
                 level: this.levelFilterValue ?
