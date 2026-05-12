@@ -1271,6 +1271,7 @@ export default {
             ifStartRuleMatching: this.form.ifStartRuleMatching ? '1' : '0',
             ifStartFeatureExtract: this.form.ifStartFeatureExtract ? '1' : '0',
             ifStartAiClassifySuggest: this.form.ifStartAiClassifySuggest ? '1' : '0',
+            ifStartDynamicGrading: this.form.ifStartDynamicGrading ? '1' : '0',
             ifConfigurationParameters: this.form.ifConfigurationParameters ? '1' : '0',
             ifTechnicalIdentifier: this.form.ifTechnicalIdentifier ? '1' : '0',
             ifRedundantFields: this.form.ifRedundantFields ? '1' : '0',
