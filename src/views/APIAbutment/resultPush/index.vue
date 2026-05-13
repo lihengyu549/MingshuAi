@@ -429,6 +429,7 @@ export default {
           formData.append('port', this.dialogData.port)
           formData.append('userName', this.dialogData.userName)
           formData.append('passWord', this.dialogData.passWord)
+          formData.append('standardId', this.dialogData.standardId)
           formData.append('p12Password', this.dialogData.p12Password)
 
           if (isEdit) {
