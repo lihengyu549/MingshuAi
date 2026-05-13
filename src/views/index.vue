@@ -129,57 +129,12 @@
                 <!-- 步骤部分 -->
                 <div class="steps-section">
                   <div class="steps-wrapper">
-                    <div class="step-item">
+                    <div class="step-item" v-for="(step, key) in taskMonitor.taskSteps" :key="key">
                       <div class="step-item-content">
-                        <i :class="getStepIconClass(taskMonitor.taskSteps.step1.status)"></i>
+                        <i :class="getStepIconClass(step.status)"></i>
                         <div class="step-text-wrapper">
-                          <span class="step-text-main">{{ $t('home.noiseDataFilter') }}</span>
-                          <span class="step-text-sub">{{ taskMonitor.taskSteps.step1.textSub }}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="step-item">
-                      <div class="step-item-content">
-                        <i :class="getStepIconClass(taskMonitor.taskSteps.step2.status)"></i>
-                        <div class="step-text-wrapper">
-                          <span class="step-text-main">{{ $t('home.semanticFilling') }}</span>
-                          <span class="step-text-sub">{{ taskMonitor.taskSteps.step2.textSub }}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="step-item">
-                      <div class="step-item-content">
-                        <i :class="getStepIconClass(taskMonitor.taskSteps.step3.status)"></i>
-                        <div class="step-text-wrapper">
-                          <span class="step-text-main">{{ $t('home.matchingRules') }}</span>
-                          <span class="step-text-sub">{{ taskMonitor.taskSteps.step3.textSub }}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="step-item">
-                      <div class="step-item-content">
-                        <i :class="getStepIconClass(taskMonitor.taskSteps.step4.status)"></i>
-                        <div class="step-text-wrapper">
-                          <span class="step-text-main">{{ $t('home.aiClassificationLabeling') }}</span>
-                          <span class="step-text-sub">{{ taskMonitor.taskSteps.step4.textSub }}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="step-item">
-                      <div class="step-item-content">
-                        <i :class="getStepIconClass(taskMonitor.taskSteps.step5.status)"></i>
-                        <div class="step-text-wrapper">
-                          <span class="step-text-main">{{ $t('home.personalInformationRecognition') }}</span>
-                          <span class="step-text-sub">{{ taskMonitor.taskSteps.step5.textSub }}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="step-item">
-                      <div class="step-item-content">
-                        <i :class="getStepIconClass(taskMonitor.taskSteps.step6.status)"></i>
-                        <div class="step-text-wrapper">
-                          <span class="step-text-main">{{ $t('home.sampleFeatureExtraction') }}</span>
-                          <span class="step-text-sub">{{ taskMonitor.taskSteps.step6.textSub }}</span>
+                          <span class="step-text-main">{{ step.textMain }}</span>
+                          <span class="step-text-sub">{{ step.textSub }}</span>
                         </div>
                       </div>
                     </div>
@@ -289,6 +244,7 @@ export default {
         analysisReview: 0
       },
       taskMonitor: {
+        type: '0',
         status: '',
         tableNames: [],
         currentTableIndex: 0,
@@ -296,12 +252,12 @@ export default {
         progressTotal: 0,
         progressPercent: 0,
         taskSteps: {
-          step1: { status: 'wait', textSub: '等待中' },
-          step2: { status: 'wait', textSub: '等待中' },
-          step3: { status: 'wait', textSub: '等待中' },
-          step4: { status: 'wait', textSub: '等待中' },
-          step5: { status: 'wait', textSub: '等待中' },
-          step6: { status: 'wait', textSub: '等待中' }
+          step1: { status: 'wait', textMain: '噪音数据过滤', textSub: '等待中' },
+          step2: { status: 'wait', textMain: '语义填充', textSub: '等待中' },
+          step3: { status: 'wait', textMain: '匹配规则', textSub: '等待中' },
+          step4: { status: 'wait', textMain: 'AI分类打标', textSub: '等待中' },
+          step5: { status: 'wait', textMain: '个人信息识别', textSub: '等待中' },
+          step6: { status: 'wait', textMain: '样本特征提取', textSub: '等待中' }
         },
         timelineData: []
       },
@@ -417,11 +373,15 @@ export default {
             this.taskMonitor.progressPercent = percent
           }
           if (data.taskMonitor.taskSteps) {
+            // 如果后端返回的步骤数与前端不一致，说明发生了类型切换（比如结构化6步切换为非结构化4步）
+            // 我们直接使用后端返回的数据覆盖现有的，如果有些值没有就用默认的
+            const newSteps = {}
             for (const key in data.taskMonitor.taskSteps) {
-              if (this.taskMonitor.taskSteps[key]) {
-                this.taskMonitor.taskSteps[key] = { ...this.taskMonitor.taskSteps[key], ...data.taskMonitor.taskSteps[key] }
-              }
+              const incomingStep = data.taskMonitor.taskSteps[key]
+              const defaultStep = this.taskMonitor.taskSteps[key] || { status: 'wait', textMain: '', textSub: '等待中' }
+              newSteps[key] = { ...defaultStep, ...incomingStep }
             }
+            this.taskMonitor.taskSteps = newSteps
           }
           if (data.taskMonitor.timelineData) {
             const newItem = data.taskMonitor.timelineData
