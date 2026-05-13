@@ -215,7 +215,7 @@ import {
   selectPublishDataBase,
   testLink,
 } from "@/api/APIAbutment";
-import { treeListI } from "@/api/system/protectCategory";
+import { resultPushByParentId } from "@/api/system/protectCategory";
 import Result from './components/result.vue'
 import Result2 from './components/result2.vue'
 
@@ -341,7 +341,7 @@ export default {
         parentId: this.dialogData.standardId,
         needSub: 1
       };
-      return treeListI(data).then(resp => {
+      return resultPushByParentId(data).then(resp => {
         this.categoryList = this.handleTree(resp.data, "id")
       });
     },

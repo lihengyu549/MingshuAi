@@ -494,3 +494,12 @@ export function dataScanByFileServer(params) {
     data: params,
   })
 }
+
+// 推送内容接口
+export function resultPushByParentId(params) {
+  return request({
+    url: '/system/category/resultPushByParentId',
+    method: 'get',
+    params: params,
+  })
+}

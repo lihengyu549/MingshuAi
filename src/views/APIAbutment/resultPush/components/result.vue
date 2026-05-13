@@ -48,7 +48,8 @@ export default {
       loading: false,
       defaultProps: {
         label: 'categoryName',
-        children: 'children'
+        children: 'children',
+        disabled: this.checkNodeDisabled
       },
       lastChildList: [],
     }
@@ -60,6 +61,13 @@ export default {
     }
   },
   methods: {
+    checkNodeDisabled(data, node) {
+      // isChecked 为 '0' 或者 0 或者 false 时，视为不可选；否则可选
+      if (data.isChecked === '0' || data.isChecked === 0 || data.isChecked === false) {
+        return true
+      }
+      return false
+    },
     handleCheckChange(arrData, treeData) {
       this.lastChildList = treeData.checkedNodes.filter(item => !item.children || item.children.length === 0)
     },
