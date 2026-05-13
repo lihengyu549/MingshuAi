@@ -1,7 +1,7 @@
 <template>
   <div :class="{ 'hidden': hidden }" class="pagination-container">
     <el-pagination v-bind="$attrs" v-on="$listeners" :background="background" :current-page.sync="currentPage"
-      :page-size.sync="pageSize" :layout="layout" :page-sizes="pageSizes" :pager-count="pagerCount" :total="total"
+      :page-size.sync="internalPageSize" :layout="layout" :page-sizes="pageSizes" :pager-count="pagerCount" :total="total"
       @size-change="handleSizeChange" @current-change="handleCurrentChange" />
   </div>
 </template>
@@ -63,6 +63,14 @@ export default {
       set(val) {
         this.$emit('update:page', val)
       }
+    },
+    internalPageSize: {
+      get() {
+        return this.pageSize
+      },
+      set(val) {
+        this.$emit('update:pageSize', val)
+      }
     }
   },
   methods: {
@@ -76,7 +84,7 @@ export default {
       }
     },
     handleCurrentChange(val) {
-      this.$emit('pagination', { page: val, pageSize: this.pageSize })
+      this.$emit('pagination', { page: val, pageSize: this.internalPageSize })
       if (this.autoScroll) {
         scrollTo(0, 800)
       }
