@@ -321,7 +321,7 @@ export default {
         { labelKey: "fileName", prop: "fileName", width: "200" },
         { labelKey: "fileFormat", prop: "fileFormat", width: "150" },
         { labelKey: "fileParentPath", prop: "fileParentPath", width: "200" },
-        { labelKey: "fileSize", prop: "fileSize", width: "150" },
+        { labelKey: "fileSizeName", prop: "fileSizeName", width: "150" },
         { labelKey: "category", prop: "categoryName", width: "200" },
         { labelKey: "securityLevel", prop: "securityLevelName" },
         { labelKey: "confirmName", prop: "confirmName", width: "150" },
@@ -365,29 +365,12 @@ export default {
         { labelKey: "fieldTopic", value: "fieldTopic" },
         { labelKey: "fileName", value: "fileName" },
         { labelKey: "fileFormat", value: "fileFormat" },
-        { labelKey: "fileSize", value: "fileSize" },
-        { labelKey: "fileAbsolutePath", value: "fileAbsolutePath" },
+        { labelKey: "fileSizeName", value: "fileSizeName" },
+        { labelKey: "filePath", value: "filePath" },
         { labelKey: "fileParentPath", value: "fileParentPath" },
-        { labelKey: "updateTime", value: "updateTime" },
-        { labelKey: "createTime", value: "createTime" },
-      ],
-      // 初始默认配置（固定不变，用于恢复初始配置）
-      initialDefaultColumns: [
-        "fieldName",
-        "fieldRemark",
-        "businessName",
-        "databaseName",
-        "tableName",
-        "categoryName",
-        "classificationReasons",
-        "piiDetectionName",
-        "securityLevelName",
-        "sampleData",
-        "fileName",
-        "fileFormat",
-        "fileParentPath",
-        "fileSize",
-      ],
+        { labelKey: "fileModifiedTime", value: "fileModifiedTime" },
+        { labelKey: "fileUploadTime", value: "fileUploadTime" },
+      ]
     };
   },
   watch: {
@@ -425,6 +408,32 @@ export default {
         ...item,
         label: item.label || this.$t(`protectTableField.columnLabels.${item.labelKey}`)
       }))
+    },
+    // 初始默认配置（用于恢复初始配置，根据结构化/非结构化动态返回）
+    initialDefaultColumns() {
+      if (this.currentNodeType == '1') {
+        return [
+          "fileName",
+          "fileFormat",
+          "fileSizeName",
+          "filePath",
+          "fileParentPath",
+          "fileModifiedTime",
+          "fileUploadTime"
+        ]
+      }
+      return [
+        "fieldName",
+        "fieldRemark",
+        "businessName",
+        "databaseName",
+        "tableName",
+        "categoryName",
+        "classificationReasons",
+        "piiDetectionName",
+        "securityLevelName",
+        "sampleData",
+      ]
     }
   },
   created() {
@@ -789,7 +798,7 @@ Authorization:Bearer ${this.Token}`
       // Update checkedColumnProps based on type only if type changed or first load
       if (typeChanged || this.checkedColumnProps.length === 0) {
         if (this.currentNodeType === 1) {
-          this.checkedColumnProps = ['fileName', 'fileFormat', 'fileParentPath', 'fileSize', 'categoryName', 'securityLevelName'];
+          this.checkedColumnProps = ['fileName', 'fileFormat', 'fileParentPath', 'fileSizeName', 'categoryName', 'securityLevelName'];
         } else {
           this.checkedColumnProps = ['fieldName', 'businessName', 'sourceName', 'databaseName', 'tableName', 'categoryName', 'securityLevelName'];
         }
@@ -1062,7 +1071,9 @@ Authorization:Bearer ${this.Token}`
 
         const res = await getDicts('sys_export_column');
         if (res.data && res.data.length > 0) {
-          const dictItem = res.data.find(item => item.dictValue == '1');
+          // 根据节点类型决定使用哪个字典值：结构化为 '1'，非结构化为 '3'
+          const targetDictValue = this.currentNodeType == '1' ? '3' : '1';
+          const dictItem = res.data.find(item => item.dictValue == targetDictValue);
           if (dictItem && dictItem.remark) {
             finalSelectedColumns = dictItem.remark.split(',').map(item => item.trim());
           }
