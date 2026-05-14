@@ -1139,21 +1139,39 @@ Authorization:Bearer ${this.Token}`
         const allColumns = this.exportAllColumns.map(item => item.value);
         const unselectedColumns = allColumns.filter(value => !this.exportColumnDialog.selectedColumns.includes(value));
 
-        let list = this.$refs.tree.getCheckedNodes();
-        let treeListLevel0 = list.filter(item => item.level === 0);  // id取0层
-        let treeListLevel1 = list.filter(item => item.level === 1);  // name取1层
+        // 获取所有包含半选和全选的节点
+        let listAll = this.$refs.tree.getCheckedNodes(false, true); 
+        // 仅获取全选的节点
+        let listChecked = this.$refs.tree.getCheckedNodes();
 
-        let checkedDatabaseNames = treeListLevel1.map(item => item.databaseName || item.categoryName || item.name || '').filter(name => name);
-        if (checkedDatabaseNames.length === 0) {
-          checkedDatabaseNames = this.databaseNames;
-        }
-        let checkedDatabaseIds = treeListLevel0.map(item => item.id);
-        if (checkedDatabaseIds.length === 0) {
-          checkedDatabaseIds = this.dataCategoryList.map(item => item.id);
-        }
+        let exportsTreeData = [];
+
+        // 我们只关注作为“父项”（顶层）的节点，所以直接遍历 dataCategoryList
+        this.dataCategoryList.forEach(parent => {
+          // 如果这个父项在所有勾选节点中（说明它被全选或半选了）
+          if (listAll.some(item => item.id === parent.id)) {
+            let dbNames = [];
+            
+            // 从该父项的所有子项中，找出那些真正被全选的子项
+            if (parent.list && parent.list.length > 0) {
+              let checkedChildren = parent.list.filter(child => {
+                return listChecked.some(checkedNode => checkedNode.id === child.id);
+              });
+              // 只提取子项的名称
+              dbNames = checkedChildren.map(child => child.databaseName || child.categoryName || child.name || '').filter(name => name);
+            }
+            
+            exportsTreeData.push({
+              databaseId: parent.id,
+              name: parent.name || parent.categoryName || '',
+              type: parent.type || (this.currentNodeType === 1 ? '1' : '0'),
+              databaseNames: dbNames
+            });
+          }
+        });
+
         const params = {
-          databaseIds: checkedDatabaseIds,
-          databaseNames: checkedDatabaseNames,
+          exportsTreeData: exportsTreeData,
           projectId: this.projectId,
           securityLevelIds: this.queryParams.securityLevel.length ? this.queryParams.securityLevel : null,
           businessName: this.queryParams.businessName,
