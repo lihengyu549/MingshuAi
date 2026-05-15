@@ -1163,8 +1163,8 @@ Authorization:Bearer ${this.Token}`
             
             exportsTreeData.push({
               databaseId: parent.id,
-              name: parent.name || parent.categoryName || '',
-              type: parent.type || (this.currentNodeType === 1 ? '1' : '0'),
+              name: parent.name,
+              type: parent.type,
               databaseNames: dbNames
             });
           }
