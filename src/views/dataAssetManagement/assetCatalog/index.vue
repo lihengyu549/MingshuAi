@@ -1244,17 +1244,36 @@ export default {
       try {
         this.loading = true;
 
-        const selectedNodes = this.selectedTreeNodeIds
-          .map(id => this.findNodeById(this.categoryList, id))
-          .filter(Boolean); // 过滤无效节点
+        let listAll = this.$refs.tree.getCheckedNodes(false, true);
+        let listChecked = this.$refs.tree.getCheckedNodes();
 
-        // 提取所有选中节点的子节点,组成数组
-        const allChildrenData = selectedNodes.reduce((acc, node) => {
-          if (node.children && node.children.length > 0) {
-            acc.push(...node.children);
+        let exportsTreeData = [];
+
+        this.categoryList.forEach(parent => {
+          console.log(parent);
+          if (listAll.some(item => item.id === parent.id)) {
+            let dbNames = [];
+
+            if (parent.children && parent.children.length > 0) {
+              let checkedChildren = parent.children.filter(child => {
+                return listChecked.some(checkedNode => checkedNode.id === child.id);
+              });
+              dbNames = checkedChildren.map(child => child.label || '').filter(name => name);
+            } else if (parent.list && parent.list.length > 0) {
+              let checkedChildren = parent.list.filter(child => {
+                return listChecked.some(checkedNode => checkedNode.id === child.id);
+              });
+              dbNames = checkedChildren.map(child => child.label || '').filter(name => name);
+            }
+
+            exportsTreeData.push({
+              databaseId: parent.id,
+              name: parent.label,
+              type: parent.type,
+              databaseNames: dbNames
+            });
           }
-          return acc;
-        }, []);
+        });
 
         // 构造请求参数
         const allColumns = this.exportColumnDialog.allColumns.map(item => item.value);
@@ -1264,7 +1283,7 @@ export default {
           tableName: this.queryParams.tableName,
           paddingStatus: this.queryParams.paddingStatus,
           featureExtractionStatus: this.queryParams.featureExtractionStatus,
-          databaseList: allChildrenData,
+          exportsTreeData: exportsTreeData,
           columnList: unselectedColumns,
           saveAsDefault: this.exportColumnDialog.saveAsDefault
         };
