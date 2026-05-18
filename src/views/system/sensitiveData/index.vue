@@ -11,9 +11,9 @@
                     </el-option>
                 </el-select>
 
-                <el-button icon="el-icon-download" @click="handleExport" size="small" class="export-btn">
+                <!-- <el-button icon="el-icon-download" @click="handleExport" size="small" class="export-btn">
                     {{ $t('sensitiveData.exportList') }}
-                </el-button>
+                </el-button> -->
             </div>
         </div>
 

@@ -68,6 +68,10 @@
         <el-button type="danger" plain icon="el-icon-close" size="medium" @click="deleteFn">{{ $t('delete')
         }}</el-button>
       </el-col>
+      <el-col :span="1.5">
+        <el-button type="info" plain icon="el-icon-refresh" size="medium" @click="getList">{{ $t('refresh')
+          }}</el-button>
+      </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
       <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click"
         style="float: inline-end; margin-right: 10px;">
@@ -78,6 +82,7 @@
           <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
             item.label }}</el-checkbox>
         </el-checkbox-group>
+
         <el-button size="medium" slot="reference">{{ $t('columnSettings') }}</el-button>
       </el-popover>
     </el-row>
@@ -168,7 +173,8 @@
               :disabled="scope.row.scanState == 'RUNNING' || !isScanOperableSource(scope.row) || btnLoading"
               :loading="btnLoading">{{ $t('dataFrom.startScan') }}</el-button>
             <el-button size="mini" type="text" @click="stopScan(scope.row)"
-              :disabled="!isScanOperableSource(scope.row) || btnLoading" :loading="btnLoading">{{
+              :disabled="scope.row.scanState !== 'RUNNING' || !isScanOperableSource(scope.row) || btnLoading"
+              :loading="btnLoading">{{
                 $t('dataFrom.terminateScan') }}</el-button>
             <!-- 添加关联数据字典按钮和下拉菜单 -->
             <el-dropdown trigger="click" :disabled="isFileSource(scope.row)" @command="handleDictionaryCommand"
@@ -375,8 +381,7 @@
           <el-upload ref="fileDirectoryUploadRef" class="upload-dragger-area" drag :action="''" :auto-upload="false"
             :multiple="true" :show-file-list="false" :limit="20" :file-list="fileDirectoryData.uploadFiles"
             :on-change="handleFileDirectoryChange" :on-remove="handleFileDirectoryRemove"
-            :on-exceed="handleFileDirectoryExceed"
-            accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx">
+            :on-exceed="handleFileDirectoryExceed" accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx">
             <div class="upload-dragger-content">
               <i class="el-icon-upload upload-icon"></i>
               <div class="upload-text">{{ $t('dataFrom.clickOrDragToUpload') }}</div>

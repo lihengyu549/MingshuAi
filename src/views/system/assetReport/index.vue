@@ -10,9 +10,9 @@
           <el-option v-for="item in standardOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
 
-        <el-button icon="el-icon-download" size="small" class="export-btn">
+        <!-- <el-button icon="el-icon-download" size="small" class="export-btn">
           {{ $t('assetReport.exportReport') }}
-        </el-button>
+        </el-button> -->
       </div>
     </div>
 
