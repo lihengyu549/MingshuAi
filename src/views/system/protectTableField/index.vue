@@ -878,18 +878,51 @@ Authorization:Bearer ${this.Token}`
     },
     selectAllFirstLevelNodes(data) {
       if (this.routeDataShow) {
-        data = data.map(item => {
-          if (item.id == this.$route.params.id) {
-            return item
+        // 如果是从任务中心跳转过来，需要选中对应的左侧树节点
+        // 根据路由传参找到对应的节点 (使用 $route.params.databaseId 或 $route.params.id)
+        let targetNode = null;
+        let targetParent = null;
+        const searchId = this.$route.params.databaseId || this.$route.params.id;
+        
+        const findNode = (nodes) => {
+          for (let item of nodes) {
+            if (item.id === searchId) {
+              targetNode = item;
+              return true;
+            }
+            if (item.children && item.children.length > 0) {
+              if (findNode(item.children)) {
+                targetParent = item; // 记录父节点
+                return true;
+              }
+            }
           }
-        })
+          return false;
+        };
+        findNode(data);
+
+        this.$nextTick(() => {
+          if (this.$refs.tree && targetNode) {
+            // 勾选该节点
+            this.$refs.tree.setCheckedNodes([targetNode]);
+            // 将其设为高亮当前节点
+            this.$refs.tree.setCurrentKey(targetNode.id);
+            // 触发节点点击事件以刷新右侧表格数据
+            this.handleNodeClick(targetNode);
+          } else if (this.$refs.tree) {
+            // 如果没找到对应的子节点，退回到默认行为
+            this.$refs.tree.setCheckedNodes(data);
+          }
+        });
+      } else {
+        // 默认行为：选中所有第一层节点
+        this.$nextTick(() => {
+          if (this.$refs.tree) {
+            this.$refs.tree.setCheckedNodes(data);
+          }
+        });
       }
-      // 设置这些节点为选中状态
-      this.$nextTick(() => {
-        if (this.$refs.tree) {
-          this.$refs.tree.setCheckedNodes(data);
-        }
-      });
+      
       let treeList = []
       let list = []
       if (this.$refs.tree) {
@@ -899,18 +932,20 @@ Authorization:Bearer ${this.Token}`
       this.treeID = treeList.map(item => item.id).join()
       this.treeIds = treeList.map(item => item.id)
 
-      // 选中第一条
-      if (this.dataCategoryList && this.dataCategoryList.length > 0) {
-        const firstNode = this.dataCategoryList[0];
-        this.$nextTick(() => {
-          if (this.$refs.tree) {
-            this.$refs.tree.setCurrentKey(firstNode.id);
-          }
-          this.handleNodeClick(firstNode);
-        });
-      } else {
-        this.currentNodeType = 0; // 重置为默认结构化
-        this.getList();
+      // 只有在非路由跳转的情况下，才默认选中并点击第一条
+      if (!this.routeDataShow) {
+        if (this.dataCategoryList && this.dataCategoryList.length > 0) {
+          const firstNode = this.dataCategoryList[0];
+          this.$nextTick(() => {
+            if (this.$refs.tree) {
+              this.$refs.tree.setCurrentKey(firstNode.id);
+            }
+            this.handleNodeClick(firstNode);
+          });
+        } else {
+          this.currentNodeType = 0; // 重置为默认结构化
+          this.getList();
+        }
       }
     },
     // 返回Promise的异步版本
