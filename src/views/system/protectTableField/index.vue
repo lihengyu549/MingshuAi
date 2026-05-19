@@ -29,9 +29,12 @@
               <el-input v-model="queryParams.businessName" clearable @input="inputSearch"
                 :placeholder="$t('protectTableField.enterSourceBusinessSystem')" @keyup.enter.native="handleQuery" />
             </el-form-item>
-            <el-form-item :label="currentNodeType === 1 ? $t('protectTableField.fileName') : $t('protectTableField.tableName')" prop="tableName">
+            <el-form-item
+              :label="currentNodeType === 1 ? $t('protectTableField.fileName') : $t('protectTableField.tableName')"
+              prop="tableName">
               <el-input v-model="queryParams.tableName" clearable @input="inputSearch"
-                :placeholder="currentNodeType === 1 ? $t('protectTableField.enterFileName') : $t('protectTableField.enterTableName')" @keyup.enter.native="handleQuery" />
+                :placeholder="currentNodeType === 1 ? $t('protectTableField.enterFileName') : $t('protectTableField.enterTableName')"
+                @keyup.enter.native="handleQuery" />
             </el-form-item>
             <el-form-item :label="$t('protectTableField.securityLevel')" prop="securityLevel">
               <el-select v-model="queryParams.securityLevel" clearable multiple @change="handleQuery"
@@ -119,8 +122,10 @@
                   </el-tooltip>
                 </template>
                 <template v-else-if="item.prop === 'confirmName'">
-                  <el-tag v-if="scope.row.confirm !== undefined && scope.row.confirm !== null" :type="scope.row.confirm == 0 ? 'info' : 'primary'">
-                    {{ scope.row.confirm == 0 ? $t('protectTableField.unconfirmed') : $t('protectTableField.confirmed') }}
+                  <el-tag v-if="scope.row.confirm !== undefined && scope.row.confirm !== null"
+                    :type="scope.row.confirm == 0 ? 'info' : 'primary'">
+                    {{ scope.row.confirm == 0 ? $t('protectTableField.unconfirmed') : $t('protectTableField.confirmed')
+                    }}
                   </el-tag>
                   <span v-else>{{ scope.row.confirmName }}</span>
                 </template>
@@ -973,7 +978,10 @@ Authorization:Bearer ${this.Token}`
       } else {
         params.tableName = this.queryParams.tableName;
         // 如果选中了节点，则传递该节点的databaseId
-        if (this.currentNodeData && this.currentNodeData.id) {
+        if (this.currentNodeData.level == 1) {
+          params.databaseId = this.currentNodeData.preid;
+          params.databaseName = this.currentNodeData.name;
+        } else {
           params.databaseId = this.currentNodeData.id;
         }
       }
@@ -1134,7 +1142,7 @@ Authorization:Bearer ${this.Token}`
         let list = this.$refs.tree.getCheckedNodes();
         let treeListLevel0 = list.filter(item => item.level === 0);  // id取0层
         let treeListLevel1 = list.filter(item => item.level === 1);  // name取1层
-        
+
         let checkedDatabaseNames = treeListLevel1.map(item => item.databaseName || item.categoryName || item.name || '').filter(name => name);
         if (checkedDatabaseNames.length === 0) {
           checkedDatabaseNames = this.databaseNames;
