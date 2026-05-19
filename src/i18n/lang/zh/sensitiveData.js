@@ -28,6 +28,7 @@ export default {
   fieldName: '字段名称',
   fileSummary: '文件摘要',
   fieldRemark: '字段注释',
+  fieldAiRemark: 'AI字段注释',
   sampleValue: '样本值',
   riskDisposeSuggestion: '风险处置建议',
   suggestedProtection: '建议防护措施',

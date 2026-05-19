@@ -135,7 +135,7 @@
                         <div class="legal-basis">
                             <p><strong>{{ $t('sensitiveData.legalBasis') }}：</strong></p>
                             <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.regulatoryBasis
-                                }}</span>
+                            }}</span>
                         </div>
 
                         <template v-if="type == '0'">
@@ -158,6 +158,8 @@
                                     show-overflow-tooltip></el-table-column>
                                 <el-table-column prop="fieldRemark" align="center"
                                     :label="$t('sensitiveData.fieldRemark')" show-overflow-tooltip></el-table-column>
+                                <el-table-column prop="fieldAiRemark" align="center"
+                                    :label="$t('sensitiveData.fieldAiRemark')" show-overflow-tooltip></el-table-column>
                                 <el-table-column prop="dataValue" align="center"
                                     :label="$t('sensitiveData.sampleValue')" width="180"></el-table-column>
                                 <el-table-column prop="riskDisposeSuggest"
@@ -229,8 +231,10 @@
                                     <el-empty :description="$t('noData')"></el-empty>
                                 </template>
                                 <el-table-column prop="fileName" align="center"
-                                    :label="$t('protectTableField.columnLabels.fileName')" min-width="220"></el-table-column>
-                                <el-table-column prop="fileSize" align="center" :label="$t('protectTableField.columnLabels.fileSize')"
+                                    :label="$t('protectTableField.columnLabels.fileName')"
+                                    min-width="220"></el-table-column>
+                                <el-table-column prop="fileSize" align="center"
+                                    :label="$t('protectTableField.columnLabels.fileSize')"
                                     width="150"></el-table-column>
                                 <el-table-column prop="fileRemark" align="center"
                                     :label="$t('sensitiveData.fileSummary')" show-overflow-tooltip></el-table-column>
@@ -241,7 +245,8 @@
                                         </div>
                                     </template>
                                     <template slot-scope="scope">
-                                        <div v-if="scope.row.riskDisposeSuggest && scope.row.riskDisposeSuggest.length > 0">
+                                        <div
+                                            v-if="scope.row.riskDisposeSuggest && scope.row.riskDisposeSuggest.length > 0">
                                             <el-tag v-for="suggestion in scope.row.riskDisposeSuggest" :key="suggestion"
                                                 class="risk-tag"
                                                 :class="{ 'tm-tag': isDesensitizeSuggestion(suggestion), 'jm-tag': isEncryptSuggestion(suggestion) }"
