@@ -1041,9 +1041,9 @@ export default {
       // 设置到表单中
       this.resultForm.selectedIds = selectedIds
 
-      // 为分类下拉框设置默认选中第一项
+      // 为分类下拉框设置默认选中未分类id-100
       if (this.categoryList && this.categoryList.length > 0) {
-        this.resultFormNodeName = this.categoryList[0].categoryName;
+        this.resultFormNodeName = this.categoryList.find(item=>item.id == '-100').categoryName
       }
 
       // 为安全分级下拉框设置默认选中第一项
