@@ -188,7 +188,7 @@
           <el-col :span="24">
             <el-form-item class="addSelectClass" :label="$t('jobMonitoring.securityLevel')" prop="minSecurityLevel">
               <el-select v-model="addOrEditDataRuls.minSecurityLevel" :placeholder="$t('jobMonitoring.securityLevel')"
-                :disabled="addOrEdit.flag == 3">
+                :disabled="addOrEdit.flag == 3" @change="handleSecurityLevelChange">
                 <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
@@ -222,12 +222,9 @@
         </el-form-item>
 
         <Title :title="$t('jobMonitoring.securityLevel')"></Title>
-        <el-form-item class="addSelectClass" :label="$t('jobMonitoring.suggestProtectMethod')" prop="protectMethodName">
-          <el-select v-model="addOrEditDataRuls.protectMethodName" :disabled="true" :placeholder="$t('all')">
-            <el-option v-for="item in protectMethodIdList" :key="item.dictValue" :label="item.dictLabel"
-              :value="item.dictValue">
-            </el-option>
-          </el-select>
+        <el-form-item class="addSelectClass" :label="$t('jobMonitoring.suggestProtectMethod')">
+          <el-input v-model="addOrEditDataRuls.protectMethodName" :disabled="true" :placeholder="$t('all')">
+          </el-input>
         </el-form-item>
         <el-form-item class="addSelectClass" :label="$t('jobMonitoring.confirmProtectMethod')"
           prop="confirmProtectMethod">
@@ -561,7 +558,7 @@ export default {
           { validator: this.tagsRlues, trigger: 'blur', required: true, }
         ],
         protectMethodName: [
-          { required: true, message: this.$t('selectRequired', { field: this.$t('jobMonitoring.suggestProtectMethod') }), trigger: "blur" },
+          { required: true, message: this.$t('inputRequired', { field: this.$t('jobMonitoring.suggestProtectMethod') }), trigger: "blur" },
         ],
         // coreTopic: [
         //   { validator: this.tagsRlues, trigger: 'blur' }
@@ -773,9 +770,14 @@ export default {
         const list = payload.records || payload.rows || payload.list || payload || []
         this.levelOptions = list.map(it => ({
           value: String(it.level),
-          label: it.levelName
+          label: it.levelName,
+          defaultProtectMethod: it.defaultProtectMethod
         }))
       })
+    },
+    // 处理安全级别变化
+    handleSecurityLevelChange() {
+      this.addOrEditDataRuls.protectMethodName = this.levelOptions.find(item => item.value === this.addOrEditDataRuls.minSecurityLevel)?.defaultProtectMethod || ''
     },
     // 处理标签变化的通用方法
     handleTagChange(val, type) {
