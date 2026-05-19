@@ -791,10 +791,24 @@ export default {
         scheduleInterval: [{ required: true, message: this.$t('selectRequired', { field: this.$t('interval') }), trigger: 'blur' }],
         scheduleTime: [{ required: true, message: this.$t('dataFrom.pleaseSelectTime'), trigger: 'blur' }],
         targetIp: [
-          { required: true, message: this.$t('dataFrom.pleaseInputIpAddress'), trigger: "blur" },
+          { required: true, message: this.$t('dataFrom.pleaseInputHostIP'), trigger: "blur" },
           {
-            pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-            message: this.$t('dataFrom.pleaseInputValidIp')
+            validator: (rule, value, callback) => {
+              if (!value) {
+                callback(new Error(this.$t('dataFrom.pleaseInputHostIP')));
+                return;
+              }
+              const ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+              const domainPattern = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+              const hostnamePattern = /^[a-zA-Z0-9\-]+$/;
+              
+              if (ipPattern.test(value) || domainPattern.test(value) || hostnamePattern.test(value) || value === 'localhost') {
+                callback();
+              } else {
+                callback(new Error(this.$t('dataFrom.pleaseInputValidIp')));
+              }
+            },
+            trigger: 'blur'
           },
         ],
         targetPort: [
@@ -925,10 +939,24 @@ export default {
           { required: true, message: this.$t('dataFrom.pleaseInputBusinessDescription'), trigger: "blur" }
         ],
         targetIp: [
-          { required: true, message: this.$t('dataFrom.pleaseInputIpAddress'), trigger: "blur" },
+          { required: true, message: this.$t('dataFrom.pleaseInputHostIP'), trigger: "blur" },
           {
-            pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-            message: this.$t('dataFrom.pleaseInputValidIp')
+            validator: (rule, value, callback) => {
+              if (!value) {
+                callback(new Error(this.$t('dataFrom.pleaseInputHostIP')));
+                return;
+              }
+              const ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+              const domainPattern = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+              const hostnamePattern = /^[a-zA-Z0-9\-]+$/;
+              
+              if (ipPattern.test(value) || domainPattern.test(value) || hostnamePattern.test(value) || value === 'localhost') {
+                callback();
+              } else {
+                callback(new Error(this.$t('dataFrom.pleaseInputValidIp')));
+              }
+            },
+            trigger: 'blur'
           },
         ],
         targetPort: [
