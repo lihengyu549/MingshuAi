@@ -222,13 +222,13 @@
         </el-form-item>
 
         <Title :title="$t('jobMonitoring.securityLevel')"></Title>
-        <!-- <el-form-item class="addSelectClass" :label="$t('jobMonitoring.suggestProtectMethod')" prop="protectMethodName">
+        <el-form-item class="addSelectClass" :label="$t('jobMonitoring.suggestProtectMethod')" prop="protectMethodName">
           <el-select v-model="addOrEditDataRuls.protectMethodName" :disabled="true" :placeholder="$t('all')">
             <el-option v-for="item in protectMethodIdList" :key="item.dictValue" :label="item.dictLabel"
               :value="item.dictValue">
             </el-option>
           </el-select>
-        </el-form-item> -->
+        </el-form-item>
         <el-form-item class="addSelectClass" :label="$t('jobMonitoring.confirmProtectMethod')"
           prop="confirmProtectMethod">
           <el-select v-model="addOrEditDataRuls.confirmProtectMethod" multiple :placeholder="$t('all')"
