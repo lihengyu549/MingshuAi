@@ -155,18 +155,18 @@
             <div class="iconBtnBox">
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.executeTask')"
                 placement="top-start">
-                <i class="el-icon-video-play" @click="scope.row.publishStatus != 1 && implementFn(scope.row)"
-                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+                <i class="el-icon-video-play" @click="(scope.row.publishStatus != 1 && !['RUNNING', 'STAYEXECUTE', 'PAUSEDING', 'PAUSING', 'KILLEDING', 'KILLING'].includes(scope.row.maskComplete)) && implementFn(scope.row)"
+                  :style="(scope.row.publishStatus == 1 || ['RUNNING', 'STAYEXECUTE', 'PAUSEDING', 'PAUSING', 'KILLEDING', 'KILLING'].includes(scope.row.maskComplete)) ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.pauseTask')"
                 placement="top-start">
-                <i class="el-icon-video-pause" @click="scope.row.publishStatus != 1 && suspendWorkFn(scope.row)"
-                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+                <i class="el-icon-video-pause" @click="(scope.row.publishStatus != 1 && !['NONE', 'COMPLETE', 'ERR'].includes(scope.row.maskComplete)) && suspendWorkFn(scope.row)"
+                  :style="(scope.row.publishStatus == 1 || ['NONE', 'COMPLETE', 'ERR'].includes(scope.row.maskComplete)) ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.terminateTask')"
                 placement="top-start">
-                <i class="el-icon-switch-button" @click="scope.row.publishStatus != 1 && terminationWorkFn(scope.row)"
-                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+                <i class="el-icon-switch-button" @click="(scope.row.publishStatus != 1 && !['NONE', 'COMPLETE', 'ERR'].includes(scope.row.maskComplete)) && terminationWorkFn(scope.row)"
+                  :style="(scope.row.publishStatus == 1 || ['NONE', 'COMPLETE', 'ERR'].includes(scope.row.maskComplete)) ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.taskMonitoring')"
                 placement="top-start">
