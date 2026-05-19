@@ -221,7 +221,7 @@
             tagsShow ? $t('expand') : $t('collapse') }}</el-button>
         </el-form-item>
 
-        <Title :title="$t('jobMonitoring.securityLevel')"></Title>
+        <Title :title="$t('jobMonitoring.securityProtection')"></Title>
         <el-form-item class="addSelectClass" :label="$t('jobMonitoring.suggestProtectMethod')">
           <el-input v-model="addOrEditDataRuls.protectMethodName" :disabled="true" :placeholder="$t('all')">
           </el-input>
