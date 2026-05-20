@@ -21,12 +21,12 @@
       </el-form>
     </el-card>
     <div class="search-actions">
-      <!-- <el-button type="primary" plain icon="el-icon-plus" @click="handleAdd"
-        v-hasPermi="['system:dict:add']">{{ $t('add') }}</el-button> -->
+      <el-button type="primary" plain icon="el-icon-plus" @click="handleAdd"
+        v-hasPermi="['system:dict:add']">{{ $t('add') }}</el-button>
       <!-- <el-button type="success" plain icon="el-icon-edit" :disabled="single" @click="handleUpdate"
         v-hasPermi="['system:dict:edit']">{{ $t('edit') }}</el-button> -->
-      <!-- <el-button type="danger" plain icon="el-icon-delete" :disabled="multiple" @click="handleDelete"
-        v-hasPermi="['system:dict:remove']">{{ $t('delete') }}</el-button> -->
+      <el-button type="danger" plain icon="el-icon-delete" :disabled="multiple" @click="handleDelete"
+        v-hasPermi="['system:dict:remove']">{{ $t('delete') }}</el-button>
       <el-button type="info" plain icon="el-icon-download" @click="handleExport"
         v-hasPermi="['system:dict:export']">{{ $t('export') }}</el-button>
       <!-- <el-button type="info" plain icon="el-icon-close" @click="handleClose">关闭</el-button> -->

@@ -28,6 +28,7 @@ export default {
   fieldName: 'Field Name',
   fileSummary: 'File Summary',
   fieldRemark: 'Field Remark',
+  fieldAiRemark: 'AI Field Remark',
   sampleValue: 'Sample Value',
   riskDisposeSuggestion: 'Risk Disposal Suggestion',
   suggestedProtection: 'Suggested Protection Measures',

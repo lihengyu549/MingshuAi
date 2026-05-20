@@ -164,9 +164,9 @@
         style="float: inline-end; margin-right: 10px;">
         <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{
           $t('selectAll') }}</el-checkbox>
-        <el-checkbox-group v-model="checkedColumn" @change="handleCheckedCitiesChange" class="checkboxGroup"
+        <el-checkbox-group v-model="checkedColumnProps" @change="handleCheckedCitiesChange" class="checkboxGroup"
           style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
-          <el-checkbox style="margin-bottom: 10px;" v-for="item in availableColumns" :label="item" :key="item.label">{{
+          <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item.prop" :key="item.prop">{{
             item.label }}</el-checkbox>
         </el-checkbox-group>
         <el-button size="medium" slot="reference">{{ $t('columnSettings') }}</el-button>
@@ -176,37 +176,39 @@
       }}</el-button>
     </el-row>
     <el-card class="table-card" shadow="never">
-      <el-table class="tableBox" v-loading="loading" :key="checkedColumn.length" :data="proxysList"
+      <el-table class="tableBox" v-loading="loading" :key="checkedColumnProps.length" :data="proxysList"
         @selection-change="handleSelectionChange" ref="tableRef">
         <el-table-column type="selection" width="60" align="center" />
-        <el-table-column v-for="item in filteredCheckedColumn" :label="item.label"
-          :align="item.label == $t('viewResults.columnLabels.category') ? 'left' : 'center'" :prop="item.prop"
-          :width="item.width" show-overflow-tooltip>
+        <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label"
+          :align="item.prop === 'categoryName' ? 'left' : 'center'" :prop="item.prop" :width="item.width"
+          show-overflow-tooltip>
           <template slot-scope="scope">
-            <!-- 特殊列渲染：文件名/字段名 -->
-            <template v-if="item.label == $t('viewResults.columnLabels.fileName') || item.label == $t('viewResults.columnLabels.fieldName')">
+            <!-- 第一个列可点击跳转详情 -->
+            <template v-if="item.prop === (isFileSource ? 'fileName' : 'fieldName')">
               <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
                 <svg-icon icon-class="text" style="font-size: 14px; margin-right: 5px;" />
-                {{ isFileSource ? scope.row.fileName : scope.row.fieldName }}
-              </span>
+                {{ scope.row[item.prop] }}</span>
             </template>
-            <!-- 分类不再展示，直接显示原始值 -->
-            <template v-else-if="item.label == $t('viewResults.columnLabels.securityLevel')">
+            <!-- 安全等级 -->
+            <template v-else-if="item.prop === 'securityLevelName'">
               <el-tag :style="getRiskStyle(Number(scope.row.securityLevel))">
                 {{ scope.row.securityLevelName }}
               </el-tag>
             </template>
-            <template v-else-if="item.label == $t('viewResults.columnLabels.category')">
+            <!-- 分类 -->
+            <template v-else-if="item.prop === 'categoryName'">
               <el-tag
-                :type="scope.row.categoryName == $t('viewResults.options.unclassified') || scope.row.categoryName == $t('viewResults.options.noiseData') ? 'info' : 'primary'">{{
-                  scope.row.categoryName }}</el-tag>
+                :type="scope.row.categoryName == $t('viewResults.options.unclassified') || scope.row.categoryName == $t('viewResults.options.noiseData') ? 'info' : 'primary'">
+                {{ scope.row.categoryName }}</el-tag>
             </template>
-            <template v-else-if="item.label == $t('viewResults.columnLabels.confirmStatus')">
+            <!-- 确认状态 -->
+            <template v-else-if="item.prop === 'confirm'">
               <el-tag :type="scope.row.confirm == 0 ? 'info' : 'primary'">{{ scope.row.confirm == 0 ?
                 $t('viewResults.options.confirm.unconfirmed') :
                 $t('viewResults.options.confirm.confirmed') }}</el-tag>
             </template>
-            <template v-else-if="item.label == $t('viewResults.columnLabels.sample')">
+            <!-- 样例数据 -->
+            <template v-else-if="item.prop === 'sampleData'">
               <el-tooltip placement="bottom" effect="light">
                 <div slot="content">
                   <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
@@ -223,7 +225,6 @@
             </template>
           </template>
         </el-table-column>
-        <!-- 操作列已集成到字段名列中 -->
       </el-table>
       <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
         :pageSize.sync="queryParams.pageSize" @pagination="getList" />
@@ -311,7 +312,7 @@ export default {
       levelOptions: [],
       updataLoading: false,
       isIndeterminate: false,
-      checkedColumn: [],
+      checkedColumnProps: [],
       checkAll: false,
       originalQueryParams: null,
       // 是否显示更多筛选条件
@@ -426,128 +427,46 @@ export default {
       total: 0,
       // 数据库代理表格数据
       proxysList: [],
-      // 数据库代理表格数据
-      setList: [
-        {
-          label: this.$t('viewResults.columnLabels.fieldName'),
-          prop: "fieldName",
-          width: "150"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.fileName'),
-          prop: "fileName",
-          width: "150"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.fileType'),
-          prop: "fileFormat",
-          width: "150"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.folder'),
-          prop: "fileParentPath",
-          width: "150"
-        },
-        {
-          label: this.$t('viewResults.columns.fieldRemark'),
-          prop: "fieldRemark",
-          width: "150"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.sourceBusinessSystem'),
-          prop: "businessName",
-          width: "150"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.database'),
-          prop: "databaseName",
-          width: "150"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.table'),
-          prop: "tableName",
-          width: "150"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.fieldType'),
-          prop: "fieldType",
-          width: "200"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.aiFieldRemark'),
-          prop: "craftRemark",
-          width: "200"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.tableRemark'),
-          prop: "tableRemark",
-          width: "200"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.aiTableRemark'),
-          prop: "tableCraftRemark",
-          width: "200"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.category'),
-          prop: "categoryName",
-          width: "250"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.classificationStatus'),
-          prop: "classificationStateName",
-          width: "250"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.classificationReason'),
-          prop: "classificationReasons",
-          width: "150"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.piiReview'),
-          prop: "piiDetectionName",
-          width: "250"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.detectionProcess'),
-          prop: "detectionProcess",
-          width: "250"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.confidenceScore'),
-          prop: "confidenceScore",
-          width: "100"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.confidenceLevel'),
-          prop: "confidenceLevel",
-          width: "100"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.securityLevel'),
-          prop: "securityLevelName",
-          width: "150"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.sensitiveData'),
-          prop: "sensitiveDataName",
-          width: "150"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.sampleFeature'),
-          prop: "regularExpression",
-          width: "150"
-
-        },
-        {
-          label: this.$t('viewResults.columnLabels.sample'),
-          prop: "sampleData",
-          width: "150"
-        },
-        {
-          label: this.$t('viewResults.columnLabels.confirmStatus'),
-          prop: "confirm",
-        }
+      // 结构化（数据库）列配置
+      columnList: [
+        { labelKey: "fieldName", prop: "fieldName", width: "150" },
+        { labelKey: "fieldType", prop: "fieldType", width: "200" },
+        { labelKey: "fieldRemark", prop: "fieldRemark", width: "150" },
+        { labelKey: "aiFieldRemark", prop: "craftRemark", width: "200" },
+        { labelKey: "sourceBusinessSystem", prop: "businessName", width: "150" },
+        { labelKey: "database", prop: "databaseName", width: "150" },
+        { labelKey: "table", prop: "tableName", width: "150" },
+        { labelKey: "tableRemark", prop: "tableRemark", width: "200" },
+        { labelKey: "aiTableRemark", prop: "tableCraftRemark", width: "200" },
+        { labelKey: "category", prop: "categoryName" },
+        { labelKey: "classificationStatus", prop: "classificationStateName", width: "250" },
+        { labelKey: "classificationReason", prop: "classificationReasons", width: "150" },
+        { labelKey: "piiReview", prop: "piiDetectionName", width: "250" },
+        { labelKey: "detectionProcess", prop: "detectionProcess", width: "250" },
+        { labelKey: "confidenceScore", prop: "confidenceScore", width: "100" },
+        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "100" },
+        { labelKey: "securityLevel", prop: "securityLevelName" },
+        { labelKey: "sensitiveData", prop: "sensitiveDataName", width: "150" },
+        { labelKey: "sampleFeature", prop: "regularExpression", width: "150" },
+        { labelKey: "sampleData", prop: "sampleData", width: "100" },
+        { labelKey: "confirm", prop: "confirm", width: "120" }
+      ],
+      // 非结构化（文件）列配置
+      unstructuredColumnList: [
+        { labelKey: "fileName", prop: "fileName", width: "200" },
+        { labelKey: "fileFormat", prop: "fileFormat", width: "150" },
+        { labelKey: "fileParentPath", prop: "fileParentPath", width: "200" },
+        { labelKey: "sourceBusinessSystem", prop: "businessName", width: "150" },
+        { labelKey: "category", prop: "categoryName" },
+        { labelKey: "classificationStatus", prop: "classificationStateName", width: "250" },
+        { labelKey: "classificationReason", prop: "classificationReasons", width: "150" },
+        { labelKey: "piiReview", prop: "piiDetectionName", width: "250" },
+        { labelKey: "detectionProcess", prop: "detectionProcess", width: "250" },
+        { labelKey: "confidenceScore", prop: "confidenceScore", width: "100" },
+        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "100" },
+        { labelKey: "securityLevel", prop: "securityLevelName" },
+        { labelKey: "sensitiveData", prop: "sensitiveDataName", width: "150" },
+        { labelKey: "confirm", prop: "confirm", width: "120" }
       ],
       // 弹出层标题
       title: "",
@@ -751,13 +670,11 @@ export default {
 
     this.getProtectCategory();
     this.getPiiList();
-    // 设置默认展示的列
-    const defaultColumnLabels = this.isFileSource
-      ? [this.$t('viewResults.columnLabels.fileName'), this.$t('viewResults.columnLabels.fileType'), this.$t('viewResults.columnLabels.folder'), this.$t('viewResults.columnLabels.category'), this.$t('viewResults.columnLabels.securityLevel'), this.$t('viewResults.columnLabels.confirmStatus')]
-      : [this.$t('viewResults.columnLabels.fieldName'), this.$t('viewResults.columnLabels.fieldType'), this.$t('viewResults.columnLabels.table'), this.$t('viewResults.columnLabels.tableRemark'), this.$t('viewResults.columnLabels.category'), this.$t('viewResults.columnLabels.securityLevel'), this.$t('viewResults.columnLabels.sample'), this.$t('viewResults.columnLabels.confirmStatus')];
-    this.checkedColumn = this.availableColumns.filter(item =>
-      defaultColumnLabels.includes(item.label)
-    );
+    // 设置默认展示的列（与ProtectTableField保持一致）
+    const defaultColumnProps = this.isFileSource
+      ? ['fileName', 'fileFormat', 'fileParentPath', 'categoryName', 'securityLevelName']
+      : ['fieldName', 'businessName', 'databaseName', 'tableName', 'categoryName', 'securityLevelName'];
+    this.checkedColumnProps = defaultColumnProps;
     this.checkAll = false;
     this.getList();
     this.getListTableByProject();
@@ -767,50 +684,22 @@ export default {
     isFileSource() {
       return this.queryParams.sourceType === 'FILE_CATALOGUE' || this.queryParams.sourceType === 'FILE_SERVER';
     },
-    availableColumns() {
-      const unstructuredLabels = [
-        this.$t('viewResults.columnLabels.fileName'),
-        this.$t('viewResults.columnLabels.fileType'),
-        this.$t('viewResults.columnLabels.folder'),
-        this.$t('viewResults.columnLabels.category'),
-        this.$t('viewResults.columnLabels.securityLevel'),
-        this.$t('viewResults.columnLabels.confirmStatus'),
-        this.$t('viewResults.columnLabels.sourceBusinessSystem'),
-        this.$t('viewResults.columnLabels.classificationReason'),
-        this.$t('viewResults.columnLabels.confidenceLevel'),
-        this.$t('viewResults.columnLabels.confidenceScore'),
-        this.$t('viewResults.columnLabels.sensitiveData')
-      ];
-      
-      const structuredLabels = [
-        this.$t('viewResults.columnLabels.fieldName'),
-        this.$t('viewResults.columnLabels.fieldType'),
-        this.$t('viewResults.columnLabels.table'),
-        this.$t('viewResults.columnLabels.category'),
-        this.$t('viewResults.columnLabels.securityLevel'),
-        this.$t('viewResults.columnLabels.sample'),
-        this.$t('viewResults.columnLabels.confirmStatus'),
-        this.$t('viewResults.columnLabels.sourceBusinessSystem'),
-        this.$t('viewResults.columnLabels.database'),
-        this.$t('viewResults.columnLabels.aiFieldRemark'),
-        this.$t('viewResults.columnLabels.tableRemark'),
-        this.$t('viewResults.columnLabels.aiTableRemark'),
-        this.$t('viewResults.columnLabels.classificationStatus'),
-        this.$t('viewResults.columnLabels.classificationReason'),
-        this.$t('viewResults.columnLabels.piiReview'),
-        this.$t('viewResults.columnLabels.detectionProcess'),
-        this.$t('viewResults.columnLabels.confidenceScore'),
-        this.$t('viewResults.columnLabels.confidenceLevel'),
-        this.$t('viewResults.columnLabels.sensitiveData'),
-        this.$t('viewResults.columnLabels.sampleFeature')
-      ];
-
-      const allowedLabels = this.isFileSource ? unstructuredLabels : structuredLabels;
-      return this.setList.filter(item => allowedLabels.includes(item.label));
+    // 列设置列表（根据类型返回不同列表）
+    setList() {
+      if (this.isFileSource) {
+        return this.unstructuredColumnList.map(item => ({
+          ...item,
+          label: this.$t(`viewResults.columnLabels.${item.labelKey}`)
+        }))
+      }
+      return this.columnList.map(item => ({
+        ...item,
+        label: this.$t(`viewResults.columnLabels.${item.labelKey}`)
+      }))
     },
-    filteredCheckedColumn() {
-      const checkedLabels = new Set(this.checkedColumn.map(item => item.label));
-      return this.availableColumns.filter(item => checkedLabels.has(item.label));
+    // 当前选中的列
+    checkedColumn() {
+      return this.setList.filter(item => this.checkedColumnProps.includes(item.prop))
     }
   },
   mounted() {
@@ -848,7 +737,7 @@ export default {
       this.$refs.treeSelectSec.filter(val);
     },
     handleCheckAllChange(val) {
-      this.checkedColumn = val ? this.availableColumns : [];
+      this.checkedColumnProps = val ? this.setList.map(item => item.prop) : [];
       this.isIndeterminate = false;
     },
     handleCheckedCitiesChange(value) {
@@ -973,7 +862,7 @@ export default {
       // 离开页面2时清除原始参数缓存，避免下次从页面1进入时错误复用
       sessionStorage.removeItem('viewResults_originalQueryParams');
       this.$router.push({
-        path: 'classificationTask/hierarchicalTask',
+        path: '/classificationTask/hierarchicalTask',
         query: {
           drawerData: this.$route.query.drawerData,
           queryParams: paramsToSave
@@ -1078,9 +967,9 @@ export default {
       // 设置到表单中
       this.resultForm.selectedIds = selectedIds
 
-      // 为分类下拉框设置默认选中第一项
+      // 为分类下拉框设置默认选中未分类id-100
       if (this.categoryList && this.categoryList.length > 0) {
-        this.resultFormNodeName = this.categoryList[0].categoryName;
+        this.resultFormNodeName = this.categoryList.find(item=>item.id == '-100').categoryName
       }
 
       // 为安全分级下拉框设置默认选中第一项
@@ -1208,7 +1097,7 @@ export default {
       // 记录跳转来源为viewResults，用于fixResults页面返回时判断
       sessionStorage.setItem('prevPage', 'viewResults');
       this.$router.push({
-        path: '/fixResults',
+        path: '/classificationTask/fixResults',
         query: { row: row, categoryList: this.categoryList, queryParams: this.queryParams, drawerData: this.$route.query.drawerData }
       })
       this.addNodeName = ''

@@ -1024,20 +1024,6 @@ export default {
       // 获取所有勾选的节点ID(包括半选节点的子节点)
       const checkedIds = this.getCheckedNodeIds(this.categoryList);
       this.selectedTreeNodeIds = checkedIds;
-      this.updateTreeAllCheckedState();
-    },
-    /**
-     * 更新全选框状态
-     */
-    updateTreeAllCheckedState() {
-      const allChildren = this.collectAllChildren(this.categoryList);
-      if (this.selectedTreeNodeIds.length === 0) {
-        this.isTreeAllChecked = false;
-      } else if (this.selectedTreeNodeIds.length === allChildren.length) {
-        this.isTreeAllChecked = true;
-      } else {
-        this.isTreeAllChecked = null;
-      }
     },
     /**
      * 点击树节点事件:点击节点展示右侧列表

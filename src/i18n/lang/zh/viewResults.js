@@ -63,10 +63,13 @@ export default {
   columnLabels: {
     fieldName: '字段名',
     fileName: '文件名',
+    fileFormat: '文件格式',
+    fileParentPath: '文件路径',
     sourceBusinessSystem: '来源业务系统',
     database: '所属库',
     table: '所属表',
     fieldType: '字段类型',
+    fieldRemark: '字段备注',
     aiFieldRemark: 'AI字段注释',
     tableRemark: '表注释',
     aiTableRemark: 'AI表注释',
@@ -80,11 +83,8 @@ export default {
     securityLevel: '安全分级',
     sensitiveData: '敏感数据',
     sampleFeature: '样本特征',
-    fileType: '文件类型',
-    folder: '所属文件夹',
-    fieldRemark: '字段注释',
-    sample: '样本',
-    confirmStatus: '确认状态'
+    sampleData: '样例数据',
+    confirm: '确认状态'
   },
   messages: {
     selectAtLeastOne: '请选择至少一条数据',
