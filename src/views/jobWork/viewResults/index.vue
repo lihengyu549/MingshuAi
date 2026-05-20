@@ -936,7 +936,7 @@ export default {
       // 离开页面2时清除原始参数缓存，避免下次从页面1进入时错误复用
       sessionStorage.removeItem('viewResults_originalQueryParams');
       this.$router.push({
-        path: 'classificationTask/hierarchicalTask',
+        path: '/classificationTask/hierarchicalTask',
         query: {
           drawerData: this.$route.query.drawerData,
           queryParams: paramsToSave
@@ -1171,7 +1171,7 @@ export default {
       // 记录跳转来源为viewResults，用于fixResults页面返回时判断
       sessionStorage.setItem('prevPage', 'viewResults');
       this.$router.push({
-        path: '/fixResults',
+        path: '/classificationTask/fixResults',
         query: { row: row, categoryList: this.categoryList, queryParams: this.queryParams, drawerData: this.$route.query.drawerData }
       })
       this.addNodeName = ''

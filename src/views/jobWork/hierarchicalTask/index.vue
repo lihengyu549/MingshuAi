@@ -1347,7 +1347,7 @@ export default {
       sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(restParams));
       sessionStorage.setItem('prevPage', 'hierarchicalTask');
       this.$router.push({
-        path: '/viewResults',
+        path: '/classificationTask/viewResults',
         query: { drawerData: row, queryParams: restParams }
       })
       if (row.publishStatus == 0) {

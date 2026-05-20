@@ -662,7 +662,7 @@ export default {
             sessionStorage.setItem('viewResults_queryParams', JSON.stringify(paramsToSave));
             sessionStorage.setItem('prevPage', 'fixResults');
             this.$router.push({
-                path: '/viewResults',
+                path: '/classificationTask/viewResults',
                 query: {
                     drawerData: this.$route.query.drawerData,
                     queryParams: paramsToSave
