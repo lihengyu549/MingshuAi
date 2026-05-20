@@ -638,6 +638,8 @@ export default {
         demotionRule: '',
         upgradeList: [],
         demotionList: [],
+        protectMethodName: '',
+        confirmProtectMethod: [],
       },
       // 添加选中行存储变量
       selectedUpgradeRows: [],
@@ -778,6 +780,9 @@ export default {
     // 处理安全级别变化
     handleSecurityLevelChange() {
       this.addOrEditDataRuls.protectMethodName = this.levelOptions.find(item => item.value === this.addOrEditDataRuls.minSecurityLevel)?.defaultProtectMethod || ''
+      this.$nextTick(() => {
+        this.$refs["addOrEdit"] && this.$refs["addOrEdit"].validateField('protectMethodName');
+      });
     },
     // 处理标签变化的通用方法
     handleTagChange(val, type) {
@@ -1285,6 +1290,8 @@ export default {
         demotionRule: false, // 重置为默认值false
         upgradeList: [], // 清空升级规则列表
         demotionList: [], // 清空降级规则列表
+        protectMethodName: '',
+        confirmProtectMethod: [],
       }
       this.addOrEditDataRuls.dataOwner = this.$store.state.user.name
       this.tagsShow = true
@@ -1355,9 +1362,23 @@ export default {
 
     // 新增取消
     addCancel() {
-      this.addOrEditDataRuls = {}
+      this.addOrEditDataRuls = {
+        additional: '',
+        attachData: '',
+        categoryId: '',
+        minSecurityLevel: null,
+        attributeType: null,
+        dataOwner: '',
+        upgradeRule: '',
+        demotionRule: '',
+        upgradeList: [],
+        demotionList: [],
+        protectMethodName: '',
+        confirmProtectMethod: [],
+      }
       this.addNodeName = ''
       this.addOrEdit.show = false
+      this.$refs["addOrEdit"] && this.$refs["addOrEdit"].clearValidate()
     },
     // 递归函数，查找父节点的 label 并返回完整的路径
     findParentLabelsById(tree, nodeId, path = []) {
@@ -1415,7 +1436,10 @@ export default {
     },
     async editFn(row) {
       this.addOrEdit.flag = 2
-      this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
+      this.addOrEditDataRuls = Object.assign({
+        protectMethodName: '',
+        confirmProtectMethod: [],
+      }, JSON.parse(JSON.stringify(row)))
       this.addOrEditDataRuls.upgradeRule = row.upgradeRule == '1' ? true : false
       this.addOrEditDataRuls.demotionRule = row.demotionRule == '1' ? true : false
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
@@ -1447,7 +1471,10 @@ export default {
     },
     async lookFn(row) {
       this.addOrEdit.flag = 3
-      this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
+      this.addOrEditDataRuls = Object.assign({
+        protectMethodName: '',
+        confirmProtectMethod: [],
+      }, JSON.parse(JSON.stringify(row)))
       this.addOrEditDataRuls.upgradeRule = row.upgradeRule == '1' ? true : false
       this.addOrEditDataRuls.demotionRule = row.demotionRule == '1' ? true : false
       this.addOrEditDataRuls.additional = row.attachDescribe
