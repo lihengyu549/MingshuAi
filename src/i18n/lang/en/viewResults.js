@@ -63,10 +63,13 @@ export default {
   columnLabels: {
     fieldName: 'Field Name',
     fileName: 'File Name',
+    fileFormat: 'File Format',
+    fileParentPath: 'File Path',
     sourceBusinessSystem: 'Source Business System',
     database: 'Database',
     table: 'Table',
     fieldType: 'Field Type',
+    fieldRemark: 'Field Remark',
     aiFieldRemark: 'AI Field Remark',
     tableRemark: 'Table Remark',
     aiTableRemark: 'AI Table Remark',
@@ -79,7 +82,9 @@ export default {
     confidenceLevel: 'Confidence Level',
     securityLevel: 'Security Level',
     sensitiveData: 'Sensitive Data',
-    sampleFeature: 'Sample Feature'
+    sampleFeature: 'Sample Feature',
+    sampleData: 'Sample Data',
+    confirm: 'Confirm Status'
   },
   messages: {
     selectAtLeastOne: 'Please select at least one record',
