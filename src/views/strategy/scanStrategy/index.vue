@@ -106,6 +106,10 @@
           <el-radio label="10" border>10</el-radio>
           <el-radio label="20" border>20</el-radio>
           <el-radio label="50" border>50</el-radio>
+          <el-radio label="100" border>100</el-radio>
+          <el-radio label="200" border>200</el-radio>
+          <el-radio label="500" border>500</el-radio>
+          <el-radio label="1000" border>1000</el-radio>
         </el-radio-group>
       </div>
     </el-card>
