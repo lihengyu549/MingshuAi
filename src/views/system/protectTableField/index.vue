@@ -1067,10 +1067,12 @@ Authorization:Bearer ${this.Token}`
             });
 
             this.total = response.total || 0;
+            this.loading = false;
           } else {
             // 重置为空数组，避免显示错误数据
             this.protectTableFieldList = [];
             this.total = 0;
+            this.loading = false;
           }
         } catch (error) {
           console.error('处理列表数据时发生错误:', error);
