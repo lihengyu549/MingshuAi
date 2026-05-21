@@ -563,6 +563,7 @@ export default {
       rootFolderTitle: '', // 根文件夹标题（从接口获取）
 
       fileListTimer: null, // 防抖定时器
+      folderClickTimer: null, // 文件夹点击节流定时器
 
       fileDetailDrawerVisible: false,
       fileDetailData: {
@@ -883,6 +884,11 @@ export default {
 
 
     handleFolderClick(folder) {
+      if (this.folderClickTimer) return;
+      this.folderClickTimer = setTimeout(() => {
+        this.folderClickTimer = null;
+      }, 1000);
+
       // 添加到面包屑
       this.breadcrumbList.push({
         id: folder.id,
