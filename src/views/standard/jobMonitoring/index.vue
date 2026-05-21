@@ -171,7 +171,7 @@
         </el-row>
         <el-form-item class="addSelectClass" :label="$t('jobMonitoring.baseParent')" prop="categoryId">
           <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3" filterable
-            :filter-method="handleAddSelectInput">
+            :filter-method="handleAddSelectInput" @visible-change="handleAddSelectVisibleChange">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" filterable :props="defaultProps" :expand-on-click-node="true"
                 :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
@@ -1420,6 +1420,14 @@ export default {
     handleAddSelectInput(value) {
       if (this.$refs.treeSelect) {
         this.$refs.treeSelect.filter(value);
+      }
+    },
+    // 处理添加选择框的显示隐藏事件，解决搜索不到值时失焦导致下拉数据为空的问题
+    handleAddSelectVisibleChange(visible) {
+      if (!visible) {
+        if (this.$refs.treeSelect) {
+          this.$refs.treeSelect.filter('');
+        }
       }
     },
     getBaseParentDisplayName(row) {
