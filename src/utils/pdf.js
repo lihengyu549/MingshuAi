@@ -1,214 +1,204 @@
-import html2Canvas from 'html2canvas';
-
-import JsPDF from "jspdf";
+import html2canvas from 'html2canvas';
+import JsPDF from 'jspdf';
 
 /**
-
- * [获取页面导出的pdf文件]
-
- * @param   {[Object]}  options  [导出pdf配置项，包括一个title属性设置文件名，以及query属性设置获取元素的条件]
-
+ * 导出页面为 PDF 文件（优化版：解决卡顿问题）
+ * @param {Object} options
+ * @param {string} options.title - 导出文件名，默认"导出报告"
+ * @param {string} options.className - 目标容器类名，默认"pdf-cell"
+ * @param {number} [options.scale] - 截图清晰度倍率，默认最高2倍（平衡清晰度和性能）
+ * @param {number} [options.quality=0.7] - JPEG 图片质量 0~1（0.7肉眼几乎无差异，体积大幅减小）
+ * @param {number} [options.dpi=200] - 截图 DPI（屏幕查看足够，打印可改为300）
+ * @param {number} [options.margin=20] - PDF 页边距（pt）
+ * @param {number} [options.gap=10] - 元素之间间距（pt）
+ * @param {boolean} [options.showLoading=true] - 是否显示默认加载提示
+ * @returns {Promise<void>}
  */
+export async function downloadPDF(options) {
+  const {
+    title = '导出报告',
+    className = 'pdf-cell',
+    scale = Math.min(window.devicePixelRatio, 2), // 核心优化1：限制最高2倍缩放
+    quality = 1,
+    dpi = 500,
+    margin = 20,
+    gap = 10,
+    showLoading = true
+  } = options || {};
 
-export function downloadPDF(options) {
-    var title = options.title || '导出报告';// 导出文件名，默认为“标题”
+  const A4_WIDTH = 595.28;
+  const A4_HEIGHT = 841.89;
+  const USABLE_WIDTH = A4_WIDTH - margin * 2;
+  const USABLE_HEIGHT = A4_HEIGHT - margin * 2;
 
-    // 这里获取调用这个方法传过来的参数对象里面的类名，也就是你需要导出为pdf元素的父盒子类名
+  // 显示加载提示
+  let loadingEl = null;
+  if (showLoading) {
+    loadingEl = document.createElement('div');
+    loadingEl.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      z-index: 99999;
+    `;
+    loadingEl.textContent = '正在生成PDF，请稍候...';
+    document.body.appendChild(loadingEl);
+  }
 
-    const ele = document.getElementsByClassName(options.className || "pdf-cell");
-
-    // 这里面我要解释一下，这里是要为做分页做准备，因为分页是根据每一个dom元素的高度来决定的，也不用细化到每一个dom元素，只是你不希望被截断的dom元素都需要单独的拿出来计算高度，而不能获取整个大页面的高度
-
-    // 这里的children取决于你传过来的父元素，根据实际需求来获取你需要的子元素
-
-    const children = ele[0].children;
-
-    // 定义一个空数组，来接收需要生成图片计算完高度的dom对象
-
-    let canvas = [];
-
-    //  这里的 i 和 j 根据实际需求添加  i 是只你定义的children的每一个dom元素的索引，每计算完一个高度，进行++运算然后递归
-
-    let i = 0;
-
-    // 这里的 j 是如果你需要对你定义的children的子元素更深层的遍历的话，需要拿到他下面的子元素高度的话，就另定义一个j变量，进行++运算再递归
-
-    let j = 0;
-
-    // scale是清晰度参数 数值越大，对应的清晰度越清晰，但是相对导出的文件大小也就越大，慎重修改，这里是根据你的窗口大小做判断
-
-    const scale = window.devicePixelRatio > 1 ? window.devicePixelRatio : 2
-
-    // 将dom转化为canvas
-
-    function toCanvas() {
-
-        if (children.length > 1) {
-            html2Canvas(children[i], {
-                scale: scale,
-                dpi: 500, // 导出pdf清晰度
-                background: '#fff', // 背景设为白色（默认为黑色）
-                useCORS: true, // 允许跨域图片
-                allowTaint: true, // 允许图片污染
-                logging: false, // 禁用日志
-                willReadFrequently: true, // 新增：解决Canvas2D警告
-                onclone: function(doc) {
-                    // 克隆页面后隐藏不必要的元素，减少渲染量
-                    const buttons = doc.querySelectorAll('button');
-                    buttons.forEach(btn => btn.style.display = 'none');
-                }
-            }).then(res => {
-                // 改进高度计算逻辑，保持宽高比
-                const A4_WIDTH = 595.28; // A4宽度（pt）
-                const MARGIN = 20; // 页边距
-                const contentWidth = A4_WIDTH - 2 * MARGIN; // 内容区域宽度
-                
-                // 按比例计算高度，保持原始宽高比
-                const ratio = contentWidth / res.width;
-                const calculatedHeight = res.height * ratio;
-                
-                // 设置最大高度限制，防止过高的canvas导致性能问题
-                res.imgHeight = Math.min(calculatedHeight, 3000);
-                res.imgWidth = contentWidth;
-                res.originalWidth = res.width; // 保存原始宽度用于调试
-
-                canvas.push(res);
-                i++;
-
-                if (canvas.length === children.length) {
-                    paging();
-                    toPdf();
-                } else {
-                    toCanvas();
-                }
-            });
-        }
+  try {
+    const container = document.querySelector('.' + className);
+    if (!container) {
+      throw new Error(`PDF导出：未找到类名为 "${className}" 的容器元素`);
     }
 
-    /**
+    const children = Array.from(container.children).filter(el => {
+      const style = window.getComputedStyle(el);
+      return style.display !== 'none' && style.visibility !== 'hidden';
+    });
 
-     * [根据dom的高度初步进行分页，会将canvas组装为一个二维数组]
+    if (!children.length) {
+      throw new Error('PDF导出：容器内没有可见的子元素');
+    }
 
-     */
+    // 核心优化2：串行截图（避免同时占用全部CPU，主线程不会完全卡死）
+    const canvases = [];
+    for (const child of children) {
+      const canvas = await html2canvas(child, {
+        scale,
+        dpi,
+        background: '#fff',
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        willReadFrequently: true,
+        onclone(doc) {
+          // 隐藏导出时不需要的元素
+          doc.querySelectorAll('.no-print, [data-no-print]').forEach(el => {
+            el.style.display = 'none';
+          });
+        }
+      });
+      canvases.push(canvas);
 
-    // dom 全部转化完成 开始计算分页
+      // 让出主线程10ms，让浏览器有机会响应其他操作
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
 
-    function paging() {
+    // 计算每张图片在PDF中的尺寸
+    const images = canvases.map(cvs => {
+      const ratio = USABLE_WIDTH / cvs.width;
+      return {
+        canvas: cvs,
+        width: USABLE_WIDTH,
+        height: cvs.height * ratio
+      };
+    });
 
-        const imgArr = [[]];
+    // 分页逻辑（保留原有的防截断功能）
+    const pages = [];
+    let currentPage = [];
+    let currentHeight = 0;
+    images.forEach(img => {
+      const needNewPage = currentPage.length > 0 && currentHeight + img.height > USABLE_HEIGHT;
+      if (needNewPage) {
+        pages.push(currentPage);
+        currentPage = [];
+        currentHeight = 0;
+      }
+      currentPage.push(img);
+      currentHeight += img.height + gap;
+    });
+    if (currentPage.length) {
+      pages.push(currentPage);
+    }
 
-        let pageH = 0;// 页面的高度
+    // 生成PDF
+    const pdf = new JsPDF('p', 'pt', 'a4');
+    const objectUrls = []; // 用于存储所有生成的ObjectURL，最后统一释放
 
-        let allH = 0;// 当前组所有dom的高度和
+    for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+      if (pageIndex > 0) {
+        pdf.addPage();
+      }
 
-        let j = 0;
+      let y = margin;
+      const page = pages[pageIndex];
 
-        for (let k = 0; k < canvas.length; k++) { // 涉及到k--的操作，使用for循环方便
-
-            pageH += canvas[k].imgHeight;
-
-            if (pageH > 841.89 - 40 && canvas[k].imgHeight < 841.89) { // 当某个页面装不下下一个dom时，则分页，留出底部边距
-
-                imgArr[j][0].allH = allH - canvas[k].imgHeight;
-
-                allH = pageH = 0;
-
-                k--;
-
-                j++;
-
-                imgArr.push([]);
-
-            } else {
-
-                if (canvas[k].imgHeight > 841.89 - 40) { // 特殊情况：某个dom高度大于了页面高度，特殊处理
-
-                    canvas[k].topH = 841.89 - 40 - (pageH - canvas[k].imgHeight);// 该dom顶部距离页面上方的距离
-
-                    pageH = (2 * canvas[k].imgHeight - pageH) % 841.89;
-
-                    canvas[k].pageH = pageH;// 该dom底部距离页面上方的距离
-
-                }
-
-                imgArr[j].push(canvas[k]);
-
-                allH += canvas[k].imgHeight;
-
+      for (const img of page) {
+        // 核心优化3：使用异步toBlob代替同步toDataURL，不阻塞主线程
+        const imgData = await new Promise((resolve, reject) => {
+          img.canvas.toBlob(blob => {
+            if (!blob) {
+              reject(new Error('Canvas转Blob失败'));
+              return;
             }
+            const url = URL.createObjectURL(blob);
+            objectUrls.push(url);
+            resolve(url);
+          }, 'image/jpeg', quality);
+        });
 
-            if (k === canvas.length - 1) imgArr[j][0].allH = allH;
+        // 超大元素跨页切割（保留原功能）
+        if (img.height > USABLE_HEIGHT) {
+          let remaining = img.height;
+          let srcY = 0;
 
+          while (remaining > 0) {
+            const drawHeight = Math.min(remaining, USABLE_HEIGHT - (y - margin));
+            const srcHeight = (drawHeight / img.height) * img.canvas.height;
+
+            pdf.addImage(
+              imgData,
+              'JPEG',
+              margin,
+              y,
+              img.width,
+              drawHeight,
+              undefined,
+              'FAST',
+              0,
+              srcY / img.canvas.height,
+              1,
+              srcHeight / img.canvas.height
+            );
+
+            remaining -= drawHeight;
+            srcY += srcHeight;
+
+            if (remaining > 0) {
+              pdf.addPage();
+              y = margin;
+            }
+          }
+        } else {
+          pdf.addImage(imgData, 'JPEG', margin, y, img.width, img.height);
+          y += img.height + gap;
         }
-
-        canvas = imgArr;
-
+      }
     }
 
-    /**
+    // 保存PDF
+    pdf.save(title + '.pdf');
 
-     * [生成PDF文件]
+    // 核心优化4：释放所有ObjectURL，避免内存泄漏
+    objectUrls.forEach(url => URL.revokeObjectURL(url));
 
-     */
-
-    function toPdf() {
-        const PDF = new JsPDF('p', 'pt', 'a4');
-        const MARGIN = 20; // 统一的页边距
-        
-        try {
-            canvas.forEach((page, index) => {
-                let allH = page[0].allH;
-                let position = MARGIN; // 使用统一的页边距
-                
-                if (index !== 0) PDF.addPage();
-                
-                page.forEach(img => {
-                    if (img.imgHeight < 841.89 - 2 * MARGIN) { // 当某个dom高度小于页面宽度，直接添加图片
-                        // 保持图片在页面居中
-                        const xPosition = (595.28 - img.imgWidth) / 2;
-                        
-                        PDF.addImage(img.toDataURL('image/jpeg', 0.8), 'JPEG', xPosition, position, img.imgWidth, img.imgHeight);
-                        position += img.imgHeight + 10; // 元素间添加10pt间距
-                        allH -= img.imgHeight;
-                    } else { // 当某个dom高度大于页面宽度，则需另行处理
-                        // 改进大图片的处理逻辑
-                        const imgData = img.toDataURL('image/jpeg', 0.8);
-                        let remainingHeight = img.imgHeight;
-                        let currentPosition = 0;
-                        const xPosition = (595.28 - img.imgWidth) / 2;
-                        
-                        while (remainingHeight > 0) {
-                            const heightToDraw = Math.min(remainingHeight, 841.89 - position - MARGIN);
-                            
-                            // 绘制当前部分
-                            PDF.addImage(
-                                imgData, 
-                                'JPEG', 
-                                xPosition, 
-                                position, 
-                                img.imgWidth, 
-                                heightToDraw
-                            );
-                            
-                            remainingHeight -= heightToDraw;
-                            
-                            if (remainingHeight > 0) {
-                                PDF.addPage();
-                                position = MARGIN;
-                            }
-                        }
-                    }
-                });
-            });
-            
-            // 保存PDF文件
-            PDF.save(title + '.pdf');
-        } catch (error) {
-            console.error('PDF生成失败:', error);
-            // 可以在这里添加错误回调通知
-        }
+  } catch (error) {
+    console.error('PDF导出失败：', error);
+    alert(`PDF导出失败：${error.message}`);
+    throw error; // 抛出错误，让调用方可以捕获
+  } finally {
+    // 隐藏加载提示
+    if (loadingEl && document.body.contains(loadingEl)) {
+      document.body.removeChild(loadingEl);
     }
-
-    toCanvas();
-
+  }
 }

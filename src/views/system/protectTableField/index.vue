@@ -1082,6 +1082,7 @@ Authorization:Bearer ${this.Token}`
           console.error('处理列表数据时发生错误:', error);
           this.protectTableFieldList = [];
           this.total = 0;
+          this.loading = false;
         } finally {
           // 确保在任何情况下都关闭loading
           this.loading = false;

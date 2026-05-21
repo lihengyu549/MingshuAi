@@ -161,13 +161,13 @@
               </el-tooltip>
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.pauseTask')"
                 placement="top-start">
-                <i class="el-icon-video-pause" @click="(scope.row.publishStatus != 1 && !['NONE', 'COMPLETE', 'ERR'].includes(scope.row.maskComplete)) && suspendWorkFn(scope.row)"
-                  :style="(scope.row.publishStatus == 1 || ['NONE', 'COMPLETE', 'ERR'].includes(scope.row.maskComplete)) ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+                <i class="el-icon-video-pause" @click="(scope.row.publishStatus != 1 && !['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) && suspendWorkFn(scope.row)"
+                  :style="(scope.row.publishStatus == 1 || ['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.terminateTask')"
                 placement="top-start">
-                <i class="el-icon-switch-button" @click="(scope.row.publishStatus != 1 && !['NONE', 'COMPLETE', 'ERR'].includes(scope.row.maskComplete)) && terminationWorkFn(scope.row)"
-                  :style="(scope.row.publishStatus == 1 || ['NONE', 'COMPLETE', 'ERR'].includes(scope.row.maskComplete)) ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+                <i class="el-icon-switch-button" @click="(scope.row.publishStatus != 1 && !['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) && terminationWorkFn(scope.row)"
+                  :style="(scope.row.publishStatus == 1 || ['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.taskMonitoring')"
                 placement="top-start">
