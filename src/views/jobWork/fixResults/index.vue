@@ -325,17 +325,12 @@ export default {
             resultFormNodeName: '',
             levelOptions: [],
             piiNodeName: '',
-            piiList: [],
-            originalQueryParams: null
+            piiList: []
         };
     },
     created() {
         this.row = this.$route.query.row || null;
         this.categoryList = this.$route.query.categoryList || [];
-        if (this.$route.query.queryParams) {
-            const { pageNum, pageSize, ...rest } = this.$route.query.queryParams;
-            this.originalQueryParams = { ...rest };
-        }
         this.getPiiList()
     },
     watch: {
@@ -345,7 +340,10 @@ export default {
     },
     computed: {
         isFileSource() {
-            return this.$route.query.queryParams.sourceType === 'FILE_CATALOGUE' || this.$route.query.queryParams.sourceType === 'FILE_SERVER';
+            const drawerData = this.$route.query.drawerData;
+            const drawerDataObj = typeof drawerData === 'string' ? JSON.parse(drawerData) : drawerData;
+            const sourceType = drawerDataObj ? drawerDataObj.sourceType : '';
+            return sourceType === 'FILE_CATALOGUE' || sourceType === 'FILE_SERVER';
         },
         titleText() {
             return this.row.id + ' ' + (this.isFileSource ? this.row.fileName : this.row.fieldName);
@@ -537,7 +535,9 @@ export default {
             // 上||下一个点击事件
             // 参数说明：0-上一个，1-下一个，2-当前
             this.loading = true;
-            const queryParams = this.$route.query.queryParams || {};
+            const savedState = sessionStorage.getItem('viewResults_search_state');
+            const state = savedState ? JSON.parse(savedState) : {};
+            const queryParams = state.queryParams || {};
             const params = {
                 ...queryParams,
                 securityLevelIds: Array.isArray(queryParams.securityLevel) ? [...queryParams.securityLevel] : [],
@@ -588,8 +588,15 @@ export default {
                 }
 
                 this.row = res.data;
-                this.$route.query.queryParams.pageNum = res.data.pageNum;
-                this.$route.query.queryParams.pageSize = res.data.pageSize;
+                const savedState = sessionStorage.getItem('viewResults_search_state');
+                if (savedState) {
+                    const state = JSON.parse(savedState);
+                    if (state.queryParams) {
+                        state.queryParams.pageNum = res.data.pageNum;
+                        state.queryParams.pageSize = res.data.pageSize;
+                        sessionStorage.setItem('viewResults_search_state', JSON.stringify(state));
+                    }
+                }
 
                 if (res.data.reasoningProcess !== undefined) {
                     this.resultForm.reasoningProcess = res.data.reasoningProcess;
@@ -658,14 +665,11 @@ export default {
 
         },
         handleReturn() {
-            const paramsToSave = this.originalQueryParams || this.$route.query.queryParams || {};
-            sessionStorage.setItem('viewResults_queryParams', JSON.stringify(paramsToSave));
-            sessionStorage.setItem('prevPage', 'fixResults');
             this.$router.push({
                 path: '/classificationTask/viewResults',
                 query: {
                     drawerData: this.$route.query.drawerData,
-                    queryParams: paramsToSave
+                    isReturn: true
                 }
             });
         },

@@ -815,47 +815,29 @@ export default {
     };
   },
 
-  beforeRouteLeave(to, from, next) {
-    const targetPath = to.path || '';
-    const jobWorkPaths = ['/viewResults', '/fixResults', '/jobMonitoring'];
-    const isNavigatingWithinJobWork = jobWorkPaths.some(path => targetPath.startsWith(path));
-
-    if (!isNavigatingWithinJobWork) {
-      sessionStorage.removeItem('hierarchicalTask_queryParams');
-      sessionStorage.removeItem('jobMonitoring_routeData');
-      sessionStorage.removeItem('prevPage');
-    }
-    next();
-  },
-
   created() {
     this.checkedColumn = this.setList.filter(item =>
       ['tasksName', 'sourceName', 'projectName', 'maskComplete', 'publishStatus'].includes(item.prop)
     );
     this.checkAll = false;
     this.gettreeOptionsList()
-    const prevPage = sessionStorage.getItem('prevPage');
-    if (!['viewResults', 'jobMonitoring'].includes(prevPage)) {
-      sessionStorage.removeItem('hierarchicalTask_queryParams');
+
+    if (this.$route.query.isReturn) {
+      const savedState = sessionStorage.getItem('hierarchicalTask_search_state');
+      if (savedState) {
+        try {
+          this.queryParams = {
+            ...this.queryParams,
+            ...JSON.parse(savedState)
+          };
+        } catch (e) {
+          console.error('解析保存的查询条件失败:', e);
+        }
+      }
     } else {
-      sessionStorage.removeItem('prevPage');
+      sessionStorage.removeItem('hierarchicalTask_search_state');
     }
-    const savedParams = sessionStorage.getItem('hierarchicalTask_queryParams');
-    if (savedParams) {
-      try {
-        this.queryParams = {
-          ...this.queryParams,
-          ...JSON.parse(savedParams)
-        };
-      } catch (e) {
-        console.error('解析保存的查询条件失败:', e);
-      }
-    } else if (this.$route.query.queryParams) {
-      this.queryParams = {
-        ...this.queryParams,
-        ...this.$route.query.queryParams
-      }
-    }
+
     this.getList()
     this.getScanCompleteDataFn()
   },
@@ -1339,22 +1321,14 @@ export default {
       }
     },
     resultLookFn(row) {
-      // if (row.state == 'RUNNING') {
-      //   this.$message({ message: '当前状态为运行中，无法查看', type: 'warning' })
-      //   return
-      // }
-      const { pageNum, pageSize, ...restParams } = this.queryParams;
-      sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(restParams));
-      sessionStorage.setItem('prevPage', 'hierarchicalTask');
-      this.$router.push({
-        path: '/classificationTask/viewResults',
-        query: { drawerData: row, queryParams: restParams }
-      })
+      sessionStorage.setItem('hierarchicalTask_search_state', JSON.stringify(this.queryParams));
       if (row.publishStatus == 0) {
-        this.drawerData = row
-        this.drawerShow = true
+        this.$router.push({
+          path: '/classificationTask/viewResults',
+          query: { drawerData: row }
+        });
       } else {
-        this.$router.push({ name: 'ProtectTableField', params: row })
+        this.$router.push({ name: 'ProtectTableField', params: row });
       }
     },
     resultReleaseFn(row) {
