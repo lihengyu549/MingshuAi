@@ -849,8 +849,7 @@ export default {
         if (this.currentNodeData) {
           this.loadFileListData(this.currentNodeData, {
             folderId: null,
-            keepCurrentFolderName: false,
-            immediate: true
+            keepCurrentFolderName: false
           });
         }
       } else {
@@ -858,7 +857,7 @@ export default {
         this.breadcrumbList = this.breadcrumbList.slice(0, index + 1);
         this.currentFolderId = item.id;
         this.currentFolderName = item.name;
-        this.loadFolderData(item.id, true);
+        this.loadFolderData(item.id);
       }
     },
 
@@ -880,8 +879,7 @@ export default {
       if (this.currentNodeData) {
         this.loadFileListData(this.currentNodeData, {
           folderId: this.currentFolderId,
-          keepCurrentFolderName: this.currentFolderId !== null && this.currentFolderId !== undefined && this.currentFolderId !== '',
-          immediate: true
+          keepCurrentFolderName: this.currentFolderId !== null && this.currentFolderId !== undefined && this.currentFolderId !== ''
         });
       }
     },
@@ -921,7 +919,7 @@ export default {
       if (this.folderClickTimer) return;
       this.folderClickTimer = setTimeout(() => {
         this.folderClickTimer = null;
-      }, 500);
+      }, 1000);
 
       // 添加到面包屑
       this.breadcrumbList.push({
@@ -931,23 +929,25 @@ export default {
       this.currentFolderId = folder.id;
       this.currentFolderName = folder.name;
 
-      this.loadFolderData(folder.id, true);
+      this.loadFolderData(folder.id);
     },
 
-    loadFolderData(folderId, immediate = false) {
+    loadFolderData(folderId) {
       if (!this.currentNodeData) return;
       this.currentFolderId = (folderId === null || folderId === undefined || folderId === '') ? null : folderId;
       this.loadFileListData(this.currentNodeData, {
         folderId: this.currentFolderId,
-        keepCurrentFolderName: this.currentFolderId !== null && this.currentFolderId !== undefined && this.currentFolderId !== '',
-        immediate: immediate
+        keepCurrentFolderName: this.currentFolderId !== null && this.currentFolderId !== undefined && this.currentFolderId !== ''
       });
     },
 
-    loadFileListData(data, options = {}) {
-      const { folderId = null, keepCurrentFolderName = false, immediate = false } = options;
 
-      const fetchList = () => {
+    loadFileListData(data, options = {}) {
+      if (this.fileListTimer) {
+        clearTimeout(this.fileListTimer);
+      }
+      this.fileListTimer = setTimeout(() => {
+        const { folderId = null, keepCurrentFolderName = false } = options;
         const sortField = this.currentSortField;
         const order = this.sortOrders[sortField];
         const isAsc = order === 'asc';
@@ -989,21 +989,7 @@ export default {
           console.error('加载文件列表失败:', err);
           this.$message.error(this.$t('assetCatalog.loadFileListFailed'));
         });
-      };
-
-      if (immediate) {
-        if (this.fileListTimer) {
-          clearTimeout(this.fileListTimer);
-        }
-        fetchList();
-      } else {
-        if (this.fileListTimer) {
-          clearTimeout(this.fileListTimer);
-        }
-        this.fileListTimer = setTimeout(() => {
-          fetchList();
-        }, 500);
-      }
+      }, 500);
     },
 
 
@@ -1060,8 +1046,7 @@ export default {
         // 加载文件列表数据（接口会返回 res.data.title 作为顶层标题）
         this.loadFileListData(data, {
           folderId: null,
-          keepCurrentFolderName: false,
-          immediate: true
+          keepCurrentFolderName: false
         });
       } else {
         // 原有表格模式
@@ -1670,8 +1655,7 @@ export default {
               this.breadcrumbList = [];
               this.loadFileListData(this.categoryList[0], {
                 folderId: null,
-                keepCurrentFolderName: false,
-                immediate: true
+                keepCurrentFolderName: false
               });
             }
           });
