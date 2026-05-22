@@ -314,7 +314,6 @@ export default {
       isIndeterminate: false,
       checkedColumnProps: [],
       checkAll: false,
-      originalQueryParams: null,
       // 是否显示更多筛选条件
       showMoreFilters: false,
       // classificationReasonsList: ['策略匹配', 'AI推理', '脏数据识别'],
@@ -582,71 +581,13 @@ export default {
     };
   },
 
-  beforeRouteLeave(to, from, next) {
-    const targetPath = to.path || '';
-    if (!targetPath.startsWith('/fixResults')) {
-      sessionStorage.removeItem('viewResults_queryParams');
-      // 【修复】导航到非页面3时，同步清除原始参数缓存，避免下次从页面1进入时读到脏数据
-      sessionStorage.removeItem('viewResults_originalQueryParams');
-      sessionStorage.removeItem('prevPage');
-    }
-    next();
-  },
-
   created() {
-    const prevPage = sessionStorage.getItem('prevPage');
-    if (prevPage !== 'fixResults') {
-      sessionStorage.removeItem('viewResults_queryParams');
-    } else {
-      sessionStorage.removeItem('prevPage');
-    }
     const drawerData = this.$route.query?.drawerData;
-    let queryParams = this.$route.query?.queryParams;
-
-    // 【修复核心】originalQueryParams 只记录页面1传来的原始查询参数：
-    // - 首次从页面1进入时：提取路由参数中页面1的字段并持久化到 sessionStorage
-    // - 从页面3返回时：复用 sessionStorage 中已持久化的原始参数，不被页面2自身的 queryParams 覆盖
-    const savedOriginalParams = sessionStorage.getItem('viewResults_originalQueryParams');
-    if (savedOriginalParams) {
-      // 从页面3返回：直接复用之前保存的纯净原始参数
-      try {
-        this.originalQueryParams = JSON.parse(savedOriginalParams);
-      } catch (e) {
-        this.originalQueryParams = {};
-      }
-    } else if (queryParams) {
-      // 首次从页面1进入：排除页面2专属字段（projectId/databaseId/sourceType 由 drawerData 注入）
-      // 只保留页面1搜索框真正传过来的查询字段
-      const params = typeof queryParams === 'string' ? JSON.parse(queryParams) : queryParams;
-      const { pageNum, pageSize, projectId, databaseId, sourceType, ...rest } = params;
-      this.originalQueryParams = { ...rest };
-      // 持久化原始参数，以便从页面3返回时仍能正确取到
-      sessionStorage.setItem('viewResults_originalQueryParams', JSON.stringify(this.originalQueryParams));
-    }
-
-    // 页面加载时优先检查sessionStorage中是否有保存的查询条件（从fixResults返回的情况）
-    const savedParams = sessionStorage.getItem('viewResults_queryParams');
-    if (savedParams) {
-      try {
-        const parsedParams = JSON.parse(savedParams);
-        this.queryParams = { ...this.queryParams, ...parsedParams };
-        this.lastQueryParams = parsedParams;
-        // 清除保存的参数，避免重复使用
-        sessionStorage.removeItem('viewResults_queryParams');
-      } catch (e) {
-        console.error('解析保存的查询条件失败:', e);
-      }
-    } else if (queryParams) {
-      // 如果没有sessionStorage中的参数，再检查路由参数
-      // 确保queryParams是对象类型
-      const params = typeof queryParams === 'string' ? JSON.parse(queryParams) : queryParams;
-      this.queryParams = { ...this.queryParams, ...params };
-      this.lastQueryParams = params;
-    }
+    let drawerDataObj = null;
 
     if (drawerData) {
       // 确保drawerData是对象类型
-      const drawerDataObj = typeof drawerData === 'string' ? JSON.parse(drawerData) : drawerData;
+      drawerDataObj = typeof drawerData === 'string' ? JSON.parse(drawerData) : drawerData;
       // 初始化 queryParams
       this.queryParams.projectId = drawerDataObj.projectId || '';
       this.queryParams.databaseId = drawerDataObj.id || '';
@@ -668,6 +609,22 @@ export default {
       }
     }
 
+    if (this.$route.query.isReturn) {
+      const savedState = sessionStorage.getItem('viewResults_search_state');
+      if (savedState) {
+        try {
+          const state = JSON.parse(savedState);
+          this.queryParams = { ...this.queryParams, ...state.queryParams };
+          this.addNodeName = state.addNodeName || '';
+          this.piiNodeName = state.piiNodeName || '';
+        } catch (e) {
+          console.error('解析保存的查询条件失败:', e);
+        }
+      }
+    } else {
+      sessionStorage.removeItem('viewResults_search_state');
+    }
+
     this.getProtectCategory();
     this.getPiiList();
     // 设置默认展示的列（与ProtectTableField保持一致）
@@ -678,7 +635,11 @@ export default {
     this.checkAll = false;
     this.getList();
     this.getListTableByProject();
-    this.fetchLevelOptions(this.$route.query.drawerData.projectId)
+    if (drawerDataObj && drawerDataObj.projectId) {
+      this.fetchLevelOptions(drawerDataObj.projectId);
+    } else if (this.$route.query.drawerData && this.$route.query.drawerData.projectId) {
+      this.fetchLevelOptions(this.$route.query.drawerData.projectId);
+    }
   },
   computed: {
     isFileSource() {
@@ -855,19 +816,10 @@ export default {
         })
     },
     handleBack() {
-      // 【修复】只使用 originalQueryParams（页面1的原始查询字段），不传入页面2专属字段
-      const paramsToSave = this.originalQueryParams || {};
-      sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(paramsToSave));
-      sessionStorage.setItem('prevPage', 'viewResults');
-      // 离开页面2时清除原始参数缓存，避免下次从页面1进入时错误复用
-      sessionStorage.removeItem('viewResults_originalQueryParams');
       this.$router.push({
         path: '/classificationTask/hierarchicalTask',
-        query: {
-          drawerData: this.$route.query.drawerData,
-          queryParams: paramsToSave
-        }
-      })
+        query: { isReturn: true }
+      });
     },
     handleEcelFnClose() {
       this.loading = true
@@ -1092,32 +1044,18 @@ export default {
       this.multiple = !selection.length
     },
     resultExdit(row) {
-      // 保存当前页面的查询条件到sessionStorage
-      sessionStorage.setItem('viewResults_queryParams', JSON.stringify(this.queryParams));
-      // 记录跳转来源为viewResults，用于fixResults页面返回时判断
-      sessionStorage.setItem('prevPage', 'viewResults');
+      // 保存当前页面的查询条件和树节点状态
+      const stateToSave = {
+        queryParams: this.queryParams,
+        addNodeName: this.addNodeName,
+        piiNodeName: this.piiNodeName
+      };
+      sessionStorage.setItem('viewResults_search_state', JSON.stringify(stateToSave));
+
       this.$router.push({
         path: '/classificationTask/fixResults',
-        query: { row: row, categoryList: this.categoryList, queryParams: this.queryParams, drawerData: this.$route.query.drawerData }
-      })
-      this.addNodeName = ''
-      this.piiNodeName = ''
-      this.resultForm = JSON.parse(JSON.stringify(row))
-      this.resultForm.tableFieldId = row.id
-      this.piiNodeName = row.piiDetectionName
-      this.resultForm.confidenceLevel = row.confidenceLevel == this.$t('viewResults.options.confidence.high') ? '2' : '1'
-
-      // 为分类下拉框设置默认选中第一项（如果没有已有值）
-      if (!this.resultFormNodeName && this.categoryList && this.categoryList.length > 0) {
-        this.resultFormNodeName = this.categoryList[0].id;
-      }
-
-      // 为安全分级下拉框设置默认选中第一项（如果没有已有值）
-      if (!this.resultForm.securityLevel && this.levelOptions && this.levelOptions.length > 0) {
-        this.resultForm.securityLevel = this.levelOptions[0].value;
-      }
-
-      this.deleteVisible = true
+        query: { row: row, categoryList: this.categoryList, drawerData: this.$route.query.drawerData }
+      });
     },
     addHandleNodeCheck(node, checkData) {
       // 筛选出选中的叶子节点（无children的节点）
@@ -1348,6 +1286,11 @@ export default {
         }
         this.Loading = false
         this.treeLoading = false
+        this.$nextTick(() => {
+          if (this.$route.query.isReturn && this.queryParams.piiDetection && this.$refs.treeSelectPii) {
+            this.$refs.treeSelectPii.setCheckedKeys(this.queryParams.piiDetection.split(','));
+          }
+        });
       });
     },
     getProtectCategory(key) {
@@ -1372,6 +1315,11 @@ export default {
         }
         this.Loading = false
         this.treeLoading = false
+        this.$nextTick(() => {
+          if (this.$route.query.isReturn && this.queryParams.categoryIds && this.$refs.treeSelectQuery) {
+            this.$refs.treeSelectQuery.setCheckedKeys(this.queryParams.categoryIds.split(','));
+          }
+        });
       });
     },
     // 递归函数，查找父节点的 label 并返回完整的路径
