@@ -994,7 +994,10 @@ Authorization:Bearer ${this.Token}`
           this.Loading = false
           this.treeIds = []
           this.databaseNames = [] // 清空数据库名称数组
-          this.getList()
+          this.protectTableFieldList = []
+          this.total = 0
+          this.loading = false
+          // 不再调用 getList() 避免空树时请求报错导致 loading 无法关闭
         } else {
           this.$nextTick(() => {
             this.selectAllFirstLevelNodes(this.dataCategoryList)
@@ -1027,10 +1030,10 @@ Authorization:Bearer ${this.Token}`
       } else {
         params.tableName = this.queryParams.tableName;
         // 如果选中了节点，则传递该节点的databaseId
-        if (this.currentNodeData.level == 1) {
+        if (this.currentNodeData && this.currentNodeData.level == 1) {
           params.databaseId = this.currentNodeData.preid;
           params.databaseName = this.currentNodeData.name;
-        } else {
+        } else if (this.currentNodeData) {
           params.databaseId = this.currentNodeData.id;
         }
       }
