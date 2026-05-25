@@ -82,7 +82,7 @@
 </template>
 
 <script>
-import { getAiConfigList, getAiConfigById, onOffAiConfig, updateAiConfigById, testConnection } from "@/api/system/modelPage";
+import { getAiConfigList, updateAiConfigById, testConnection } from "@/api/system/modelPage";
 
 export default {
     name: 'VisualModel',
@@ -125,32 +125,28 @@ export default {
         },
         async init() {
             try {
-                // 暂时使用 mock 数据，若后端有接口可直接替换
-                const mockData = [
-                    {
-                        id: 1,
-                        label: 'loca',
-                        provider: 'local',
-                        status: '1',
-                        aiAddress: 'http://192.168.2.174:11434/api',
-                        timeOut: 30
+                let params = {
+                    aiType: '3'
+                }
+                let src = await getAiConfigList(params)
+                this.models = []
+                if (src && src.data) {
+                    src.data.forEach(item => {
+                        this.models.push({
+                            id: item.id,
+                            label: item.provider,
+                            name: item.provider,
+                            enabled: item.status == '1' ? true : false,
+                            apiUrl: item.aiAddress,
+                            timeout: item.timeOut || 30
+                        })
+                    })
+                    const activeItem = src.data.find(item => item.status == '1');
+                    if (activeItem) {
+                        this.activeModel = activeItem.provider;
+                    } else if (this.models.length > 0) {
+                        this.activeModel = this.models[0].name;
                     }
-                ];
-                
-                // 若实际有 getAiConfigList 接口返回 visual 模型数据，可以像下面这样处理：
-                // let src = await getAiConfigList();
-                // const apiData = src.data.filter(item => item.modelType === 'visual'); // 假设通过 modelType 区分
-                
-                this.models = mockData.map(item => ({
-                    id: item.id,
-                    label: item.label,
-                    name: item.provider,
-                    enabled: item.status == '1',
-                    apiUrl: item.aiAddress,
-                    timeout: item.timeOut || 30
-                }));
-                if (this.models.length > 0) {
-                    this.activeModel = this.models[0].name;
                 }
             } catch (e) {
                 console.error(e);
@@ -183,13 +179,42 @@ export default {
                 spinner: 'el-icon-loading',
                 background: 'rgba(0, 0, 0, 0.7)'
             });
-            setTimeout(() => {
+            try {
+                const model = {
+                    id: this.currentModel.id,
+                    provider: this.currentModel.name,
+                    enabled: this.currentModel.enabled,
+                    aiAddress: this.currentModel.apiUrl,
+                    timeOut: this.currentModel.timeout
+                }
+                const response = await testConnection(model);
+                if (response && response.code === 200) {
+                    this.$message.success('连接测试成功');
+                } else {
+                    const errorMsg = response.message || '连接测试失败';
+                    this.$message.error(errorMsg);
+                }
+            } catch (error) {
+                console.error('测试连接出错:', error);
+                this.$message.error('连接测试失败：' + (error.message || '未知错误'));
+            } finally {
                 loadingInstance.close();
-                this.$message.success('连接测试成功');
-            }, 1000);
+            }
         },
         async handleSave() {
-            this.$message.success('配置保存成功');
+            let response = {
+                id: this.currentModel.id,
+                aiAddress: this.currentModel.apiUrl,
+                timeOut: this.currentModel.timeout
+            }
+            try {
+                await updateAiConfigById(response)
+                this.init()
+                this.$message.success('配置保存成功');
+            } catch (error) {
+                console.error(error);
+                this.$message.error('保存失败');
+            }
         }
     },
     created() {

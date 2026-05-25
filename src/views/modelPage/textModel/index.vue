@@ -179,7 +179,10 @@ export default {
         // 初始化
         async init() {
             // 初始化当前模型的列表
-            let src = await getAiConfigList()
+            let params = {
+                aiType: '1'
+            }
+            let src = await getAiConfigList(params)
             this.models = []
             src.data.forEach(item => {
                 this.models.push({

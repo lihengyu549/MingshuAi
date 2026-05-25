@@ -3,10 +3,11 @@ import { stringify } from '@/utils/ruoyi'
 
 
 // 查询模型配置列表
-export function getAiConfigList() {
+export function getAiConfigList(data) {
     return request({
         url: '/system/ai/getAiConfigList',
         method: 'get',
+        params: data
     })
 }
 

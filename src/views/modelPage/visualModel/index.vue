@@ -34,7 +34,7 @@
                     <div class="right-content">
                         <div class="content-header">
                             <svg-icon icon-class="local" style="margin-right: 10px;"></svg-icon>
-                            <span>{{ currentModel.label || 'local' }}</span>
+                            <span>{{ currentModel.label }}</span>
                             <!-- 右侧主开关 - 调整为内部显示ON/OFF，右侧开关只读展示 -->
                             <el-switch v-model="currentModel.enabled" active-color="#13ce66" inactive-color="#e9ecef"
                                 class="inner-text-switch" style="margin-left: auto;" disabled></el-switch>
@@ -49,17 +49,17 @@
 
                             <el-form-item label="精确度">
                                 <el-radio-group v-model="currentModel.accuracy" size="small" class="custom-radio-group">
-                                    <el-radio-button label="平衡">平衡</el-radio-button>
-                                    <el-radio-button label="精准">精准</el-radio-button>
+                                    <el-radio-button label="1">平衡</el-radio-button>
+                                    <el-radio-button label="2">精准</el-radio-button>
                                 </el-radio-group>
                             </el-form-item>
 
                             <el-form-item :label="$t('textModel.requestTimeout') || '请求超时'">
                                 <div class="slider-container">
-                                    <el-slider v-model="currentModel.timeout" :max="300" :min="30" :step="30"
+                                    <el-slider v-model="currentModel.timeOut" :max="300" :min="30" :step="30"
                                         show-tooltip style="flex: 1;" class="timeout"></el-slider>
                                     <span class="slider-value">
-                                        {{ formatTimeout(currentModel.timeout) }}
+                                        {{ formatTimeout(currentModel.timeOut) }}
                                     </span>
                                     <el-tooltip :content="$t('textModel.requestTimeoutTooltip') || '设置请求超时时间'"
                                         placement="top" transition="el-fade-in-linear">
@@ -68,7 +68,7 @@
                                 </div>
                                 <div class="timeout-buttons">
                                     <el-button v-for="btn in timeoutOptions" :key="btn.value"
-                                        :type="currentModel.timeout === btn.value ? 'danger' : 'default'" size="mini"
+                                        :type="currentModel.timeOut === btn.value ? 'danger' : 'default'" size="mini"
                                         @click="setTimeout(btn.value)">
                                         {{ btn.label }}
                                     </el-button>
@@ -89,7 +89,7 @@
 </template>
 
 <script>
-import { getAiConfigList, getAiConfigById, onOffAiConfig, updateAiConfigById, testConnection } from "@/api/system/modelPage";
+import { getAiConfigList, updateAiConfigById, testConnection } from "@/api/system/modelPage";
 
 export default {
     name: 'VisualModel',
@@ -132,34 +132,29 @@ export default {
         },
         async init() {
             try {
-                // 暂时使用 mock 数据，若后端有接口可直接替换
-                const mockData = [
-                    {
-                        id: 1,
-                        label: 'local',
-                        provider: 'local',
-                        status: '1',
-                        aiAddress: 'http://192.168.2.174:11434/api',
-                        accuracy: '平衡',
-                        timeOut: 60
+                let params = {
+                    aiType: '2'
+                }
+                let src = await getAiConfigList(params)
+                this.models = []
+                if (src && src.data) {
+                    src.data.forEach(item => {
+                        this.models.push({
+                            id: item.id,
+                            label: item.provider,
+                            name: item.provider,
+                            enabled: item.status == '1' ? true : false,
+                            apiUrl: item.aiAddress,
+                            accuracy: item.accuracy,
+                            timeOut: item.timeOut || 30
+                        })
+                    })
+                    const activeItem = src.data.find(item => item.status == '1');
+                    if (activeItem) {
+                        this.activeModel = activeItem.provider;
+                    } else if (this.models.length > 0) {
+                        this.activeModel = this.models[0].name;
                     }
-                ];
-                
-                // 若实际有 getAiConfigList 接口返回 visual 模型数据，可以像下面这样处理：
-                // let src = await getAiConfigList();
-                // const apiData = src.data.filter(item => item.modelType === 'visual'); // 假设通过 modelType 区分
-                
-                this.models = mockData.map(item => ({
-                    id: item.id,
-                    label: item.label,
-                    name: item.provider,
-                    enabled: item.status == '1',
-                    apiUrl: item.aiAddress,
-                    accuracy: item.accuracy || '平衡',
-                    timeout: item.timeOut || 30
-                }));
-                if (this.models.length > 0) {
-                    this.activeModel = this.models[0].name;
                 }
             } catch (e) {
                 console.error(e);
@@ -192,13 +187,44 @@ export default {
                 spinner: 'el-icon-loading',
                 background: 'rgba(0, 0, 0, 0.7)'
             });
-            setTimeout(() => {
+            try {
+                const model = {
+                    id: this.currentModel.id,
+                    provider: this.currentModel.name,
+                    enabled: this.currentModel.enabled,
+                    aiAddress: this.currentModel.apiUrl,
+                    accuracy: this.currentModel.accuracy,
+                    timeOut: this.currentModel.timeout
+                }
+                const response = await testConnection(model);
+                if (response && response.code === 200) {
+                    this.$message.success('连接测试成功');
+                } else {
+                    const errorMsg = response.message || '连接测试失败';
+                    this.$message.error(errorMsg);
+                }
+            } catch (error) {
+                console.error('测试连接出错:', error);
+                this.$message.error('连接测试失败：' + (error.message || '未知错误'));
+            } finally {
                 loadingInstance.close();
-                this.$message.success('连接测试成功');
-            }, 1000);
+            }
         },
         async handleSave() {
-            this.$message.success('配置保存成功');
+            let response = {
+                id: this.currentModel.id,
+                aiAddress: this.currentModel.apiUrl,
+                accuracy: this.currentModel.accuracy,
+                timeOut: this.currentModel.timeout
+            }
+            try {
+                await updateAiConfigById(response)
+                this.init()
+                this.$message.success('配置保存成功');
+            } catch (error) {
+                console.error(error);
+                this.$message.error('保存失败');
+            }
         }
     },
     created() {
