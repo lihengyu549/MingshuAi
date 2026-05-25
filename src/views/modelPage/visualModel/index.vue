@@ -146,7 +146,7 @@ export default {
                             enabled: item.status == '1' ? true : false,
                             apiUrl: item.aiAddress,
                             accuracy: item.accuracy,
-                            timeout: item.timeout || 30
+                            timeout: item.timeOut || 30
                         })
                     })
                     const activeItem = src.data.find(item => item.status == '1');

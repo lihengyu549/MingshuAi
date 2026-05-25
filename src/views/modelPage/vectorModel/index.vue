@@ -138,7 +138,7 @@ export default {
                             name: item.provider,
                             enabled: item.status == '1' ? true : false,
                             apiUrl: item.aiAddress,
-                            timeOut: item.timeout || 30
+                            timeout: item.timeOut || 30
                         })
                     })
                     const activeItem = src.data.find(item => item.status == '1');
