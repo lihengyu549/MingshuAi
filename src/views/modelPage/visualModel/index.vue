@@ -47,19 +47,19 @@
                                     style="width: 100%;"></el-input>
                             </el-form-item>
 
-                            <el-form-item label="精确度">
+                            <el-form-item :label="$t('textModel.accuracy') || '精确度'">
                                 <el-radio-group v-model="currentModel.accuracy" size="small" class="custom-radio-group">
-                                    <el-radio-button label="1">平衡</el-radio-button>
-                                    <el-radio-button label="2">精准</el-radio-button>
+                                    <el-radio-button label="1">{{ $t('textModel.balanced') || '平衡' }}</el-radio-button>
+                                    <el-radio-button label="2">{{ $t('textModel.precise') || '精准' }}</el-radio-button>
                                 </el-radio-group>
                             </el-form-item>
 
                             <el-form-item :label="$t('textModel.requestTimeout') || '请求超时'">
                                 <div class="slider-container">
-                                    <el-slider v-model="currentModel.timeOut" :max="300" :min="30" :step="30"
+                                    <el-slider v-model="currentModel.timeout" :max="300" :min="30" :step="30"
                                         show-tooltip style="flex: 1;" class="timeout"></el-slider>
                                     <span class="slider-value">
-                                        {{ formatTimeout(currentModel.timeOut) }}
+                                        {{ formatTimeout(currentModel.timeout) }}
                                     </span>
                                     <el-tooltip :content="$t('textModel.requestTimeoutTooltip') || '设置请求超时时间'"
                                         placement="top" transition="el-fade-in-linear">
@@ -68,7 +68,7 @@
                                 </div>
                                 <div class="timeout-buttons">
                                     <el-button v-for="btn in timeoutOptions" :key="btn.value"
-                                        :type="currentModel.timeOut === btn.value ? 'danger' : 'default'" size="mini"
+                                        :type="currentModel.timeout === btn.value ? 'danger' : 'default'" size="mini"
                                         @click="setTimeout(btn.value)">
                                         {{ btn.label }}
                                     </el-button>
@@ -123,9 +123,9 @@ export default {
     methods: {
         formatTimeout(seconds) {
             if (seconds >= 60) {
-                return `${seconds / 60}${this.$t('minutes') || '分钟'}`;
+                return `${seconds / 60}${this.$t('textModel.minutes') || '分钟'}`;
             }
-            return `${seconds}${this.$t('seconds') || '秒'}`;
+            return `${seconds}${this.$t('textModel.seconds') || '秒'}`;
         },
         setTimeout(value) {
             this.currentModel.timeout = value;
@@ -146,7 +146,7 @@ export default {
                             enabled: item.status == '1' ? true : false,
                             apiUrl: item.aiAddress,
                             accuracy: item.accuracy,
-                            timeOut: item.timeOut || 30
+                            timeout: item.timeout || 30
                         })
                     })
                     const activeItem = src.data.find(item => item.status == '1');
@@ -183,7 +183,7 @@ export default {
         async handleTest() {
             const loadingInstance = this.$loading({
                 lock: true,
-                text: '正在测试连接...',
+                text: this.$t('textModel.testingConnection') || '正在测试连接...',
                 spinner: 'el-icon-loading',
                 background: 'rgba(0, 0, 0, 0.7)'
             });
@@ -194,18 +194,19 @@ export default {
                     enabled: this.currentModel.enabled,
                     aiAddress: this.currentModel.apiUrl,
                     accuracy: this.currentModel.accuracy,
-                    timeOut: this.currentModel.timeout
+                    timeOut: this.currentModel.timeout,
+                    aiType: '2',
                 }
                 const response = await testConnection(model);
                 if (response && response.code === 200) {
-                    this.$message.success('连接测试成功');
+                    this.$message.success(this.$t('textModel.connectionSuccess') || '连接测试成功');
                 } else {
-                    const errorMsg = response.message || '连接测试失败';
+                    const errorMsg = response.message || this.$t('textModel.connectionFailed') || '连接测试失败';
                     this.$message.error(errorMsg);
                 }
             } catch (error) {
                 console.error('测试连接出错:', error);
-                this.$message.error('连接测试失败：' + (error.message || '未知错误'));
+                this.$message.error((this.$t('textModel.connectionFailed') || '连接测试失败：') + (error.message || this.$t('textModel.unknownError') || '未知错误'));
             } finally {
                 loadingInstance.close();
             }
@@ -215,15 +216,16 @@ export default {
                 id: this.currentModel.id,
                 aiAddress: this.currentModel.apiUrl,
                 accuracy: this.currentModel.accuracy,
-                timeOut: this.currentModel.timeout
+                timeOut: this.currentModel.timeout,
+                aiType: '2',
             }
             try {
                 await updateAiConfigById(response)
                 this.init()
-                this.$message.success('配置保存成功');
+                this.$message.success(this.$t('textModel.saveSuccess') || '配置保存成功');
             } catch (error) {
                 console.error(error);
-                this.$message.error('保存失败');
+                this.$message.error(this.$t('textModel.saveFailed') || '保存失败');
             }
         }
     },

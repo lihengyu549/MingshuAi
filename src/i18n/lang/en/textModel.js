@@ -19,5 +19,14 @@ export default {
   minutes5: '5 Minutes',
   pleaseSelectModel: 'Please select model',
   requestTimeoutTooltip: 'Set the maximum waiting time for API requests. If the request exceeds this time without responding, the connection will be automatically interrupted. Suggested to adjust based on the network environment and task complexity.',
-  temperatureTooltip: 'Control the randomness and creativity of the model output. Lower values (0.1-0.3) produce more deterministic answers, while higher values (0.7-1.0) produce more creative answers.'
+  temperatureTooltip: 'Control the randomness and creativity of the model output. Lower values (0.1-0.3) produce more deterministic answers, while higher values (0.7-1.0) produce more creative answers.',
+  testingConnection: 'Testing connection...',
+  connectionSuccess: 'Connection test successful',
+  connectionFailed: 'Connection test failed',
+  unknownError: 'Unknown error',
+  saveSuccess: 'Configuration saved successfully',
+  saveFailed: 'Save failed',
+  accuracy: 'Accuracy',
+  balanced: 'Balanced',
+  precise: 'Precise'
 }

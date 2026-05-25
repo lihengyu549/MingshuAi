@@ -315,7 +315,8 @@ export default {
                     modelName: this.currentModel.modelName,
                     availableModels: this.currentModel.availableModels,
                     temperature: this.currentModel.temperature,
-                    timeOut: this.currentModel.timeout
+                    timeOut: this.currentModel.timeout,
+                    aiType: '1',
                 }
                 const response = await testConnection(model);
 

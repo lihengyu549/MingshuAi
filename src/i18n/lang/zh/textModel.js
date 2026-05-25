@@ -19,5 +19,14 @@ export default {
   minutes5: '5分钟',
   pleaseSelectModel: '请选择模型',
   requestTimeoutTooltip: '设置API请求的最大等待时间。如果请求超过此时间仍未响应，将自动中断连接。建议根据网络环境和任务复杂度调整。',
-  temperatureTooltip: '控制模型输出的随机性和创造性。较低的值（0.1-0.3）产生更确定性的回答，较高的值（0.7-1.0）产生更创造性的回答。'
+  temperatureTooltip: '控制模型输出的随机性和创造性。较低的值（0.1-0.3）产生更确定性的回答，较高的值（0.7-1.0）产生更创造性的回答。',
+  testingConnection: '正在测试连接...',
+  connectionSuccess: '连接测试成功',
+  connectionFailed: '连接测试失败',
+  unknownError: '未知错误',
+  saveSuccess: '配置保存成功',
+  saveFailed: '保存失败',
+  accuracy: '精确度',
+  balanced: '平衡',
+  precise: '精准'
 }

@@ -116,9 +116,9 @@ export default {
     methods: {
         formatTimeout(seconds) {
             if (seconds >= 60) {
-                return `${seconds / 60}${this.$t('minutes') || '分钟'}`;
+                return `${seconds / 60}${this.$t('textModel.minutes') || '分钟'}`;
             }
-            return `${seconds}${this.$t('seconds') || '秒'}`;
+            return `${seconds}${this.$t('textModel.seconds') || '秒'}`;
         },
         setTimeout(value) {
             this.currentModel.timeout = value;
@@ -138,7 +138,7 @@ export default {
                             name: item.provider,
                             enabled: item.status == '1' ? true : false,
                             apiUrl: item.aiAddress,
-                            timeout: item.timeOut || 30
+                            timeOut: item.timeout || 30
                         })
                     })
                     const activeItem = src.data.find(item => item.status == '1');
@@ -175,7 +175,7 @@ export default {
         async handleTest() {
             const loadingInstance = this.$loading({
                 lock: true,
-                text: '正在测试连接...',
+                text: this.$t('textModel.testingConnection') || '正在测试连接...',
                 spinner: 'el-icon-loading',
                 background: 'rgba(0, 0, 0, 0.7)'
             });
@@ -185,18 +185,19 @@ export default {
                     provider: this.currentModel.name,
                     enabled: this.currentModel.enabled,
                     aiAddress: this.currentModel.apiUrl,
-                    timeOut: this.currentModel.timeout
+                    timeOut: this.currentModel.timeout,
+                    aiType: '3',
                 }
                 const response = await testConnection(model);
                 if (response && response.code === 200) {
-                    this.$message.success('连接测试成功');
+                    this.$message.success(this.$t('textModel.connectionSuccess') || '连接测试成功');
                 } else {
-                    const errorMsg = response.message || '连接测试失败';
+                    const errorMsg = response.message || this.$t('textModel.connectionFailed') || '连接测试失败';
                     this.$message.error(errorMsg);
                 }
             } catch (error) {
                 console.error('测试连接出错:', error);
-                this.$message.error('连接测试失败：' + (error.message || '未知错误'));
+                this.$message.error((this.$t('textModel.connectionFailed') || '连接测试失败：') + (error.message || this.$t('textModel.unknownError') || '未知错误'));
             } finally {
                 loadingInstance.close();
             }
@@ -210,10 +211,10 @@ export default {
             try {
                 await updateAiConfigById(response)
                 this.init()
-                this.$message.success('配置保存成功');
+                this.$message.success(this.$t('textModel.saveSuccess') || '配置保存成功');
             } catch (error) {
                 console.error(error);
-                this.$message.error('保存失败');
+                this.$message.error(this.$t('textModel.saveFailed') || '保存失败');
             }
         }
     },
