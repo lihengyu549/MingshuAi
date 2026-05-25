@@ -607,7 +607,7 @@ export default {
       if (drawerDataObj.id) {
         sessionStorage.setItem('databaseId', String(drawerDataObj.id));
       }
-    }
+    } 
 
     if (this.$route.query.isReturn) {
       const savedState = sessionStorage.getItem('viewResults_search_state');
