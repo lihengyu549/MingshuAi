@@ -171,7 +171,7 @@
         </el-row>
         <el-form-item class="addSelectClass" :label="$t('jobMonitoring.baseParent')" prop="categoryId">
           <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3" filterable
-            :filter-method="handleAddSelectInput">
+            :filter-method="handleAddSelectInput" @visible-change="handleAddSelectVisibleChange">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" filterable :props="defaultProps" :expand-on-click-node="true"
                 :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
@@ -188,7 +188,7 @@
           <el-col :span="24">
             <el-form-item class="addSelectClass" :label="$t('jobMonitoring.securityLevel')" prop="minSecurityLevel">
               <el-select v-model="addOrEditDataRuls.minSecurityLevel" :placeholder="$t('jobMonitoring.securityLevel')"
-                :disabled="addOrEdit.flag == 3">
+                :disabled="addOrEdit.flag == 3" @change="handleSecurityLevelChange">
                 <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
@@ -221,13 +221,10 @@
             tagsShow ? $t('expand') : $t('collapse') }}</el-button>
         </el-form-item>
 
-        <Title :title="$t('jobMonitoring.securityLevel')"></Title>
-        <el-form-item class="addSelectClass" :label="$t('jobMonitoring.suggestProtectMethod')" prop="protectMethodName">
-          <el-select v-model="addOrEditDataRuls.protectMethodName" :disabled="true" :placeholder="$t('all')">
-            <el-option v-for="item in protectMethodIdList" :key="item.dictValue" :label="item.dictLabel"
-              :value="item.dictValue">
-            </el-option>
-          </el-select>
+        <Title :title="$t('jobMonitoring.securityProtection')"></Title>
+        <el-form-item class="addSelectClass" :label="$t('jobMonitoring.suggestProtectMethod')">
+          <el-input v-model="addOrEditDataRuls.protectMethodName" :disabled="true" :placeholder="$t('all')">
+          </el-input>
         </el-form-item>
         <el-form-item class="addSelectClass" :label="$t('jobMonitoring.confirmProtectMethod')"
           prop="confirmProtectMethod">
@@ -561,7 +558,7 @@ export default {
           { validator: this.tagsRlues, trigger: 'blur', required: true, }
         ],
         protectMethodName: [
-          { required: true, message: this.$t('selectRequired', { field: this.$t('jobMonitoring.suggestProtectMethod') }), trigger: "blur" },
+          { required: true, message: this.$t('inputRequired', { field: this.$t('jobMonitoring.suggestProtectMethod') }), trigger: "blur" },
         ],
         // coreTopic: [
         //   { validator: this.tagsRlues, trigger: 'blur' }
@@ -641,6 +638,8 @@ export default {
         demotionRule: '',
         upgradeList: [],
         demotionList: [],
+        protectMethodName: '',
+        confirmProtectMethod: [],
       },
       // 添加选中行存储变量
       selectedUpgradeRows: [],
@@ -773,9 +772,17 @@ export default {
         const list = payload.records || payload.rows || payload.list || payload || []
         this.levelOptions = list.map(it => ({
           value: String(it.level),
-          label: it.levelName
+          label: it.levelName,
+          defaultProtectMethod: it.defaultProtectMethod
         }))
       })
+    },
+    // 处理安全级别变化
+    handleSecurityLevelChange() {
+      this.addOrEditDataRuls.protectMethodName = this.levelOptions.find(item => item.value === this.addOrEditDataRuls.minSecurityLevel)?.defaultProtectMethod || ''
+      this.$nextTick(() => {
+        this.$refs["addOrEdit"] && this.$refs["addOrEdit"].validateField('protectMethodName');
+      });
     },
     // 处理标签变化的通用方法
     handleTagChange(val, type) {
@@ -1283,6 +1290,8 @@ export default {
         demotionRule: false, // 重置为默认值false
         upgradeList: [], // 清空升级规则列表
         demotionList: [], // 清空降级规则列表
+        protectMethodName: '',
+        confirmProtectMethod: [],
       }
       this.addOrEditDataRuls.dataOwner = this.$store.state.user.name
       this.tagsShow = true
@@ -1353,9 +1362,23 @@ export default {
 
     // 新增取消
     addCancel() {
-      this.addOrEditDataRuls = {}
+      this.addOrEditDataRuls = {
+        additional: '',
+        attachData: '',
+        categoryId: '',
+        minSecurityLevel: null,
+        attributeType: null,
+        dataOwner: '',
+        upgradeRule: '',
+        demotionRule: '',
+        upgradeList: [],
+        demotionList: [],
+        protectMethodName: '',
+        confirmProtectMethod: [],
+      }
       this.addNodeName = ''
       this.addOrEdit.show = false
+      this.$refs["addOrEdit"] && this.$refs["addOrEdit"].clearValidate()
     },
     // 递归函数，查找父节点的 label 并返回完整的路径
     findParentLabelsById(tree, nodeId, path = []) {
@@ -1399,6 +1422,14 @@ export default {
         this.$refs.treeSelect.filter(value);
       }
     },
+    // 处理添加选择框的显示隐藏事件，解决搜索不到值时失焦导致下拉数据为空的问题
+    handleAddSelectVisibleChange(visible) {
+      if (!visible) {
+        if (this.$refs.treeSelect) {
+          this.$refs.treeSelect.filter('');
+        }
+      }
+    },
     getBaseParentDisplayName(row) {
       if (row.baseParent) {
         return row.baseParent
@@ -1413,7 +1444,10 @@ export default {
     },
     async editFn(row) {
       this.addOrEdit.flag = 2
-      this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
+      this.addOrEditDataRuls = Object.assign({
+        protectMethodName: '',
+        confirmProtectMethod: [],
+      }, JSON.parse(JSON.stringify(row)))
       this.addOrEditDataRuls.upgradeRule = row.upgradeRule == '1' ? true : false
       this.addOrEditDataRuls.demotionRule = row.demotionRule == '1' ? true : false
       this.addOrEditDataRuls.minSecurityLevel = row.minSecurityLevel + ''
@@ -1445,7 +1479,10 @@ export default {
     },
     async lookFn(row) {
       this.addOrEdit.flag = 3
-      this.addOrEditDataRuls = JSON.parse(JSON.stringify(row))
+      this.addOrEditDataRuls = Object.assign({
+        protectMethodName: '',
+        confirmProtectMethod: [],
+      }, JSON.parse(JSON.stringify(row)))
       this.addOrEditDataRuls.upgradeRule = row.upgradeRule == '1' ? true : false
       this.addOrEditDataRuls.demotionRule = row.demotionRule == '1' ? true : false
       this.addOrEditDataRuls.additional = row.attachDescribe

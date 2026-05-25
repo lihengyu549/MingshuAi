@@ -310,15 +310,26 @@ export default {
       checkedColumnProps: [],
       checkAll: false,
       columnList: [
-        { labelKey: "fieldName", prop: "fieldName", width: "200" },
-        { labelKey: "fieldRemark", prop: "fieldRemark", width: "200" },
+        { labelKey: "fieldName", prop: "fieldName", width: "150" },
+        { labelKey: "fieldType", prop: "fieldType", width: "150" },
+        { labelKey: "fieldRemark", prop: "fieldRemark", width: "150" },
+        { labelKey: "aiFieldRemark", prop: "craftRemark", width: "150" },
         { labelKey: "sourceBusinessSystem", prop: "businessName", width: "150" },
         { labelKey: "dataSource", prop: "sourceName", width: "150" },
-        { labelKey: "databaseName", prop: "databaseName", width: "200" },
-        { labelKey: "tableName", prop: "tableName" },
+        { labelKey: "databaseName", prop: "databaseName", width: "150" },
+        { labelKey: "tableName", prop: "tableName", width: "150" },
+        { labelKey: "tableRemark", prop: "tableRemark", width: "150" },
+        { labelKey: "aiTableRemark", prop: "tableCraftRemark", width: "150" },
         { labelKey: "category", prop: "categoryName", width: "250" },
-        { labelKey: "piiComplianceReview", prop: "piiDetectionName", width: "200" },
-        { labelKey: "securityLevel", prop: "securityLevelName", width: "200" },
+        { labelKey: "classificationStatus", prop: "classificationStateName", width: "250" },
+        { labelKey: "classificationReason", prop: "classificationReasons", width: "150" },
+        { labelKey: "piiComplianceReview", prop: "piiDetectionName", width: "250" },
+        { labelKey: "detectionProcess", prop: "detectionProcess", width: "250" },
+        { labelKey: "confidenceScore", prop: "confidenceScore", width: "100" },
+        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "100" },
+        { labelKey: "securityLevel", prop: "securityLevelName" },
+        { labelKey: "sensitiveData", prop: "sensitiveDataName", width: "150" },
+        { labelKey: "sampleFeature", prop: "regularExpression", width: "150" },
         { labelKey: "suggestedProtection", prop: "protectMethod", width: "200" },
         { labelKey: "sample", prop: "sampleData", width: "100" }
       ],
@@ -327,14 +338,17 @@ export default {
         { labelKey: "fileFormat", prop: "fileFormat", width: "150" },
         { labelKey: "fileParentPath", prop: "fileParentPath", width: "200" },
         { labelKey: "fileSizeName", prop: "fileSizeName", width: "150" },
-        { labelKey: "category", prop: "categoryName", width: "200" },
-        { labelKey: "securityLevel", prop: "securityLevelName" },
-        { labelKey: "confirmName", prop: "confirmName", width: "150" },
         { labelKey: "sourceBusinessSystem", prop: "businessName", width: "150" },
+        { labelKey: "category", prop: "categoryName", width: "250" },
+        { labelKey: "classificationStatus", prop: "classificationStateName", width: "250" },
         { labelKey: "classificationReason", prop: "classificationReasons", width: "150" },
-        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "150" },
-        { labelKey: "confidenceScore", prop: "confidenceScore", width: "150" },
-        { labelKey: "sensitiveData", prop: "sensitiveDataName", width: "150" }
+        { labelKey: "piiComplianceReview", prop: "piiDetectionName", width: "250" },
+        { labelKey: "detectionProcess", prop: "detectionProcess", width: "250" },
+        { labelKey: "confidenceScore", prop: "confidenceScore", width: "100" },
+        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "100" },
+        { labelKey: "securityLevel", prop: "securityLevelName" },
+        { labelKey: "sensitiveData", prop: "sensitiveDataName", width: "150" },
+        { labelKey: "confirmName", prop: "confirmName", width: "150" }
       ],
       // 导出列配置相关数据
       exportColumnDialog: {
@@ -881,18 +895,51 @@ Authorization:Bearer ${this.Token}`
     },
     selectAllFirstLevelNodes(data) {
       if (this.routeDataShow) {
-        data = data.map(item => {
-          if (item.id == this.$route.params.id) {
-            return item
+        // 如果是从任务中心跳转过来，需要选中对应的左侧树节点
+        // 根据路由传参找到对应的节点 (使用 $route.params.databaseId 或 $route.params.id)
+        let targetNode = null;
+        let targetParent = null;
+        const searchId = this.$route.params.databaseId || this.$route.params.id;
+        
+        const findNode = (nodes) => {
+          for (let item of nodes) {
+            if (item.id === searchId) {
+              targetNode = item;
+              return true;
+            }
+            if (item.children && item.children.length > 0) {
+              if (findNode(item.children)) {
+                targetParent = item; // 记录父节点
+                return true;
+              }
+            }
           }
-        })
+          return false;
+        };
+        findNode(data);
+
+        this.$nextTick(() => {
+          if (this.$refs.tree && targetNode) {
+            // 勾选该节点
+            this.$refs.tree.setCheckedNodes([targetNode]);
+            // 将其设为高亮当前节点
+            this.$refs.tree.setCurrentKey(targetNode.id);
+            // 触发节点点击事件以刷新右侧表格数据
+            this.handleNodeClick(targetNode);
+          } else if (this.$refs.tree) {
+            // 如果没找到对应的子节点，退回到默认行为
+            this.$refs.tree.setCheckedNodes(data);
+          }
+        });
+      } else {
+        // 默认行为：选中所有第一层节点
+        this.$nextTick(() => {
+          if (this.$refs.tree) {
+            this.$refs.tree.setCheckedNodes(data);
+          }
+        });
       }
-      // 设置这些节点为选中状态
-      this.$nextTick(() => {
-        if (this.$refs.tree) {
-          this.$refs.tree.setCheckedNodes(data);
-        }
-      });
+      
       let treeList = []
       let list = []
       if (this.$refs.tree) {
@@ -902,18 +949,20 @@ Authorization:Bearer ${this.Token}`
       this.treeID = treeList.map(item => item.id).join()
       this.treeIds = treeList.map(item => item.id)
 
-      // 选中第一条
-      if (this.dataCategoryList && this.dataCategoryList.length > 0) {
-        const firstNode = this.dataCategoryList[0];
-        this.$nextTick(() => {
-          if (this.$refs.tree) {
-            this.$refs.tree.setCurrentKey(firstNode.id);
-          }
-          this.handleNodeClick(firstNode);
-        });
-      } else {
-        this.currentNodeType = 0; // 重置为默认结构化
-        this.getList();
+      // 只有在非路由跳转的情况下，才默认选中并点击第一条
+      if (!this.routeDataShow) {
+        if (this.dataCategoryList && this.dataCategoryList.length > 0) {
+          const firstNode = this.dataCategoryList[0];
+          this.$nextTick(() => {
+            if (this.$refs.tree) {
+              this.$refs.tree.setCurrentKey(firstNode.id);
+            }
+            this.handleNodeClick(firstNode);
+          });
+        } else {
+          this.currentNodeType = 0; // 重置为默认结构化
+          this.getList();
+        }
       }
     },
     // 返回Promise的异步版本
@@ -948,7 +997,10 @@ Authorization:Bearer ${this.Token}`
           this.Loading = false
           this.treeIds = []
           this.databaseNames = [] // 清空数据库名称数组
-          this.getList()
+          this.protectTableFieldList = []
+          this.total = 0
+          this.loading = false
+          // 不再调用 getList() 避免空树时请求报错导致 loading 无法关闭
         } else {
           this.$nextTick(() => {
             this.selectAllFirstLevelNodes(this.dataCategoryList)
@@ -981,7 +1033,10 @@ Authorization:Bearer ${this.Token}`
       } else {
         params.tableName = this.queryParams.tableName;
         // 如果选中了节点，则传递该节点的databaseId
-        if (this.currentNodeData && this.currentNodeData.id) {
+        if (this.currentNodeData && this.currentNodeData.level == 1) {
+          params.databaseId = this.currentNodeData.preid;
+          params.databaseName = this.currentNodeData.name;
+        } else if (this.currentNodeData) {
           params.databaseId = this.currentNodeData.id;
         }
       }
@@ -1018,15 +1073,18 @@ Authorization:Bearer ${this.Token}`
             });
 
             this.total = response.total || 0;
+            this.loading = false;
           } else {
             // 重置为空数组，避免显示错误数据
             this.protectTableFieldList = [];
             this.total = 0;
+            this.loading = false;
           }
         } catch (error) {
           console.error('处理列表数据时发生错误:', error);
           this.protectTableFieldList = [];
           this.total = 0;
+          this.loading = false;
         } finally {
           // 确保在任何情况下都关闭loading
           this.loading = false;

@@ -69,17 +69,20 @@
         }}</el-button>
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
-      <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click"
-        style="float: inline-end; margin-right: 10px;">
-        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{
-          $t('selectAll') }}</el-checkbox>
-        <el-checkbox-group v-model="checkedColumn" @change="handleCheckedCitiesChange" class="checkboxGroup"
-          style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
-          <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
-            item.label }}</el-checkbox>
-        </el-checkbox-group>
-        <el-button size="medium" slot="reference">{{ $t('columnSettings') }}</el-button>
-      </el-popover>
+      <div style="float: right; margin-right: 10px;">
+        <el-button type="info" plain icon="el-icon-refresh" size="medium" @click="getList" style="margin-right: 10px;">{{ $t('refresh') }}</el-button>
+        <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
+          <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{
+            $t('selectAll') }}</el-checkbox>
+          <el-checkbox-group v-model="checkedColumn" @change="handleCheckedCitiesChange" class="checkboxGroup"
+            style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
+            <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
+              item.label }}</el-checkbox>
+          </el-checkbox-group>
+
+          <el-button size="medium" slot="reference">{{ $t('columnSettings') }}</el-button>
+        </el-popover>
+      </div>
     </el-row>
     <el-card shadow="never" class="table-card">
       <el-table v-loading="loading" height="860px" class="tableBox" :data="proxysList" :key="checkedColumn.length"
@@ -165,10 +168,11 @@
         <el-table-column :label="$t('operation')" align="center" class-name="small-padding fixed-width" min-width="150">
           <template slot-scope="scope">
             <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
-              :disabled="scope.row.scanState == 'RUNNING' || !isScanOperableSource(scope.row) || btnLoading"
-              :loading="btnLoading">{{ $t('dataFrom.startScan') }}</el-button>
+              :disabled="scope.row.scanState == 'RUNNING' || !isScanOperableSource(scope.row) || (loadingMap[scope.row.id] && loadingMap[scope.row.id].start)"
+              :loading="loadingMap[scope.row.id] && loadingMap[scope.row.id].start">{{ $t('dataFrom.startScan') }}</el-button>
             <el-button size="mini" type="text" @click="stopScan(scope.row)"
-              :disabled="!isScanOperableSource(scope.row) || btnLoading" :loading="btnLoading">{{
+              :disabled="scope.row.scanState !== 'RUNNING' || !isScanOperableSource(scope.row) || (loadingMap[scope.row.id] && loadingMap[scope.row.id].stop)"
+              :loading="loadingMap[scope.row.id] && loadingMap[scope.row.id].stop">{{
                 $t('dataFrom.terminateScan') }}</el-button>
             <!-- 添加关联数据字典按钮和下拉菜单 -->
             <el-dropdown trigger="click" :disabled="isFileSource(scope.row)" @command="handleDictionaryCommand"
@@ -375,8 +379,7 @@
           <el-upload ref="fileDirectoryUploadRef" class="upload-dragger-area" drag :action="''" :auto-upload="false"
             :multiple="true" :show-file-list="false" :limit="20" :file-list="fileDirectoryData.uploadFiles"
             :on-change="handleFileDirectoryChange" :on-remove="handleFileDirectoryRemove"
-            :on-exceed="handleFileDirectoryExceed"
-            accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx">
+            :on-exceed="handleFileDirectoryExceed" accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx">
             <div class="upload-dragger-content">
               <i class="el-icon-upload upload-icon"></i>
               <div class="upload-text">{{ $t('dataFrom.clickOrDragToUpload') }}</div>
@@ -627,6 +630,7 @@ export default {
       mainLoading: false,
       submitLoading: false,
       btnLoading: false,
+      loadingMap: {}, // Store loading states per row and action
       imgSrc: {
         'ERR': require('@/assets/stateImg/stateDanger.png'),
         'COMPLETE': require('@/assets/stateImg/stateSuess.png'),
@@ -786,10 +790,24 @@ export default {
         scheduleInterval: [{ required: true, message: this.$t('selectRequired', { field: this.$t('interval') }), trigger: 'blur' }],
         scheduleTime: [{ required: true, message: this.$t('dataFrom.pleaseSelectTime'), trigger: 'blur' }],
         targetIp: [
-          { required: true, message: this.$t('dataFrom.pleaseInputIpAddress'), trigger: "blur" },
+          { required: true, message: this.$t('dataFrom.pleaseInputHostIP'), trigger: "blur" },
           {
-            pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-            message: this.$t('dataFrom.pleaseInputValidIp')
+            validator: (rule, value, callback) => {
+              if (!value) {
+                callback(new Error(this.$t('dataFrom.pleaseInputHostIP')));
+                return;
+              }
+              const ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+              const domainPattern = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+              const hostnamePattern = /^[a-zA-Z0-9\-]+$/;
+              
+              if (ipPattern.test(value) || domainPattern.test(value) || hostnamePattern.test(value) || value === 'localhost') {
+                callback();
+              } else {
+                callback(new Error(this.$t('dataFrom.pleaseInputValidIp')));
+              }
+            },
+            trigger: 'blur'
           },
         ],
         targetPort: [
@@ -920,10 +938,24 @@ export default {
           { required: true, message: this.$t('dataFrom.pleaseInputBusinessDescription'), trigger: "blur" }
         ],
         targetIp: [
-          { required: true, message: this.$t('dataFrom.pleaseInputIpAddress'), trigger: "blur" },
+          { required: true, message: this.$t('dataFrom.pleaseInputHostIP'), trigger: "blur" },
           {
-            pattern: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-            message: this.$t('dataFrom.pleaseInputValidIp')
+            validator: (rule, value, callback) => {
+              if (!value) {
+                callback(new Error(this.$t('dataFrom.pleaseInputHostIP')));
+                return;
+              }
+              const ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+              const domainPattern = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+              const hostnamePattern = /^[a-zA-Z0-9\-]+$/;
+              
+              if (ipPattern.test(value) || domainPattern.test(value) || hostnamePattern.test(value) || value === 'localhost') {
+                callback();
+              } else {
+                callback(new Error(this.$t('dataFrom.pleaseInputValidIp')));
+              }
+            },
+            trigger: 'blur'
           },
         ],
         targetPort: [
@@ -1000,14 +1032,14 @@ export default {
       return row.sourceType === 'FILE_SERVER' ? dataScanByFileServer({ id: row.id }) : dataSacn({ proxyIds: row.id });
     },
     async executeScan(row) {
-      this.btnLoading = true;
+      this.$set(this.loadingMap, row.id, { ...this.loadingMap[row.id], start: true });
       try {
         await this.triggerDataScan(row);
         await this.getList();
       } catch (error) {
         this.$message.error(this.$t('dataFrom.scanFailedMessage'));
       } finally {
-        this.btnLoading = false;
+        this.$set(this.loadingMap, row.id, { ...this.loadingMap[row.id], start: false });
       }
     },
     // 获取文件共享扫描内容展示文字
@@ -1619,7 +1651,7 @@ export default {
       }
     },
     scanStateClickFn(row) {
-      if (this.btnLoading) return;
+      if (this.loadingMap[row.id] && this.loadingMap[row.id].start) return;
       if (!this.isScanOperableSource(row)) return;
       if (row.scanState == 'COMPLETE') {
         this.$confirm(this.$t('dataFrom.confirmRescan'), this.$t('tip'), {
@@ -1634,53 +1666,23 @@ export default {
       }
       this.executeScan(row)
       return;
-      /*
-      if (row.scanState == 'COMPLETE') {
-        this.$confirm(this.$t('dataFrom.confirmRescan'), this.$t('tip')), {
-          confirmButtonText: this.$t('confirm'),
-          cancelButtonText: this.$t('cancel'),
-          type: 'warning'
-        }).then(() => {
-          this.btnLoading = true;
-          dataSacn({ proxyIds: row.id }).then(async res => {
-            await this.getList()
-          }).catch(() => {
-            this.$message.error(this.$t('dataFrom.scanFailedMessage'))
-          }).finally(() => {
-            this.btnLoading = false;
-          })
-        })
-          .catch(() => {
-            this.getList()
-          })
-      } else {
-        this.btnLoading = true;
-        dataSacn({ proxyIds: row.id }).then(async res => {
-          await this.getList()
-        }).catch(() => {
-          this.$message.error(this.$t('dataFrom.scanFailedMessage'))
-        }).finally(() => {
-          this.btnLoading = false;
-        })
-      }
-      */
     },
     stopScan(row) {
-      if (this.btnLoading) return;
+      if (this.loadingMap[row.id] && this.loadingMap[row.id].stop) return;
       if (!this.isScanOperableSource(row)) return;
       this.$confirm(this.$t('dataFrom.confirmStopScan', { name: row.sourceName }), this.$t('tip'), {
         confirmButtonText: this.$t('confirm'),
         cancelButtonText: this.$t('cancel'),
         type: 'warning'
       }).then(() => {
-        this.btnLoading = true;
+        this.$set(this.loadingMap, row.id, { ...this.loadingMap[row.id], stop: true });
         stopDataScan({ proxyIds: row.id }).then(async res => {
           this.$message.success(res.msg || this.$t('dataFrom.stopScanSuccess'))
           await this.getList()
         }).catch(() => {
           this.$message.error(this.$t('dataFrom.stopScanFailed'))
         }).finally(() => {
-          this.btnLoading = false;
+          this.$set(this.loadingMap, row.id, { ...this.loadingMap[row.id], stop: false });
         })
       }).catch(() => {
       })

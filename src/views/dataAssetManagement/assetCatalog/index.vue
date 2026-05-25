@@ -563,6 +563,7 @@ export default {
       rootFolderTitle: '', // 根文件夹标题（从接口获取）
 
       fileListTimer: null, // 防抖定时器
+      folderClickTimer: null, // 文件夹点击节流定时器
 
       fileDetailDrawerVisible: false,
       fileDetailData: {
@@ -848,7 +849,8 @@ export default {
         if (this.currentNodeData) {
           this.loadFileListData(this.currentNodeData, {
             folderId: null,
-            keepCurrentFolderName: false
+            keepCurrentFolderName: false,
+            immediate: true
           });
         }
       } else {
@@ -856,7 +858,7 @@ export default {
         this.breadcrumbList = this.breadcrumbList.slice(0, index + 1);
         this.currentFolderId = item.id;
         this.currentFolderName = item.name;
-        this.loadFolderData(item.id);
+        this.loadFolderData(item.id, true);
       }
     },
 
@@ -878,7 +880,8 @@ export default {
       if (this.currentNodeData) {
         this.loadFileListData(this.currentNodeData, {
           folderId: this.currentFolderId,
-          keepCurrentFolderName: this.currentFolderId !== null && this.currentFolderId !== undefined && this.currentFolderId !== ''
+          keepCurrentFolderName: this.currentFolderId !== null && this.currentFolderId !== undefined && this.currentFolderId !== '',
+          immediate: true
         });
       }
     },
@@ -915,6 +918,11 @@ export default {
 
 
     handleFolderClick(folder) {
+      if (this.folderClickTimer) return;
+      this.folderClickTimer = setTimeout(() => {
+        this.folderClickTimer = null;
+      }, 500);
+
       // 添加到面包屑
       this.breadcrumbList.push({
         id: folder.id,
@@ -923,25 +931,23 @@ export default {
       this.currentFolderId = folder.id;
       this.currentFolderName = folder.name;
 
-      this.loadFolderData(folder.id);
+      this.loadFolderData(folder.id, true);
     },
 
-    loadFolderData(folderId) {
+    loadFolderData(folderId, immediate = false) {
       if (!this.currentNodeData) return;
       this.currentFolderId = (folderId === null || folderId === undefined || folderId === '') ? null : folderId;
       this.loadFileListData(this.currentNodeData, {
         folderId: this.currentFolderId,
-        keepCurrentFolderName: this.currentFolderId !== null && this.currentFolderId !== undefined && this.currentFolderId !== ''
+        keepCurrentFolderName: this.currentFolderId !== null && this.currentFolderId !== undefined && this.currentFolderId !== '',
+        immediate: immediate
       });
     },
 
-
     loadFileListData(data, options = {}) {
-      if (this.fileListTimer) {
-        clearTimeout(this.fileListTimer);
-      }
-      this.fileListTimer = setTimeout(() => {
-        const { folderId = null, keepCurrentFolderName = false } = options;
+      const { folderId = null, keepCurrentFolderName = false, immediate = false } = options;
+
+      const fetchList = () => {
         const sortField = this.currentSortField;
         const order = this.sortOrders[sortField];
         const isAsc = order === 'asc';
@@ -983,7 +989,21 @@ export default {
           console.error('加载文件列表失败:', err);
           this.$message.error(this.$t('assetCatalog.loadFileListFailed'));
         });
-      }, 500);
+      };
+
+      if (immediate) {
+        if (this.fileListTimer) {
+          clearTimeout(this.fileListTimer);
+        }
+        fetchList();
+      } else {
+        if (this.fileListTimer) {
+          clearTimeout(this.fileListTimer);
+        }
+        this.fileListTimer = setTimeout(() => {
+          fetchList();
+        }, 500);
+      }
     },
 
 
@@ -1024,20 +1044,6 @@ export default {
       // 获取所有勾选的节点ID(包括半选节点的子节点)
       const checkedIds = this.getCheckedNodeIds(this.categoryList);
       this.selectedTreeNodeIds = checkedIds;
-      this.updateTreeAllCheckedState();
-    },
-    /**
-     * 更新全选框状态
-     */
-    updateTreeAllCheckedState() {
-      const allChildren = this.collectAllChildren(this.categoryList);
-      if (this.selectedTreeNodeIds.length === 0) {
-        this.isTreeAllChecked = false;
-      } else if (this.selectedTreeNodeIds.length === allChildren.length) {
-        this.isTreeAllChecked = true;
-      } else {
-        this.isTreeAllChecked = null;
-      }
     },
     /**
      * 点击树节点事件:点击节点展示右侧列表
@@ -1054,7 +1060,8 @@ export default {
         // 加载文件列表数据（接口会返回 res.data.title 作为顶层标题）
         this.loadFileListData(data, {
           folderId: null,
-          keepCurrentFolderName: false
+          keepCurrentFolderName: false,
+          immediate: true
         });
       } else {
         // 原有表格模式
@@ -1663,7 +1670,8 @@ export default {
               this.breadcrumbList = [];
               this.loadFileListData(this.categoryList[0], {
                 folderId: null,
-                keepCurrentFolderName: false
+                keepCurrentFolderName: false,
+                immediate: true
               });
             }
           });

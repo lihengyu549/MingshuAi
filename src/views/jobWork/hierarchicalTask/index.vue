@@ -156,18 +156,18 @@
             <div class="iconBtnBox">
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.executeTask')"
                 placement="top-start">
-                <i class="el-icon-video-play" @click="scope.row.publishStatus != 1 && implementFn(scope.row)"
-                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+                <i class="el-icon-video-play" @click="(scope.row.publishStatus != 1 && !['RUNNING', 'STAYEXECUTE', 'PAUSEDING', 'PAUSING', 'KILLEDING', 'KILLING'].includes(scope.row.maskComplete)) && implementFn(scope.row)"
+                  :style="(scope.row.publishStatus == 1 || ['RUNNING', 'STAYEXECUTE', 'PAUSEDING', 'PAUSING', 'KILLEDING', 'KILLING'].includes(scope.row.maskComplete)) ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.pauseTask')"
                 placement="top-start">
-                <i class="el-icon-video-pause" @click="scope.row.publishStatus != 1 && suspendWorkFn(scope.row)"
-                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+                <i class="el-icon-video-pause" @click="(scope.row.publishStatus != 1 && !['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) && suspendWorkFn(scope.row)"
+                  :style="(scope.row.publishStatus == 1 || ['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.terminateTask')"
                 placement="top-start">
-                <i class="el-icon-switch-button" @click="scope.row.publishStatus != 1 && terminationWorkFn(scope.row)"
-                  :style="scope.row.publishStatus == 1 ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
+                <i class="el-icon-switch-button" @click="(scope.row.publishStatus != 1 && !['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) && terminationWorkFn(scope.row)"
+                  :style="(scope.row.publishStatus == 1 || ['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.taskMonitoring')"
                 placement="top-start">
@@ -840,47 +840,29 @@ export default {
     };
   },
 
-  beforeRouteLeave(to, from, next) {
-    const targetPath = to.path || '';
-    const jobWorkPaths = ['/viewResults', '/fixResults', '/jobMonitoring'];
-    const isNavigatingWithinJobWork = jobWorkPaths.some(path => targetPath.startsWith(path));
-
-    if (!isNavigatingWithinJobWork) {
-      sessionStorage.removeItem('hierarchicalTask_queryParams');
-      sessionStorage.removeItem('jobMonitoring_routeData');
-      sessionStorage.removeItem('prevPage');
-    }
-    next();
-  },
-
   created() {
     this.checkedColumn = this.setList.filter(item =>
       ['tasksName', 'sourceName', 'projectName', 'maskComplete', 'publishStatus'].includes(item.prop)
     );
     this.checkAll = false;
     this.gettreeOptionsList()
-    const prevPage = sessionStorage.getItem('prevPage');
-    if (!['viewResults', 'jobMonitoring'].includes(prevPage)) {
-      sessionStorage.removeItem('hierarchicalTask_queryParams');
+
+    if (this.$route.query.isReturn) {
+      const savedState = sessionStorage.getItem('hierarchicalTask_search_state');
+      if (savedState) {
+        try {
+          this.queryParams = {
+            ...this.queryParams,
+            ...JSON.parse(savedState)
+          };
+        } catch (e) {
+          console.error('解析保存的查询条件失败:', e);
+        }
+      }
     } else {
-      sessionStorage.removeItem('prevPage');
+      sessionStorage.removeItem('hierarchicalTask_search_state');
     }
-    const savedParams = sessionStorage.getItem('hierarchicalTask_queryParams');
-    if (savedParams) {
-      try {
-        this.queryParams = {
-          ...this.queryParams,
-          ...JSON.parse(savedParams)
-        };
-      } catch (e) {
-        console.error('解析保存的查询条件失败:', e);
-      }
-    } else if (this.$route.query.queryParams) {
-      this.queryParams = {
-        ...this.queryParams,
-        ...this.$route.query.queryParams
-      }
-    }
+
     this.getList()
     this.getScanCompleteDataFn()
   },
@@ -1389,22 +1371,14 @@ export default {
       }
     },
     resultLookFn(row) {
-      // if (row.state == 'RUNNING') {
-      //   this.$message({ message: '当前状态为运行中，无法查看', type: 'warning' })
-      //   return
-      // }
-      const { pageNum, pageSize, ...restParams } = this.queryParams;
-      sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(restParams));
-      sessionStorage.setItem('prevPage', 'hierarchicalTask');
-      this.$router.push({
-        path: '/viewResults',
-        query: { drawerData: row, queryParams: restParams }
-      })
+      sessionStorage.setItem('hierarchicalTask_search_state', JSON.stringify(this.queryParams));
       if (row.publishStatus == 0) {
-        this.drawerData = row
-        this.drawerShow = true
+        this.$router.push({
+          path: '/classificationTask/viewResults',
+          query: { drawerData: row }
+        });
       } else {
-        this.$router.push({ name: 'ProtectTableField', params: row })
+        this.$router.push({ name: 'ProtectTableField', params: row });
       }
     },
     resultReleaseFn(row) {

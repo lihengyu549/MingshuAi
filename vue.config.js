@@ -50,7 +50,7 @@ module.exports = {
         // target: `http://dast123123.zp.jilj.top:25378`,
         // target: `http://192.168.2.196/`,
         // target: `https://192.168.2.174/`,
-        target: `http://192.168.7.84:8080/`,
+        target: `http://192.168.7.51:8080/`,
         // target: `http://117.134.9.113:8008/`,
         // target: `http://sihx.hlg.d2w.cc:30977/`,
         changeOrigin: true,

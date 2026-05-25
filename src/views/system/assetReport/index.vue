@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container" v-loading="loading">
+  <div class="app-container pdf-export-wrap" v-loading="loading" ref="pdfWrap">
     <!-- 页面头部：标题、所属标准、导出按钮 -->
     <div class="page-header">
       <h2><b>{{ $t('assetReport.title') }}</b></h2>
@@ -10,7 +10,7 @@
           <el-option v-for="item in standardOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
 
-        <el-button icon="el-icon-download" size="small" class="export-btn">
+        <el-button icon="el-icon-download" size="small" class="export-btn" @click="handleExport">
           {{ $t('assetReport.exportReport') }}
         </el-button>
       </div>
@@ -159,6 +159,7 @@
 import * as echarts from 'echarts';
 import { getSafetyComplianceReport } from '@/api/data'
 import { getFrameworks } from '@/api/system/protectCategory'
+import { downloadPDF } from '@/utils/pdf'
 import CountTo from 'vue-count-to'
 export default {
   name: 'DataAssetReport',
@@ -653,6 +654,23 @@ export default {
       Object.values(this.charts).forEach(chart => {
         if (chart) chart.resize();
       });
+    },
+
+    handleExport() {
+      this.loading = true;
+      downloadPDF({
+        title: this.$t('assetReport.title') || '数据资产报告',
+        className: 'pdf-export-wrap'
+      })
+        .then(() => {
+          this.$message.success(this.$t('assetReport.exportSuccess') || '导出成功');
+        })
+        .catch(err => {
+          this.$message.error(err.message || (this.$t('assetReport.exportFailed') || '导出失败'));
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     }
   }
 };
