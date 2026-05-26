@@ -1070,6 +1070,40 @@ export default {
   watch: {
     filterText(val) {
       this.$refs.tree.filter(val);
+      
+      // 如果清空了搜索框，强制折叠所有节点，并仅展开当前选中的节点
+      if (!val) {
+        this.$nextTick(() => {
+          // 1. 折叠所有节点
+          const rootNodes = this.$refs.tree.store.root.childNodes;
+          if (rootNodes) {
+            rootNodes.forEach(child => {
+              child.expanded = false;
+              if (child.childNodes && child.childNodes.length > 0) {
+                child.childNodes.forEach(subChild => {
+                  subChild.expanded = false;
+                  if (subChild.childNodes && subChild.childNodes.length > 0) {
+                    subChild.childNodes.forEach(leaf => {
+                      leaf.expanded = false;
+                    });
+                  }
+                });
+              }
+            });
+          }
+          
+          // 2. 展开当前选中的节点
+          if (this.currentNodeData) {
+            const currentKey = this.currentNodeData.id;
+            let node = this.$refs.tree.getNode(currentKey);
+            // 逐级向上展开父节点
+            while (node) {
+              node.expanded = true;
+              node = node.parent;
+            }
+          }
+        });
+      }
     },
     // 监听全选框状态变化，同步树的勾选状态
     isTreeAllChecked(newVal) {
