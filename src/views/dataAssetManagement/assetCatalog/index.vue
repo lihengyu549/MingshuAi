@@ -44,203 +44,329 @@
       <el-col :span="19" :xs="24">
         <!-- type = 0 时显示原有表格卡片内容 -->
         <template v-if="currentNodeType == '0'">
-          <el-card class="search-card" shadow="never">
-            <el-form :model="queryParams" class="yuanDataClass" ref="queryParams" size="small" :inline="true">
-              <el-form-item :label="$t('assetCatalog.tableName')" prop="tableName">
-                <el-input v-model="queryParams.tableName" :placeholder="$t('assetCatalog.pleaseInputTableName')"
-                  @input="handleInputChange" clearable>
-                  <i slot="prefix" class="el-input__icon el-icon-search"></i>
-                </el-input>
-              </el-form-item>
-              <el-form-item :label="$t('assetCatalog.semanticFilling')" prop="paddingStatus">
-                <el-select v-model="queryParams.paddingStatus" @change="selectProjectIdChange"
-                  :placeholder="$t('assetCatalog.all')" clearable>
-                  <el-option :label="$t('assetCatalog.notStarted')" value="1"></el-option>
-                  <el-option :label="$t('assetCatalog.success')" value="2"></el-option>
-                  <el-option :label="$t('assetCatalog.failed')" value="3"></el-option>
-                  <el-option :label="$t('assetCatalog.executing')" value="4"></el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item :label="$t('assetCatalog.sampleFeatureExtraction')" prop="featureExtractionStatus">
-                <el-select v-model="queryParams.featureExtractionStatus" @change="selectProjectIdChange"
-                  :placeholder="$t('assetCatalog.all')" clearable>
-                  <el-option :label="$t('assetCatalog.notStarted')" value="1"></el-option>
-                  <el-option :label="$t('assetCatalog.success')" value="2"></el-option>
-                  <el-option :label="$t('assetCatalog.failed')" value="3"></el-option>
-                  <el-option :label="$t('assetCatalog.executing')" value="4"></el-option>
-                </el-select>
-              </el-form-item>
-            </el-form>
-          </el-card>
-          <el-card class="table-card" shadow="never">
-            <div class="mian_box" id="main_box">
-              <div v-for="(item, index) in dataAll" v-loading="loading" :key="index" class="table-info-card">
-                <!-- 头部区域：表名 + 字段信息按钮 -->
-                <div class="card-header">
-                  <h3 class="table-name">
-                    <svg-icon icon-class="table1" style="margin-right: 5px;" />
-                    {{ item.tableName }}
-                  </h3>
-                  <button class="field-info-btn" @click="fieldInformationFn(item)">
-                    <i class="el-icon-warning-outline" style="margin-right: 5px;"></i>{{
-                      $t('assetCatalog.fieldInformation') }}
-                  </button>
+          <!-- 第一层：数据源 (Level 1) -->
+          <template v-if="currentNodeLevel === 1">
+            <div class="file-manager-wrapper" style="display: flex; flex-direction: column; height: 100%;">
+              <el-card class="file-manager-card" shadow="never" style="flex: 1; display: flex; flex-direction: column;" :body-style="{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }">
+                <div slot="header" class="header-title" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <div>
+                    <span style="font-size: 18px; font-weight: bold; display: flex; align-items: center;">
+                      <svg-icon icon-class="home-dataAsset" style="font-size: 18px;margin-right: 10px;"></svg-icon>
+                      数据源：{{ currentNodeData ? currentNodeData.label : '' }}
+                    </span>
+                    <div style="margin-top: 10px; font-size: 13px; color: #606266;">
+                      OA系统：一体化协同办公 OA 系统，涵盖流程审批、行政办公、人事管理、信息发布、资源管理等功能，实现企业线上高效协同办公，规范办公流程，提升整体办公效率。
+                    </div>
+                  </div>
+                  <span style="color: #909399; font-size: 13px;">共 {{ currentNodeData && currentNodeData.children ? currentNodeData.children.length : 0 }} 个数据库</span>
                 </div>
-
-                <!-- 内容区域：分三行布局 -->
-                <div class="card-content">
-                  <!-- 第一行：4 列 -->
-                  <div class="row row-1">
-                    <!-- CHANGE: 添加点击事件打开评估详情弹窗 -->
-                    <div class="col col-4" @click="showScoreDialog(item)" style="cursor: pointer;">
-                      <div class="label">{{ $t('assetCatalog.dataQualityScore') }}</div>
-                      <div class="value" :title="item.score || '--'">{{ item.score ? item.score : '--' }}</div>
-                      <svg-icon icon-class="xingxing" class="info-icon" />
-                      <div class="progress-bar">
-                        <el-progress :percentage="Number(item.score)" color="#f4a63e" :show-text="false"></el-progress>
+                
+                <div class="file-manager-content" style="flex: 1; display: flex; flex-direction: column; height: 100%;">
+                  <div class="file-section" style="flex: 1; overflow-y: auto; padding: 20px;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                      <div v-for="db in (currentNodeData && currentNodeData.children ? currentNodeData.children : [])" :key="db.id" style="width: 33%;">
+                        <el-card shadow="hover" @click.native="handleDatabaseCardClick(db)" style="cursor: pointer; border-radius: 8px; border: 1px solid #ebeef5;">
+                          <div slot="header" style="display: flex; align-items: center; margin-bottom: 15px;">
+                            <div style="width: 40px; height: 40px; background-color: #f0f2f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                              <svg-icon icon-class="databaseSolid" style="font-size: 18px;" />
+                            </div>
+                            <div>
+                              <div style="font-weight: bold; font-size: 16px; color: #303133;">{{ db.label }}</div>
+                              <div style="font-size: 12px; color: #909399; margin-top: 5px;">UTF-8 / MySQL</div>
+                            </div>
+                          </div>
+                          <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+                            <span style="color: #606266;">包含表数量</span>
+                            <span style="color: #409EFF; font-weight: bold; font-size: 16px;">{{ db.children ? db.children.length : (db.list ? db.list.length : 0) }}</span>
+                          </div>
+                        </el-card>
                       </div>
-                    </div>
-                    <div class="col col-1">
-                      <div class="label">{{ $t('assetCatalog.tableComment') }}</div>
-                      <div class="value" :title="item.oldTableRemark || '--'">{{ item.oldTableRemark ?
-                        item.oldTableRemark
-                        :
-                        '--' }}</div>
-                      <svg-icon icon-class="xinxi" class="info-icon" />
-                    </div>
-                    <div class="col col-2">
-                      <div class="label">{{ $t('assetCatalog.dataSize') }}</div>
-                      <div class="value" :title="item.dataSize || '--'">{{ item.dataSize ? item.dataSize : '--' }}</div>
-                      <svg-icon icon-class="database" class="info-icon" />
-                    </div>
-                    <div class="col col-3">
-                      <div class="label">{{ $t('assetCatalog.dataVolume') }}</div>
-                      <div class="value"
-                        :title="item.dataMagnitude ? item.dataMagnitude + ' ' + $t('assetCatalog.row') : '--'">{{
-                          item.dataMagnitude ? item.dataMagnitude + ' ' + $t('assetCatalog.row') : '--' }}</div>
-                      <svg-icon icon-class="list2" class="info-icon" />
-                    </div>
-                  </div>
-
-                  <!-- 第二行：6 列 -->
-                  <div class="row row-2">
-                    <div class="col">
-                      <div class="label">{{ $t('assetCatalog.aiTableComment') }}</div>
-                      <div class="value" :title="item.craftTableRemark || '--'">{{ item.craftTableRemark ?
-                        item.craftTableRemark : '--' }}</div>
-                    </div>
-                    <div class="col">
-                      <div class="label">{{ $t('assetCatalog.dataSourceName') }}</div>
-                      <div class="value" :title="item.dataSourceName || '--'">{{ item.dataSourceName ?
-                        item.dataSourceName : '--' }}</div>
-                    </div>
-                    <div class="col">
-                      <div class="label">{{ $t('assetCatalog.classificationLevelStandard') }}</div>
-                      <div class="value" :title="item.categoryName || '--'">{{ item.categoryName ?
-                        item.categoryName : '--' }}</div>
-                    </div>
-                    <div class="col">
-                      <div class="label">{{ $t('assetCatalog.businessSystem') }}</div>
-                      <div class="value" :title="item.businessName || '--'">{{ item.businessName ?
-                        item.businessName : '--' }}</div>
-                    </div>
-                    <div class="col">
-                      <div class="label">{{ $t('assetCatalog.libraryName') }}</div>
-                      <div class="value" :title="item.affiliationDatabaseName || '--'">{{ item.affiliationDatabaseName ?
-                        item.affiliationDatabaseName : '--' }}</div>
-                    </div>
-                    <div class="col">
-                      <div class="label">{{ $t('assetCatalog.tableClassification') }}</div>
-                      <div class="value" :title="item.tableCategoryName || '--'">{{ item.tableCategoryName ?
-                        item.tableCategoryName : '--' }}</div>
-                    </div>
-                  </div>
-
-                  <!-- 第三行：6 列 -->
-                  <div class="row row-3">
-                    <div class="col">
-                      <div class="label">{{ $t('assetCatalog.tableLevel') }}</div>
-                      <div class="value" :title="item.tableSecurityLevel || '--'">{{ item.tableSecurityLevel ?
-                        item.tableSecurityLevel : '--' }}</div>
-                    </div>
-                    <div class="col">
-                      <div class="label">{{ $t('assetCatalog.personalInfoCount') }}</div>
-                      <div class="value green"
-                        :title="item.personalInformation ? item.personalInformation + ' ' + $t('assetCatalog.recordUnit') : '--'">
-                        {{
-                          item.personalInformation ? item.personalInformation + ' ' + $t('assetCatalog.recordUnit') : '--'
-                        }}</div>
-                    </div>
-                    <div class="col">
-                      <div class="label">{{ $t('assetCatalog.minorInfoCount') }}</div>
-                      <div class="value" :title="item.minorsInformation || '--'">{{ item.minorsInformation ?
-                        item.minorsInformation : '--' }}</div>
-                    </div>
-                    <div class="col">
-                      <div class="label">{{ $t('assetCatalog.fieldCount') }}</div>
-                      <div class="value" :title="item.fieldCount || '--'">{{ item.fieldCount ? item.fieldCount : '--' }}
-                      </div>
-                    </div>
-                    <div class="col">
-                      <div class="label">{{ $t('assetCatalog.semanticFilling') }}</div>
-                      <el-tag
-                        :type="item.paddingStatus == $t('assetCatalog.notStarted') ? 'info' : item.paddingStatus == $t('assetCatalog.success') ? 'success' : item.paddingStatus == $t('assetCatalog.failed') ? 'danger' : item.paddingStatus == $t('assetCatalog.executing') ? 'primary' : 'info'"
-                        class="status-tag" :title="item.paddingStatus">
-                        <i
-                          :class="item.paddingStatus == $t('assetCatalog.notStarted') ? 'el-icon-time' : item.paddingStatus == $t('assetCatalog.success') ? 'el-icon-circle-check' : item.paddingStatus == $t('assetCatalog.failed') ? 'el-icon-warning-outline' : item.paddingStatus == $t('assetCatalog.executing') ? 'el-icon-refresh' : 'el-icon-time'"></i>
-                        {{ item.paddingStatus }}
-                      </el-tag>
-                    </div>
-                    <div class="col">
-                      <div class="label">{{ $t('assetCatalog.sampleFeatureExtraction') }}</div>
-                      <el-tag
-                        :type="item.featureExtractionStatus == $t('assetCatalog.notStarted') ? 'info' : item.featureExtractionStatus == $t('assetCatalog.success') ? 'success' : item.featureExtractionStatus == $t('assetCatalog.failed') ? 'danger' : item.featureExtractionStatus == $t('assetCatalog.executing') ? 'primary' : 'primary'"
-                        class="status-tag" :title="item.featureExtractionStatus">
-                        <i
-                          :class="item.featureExtractionStatus == $t('assetCatalog.notStarted') ? 'el-icon-time' : item.featureExtractionStatus == $t('assetCatalog.success') ? 'el-icon-circle-check' : item.featureExtractionStatus == $t('assetCatalog.failed') ? 'el-icon-warning-outline' : item.featureExtractionStatus == $t('assetCatalog.executing') ? 'el-icon-refresh' : 'el-icon-time'"></i>
-                        {{ item.featureExtractionStatus }}
-                      </el-tag>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div v-if="dataAll.length === 0" class="no-data">
-                <el-empty :description="$t('assetCatalog.noData')"></el-empty>
-              </div>
+              </el-card>
             </div>
-            <!-- type = 0 时才显示此分页组件 -->
-            <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-              :pageSize.sync="queryParams.pageSize" @pagination="handlePagination" />
-          </el-card>
+          </template>
+
+          <!-- 第二层：数据库 (Level 2) -->
+          <template v-else-if="currentNodeLevel === 2">
+            <div class="file-manager-wrapper" style="display: flex; flex-direction: column; height: 100%;">
+              <el-card class="file-manager-card" shadow="never" style="flex: 1; display: flex; flex-direction: column;" :body-style="{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }">
+                <div slot="header" class="header-title" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <div>
+                    <span style="font-size: 18px; font-weight: bold; display: flex; align-items: center;">
+                      <svg-icon icon-class="databaseSolid" style="font-size: 18px;margin-right: 10px;" />
+                      数据库：{{ currentNodeData ? currentNodeData.label : '' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="file-manager-content" style="flex: 1; display: flex; flex-direction: column; height: 100%; padding: 20px;">
+                  <div class="file-section" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                    <el-table :data="dataAll" v-loading="loading" class="tableBox"
+                      style="width: 100%; margin-top: 20px;" height="100%"
+                      :header-cell-style="{ background: '#f8f8f9', color: '#606266' }">
+                      <el-table-column label="表名" min-width="180">
+                        <template slot-scope="scope">
+                          <div style="display: flex; align-items: center; cursor: pointer; color: #409EFF;"
+                            @click="handleTableClick(scope.row)">
+                            <svg-icon icon-class="table1" style="margin-right: 8px;" />
+                            {{ scope.row.tableName }}
+                          </div>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="表注释" prop="tableRemark" show-overflow-tooltip></el-table-column>
+                      <el-table-column label="AI表注释" prop="aiTableRemark" show-overflow-tooltip>
+                        <template slot-scope="scope">
+                          <el-tag type="primary" size="mini" v-if="scope.row.craftTableRemark">{{
+                            scope.row.craftTableRemark }}</el-tag>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="数据质量评分" width="150">
+                        <template slot-scope="scope">
+                          <div style="display: flex; align-items: center; cursor: pointer;"
+                            @click="showScoreDialog(scope.row)">
+                            <el-progress :percentage="Number(scope.row.score)" color="#f4a63e" :show-text="false"
+                              style="width: 60px; margin-right: 10px;"></el-progress>
+                            <span style="color: #f4a63e; font-weight: bold;">{{ scope.row.score }}</span>
+                          </div>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="数据量(行)" prop="dataMagnitude" width="100"></el-table-column>
+                      <el-table-column label="数据大小" prop="dataSize" width="100"></el-table-column>
+                      <el-table-column label="数据等级" width="100" align="center">
+                        <template slot-scope="scope">
+                          <el-tag type="danger" size="mini" v-if="scope.row.tableSecurityLevel">{{
+                            scope.row.tableSecurityLevel }}</el-tag>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="分类" width="100" align="center">
+                        <template slot-scope="scope">
+                          <span style="color: #409EFF;">{{ scope.row.tableCategoryName || scope.row.categoryName
+                            }}</span>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                  </div>
+
+                  <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+                    :pageSize.sync="queryParams.pageSize" @pagination="handlePagination" />
+                </div>
+              </el-card>
+            </div>
+          </template>
+
+          <!-- 第三层：表 (Level 3) -->
+          <template v-else-if="currentNodeLevel === 3">
+            <div class="file-manager-wrapper" style="display: flex; flex-direction: column; height: 100%;">
+              <!-- 新增：搜索区域 (移动到上方) -->
+              <el-collapse-transition>
+                <div v-show="showFieldSearch" class="file-search-container"
+                  style="margin-bottom: 15px; flex-shrink: 0;">
+                  <el-card class="search-card" shadow="never">
+                    <el-form :model="drawerQueryParams" size="small" :inline="true" class="yuanDataClass">
+                      <el-form-item label="字段名">
+                        <el-input v-model="drawerQueryParams.fieldName" placeholder="请输入字段名" clearable
+                          @keyup.enter.native="handleDrawerSearch"></el-input>
+                      </el-form-item>
+                      <el-form-item label="分类">
+                        <el-select v-model="drawerQueryParams.category" placeholder="全部" clearable></el-select>
+                      </el-form-item>
+                      <el-form-item label="分类状态">
+                        <el-select v-model="drawerQueryParams.categoryStatus" placeholder="全部" clearable></el-select>
+                      </el-form-item>
+                      <el-form-item label="安全分级">
+                        <el-select v-model="drawerQueryParams.securityLevel" placeholder="全部" clearable></el-select>
+                      </el-form-item>
+                      <el-form-item label="确认状态">
+                        <el-select v-model="drawerQueryParams.confirmStatus" placeholder="全部" clearable></el-select>
+                      </el-form-item>
+                      <el-form-item label="归类原因">
+                        <el-select v-model="drawerQueryParams.classificationReason" placeholder="全部"
+                          clearable></el-select>
+                      </el-form-item>
+                      <el-form-item label="置信度">
+                        <el-select v-model="drawerQueryParams.confidenceLevel" placeholder="全部" clearable></el-select>
+                      </el-form-item>
+                      <el-form-item label="个保合规">
+                        <el-select v-model="drawerQueryParams.personalProtection" placeholder="全部"
+                          clearable></el-select>
+                      </el-form-item>
+                      <el-form-item label="样本特征">
+                        <el-select v-model="drawerQueryParams.sampleFeature" placeholder="全部" clearable></el-select>
+                      </el-form-item>
+                    </el-form>
+                  </el-card>
+                </div>
+              </el-collapse-transition>
+
+              <el-card class="file-manager-card" shadow="never" style="flex: 1; display: flex; flex-direction: column;" :body-style="{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }">
+                <div slot="header" class="header-title" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <div>
+                    <span style="font-size: 18px; font-weight: bold; display: flex; align-items: center;">
+                      <svg-icon icon-class="table1" style="margin-right: 8px; color: #409EFF;" />
+                      {{ currentNodeData ? currentNodeData.label : '' }}
+                    </span>
+                    <div style="font-size: 13px; color: #606266; margin-top: 10px;">
+                      {{ (currentNodeData && currentNodeData.row && currentNodeData.row.tableRemark) ?
+                        currentNodeData.row.tableRemark : '暂无表注释信息' }}
+                    </div>
+                  </div>
+                  <span style="color: #909399; font-size: 13px;">共 {{ drawerTotal }} 个字段</span>
+                </div>
+
+                <div class="file-manager-content" style="display: flex; flex-direction: column; height: 100%; padding: 20px">
+                  <div style="overflow: hidden; display: flex; flex-direction: column;margin: 15px 0;">
+                    <!-- 操作按钮区域 -->
+                    <div
+                      style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                      <div>
+                        <el-button type="primary" size="medium" @click="$message.info('开发中')">确认结果</el-button>
+                        <el-button type="default" size="medium" @click="$message.info('开发中')">取消操作</el-button>
+                        <el-button type="default" size="medium" @click="$message.info('开发中')">批量修改</el-button>
+                      </div>
+                      <div>
+                        <el-button plain size="medium" @click="showFieldSearch = !showFieldSearch"
+                          style="margin-right: 10px;">
+                          <i :class="showFieldSearch ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
+                          {{ showFieldSearch ? '收起筛选' : '展开筛选' }}
+                        </el-button>
+                        <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
+                          <el-checkbox :indeterminate="isIndeterminateFieldCol" v-model="checkAllFieldCol"
+                            @change="handleFieldCheckAllChange">全选</el-checkbox>
+                          <el-checkbox-group v-model="checkedFieldColumns" @change="handleFieldCheckedCitiesChange"
+                            class="checkboxGroup"
+                            style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
+                            <el-checkbox style="margin-bottom: 10px;" v-for="item in fieldColumnList" :label="item.prop"
+                              :key="item.prop">{{ item.label }}</el-checkbox>
+                          </el-checkbox-group>
+                          <el-button size="medium" slot="reference" icon="el-icon-setting">列设置</el-button>
+                        </el-popover>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 字段表格 -->
+                  <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                    <el-table :data="filteredDrawerData" border style="width: 100%;" height="100%"
+                      :header-cell-style="{ background: '#f8f8f9', color: '#606266' }">
+                      <el-table-column type="selection" width="55" align="center"></el-table-column>
+                      <el-table-column v-for="item in checkedFieldColumnDef" :key="item.prop" :label="item.label"
+                        :prop="item.prop" :width="item.width" show-overflow-tooltip align="center">
+                        <template slot-scope="scope">
+                          <template v-if="item.prop === 'fieldName'">
+                            {{ scope.row.fieldName }} <el-tag size="mini" type="warning"
+                              v-if="scope.row.isPk">PK</el-tag>
+                          </template>
+                          <template v-else-if="item.prop === 'confirmStatus' || item.prop === 'dirtyData'">
+                            <span :style="{ color: scope.row.dirtyData === '是' ? '#67C23A' : '#E6A23C' }">
+                              {{ scope.row.dirtyData === '是' ? '已确认' : '待确认' }}
+                            </span>
+                          </template>
+                          <template v-else-if="item.prop === 'securityLevel'">
+                            <el-tag v-if="scope.row.securityLevel"
+                              :type="scope.row.securityLevel.includes('公开') ? 'success' : 'danger'" size="small"
+                              plain>{{
+                                scope.row.securityLevel }}</el-tag>
+                            <span v-else>--</span>
+                          </template>
+                          <template v-else-if="item.prop === 'aiFieldRemark'">
+                            <el-tag type="primary" size="mini" v-if="scope.row.aiFieldRemark">{{ scope.row.aiFieldRemark
+                            }}</el-tag>
+                            <span v-else>--</span>
+                          </template>
+                          <template v-else-if="item.prop === 'sampleList'">
+                            <span v-if="scope.row.sampleList && scope.row.sampleList.length > 0">{{
+                              scope.row.sampleList[0].value }} <i class="el-icon-view"></i></span>
+                            <span v-else>--</span>
+                          </template>
+                          <template v-else>
+                            {{ scope.row[item.prop] || '--' }}
+                          </template>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+
+                    <pagination v-show="drawerTotal > 0" :total="drawerTotal" :page.sync="drawerQueryParams.pageNum"
+                      :pageSize.sync="drawerQueryParams.pageSize" @pagination="handleDrawerPagination" />
+                  </div>
+                </div>
+              </el-card>
+            </div>
+          </template>
         </template>
 
         <!-- type = 1 时显示文件管理界面 -->
         <template v-else-if="currentNodeType == '1'">
-          <el-card class="file-manager-card" shadow="never">
-            <div class="file-manager-content">
-              <!-- (1) 面包屑导航 -->
-              <div class="breadcrumb-container">
-                <el-breadcrumb separator=">" class="breadcrumb-nav">
-                  <el-breadcrumb-item @click.native="handleBreadcrumbClick(null)">
-                    <i class="el-icon-s-home"></i>
-                  </el-breadcrumb-item>
-                  <el-breadcrumb-item v-for="(item, index) in breadcrumbList" :key="index"
-                    @click.native="handleBreadcrumbClick(item, index)">
-                    <i class="el-icon-folder"></i>
-                    {{ item.name }}
-                  </el-breadcrumb-item>
-                </el-breadcrumb>
+          <div class="file-manager-wrapper" style="display: flex; flex-direction: column; height: 100%;">
+            <!-- 新增：搜索区域 (移动到上方, 并在 card 外) -->
+            <el-collapse-transition>
+              <div v-show="showFileSearch" class="file-search-container" style="margin-bottom: 15px;">
+                <el-card class="search-card" shadow="never">
+                  <el-form :model="fileQueryParams" size="small" :inline="true" class="yuanDataClass">
+                    <el-form-item label="文件名">
+                      <el-input v-model="fileQueryParams.fileName" placeholder="请输入文件名" clearable
+                        @keyup.enter.native="handleFileQuery"></el-input>
+                    </el-form-item>
+                    <el-form-item label="分类">
+                      <el-select v-model="fileQueryParams.categoryName" placeholder="全部" clearable>
+                        <!-- <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label" :value="item.value"></el-option> -->
+                      </el-select>
+                    </el-form-item>
+                    <el-form-item label="分类状态">
+                      <el-select v-model="fileQueryParams.categoryStatus" placeholder="全部" clearable></el-select>
+                    </el-form-item>
+                    <el-form-item label="安全分级">
+                      <el-select v-model="fileQueryParams.securityLevel" placeholder="全部" clearable>
+                        <!-- <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value"></el-option> -->
+                      </el-select>
+                    </el-form-item>
+                    <el-form-item label="确认状态">
+                      <el-select v-model="fileQueryParams.confirm" placeholder="全部" clearable>
+                        <el-option label="待确认" value="0"></el-option>
+                        <el-option label="已确认" value="1"></el-option>
+                      </el-select>
+                    </el-form-item>
+                    <el-form-item label="所属文件夹">
+                      <el-input v-model="fileQueryParams.folderName" placeholder="请输入所属文件夹" clearable
+                        @keyup.enter.native="handleFileQuery"></el-input>
+                    </el-form-item>
+                    <el-form-item label="归类原因">
+                      <el-select v-model="fileQueryParams.classificationReason" placeholder="全部" clearable></el-select>
+                    </el-form-item>
+                    <el-form-item label="置信度">
+                      <el-select v-model="fileQueryParams.confidenceLevel" placeholder="全部" clearable></el-select>
+                    </el-form-item>
+                  </el-form>
+                </el-card>
               </div>
+            </el-collapse-transition>
 
-              <!-- (2) 当前文件夹名称 + 总数量 -->
-              <div class="folder-header">
-                <div class="folder-title">
-                  <span class="folder-name">{{ currentFolderName }}</span>
-                  <span class="folder-count">{{ totalItems }} {{ $t('assetCatalog.item') }}</span>
+            <el-card class="file-manager-card" shadow="never" style="flex: 1;">
+              <div class="file-manager-content">
+                <!-- (1) 面包屑导航 -->
+                <div class="breadcrumb-container">
+                  <el-breadcrumb separator=">" class="breadcrumb-nav">
+                    <el-breadcrumb-item @click.native="handleBreadcrumbClick(null)">
+                      <i class="el-icon-s-home"></i>
+                    </el-breadcrumb-item>
+                    <el-breadcrumb-item v-for="(item, index) in breadcrumbList" :key="index"
+                      @click.native="handleBreadcrumbClick(item, index)">
+                      <i class="el-icon-folder"></i>
+                      {{ item.name }}
+                    </el-breadcrumb-item>
+                  </el-breadcrumb>
                 </div>
-                <!-- (3) 排序组件 -->
-                <!-- 修改排序组件，支持所有字段的升降序 -->
-                <!-- <div class="sort-selector">
+
+                <!-- (2) 当前文件夹名称 + 总数量 -->
+                <div class="folder-header">
+                  <div class="folder-title">
+                    <span class="folder-name">{{ currentFolderName }}</span>
+                    <span class="folder-count">{{ totalItems }} {{ $t('assetCatalog.item') }}</span>
+                  </div>
+                  <!-- (3) 排序组件 -->
+                  <!-- 修改排序组件，支持所有字段的升降序 -->
+                  <!-- <div class="sort-selector">
                   <el-dropdown @command="handleSortChange" trigger="click">
                     <span class="sort-button">
                       {{ currentSortLabel }}
@@ -262,42 +388,101 @@
                     </el-dropdown-menu>
                   </el-dropdown>
                 </div> -->
-              </div>
-
-              <!-- (4) 文件夹展示区域 -->
-              <div v-if="folderList.length > 0" class="folder-section">
-                <div class="section-title">{{ $t('assetCatalog.folder') }}</div>
-                <div class="folder-grid">
-                  <div v-for="folder in folderList" :key="folder.id" class="folder-item"
-                    @click="handleFolderClick(folder)">
-                    <i class="el-icon-folder folder-icon"></i>
-                    <span class="folder-item-name">{{ folder.name }}</span>
-                  </div>
                 </div>
-              </div>
 
-              <!-- (5) 文件列表展示 -->
-              <div v-if="fileList.length > 0" class="file-section">
-                <div class="section-title">{{ $t('assetCatalog.file') }}</div>
-                <div class="file-list">
-                  <div v-for="file in fileList" :key="file.id" class="file-item" @click="openFileDetailDrawer(file)">
-                    <div class="file-content">
-                      <div class="file-info">
-                        <i class="el-icon-document file-icon"></i>
-                        <span class="file-name"><b>{{ file.fileName }}</b>{{ file.name }}</span>
-                      </div>
-                      <div class="file-meta">
-                        <span class="file-time">{{ currentFileTimeLabel }}: {{ file.createTime }}</span>
-                        <span class="file-size">{{ file.fileSize }}</span>
-                      </div>
+                <!-- (4) 文件夹展示区域 -->
+                <div v-if="folderList.length > 0" class="folder-section">
+                  <div class="section-title">{{ $t('assetCatalog.folder') }}</div>
+                  <div class="folder-grid">
+                    <div v-for="folder in folderList" :key="folder.id" class="folder-item"
+                      @click="handleFolderClick(folder)">
+                      <i class="el-icon-folder folder-icon"></i>
+                      <span class="folder-item-name">{{ folder.name }}</span>
                     </div>
-                    <!-- <span class="file-footer"><b>{{ $t('assetCatalog.summary') }}：</b>{{ file.digest }}</span> -->
                   </div>
                 </div>
 
+                <!-- (5) 文件列表展示 -->
+                <div v-if="fileList.length > 0 || folderList.length > 0" class="file-section">
+                  <div class="section-title"
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span>{{ $t('assetCatalog.file') }}</span>
+                  </div>
+
+                  <!-- 新增：操作按钮区域 -->
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <!-- 左侧按钮 -->
+                    <div>
+                      <el-button type="primary" size="medium" @click="$message.info('开发中')">确认结果</el-button>
+                      <el-button type="default" size="medium" @click="$message.info('开发中')">取消操作</el-button>
+                      <el-button type="default" size="medium" @click="$message.info('开发中')">批量修改</el-button>
+                    </div>
+                    <!-- 右侧按钮 -->
+                    <div>
+                      <el-button plain size="medium" @click="toggleFileSearch" style="margin-right: 10px;">
+                        <i :class="showFileSearch ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
+                        {{ showFileSearch ? '收起筛选' : '展开筛选' }}
+                      </el-button>
+                      <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
+                        <el-checkbox :indeterminate="isIndeterminateFileCol" v-model="checkAllFileCol"
+                          @change="handleFileCheckAllChange">全选</el-checkbox>
+                        <el-checkbox-group v-model="checkedUnstructuredColumns" @change="handleFileCheckedCitiesChange"
+                          class="checkboxGroup"
+                          style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
+                          <el-checkbox style="margin-bottom: 10px;" v-for="item in unstructuredColumnList"
+                            :label="item.prop" :key="item.prop">{{ item.label }}</el-checkbox>
+                        </el-checkbox-group>
+                        <el-button size="medium" slot="reference" icon="el-icon-setting">列设置</el-button>
+                      </el-popover>
+                    </div>
+                  </div>
+
+                  <!-- 新增：表格区域 -->
+                  <el-table :data="fileList" class="tableBox" style="width: 100%"
+                    @selection-change="handleFileSelectionChange">
+                    <el-table-column type="selection" width="55" align="center"></el-table-column>
+                    <el-table-column v-for="item in checkedFileColumn" :key="item.prop" :label="item.label"
+                      :prop="item.prop" :width="item.width" show-overflow-tooltip align="center">
+                      <template slot-scope="scope">
+                        <!-- 确认状态样式定制 -->
+                        <template v-if="item.prop === 'confirm'">
+                          <span
+                            :style="{ color: scope.row.confirm === '0' || scope.row.confirm === 0 ? '#E6A23C' : '#67C23A' }">
+                            {{ scope.row.confirm === '0' || scope.row.confirm === 0 ? '待确认' : '已确认' }}
+                          </span>
+                        </template>
+                        <template v-else-if="item.prop === 'securityLevel'">
+                          <el-tag v-if="scope.row.securityLevel" type="danger" size="small">{{ scope.row.securityLevel
+                          }}</el-tag>
+                          <span v-else>--</span>
+                        </template>
+                        <template v-else-if="item.prop === 'fileName'">
+                          <span style="color: #409EFF; cursor: pointer;" @click="openFileDetailDrawer(scope.row)">
+                            <i class="el-icon-document" style="margin-right: 5px;"></i>{{ scope.row.fileName ||
+                              scope.row.name }}
+                          </span>
+                        </template>
+                        <template v-else>
+                          {{ scope.row[item.prop] || '--' }}
+                        </template>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+
+                  <!-- 分页 -->
+                  <pagination v-show="fileTotal > 0" :total="fileTotal" :page.sync="fileQueryParams.pageNum"
+                    :pageSize.sync="fileQueryParams.pageSize" @pagination="handleFileQuery" />
+                </div>
+
+                <!-- 文件夹和文件都为空时显示的占位 -->
+                <div v-if="folderList.length === 0 && fileList.length === 0" class="no-data"
+                  style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: #909399;">
+                  <i class="el-icon-folder-opened" style="font-size: 64px; margin-bottom: 10px; color: #c0c4cc;"></i>
+                  <span>此文件夹为空</span>
+                </div>
               </div>
-            </div>
-          </el-card>
+            </el-card>
+          </div>
         </template>
       </el-col>
     </el-row>
@@ -768,9 +953,74 @@ export default {
           totalScore: 0
         }
       },
+      // 新增：文件搜索与列配置相关
+      fileQueryParams: {
+        fileName: '',
+        categoryName: '',
+        categoryStatus: '',
+        securityLevel: '',
+        confirm: '',
+        folderName: '',
+        classificationReason: '',
+        confidenceLevel: '',
+        pageNum: 1,
+        pageSize: 10
+      },
+      showFileSearch: false,
+      isIndeterminateFileCol: false,
+      checkAllFileCol: false,
+      unstructuredColumnList: [
+        { label: '文件名', prop: 'fileName', width: '200' },
+        { label: '文件大小', prop: 'fileSize', width: '100' },
+        { label: '文件类型', prop: 'fileType', width: '100' },
+        { label: '内容摘要', prop: 'digest', width: '200' },
+        { label: '分类', prop: 'categoryName', width: '150' },
+        { label: '安全分级', prop: 'securityLevel', width: '120' },
+        { label: '确认状态', prop: 'confirm' },
+        { label: '归类原因', prop: 'classificationReason', width: '150' },
+        { label: '置信度', prop: 'confidenceLevel', width: '100' },
+        { label: '置信度分数', prop: 'confidenceScore', width: '120' },
+        { label: '敏感数据', prop: 'sensitiveData', width: '150' },
+        { label: '最后修改时间', prop: 'updateTime', width: '180' },
+        { label: '文件上传时间', prop: 'createTime', width: '180' }
+      ],
+      checkedUnstructuredColumns: ['fileName', 'fileSize', 'fileType', 'digest', 'categoryName', 'securityLevel', 'confirm'],
+      selectedFileNodes: [],
+
+      // 新增：结构化表字段相关状态
+      showFieldSearch: false,
+      isIndeterminateFieldCol: false,
+      checkAllFieldCol: false,
+      fieldColumnList: [
+        { label: '字段名', prop: 'fieldName', width: '180' },
+        { label: '数据类型', prop: 'fieldType', width: '120' },
+        { label: '字段注释', prop: 'oldFieldRemark', width: '150' },
+        { label: 'AI字段注释', prop: 'aiFieldRemark', width: '200' },
+        { label: '分类', prop: 'categoryName', width: '150' },
+        { label: '安全分级', prop: 'securityLevel', width: '120' },
+        { label: '样本', prop: 'sampleList', width: '150' },
+        { label: '确认状态', prop: 'confirmStatus'},
+        { label: '所属库', prop: 'databaseName' },
+        { label: '所属表', prop: 'tableName' },
+        { label: '表注释', prop: 'tableRemark' },
+        { label: 'AI表注释', prop: 'aiTableRemark' },
+        { label: '分类状态', prop: 'categoryStatus' },
+        { label: '归类原因', prop: 'classificationReason' },
+        { label: '个保合规', prop: 'personalProtection' },
+        { label: '识别过程', prop: 'recognitionProcess' },
+        { label: '置信度分数', prop: 'confidenceScore' },
+        { label: '置信度', prop: 'confidenceLevel' },
+        { label: '敏感数据', prop: 'sensitiveData' },
+        { label: '样本特征', prop: 'sampleFeature' }
+      ],
+      checkedFieldColumns: ['fieldName', 'fieldType', 'oldFieldRemark', 'aiFieldRemark', 'categoryName', 'securityLevel', 'sampleList', 'confirmStatus'],
+      selectedFieldNodes: [],
     };
   },
   computed: {
+    checkedFieldColumnDef() {
+      return this.fieldColumnList.filter(item => this.checkedFieldColumns.includes(item.prop));
+    },
     // 文件+文件夹总数
     totalItems() {
       return Number(this.fileTotal) || 0;
@@ -786,6 +1036,22 @@ export default {
         return 'el-icon-bottom';
       }
       return 'el-icon-d-caret';
+    },
+    checkedFileColumn() {
+      return this.unstructuredColumnList.filter(item => this.checkedUnstructuredColumns.includes(item.prop));
+    },
+    currentNodeLevel() {
+      if (this.currentNodeType == '1') return 0;
+      if (!this.currentNodeData) return 1;
+
+      const node = this.$refs.tree ? this.$refs.tree.getNode(this.currentNodeData.id) : null;
+      if (node) return node.level;
+
+      if (this.currentNodeData.parentId) {
+        const parentNode = this.$refs.tree ? this.$refs.tree.getNode(this.currentNodeData.parentId) : null;
+        if (parentNode) return parentNode.level + 1;
+      }
+      return 1;
     }
   },
   watch: {
@@ -916,6 +1182,65 @@ export default {
       return String(value);
     },
 
+    // 新增：文件相关方法
+    handleFileQuery() {
+      if (this.currentNodeData) {
+        this.loadFileListData(this.currentNodeData, {
+          folderId: this.currentFolderId,
+          keepCurrentFolderName: true,
+          immediate: true
+        });
+      }
+    },
+    toggleFileSearch() {
+      this.showFileSearch = !this.showFileSearch;
+    },
+    handleFileCheckAllChange(val) {
+      this.checkedUnstructuredColumns = val ? this.unstructuredColumnList.map(item => item.prop) : [];
+      this.isIndeterminateFileCol = false;
+    },
+    handleFileCheckedCitiesChange(value) {
+      let checkedCount = value.length;
+      this.checkAllFileCol = checkedCount === this.unstructuredColumnList.length;
+      this.isIndeterminateFileCol = checkedCount > 0 && checkedCount < this.unstructuredColumnList.length;
+    },
+    handleFileSelectionChange(val) {
+      this.selectedFileNodes = val;
+    },
+
+    // 新增：结构化视图相关方法
+    handleDatabaseCardClick(db) {
+      this.$refs.tree.setCurrentKey(db.id);
+      this.handleTreeNodeClick(db);
+    },
+    handleTableClick(row) {
+      let tableNode = null;
+      if (this.currentNodeData && this.currentNodeData.children) {
+        tableNode = this.currentNodeData.children.find(child => child.label === row.tableName);
+      }
+      if (tableNode) {
+        this.$refs.tree.setCurrentKey(tableNode.id);
+        this.handleTreeNodeClick(tableNode);
+      } else {
+        const dummyNode = {
+          id: row.tableId || row.id,
+          label: row.tableName,
+          parentId: this.currentNodeData ? this.currentNodeData.id : null,
+          type: '0',
+          row: row
+        };
+        this.handleTreeNodeClick(dummyNode);
+      }
+    },
+    handleFieldCheckAllChange(val) {
+      this.checkedFieldColumns = val ? this.fieldColumnList.map(item => item.prop) : [];
+      this.isIndeterminateFieldCol = false;
+    },
+    handleFieldCheckedCitiesChange(value) {
+      let checkedCount = value.length;
+      this.checkAllFieldCol = checkedCount === this.fieldColumnList.length;
+      this.isIndeterminateFieldCol = checkedCount > 0 && checkedCount < this.fieldColumnList.length;
+    },
 
     handleFolderClick(folder) {
       if (this.folderClickTimer) return;
@@ -959,7 +1284,8 @@ export default {
           databaseList: [{
             parentId: data.id,
             label: data.label
-          }]
+          }],
+          ...this.fileQueryParams
         };
         if (folderId !== null && folderId !== undefined && folderId !== '') {
           response.folderId = folderId;
@@ -1064,16 +1390,24 @@ export default {
           immediate: true
         });
       } else {
-        // 原有表格模式
-        if (data.children && data.children.length > 0) {
-          // 点击的是父节点
-          this.getList(data.children)
-        } else {
-          // 点击的是子节点
-          this.getList([{
-            parentId: data.parentId,
-            label: data.label,
-          }]);
+        // 结构化模式
+        const level = this.currentNodeLevel;
+        if (level === 1) {
+          // 数据源层级,不发请求,由前端渲染 currentNodeData.children
+        } else if (level === 2) {
+          // 数据库层级,加载表列表
+          if (data.children && data.children.length > 0) {
+            this.getList(data.children);
+          } else {
+            this.getList([{
+              parentId: data.parentId,
+              label: data.label,
+            }]);
+          }
+        } else if (level === 3) {
+          // 表层级,加载字段列表
+          const row = data.row || { tableId: data.id, databaseId: data.parentId, tableName: data.label };
+          this.fieldInformationFn(row);
         }
       }
     },
@@ -1171,8 +1505,32 @@ export default {
         return;
       }
 
-      // 打开导出列配置弹窗
-      this.showExportColumnDialog();
+      // 暂时隐藏导出列配置弹窗，直接弹出确认导出的弹窗
+      this.$confirm('是否确认导出选中的数据？', this.$t('tip'), {
+        confirmButtonText: this.$t('confirm'),
+        cancelButtonText: this.$t('cancel'),
+        type: 'warning'
+      }).then(async () => {
+        try {
+          let finalSelectedColumns = [];
+          const res = await getDicts('sys_export_column');
+          if (res.data && res.data.length > 0) {
+            const dictItem = res.data.find(item => item.dictValue == '2');
+            if (dictItem && dictItem.remark) {
+              finalSelectedColumns = dictItem.remark.split(',').map(item => item.trim());
+            }
+          }
+          if (finalSelectedColumns.length === 0) {
+            finalSelectedColumns = [...this.initialDefaultColumns];
+          }
+          this.exportColumnDialog.selectedColumns = [...finalSelectedColumns];
+        } catch (error) {
+          console.error('获取导出列配置失败:', error);
+          this.exportColumnDialog.selectedColumns = [...this.initialDefaultColumns];
+        }
+
+        this.performExport();
+      }).catch(() => { });
     },
 
     async showExportColumnDialog() {
@@ -1544,7 +1902,6 @@ export default {
             ele.featureData = ele.featureData || this.$t('assetCatalog.notInclude')
             return ele
           })
-          this.drawerShow = true
           // 初始化筛选
           this.handleDrawerSearch()
         }
@@ -1556,22 +1913,24 @@ export default {
       this.drawerQueryParams.pageNum = 1
       // 执行筛选
       let filtered = this.drawerData.filter(item => {
-        // 字段名称筛选
         const matchField = !this.drawerQueryParams.fieldName ||
           (item.fieldName && item.fieldName.includes(this.drawerQueryParams.fieldName))
-
-        // 字段类型筛选
         const matchType = !this.drawerQueryParams.fieldType ||
           (item.fieldType && item.fieldType.includes(this.drawerQueryParams.fieldType))
-
-        // 字段注释筛选
         const matchRemark = !this.drawerQueryParams.oldFieldRemark ||
           (item.oldFieldRemark && item.oldFieldRemark.includes(this.drawerQueryParams.oldFieldRemark))
+        const matchSecurity = !this.drawerQueryParams.securityLevel ||
+          (item.securityLevel && item.securityLevel === this.drawerQueryParams.securityLevel)
+        const matchConfirm = !this.drawerQueryParams.confirmStatus ||
+          (item.confirmStatus && item.confirmStatus === this.drawerQueryParams.confirmStatus)
+        const matchCategory = !this.drawerQueryParams.category ||
+          (item.categoryName && item.categoryName === this.drawerQueryParams.category)
+        const matchFeature = !this.drawerQueryParams.sampleFeature ||
+          (item.sampleFeature && item.sampleFeature.includes(this.drawerQueryParams.sampleFeature))
 
-        return matchField && matchType && matchRemark
+        return matchField && matchType && matchRemark && matchSecurity && matchConfirm && matchCategory && matchFeature
       })
 
-      // 计算总条数和分页数据
       this.drawerTotal = filtered.length
       this.filteredDrawerData = this.getPagedData(filtered)
     },
@@ -1583,22 +1942,25 @@ export default {
     },
     // 分页切换
     handleDrawerPagination() {
-      this.filteredDrawerData = this.getPagedData(
-        this.drawerData.filter(item => {
-          const matchField = !this.drawerQueryParams.fieldName ||
-            (item.fieldName && item.fieldName.includes(this.drawerQueryParams.fieldName))
+      let filtered = this.drawerData.filter(item => {
+        const matchField = !this.drawerQueryParams.fieldName ||
+          (item.fieldName && item.fieldName.includes(this.drawerQueryParams.fieldName))
+        const matchType = !this.drawerQueryParams.fieldType ||
+          (item.fieldType && item.fieldType.includes(this.drawerQueryParams.fieldType))
+        const matchRemark = !this.drawerQueryParams.oldFieldRemark ||
+          (item.oldFieldRemark && item.oldFieldRemark.includes(this.drawerQueryParams.oldFieldRemark))
+        const matchSecurity = !this.drawerQueryParams.securityLevel ||
+          (item.securityLevel && item.securityLevel === this.drawerQueryParams.securityLevel)
+        const matchConfirm = !this.drawerQueryParams.confirmStatus ||
+          (item.confirmStatus && item.confirmStatus === this.drawerQueryParams.confirmStatus)
+        const matchCategory = !this.drawerQueryParams.category ||
+          (item.categoryName && item.categoryName === this.drawerQueryParams.category)
+        const matchFeature = !this.drawerQueryParams.sampleFeature ||
+          (item.sampleFeature && item.sampleFeature.includes(this.drawerQueryParams.sampleFeature))
 
-          // 字段类型筛选
-          const matchType = !this.drawerQueryParams.fieldType ||
-            (item.fieldType && item.fieldType.includes(this.drawerQueryParams.fieldType))
-
-          // 字段注释筛选
-          const matchRemark = !this.drawerQueryParams.oldFieldRemark ||
-            (item.oldFieldRemark && item.oldFieldRemark.includes(this.drawerQueryParams.oldFieldRemark))
-
-          return matchField && matchType && matchRemark
-        })
-      )
+        return matchField && matchType && matchRemark && matchSecurity && matchConfirm && matchCategory && matchFeature
+      })
+      this.filteredDrawerData = this.getPagedData(filtered)
     },
 
     // 分页事件处理
