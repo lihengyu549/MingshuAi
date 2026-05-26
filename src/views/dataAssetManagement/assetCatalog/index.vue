@@ -29,9 +29,9 @@
 
           <div class="head-container" v-loading="treeLoading">
             <div class="tree-scroll-container">
-              <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
+              <el-tree class="treeBox" :data="categoryList" :props="defaultProps"
                 :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
-                node-key="id" highlight-current show-checkbox :check-strictly="false"
+                node-key="id" highlight-current show-checkbox :check-strictly="false" :accordion="true"
                 :default-checked-keys="defaultCheckedKeys" @node-click="handleTreeNodeClick" @check="handleTreeCheck"
                 :render-content="renderContent" />
             </div>
@@ -1453,6 +1453,21 @@ export default {
         const level = this.currentNodeLevel;
         if (level === 1) {
           // 点击第一层：数据源
+          // 手动控制同级其他数据源节点收起
+          const rootNodes = this.$refs.tree.store.root.childNodes;
+          if (rootNodes) {
+            rootNodes.forEach(child => {
+              if (child.data.id !== data.id) {
+                child.expanded = false;
+                // 同时把它们下面所有的子节点也全部收起，防止下次展开时状态错乱
+                if (child.childNodes && child.childNodes.length > 0) {
+                  child.childNodes.forEach(subChild => {
+                    subChild.expanded = false;
+                  });
+                }
+              }
+            });
+          }
           this.$refs.tree.store.nodesMap[data.id].expanded = true;
           
           // 从后端获取第一层数据源详情和其下的数据库列表
@@ -1497,6 +1512,15 @@ export default {
                   row: table 
                 }));
                 this.$set(data, 'children', tableNodes);
+              }
+              // 手动控制同级其他节点收起
+              const parentNode = this.$refs.tree.getNode(data.parentId);
+              if (parentNode && parentNode.childNodes) {
+                parentNode.childNodes.forEach(child => {
+                  if (child.data.id !== data.id) {
+                    child.expanded = false;
+                  }
+                });
               }
               if(this.$refs.tree.store.nodesMap[data.id]) {
                 this.$refs.tree.store.nodesMap[data.id].expanded = true;
@@ -1565,10 +1589,26 @@ export default {
      */
     renderContent(h, { node, data }) {
       let iconClass = 'database1';
+      
+      // 判断节点层级
+      let level = 1;
+      if (data.level !== undefined && data.level !== null) {
+        level = data.level;
+      } else if (node.level !== undefined && node.level !== null) {
+        level = node.level;
+      }
+
+      // 根据层级和类型设置不同的图标
       if (data.type == 1) {
         iconClass = 'file-o';
-      } else if (data.children && data.children.length > 0) {
-        iconClass = 'sysBusiness';
+      } else {
+        if (level == 1) {
+          iconClass = 'home-dataAsset';
+        } else if (level == 2) {
+          iconClass = 'databaseSolid';
+        } else if (level == 3) {
+          iconClass = 'table1';
+        }
       }
 
       const labelPart = h('span', {
