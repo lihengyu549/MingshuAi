@@ -54,30 +54,30 @@
                       <svg-icon icon-class="home-dataAsset" style="font-size: 18px;margin-right: 10px;"></svg-icon>
                       数据源：{{ currentNodeData ? currentNodeData.label : '' }}
                     </span>
-                    <div style="margin-top: 10px; font-size: 13px; color: #606266;">
-                      OA系统：一体化协同办公 OA 系统，涵盖流程审批、行政办公、人事管理、信息发布、资源管理等功能，实现企业线上高效协同办公，规范办公流程，提升整体办公效率。
+                    <div style="margin-top: 10px; font-size: 13px; color: #606266;" v-if="dataSourceDetail.systemName || dataSourceDetail.systemRemark">
+                      {{ dataSourceDetail.systemName }}：{{ dataSourceDetail.systemRemark }}
                     </div>
                   </div>
-                  <span style="color: #909399; font-size: 13px;">共 {{ currentNodeData && currentNodeData.children ? currentNodeData.children.length : 0 }} 个数据库</span>
+                  <span style="color: #909399; font-size: 13px;">共 {{ dataSourceDetail.databaseCount }} 个数据库</span>
                 </div>
                 
                 <div class="file-manager-content" style="flex: 1; display: flex; flex-direction: column; height: 100%;">
-                  <div class="file-section" style="flex: 1; overflow-y: auto; padding: 20px;">
+                  <div class="file-section" style="flex: 1; overflow-y: auto; padding: 20px;" v-loading="loading">
                     <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                      <div v-for="db in (currentNodeData && currentNodeData.children ? currentNodeData.children : [])" :key="db.id" style="width: 33%;">
+                      <div v-for="db in dataSourceDetail.databaseList" :key="db.id" style="width: calc(33.33% - 13.33px);">
                         <el-card shadow="hover" @click.native="handleDatabaseCardClick(db)" style="cursor: pointer; border-radius: 8px; border: 1px solid #ebeef5;">
                           <div slot="header" style="display: flex; align-items: center; margin-bottom: 15px;">
                             <div style="width: 40px; height: 40px; background-color: #f0f2f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
                               <svg-icon icon-class="databaseSolid" style="font-size: 18px;" />
                             </div>
                             <div>
-                              <div style="font-weight: bold; font-size: 16px; color: #303133;">{{ db.label }}</div>
-                              <div style="font-size: 12px; color: #909399; margin-top: 5px;">UTF-8 / MySQL</div>
+                              <div style="font-weight: bold; font-size: 16px; color: #303133;">{{ db.label || db.databaseName }}</div>
+                              <div style="font-size: 12px; color: #909399; margin-top: 5px;">{{ db.databaseType || 'UTF-8 / MySQL' }}</div>
                             </div>
                           </div>
                           <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
                             <span style="color: #606266;">包含表数量</span>
-                            <span style="color: #409EFF; font-weight: bold; font-size: 16px;">{{ db.children ? db.children.length : (db.list ? db.list.length : 0) }}</span>
+                            <span style="color: #409EFF; font-weight: bold; font-size: 16px;">{{ db.tableCount || 0 }}</span>
                           </div>
                         </el-card>
                       </div>
@@ -248,7 +248,7 @@
 
                   <!-- 字段表格 -->
                   <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
-                    <el-table :data="filteredDrawerData" border style="width: 100%;" height="100%"
+                    <el-table :data="filteredDrawerData" style="width: 100%;" height="100%"
                       :header-cell-style="{ background: '#f8f8f9', color: '#606266' }">
                       <el-table-column type="selection" width="55" align="center"></el-table-column>
                       <el-table-column v-for="item in checkedFieldColumnDef" :key="item.prop" :label="item.label"
@@ -719,7 +719,8 @@ import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import {
   getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId,
   getSelectTableNames, callAIPaddingComments, updateDataQualityAssessment, updateFieldListByFieldId,
-  callAIPaddingCommentsByAll, updateDataQualityAssessmentByAll, propertyCatalogueExport
+  callAIPaddingCommentsByAll, updateDataQualityAssessmentByAll, propertyCatalogueExport,
+  getTables, getPropertyList
 } from "@/api/system/protectCategory";
 import { getDicts } from "@/api/system/dict/data";
 // 引入getProjectFileList接口
@@ -788,7 +789,13 @@ export default {
       debounceTimeout: null,//防抖动
       treeLoading: false,
       treeID: '', //tree 父节点id
-      databaseName: '',// tree 子节点label
+      // 第一层数据源详情及数据库列表
+      dataSourceDetail: {
+        systemName: '', // OA系统
+        systemRemark: '', // 一体化协同办公 OA 系统...
+        databaseCount: 0,
+        databaseList: []
+      },
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -1044,6 +1051,12 @@ export default {
       if (this.currentNodeType == '1') return 0;
       if (!this.currentNodeData) return 1;
 
+      // 优先使用后端返回的 level 字段
+      if (this.currentNodeData.level !== undefined && this.currentNodeData.level !== null) {
+        return Number(this.currentNodeData.level);
+      }
+
+      // 如果后端没有返回，或者异常情况下，作为兜底依然尝试通过树节点获取层级
       const node = this.$refs.tree ? this.$refs.tree.getNode(this.currentNodeData.id) : null;
       if (node) return node.level;
 
@@ -1103,7 +1116,54 @@ export default {
   mounted() {
   },
   methods: {
+    // 动态获取左侧树数据
+    getProtectCategory() {
+      this.Loading = true;
+      getAllProxys().then((resp) => {
+        this.Loading = false;
+        if (resp.code == 200) {
+          if (resp.data && resp.data.length > 0) {
+            this.categoryList = this.processTreeData(resp.data);
+            this.treeID = resp.data[0].id;
+            this.$nextTick(() => {
+              this.$refs.tree.setCurrentKey(this.treeID);
+              this.isTreeAllChecked = true;
 
+              // 根据类型初始化右侧视图
+              if (this.categoryList[0].type == '0') {
+                // 结构化数据源，模拟点击触发 handleTreeNodeClick，进入第一层视图
+                this.handleTreeNodeClick(this.categoryList[0]);
+              } else {
+                // 非结构化数据源，初始化加载文件列表
+                this.currentNodeData = this.categoryList[0];
+                this.currentNodeType = this.categoryList[0].type || '0';
+                this.currentFolderId = null;
+                this.breadcrumbList = [];
+                this.loadFileListData(this.categoryList[0], {
+                  folderId: null,
+                  keepCurrentFolderName: false,
+                  immediate: true
+                });
+              }
+            });
+          } else {
+            this.categoryList = [];
+          }
+        }
+      }).catch(() => {
+        this.Loading = false;
+      });
+    },
+    // 处理树节点数据，初始化状态
+    processTreeData(data) {
+      return data.map(item => {
+        // 如果是结构化数据源节点（后端只返回到库层级），确保有 children 数组
+        if (item.type === '0' || item.type === 0) {
+           item.children = item.children || []
+        }
+        return item
+      })
+    },
 
     handleBreadcrumbClick(item, index) {
       if (item === null) {
@@ -1380,32 +1440,88 @@ export default {
       this.currentNodeData = data; // 保存当前节点数据
 
       if (this.currentNodeType == '1') {
-        // 文件管理模式
+        // 文件管理模式 (非结构化，一层)
         this.breadcrumbList = [];
         this.currentFolderId = null;
-        // 加载文件列表数据（接口会返回 res.data.title 作为顶层标题）
         this.loadFileListData(data, {
           folderId: null,
           keepCurrentFolderName: false,
           immediate: true
         });
       } else {
-        // 结构化模式
+        // 结构化模式 (数据源 -> 库 -> 表)
         const level = this.currentNodeLevel;
         if (level === 1) {
-          // 数据源层级,不发请求,由前端渲染 currentNodeData.children
+          // 点击第一层：数据源
+          this.$refs.tree.store.nodesMap[data.id].expanded = true;
+          
+          // 从后端获取第一层数据源详情和其下的数据库列表
+          this.loading = true;
+          const params = {
+            queryType: '1',
+            databaseId: data.id // 数据源ID
+          };
+          getPropertyList(params).then(res => {
+            if (res.code === 200) {
+              const resData = res.data || {};
+              this.dataSourceDetail = {
+                systemName: resData.systemName || '',
+                systemRemark: resData.systemRemark || '',
+                databaseCount: resData.databaseCount || (resData.databaseList ? resData.databaseList.length : 0),
+                databaseList: resData.databaseList || []
+              };
+            }
+          }).finally(() => {
+            this.loading = false;
+          });
+          
         } else if (level === 2) {
-          // 数据库层级,加载表列表
-          if (data.children && data.children.length > 0) {
-            this.getList(data.children);
-          } else {
-            this.getList([{
-              parentId: data.parentId,
-              label: data.label,
-            }]);
-          }
+          // 点击第二层：数据库，展开节点、获取表数据并插入到树中，右侧展示表列表
+          this.loading = true;
+          // 第一步：调用新增的 getTables 接口获取该库下的表数据塞进树节点
+          const treeParams = {
+            parentId: data.parentId, // 数据源ID
+            databaseName: data.label  // 数据库名称
+          };
+          
+          getTables(treeParams).then(res => {
+            if (res.code === 200) {
+              const tables = res.data || [];
+              if (!data.children || data.children.length === 0) {
+                const tableNodes = tables.map(table => ({
+                  id: table.tableId || table.id || Math.random().toString(36).substr(2, 9),
+                  label: table.tableName,
+                  parentId: data.id,
+                  type: '0', 
+                  level: 3, // 明确标识为第3层
+                  row: table 
+                }));
+                this.$set(data, 'children', tableNodes);
+              }
+              if(this.$refs.tree.store.nodesMap[data.id]) {
+                this.$refs.tree.store.nodesMap[data.id].expanded = true;
+              }
+            }
+          });
+
+          // 第二步：调用 getPropertyList 获取右侧表格的分页详情数据
+          const tableParams = {
+            queryType: '2',
+            databaseId: data.parentId, // 数据源ID
+            databaseName: data.label,
+            pageNum: this.queryParams.pageNum,
+            pageSize: this.queryParams.pageSize
+          };
+          getPropertyList(tableParams).then(res => {
+            if (res.code === 200) {
+              this.dataAll = res.data.list || [];
+              this.total = res.data.total || 0;
+            }
+          }).finally(() => {
+            this.loading = false;
+          });
         } else if (level === 3) {
-          // 表层级,加载字段列表
+          // 点击第三层：表，右侧展示表字段信息
           const row = data.row || { tableId: data.id, databaseId: data.parentId, tableName: data.label };
           this.fieldInformationFn(row);
         }
@@ -1882,14 +1998,28 @@ export default {
     async fieldInformationFn(row) {
       this.filedRowData = row
       this.drawerTitle = this.$t('assetCatalog.tableNameLabel') + row.tableName
-      let params = {
-        tableId: row.tableId,
-        databaseId: row.databaseId,
+      
+      let sourceId = '';
+      if (this.currentNodeData) {
+        if (this.currentNodeLevel === 3) {
+          const parentNode = this.$refs.tree.getNode(this.currentNodeData.parentId);
+          if (parentNode) sourceId = parentNode.data.parentId;
+        } else if (this.currentNodeLevel === 2) {
+          sourceId = this.currentNodeData.parentId;
+        }
       }
-      getAllFieldListByTableIdAndDatabaseId(params).then(res => {
+
+      let params = {
+        queryType: '3',
+        databaseId: sourceId || row.proxysId || row.databaseId,
+        tableId: row.tableId || row.id,
+        tableName: row.tableName
+      }
+      getPropertyList(params).then(res => {
         if (res.code == 200) {
           // 处理原始数据,补充必要字段
-          this.drawerData = res.data.map(ele => {
+          const listData = res.data.list || res.data || [];
+          this.drawerData = listData.map(ele => {
             if (ele.data) {
               ele.sampleList = JSON.parse(ele.data).map(item => ({ value: item }))
             }
@@ -2005,43 +2135,7 @@ export default {
         this.handleQuery();
       }, 500); // 500毫秒防抖
     },
-    // 左侧树数据
-    getProtectCategory() {
-      this.treeLoading = true;
-      this.Loading = true;
-      getAllProxys().then((resp) => {
-        this.Loading = false;
-        if (resp.data.length === 0) {
-          this.categoryList = [];
-        } else {
-          this.categoryList = resp.data;
-          this.treeID = resp.data[0].id;
-          this.$nextTick(() => {
-            this.$refs.tree.setCurrentKey(this.treeID);
-            // 页面初次加载时全选所有节点
-            this.isTreeAllChecked = true;
-
-            // 示例:获取所有children并打印(可根据需要调整调用时机)
-            if (this.categoryList[0].type == '0') {
-              const allChildren = this.collectAllChildren([this.categoryList[0]]);
-              this.getList(allChildren);
-            } else {
-              this.currentNodeData = this.categoryList[0];
-              this.currentNodeType = this.categoryList[0].type || '0';
-              this.currentFolderId = null;
-              this.breadcrumbList = [];
-              this.loadFileListData(this.categoryList[0], {
-                folderId: null,
-                keepCurrentFolderName: false,
-                immediate: true
-              });
-            }
-          });
-        }
-        this.treeLoading = false;
-        // this.getSelectTableNamesFn();
-      });
-    },
+    
     /**
  * 收集所有树节点的children,构建成指定结构数组
  * @param {Array} treeData - 树数据源

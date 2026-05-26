@@ -249,6 +249,25 @@ export function getAllProxys(params) {
     params: params,
   })
 }
+
+// 获取指定数据源下拉所有表名
+export function getTables(params) {
+  return request({
+    url: '/system/proxy/database/proxys/getAllProxys/getTables',
+    method: 'get',
+    params: params,
+  })
+}
+
+// 获取结构化数据第一、二、三层
+export function getPropertyList(params) {
+  return request({
+    url: '/system/protectTableField/getPropertyList',
+    method: 'post',
+    data: params,
+  })
+}
+
 // 资产目录列表接口
 export function getTableListByProxysId(params, body) {
   return request({
