@@ -181,61 +181,61 @@
                     <el-form :model="drawerQueryParams" size="small" :inline="true" class="yuanDataClass">
                       <el-form-item label="字段名">
                         <el-input v-model="drawerQueryParams.fieldName" placeholder="请输入字段名" clearable
-                          @keyup.enter.native="handleDrawerSearch"></el-input>
+                          @keyup.enter.native="handleDrawerSearch" @clear="handleDrawerSearch"></el-input>
                       </el-form-item>
                       <el-form-item label="分类">
                         <el-select ref="categorySelect" v-model="drawerQueryParams.categoryName" placeholder="全部"
-                          clearable @clear="handleCategoryClear" multiple collapse-tags>
+                          clearable @clear="handleCategoryClear" collapse-tags :filter-method="filterCategoryTree">
                           <el-option style="height: 100%; padding: 0" value="">
                             <el-tree :data="categoryOptions" :props="{ label: 'categoryName', children: 'children' }"
-                              node-key="id" @node-click="handleCategoryNodeClick" :expand-on-click-node="false"
-                              show-checkbox check-strictly @check="handleCategoryCheck" ref="categoryTree" />
+                              node-key="id" :expand-on-click-node="false"
+                              show-checkbox @check="handleCategoryCheck" ref="categoryTree" :filter-node-method="filterNode" />
                           </el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="分类状态">
-                        <el-select v-model="drawerQueryParams.categoryStatus" placeholder="全部" clearable>
+                        <el-select v-model="drawerQueryParams.categoryStatus" placeholder="全部" clearable @change="handleDrawerSearch">
                           <el-option v-for="item in dict.type.sys_classification_state" :key="item.value"
                             :label="item.label" :value="item.value"></el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="安全分级">
-                        <el-select v-model="drawerQueryParams.securityLevel" placeholder="全部" clearable>
+                        <el-select v-model="drawerQueryParams.securityLevel" placeholder="全部" clearable @change="handleDrawerSearch">
                           <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
                             :value="item.value"></el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="确认状态">
-                        <el-select v-model="drawerQueryParams.confirmStatus" placeholder="全部" clearable>
+                        <el-select v-model="drawerQueryParams.confirmStatus" placeholder="全部" clearable @change="handleDrawerSearch">
                           <el-option v-for="item in confirmList" :key="item.value" :label="item.label"
                             :value="item.value"></el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="归类原因">
-                        <el-select v-model="drawerQueryParams.classificationReason" placeholder="全部" clearable>
+                        <el-select v-model="drawerQueryParams.classificationReason" placeholder="全部" clearable @change="handleDrawerSearch">
                           <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value"
                             :label="item.label" :value="item.value"></el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="置信度">
-                        <el-select v-model="drawerQueryParams.confidenceLevel" placeholder="全部" clearable>
+                        <el-select v-model="drawerQueryParams.confidenceLevel" placeholder="全部" clearable @change="handleDrawerSearch">
                           <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name"
                             :value="item.value"></el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="个保合规">
                         <el-select ref="ppSelect" v-model="drawerQueryParams.personalProtectionName" placeholder="全部"
-                          clearable @clear="handlePPClear" multiple collapse-tags>
+                          clearable @clear="handlePPClear" collapse-tags :filter-method="filterPPTree">
                           <el-option style="height: 100%; padding: 0" value="">
                             <el-tree :data="personalProtectionOptions"
                               :props="{ label: 'categoryName', children: 'children' }" node-key="id"
-                              @node-click="handlePPNodeClick" :expand-on-click-node="false" show-checkbox check-strictly
-                              @check="handlePPCheck" ref="ppTree" />
+                              :expand-on-click-node="false" show-checkbox
+                              @check="handlePPCheck" ref="ppTree" :filter-node-method="filterNode" />
                           </el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="样本特征">
-                        <el-select v-model="drawerQueryParams.sampleFeature" placeholder="全部" clearable>
+                        <el-select v-model="drawerQueryParams.sampleFeature" placeholder="全部" clearable @change="handleDrawerSearch">
                           <el-option label="是" value="1" />
                           <el-option label="否" value="0" />
                         </el-select>
@@ -302,8 +302,7 @@
                         :prop="item.prop" :width="item.width" show-overflow-tooltip align="center">
                         <template slot-scope="scope">
                           <template v-if="item.prop === 'fieldName'">
-                            {{ scope.row.fieldName }} <el-tag size="mini" type="warning"
-                              v-if="scope.row.isPk">PK</el-tag>
+                            {{ scope.row.fieldName }}
                           </template>
                           <template v-else-if="item.prop === 'confirmStatus' || item.prop === 'dirtyData'">
                             <span :style="{ color: scope.row.dirtyData === '是' ? '#67C23A' : '#E6A23C' }">
@@ -353,48 +352,48 @@
                   <el-form :model="fileQueryParams" size="small" :inline="true" class="yuanDataClass">
                     <el-form-item label="文件名">
                       <el-input v-model="fileQueryParams.fileName" placeholder="请输入文件名" clearable
-                        @keyup.enter.native="handleFileQuery"></el-input>
+                        @keyup.enter.native="handleFileQuery" @clear="handleFileQuery"></el-input>
                     </el-form-item>
                     <el-form-item label="分类">
-                      <el-select ref="categorySelect" v-model="fileQueryParams.categoryName" placeholder="全部" clearable
-                        @clear="handleCategoryClear" multiple collapse-tags>
+                      <el-select ref="fileCategorySelect" v-model="fileQueryParams.categoryName" placeholder="全部" clearable
+                        @clear="handleCategoryClear" collapse-tags :filter-method="filterFileCategoryTree">
                         <el-option style="height: 100%; padding: 0" value="">
                           <el-tree :data="categoryOptions" :props="{ label: 'categoryName', children: 'children' }"
-                            node-key="id" @node-click="handleCategoryNodeClick" :expand-on-click-node="false"
-                            show-checkbox check-strictly @check="handleCategoryCheck" ref="categoryTree" />
+                            node-key="id" :expand-on-click-node="false"
+                            show-checkbox @check="handleCategoryCheck" ref="fileCategoryTree" :filter-node-method="filterNode" />
                         </el-option>
                       </el-select>
                     </el-form-item>
                     <el-form-item label="分类状态">
-                      <el-select v-model="fileQueryParams.categoryStatus" placeholder="全部" clearable>
+                      <el-select v-model="fileQueryParams.categoryStatus" placeholder="全部" clearable @change="handleFileQuery">
                         <el-option v-for="item in dict.type.sys_classification_state" :key="item.value"
                           :label="item.label" :value="item.value"></el-option>
                       </el-select>
                     </el-form-item>
                     <el-form-item label="安全分级">
-                      <el-select v-model="fileQueryParams.securityLevel" placeholder="全部" clearable>
+                      <el-select v-model="fileQueryParams.securityLevel" placeholder="全部" clearable @change="handleFileQuery">
                         <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
                           :value="item.value"></el-option>
                       </el-select>
                     </el-form-item>
                     <el-form-item label="确认状态">
-                      <el-select v-model="fileQueryParams.confirm" placeholder="全部" clearable>
+                      <el-select v-model="fileQueryParams.confirm" placeholder="全部" clearable @change="handleFileQuery">
                         <el-option v-for="item in confirmList" :key="item.value" :label="item.label"
                           :value="item.value"></el-option>
                       </el-select>
                     </el-form-item>
                     <el-form-item label="所属文件夹">
                       <el-input v-model="fileQueryParams.folderName" placeholder="请输入所属文件夹" clearable
-                        @keyup.enter.native="handleFileQuery"></el-input>
+                        @keyup.enter.native="handleFileQuery" @clear="handleFileQuery"></el-input>
                     </el-form-item>
                     <el-form-item label="归类原因">
-                      <el-select v-model="fileQueryParams.classificationReason" placeholder="全部" clearable>
+                      <el-select v-model="fileQueryParams.classificationReason" placeholder="全部" clearable @change="handleFileQuery">
                         <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value"
                           :label="item.label" :value="item.value"></el-option>
                       </el-select>
                     </el-form-item>
                     <el-form-item label="置信度">
-                      <el-select v-model="fileQueryParams.confidenceLevel" placeholder="全部" clearable>
+                      <el-select v-model="fileQueryParams.confidenceLevel" placeholder="全部" clearable @change="handleFileQuery">
                         <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name"
                           :value="item.value"></el-option>
                       </el-select>
@@ -561,11 +560,11 @@
             </el-form-item>
             <el-form-item :label="$t('assetCatalog.fieldType')" prop="fieldType">
               <el-input v-model="drawerQueryParams.fieldType" :placeholder="$t('assetCatalog.pleaseInputFieldType')"
-                @input="handleDrawerSearch" size="mini"></el-input>
+                @input="handleDrawerSearch" @clear="handleDrawerSearch" size="mini"></el-input>
             </el-form-item>
             <el-form-item :label="$t('assetCatalog.fieldComment')" prop="oldFieldRemark">
               <el-input v-model="drawerQueryParams.oldFieldRemark"
-                :placeholder="$t('assetCatalog.pleaseInputFieldComment')" @input="handleDrawerSearch"
+                :placeholder="$t('assetCatalog.pleaseInputFieldComment')" @input="handleDrawerSearch" @clear="handleDrawerSearch"
                 size="mini"></el-input>
             </el-form-item>
             <!-- <el-form-item label="脏数据" prop="dirtyData">
@@ -885,14 +884,13 @@ export default {
       // 抽屉筛选参数
       drawerQueryParams: {
         fieldName: '',
-        dirtyData: '',
         sampleFeature: '',
         fieldType: '',
         oldFieldRemark: '',
-        category: [],
-        categoryName: [],
-        personalProtection: [],
-        personalProtectionName: [],
+        category: '',
+        categoryName: '',
+        personalProtection: '',
+        personalProtectionName: '',
         pageNum: 1,
         pageSize: 10
       },
@@ -1046,6 +1044,7 @@ export default {
       // 新增：文件搜索与列配置相关
       fileQueryParams: {
         fileName: '',
+        category: '',
         categoryName: '',
         categoryStatus: '',
         securityLevel: '',
@@ -1431,21 +1430,22 @@ export default {
       this.loading = true;
       const data = this.currentNodeData;
       // 寻找最顶层的数据源ID
-      let sourceId = data.parentId;
+      let sourceId = '';
       const parentNode = this.$refs.tree.getNode(data.parentId);
       if (parentNode && parentNode.data.parentId) {
         sourceId = parentNode.data.parentId;
       }
+      
+      // 如果由于节点不存在导致sourceId为空，尝试从row中获取更准确的顶层数据源ID，否则兜底使用 data.parentId
+      if (!sourceId) {
+        sourceId = (data.row && (data.row.proxysId || data.row.databaseId)) || data.parentId;
+      }
 
       // 合并基础参数和表单查询参数
-      // 处理多选数组，将数组转为逗号分隔的字符串
+      // 因为现在category和personalProtection已经是字符串了，所以不需要再处理了
       const processedParams = { ...this.drawerQueryParams };
-      if (Array.isArray(processedParams.category)) {
-        processedParams.category = processedParams.category.join(',');
-      }
-      if (Array.isArray(processedParams.personalProtection)) {
-        processedParams.personalProtection = processedParams.personalProtection.join(',');
-      }
+      delete processedParams.categoryName;
+      delete processedParams.personalProtectionName;
 
       const params = {
         ...processedParams,
@@ -1565,6 +1565,9 @@ export default {
         const order = this.sortOrders[sortField];
         const isAsc = order === 'asc';
 
+        const processedParams = { ...this.fileQueryParams };
+        delete processedParams.categoryName;
+
         const response = {
           sortField: sortField,
           isAsc: isAsc,
@@ -1573,7 +1576,7 @@ export default {
             parentId: data.id,
             label: data.label
           }],
-          ...this.fileQueryParams
+          ...processedParams
         };
         if (folderId !== null && folderId !== undefined && folderId !== '') {
           response.folderId = folderId;
@@ -2320,52 +2323,8 @@ export default {
       this.filedRowData = row
       this.drawerTitle = this.$t('assetCatalog.tableNameLabel') + row.tableName
 
-      let sourceId = '';
-      if (this.currentNodeData) {
-        if (this.currentNodeLevel === 3) {
-          const parentNode = this.$refs.tree.getNode(this.currentNodeData.parentId);
-          if (parentNode) sourceId = parentNode.data.parentId;
-        } else if (this.currentNodeLevel === 2) {
-          sourceId = this.currentNodeData.parentId;
-        }
-      }
-
-      // 处理多选数组，将数组转为逗号分隔的字符串
-      const processedParams = { ...this.drawerQueryParams };
-      if (Array.isArray(processedParams.category)) {
-        processedParams.category = processedParams.category.join(',');
-      }
-      if (Array.isArray(processedParams.personalProtection)) {
-        processedParams.personalProtection = processedParams.personalProtection.join(',');
-      }
-
-      let params = {
-        queryType: '3',
-        databaseId: sourceId || row.proxysId || row.databaseId,
-        tableId: row.tableId || row.id,
-        tableName: row.tableName
-      }
-      getPropertyList(params).then(res => {
-        if (res.code == 200) {
-          // 处理原始数据,补充必要字段
-          const listData = res.data.list || res.data || [];
-          this.drawerData = listData.map(ele => {
-            if (ele.data) {
-              ele.sampleList = JSON.parse(ele.data).map(item => ({ value: item }))
-            }
-            ele.drawerEdit = false
-            ele.drawerEditDirtyData = false
-            ele.aiFieldRemarkEdit = ''
-            ele.dirtyDataEditMsg = ''
-            // 确保状态字段有默认值
-            ele.dirtyData = ele.dirtyData || this.$t('assetCatalog.no')
-            ele.featureData = ele.featureData || this.$t('assetCatalog.notInclude')
-            return ele
-          })
-          // 初始化筛选
-          this.handleDrawerSearch()
-        }
-      })
+      // 初始化筛选
+      this.handleDrawerSearch()
     },
     // 抽屉筛选处理
     handleDrawerSearch() {
@@ -2384,59 +2343,203 @@ export default {
       this.getTableFieldsData()
     },
 
-    // 新增：分类树节点点击事件
-    handleCategoryNodeClick(data) {
-      const isChecked = this.$refs.categoryTree.getCheckedKeys().includes(data.id);
-      if (isChecked) {
-        this.$refs.categoryTree.setChecked(data.id, false);
-      } else {
-        this.$refs.categoryTree.setChecked(data.id, true);
+    filterCategoryTree(val) {
+      if (this.$refs.categoryTree) {
+        this.$refs.categoryTree.filter(val);
       }
-      this.syncCategorySelection();
+    },
+    filterFileCategoryTree(val) {
+      if (this.$refs.fileCategoryTree) {
+        this.$refs.fileCategoryTree.filter(val);
+      }
+    },
+    filterPPTree(val) {
+      if (this.$refs.ppTree) {
+        this.$refs.ppTree.filter(val);
+      }
     },
     // 新增：分类树节点勾选事件
-    handleCategoryCheck(data, status) {
-      this.syncCategorySelection();
+    handleCategoryCheck(data, checkData) {
+      // 筛选出选中的叶子节点（无children的节点）
+      const checkedLeafNodes = checkData.checkedNodes.filter(item => !item.children);
+
+      // 无选中节点或无选中子项（叶子节点），清空展示
+      if (checkData.checkedKeys.length === 0 || checkedLeafNodes.length === 0) {
+        if (this.currentNodeType == '1') {
+          this.fileQueryParams.categoryName = '';
+          this.fileQueryParams.category = '';
+          this.handleFileQuery();
+        } else {
+          this.drawerQueryParams.categoryName = '';
+          this.drawerQueryParams.category = '';
+          this.handleDrawerSearch();
+        }
+        return;
+      }
+
+      // 收集所有选中叶子节点对应的根节点（去重）
+      const rootNodeNames = new Set();
+      checkedLeafNodes.forEach(leafNode => {
+        const rootNode = this.findRootNode(this.categoryOptions, leafNode.id);
+        if (rootNode) {
+          rootNodeNames.add(rootNode.categoryName); // 根节点名称
+        }
+      });
+
+      // 展示根节点名称（用逗号分隔）
+      const categoryNameStr = Array.from(rootNodeNames).join(',');
+
+      // 收集叶子节点及其所有祖先节点的ID
+      const allCategoryIds = new Set();
+      checkedLeafNodes.forEach(leafNode => {
+        // 添加叶子节点自身
+        allCategoryIds.add(leafNode.id);
+
+        // 递归收集所有祖先节点（包括父节点、爷节点等）
+        const ancestors = this.findAllAncestors(this.categoryOptions, leafNode.id);
+        ancestors.forEach(ancestorId => allCategoryIds.add(ancestorId));
+      });
+
+      const categoryIdsStr = Array.from(allCategoryIds).join(',');
+
+      if (this.currentNodeType == '1') {
+        this.fileQueryParams.categoryName = categoryNameStr;
+        this.fileQueryParams.category = categoryIdsStr;
+        this.handleFileQuery();
+      } else {
+        this.drawerQueryParams.categoryName = categoryNameStr;
+        this.drawerQueryParams.category = categoryIdsStr;
+        this.handleDrawerSearch();
+      }
     },
-    syncCategorySelection() {
-      const checkedNodes = this.$refs.categoryTree.getCheckedNodes();
-      this.drawerQueryParams.category = checkedNodes.map(node => node.id);
-      this.drawerQueryParams.categoryName = checkedNodes.map(node => node.categoryName);
+    // 查找节点对应的根节点
+    findRootNode(tree, nodeId) {
+      const findNode = (nodes, id) => {
+        for (const node of nodes) {
+          if (node.id === id) {
+            return node;
+          }
+          if (node.children && node.children.length) {
+            const found = findNode(node.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      const node = findNode(tree, nodeId);
+      if (!node) return null;
+
+      let currentNode = node;
+      // 在 assetCatalog 中根节点的 parentId 可能是当前 databaseId
+      while (currentNode.parentId !== 0 && currentNode.parentId !== null && currentNode.parentId !== undefined) {
+        const parentNode = findNode(tree, currentNode.parentId);
+        if (!parentNode) break;
+        currentNode = parentNode;
+      }
+      return currentNode;
+    },
+
+    // 查找节点的所有祖先节点ID
+    findAllAncestors(tree, nodeId) {
+      const ancestors = [];
+      const findNode = (nodes, id) => {
+        for (const node of nodes) {
+          if (node.id === id) {
+            return node;
+          }
+          if (node.children && node.children.length) {
+            const found = findNode(node.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      const currentNode = findNode(tree, nodeId);
+      if (!currentNode) return ancestors;
+
+      let parentId = currentNode.parentId;
+      while (parentId) {
+        const parentNode = findNode(tree, parentId);
+        if (parentNode) {
+          ancestors.push(parentNode.id);
+          parentId = parentNode.parentId;
+        } else {
+          break;
+        }
+      }
+      return ancestors;
     },
     // 新增：分类清除事件
     handleCategoryClear() {
-      this.drawerQueryParams.category = [];
-      this.drawerQueryParams.categoryName = [];
+      if (this.currentNodeType == '1') {
+        this.fileQueryParams.category = '';
+        this.fileQueryParams.categoryName = '';
+        this.handleFileQuery();
+      } else {
+        this.drawerQueryParams.category = '';
+        this.drawerQueryParams.categoryName = '';
+        this.handleDrawerSearch();
+      }
       if (this.$refs.categoryTree) {
         this.$refs.categoryTree.setCheckedKeys([]);
+      }
+      if (this.$refs.fileCategoryTree) {
+        this.$refs.fileCategoryTree.setCheckedKeys([]);
       }
     },
     // 新增：个保合规树节点点击事件
     handlePPNodeClick(data) {
-      const isChecked = this.$refs.ppTree.getCheckedKeys().includes(data.id);
-      if (isChecked) {
-        this.$refs.ppTree.setChecked(data.id, false);
-      } else {
-        this.$refs.ppTree.setChecked(data.id, true);
-      }
-      this.syncPPSelection();
+      // do nothing here, let the checkbox handle the selection
     },
     // 新增：个保合规树节点勾选事件
-    handlePPCheck(data, status) {
-      this.syncPPSelection();
-    },
-    syncPPSelection() {
-      const checkedNodes = this.$refs.ppTree.getCheckedNodes();
-      this.drawerQueryParams.personalProtection = checkedNodes.map(node => node.id);
-      this.drawerQueryParams.personalProtectionName = checkedNodes.map(node => node.categoryName);
+    handlePPCheck(data, checkData) {
+      // 筛选出选中的叶子节点（无children的节点）
+      const checkedLeafNodes = checkData.checkedNodes.filter(item => !item.children);
+
+      // 无选中节点或无选中子项（叶子节点），清空展示
+      if (checkData.checkedKeys.length === 0 || checkedLeafNodes.length === 0) {
+        this.drawerQueryParams.personalProtectionName = '';
+        this.drawerQueryParams.personalProtection = '';
+        this.handleDrawerSearch();
+        return;
+      }
+
+      // 收集所有选中叶子节点对应的根节点（去重）
+      const rootNodeNames = new Set();
+      checkedLeafNodes.forEach(leafNode => {
+        const rootNode = this.findRootNode(this.personalProtectionOptions, leafNode.id);
+        if (rootNode) {
+          rootNodeNames.add(rootNode.categoryName); // 根节点名称
+        }
+      });
+
+      // 展示根节点名称（用逗号分隔）
+      this.drawerQueryParams.personalProtectionName = Array.from(rootNodeNames).join(',');
+
+      // 收集叶子节点及其所有祖先节点的ID
+      const allCategoryIds = new Set();
+      checkedLeafNodes.forEach(leafNode => {
+        // 添加叶子节点自身
+        allCategoryIds.add(leafNode.id);
+
+        // 递归收集所有祖先节点（包括父节点、爷节点等）
+        const ancestors = this.findAllAncestors(this.personalProtectionOptions, leafNode.id);
+        ancestors.forEach(ancestorId => allCategoryIds.add(ancestorId));
+      });
+
+      this.drawerQueryParams.personalProtection = Array.from(allCategoryIds).join(',');
+      this.handleDrawerSearch();
     },
     // 新增：个保合规清除事件
     handlePPClear() {
-      this.drawerQueryParams.personalProtection = [];
-      this.drawerQueryParams.personalProtectionName = [];
+      this.drawerQueryParams.personalProtection = '';
+      this.drawerQueryParams.personalProtectionName = '';
       if (this.$refs.ppTree) {
         this.$refs.ppTree.setCheckedKeys([]);
       }
+      this.handleDrawerSearch();
     },
 
     // 分页事件处理
@@ -2449,14 +2552,13 @@ export default {
       // 先手动重置筛选参数
       this.drawerQueryParams = {
         fieldName: '',
-        dirtyData: '',
         sampleFeature: '',
         fieldType: '',
         oldFieldRemark: '',
-        category: [],
-        categoryName: [],
-        personalProtection: [],
-        personalProtectionName: [],
+        category: '',
+        categoryName: '',
+        personalProtection: '',
+        personalProtectionName: '',
         pageNum: 1,
         pageSize: 10
       }
