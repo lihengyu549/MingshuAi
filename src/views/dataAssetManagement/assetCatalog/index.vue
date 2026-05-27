@@ -1375,6 +1375,63 @@ export default {
       this.selectedFileNodes = val;
     },
 
+    /**
+     * 获取数据库表分页数据 (第二层)
+     */
+    getDatabaseTablesData() {
+      this.loading = true;
+      const data = this.currentNodeData;
+      const params = {
+        queryType: '2',
+        databaseId: data.parentId, // 数据源ID
+        databaseName: data.label,  // 数据库名称
+        pageNum: this.queryParams.pageNum,
+        pageSize: this.queryParams.pageSize
+      };
+      
+      getPropertyList(params).then(res => {
+        if (res.code === 200) {
+          this.databaseTableList = res.data.list || res.data.records || [];
+          this.dbTotal = res.data.total || 0;
+        }
+      }).finally(() => {
+        this.loading = false;
+      });
+    },
+
+    /**
+     * 获取表字段分页数据 (第三层)
+     */
+    getTableFieldsData() {
+      this.loading = true;
+      const data = this.currentNodeData;
+      // 寻找最顶层的数据源ID
+      let sourceId = data.parentId;
+      const parentNode = this.$refs.tree.getNode(data.parentId);
+      if (parentNode && parentNode.data.parentId) {
+        sourceId = parentNode.data.parentId;
+      }
+      
+      // 合并基础参数和表单查询参数
+      const params = {
+        ...this.drawerQueryParams,
+        queryType: '3',
+        databaseId: sourceId,      // 数据源ID
+        tableId: data.row.tableId || data.id, // 表ID
+        tableName: data.label,     // 表名
+      };
+
+      getPropertyList(params).then(res => {
+        if (res.code === 200) {
+          const resData = res.data || {};
+          this.fieldList = resData.list || resData.records || resData.rows || [];
+          this.drawerTotal = resData.total || 0;
+        }
+      }).finally(() => {
+        this.loading = false;
+      });
+    },
+
     // 新增：结构化视图相关方法
     handleDatabaseCardClick(db) {
       // 通过树组件模拟点击左侧树节点，以保持参数传递完全一致
@@ -2238,34 +2295,13 @@ export default {
     },
     // 分页切换
     handleDrawerPagination() {
-      let filtered = this.drawerData.filter(item => {
-        const matchField = !this.drawerQueryParams.fieldName ||
-          (item.fieldName && item.fieldName.includes(this.drawerQueryParams.fieldName))
-        const matchType = !this.drawerQueryParams.fieldType ||
-          (item.fieldType && item.fieldType.includes(this.drawerQueryParams.fieldType))
-        const matchRemark = !this.drawerQueryParams.oldFieldRemark ||
-          (item.oldFieldRemark && item.oldFieldRemark.includes(this.drawerQueryParams.oldFieldRemark))
-        const matchSecurity = !this.drawerQueryParams.securityLevel ||
-          (item.securityLevel && item.securityLevel === this.drawerQueryParams.securityLevel)
-        const matchConfirm = !this.drawerQueryParams.confirmStatus ||
-          (item.confirmStatus && item.confirmStatus === this.drawerQueryParams.confirmStatus)
-        const matchCategory = !this.drawerQueryParams.category ||
-          (item.categoryName && item.categoryName === this.drawerQueryParams.category)
-        const matchFeature = !this.drawerQueryParams.sampleFeature ||
-          (item.sampleFeature && item.sampleFeature.includes(this.drawerQueryParams.sampleFeature))
-
-        return matchField && matchType && matchRemark && matchSecurity && matchConfirm && matchCategory && matchFeature
-      })
-      this.filteredDrawerData = this.getPagedData(filtered)
+      this.getTableFieldsData()
     },
 
     // 分页事件处理
     handlePagination() {
-      // 获取当前选中的节点数据
-      const checkedNodes = this.$refs.tree.getCheckedNodes();
-      const checkedNodeData = this.getCheckedNodeData(checkedNodes);
-      // 调用列表刷新方法
-      this.getList(checkedNodeData);
+      // 获取当前选中的节点数据，调用新版接口
+      this.getDatabaseTablesData()
     },
     // 重置筛选条件
     resetDrawerSearch() {
