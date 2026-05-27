@@ -87,7 +87,7 @@
                             style="padding: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
                             <span style="color: #606266;">包含表数量</span>
                             <span style="color: #409EFF; font-weight: bold; font-size: 16px;">{{ db.tableCount || 0
-                              }}</span>
+                            }}</span>
                           </div>
                         </el-card>
                       </div>
@@ -184,7 +184,14 @@
                           @keyup.enter.native="handleDrawerSearch"></el-input>
                       </el-form-item>
                       <el-form-item label="分类">
-                        <el-select v-model="drawerQueryParams.category" placeholder="全部" clearable></el-select>
+                        <el-select ref="categorySelect" v-model="drawerQueryParams.categoryName" placeholder="全部"
+                          clearable @clear="handleCategoryClear" multiple collapse-tags>
+                          <el-option style="height: 100%; padding: 0" value="">
+                            <el-tree :data="categoryOptions" :props="{ label: 'categoryName', children: 'children' }"
+                              node-key="id" @node-click="handleCategoryNodeClick" :expand-on-click-node="false"
+                              show-checkbox check-strictly @check="handleCategoryCheck" ref="categoryTree" />
+                          </el-option>
+                        </el-select>
                       </el-form-item>
                       <el-form-item label="分类状态">
                         <el-select v-model="drawerQueryParams.categoryStatus" placeholder="全部" clearable>
@@ -217,10 +224,14 @@
                         </el-select>
                       </el-form-item>
                       <el-form-item label="个保合规">
-                        <el-select v-model="drawerQueryParams.personalProtection" placeholder="全部" clearable>
-                          <el-option label="敏感个人信息" value="1"></el-option>
-                          <el-option label="一般个人信息" value="2"></el-option>
-                          <el-option label="无关个人信息" value="0"></el-option>
+                        <el-select ref="ppSelect" v-model="drawerQueryParams.personalProtectionName" placeholder="全部"
+                          clearable @clear="handlePPClear" multiple collapse-tags>
+                          <el-option style="height: 100%; padding: 0" value="">
+                            <el-tree :data="personalProtectionOptions"
+                              :props="{ label: 'categoryName', children: 'children' }" node-key="id"
+                              @node-click="handlePPNodeClick" :expand-on-click-node="false" show-checkbox check-strictly
+                              @check="handlePPCheck" ref="ppTree" />
+                          </el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="样本特征">
@@ -345,7 +356,14 @@
                         @keyup.enter.native="handleFileQuery"></el-input>
                     </el-form-item>
                     <el-form-item label="分类">
-                      <el-select v-model="fileQueryParams.categoryName" placeholder="全部" clearable></el-select>
+                      <el-select ref="categorySelect" v-model="fileQueryParams.categoryName" placeholder="全部" clearable
+                        @clear="handleCategoryClear" multiple collapse-tags>
+                        <el-option style="height: 100%; padding: 0" value="">
+                          <el-tree :data="categoryOptions" :props="{ label: 'categoryName', children: 'children' }"
+                            node-key="id" @node-click="handleCategoryNodeClick" :expand-on-click-node="false"
+                            show-checkbox check-strictly @check="handleCategoryCheck" ref="categoryTree" />
+                        </el-option>
+                      </el-select>
                     </el-form-item>
                     <el-form-item label="分类状态">
                       <el-select v-model="fileQueryParams.categoryStatus" placeholder="全部" clearable>
@@ -764,15 +782,16 @@ import {
   getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId,
   getSelectTableNames, callAIPaddingComments, updateDataQualityAssessment, updateFieldListByFieldId,
   callAIPaddingCommentsByAll, updateDataQualityAssessmentByAll, propertyCatalogueExport,
-  getTables, getPropertyList, getCategorySchemaLevelList
+  getTables, getPropertyList, getCategorySchemaLevelList, treeListI
 } from "@/api/system/protectCategory";
 import { getDicts } from "@/api/system/dict/data";
 // 引入getProjectFileList接口
 import { getProjectFileList } from "@/api/system/unstructured";
+import Treeselect from "@riophae/vue-treeselect";
 export default {
   dicts: ['sys_export_column', 'sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un'],
   name: "assetCatalog",
-  components: {},
+  components: { Treeselect },
   data() {
     return {
       currentNodeType: '0', // 当前节点的type值,默认为'0'
@@ -870,6 +889,10 @@ export default {
         sampleFeature: '',
         fieldType: '',
         oldFieldRemark: '',
+        category: [],
+        categoryName: [],
+        personalProtection: [],
+        personalProtectionName: [],
         pageNum: 1,
         pageSize: 10
       },
@@ -879,6 +902,8 @@ export default {
         children: "children",
         label: "label"
       },
+      personalProtectionOptions: [],
+      categoryOptions: [],
       tableKey: 0,
       editMsg: '',
 
@@ -1388,11 +1413,11 @@ export default {
         pageNum: this.queryParams.pageNum,
         pageSize: this.queryParams.pageSize
       };
-      
+
       getPropertyList(params).then(res => {
         if (res.code === 200) {
-          this.databaseTableList = res.data.list || res.data.records || [];
-          this.dbTotal = res.data.total || 0;
+          this.dataAll = res.data.list || res.data.records || [];
+          this.total = res.data.total || 0;
         }
       }).finally(() => {
         this.loading = false;
@@ -1411,10 +1436,19 @@ export default {
       if (parentNode && parentNode.data.parentId) {
         sourceId = parentNode.data.parentId;
       }
-      
+
       // 合并基础参数和表单查询参数
+      // 处理多选数组，将数组转为逗号分隔的字符串
+      const processedParams = { ...this.drawerQueryParams };
+      if (Array.isArray(processedParams.category)) {
+        processedParams.category = processedParams.category.join(',');
+      }
+      if (Array.isArray(processedParams.personalProtection)) {
+        processedParams.personalProtection = processedParams.personalProtection.join(',');
+      }
+
       const params = {
-        ...this.drawerQueryParams,
+        ...processedParams,
         queryType: '3',
         databaseId: sourceId,      // 数据源ID
         tableId: data.row.tableId || data.id, // 表ID
@@ -1424,7 +1458,23 @@ export default {
       getPropertyList(params).then(res => {
         if (res.code === 200) {
           const resData = res.data || {};
-          this.fieldList = resData.list || resData.records || resData.rows || [];
+          const listData = resData.list || resData.records || resData.rows || [];
+          this.filteredDrawerData = listData.map(ele => {
+            if (ele.data) {
+              try {
+                ele.sampleList = JSON.parse(ele.data).map(item => ({ value: item }))
+              } catch (e) {
+                ele.sampleList = []
+              }
+            }
+            ele.drawerEdit = false
+            ele.drawerEditDirtyData = false
+            ele.aiFieldRemarkEdit = ''
+            ele.dirtyDataEditMsg = ''
+            ele.dirtyData = ele.dirtyData || this.$t('assetCatalog.no')
+            ele.featureData = ele.featureData || this.$t('assetCatalog.notInclude')
+            return ele
+          });
           this.drawerTotal = resData.total || 0;
         }
       }).finally(() => {
@@ -1622,6 +1672,31 @@ export default {
       });
     },
 
+    // 新增：获取个保合规下拉选项
+    fetchPersonalProtectionOptions() {
+      let data = {
+        parentId: 1,
+        needSub: 1,
+        ifAddUnclassified: 2
+      };
+      treeListI(data).then(res => {
+        this.personalProtectionOptions = this.handleTree(res.data, "id") || res.data
+      });
+    },
+
+    // 新增：获取分类下拉选项
+    fetchCategoryOptions(databaseId) {
+      let data = {
+        parentId: databaseId,
+        needSub: 1,
+        ifAddUnclassified: 2
+      };
+      treeListI(data).then(res => {
+        this.categoryOptions = this.handleTree(res.data, "id") || res.data
+      });
+    },
+
+
     /**
      * 点击树节点事件:点击节点展示右侧列表
      * @param {Object} data - 点击的节点数据
@@ -1645,6 +1720,8 @@ export default {
         if (level === 1) {
           // 获取安全分级下拉选项
           this.fetchLevelOptions(data.id);
+          this.fetchPersonalProtectionOptions();
+          this.fetchCategoryOptions(data.id);
 
           // 点击第一层：数据源
           // 手动控制同级其他数据源节点收起
@@ -2253,6 +2330,15 @@ export default {
         }
       }
 
+      // 处理多选数组，将数组转为逗号分隔的字符串
+      const processedParams = { ...this.drawerQueryParams };
+      if (Array.isArray(processedParams.category)) {
+        processedParams.category = processedParams.category.join(',');
+      }
+      if (Array.isArray(processedParams.personalProtection)) {
+        processedParams.personalProtection = processedParams.personalProtection.join(',');
+      }
+
       let params = {
         queryType: '3',
         databaseId: sourceId || row.proxysId || row.databaseId,
@@ -2284,18 +2370,73 @@ export default {
     // 抽屉筛选处理
     handleDrawerSearch() {
       // 重置页码
-      this.drawerPageNum = 1
+      this.drawerQueryParams.pageNum = 1
       this.getTableFieldsData()
     },
     // 分页处理
     getPagedData(data) {
-      const start = (this.drawerPageNum - 1) * this.drawerPageSize
-      const end = start + this.drawerPageSize
+      const start = (this.drawerQueryParams.pageNum - 1) * this.drawerQueryParams.pageSize
+      const end = start + this.drawerQueryParams.pageSize
       return data.slice(start, end)
     },
     // 分页切换
     handleDrawerPagination() {
       this.getTableFieldsData()
+    },
+
+    // 新增：分类树节点点击事件
+    handleCategoryNodeClick(data) {
+      const isChecked = this.$refs.categoryTree.getCheckedKeys().includes(data.id);
+      if (isChecked) {
+        this.$refs.categoryTree.setChecked(data.id, false);
+      } else {
+        this.$refs.categoryTree.setChecked(data.id, true);
+      }
+      this.syncCategorySelection();
+    },
+    // 新增：分类树节点勾选事件
+    handleCategoryCheck(data, status) {
+      this.syncCategorySelection();
+    },
+    syncCategorySelection() {
+      const checkedNodes = this.$refs.categoryTree.getCheckedNodes();
+      this.drawerQueryParams.category = checkedNodes.map(node => node.id);
+      this.drawerQueryParams.categoryName = checkedNodes.map(node => node.categoryName);
+    },
+    // 新增：分类清除事件
+    handleCategoryClear() {
+      this.drawerQueryParams.category = [];
+      this.drawerQueryParams.categoryName = [];
+      if (this.$refs.categoryTree) {
+        this.$refs.categoryTree.setCheckedKeys([]);
+      }
+    },
+    // 新增：个保合规树节点点击事件
+    handlePPNodeClick(data) {
+      const isChecked = this.$refs.ppTree.getCheckedKeys().includes(data.id);
+      if (isChecked) {
+        this.$refs.ppTree.setChecked(data.id, false);
+      } else {
+        this.$refs.ppTree.setChecked(data.id, true);
+      }
+      this.syncPPSelection();
+    },
+    // 新增：个保合规树节点勾选事件
+    handlePPCheck(data, status) {
+      this.syncPPSelection();
+    },
+    syncPPSelection() {
+      const checkedNodes = this.$refs.ppTree.getCheckedNodes();
+      this.drawerQueryParams.personalProtection = checkedNodes.map(node => node.id);
+      this.drawerQueryParams.personalProtectionName = checkedNodes.map(node => node.categoryName);
+    },
+    // 新增：个保合规清除事件
+    handlePPClear() {
+      this.drawerQueryParams.personalProtection = [];
+      this.drawerQueryParams.personalProtectionName = [];
+      if (this.$refs.ppTree) {
+        this.$refs.ppTree.setCheckedKeys([]);
+      }
     },
 
     // 分页事件处理
@@ -2308,11 +2449,19 @@ export default {
       // 先手动重置筛选参数
       this.drawerQueryParams = {
         fieldName: '',
+        dirtyData: '',
+        sampleFeature: '',
         fieldType: '',
         oldFieldRemark: '',
+        category: [],
+        categoryName: [],
+        personalProtection: [],
+        personalProtectionName: [],
+        pageNum: 1,
+        pageSize: 10
       }
-      this.drawerPageNum = 1
-      this.drawerPageSize = 10
+      if (this.$refs.categoryTree) this.$refs.categoryTree.setCheckedKeys([]);
+      if (this.$refs.ppTree) this.$refs.ppTree.setCheckedKeys([]);
       this.getTableFieldsData()
     },
     // 树节点过滤方法
