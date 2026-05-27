@@ -131,8 +131,8 @@
                       <el-table-column label="表注释" prop="tableRemark" show-overflow-tooltip></el-table-column>
                       <el-table-column label="AI表注释" prop="aiTableRemark" show-overflow-tooltip>
                         <template slot-scope="scope">
-                          <el-tag type="primary" size="mini" v-if="scope.row.craftTableRemark">{{
-                            scope.row.craftTableRemark }}</el-tag>
+                          <el-tag type="primary" size="mini" v-if="scope.row.aiTableRemark">{{
+                            scope.row.aiTableRemark }}</el-tag>
                         </template>
                       </el-table-column>
                       <el-table-column label="数据质量评分" width="150">
@@ -188,37 +188,42 @@
                           clearable @clear="handleCategoryClear" collapse-tags :filter-method="filterCategoryTree">
                           <el-option style="height: 100%; padding: 0" value="">
                             <el-tree :data="categoryOptions" :props="{ label: 'categoryName', children: 'children' }"
-                              node-key="id" :expand-on-click-node="false"
-                              show-checkbox @check="handleCategoryCheck" ref="categoryTree" :filter-node-method="filterNode" />
+                              node-key="id" :expand-on-click-node="false" show-checkbox @check="handleCategoryCheck"
+                              ref="categoryTree" :filter-node-method="filterNode" />
                           </el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="分类状态">
-                        <el-select v-model="drawerQueryParams.categoryStatus" placeholder="全部" clearable @change="handleDrawerSearch">
+                        <el-select v-model="drawerQueryParams.categoryStatus" placeholder="全部" clearable
+                          @change="handleDrawerSearch">
                           <el-option v-for="item in dict.type.sys_classification_state" :key="item.value"
                             :label="item.label" :value="item.value"></el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="安全分级">
-                        <el-select v-model="drawerQueryParams.securityLevel" placeholder="全部" clearable @change="handleDrawerSearch">
+                        <el-select v-model="drawerQueryParams.securityLevel" placeholder="全部" clearable
+                          @change="handleDrawerSearch">
                           <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
                             :value="item.value"></el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="确认状态">
-                        <el-select v-model="drawerQueryParams.confirmStatus" placeholder="全部" clearable @change="handleDrawerSearch">
+                        <el-select v-model="drawerQueryParams.confirmStatus" placeholder="全部" clearable
+                          @change="handleDrawerSearch">
                           <el-option v-for="item in confirmList" :key="item.value" :label="item.label"
                             :value="item.value"></el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="归类原因">
-                        <el-select v-model="drawerQueryParams.classificationReason" placeholder="全部" clearable @change="handleDrawerSearch">
+                        <el-select v-model="drawerQueryParams.classificationReason" placeholder="全部" clearable
+                          @change="handleDrawerSearch">
                           <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value"
                             :label="item.label" :value="item.value"></el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="置信度">
-                        <el-select v-model="drawerQueryParams.confidenceLevel" placeholder="全部" clearable @change="handleDrawerSearch">
+                        <el-select v-model="drawerQueryParams.confidenceLevel" placeholder="全部" clearable
+                          @change="handleDrawerSearch">
                           <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name"
                             :value="item.value"></el-option>
                         </el-select>
@@ -229,13 +234,14 @@
                           <el-option style="height: 100%; padding: 0" value="">
                             <el-tree :data="personalProtectionOptions"
                               :props="{ label: 'categoryName', children: 'children' }" node-key="id"
-                              :expand-on-click-node="false" show-checkbox
-                              @check="handlePPCheck" ref="ppTree" :filter-node-method="filterNode" />
+                              :expand-on-click-node="false" show-checkbox @check="handlePPCheck" ref="ppTree"
+                              :filter-node-method="filterNode" />
                           </el-option>
                         </el-select>
                       </el-form-item>
                       <el-form-item label="样本特征">
-                        <el-select v-model="drawerQueryParams.sampleFeature" placeholder="全部" clearable @change="handleDrawerSearch">
+                        <el-select v-model="drawerQueryParams.sampleFeature" placeholder="全部" clearable
+                          @change="handleDrawerSearch">
                           <el-option label="是" value="1" />
                           <el-option label="否" value="0" />
                         </el-select>
@@ -302,28 +308,34 @@
                         :prop="item.prop" :width="item.width" show-overflow-tooltip align="center">
                         <template slot-scope="scope">
                           <template v-if="item.prop === 'fieldName'">
-                            {{ scope.row.fieldName }}
+                            {{ scope.row.fieldName }} <el-tag size="mini" type="warning"
+                              v-if="scope.row.isPk">PK</el-tag>
                           </template>
                           <template v-else-if="item.prop === 'confirmStatus' || item.prop === 'dirtyData'">
                             <span :style="{ color: scope.row.dirtyData === '是' ? '#67C23A' : '#E6A23C' }">
                               {{ scope.row.dirtyData === '是' ? '已确认' : '待确认' }}
                             </span>
                           </template>
-                          <template v-else-if="item.prop === 'securityLevel'">
-                            <el-tag v-if="scope.row.securityLevel"
-                              :type="scope.row.securityLevel.includes('公开') ? 'success' : 'danger'" size="small"
-                              plain>{{
-                                scope.row.securityLevel }}</el-tag>
+                          <template v-else-if="item.prop === 'securityLevelName'">
+                            <el-tag v-if="scope.row.securityLevelName" plain :style="getRiskStyle(scope.row.securityLevel)">{{
+                              scope.row.securityLevelName }}</el-tag>
                             <span v-else>--</span>
                           </template>
-                          <template v-else-if="item.prop === 'aiFieldRemark'">
-                            <el-tag type="primary" size="mini" v-if="scope.row.aiFieldRemark">{{ scope.row.aiFieldRemark
+                          <template v-else-if="item.prop === 'craftRemark'">
+                            <el-tag type="primary" size="mini" v-if="scope.row.craftRemark">{{ scope.row.craftRemark
                             }}</el-tag>
                             <span v-else>--</span>
                           </template>
-                          <template v-else-if="item.prop === 'sampleList'">
-                            <span v-if="scope.row.sampleList && scope.row.sampleList.length > 0">{{
-                              scope.row.sampleList[0].value }} <i class="el-icon-view"></i></span>
+                          <template v-else-if="item.prop === 'sampleData'">
+                            <el-tooltip placement="bottom" effect="light" v-if="scope.row.sampleData && scope.row.sampleData.length > 0">
+                              <div slot="content">
+                                <el-table :data="scope.row.sampleData" height="250" border class="tableCla" style="width: 100%">
+                                  <el-table-column type="index" label="序号" width="50" align="center" />
+                                  <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip align="center" />
+                                </el-table>
+                              </div>
+                              <i class="el-icon-view" style="font-size: 18px; cursor: pointer;"></i>
+                            </el-tooltip>
                             <span v-else>--</span>
                           </template>
                           <template v-else>
@@ -355,23 +367,25 @@
                         @keyup.enter.native="handleFileQuery" @clear="handleFileQuery"></el-input>
                     </el-form-item>
                     <el-form-item label="分类">
-                      <el-select ref="fileCategorySelect" v-model="fileQueryParams.categoryName" placeholder="全部" clearable
-                        @clear="handleCategoryClear" collapse-tags :filter-method="filterFileCategoryTree">
+                      <el-select ref="fileCategorySelect" v-model="fileQueryParams.categoryName" placeholder="全部"
+                        clearable @clear="handleCategoryClear" collapse-tags :filter-method="filterFileCategoryTree">
                         <el-option style="height: 100%; padding: 0" value="">
                           <el-tree :data="categoryOptions" :props="{ label: 'categoryName', children: 'children' }"
-                            node-key="id" :expand-on-click-node="false"
-                            show-checkbox @check="handleCategoryCheck" ref="fileCategoryTree" :filter-node-method="filterNode" />
+                            node-key="id" :expand-on-click-node="false" show-checkbox @check="handleCategoryCheck"
+                            ref="fileCategoryTree" :filter-node-method="filterNode" />
                         </el-option>
                       </el-select>
                     </el-form-item>
                     <el-form-item label="分类状态">
-                      <el-select v-model="fileQueryParams.categoryStatus" placeholder="全部" clearable @change="handleFileQuery">
+                      <el-select v-model="fileQueryParams.categoryStatus" placeholder="全部" clearable
+                        @change="handleFileQuery">
                         <el-option v-for="item in dict.type.sys_classification_state" :key="item.value"
                           :label="item.label" :value="item.value"></el-option>
                       </el-select>
                     </el-form-item>
                     <el-form-item label="安全分级">
-                      <el-select v-model="fileQueryParams.securityLevel" placeholder="全部" clearable @change="handleFileQuery">
+                      <el-select v-model="fileQueryParams.securityLevel" placeholder="全部" clearable
+                        @change="handleFileQuery">
                         <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
                           :value="item.value"></el-option>
                       </el-select>
@@ -387,13 +401,15 @@
                         @keyup.enter.native="handleFileQuery" @clear="handleFileQuery"></el-input>
                     </el-form-item>
                     <el-form-item label="归类原因">
-                      <el-select v-model="fileQueryParams.classificationReason" placeholder="全部" clearable @change="handleFileQuery">
+                      <el-select v-model="fileQueryParams.classificationReason" placeholder="全部" clearable
+                        @change="handleFileQuery">
                         <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value"
                           :label="item.label" :value="item.value"></el-option>
                       </el-select>
                     </el-form-item>
                     <el-form-item label="置信度">
-                      <el-select v-model="fileQueryParams.confidenceLevel" placeholder="全部" clearable @change="handleFileQuery">
+                      <el-select v-model="fileQueryParams.confidenceLevel" placeholder="全部" clearable
+                        @change="handleFileQuery">
                         <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name"
                           :value="item.value"></el-option>
                       </el-select>
@@ -512,9 +528,10 @@
                             {{ scope.row.confirm === '0' || scope.row.confirm === 0 ? '待确认' : '已确认' }}
                           </span>
                         </template>
-                        <template v-else-if="item.prop === 'securityLevel'">
-                          <el-tag v-if="scope.row.securityLevel" type="danger" size="small">{{ scope.row.securityLevel
-                          }}</el-tag>
+                        <template v-else-if="item.prop === 'securityLevelName'">
+                          <el-tag v-if="scope.row.securityLevelName" type="danger" size="small">{{
+                            scope.row.securityLevelName
+                            }}</el-tag>
                           <span v-else>--</span>
                         </template>
                         <template v-else-if="item.prop === 'fileName'">
@@ -564,8 +581,8 @@
             </el-form-item>
             <el-form-item :label="$t('assetCatalog.fieldComment')" prop="oldFieldRemark">
               <el-input v-model="drawerQueryParams.oldFieldRemark"
-                :placeholder="$t('assetCatalog.pleaseInputFieldComment')" @input="handleDrawerSearch" @clear="handleDrawerSearch"
-                size="mini"></el-input>
+                :placeholder="$t('assetCatalog.pleaseInputFieldComment')" @input="handleDrawerSearch"
+                @clear="handleDrawerSearch" size="mini"></el-input>
             </el-form-item>
             <!-- <el-form-item label="脏数据" prop="dirtyData">
           <el-select v-model="drawerQueryParams.dirtyData" placeholder="全部" @change="handleDrawerSearch"
@@ -1060,20 +1077,20 @@ export default {
       checkAllFileCol: false,
       unstructuredColumnList: [
         { label: '文件名', prop: 'fileName', width: '200' },
-        { label: '文件大小', prop: 'fileSize', width: '100' },
+        { label: '文件大小', prop: 'fileSizeName', width: '100' },
         { label: '文件类型', prop: 'fileType', width: '100' },
-        { label: '内容摘要', prop: 'digest', width: '200' },
+        { label: '内容摘要', prop: 'fileContext', width: '200' },
         { label: '分类', prop: 'categoryName', width: '150' },
-        { label: '安全分级', prop: 'securityLevel', width: '120' },
+        { label: '安全分级', prop: 'securityLevelName', width: '120' },
         { label: '确认状态', prop: 'confirm' },
-        { label: '归类原因', prop: 'classificationReason', width: '150' },
+        { label: '归类原因', prop: 'classificationReasons', width: '150' },
         { label: '置信度', prop: 'confidenceLevel', width: '100' },
         { label: '置信度分数', prop: 'confidenceScore', width: '120' },
-        { label: '敏感数据', prop: 'sensitiveData', width: '150' },
-        { label: '最后修改时间', prop: 'updateTime', width: '180' },
-        { label: '文件上传时间', prop: 'createTime', width: '180' }
+        { label: '敏感数据', prop: 'sensitiveDataName', width: '150' },
+        { label: '最后修改时间', prop: 'fileModifiedTime', width: '180' },
+        { label: '文件上传时间', prop: 'fileUploadTime', width: '180' }
       ],
-      checkedUnstructuredColumns: ['fileName', 'fileSize', 'fileType', 'digest', 'categoryName', 'securityLevel', 'confirm'],
+      checkedUnstructuredColumns: ['fileName', 'fileSizeName', 'fileType', 'fileContext', 'categoryName', 'securityLevel', 'confirm'],
       selectedFileNodes: [],
 
       levelOptions: [], // 安全分级下拉选项数据
@@ -1085,26 +1102,26 @@ export default {
       fieldColumnList: [
         { label: '字段名', prop: 'fieldName', width: '180' },
         { label: '数据类型', prop: 'fieldType', width: '120' },
-        { label: '字段注释', prop: 'oldFieldRemark', width: '150' },
-        { label: 'AI字段注释', prop: 'aiFieldRemark', width: '200' },
+        { label: '字段注释', prop: 'fieldRemark', width: '150' },
+        { label: 'AI字段注释', prop: 'craftRemark', width: '200' },
         { label: '分类', prop: 'categoryName', width: '150' },
-        { label: '安全分级', prop: 'securityLevel', width: '120' },
-        { label: '样本', prop: 'sampleList', width: '150' },
+        { label: '安全分级', prop: 'securityLevelName', width: '120' },
+        { label: '样本', prop: 'sampleData', width: '150' },
         { label: '确认状态', prop: 'confirmStatus' },
         { label: '所属库', prop: 'databaseName' },
         { label: '所属表', prop: 'tableName' },
         { label: '表注释', prop: 'tableRemark' },
-        { label: 'AI表注释', prop: 'aiTableRemark' },
-        { label: '分类状态', prop: 'categoryStatus' },
-        { label: '归类原因', prop: 'classificationReason' },
-        { label: '个保合规', prop: 'personalProtection' },
-        { label: '识别过程', prop: 'recognitionProcess' },
+        { label: 'AI表注释', prop: 'tableCraftRemark' },
+        { label: '分类状态', prop: 'classificationStateName' },
+        { label: '归类原因', prop: 'classificationReasons' },
+        { label: '个保合规', prop: 'piiDetectionName' },
+        { label: '识别过程', prop: 'detectionProcess' },
         { label: '置信度分数', prop: 'confidenceScore' },
         { label: '置信度', prop: 'confidenceLevel' },
-        { label: '敏感数据', prop: 'sensitiveData' },
-        { label: '样本特征', prop: 'sampleFeature' }
+        { label: '敏感数据', prop: 'sensitiveDataName' },
+        { label: '样本特征', prop: 'regularExpression' }
       ],
-      checkedFieldColumns: ['fieldName', 'fieldType', 'oldFieldRemark', 'aiFieldRemark', 'categoryName', 'securityLevel', 'sampleList', 'confirmStatus'],
+      checkedFieldColumns: ['fieldName', 'fieldType', 'fieldRemark', 'craftRemark', 'categoryName', 'securityLevelName', 'sampleData', 'confirmStatus'],
       selectedFieldNodes: [],
     };
   },
@@ -1435,7 +1452,7 @@ export default {
       if (parentNode && parentNode.data.parentId) {
         sourceId = parentNode.data.parentId;
       }
-      
+
       // 如果由于节点不存在导致sourceId为空，尝试从row中获取更准确的顶层数据源ID，否则兜底使用 data.parentId
       if (!sourceId) {
         sourceId = (data.row && (data.row.proxysId || data.row.databaseId)) || data.parentId;
@@ -1460,12 +1477,16 @@ export default {
           const resData = res.data || {};
           const listData = resData.list || resData.records || resData.rows || [];
           this.filteredDrawerData = listData.map(ele => {
-            if (ele.data) {
+            if (ele.sampleData) {
               try {
-                ele.sampleList = JSON.parse(ele.data).map(item => ({ value: item }))
+                // 如果后端返回的是字符串，则解析；否则当做数组处理
+                const parsedData = typeof ele.sampleData === 'string' ? JSON.parse(ele.sampleData) : ele.sampleData;
+                ele.sampleData = parsedData.map(item => ({ value: item }))
               } catch (e) {
-                ele.sampleList = []
+                ele.sampleData = []
               }
+            } else {
+              ele.sampleData = []
             }
             ele.drawerEdit = false
             ele.drawerEditDirtyData = false
@@ -2914,6 +2935,7 @@ export default {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding: 0 20px;
 
   .section-title {
     font-size: 16px;
