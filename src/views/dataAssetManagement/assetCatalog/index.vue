@@ -261,8 +261,7 @@
                       {{ currentNodeData ? currentNodeData.label : '' }}
                     </span>
                     <div style="font-size: 13px; color: #606266; margin-top: 10px;">
-                      {{ (currentNodeData && currentNodeData.row && currentNodeData.row.tableRemark) ?
-                        currentNodeData.row.tableRemark : '暂无表注释信息' }}
+                      {{ currentTableRemark }}
                     </div>
                   </div>
                   <span style="color: #909399; font-size: 13px;">共 {{ drawerTotal }} 个字段</span>
@@ -1144,6 +1143,18 @@ export default {
         return 'el-icon-bottom';
       }
       return 'el-icon-d-caret';
+    },
+    currentTableRemark() {
+      if (this.currentNodeData?.tableRemark) {
+        return this.currentNodeData.tableRemark;
+      }
+      if (this.currentNodeData?.row?.tableRemark) {
+        return this.currentNodeData.row.tableRemark;
+      }
+      if (this.filteredDrawerData?.length > 0 && this.filteredDrawerData[0].tableRemark) {
+        return this.filteredDrawerData[0].tableRemark;
+      }
+      return '暂无表注释信息';
     },
     checkedFileColumn() {
       return this.unstructuredColumnList.filter(item => this.checkedUnstructuredColumns.includes(item.prop));
