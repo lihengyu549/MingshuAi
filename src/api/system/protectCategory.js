@@ -11,6 +11,16 @@ export function treeListI(data) {
 
   })
 }
+
+// 获取安全分级列表
+export function getCategorySchemaLevelList(databaseId) {
+  return request({
+    url: '/system/categorySchema/getCategorySchemaLevelListByDatabaseId',
+    method: 'get',
+    params: databaseId
+  })
+}
+
 // 从Excel中导入分类分级数据
 export function categoryImport(query) {
   return request({

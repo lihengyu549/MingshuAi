@@ -29,9 +29,9 @@
 
           <div class="head-container" v-loading="treeLoading">
             <div class="tree-scroll-container">
-              <el-tree class="treeBox" :data="categoryList" :props="defaultProps"
-                :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
-                node-key="id" highlight-current show-checkbox :check-strictly="false" :accordion="true"
+              <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :current-node-key="treeID"
+                :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree" node-key="id"
+                highlight-current show-checkbox :check-strictly="false" :accordion="true"
                 :default-checked-keys="defaultCheckedKeys" @node-click="handleTreeNodeClick" @check="handleTreeCheck"
                 :render-content="renderContent" />
             </div>
@@ -47,37 +47,47 @@
           <!-- 第一层：数据源 (Level 1) -->
           <template v-if="currentNodeLevel === 1">
             <div class="file-manager-wrapper" style="display: flex; flex-direction: column; height: 100%;">
-              <el-card class="file-manager-card" shadow="never" style="flex: 1; display: flex; flex-direction: column;" :body-style="{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }">
-                <div slot="header" class="header-title" style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <el-card class="file-manager-card" shadow="never" style="flex: 1; display: flex; flex-direction: column;"
+                :body-style="{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }">
+                <div slot="header" class="header-title"
+                  style="display: flex; justify-content: space-between; align-items: flex-start;">
                   <div>
                     <span style="font-size: 18px; font-weight: bold; display: flex; align-items: center;">
                       <svg-icon icon-class="home-dataAsset" style="font-size: 18px;margin-right: 10px;"></svg-icon>
                       数据源：{{ currentNodeData ? currentNodeData.label : '' }}
                     </span>
-                    <div style="margin-top: 10px; font-size: 13px; color: #606266;" v-if="dataSourceDetail.systemName || dataSourceDetail.systemRemark">
+                    <div style="margin-top: 10px; font-size: 13px; color: #606266;"
+                      v-if="dataSourceDetail.systemName || dataSourceDetail.systemRemark">
                       {{ dataSourceDetail.systemName }}：{{ dataSourceDetail.systemRemark }}
                     </div>
                   </div>
                   <span style="color: #909399; font-size: 13px;">共 {{ dataSourceDetail.databaseCount }} 个数据库</span>
                 </div>
-                
+
                 <div class="file-manager-content" style="flex: 1; display: flex; flex-direction: column; height: 100%;">
                   <div class="file-section" style="flex: 1; overflow-y: auto; padding: 20px;" v-loading="loading">
                     <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                      <div v-for="db in dataSourceDetail.databaseList" :key="db.id" style="width: calc(33.33% - 13.33px);">
-                        <el-card shadow="hover" @click.native="handleDatabaseCardClick(db)" style="cursor: pointer; border-radius: 8px; border: 1px solid #ebeef5;">
+                      <div v-for="db in dataSourceDetail.databaseList" :key="db.id"
+                        style="width: calc(33.33% - 13.33px);">
+                        <el-card shadow="hover" @click.native="handleDatabaseCardClick(db)"
+                          style="cursor: pointer; border-radius: 8px; border: 1px solid #ebeef5;">
                           <div slot="header" style="display: flex; align-items: center; margin-bottom: 15px;">
-                            <div style="width: 40px; height: 40px; background-color: #f0f2f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                            <div
+                              style="width: 40px; height: 40px; background-color: #f0f2f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
                               <svg-icon icon-class="databaseSolid" style="font-size: 18px;" />
                             </div>
                             <div>
-                              <div style="font-weight: bold; font-size: 16px; color: #303133;">{{ db.label || db.databaseName }}</div>
-                              <div style="font-size: 12px; color: #909399; margin-top: 5px;">{{ db.databaseType || 'UTF-8 / MySQL' }}</div>
+                              <div style="font-weight: bold; font-size: 16px; color: #303133;">{{ db.label ||
+                                db.databaseName }}</div>
+                              <div style="font-size: 12px; color: #909399; margin-top: 5px;">{{ db.databaseType ||
+                                'UTF-8 / MySQL' }}</div>
                             </div>
                           </div>
-                          <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+                          <div
+                            style="padding: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
                             <span style="color: #606266;">包含表数量</span>
-                            <span style="color: #409EFF; font-weight: bold; font-size: 16px;">{{ db.tableCount || 0 }}</span>
+                            <span style="color: #409EFF; font-weight: bold; font-size: 16px;">{{ db.tableCount || 0
+                              }}</span>
                           </div>
                         </el-card>
                       </div>
@@ -91,8 +101,10 @@
           <!-- 第二层：数据库 (Level 2) -->
           <template v-else-if="currentNodeLevel === 2">
             <div class="file-manager-wrapper" style="display: flex; flex-direction: column; height: 100%;">
-              <el-card class="file-manager-card" shadow="never" style="flex: 1; display: flex; flex-direction: column;" :body-style="{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }">
-                <div slot="header" class="header-title" style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <el-card class="file-manager-card" shadow="never" style="flex: 1; display: flex; flex-direction: column;"
+                :body-style="{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }">
+                <div slot="header" class="header-title"
+                  style="display: flex; justify-content: space-between; align-items: flex-start;">
                   <div>
                     <span style="font-size: 18px; font-weight: bold; display: flex; align-items: center;">
                       <svg-icon icon-class="databaseSolid" style="font-size: 18px;margin-right: 10px;" />
@@ -101,7 +113,8 @@
                   </div>
                 </div>
 
-                <div class="file-manager-content" style="flex: 1; display: flex; flex-direction: column; height: 100%; padding: 20px;">
+                <div class="file-manager-content"
+                  style="flex: 1; display: flex; flex-direction: column; height: 100%; padding: 20px;">
                   <div class="file-section" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
                     <el-table :data="dataAll" v-loading="loading" class="tableBox"
                       style="width: 100%; margin-top: 20px;" height="100%"
@@ -132,18 +145,19 @@
                           </div>
                         </template>
                       </el-table-column>
-                      <el-table-column label="数据量(行)" prop="dataMagnitude" width="100"></el-table-column>
-                      <el-table-column label="数据大小" prop="dataSize" width="100"></el-table-column>
-                      <el-table-column label="数据等级" width="100" align="center">
+                      <el-table-column label="数据量(行)" prop="dataMagnitude" width="150"></el-table-column>
+                      <el-table-column label="数据大小" prop="dataSize" width="150"></el-table-column>
+                      <el-table-column label="敏感等级" width="150" align="center">
                         <template slot-scope="scope">
-                          <el-tag type="danger" size="mini" v-if="scope.row.tableSecurityLevel">{{
-                            scope.row.tableSecurityLevel }}</el-tag>
+                          <el-tag type="danger" size="mini" v-if="scope.row.tableSecurityLevel"
+                            :style="getRiskStyle(scope.row.tableSecurityLevel)">{{
+                              scope.row.tableSecurityLevelName }}</el-tag>
                         </template>
                       </el-table-column>
-                      <el-table-column label="分类" width="100" align="center">
+                      <el-table-column label="分类" width="150" align="center">
                         <template slot-scope="scope">
                           <span style="color: #409EFF;">{{ scope.row.tableCategoryName || scope.row.categoryName
-                            }}</span>
+                          }}</span>
                         </template>
                       </el-table-column>
                     </el-table>
@@ -173,35 +187,57 @@
                         <el-select v-model="drawerQueryParams.category" placeholder="全部" clearable></el-select>
                       </el-form-item>
                       <el-form-item label="分类状态">
-                        <el-select v-model="drawerQueryParams.categoryStatus" placeholder="全部" clearable></el-select>
+                        <el-select v-model="drawerQueryParams.categoryStatus" placeholder="全部" clearable>
+                          <el-option v-for="item in dict.type.sys_classification_state" :key="item.value"
+                            :label="item.label" :value="item.value"></el-option>
+                        </el-select>
                       </el-form-item>
                       <el-form-item label="安全分级">
-                        <el-select v-model="drawerQueryParams.securityLevel" placeholder="全部" clearable></el-select>
+                        <el-select v-model="drawerQueryParams.securityLevel" placeholder="全部" clearable>
+                          <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
+                            :value="item.value"></el-option>
+                        </el-select>
                       </el-form-item>
                       <el-form-item label="确认状态">
-                        <el-select v-model="drawerQueryParams.confirmStatus" placeholder="全部" clearable></el-select>
+                        <el-select v-model="drawerQueryParams.confirmStatus" placeholder="全部" clearable>
+                          <el-option v-for="item in confirmList" :key="item.value" :label="item.label"
+                            :value="item.value"></el-option>
+                        </el-select>
                       </el-form-item>
                       <el-form-item label="归类原因">
-                        <el-select v-model="drawerQueryParams.classificationReason" placeholder="全部"
-                          clearable></el-select>
+                        <el-select v-model="drawerQueryParams.classificationReason" placeholder="全部" clearable>
+                          <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value"
+                            :label="item.label" :value="item.value"></el-option>
+                        </el-select>
                       </el-form-item>
                       <el-form-item label="置信度">
-                        <el-select v-model="drawerQueryParams.confidenceLevel" placeholder="全部" clearable></el-select>
+                        <el-select v-model="drawerQueryParams.confidenceLevel" placeholder="全部" clearable>
+                          <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name"
+                            :value="item.value"></el-option>
+                        </el-select>
                       </el-form-item>
                       <el-form-item label="个保合规">
-                        <el-select v-model="drawerQueryParams.personalProtection" placeholder="全部"
-                          clearable></el-select>
+                        <el-select v-model="drawerQueryParams.personalProtection" placeholder="全部" clearable>
+                          <el-option label="敏感个人信息" value="1"></el-option>
+                          <el-option label="一般个人信息" value="2"></el-option>
+                          <el-option label="无关个人信息" value="0"></el-option>
+                        </el-select>
                       </el-form-item>
                       <el-form-item label="样本特征">
-                        <el-select v-model="drawerQueryParams.sampleFeature" placeholder="全部" clearable></el-select>
+                        <el-select v-model="drawerQueryParams.sampleFeature" placeholder="全部" clearable>
+                          <el-option label="是" value="1" />
+                          <el-option label="否" value="0" />
+                        </el-select>
                       </el-form-item>
                     </el-form>
                   </el-card>
                 </div>
               </el-collapse-transition>
 
-              <el-card class="file-manager-card" shadow="never" style="flex: 1; display: flex; flex-direction: column;" :body-style="{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }">
-                <div slot="header" class="header-title" style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <el-card class="file-manager-card" shadow="never" style="flex: 1; display: flex; flex-direction: column;"
+                :body-style="{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }">
+                <div slot="header" class="header-title"
+                  style="display: flex; justify-content: space-between; align-items: flex-start;">
                   <div>
                     <span style="font-size: 18px; font-weight: bold; display: flex; align-items: center;">
                       <svg-icon icon-class="table1" style="margin-right: 8px; color: #409EFF;" />
@@ -215,11 +251,11 @@
                   <span style="color: #909399; font-size: 13px;">共 {{ drawerTotal }} 个字段</span>
                 </div>
 
-                <div class="file-manager-content" style="display: flex; flex-direction: column; height: 100%; padding: 20px">
+                <div class="file-manager-content"
+                  style="display: flex; flex-direction: column; height: 100%; padding: 20px">
                   <div style="overflow: hidden; display: flex; flex-direction: column;margin: 15px 0;">
                     <!-- 操作按钮区域 -->
-                    <div
-                      style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                       <div>
                         <el-button type="primary" size="medium" @click="$message.info('开发中')">确认结果</el-button>
                         <el-button type="default" size="medium" @click="$message.info('开发中')">取消操作</el-button>
@@ -309,22 +345,24 @@
                         @keyup.enter.native="handleFileQuery"></el-input>
                     </el-form-item>
                     <el-form-item label="分类">
-                      <el-select v-model="fileQueryParams.categoryName" placeholder="全部" clearable>
-                        <!-- <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label" :value="item.value"></el-option> -->
-                      </el-select>
+                      <el-select v-model="fileQueryParams.categoryName" placeholder="全部" clearable></el-select>
                     </el-form-item>
                     <el-form-item label="分类状态">
-                      <el-select v-model="fileQueryParams.categoryStatus" placeholder="全部" clearable></el-select>
+                      <el-select v-model="fileQueryParams.categoryStatus" placeholder="全部" clearable>
+                        <el-option v-for="item in dict.type.sys_classification_state" :key="item.value"
+                          :label="item.label" :value="item.value"></el-option>
+                      </el-select>
                     </el-form-item>
                     <el-form-item label="安全分级">
                       <el-select v-model="fileQueryParams.securityLevel" placeholder="全部" clearable>
-                        <!-- <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value"></el-option> -->
+                        <el-option v-for="item in levelOptions" :key="item.value" :label="item.label"
+                          :value="item.value"></el-option>
                       </el-select>
                     </el-form-item>
                     <el-form-item label="确认状态">
                       <el-select v-model="fileQueryParams.confirm" placeholder="全部" clearable>
-                        <el-option label="待确认" value="0"></el-option>
-                        <el-option label="已确认" value="1"></el-option>
+                        <el-option v-for="item in confirmList" :key="item.value" :label="item.label"
+                          :value="item.value"></el-option>
                       </el-select>
                     </el-form-item>
                     <el-form-item label="所属文件夹">
@@ -332,10 +370,16 @@
                         @keyup.enter.native="handleFileQuery"></el-input>
                     </el-form-item>
                     <el-form-item label="归类原因">
-                      <el-select v-model="fileQueryParams.classificationReason" placeholder="全部" clearable></el-select>
+                      <el-select v-model="fileQueryParams.classificationReason" placeholder="全部" clearable>
+                        <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value"
+                          :label="item.label" :value="item.value"></el-option>
+                      </el-select>
                     </el-form-item>
                     <el-form-item label="置信度">
-                      <el-select v-model="fileQueryParams.confidenceLevel" placeholder="全部" clearable></el-select>
+                      <el-select v-model="fileQueryParams.confidenceLevel" placeholder="全部" clearable>
+                        <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name"
+                          :value="item.value"></el-option>
+                      </el-select>
                     </el-form-item>
                   </el-form>
                 </el-card>
@@ -720,13 +764,13 @@ import {
   getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId,
   getSelectTableNames, callAIPaddingComments, updateDataQualityAssessment, updateFieldListByFieldId,
   callAIPaddingCommentsByAll, updateDataQualityAssessmentByAll, propertyCatalogueExport,
-  getTables, getPropertyList
+  getTables, getPropertyList, getCategorySchemaLevelList
 } from "@/api/system/protectCategory";
 import { getDicts } from "@/api/system/dict/data";
 // 引入getProjectFileList接口
 import { getProjectFileList } from "@/api/system/unstructured";
 export default {
-  dicts: ['sys_export_column'],
+  dicts: ['sys_export_column', 'sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un'],
   name: "assetCatalog",
   components: {},
   data() {
@@ -783,6 +827,20 @@ export default {
           label: this.$t('assetCatalog.no'),
           value: 0,
         }
+      ],
+      confirmList: [
+        {
+          value: '1',
+          label: this.$t('viewResults.options.confirm.confirmed')
+        },
+        {
+          value: '0',
+          label: this.$t('viewResults.options.confirm.unconfirmed')
+        },
+      ],
+      confidenceLevelList: [
+        { name: this.$t('viewResults.options.confidence.low'), id: 1, value: "1" },
+        { name: this.$t('viewResults.options.confidence.high'), id: 2, value: "2" }
       ],
       categoryList: [],
       isChildrenNode: true,
@@ -994,6 +1052,8 @@ export default {
       checkedUnstructuredColumns: ['fileName', 'fileSize', 'fileType', 'digest', 'categoryName', 'securityLevel', 'confirm'],
       selectedFileNodes: [],
 
+      levelOptions: [], // 安全分级下拉选项数据
+
       // 新增：结构化表字段相关状态
       showFieldSearch: false,
       isIndeterminateFieldCol: false,
@@ -1006,7 +1066,7 @@ export default {
         { label: '分类', prop: 'categoryName', width: '150' },
         { label: '安全分级', prop: 'securityLevel', width: '120' },
         { label: '样本', prop: 'sampleList', width: '150' },
-        { label: '确认状态', prop: 'confirmStatus'},
+        { label: '确认状态', prop: 'confirmStatus' },
         { label: '所属库', prop: 'databaseName' },
         { label: '所属表', prop: 'tableName' },
         { label: '表注释', prop: 'tableRemark' },
@@ -1070,7 +1130,7 @@ export default {
   watch: {
     filterText(val) {
       this.$refs.tree.filter(val);
-      
+
       // 如果清空了搜索框，强制折叠所有节点，并仅展开当前选中的节点
       if (!val) {
         this.$nextTick(() => {
@@ -1091,7 +1151,7 @@ export default {
               }
             });
           }
-          
+
           // 2. 展开当前选中的节点
           if (this.currentNodeData) {
             const currentKey = this.currentNodeData.id;
@@ -1150,6 +1210,19 @@ export default {
   mounted() {
   },
   methods: {
+    // 获取安全分级 
+
+    // 敏感等级与安全分级tag样式
+    getRiskStyle(level) {
+      const styles = {
+        1: { color: '#16a34a', backgroundColor: '#f0fdf4', border: 'none' },
+        2: { color: '#f97316', backgroundColor: '#fff7ed', border: 'none' },
+        3: { color: '#c2410c', backgroundColor: '#ffedd5', border: 'none' },
+        4: { color: '#dc2626', backgroundColor: '#fee2e2', border: 'none' },
+        5: { color: '#991b1b', backgroundColor: '#fecaca', border: 'none' }
+      };
+      return styles[level] || { color: '#6b7280', backgroundColor: '#f3f4f6', border: 'none' };
+    },
     // 动态获取左侧树数据
     getProtectCategory() {
       this.Loading = true;
@@ -1193,7 +1266,7 @@ export default {
       return data.map(item => {
         // 如果是结构化数据源节点（后端只返回到库层级），确保有 children 数组
         if (item.type === '0' || item.type === 0) {
-           item.children = item.children || []
+          item.children = item.children || []
         }
         return item
       })
@@ -1465,6 +1538,19 @@ export default {
       const checkedIds = this.getCheckedNodeIds(this.categoryList);
       this.selectedTreeNodeIds = checkedIds;
     },
+    // 新增：获取安全分级下拉选项
+    fetchLevelOptions(databaseId) {
+      if (!databaseId) return;
+      getCategorySchemaLevelList({ databaseId }).then(res => {
+        const payload = res && res.data ? res.data : res;
+        const list = payload.records || payload.rows || payload.list || payload || [];
+        this.levelOptions = list.map(it => ({
+          value: it.level,
+          label: it.levelName
+        }));
+      });
+    },
+
     /**
      * 点击树节点事件:点击节点展示右侧列表
      * @param {Object} data - 点击的节点数据
@@ -1486,6 +1572,9 @@ export default {
         // 结构化模式 (数据源 -> 库 -> 表)
         const level = this.currentNodeLevel;
         if (level === 1) {
+          // 获取安全分级下拉选项
+          this.fetchLevelOptions(data.id);
+
           // 点击第一层：数据源
           // 手动控制同级其他数据源节点收起
           const rootNodes = this.$refs.tree.store.root.childNodes;
@@ -1503,7 +1592,7 @@ export default {
             });
           }
           this.$refs.tree.store.nodesMap[data.id].expanded = true;
-          
+
           // 从后端获取第一层数据源详情和其下的数据库列表
           this.loading = true;
           const params = {
@@ -1523,7 +1612,7 @@ export default {
           }).finally(() => {
             this.loading = false;
           });
-          
+
         } else if (level === 2) {
           // 点击第二层：数据库，展开节点、获取表数据并插入到树中，右侧展示表列表
           this.loading = true;
@@ -1532,7 +1621,7 @@ export default {
             parentId: data.parentId, // 数据源ID
             databaseName: data.label  // 数据库名称
           };
-          
+
           getTables(treeParams).then(res => {
             if (res.code === 200) {
               const tables = res.data || [];
@@ -1541,11 +1630,21 @@ export default {
                   id: table.tableId || table.id || Math.random().toString(36).substr(2, 9),
                   label: table.tableName,
                   parentId: data.id,
-                  type: '0', 
+                  type: '0',
                   level: 3, // 明确标识为第3层
-                  row: table 
+                  row: table
                 }));
                 this.$set(data, 'children', tableNodes);
+
+                // 如果当前数据库节点是被勾选的，则新塞入的表节点也应该被勾选
+                this.$nextTick(() => {
+                  const dbNode = this.$refs.tree.getNode(data.id);
+                  if (dbNode && dbNode.checked) {
+                    const currentCheckedKeys = this.$refs.tree.getCheckedKeys();
+                    const newTableIds = tableNodes.map(node => node.id);
+                    this.$refs.tree.setCheckedKeys([...new Set([...currentCheckedKeys, ...newTableIds])]);
+                  }
+                });
               }
               // 手动控制同级其他节点收起
               const parentNode = this.$refs.tree.getNode(data.parentId);
@@ -1556,7 +1655,7 @@ export default {
                   }
                 });
               }
-              if(this.$refs.tree.store.nodesMap[data.id]) {
+              if (this.$refs.tree.store.nodesMap[data.id]) {
                 this.$refs.tree.store.nodesMap[data.id].expanded = true;
               }
             }
@@ -1623,7 +1722,7 @@ export default {
      */
     renderContent(h, { node, data }) {
       let iconClass = 'database1';
-      
+
       // 判断节点层级
       let level = 1;
       if (data.level !== undefined && data.level !== null) {
@@ -2072,7 +2171,7 @@ export default {
     async fieldInformationFn(row) {
       this.filedRowData = row
       this.drawerTitle = this.$t('assetCatalog.tableNameLabel') + row.tableName
-      
+
       let sourceId = '';
       if (this.currentNodeData) {
         if (this.currentNodeLevel === 3) {
@@ -2209,7 +2308,7 @@ export default {
         this.handleQuery();
       }, 500); // 500毫秒防抖
     },
-    
+
     /**
  * 收集所有树节点的children,构建成指定结构数组
  * @param {Array} treeData - 树数据源
