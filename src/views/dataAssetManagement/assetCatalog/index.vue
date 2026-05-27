@@ -1377,8 +1377,22 @@ export default {
 
     // 新增：结构化视图相关方法
     handleDatabaseCardClick(db) {
-      this.$refs.tree.setCurrentKey(db.id);
-      this.handleTreeNodeClick(db);
+      // 通过树组件模拟点击左侧树节点，以保持参数传递完全一致
+      const node = this.$refs.tree.getNode(db.id);
+      if (node) {
+        this.$refs.tree.setCurrentKey(db.id);
+        this.handleTreeNodeClick(node.data);
+      } else {
+        // 如果树上没找到，则手动构造数据
+        const data = {
+          id: db.id,
+          label: db.databaseName || db.label,
+          parentId: this.currentNodeData.id,
+          type: '0',
+          level: 2
+        };
+        this.handleTreeNodeClick(data);
+      }
     },
     handleTableClick(row) {
       let tableNode = null;
@@ -2213,34 +2227,13 @@ export default {
     // 抽屉筛选处理
     handleDrawerSearch() {
       // 重置页码
-      this.drawerQueryParams.pageNum = 1
-      // 执行筛选
-      let filtered = this.drawerData.filter(item => {
-        const matchField = !this.drawerQueryParams.fieldName ||
-          (item.fieldName && item.fieldName.includes(this.drawerQueryParams.fieldName))
-        const matchType = !this.drawerQueryParams.fieldType ||
-          (item.fieldType && item.fieldType.includes(this.drawerQueryParams.fieldType))
-        const matchRemark = !this.drawerQueryParams.oldFieldRemark ||
-          (item.oldFieldRemark && item.oldFieldRemark.includes(this.drawerQueryParams.oldFieldRemark))
-        const matchSecurity = !this.drawerQueryParams.securityLevel ||
-          (item.securityLevel && item.securityLevel === this.drawerQueryParams.securityLevel)
-        const matchConfirm = !this.drawerQueryParams.confirmStatus ||
-          (item.confirmStatus && item.confirmStatus === this.drawerQueryParams.confirmStatus)
-        const matchCategory = !this.drawerQueryParams.category ||
-          (item.categoryName && item.categoryName === this.drawerQueryParams.category)
-        const matchFeature = !this.drawerQueryParams.sampleFeature ||
-          (item.sampleFeature && item.sampleFeature.includes(this.drawerQueryParams.sampleFeature))
-
-        return matchField && matchType && matchRemark && matchSecurity && matchConfirm && matchCategory && matchFeature
-      })
-
-      this.drawerTotal = filtered.length
-      this.filteredDrawerData = this.getPagedData(filtered)
+      this.drawerPageNum = 1
+      this.getTableFieldsData()
     },
     // 分页处理
     getPagedData(data) {
-      const start = (this.drawerQueryParams.pageNum - 1) * this.drawerQueryParams.pageSize
-      const end = start + this.drawerQueryParams.pageSize
+      const start = (this.drawerPageNum - 1) * this.drawerPageSize
+      const end = start + this.drawerPageSize
       return data.slice(start, end)
     },
     // 分页切换
@@ -2281,15 +2274,10 @@ export default {
         fieldName: '',
         fieldType: '',
         oldFieldRemark: '',
-        pageNum: 1,
-        pageSize: 10
-      };
-      // 再调用表单重置方法(双重保障)
-      if (this.$refs.drawerQueryForm) {
-        this.$refs.drawerQueryForm.resetFields();
       }
-      // 重新执行筛选
-      this.handleDrawerSearch();
+      this.drawerPageNum = 1
+      this.drawerPageSize = 10
+      this.getTableFieldsData()
     },
     // 树节点过滤方法
     filterNode(value, data) {
