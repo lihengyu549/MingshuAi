@@ -9,9 +9,44 @@
             </el-input>
           </div>
           <div class="head-container tree-container" v-loading="treeLoading">
-            <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :current-node-key="treeID"
+            <el-tree class="treeBox" :data="treeList" :props="defaultProps" :current-node-key="treeID"
               :expand-on-click-node="false" :filter-node-method="filterNode" ref="resultTree" node-key="id"
-              highlight-current accordion @node-click="handleTreeNodeClick" />
+              highlight-current accordion @node-click="handleTreeNodeClick">
+              <span class="custom-tree-node" slot-scope="{ node, data }"
+                style="display: flex; justify-content: space-between; align-items: center; flex: 1; min-width: 0; padding-right: 8px;">
+                <span style="display: flex; align-items: center; min-width: 0;">
+                  <!-- 呼吸灯动效 (非根节点且当前用户为该节点负责人时展示) -->
+                  <span v-if="data.level > 0 && isCurrentUserOwner(data.dataOwner)" class="breathing-light"
+                    style="margin-right: 6px;"></span>
+
+                  <!-- 根节点图标 -->
+                  <template v-if="data.level === 0">
+                    <i v-if="data.treeType === '0'" class="el-icon-circle-plus"
+                      style="margin-right: 5px; color: #409EFF; font-size: 16px;"></i>
+                    <i v-else-if="data.treeType === '1'" class="el-icon-success"
+                      style="margin-right: 5px; color: #409EFF; font-size: 16px;"></i>
+                    <i v-else-if="data.treeType === '2'" class="el-icon-error"
+                      style="margin-right: 5px; color: #409EFF; font-size: 16px;"></i>
+                  </template>
+                  <!-- 非根节点图标 -->
+                  <template v-else>
+                    <svg-icon :icon-class="node.expanded ? 'openFile' : 'closeFile'"
+                      style="margin-right: 5px; font-size: 16px; color: #909399;" />
+                  </template>
+
+                  <span class="node-label" :title="node.label"
+                    style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; color: #303133;">{{
+                      node.label
+                    }}</span>
+                  <span style="color: #909399; margin-left: 5px; font-size: 14px; flex-shrink: 0;">({{ data.fieldCount
+                    || 0 }})</span>
+                </span>
+                <span v-if="data.level > 0"
+                  style="color: #909399; font-size: 12px; margin-left: 10px; flex-shrink: 0; background-color: #f4f4f5; padding: 2px 6px; border-radius: 4px;">
+                  L{{ data.level }}
+                </span>
+              </span>
+            </el-tree>
           </div>
         </el-card>
       </el-col>
@@ -141,7 +176,7 @@
             <div class="content-header">
               <div class="content-header-main">
                 <span class="content-title">
-                  <i class="el-icon-collection-tag"></i>
+                  <svg-icon :icon-class="currentTreeLevel > 0 ? '表格' : '组织架构'" style="font-size: 20px;" />
                   {{ contentTitle }}
                 </span>
                 <div class="content-desc">{{ contentDescription }}</div>
@@ -156,7 +191,7 @@
                 </div>
                 <div class="overview-value" :title="item.value">
                   <el-tag v-if="item.isTag" :style="getRiskStyle(Number(item.level))" size="small">{{ item.value
-                    }}</el-tag>
+                  }}</el-tag>
                   <span v-else>{{ item.value }}</span>
                 </div>
               </div>
@@ -624,9 +659,81 @@ export default {
     this.initDrawerData();
     this.initSearchState();
     this.initDefaultColumns();
+    // 初始化的时候直接调用之前写好的mock数据填充到树形结构中
+    this.getProtectCategory();
     this.fetchInitialData();
   },
   computed: {
+    treeList() {
+      return [
+        {
+          "id": "1",
+          "label": "华为",
+          "level": 0,
+          "treeType": "1",
+          "fieldCount": 528,
+          "showCard": false,
+          "children": [
+            {
+              "id": "1-1",
+              "label": "通信服务",
+              "level": 1,
+              "fieldCount": 120,
+              "showCard": false
+            },
+            {
+              "id": "1-3",
+              "label": "消费者业务",
+              "level": 1,
+              "fieldCount": 200,
+              "showCard": false,
+              "children": [
+                {
+                  "id": "1-3-1",
+                  "label": "智能终端产品管理",
+                  "level": 2,
+                  "fieldCount": 45,
+                  "showCard": true,
+                  "dataOwner": "张华 (业务中台)",
+                  "securityLevelName": "3级-内部敏感",
+                  "securityLevel": 3,
+                  "suggestedProtection": "脱敏展示，严格访问控制",
+                  "confirmedProtection": "已配置脱敏规则 (掩码)"
+                },
+                {
+                  "id": "1-3-2",
+                  "label": "消费者品牌与市场拓展",
+                  "level": 2,
+                  "fieldCount": 60,
+                  "showCard": true,
+                  "dataOwner": "李强 (营销中心)",
+                  "securityLevelName": "2级-内部公开",
+                  "securityLevel": 2,
+                  "suggestedProtection": "按需申请权限",
+                  "confirmedProtection": "默认保护"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "2",
+          "label": "未分类",
+          "level": 0,
+          "treeType": "0",
+          "fieldCount": 45,
+          "showCard": false
+        },
+        {
+          "id": "3",
+          "label": "噪音数据",
+          "level": 0,
+          "treeType": "2",
+          "fieldCount": 12,
+          "showCard": false
+        }
+      ]
+    },
     isFileSource() {
       return this.queryParams.sourceType === 'FILE_CATALOGUE' || this.queryParams.sourceType === 'FILE_SERVER';
     },
@@ -660,18 +767,16 @@ export default {
       return descParts.length ? descParts.join(' / ') : '通过左侧节点和筛选条件查看当前识别结果。'
     },
     currentTreeLevel() {
-      const node = this.$refs.resultTree ? this.$refs.resultTree.getNode(this.treeID) : null
-      return node ? node.level : 0
+      // 确保依赖被正确收集，直接使用已保存的当前节点数据中的 level
+      return this.currentTreeNode && this.currentTreeNode.level !== undefined ? this.currentTreeNode.level : 0;
     },
     showNodeOverview() {
       if (!this.currentTreeNode) return false
+      // 树节点如果有 showCard 标识，优先根据标识判断是否展示 overview-grid
       if (typeof this.currentTreeNode.showCard !== 'undefined') {
         return !!this.currentTreeNode.showCard
       }
-      if (typeof this.currentTreeNode.attributeType !== 'undefined') {
-        return String(this.currentTreeNode.attributeType) !== '0'
-      }
-      return !this.currentTreeNode.children || this.currentTreeNode.children.length === 0
+      return false
     },
     nodeOverviewCards() {
       const node = this.currentTreeNode || {}
@@ -712,6 +817,14 @@ export default {
 
   },
   methods: {
+    // 判断当前登录用户是否为该节点负责人
+    isCurrentUserOwner(dataOwner) {
+      if (!dataOwner) return false;
+      const currentUser = this.$store.state.user.name;
+      // 支持完全匹配或者包含（例如 dataOwner 是 '张华 (业务中台)'，而 currentUser 是 '张华'）
+      return dataOwner.includes(currentUser);
+    },
+
     // 初始化路由参数带来的抽屉数据
     initDrawerData() {
       const drawerData = this.$route.query?.drawerData;
@@ -719,12 +832,12 @@ export default {
 
       const drawerDataObj = typeof drawerData === 'string' ? JSON.parse(drawerData) : drawerData;
       this.drawerDataInfo = drawerDataObj || {};
-      
+
       // 初始化 queryParams
       this.queryParams.projectId = drawerDataObj.projectId || '';
       this.queryParams.databaseId = drawerDataObj.id || '';
       this.queryParams.sourceType = drawerDataObj.sourceType || '';
-      
+
       // 处理数据库列表
       if (drawerDataObj.targetDatabase && typeof drawerDataObj.targetDatabase === 'string') {
         const cleanedDatabase = drawerDataObj.targetDatabase.replace(/,$/, '');
@@ -772,11 +885,12 @@ export default {
 
     // 获取页面初始所需的数据
     fetchInitialData() {
-      this.getProtectCategory();
+      // 因为没有接口了，所以注释掉获取分类数据的方法
+      // this.getProtectCategory();
       this.getPiiList();
       this.getList();
       this.getListTableByProject();
-      
+
       if (this.drawerDataInfo && this.drawerDataInfo.projectId) {
         this.fetchLevelOptions(this.drawerDataInfo.projectId);
       } else if (this.$route.query.drawerData && this.$route.query.drawerData.projectId) {
@@ -829,7 +943,8 @@ export default {
       this.addNodeName = this.getNodePathLabel(node.id)
       this.queryParams.categoryId = node.id
       this.queryParams.categoryIds = this.collectTreeNodeFilterIds(node).join(',')
-      this.handleQuery()
+      // 由于目前接口还没给到，暂不调用接口
+      // this.handleQuery()
     },
     collectTreeNodeFilterIds(node) {
       const ids = new Set()
@@ -1908,6 +2023,37 @@ export default {
 
 .tableCla {
   height: 266px !important;
+}
+
+/* 呼吸灯动效 */
+.breathing-light {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #409EFF;
+  box-shadow: 0 0 4px #409EFF;
+  animation: breathing 2s infinite ease-in-out;
+}
+
+@keyframes breathing {
+  0% {
+    opacity: 0.3;
+    transform: scale(0.8);
+    box-shadow: 0 0 2px rgba(64, 158, 255, 0.3);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+    box-shadow: 0 0 8px rgba(64, 158, 255, 0.8);
+  }
+
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+    box-shadow: 0 0 2px rgba(64, 158, 255, 0.3);
+  }
 }
 
 @media screen and (max-width: 1400px) {
