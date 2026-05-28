@@ -528,7 +528,7 @@
                           </span>
                         </template>
                         <template v-else-if="item.prop === 'securityLevelName'">
-                          <el-tag v-if="scope.row.securityLevelName" type="danger" size="small">{{
+                          <el-tag v-if="scope.row.securityLevelName" size="small" plain :style="getRiskStyle(scope.row.securityLevel)">{{
                             scope.row.securityLevelName
                             }}</el-tag>
                           <span v-else>--</span>
@@ -1089,7 +1089,7 @@ export default {
         { label: '最后修改时间', prop: 'fileModifiedTime', width: '180' },
         { label: '文件上传时间', prop: 'fileUploadTime', width: '180' }
       ],
-      checkedUnstructuredColumns: ['fileName', 'fileSizeName', 'fileType', 'fileContext', 'categoryName', 'securityLevel', 'confirm'],
+      checkedUnstructuredColumns: ['fileName', 'fileSizeName', 'fileType', 'fileContext', 'categoryName', 'securityLevelName', 'confirm'],
       selectedFileNodes: [],
 
       levelOptions: [], // 安全分级下拉选项数据
