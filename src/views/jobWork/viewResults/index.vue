@@ -1,234 +1,270 @@
 <template>
-  <div class="app-container" v-loading="loading">
-    <el-card class="searchCard" shadow="never">
-      <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
-        v-show="showSearch">
-        <!-- 默认显示的筛选条件（前两行） -->
-        <template v-if="isFileSource">
-          <el-form-item :label="$t('viewResults.search.fileName')" prop="fileName">
-            <el-input v-model="queryParams.fileName" @input="inputSearch"
-              :placeholder="$t('viewResults.search.enterFileName')" clearable @keyup.enter.native="handleQuery" />
-          </el-form-item>
-        </template>
-        <template v-else>
-          <el-form-item :label="$t('viewResults.search.fieldName')" prop="fieldName">
-            <el-input v-model="queryParams.fieldName" @input="inputSearch"
-              :placeholder="$t('viewResults.search.enterFieldName')" clearable @keyup.enter.native="handleQuery" />
-          </el-form-item>
-        </template>
-        <el-form-item :label="$t('viewResults.search.category')" prop="categoryId">
-          <el-select ref="addSelectRef" v-model="addNodeName" :filter-method="filterCategoryTree">
-            <el-option style="height: 100%; padding: 0" value="">
-              <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
-                :filter-node-method="filterNode" ref="treeSelectQuery" node-key="id" highlight-current
-                @check="addHandleNodeCheck" />
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item :label="$t('viewResults.search.classificationStatus')" class="addSelectClass"
-          prop="classificationStateIds">
-          <el-select v-model="queryParams.classificationStateIds" multiple @change="inputSearch"
-            :placeholder="$t('pleaseSelect')">
-            <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item :label="$t('viewResults.search.securityLevel')" prop="securityLevel">
-          <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch"
-            :placeholder="$t('pleaseSelect')">
-            <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item :label="$t('viewResults.search.confirmStatus')" prop="confirm">
-          <el-select clearable v-model="queryParams.confirm" @change="inputSearch" :placeholder="$t('pleaseSelect')">
-            <el-option v-for="item in confirmList" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <template v-if="isFileSource">
-          <el-form-item :label="$t('viewResults.search.folder')" prop="filePath">
-            <el-input v-model="queryParams.fileParentPath" @input="inputSearch"
-              :placeholder="$t('viewResults.search.enterFolder')" clearable el-ineyup.enter.native="handleQuery" />
-          </el-form-item>
-        </template>
-        <template v-else>
-          <el-form-item :label="$t('viewResults.search.database')" prop="databaseName">
-            <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn"
-              :placeholder="$t('pleaseSelect')">
-              <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
-              </el-option>
-            </el-select>
-          </el-form-item>
-        </template>
+  <div class="app-container view-results-page" v-loading="loading">
+    <el-row :gutter="20" class="page-layout">
+      <el-col :span="5" :xs="24">
+        <el-card class="left-card" shadow="never">
+          <div class="head-container">
+            <el-input v-model="treeFilterText" clearable placeholder="搜索左侧节点">
+              <i slot="prefix" class="el-input__icon el-icon-search"></i>
+            </el-input>
+          </div>
+          <div class="head-container tree-container" v-loading="treeLoading">
+            <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :current-node-key="treeID"
+              :expand-on-click-node="false" :filter-node-method="filterNode" ref="resultTree" node-key="id"
+              highlight-current accordion @node-click="handleTreeNodeClick" />
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="19" :xs="24">
+        <el-collapse-transition>
+          <div v-show="showSearch" class="search-wrapper">
+            <el-card class="searchCard" shadow="never">
+              <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true">
+                <template v-if="isFileSource">
+                  <el-form-item :label="$t('viewResults.search.fileName')" prop="fileName">
+                    <el-input v-model="queryParams.fileName" @input="inputSearch"
+                      :placeholder="$t('viewResults.search.enterFileName')" clearable
+                      @keyup.enter.native="handleQuery" />
+                  </el-form-item>
+                </template>
+                <template v-else>
+                  <el-form-item :label="$t('viewResults.search.fieldName')" prop="fieldName">
+                    <el-input v-model="queryParams.fieldName" @input="inputSearch"
+                      :placeholder="$t('viewResults.search.enterFieldName')" clearable
+                      @keyup.enter.native="handleQuery" />
+                  </el-form-item>
+                </template>
+                <el-form-item :label="$t('viewResults.search.category')" prop="categoryId">
+                  <el-select ref="addSelectRef" v-model="addNodeName" :filter-method="filterCategoryTree">
+                    <el-option style="height: 100%; padding: 0" value="">
+                      <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
+                        :filter-node-method="filterNode" ref="treeSelectQuery" node-key="id" highlight-current
+                        @check="addHandleNodeCheck" />
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item :label="$t('viewResults.search.classificationStatus')" class="addSelectClass"
+                  prop="classificationStateIds">
+                  <el-select v-model="queryParams.classificationStateIds" multiple @change="inputSearch"
+                    :placeholder="$t('pleaseSelect')">
+                    <el-option v-for="item in dict.type.sys_classification_state" :key="item.value" :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item :label="$t('viewResults.search.securityLevel')" prop="securityLevel">
+                  <el-select clearable v-model="queryParams.securityLevel" multiple @change="inputSearch"
+                    :placeholder="$t('pleaseSelect')">
+                    <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item :label="$t('viewResults.search.confirmStatus')" prop="confirm">
+                  <el-select clearable v-model="queryParams.confirm" @change="inputSearch"
+                    :placeholder="$t('pleaseSelect')">
+                    <el-option v-for="item in confirmList" :key="item.value" :label="item.label" :value="item.value">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <template v-if="isFileSource">
+                  <el-form-item :label="$t('viewResults.search.folder')" prop="filePath">
+                    <el-input v-model="queryParams.fileParentPath" @input="inputSearch"
+                      :placeholder="$t('viewResults.search.enterFolder')" clearable
+                      el-ineyup.enter.native="handleQuery" />
+                  </el-form-item>
+                </template>
+                <template v-else>
+                  <el-form-item :label="$t('viewResults.search.database')" prop="databaseName">
+                    <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn"
+                      :placeholder="$t('pleaseSelect')">
+                      <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item :label="$t('viewResults.search.table')" prop="tableName">
+                    <el-select clearable v-model="queryParams.tableName" filterable
+                      :disabled="!queryParams.databaseName" @change="inputSearch" :placeholder="$t('all')">
+                      <el-option v-for="item in tableList" :key="item.id" :label="item.tableName"
+                        :value="item.tableName">
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
+                </template>
+                <el-form-item :label="$t('viewResults.search.classificationReason')" prop="classificationReasons">
+                  <el-select clearable v-model="queryParams.classificationReasons" @change="inputSearch"
+                    :placeholder="$t('pleaseSelect')">
+                    <template v-if="isFileSource">
+                      <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value"
+                        :label="item.label" :value="item.value">
+                      </el-option>
+                    </template>
+                    <template v-else>
+                      <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value"
+                        :label="item.label" :value="item.value">
+                      </el-option>
+                    </template>
+                  </el-select>
+                </el-form-item>
+                <el-form-item :label="$t('viewResults.search.confidenceLevel')" prop="confidenceLevel">
+                  <el-select clearable v-model="queryParams.confidenceLevel" @change="inputSearch"
+                    :placeholder="$t('pleaseSelect')">
+                    <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <template v-if="!isFileSource">
+                  <el-form-item :label="$t('viewResults.search.piiReview')" prop="piiDetection">
+                    <el-select ref="addSelectRef" v-model="piiNodeName">
+                      <el-option style="height: 100%; padding: 0" value="">
+                        <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
+                          :filter-node-method="filterNode" ref="treeSelectPii" node-key="id" highlight-current
+                          @check="piiHandleNodeCheck" />
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item :label="$t('viewResults.search.sampleFeature')" prop="featureData">
+                    <el-select clearable v-model="queryParams.featureData" @change="inputSearch"
+                      :placeholder="$t('pleaseSelect')">
+                      <el-option :label="$t('viewResults.options.yes')" value="1" />
+                      <el-option :label="$t('viewResults.options.no')" value="0" />
+                    </el-select>
+                  </el-form-item>
+                </template>
+              </el-form>
+            </el-card>
+          </div>
+        </el-collapse-transition>
 
-
-        <!-- 点击展开后显示的筛选条件 -->
-        <template v-if="showMoreFilters">
-          <template v-if="!isFileSource">
-            <el-form-item :label="$t('viewResults.search.table')" prop="tableName">
-              <el-select clearable v-model="queryParams.tableName" filterable :disabled="!queryParams.databaseName"
-                @change="inputSearch" :placeholder="$t('all')">
-                <el-option v-for="item in tableList" :key="item.id" :label="item.tableName" :value="item.tableName">
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </template>
-          <el-form-item :label="$t('viewResults.search.classificationReason')" prop="classificationReasons">
-            <el-select clearable v-model="queryParams.classificationReasons" @change="inputSearch"
-              :placeholder="$t('pleaseSelect')">
-              <template v-if="isFileSource">
-                <el-option v-for="item in dict.type.sys_classification_reasons_un" :key="item.value" :label="item.label"
-                  :value="item.value">
-                </el-option>
-              </template>
-              <template v-else>
-                <el-option v-for="item in dict.type.sys_classification_reasons" :key="item.value" :label="item.label"
-                  :value="item.value">
-                </el-option>
-              </template>
-            </el-select>
-          </el-form-item>
-          <el-form-item :label="$t('viewResults.search.confidenceLevel')" prop="confidenceLevel">
-            <el-select clearable v-model="queryParams.confidenceLevel" @change="inputSearch"
-              :placeholder="$t('pleaseSelect')">
-              <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name" :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <template v-if="!isFileSource">
-            <el-form-item :label="$t('viewResults.search.piiReview')" prop="piiDetection">
-              <el-select ref="addSelectRef" v-model="piiNodeName">
-                <el-option style="height: 100%; padding: 0" value="">
-                  <el-tree :data="piiList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
-                    :filter-node-method="filterNode" ref="treeSelectPii" node-key="id" highlight-current
-                    @check="piiHandleNodeCheck" />
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </template>
-          <template v-if="!isFileSource">
-            <el-form-item :label="$t('viewResults.search.sampleFeature')" prop="featureData">
-              <el-select clearable v-model="queryParams.featureData" @change="inputSearch"
-                :placeholder="$t('pleaseSelect')">
-                <el-option :label="$t('viewResults.options.yes')" value="1" />
-                <el-option :label="$t('viewResults.options.no')" value="0" />
-              </el-select>
-            </el-form-item>
-          </template>
-        </template>
-        <!-- <el-form-item label=" " class="searchBtn"> -->
-        <!-- <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button> -->
-        <!-- </el-form-item> -->
-      </el-form>
-    </el-card>
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-dropdown trigger="click">
-          <el-button type="primary" plain size="medium">{{ $t('viewResults.buttons.confirmResult') }}<i
-              class="el-icon-arrow-down el-icon--right"></i></el-button>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item @click.native="handleAdd">
-              <i class="el-icon-aim"></i> {{ $t('viewResults.buttons.confirmChecked') }}
-            </el-dropdown-item>
-            <el-dropdown-item @click.native="handleEcelFn">
-              <i class="el-icon-more"></i> {{ $t('viewResults.buttons.confirmFiltered') }}
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-      </el-col>
-      <el-col :span="1.5">
-        <el-dropdown trigger="click">
-          <el-button type="danger" plain size="medium">{{ $t('viewResults.buttons.cancelAction') }}<i
-              class="el-icon-arrow-down el-icon--right"></i></el-button>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item @click.native="handleAddFnClose">
-              <i class="el-icon-refresh-left"></i> {{ $t('viewResults.buttons.cancelChecked') }}
-            </el-dropdown-item>
-            <el-dropdown-item @click.native="handleEcelFnClose">
-              <i class="el-icon-magic-stick"></i> {{ $t('viewResults.buttons.cancelFiltered') }}
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button type="primary" plain size="medium" @click="handleBatchFix" style="float: inline-end;">{{
-          $t('viewResults.buttons.batchEdit') }}</el-button>
-      </el-col>
-      <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
-      <el-button type="primary" plain size="medium" @click="handleBack" style="float: inline-end;">{{
-        $t('return')
-      }}</el-button>
-      <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click"
-        style="float: inline-end; margin-right: 10px;">
-        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{
-          $t('selectAll') }}</el-checkbox>
-        <el-checkbox-group v-model="checkedColumnProps" @change="handleCheckedCitiesChange" class="checkboxGroup"
-          style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
-          <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item.prop" :key="item.prop">{{
-            item.label }}</el-checkbox>
-        </el-checkbox-group>
-        <el-button size="medium" slot="reference">{{ $t('columnSettings') }}</el-button>
-      </el-popover>
-      <el-button plain size="medium" @click="toggleFilters" style="float: inline-end; margin-right: 10px;">{{
-        showMoreFilters ? $t('viewResults.search.collapseFilters') : $t('viewResults.search.expandFilters')
-      }}</el-button>
-    </el-row>
-    <el-card class="table-card" shadow="never">
-      <el-table class="tableBox" v-loading="loading" :key="checkedColumnProps.length" :data="proxysList"
-        @selection-change="handleSelectionChange" ref="tableRef">
-        <el-table-column type="selection" width="60" align="center" />
-        <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label"
-          :align="item.prop === 'categoryName' ? 'left' : 'center'" :prop="item.prop" :width="item.width"
-          show-overflow-tooltip>
-          <template slot-scope="scope">
-            <!-- 第一个列可点击跳转详情 -->
-            <template v-if="item.prop === (isFileSource ? 'fileName' : 'fieldName')">
-              <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
-                <svg-icon icon-class="text" style="font-size: 14px; margin-right: 5px;" />
-                {{ scope.row[item.prop] }}</span>
-            </template>
-            <!-- 安全等级 -->
-            <template v-else-if="item.prop === 'securityLevelName'">
-              <el-tag :style="getRiskStyle(Number(scope.row.securityLevel))">
-                {{ scope.row.securityLevelName }}
-              </el-tag>
-            </template>
-            <!-- 分类 -->
-            <template v-else-if="item.prop === 'categoryName'">
-              <el-tag
-                :type="scope.row.categoryName == $t('viewResults.options.unclassified') || scope.row.categoryName == $t('viewResults.options.noiseData') ? 'info' : 'primary'">
-                {{ scope.row.categoryName }}</el-tag>
-            </template>
-            <!-- 确认状态 -->
-            <template v-else-if="item.prop === 'confirm'">
-              <el-tag :type="scope.row.confirm == 0 ? 'info' : 'primary'">{{ scope.row.confirm == 0 ?
-                $t('viewResults.options.confirm.unconfirmed') :
-                $t('viewResults.options.confirm.confirmed') }}</el-tag>
-            </template>
-            <!-- 样例数据 -->
-            <template v-else-if="item.prop === 'sampleData'">
-              <el-tooltip placement="bottom" effect="light">
-                <div slot="content">
-                  <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
-                    <el-table-column type="index" :label="$t('index')" width="50" />
-                    <el-table-column prop="value" :label="$t('fieldValue')" width="100" show-overflow-tooltip>
-                    </el-table-column>
-                  </el-table>
+        <el-card class="table-card" shadow="never">
+          <div slot="header" class="table-card-header">
+            <div class="content-header">
+              <div class="content-header-main">
+                <span class="content-title">
+                  <i class="el-icon-collection-tag"></i>
+                  {{ contentTitle }}
+                </span>
+                <div class="content-desc">{{ contentDescription }}</div>
+              </div>
+              <span class="content-count">共 {{ total }} 条结果</span>
+            </div>
+            <div v-if="showNodeOverview" class="overview-grid">
+              <div v-for="item in nodeOverviewCards" :key="item.label" class="overview-item">
+                <div class="overview-label">
+                  <i :class="item.icon" v-if="item.icon" style="margin-right: 4px;"></i>
+                  {{ item.label }}
                 </div>
-                <i class="el-icon-view" style="font-size: 18px; cursor: pointer;"></i>
-              </el-tooltip>
-            </template>
-            <template v-else>
-              {{ scope.row[item.prop] }}
-            </template>
-          </template>
-        </el-table-column>
-      </el-table>
-      <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-        :pageSize.sync="queryParams.pageSize" @pagination="getList" />
-    </el-card>
+                <div class="overview-value" :title="item.value">
+                  <el-tag v-if="item.isTag" :style="getRiskStyle(Number(item.level))" size="small">{{ item.value
+                    }}</el-tag>
+                  <span v-else>{{ item.value }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-card-content">
+            <div class="table-toolbar">
+              <div class="toolbar-group">
+                <el-dropdown trigger="click">
+                  <el-button type="primary" plain size="medium">{{ $t('viewResults.buttons.confirmResult') }}<i
+                      class="el-icon-arrow-down el-icon--right"></i></el-button>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item @click.native="handleAdd">
+                      <i class="el-icon-aim"></i> {{ $t('viewResults.buttons.confirmChecked') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item @click.native="handleEcelFn">
+                      <i class="el-icon-more"></i> {{ $t('viewResults.buttons.confirmFiltered') }}
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+                <el-dropdown trigger="click">
+                  <el-button type="danger" plain size="medium">{{ $t('viewResults.buttons.cancelAction') }}<i
+                      class="el-icon-arrow-down el-icon--right"></i></el-button>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item @click.native="handleAddFnClose">
+                      <i class="el-icon-refresh-left"></i> {{ $t('viewResults.buttons.cancelChecked') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item @click.native="handleEcelFnClose">
+                      <i class="el-icon-magic-stick"></i> {{ $t('viewResults.buttons.cancelFiltered') }}
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+                <el-button type="primary" plain size="medium" @click="handleBatchFix">{{
+                  $t('viewResults.buttons.batchEdit') }}</el-button>
+              </div>
+              <div class="toolbar-group toolbar-group-right">
+                <el-button plain size="medium" @click="toggleFilters">
+                  <i :class="showSearch ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
+                  {{ showSearch ? '收起筛选' : '展开筛选' }}
+                </el-button>
+                <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
+                  <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{
+                    $t('selectAll') }}</el-checkbox>
+                  <el-checkbox-group v-model="checkedColumnProps" @change="handleCheckedCitiesChange"
+                    class="checkboxGroup"
+                    style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
+                    <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item.prop"
+                      :key="item.prop">{{
+                        item.label }}</el-checkbox>
+                  </el-checkbox-group>
+                  <el-button size="medium" slot="reference">{{ $t('columnSettings') }}</el-button>
+                </el-popover>
+                <el-button type="info" plain size="medium" @click="handleBack">{{ $t('return') }}</el-button>
+              </div>
+            </div>
+            <el-table class="tableBox" style="flex: 1;" height="100%" v-loading="loading"
+              :key="checkedColumnProps.length" :data="proxysList" @selection-change="handleSelectionChange"
+              ref="tableRef">
+              <el-table-column type="selection" width="60" align="center" />
+              <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label"
+                :align="item.prop === 'categoryName' ? 'left' : 'center'" :prop="item.prop" :width="item.width"
+                show-overflow-tooltip>
+                <template slot-scope="scope">
+                  <template v-if="item.prop === (isFileSource ? 'fileName' : 'fieldName')">
+                    <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
+                      <svg-icon icon-class="text" style="font-size: 14px; margin-right: 5px;" />
+                      {{ scope.row[item.prop] }}</span>
+                  </template>
+                  <template v-else-if="item.prop === 'securityLevelName'">
+                    <el-tag :style="getRiskStyle(Number(scope.row.securityLevel))">
+                      {{ scope.row.securityLevelName }}
+                    </el-tag>
+                  </template>
+                  <template v-else-if="item.prop === 'categoryName'">
+                    <el-tag
+                      :type="scope.row.categoryName == $t('viewResults.options.unclassified') || scope.row.categoryName == $t('viewResults.options.noiseData') ? 'info' : 'primary'">
+                      {{ scope.row.categoryName }}</el-tag>
+                  </template>
+                  <template v-else-if="item.prop === 'confirm'">
+                    <el-tag :type="scope.row.confirm == 0 ? 'info' : 'primary'">{{ scope.row.confirm == 0 ?
+                      $t('viewResults.options.confirm.unconfirmed') :
+                      $t('viewResults.options.confirm.confirmed') }}</el-tag>
+                  </template>
+                  <template v-else-if="item.prop === 'sampleData'">
+                    <el-tooltip placement="bottom" effect="light">
+                      <div slot="content">
+                        <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
+                          <el-table-column type="index" :label="$t('index')" width="50" />
+                          <el-table-column prop="value" :label="$t('fieldValue')" width="100" show-overflow-tooltip>
+                          </el-table-column>
+                        </el-table>
+                      </div>
+                      <i class="el-icon-view" style="font-size: 18px; cursor: pointer;"></i>
+                    </el-tooltip>
+                  </template>
+                  <template v-else>
+                    {{ scope.row[item.prop] }}
+                  </template>
+                </template>
+              </el-table-column>
+            </el-table>
+            <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+              :pageSize.sync="queryParams.pageSize" @pagination="getList" />
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
     <el-dialog :title="$t('viewResults.dialog.title')" class="addMsg" :visible.sync="deleteVisible" width="700px"
       append-to-body :close-on-click-modal="false">
       <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto"
@@ -314,8 +350,11 @@ export default {
       isIndeterminate: false,
       checkedColumnProps: [],
       checkAll: false,
-      // 是否显示更多筛选条件
-      showMoreFilters: false,
+      treeLoading: false,
+      Loading: false,
+      treeFilterText: '',
+      currentTreeNode: null,
+      drawerDataInfo: {},
       // classificationReasonsList: ['策略匹配', 'AI推理', '脏数据识别'],
       confidenceLevelList: [
         { name: this.$t('viewResults.options.confidence.low'), id: 1, value: "1" },
@@ -421,7 +460,7 @@ export default {
       multiple: true,
       showSucType: 0,
       // 显示搜索条件
-      showSearch: true,
+      showSearch: false,
       // 总条数
       total: 0,
       // 数据库代理表格数据
@@ -582,64 +621,10 @@ export default {
   },
 
   created() {
-    const drawerData = this.$route.query?.drawerData;
-    let drawerDataObj = null;
-
-    if (drawerData) {
-      // 确保drawerData是对象类型
-      drawerDataObj = typeof drawerData === 'string' ? JSON.parse(drawerData) : drawerData;
-      // 初始化 queryParams
-      this.queryParams.projectId = drawerDataObj.projectId || '';
-      this.queryParams.databaseId = drawerDataObj.id || '';
-      this.queryParams.sourceType = drawerDataObj.sourceType || '';
-      // 处理数据库列表
-      if (drawerDataObj.targetDatabase && typeof drawerDataObj.targetDatabase === 'string') {
-        const cleanedDatabase = drawerDataObj.targetDatabase.replace(/,$/, '');
-        this.surfaceList = cleanedDatabase ? cleanedDatabase.split(',') : [];
-      }
-
-      // 存储projectId到sessionStorage
-      if (drawerDataObj.projectId) {
-        sessionStorage.setItem('projectId', String(drawerDataObj.projectId));
-      }
-
-      // 存储databaseId到sessionStorage
-      if (drawerDataObj.id) {
-        sessionStorage.setItem('databaseId', String(drawerDataObj.id));
-      }
-    } 
-
-    if (this.$route.query.isReturn) {
-      const savedState = sessionStorage.getItem('viewResults_search_state');
-      if (savedState) {
-        try {
-          const state = JSON.parse(savedState);
-          this.queryParams = { ...this.queryParams, ...state.queryParams };
-          this.addNodeName = state.addNodeName || '';
-          this.piiNodeName = state.piiNodeName || '';
-        } catch (e) {
-          console.error('解析保存的查询条件失败:', e);
-        }
-      }
-    } else {
-      sessionStorage.removeItem('viewResults_search_state');
-    }
-
-    this.getProtectCategory();
-    this.getPiiList();
-    // 设置默认展示的列（与ProtectTableField保持一致）
-    const defaultColumnProps = this.isFileSource
-      ? ['fileName', 'fileFormat', 'fileParentPath', 'categoryName', 'securityLevelName']
-      : ['fieldName', 'businessName', 'databaseName', 'tableName', 'categoryName', 'securityLevelName'];
-    this.checkedColumnProps = defaultColumnProps;
-    this.checkAll = false;
-    this.getList();
-    this.getListTableByProject();
-    if (drawerDataObj && drawerDataObj.projectId) {
-      this.fetchLevelOptions(drawerDataObj.projectId);
-    } else if (this.$route.query.drawerData && this.$route.query.drawerData.projectId) {
-      this.fetchLevelOptions(this.$route.query.drawerData.projectId);
-    }
+    this.initDrawerData();
+    this.initSearchState();
+    this.initDefaultColumns();
+    this.fetchInitialData();
   },
   computed: {
     isFileSource() {
@@ -661,12 +646,144 @@ export default {
     // 当前选中的列
     checkedColumn() {
       return this.setList.filter(item => this.checkedColumnProps.includes(item.prop))
+    },
+    contentTitle() {
+      const currentLabel = this.currentTreeNode?.categoryName || this.currentTreeNode?.label
+      const sourceName = this.drawerDataInfo?.sourceName || this.drawerDataInfo?.tasksName
+      return currentLabel || sourceName || '识别结果'
+    },
+    contentDescription() {
+      const description = this.currentTreeNode?.remark || this.currentTreeNode?.description || this.currentTreeNode?.additional
+      if (description) return description
+      const descParts = [this.drawerDataInfo?.projectName, this.drawerDataInfo?.businessName, this.drawerDataInfo?.sourceName]
+        .filter(Boolean)
+      return descParts.length ? descParts.join(' / ') : '通过左侧节点和筛选条件查看当前识别结果。'
+    },
+    currentTreeLevel() {
+      const node = this.$refs.resultTree ? this.$refs.resultTree.getNode(this.treeID) : null
+      return node ? node.level : 0
+    },
+    showNodeOverview() {
+      if (!this.currentTreeNode) return false
+      if (typeof this.currentTreeNode.showCard !== 'undefined') {
+        return !!this.currentTreeNode.showCard
+      }
+      if (typeof this.currentTreeNode.attributeType !== 'undefined') {
+        return String(this.currentTreeNode.attributeType) !== '0'
+      }
+      return !this.currentTreeNode.children || this.currentTreeNode.children.length === 0
+    },
+    nodeOverviewCards() {
+      const node = this.currentTreeNode || {}
+      return [
+        {
+          label: '数据所有者',
+          value: node.dataOwner || '--',
+          icon: 'el-icon-user-solid'
+        },
+        {
+          label: '安全分级',
+          value: node.securityLevelName || '--',
+          icon: 'el-icon-s-order',
+          isTag: !!node.securityLevelName,
+          level: node.securityLevel || 0
+        },
+        {
+          label: '建议防护措施',
+          value: node.suggestedProtection || node.suggestedMeasures || '--',
+          icon: 'el-icon-s-opportunity'
+        },
+        {
+          label: '确认防护措施',
+          value: node.confirmedProtection || node.confirmedMeasures || '--',
+          icon: 'el-icon-success'
+        }
+      ]
+    }
+  },
+  watch: {
+    treeFilterText(val) {
+      if (this.$refs.resultTree) {
+        this.$refs.resultTree.filter(val);
+      }
     }
   },
   mounted() {
 
   },
   methods: {
+    // 初始化路由参数带来的抽屉数据
+    initDrawerData() {
+      const drawerData = this.$route.query?.drawerData;
+      if (!drawerData) return;
+
+      const drawerDataObj = typeof drawerData === 'string' ? JSON.parse(drawerData) : drawerData;
+      this.drawerDataInfo = drawerDataObj || {};
+      
+      // 初始化 queryParams
+      this.queryParams.projectId = drawerDataObj.projectId || '';
+      this.queryParams.databaseId = drawerDataObj.id || '';
+      this.queryParams.sourceType = drawerDataObj.sourceType || '';
+      
+      // 处理数据库列表
+      if (drawerDataObj.targetDatabase && typeof drawerDataObj.targetDatabase === 'string') {
+        const cleanedDatabase = drawerDataObj.targetDatabase.replace(/,$/, '');
+        this.surfaceList = cleanedDatabase ? cleanedDatabase.split(',') : [];
+      }
+
+      // 存储到sessionStorage
+      if (drawerDataObj.projectId) {
+        sessionStorage.setItem('projectId', String(drawerDataObj.projectId));
+      }
+      if (drawerDataObj.id) {
+        sessionStorage.setItem('databaseId', String(drawerDataObj.id));
+      }
+    },
+
+    // 初始化搜索状态（如果是从详情页返回）
+    initSearchState() {
+      if (this.$route.query.isReturn) {
+        const savedState = sessionStorage.getItem('viewResults_search_state');
+        if (savedState) {
+          try {
+            const state = JSON.parse(savedState);
+            this.queryParams = { ...this.queryParams, ...state.queryParams };
+            this.addNodeName = state.addNodeName || '';
+            this.piiNodeName = state.piiNodeName || '';
+            this.treeID = state.treeID || '';
+            this.showSearch = typeof state.showSearch === 'boolean' ? state.showSearch : this.showSearch;
+          } catch (e) {
+            console.error('解析保存的查询条件失败:', e);
+          }
+        }
+      } else {
+        sessionStorage.removeItem('viewResults_search_state');
+      }
+    },
+
+    // 初始化默认展示的列
+    initDefaultColumns() {
+      // 设置默认展示的列（与ProtectTableField保持一致）
+      this.checkedColumnProps = this.isFileSource
+        ? ['fileName', 'fileFormat', 'fileParentPath', 'categoryName', 'securityLevelName']
+        : ['fieldName', 'businessName', 'databaseName', 'tableName', 'categoryName', 'securityLevelName'];
+      this.checkAll = false;
+    },
+
+    // 获取页面初始所需的数据
+    fetchInitialData() {
+      this.getProtectCategory();
+      this.getPiiList();
+      this.getList();
+      this.getListTableByProject();
+      
+      if (this.drawerDataInfo && this.drawerDataInfo.projectId) {
+        this.fetchLevelOptions(this.drawerDataInfo.projectId);
+      } else if (this.$route.query.drawerData && this.$route.query.drawerData.projectId) {
+        this.fetchLevelOptions(this.$route.query.drawerData.projectId);
+      }
+    },
+
     fetchLevelOptions(categoryId) {
       const params = {}
       if (categoryId) params.projectId = categoryId
@@ -692,7 +809,7 @@ export default {
     },
     // 切换筛选条件的显示/隐藏
     toggleFilters() {
-      this.showMoreFilters = !this.showMoreFilters;
+      this.showSearch = !this.showSearch;
     },
     handleSearch(val) {
       this.$refs.treeSelectSec.filter(val);
@@ -703,12 +820,50 @@ export default {
     },
     handleCheckedCitiesChange(value) {
       let checkedCount = value.length;
-      this.checkAll = checkedCount === this.availableColumns.length;
-      this.isIndeterminate = checkedCount > 0 && checkedCount < this.availableColumns.length;
+      this.checkAll = checkedCount === this.setList.length;
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.setList.length;
+    },
+    handleTreeNodeClick(node) {
+      this.currentTreeNode = node
+      this.treeID = node.id
+      this.addNodeName = this.getNodePathLabel(node.id)
+      this.queryParams.categoryId = node.id
+      this.queryParams.categoryIds = this.collectTreeNodeFilterIds(node).join(',')
+      this.handleQuery()
+    },
+    collectTreeNodeFilterIds(node) {
+      const ids = new Set()
+      const walkChildren = (currentNode) => {
+        if (!currentNode) return
+        ids.add(currentNode.id)
+        if (Array.isArray(currentNode.children)) {
+          currentNode.children.forEach(child => walkChildren(child))
+        }
+      }
+      walkChildren(node)
+      this.findAllAncestors(this.categoryList, node.id).forEach(id => ids.add(id))
+      return Array.from(ids)
+    },
+    getNodePathLabel(nodeId) {
+      const node = this.findNodeById(this.categoryList, nodeId)
+      if (!node) return ''
+      const parentLabels = this.findParentLabelsById(this.categoryList, nodeId)
+      return parentLabels ? `${parentLabels.join('-')}-${node.categoryName || node.label}` : (node.categoryName || node.label || '')
+    },
+    findNodeById(tree, nodeId) {
+      if (!Array.isArray(tree)) return null
+      for (const node of tree) {
+        if (node.id === nodeId) return node
+        if (node.children && node.children.length) {
+          const childNode = this.findNodeById(node.children, nodeId)
+          if (childNode) return childNode
+        }
+      }
+      return null
     },
     getListTableByProject() {
       let data = {
-        databaseId: this.$route.query.drawerData.id ? this.$route.query.drawerData.id : Number(sessionStorage.getItem('databaseId')),
+        databaseId: this.drawerDataInfo.id ? this.drawerDataInfo.id : Number(sessionStorage.getItem('databaseId')),
         databaseName: this.queryParams.databaseName
       }
       listTableByProject(data).then(res => {
@@ -921,7 +1076,7 @@ export default {
 
       // 为分类下拉框设置默认选中未分类id-100
       if (this.categoryList && this.categoryList.length > 0) {
-        this.resultFormNodeName = this.categoryList.find(item=>item.id == '-100').categoryName
+        this.resultFormNodeName = this.categoryList.find(item => item.id == '-100').categoryName
       }
 
       // 为安全分级下拉框设置默认选中第一项
@@ -1036,6 +1191,11 @@ export default {
       if (this.queryParams.categoryIds) {
         this.queryParams.categoryIds = ''
       }
+      if (this.currentTreeNode) {
+        this.queryParams.categoryId = this.currentTreeNode.id
+        this.queryParams.categoryIds = this.collectTreeNodeFilterIds(this.currentTreeNode).join(',')
+        this.addNodeName = this.getNodePathLabel(this.currentTreeNode.id)
+      }
       this.handleQuery();
     },
     // 多选框选中数据
@@ -1048,7 +1208,9 @@ export default {
       const stateToSave = {
         queryParams: this.queryParams,
         addNodeName: this.addNodeName,
-        piiNodeName: this.piiNodeName
+        piiNodeName: this.piiNodeName,
+        treeID: this.treeID,
+        showSearch: this.showSearch
       };
       sessionStorage.setItem('viewResults_search_state', JSON.stringify(stateToSave));
 
@@ -1118,7 +1280,7 @@ export default {
 
       // 向上追溯到根节点（根节点的parentId为初始的projectId）
       let currentNode = node;
-      while (currentNode.parentId !== this.$route.query.drawerData.projectId && currentNode.parentId) {
+      while (currentNode.parentId !== this.drawerDataInfo.projectId && currentNode.parentId) {
         const parentNode = findNode(tree, currentNode.parentId);
         if (!parentNode) break; // 防止死循环
         currentNode = parentNode;
@@ -1296,7 +1458,7 @@ export default {
     getProtectCategory(key) {
       this.treeLoading = true
       let data = {
-        parentId: this.$route.query.drawerData.projectId ? this.$route.query.drawerData.projectId : Number(sessionStorage.getItem('projectId')),
+        parentId: this.drawerDataInfo.projectId ? this.drawerDataInfo.projectId : Number(sessionStorage.getItem('projectId')),
         needSub: 1,
         ifAddUnclassified: 1,
       };
@@ -1316,6 +1478,13 @@ export default {
         this.Loading = false
         this.treeLoading = false
         this.$nextTick(() => {
+          if (this.$refs.resultTree) {
+            const selectedId = this.treeID || this.queryParams.categoryId
+            if (selectedId) {
+              this.$refs.resultTree.setCurrentKey(selectedId)
+              this.currentTreeNode = this.findNodeById(this.categoryList, selectedId)
+            }
+          }
           if (this.$route.query.isReturn && this.queryParams.categoryIds && this.$refs.treeSelectQuery) {
             this.$refs.treeSelectQuery.setCheckedKeys(this.queryParams.categoryIds.split(','));
           }
@@ -1346,88 +1515,123 @@ export default {
   }
 };
 </script>
-<style>
-.checkboxGroup::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+<style lang="scss" scoped>
+::v-deep .el-row {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
-.checkboxGroup::-webkit-scrollbar-thumb {
-  background-color: #0003;
-  border-radius: 10px;
-  transition: all .2s ease-in-out;
+::v-deep .el-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
-.checkboxGroup::-webkit-scrollbar-track {
+::v-deep .left-card {
   border-radius: 10px;
+  height: 100%;
+
+  & .el-card__body {
+    height: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
 }
-</style>
-<style scoped>
-/deep/.searchCard {
+
+::v-deep .searchCard {
   border-radius: 10px;
-  margin-bottom: 30px;
+  margin-bottom: 16px;
 
   & .el-card__body {
     padding: 24px;
   }
 }
 
-.addMsg /deep/.el-dialog {
+
+
+.search-wrapper {
+  flex-shrink: 0;
+}
+
+.head-container+.head-container {
+  margin-top: 16px;
+}
+
+.tree-container {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.treeBox {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.treeBox ::v-deep .el-tree-node__content {
+  min-height: 32px;
+}
+
+.addMsg ::v-deep.el-dialog {
   border-radius: 10px;
 }
 
-.addMsg /deep/.el-dialog__header {
+.addMsg ::v-deep.el-dialog__header {
   border-bottom: 1px solid #e6e6e6;
 }
 
-.addMsg /deep/.el-dialog__title {
+.addMsg ::v-deep.el-dialog__title {
   font-weight: bold;
 }
 
-.addMsg /deep/.el-form-item__content {
+.addMsg ::v-deep.el-form-item__content {
   padding-right: 15px;
 }
 
-.addMsg /deep/.el-select--medium,
-.addMsg /deep/.el-select--small {
+.addMsg ::v-deep.el-select--medium,
+.addMsg ::v-deep.el-select--small {
   width: 100%;
 }
 
-.addMsg /deep/.el-dialog__body {
+.addMsg ::v-deep.el-dialog__body {
   padding: 30px;
 }
 
-.addMsg /deep/ .el-dialog:not(.is-fullscreen) {
+.addMsg ::v-deep .el-dialog:not(.is-fullscreen) {
   margin-top: 10% !important;
 }
 
-.addMsg /deep/ .el-dialog__body {
+.addMsg ::v-deep .el-dialog__body {
   padding-bottom: 0;
 
 }
 
-.addMsg /deep/ .el-dialog__footer {
+.addMsg ::v-deep .el-dialog__footer {
   padding-bottom: 32px;
 
 }
 
-.addMsg /deep/ .el-form-item__label {
+.addMsg ::v-deep .el-form-item__label {
   text-align: left;
 }
 
-.addMsg /deep/ .el-select--medium {
+.addMsg ::v-deep .el-select--medium {
   width: 100%;
 }
 
 .table-card {
-  margin-top: 20px;
   border-radius: 10px;
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
 
-  .el-card__body {
+  ::v-deep .el-card__body {
     padding: 0;
     flex: 1;
     display: flex;
@@ -1436,47 +1640,147 @@ export default {
   }
 }
 
-.tableBox {
-  overflow-y: auto;
-  border: none;
-  border-bottom: 1px solid #e2e8f0;
-  border-radius: 0;
+.table-card ::v-deep .el-card__header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #ebeef5;
 }
 
-.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
+.table-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.content-header-main {
+  min-width: 0;
+}
+
+.content-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.content-desc {
+  margin-top: 10px;
+  color: #606266;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.content-count {
+  color: #909399;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.toolbar-group-right {
+  margin-left: auto;
+}
+
+.table-card-content {
+  padding: 0 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.overview-item {
+  padding: 16px 18px;
+  border: 1px solid #ebeef5;
+  border-radius: 10px;
+  min-width: 0;
+}
+
+.overview-label {
+  font-size: 13px;
+  color: #909399;
+  margin-bottom: 8px;
+}
+
+.overview-value {
+  font-size: 15px;
+  color: #303133;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tableBox {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.tableBox ::v-deep .el-table__body-wrapper::-webkit-scrollbar {
   width: 6px;
   height: 10px;
 }
 
-.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-thumb {
+.tableBox ::v-deep .el-table__body-wrapper::-webkit-scrollbar-thumb {
   background-color: #0003;
   border-radius: 10px;
   transition: all .2s ease-in-out;
 }
 
-.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-track {
+.tableBox ::v-deep .el-table__body-wrapper::-webkit-scrollbar-track {
   border-radius: 10px;
 }
 
-.addMsg /deep/ .el-dialog:not(.is-fullscreen) {
+.addMsg ::v-deep .el-dialog:not(.is-fullscreen) {
   margin-top: 10% !important;
 }
 
-.addMsg /deep/ .el-dialog__body {
+.addMsg ::v-deep .el-dialog__body {
   padding-bottom: 0;
 
 }
 
-.addMsg /deep/ .el-dialog__footer {
+.addMsg ::v-deep .el-dialog__footer {
   padding-bottom: 32px;
 
 }
 
-.addMsg /deep/ .el-form-item__label {
+.addMsg ::v-deep .el-form-item__label {
   text-align: left;
 }
 
-.addSelectClass /deep/ .el-select {
+.addSelectClass ::v-deep .el-select {
   width: calc(100%);
 }
 
@@ -1505,7 +1809,7 @@ export default {
   color: #f56c6c;
 }
 
-.marking /deep/ .el-dialog:not(.is-fullscreen) {
+.marking ::v-deep .el-dialog:not(.is-fullscreen) {
   margin-top: 25vh !important;
 }
 
@@ -1514,7 +1818,7 @@ export default {
   margin-left: 5px;
 }
 
-.getDiv /deep/ .el-button {
+.getDiv ::v-deep .el-button {
   width: 60px;
   padding: 10px 13px
 }
@@ -1551,28 +1855,28 @@ export default {
   background-color: #ccc;
 }
 
-.yuanDataClass /deep/ .el-form-item {
+.yuanDataClass ::v-deep .el-form-item {
   width: 30%;
 }
 
-.yuanDataClass /deep/ .el-form-item:nth-child(3n) {
+.yuanDataClass ::v-deep .el-form-item:nth-child(3n) {
   margin-right: 0;
 }
 
-.yuanDataClass /deep/ .el-form-item:nth-last-child(-n+3) {
+.yuanDataClass ::v-deep .el-form-item:nth-last-child(-n+3) {
   margin-bottom: 0;
 }
 
-.yuanDataClass /deep/ .el-form-item__label {
+.yuanDataClass ::v-deep .el-form-item__label {
   width: 25%;
   white-space: nowrap;
 }
 
-.yuanDataClass /deep/ .el-form-item__content {
+.yuanDataClass ::v-deep .el-form-item__content {
   width: 75%;
 }
 
-.yuanDataClass /deep/ .el-select {
+.yuanDataClass ::v-deep .el-select {
   width: 100%;
 }
 
@@ -1580,17 +1884,17 @@ export default {
   height: 100%;
 }
 
-.searchBtn /deep/ .el-form-item__content {
+.searchBtn ::v-deep .el-form-item__content {
   display: flex;
   justify-content: flex-end
 }
 
-.importForm /deep/ .el-form-item--medium {
+.importForm ::v-deep .el-form-item--medium {
   width: 70%;
 
 }
 
-.importForm /deep/ .el-form-item__content {
+.importForm ::v-deep .el-form-item__content {
   width: calc(100% - 145px);
 }
 
@@ -1598,11 +1902,35 @@ export default {
   width: 20% !important;
 }
 
-.addSelectClass /deep/ .el-select {
+.addSelectClass ::v-deep .el-select {
   width: calc(100%);
 }
 
 .tableCla {
   height: 266px !important;
+}
+
+@media screen and (max-width: 1400px) {
+  .overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .page-layout {
+    min-height: auto;
+  }
+
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .content-header {
+    flex-direction: column;
+  }
+
+  .toolbar-group-right {
+    margin-left: 0;
+  }
 }
 </style>
