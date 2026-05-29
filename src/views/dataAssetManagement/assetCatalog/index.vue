@@ -194,8 +194,8 @@
                         </el-select>
                       </el-form-item>
                       <el-form-item label="分类状态">
-                        <el-select v-model="drawerQueryParams.classificationStateIds" multiple placeholder="全部" clearable
-                          @change="handleDrawerSearch">
+                        <el-select v-model="drawerQueryParams.classificationStateIds" multiple placeholder="全部"
+                          clearable @change="handleDrawerSearch">
                           <el-option v-for="item in dict.type.sys_classification_state" :key="item.value"
                             :label="item.label" :value="item.value"></el-option>
                         </el-select>
@@ -273,9 +273,32 @@
                     <!-- 操作按钮区域 -->
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                       <div>
-                        <el-button type="primary" size="medium" @click="$message.info('开发中')">确认结果</el-button>
-                        <el-button type="default" size="medium" @click="$message.info('开发中')">取消操作</el-button>
-                        <el-button type="default" size="medium" @click="$message.info('开发中')">批量修改</el-button>
+                        <el-dropdown trigger="click">
+                          <el-button type="primary" plain size="medium">确认结果<i
+                              class="el-icon-arrow-down el-icon--right"></i></el-button>
+                          <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item @click.native="handleAdd">
+                              <i class="el-icon-aim"></i> 确认勾选项
+                            </el-dropdown-item>
+                            <el-dropdown-item @click.native="handleEcelFn">
+                              <i class="el-icon-more"></i> 确认全部筛选结果
+                            </el-dropdown-item>
+                          </el-dropdown-menu>
+                        </el-dropdown>
+                        <el-dropdown trigger="click" style="margin-left: 10px;">
+                          <el-button type="danger" plain size="medium">取消操作<i
+                              class="el-icon-arrow-down el-icon--right"></i></el-button>
+                          <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item @click.native="handleAddFnClose">
+                              <i class="el-icon-refresh-left"></i> 取消确认勾选项
+                            </el-dropdown-item>
+                            <el-dropdown-item @click.native="handleEcelFnClose">
+                              <i class="el-icon-magic-stick"></i> 取消确认全部筛选结果
+                            </el-dropdown-item>
+                          </el-dropdown-menu>
+                        </el-dropdown>
+                        <el-button type="primary" plain size="medium" @click="handleBatchFix"
+                          style="margin-left: 10px;">批量修改</el-button>
                       </div>
                       <div>
                         <el-button plain size="medium" @click="showFieldSearch = !showFieldSearch"
@@ -300,7 +323,7 @@
 
                   <!-- 字段表格 -->
                   <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
-                    <el-table :data="filteredDrawerData" style="width: 100%;" height="100%"
+                    <el-table ref="tableRefMain" :data="filteredDrawerData" style="width: 100%;" height="100%"
                       :header-cell-style="{ background: '#f8f8f9', color: '#606266' }">
                       <el-table-column type="selection" width="55" align="center"></el-table-column>
                       <el-table-column v-for="item in checkedFieldColumnDef" :key="item.prop" :label="item.label"
@@ -316,8 +339,9 @@
                             </span>
                           </template>
                           <template v-else-if="item.prop === 'securityLevelName'">
-                            <el-tag v-if="scope.row.securityLevelName" plain :style="getRiskStyle(scope.row.securityLevel)">{{
-                              scope.row.securityLevelName }}</el-tag>
+                            <el-tag v-if="scope.row.securityLevelName" plain
+                              :style="getRiskStyle(scope.row.securityLevel)">{{
+                                scope.row.securityLevelName }}</el-tag>
                             <span v-else>--</span>
                           </template>
                           <template v-else-if="item.prop === 'craftRemark'">
@@ -326,11 +350,14 @@
                             <span v-else>--</span>
                           </template>
                           <template v-else-if="item.prop === 'sampleData'">
-                            <el-tooltip placement="bottom" effect="light" v-if="scope.row.sampleData && scope.row.sampleData.length > 0">
+                            <el-tooltip placement="bottom" effect="light"
+                              v-if="scope.row.sampleData && scope.row.sampleData.length > 0">
                               <div slot="content">
-                                <el-table :data="scope.row.sampleData" height="250" border class="tableCla" style="width: 100%">
+                                <el-table :data="scope.row.sampleData" height="250" border class="tableCla"
+                                  style="width: 100%">
                                   <el-table-column type="index" label="序号" width="50" align="center" />
-                                  <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip align="center" />
+                                  <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip
+                                    align="center" />
                                 </el-table>
                               </div>
                               <i class="el-icon-view" style="font-size: 18px; cursor: pointer;"></i>
@@ -489,9 +516,32 @@
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <!-- 左侧按钮 -->
                     <div>
-                      <el-button type="primary" size="medium" @click="$message.info('开发中')">确认结果</el-button>
-                      <el-button type="default" size="medium" @click="$message.info('开发中')">取消操作</el-button>
-                      <el-button type="default" size="medium" @click="$message.info('开发中')">批量修改</el-button>
+                      <el-dropdown trigger="click">
+                        <el-button type="primary" plain size="medium">确认结果<i
+                            class="el-icon-arrow-down el-icon--right"></i></el-button>
+                        <el-dropdown-menu slot="dropdown">
+                          <el-dropdown-item @click.native="handleFileAdd">
+                            <i class="el-icon-aim"></i> 确认勾选项
+                          </el-dropdown-item>
+                          <el-dropdown-item @click.native="handleFileEcelFn">
+                            <i class="el-icon-more"></i> 确认全部筛选结果
+                          </el-dropdown-item>
+                        </el-dropdown-menu>
+                      </el-dropdown>
+                      <el-dropdown trigger="click" style="margin-left: 10px;">
+                        <el-button type="danger" plain size="medium">取消操作<i
+                            class="el-icon-arrow-down el-icon--right"></i></el-button>
+                        <el-dropdown-menu slot="dropdown">
+                          <el-dropdown-item @click.native="handleFileAddFnClose">
+                            <i class="el-icon-refresh-left"></i> 取消确认勾选项
+                          </el-dropdown-item>
+                          <el-dropdown-item @click.native="handleFileEcelFnClose">
+                            <i class="el-icon-magic-stick"></i> 取消确认全部筛选结果
+                          </el-dropdown-item>
+                        </el-dropdown-menu>
+                      </el-dropdown>
+                      <el-button type="primary" plain size="medium" @click="handleFileBatchFix"
+                        style="margin-left: 10px;">批量修改</el-button>
                     </div>
                     <!-- 右侧按钮 -->
                     <div>
@@ -514,7 +564,7 @@
                   </div>
 
                   <!-- 新增：表格区域 -->
-                  <el-table :data="fileList" class="tableBox" style="width: 100%"
+                  <el-table ref="fileTableRef" :data="fileList" class="tableBox" style="width: 100%"
                     @selection-change="handleFileSelectionChange">
                     <el-table-column type="selection" width="55" align="center"></el-table-column>
                     <el-table-column v-for="item in checkedFileColumn" :key="item.prop" :label="item.label"
@@ -528,8 +578,9 @@
                           </span>
                         </template>
                         <template v-else-if="item.prop === 'securityLevelName'">
-                          <el-tag v-if="scope.row.securityLevelName" size="small" plain :style="getRiskStyle(scope.row.securityLevel)">{{
-                            scope.row.securityLevelName
+                          <el-tag v-if="scope.row.securityLevelName" size="small" plain
+                            :style="getRiskStyle(scope.row.securityLevel)">{{
+                              scope.row.securityLevelName
                             }}</el-tag>
                           <span v-else>--</span>
                         </template>
@@ -789,6 +840,46 @@
         <span class="footer-score">{{ scoreDialog.data.totalScore }}</span>
       </div>
     </el-dialog>
+
+    <el-dialog title="批量修改" class="addMsg" :visible.sync="deleteVisible" width="700px" append-to-body
+      :close-on-click-modal="false">
+      <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto"
+        label-position="top">
+        <el-form-item label="分类" class="addSelectClass">
+          <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable
+            :filter-method="handleResultFormSearch">
+            <el-option style="height: 100%; padding: 0" value="">
+              <el-tree :data="categoryOptions" :props="{ label: 'categoryName', children: 'children' }" filterable
+                :expand-on-click-node="true" :filter-node-method="filterNode" ref="treeSelectSec" node-key="id"
+                highlight-current @node-click="resultHandleNodeClick" />
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="安全分级" class="addSelectClass" prop="securityLevel">
+          <el-select v-model="resultForm.securityLevel" disabled placeholder="请选择">
+            <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <template v-if="currentNodeType != '1'">
+          <el-form-item label="个保合规" class="addSelectClass" prop="piiDetection">
+            <el-select ref="piiSelectRef" v-model="piiNodeName">
+              <el-option style="height: 100%; padding: 0" value="">
+                <el-tree :data="personalProtectionOptions" :props="{ label: 'categoryName', children: 'children' }"
+                  :expand-on-click-node="true" :filter-node-method="filterNode" ref="treeSelect" node-key="id"
+                  highlight-current @node-click="piiHandleNodeClick" />
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </template>
+      </el-form>
+      <template #footer>
+        <span>
+          <el-button type="primary" plain @click="updataResultFn">确定</el-button>
+          <el-button @click="updataResultCanelFn">取消</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -801,7 +892,8 @@ import {
 } from "@/api/system/protectCategory";
 import { getDicts } from "@/api/system/dict/data";
 // 引入getProjectFileList接口
-import { getProjectFileList } from "@/api/system/unstructured";
+import { getProjectFileList, updateResultByFile, confirmListByFile, cancelConfirmByFile } from "@/api/system/unstructured";
+import { confirmIds, confirmList, cancelConfirm, cancelConfirmData, updateFiledRule, getCategoryAttachData } from "@/api/system/proxys";
 import Treeselect from "@riophae/vue-treeselect";
 export default {
   dicts: ['sys_export_column', 'sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un'],
@@ -922,6 +1014,16 @@ export default {
         label: "label"
       },
       personalProtectionOptions: [],
+      deleteVisible: false,
+      resultFormNodeName: '',
+      piiNodeName: '',
+      resultForm: {
+        categoryId: '',
+        securityLevel: '',
+        id: '',
+        piiDetection: '',
+        selectedIds: null,
+      },
       categoryOptions: [],
       tableKey: 0,
       editMsg: '',
@@ -2554,7 +2656,130 @@ export default {
         this.$refs.fileCategoryTree.setCheckedKeys([]);
       }
     },
-    // 新增：个保合规树节点点击事件
+    handleFileAdd() {
+      this.loading = true
+      let dataS = this.$refs.fileTableRef.selection
+      if (dataS && dataS.length > 0) {
+        this.$confirm('确认提交选中的结果？', this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
+          type: 'warning'
+        }).then(() => {
+          let ids = dataS.map(item => item.id)
+          let data = ids.join(',')
+          confirmIds(data).then(res => {
+            if (res.code == 200) {
+              this.$message({ message: res.msg, type: 'success' })
+              this.handleFileQuery()
+              this.loading = false
+            }
+          }).catch(() => {
+            this.loading = false
+          });
+        }).catch(() => {
+          this.loading = false
+        });
+      } else {
+        this.$message({ message: '请至少选择一条数据', type: 'warning' })
+        this.loading = false
+      }
+    },
+    handleFileAddFnClose() {
+      this.loading = true
+      let dataS = this.$refs.fileTableRef.selection
+      if (dataS && dataS.length > 0) {
+        this.$confirm('确认取消选中的结果？', this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
+          type: 'warning'
+        }).then(() => {
+          let ids = dataS.map(item => item.id)
+          let data = ids.join(',')
+          cancelConfirm(data).then(res => {
+            if (res.code == 200) {
+              this.$message({ message: res.msg, type: 'success' })
+              this.handleFileQuery()
+              this.loading = false
+            }
+          }).catch(() => {
+            this.loading = false
+          });
+        }).catch(() => {
+          this.loading = false
+        });
+      } else {
+        this.$message({ message: '请至少选择一条数据', type: 'warning' })
+        this.loading = false
+      }
+    },
+    getProcessedParamsForFileConfirm() {
+      return {
+        ...this.fileQueryParams,
+        securityLevelIds: Array.isArray(this.fileQueryParams.securityLevel) ? [...this.fileQueryParams.securityLevel] : [],
+        securityLevel: Array.isArray(this.fileQueryParams.securityLevel) ? this.fileQueryParams.securityLevel.join(',') : '',
+        databaseId: this.currentFolderId ? this.currentFolderId : this.currentNodeData.id,
+      }
+    },
+    handleFileEcelFn() {
+      this.loading = true
+      let params = this.getProcessedParamsForFileConfirm()
+      confirmListByFile(params).then(res => {
+        if (res.code === 200) {
+          this.$message.success(res.msg)
+          this.handleFileQuery()
+          this.loading = false
+        }
+      }).catch(err => {
+        this.loading = false
+      })
+    },
+    handleFileEcelFnClose() {
+      this.loading = true
+      let params = this.getProcessedParamsForFileConfirm()
+      cancelConfirmByFile(params).then(res => {
+        if (res.code === 200) {
+          this.$message.success(res.msg)
+          this.handleFileQuery()
+          this.loading = false
+        }
+      }).catch(err => {
+        this.loading = false
+      })
+    },
+    handleFileBatchFix() {
+      const selection = this.$refs.fileTableRef.selection
+      if (!selection || selection.length === 0) {
+        this.$message.warning('请至少选择一条数据进行批量修改')
+        return
+      }
+      const selectedIds = selection.map(row => row.id)
+      this.resultForm.selectedIds = selectedIds
+
+      if (this.categoryOptions && this.categoryOptions.length > 0) {
+        let unclassified = null;
+        const findUnclassified = (nodes) => {
+          for (let n of nodes) {
+            if (n.id == '-100') return n;
+            if (n.children) {
+              let res = findUnclassified(n.children);
+              if (res) return res;
+            }
+          }
+          return null;
+        }
+        unclassified = findUnclassified(this.categoryOptions);
+        if (unclassified) {
+          this.resultFormNodeName = unclassified.categoryName;
+          this.resultForm.categoryId = unclassified.id;
+        }
+      }
+
+      if (this.levelOptions && this.levelOptions.length > 0) {
+        this.resultForm.securityLevel = this.levelOptions[0].value;
+      }
+
+      this.deleteVisible = true
+    },
     handlePPNodeClick(data) {
       // do nothing here, let the checkbox handle the selection
     },
@@ -2735,6 +2960,263 @@ export default {
       console.log('processedNodes', processedNodes);
       // 传入处理后的节点数据调用getList
       this.getList(processedNodes);
+    },
+    handleAdd() {
+      this.loading = true
+      let dataS = this.$refs.tableRefMain.selection
+      if (dataS && dataS.length > 0) {
+        this.$confirm('确认提交选中的结果？', this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
+          type: 'warning'
+        }).then(() => {
+          let ids = dataS.map(item => {
+            return item.id || item.tableId
+          })
+          let data = ids.join(',')
+          confirmIds(data).then(res => {
+            if (res.code == 200) {
+              this.$message({ message: res.msg, type: 'success' })
+              this.getTableFieldsData()
+              this.loading = false
+            }
+          }).catch(() => {
+            this.loading = false
+          });
+        }).catch(() => {
+          this.loading = false
+        });
+      } else {
+        this.$message({ message: '请至少选择一条数据', type: 'warning' })
+        this.loading = false
+      }
+    },
+    handleAddFnClose() {
+      this.loading = true
+      let dataS = this.$refs.tableRefMain.selection
+      if (dataS && dataS.length > 0) {
+        this.$confirm('确认取消选中的结果？', this.$t('tip'), {
+          confirmButtonText: this.$t('confirm'),
+          cancelButtonText: this.$t('cancel'),
+          type: 'warning'
+        }).then(() => {
+          let ids = dataS.map(item => {
+            return item.id || item.tableId
+          })
+          let data = ids.join(',')
+          cancelConfirm(data).then(res => {
+            if (res.code == 200) {
+              this.$message({ message: res.msg, type: 'success' })
+              this.getTableFieldsData()
+              this.loading = false
+            }
+          }).catch(() => {
+            this.loading = false
+          });
+        }).catch(() => {
+          this.loading = false
+        });
+      } else {
+        this.$message({ message: '请至少选择一条数据', type: 'warning' })
+        this.loading = false
+      }
+    },
+    getProcessedParamsForConfirm() {
+      const data = this.currentNodeData;
+      let sourceId = '';
+      const parentNode = this.$refs.tree.getNode(data.parentId);
+      if (parentNode && parentNode.data.parentId) {
+        sourceId = parentNode.data.parentId;
+      }
+      if (!sourceId) {
+        sourceId = (data.row && (data.row.proxysId || data.row.databaseId)) || data.parentId;
+      }
+      const processedParams = { ...this.drawerQueryParams };
+      processedParams.categoryIds = processedParams.category;
+      delete processedParams.categoryName;
+      delete processedParams.piiDetectionName;
+      delete processedParams.category;
+
+      return {
+        ...processedParams,
+        securityLevelIds: Array.isArray(processedParams.securityLevel) ? [...processedParams.securityLevel] : [],
+        securityLevel: Array.isArray(processedParams.securityLevel) ? processedParams.securityLevel.join(',') : '',
+        queryType: '3',
+        databaseId: sourceId,
+        tableId: data.row ? data.row.tableId || data.id : data.id,
+        tableName: data.label,
+      };
+    },
+    handleEcelFn() {
+      this.loading = true
+      let params = this.getProcessedParamsForConfirm()
+      confirmList(params).then(res => {
+        if (res.code === 200) {
+          this.$message.success(res.msg)
+          this.getTableFieldsData()
+          this.loading = false
+        }
+      }).catch(err => {
+        this.loading = false
+      })
+    },
+    handleEcelFnClose() {
+      this.loading = true
+      let params = this.getProcessedParamsForConfirm()
+      cancelConfirmData(params).then(res => {
+        if (res.code === 200) {
+          this.$message.success(res.msg)
+          this.getTableFieldsData()
+          this.loading = false
+        }
+      }).catch(err => {
+        this.loading = false
+      })
+    },
+    handleBatchFix() {
+      const selection = this.$refs.tableRefMain.selection
+      if (!selection || selection.length === 0) {
+        this.$message.warning('请至少选择一条数据进行批量修改')
+        return
+      }
+      const selectedIds = selection.map(row => row.id || row.tableId)
+      this.resultForm.selectedIds = selectedIds
+
+      if (this.categoryOptions && this.categoryOptions.length > 0) {
+        let unclassified = null;
+        const findUnclassified = (nodes) => {
+          for (let n of nodes) {
+            if (n.id == '-100') return n;
+            if (n.children) {
+              let res = findUnclassified(n.children);
+              if (res) return res;
+            }
+          }
+          return null;
+        }
+        unclassified = findUnclassified(this.categoryOptions);
+        if (unclassified) {
+          this.resultFormNodeName = unclassified.categoryName;
+          this.resultForm.categoryId = unclassified.id;
+        }
+      }
+
+      if (this.levelOptions && this.levelOptions.length > 0) {
+        this.resultForm.securityLevel = this.levelOptions[0].value;
+      }
+
+      this.deleteVisible = true
+    },
+    handleResultFormSearch(val) {
+      if (this.$refs.treeSelectSec) {
+        this.$refs.treeSelectSec.filter(val);
+      }
+    },
+    resultHandleNodeClick(node) {
+      if (node.children && node.children.length > 0) {
+        node.disabled = true;
+      } else {
+        const parentLabels = this.findParentLabelsById(this.categoryOptions, node.id);
+        if (parentLabels) {
+          this.resultFormNodeName = parentLabels.join('-') + '-' + node.categoryName;
+        } else {
+          this.resultFormNodeName = node.categoryName;
+        }
+        this.resultForm.categoryId = node.id
+        this.$refs.resultSelectRef.blur()
+        getCategoryAttachData({ categoryId: node.id, piiId: this.resultForm.piiDetection }).then(res => {
+          this.resultForm.securityLevel = res.data.minSecurityLevel + ''
+        })
+      }
+    },
+    piiHandleNodeClick(node) {
+      if (node.children && node.children.length > 0) {
+        node.disabled = true;
+      } else {
+        const parentLabels = this.findParentLabelsById(this.personalProtectionOptions, node.id);
+        if (parentLabels) {
+          this.piiNodeName = parentLabels.join('-') + '-' + node.categoryName;
+        } else {
+          this.piiNodeName = node.categoryName;
+        }
+        this.resultForm.piiDetection = node.id
+        this.$refs.piiSelectRef.blur()
+        getCategoryAttachData({ piiId: node.id, categoryId: this.resultForm.categoryId }).then(res => {
+          this.resultForm.securityLevel = res.data.minSecurityLevel + ''
+        })
+      }
+    },
+    findParentLabelsById(tree, nodeId, path = []) {
+      if (!Array.isArray(tree)) {
+        return null;
+      }
+      for (const node of tree) {
+        if (node.children && node.children.length > 0) {
+          for (const child of node.children) {
+            if (child.id === nodeId) {
+              return [...path, node.categoryName || node.label];
+            }
+          }
+          const found = this.findParentLabelsById(node.children, nodeId, [...path, node.categoryName || node.label]);
+          if (found) {
+            return found;
+          }
+        }
+      }
+      return null;
+    },
+    updataResultFn() {
+      this.updataLoading = true
+      let params = {
+        tableFieldIds: this.resultForm.selectedIds,
+        categoryId: this.resultForm.categoryId,
+        securityLevel: this.resultForm.securityLevel,
+        piiDetection: this.resultForm.piiDetection,
+      }
+
+      if (this.currentNodeType === '1') {
+        // 非结构化批量修改
+        updateResultByFile(params).then(res => {
+          if (res.code == 200) {
+            this.$message({
+              message: res.msg,
+              type: 'success'
+            })
+          }
+          this.deleteVisible = false
+          this.resultFormNodeName = ''
+          this.resetForm('resultForm')
+          this.resultForm.selectedIds = null
+          this.handleFileQuery()
+          this.updataLoading = false
+        }).catch(err => {
+          this.updataLoading = false
+        })
+      } else {
+        // 结构化批量修改
+        updateFiledRule(params).then(res => {
+          if (res.code == 200) {
+            this.$message({
+              message: res.msg,
+              type: 'success'
+            })
+          }
+          this.deleteVisible = false
+          this.resultFormNodeName = ''
+          this.resetForm('resultForm')
+          this.resultForm.selectedIds = null
+          this.getTableFieldsData()
+          this.updataLoading = false
+        }).catch(err => {
+          this.updataLoading = false
+        })
+      }
+    },
+    updataResultCanelFn() {
+      this.deleteVisible = false
+      this.resultFormNodeName = ''
+      this.resetForm('resultForm')
+      this.resultForm.selectedIds = null
     },
     /** 重置按钮操作 */
     resetQuery() {
@@ -3107,8 +3589,51 @@ export default {
   box-shadow: none;
 }
 
-.addMsg ::v-deep .el-input--medium {
-  width: 237px;
+.addMsg ::v-deep.el-dialog {
+  border-radius: 10px;
+}
+
+.addMsg ::v-deep.el-dialog__header {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.addMsg ::v-deep.el-dialog__title {
+  font-weight: bold;
+}
+
+.addMsg ::v-deep.el-form-item__content {
+  padding-right: 15px;
+}
+
+.addMsg ::v-deep.el-select--medium,
+.addMsg ::v-deep.el-select--small {
+  width: 100%;
+}
+
+.addMsg ::v-deep.el-dialog__body {
+  padding: 30px;
+}
+
+.addMsg ::v-deep .el-dialog:not(.is-fullscreen) {
+  margin-top: 10% !important;
+}
+
+.addMsg ::v-deep .el-dialog__body {
+  padding-bottom: 0;
+
+}
+
+.addMsg ::v-deep .el-dialog__footer {
+  padding-bottom: 32px;
+
+}
+
+.addMsg ::v-deep .el-form-item__label {
+  text-align: left;
+}
+
+.addMsg ::v-deep .el-select--medium {
+  width: 100%;
 }
 
 .success {
