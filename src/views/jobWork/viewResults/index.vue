@@ -10,17 +10,17 @@
           </div>
           <div class="head-container tree-container" v-loading="treeLoading">
             <el-tree class="treeBox" :data="treeList" :props="defaultProps" :current-node-key="treeID"
-              :expand-on-click-node="true" :filter-node-method="filterNode" ref="resultTree" node-key="id"
+              :expand-on-click-node="false" :filter-node-method="filterNode" ref="resultTree" node-key="id"
               highlight-current @node-click="handleTreeNodeClick">
               <span class="custom-tree-node" slot-scope="{ node, data }"
                 style="display: flex; justify-content: space-between; align-items: center; flex: 1; min-width: 0; padding-right: 8px;">
                 <span style="display: flex; align-items: center; min-width: 0;">
                   <!-- 呼吸灯动效 (非根节点且当前用户为该节点负责人时展示) -->
-                  <span v-if="data.level > 0 && isCurrentUserOwner(data.dataOwner)" class="breathing-light"
+                  <span v-if="node.level > 1 && isCurrentUserOwner(data.dataOwner)" class="breathing-light"
                     style="margin-right: 6px;"></span>
 
                   <!-- 根节点图标 -->
-                  <template v-if="data.level === 0">
+                  <template v-if="node.level === 1">
                     <i v-if="data.treeType == '0'" class="el-icon-circle-plus"
                       style="margin-right: 5px; color: #409EFF; font-size: 16px;"></i>
                     <i v-else-if="data.treeType == '1'" class="el-icon-success"
@@ -42,13 +42,12 @@
                     || 0 }})</span>
                 </span>
                 <div style="display: flex; align-items: center; flex-shrink: 0;">
-                  <span v-if="data.level > 0"
+                  <span v-if="node.level > 1"
                     style="color: #909399; font-size: 12px; margin-left: 10px; flex-shrink: 0; background-color: #f4f4f5; padding: 2px 6px; border-radius: 4px;">
-                    L{{ data.level }}
+                    L{{ node.level - 1 }}
                   </span>
-                  <span v-if="treeList.length > 0 && data.id === treeList[0].id" 
-                        class="expand-all-btn" 
-                        @click.stop="handleExpandAll(node, data)">
+                  <span v-if="treeList.length > 0 && data.id === treeList[0].id" class="expand-all-btn"
+                    @click.stop="handleExpandAll(node, data)">
                     <svg-icon icon-class="全部展开" style="font-size: 14px;" />
                   </span>
                 </div>
@@ -698,15 +697,17 @@ export default {
       return currentLabel || sourceName || '识别结果'
     },
     contentDescription() {
-      const description = this.currentTreeNode?.remark || this.currentTreeNode?.description || this.currentTreeNode?.additional
+      const description = this.currentTreeNode?.categoryDescribe || this.currentTreeNode?.remark || this.currentTreeNode?.description || this.currentTreeNode?.additional
       if (description) return description
       const descParts = [this.drawerDataInfo?.projectName, this.drawerDataInfo?.businessName, this.drawerDataInfo?.sourceName]
         .filter(Boolean)
       return descParts.length ? descParts.join(' / ') : '通过左侧节点和筛选条件查看当前识别结果。'
     },
     currentTreeLevel() {
-      // 确保依赖被正确收集，直接使用已保存的当前节点数据中的 level
-      return this.currentTreeNode && this.currentTreeNode.level !== undefined ? this.currentTreeNode.level : 0;
+      // 通过当前树节点的实际层级（node.level）来计算
+      if (!this.currentTreeNode) return 0;
+      const node = this.$refs.resultTree?.getNode(this.currentTreeNode.id);
+      return node ? node.level - 1 : 0;
     },
     showNodeOverview() {
       if (!this.currentTreeNode) return false
@@ -718,6 +719,21 @@ export default {
     },
     nodeOverviewCards() {
       const node = this.currentTreeNode || {}
+
+      // 根据 securityLevel 从 levelOptions 中获取 securityLevelName 和 defaultProtectMethod
+      let securityLevelName = node.securityLevelName
+      let suggestedProtection = ''
+
+      if (node.securityLevel && this.levelOptions.length > 0) {
+        const levelOption = this.levelOptions.find(item => Number(item.value) === Number(node.securityLevel))
+        if (levelOption) {
+          if (!securityLevelName) {
+            securityLevelName = levelOption.label
+          }
+          suggestedProtection = levelOption.defaultProtectMethod
+        }
+      }
+
       return [
         {
           label: '数据所有者',
@@ -726,14 +742,14 @@ export default {
         },
         {
           label: '安全分级',
-          value: node.securityLevelName || '--',
+          value: securityLevelName || '--',
           icon: 'el-icon-s-order',
-          isTag: !!node.securityLevelName,
+          isTag: !!securityLevelName,
           level: node.securityLevel || 0
         },
         {
           label: '建议防护措施',
-          value: node.suggestedProtection || node.suggestedMeasures || '--',
+          value: suggestedProtection || '--',
           icon: 'el-icon-s-opportunity'
         },
         {
@@ -878,17 +894,17 @@ export default {
             const generateUniqueId = () => {
               return 'node_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
             };
-            
+
             const formatTree = (list, parentIds = new Set()) => {
               return list.map(item => {
                 let children = item.children || [];
                 // 如果后端返回的数据中 id 有重复的（或者为空），前端给它分配一个唯一ID
                 let nodeId = item.id;
                 if (!nodeId || parentIds.has(nodeId)) {
-                   nodeId = item.id ? item.id + '_' + generateUniqueId() : generateUniqueId();
+                  nodeId = item.id ? item.id + '_' + generateUniqueId() : generateUniqueId();
                 }
                 parentIds.add(nodeId);
-                
+
                 return {
                   ...item,
                   id: nodeId, // 覆盖可能重复的id
@@ -900,7 +916,7 @@ export default {
             };
             this.treeList = formatTree(res.data);
             this.isAllExpanded = true;
-            
+
             // 展开所有节点
             this.$nextTick(() => {
               const nodesMap = this.$refs.resultTree.store.nodesMap;
@@ -934,7 +950,8 @@ export default {
         const list = payload.records || payload.rows || payload.list || payload || []
         this.levelOptions = list.map(it => ({
           value: it.level,
-          label: it.levelName
+          label: it.levelName,
+          defaultProtectMethod: it.defaultProtectMethod || ''
         }))
       })
     },
@@ -971,8 +988,9 @@ export default {
       this.addNodeName = this.getNodePathLabel(node.id)
       this.queryParams.categoryId = node.id
       this.queryParams.categoryIds = this.collectTreeNodeFilterIds(node).join(',')
-      // 由于目前接口还没给到，暂不调用接口
-      // this.handleQuery()
+
+      // 更新右侧表格数据
+      this.handleQuery()
 
       // 动态加载子节点
       let params = {
@@ -980,7 +998,7 @@ export default {
         projectId: node.id,
         isInner: 1
       };
-      
+
       // 记录点击前该节点的展开状态
       const treeNodeBefore = this.$refs.resultTree.getNode(node.id);
       const isExpandedBefore = treeNodeBefore ? treeNodeBefore.expanded : false;
@@ -996,7 +1014,7 @@ export default {
             };
           });
           this.$set(node, 'children', children);
-          
+
           this.$nextTick(() => {
             const treeNode = this.$refs.resultTree.getNode(node.id);
             if (treeNode) {
@@ -1006,14 +1024,14 @@ export default {
             }
           });
         } else {
-           // 如果没有查到数据，根据 el-tree 的 expand-on-click-node 逻辑，
-           // 它可能会被默认收起。如果希望即使没数据也恢复它之前的展开状态（如果它原来是展开的）：
-           this.$nextTick(() => {
-             const treeNode = this.$refs.resultTree.getNode(node.id);
-             if (treeNode && isExpandedBefore) {
-               treeNode.expanded = true;
-             }
-           });
+          // 如果没有查到数据，根据 el-tree 的 expand-on-click-node 逻辑，
+          // 它可能会被默认收起。如果希望即使没数据也恢复它之前的展开状态（如果它原来是展开的）：
+          this.$nextTick(() => {
+            const treeNode = this.$refs.resultTree.getNode(node.id);
+            if (treeNode && isExpandedBefore) {
+              treeNode.expanded = true;
+            }
+          });
         }
       });
     },
@@ -1323,8 +1341,10 @@ export default {
     /** 查询数据库代理列表 */
     getList() {
       this.loading = true;
+      let treeId = this.currentTreeNode ? this.currentTreeNode.id : (this.drawerDataInfo.projectId || sessionStorage.getItem('projectId'));
       let params = {
         ...this.queryParams,
+        treeId: treeId,
         securityLevel: '',
         securityLevelIds: this.queryParams.securityLevel,
       }
