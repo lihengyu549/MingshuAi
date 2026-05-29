@@ -10,8 +10,8 @@
           </div>
           <div class="head-container tree-container" v-loading="treeLoading">
             <el-tree class="treeBox" :data="treeList" :props="defaultProps" :current-node-key="treeID"
-              :expand-on-click-node="false" :filter-node-method="filterNode" ref="resultTree" node-key="id"
-              highlight-current accordion @node-click="handleTreeNodeClick">
+              :expand-on-click-node="true" :filter-node-method="filterNode" ref="resultTree" node-key="id"
+              highlight-current @node-click="handleTreeNodeClick">
               <span class="custom-tree-node" slot-scope="{ node, data }"
                 style="display: flex; justify-content: space-between; align-items: center; flex: 1; min-width: 0; padding-right: 8px;">
                 <span style="display: flex; align-items: center; min-width: 0;">
@@ -21,11 +21,11 @@
 
                   <!-- 根节点图标 -->
                   <template v-if="data.level === 0">
-                    <i v-if="data.treeType === '0'" class="el-icon-circle-plus"
+                    <i v-if="data.treeType == '0'" class="el-icon-circle-plus"
                       style="margin-right: 5px; color: #409EFF; font-size: 16px;"></i>
-                    <i v-else-if="data.treeType === '1'" class="el-icon-success"
+                    <i v-else-if="data.treeType == '1'" class="el-icon-success"
                       style="margin-right: 5px; color: #409EFF; font-size: 16px;"></i>
-                    <i v-else-if="data.treeType === '2'" class="el-icon-error"
+                    <i v-else-if="data.treeType == '2'" class="el-icon-error"
                       style="margin-right: 5px; color: #409EFF; font-size: 16px;"></i>
                   </template>
                   <!-- 非根节点图标 -->
@@ -41,10 +41,17 @@
                   <span style="color: #909399; margin-left: 5px; font-size: 14px; flex-shrink: 0;">({{ data.fieldCount
                     || 0 }})</span>
                 </span>
-                <span v-if="data.level > 0"
-                  style="color: #909399; font-size: 12px; margin-left: 10px; flex-shrink: 0; background-color: #f4f4f5; padding: 2px 6px; border-radius: 4px;">
-                  L{{ data.level }}
-                </span>
+                <div style="display: flex; align-items: center; flex-shrink: 0;">
+                  <span v-if="data.level > 0"
+                    style="color: #909399; font-size: 12px; margin-left: 10px; flex-shrink: 0; background-color: #f4f4f5; padding: 2px 6px; border-radius: 4px;">
+                    L{{ data.level }}
+                  </span>
+                  <span v-if="treeList.length > 0 && data.id === treeList[0].id" 
+                        class="expand-all-btn" 
+                        @click.stop="handleExpandAll(node, data)">
+                    <svg-icon icon-class="全部展开" style="font-size: 14px;" />
+                  </span>
+                </div>
               </span>
             </el-tree>
           </div>
@@ -365,9 +372,8 @@ import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
   startI, stopI, databaseMaskI, strategyPushI, strategyAll,
   databaseListI, confirmIds, selectResultsById, confirmList, updateFiledRule,
-  cancelConfirm, cancelConfirmData, getCategoryAttachData
+  cancelConfirm, cancelConfirmData, getCategoryAttachData, getStandardByProjectId, getStandardTreeByProjectId
 } from "@/api/system/proxys";
-import { listAllProject, } from "@/api/system/project";
 import {
   treeListI, categoryImport, getAttachData, attachStatus,
   forceLogout, updataAttach, nameTesting, addData,
@@ -397,6 +403,8 @@ export default {
       ],
       resultFormNodeName: '',
       treeID: '',
+      treeList: [],
+      isAllExpanded: false,
       categoryList: [],
       yuanCategoryList: [],
       addNodeName: '',
@@ -664,76 +672,6 @@ export default {
     this.fetchInitialData();
   },
   computed: {
-    treeList() {
-      return [
-        {
-          "id": "1",
-          "label": "华为",
-          "level": 0,
-          "treeType": "1",
-          "fieldCount": 528,
-          "showCard": false,
-          "children": [
-            {
-              "id": "1-1",
-              "label": "通信服务",
-              "level": 1,
-              "fieldCount": 120,
-              "showCard": false
-            },
-            {
-              "id": "1-3",
-              "label": "消费者业务",
-              "level": 1,
-              "fieldCount": 200,
-              "showCard": false,
-              "children": [
-                {
-                  "id": "1-3-1",
-                  "label": "智能终端产品管理",
-                  "level": 2,
-                  "fieldCount": 45,
-                  "showCard": true,
-                  "dataOwner": "张华 (业务中台)",
-                  "securityLevelName": "3级-内部敏感",
-                  "securityLevel": 3,
-                  "suggestedProtection": "脱敏展示，严格访问控制",
-                  "confirmedProtection": "已配置脱敏规则 (掩码)"
-                },
-                {
-                  "id": "1-3-2",
-                  "label": "消费者品牌与市场拓展",
-                  "level": 2,
-                  "fieldCount": 60,
-                  "showCard": true,
-                  "dataOwner": "李强 (营销中心)",
-                  "securityLevelName": "2级-内部公开",
-                  "securityLevel": 2,
-                  "suggestedProtection": "按需申请权限",
-                  "confirmedProtection": "默认保护"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "2",
-          "label": "未分类",
-          "level": 0,
-          "treeType": "0",
-          "fieldCount": 45,
-          "showCard": false
-        },
-        {
-          "id": "3",
-          "label": "噪音数据",
-          "level": 0,
-          "treeType": "2",
-          "fieldCount": 12,
-          "showCard": false
-        }
-      ]
-    },
     isFileSource() {
       return this.queryParams.sourceType === 'FILE_CATALOGUE' || this.queryParams.sourceType === 'FILE_SERVER';
     },
@@ -835,7 +773,7 @@ export default {
 
       // 初始化 queryParams
       this.queryParams.projectId = drawerDataObj.projectId || '';
-      this.queryParams.databaseId = drawerDataObj.id || '';
+      this.queryParams.databaseId = drawerDataObj.databaseId || drawerDataObj.id || '';
       this.queryParams.sourceType = drawerDataObj.sourceType || '';
 
       // 处理数据库列表
@@ -848,8 +786,8 @@ export default {
       if (drawerDataObj.projectId) {
         sessionStorage.setItem('projectId', String(drawerDataObj.projectId));
       }
-      if (drawerDataObj.id) {
-        sessionStorage.setItem('databaseId', String(drawerDataObj.id));
+      if (drawerDataObj.databaseId || drawerDataObj.id) {
+        sessionStorage.setItem('databaseId', String(drawerDataObj.databaseId || drawerDataObj.id));
       }
     },
 
@@ -887,6 +825,7 @@ export default {
     fetchInitialData() {
       // 因为没有接口了，所以注释掉获取分类数据的方法
       // this.getProtectCategory();
+      this.getInitialTreeData();
       this.getPiiList();
       this.getList();
       this.getListTableByProject();
@@ -895,6 +834,95 @@ export default {
         this.fetchLevelOptions(this.drawerDataInfo.projectId);
       } else if (this.$route.query.drawerData && this.$route.query.drawerData.projectId) {
         this.fetchLevelOptions(this.$route.query.drawerData.projectId);
+      }
+    },
+
+    // 获取左侧树初始数据
+    getInitialTreeData() {
+      this.treeLoading = true;
+      let params = {
+        databaseId: this.drawerDataInfo.databaseId || this.drawerDataInfo.id || sessionStorage.getItem('databaseId'),
+        projectId: this.drawerDataInfo.projectId || sessionStorage.getItem('projectId'),
+        isInner: 0
+      };
+      getStandardByProjectId(params).then(res => {
+        this.treeLoading = false;
+        if (res.code == 200 && res.data) {
+          this.treeList = res.data.map(item => {
+            return {
+              ...item,
+              label: item.categoryName || item.label || item.name,
+              children: [] // 初始化空子节点数组
+            }
+          });
+        }
+      }).catch(() => {
+        this.treeLoading = false;
+      });
+    },
+
+    // 全部展开/收起
+    handleExpandAll(node, data) {
+      if (!this.isAllExpanded) {
+        // 执行全部展开
+        this.treeLoading = true;
+        let params = {
+          databaseId: this.drawerDataInfo.databaseId || this.drawerDataInfo.id || sessionStorage.getItem('databaseId'),
+          projectId: this.drawerDataInfo.projectId || sessionStorage.getItem('projectId'),
+          isInner: 0
+        };
+        getStandardTreeByProjectId(params).then(res => {
+          this.treeLoading = false;
+          if (res.code == 200 && res.data) {
+            // 递归格式化返回的完整树结构，确保 node-key 唯一
+            const generateUniqueId = () => {
+              return 'node_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+            };
+            
+            const formatTree = (list, parentIds = new Set()) => {
+              return list.map(item => {
+                let children = item.children || [];
+                // 如果后端返回的数据中 id 有重复的（或者为空），前端给它分配一个唯一ID
+                let nodeId = item.id;
+                if (!nodeId || parentIds.has(nodeId)) {
+                   nodeId = item.id ? item.id + '_' + generateUniqueId() : generateUniqueId();
+                }
+                parentIds.add(nodeId);
+                
+                return {
+                  ...item,
+                  id: nodeId, // 覆盖可能重复的id
+                  label: item.categoryName || item.label || item.name,
+                  children: formatTree(children, new Set(parentIds)),
+                  _loaded: true
+                };
+              });
+            };
+            this.treeList = formatTree(res.data);
+            this.isAllExpanded = true;
+            
+            // 展开所有节点
+            this.$nextTick(() => {
+              const nodesMap = this.$refs.resultTree.store.nodesMap;
+              for (let key in nodesMap) {
+                nodesMap[key].expanded = true;
+              }
+            });
+          }
+        }).catch(() => {
+          this.treeLoading = false;
+        });
+      } else {
+        // 执行全部收起
+        this.isAllExpanded = false;
+        const nodesMap = this.$refs.resultTree.store.nodesMap;
+        for (let key in nodesMap) {
+          // 如果想保留根节点展开，可以判断 nodesMap[key].level === 1
+          nodesMap[key].expanded = false;
+        }
+        // 如果想让第一个根节点依然保持展开，可以单独设置
+        // const rootNode = this.$refs.resultTree.getNode(this.treeList[0].id);
+        // if (rootNode) rootNode.expanded = true;
       }
     },
 
@@ -945,6 +973,49 @@ export default {
       this.queryParams.categoryIds = this.collectTreeNodeFilterIds(node).join(',')
       // 由于目前接口还没给到，暂不调用接口
       // this.handleQuery()
+
+      // 动态加载子节点
+      let params = {
+        databaseId: this.drawerDataInfo.databaseId || this.drawerDataInfo.id || sessionStorage.getItem('databaseId'),
+        projectId: node.id,
+        isInner: 1
+      };
+      
+      // 记录点击前该节点的展开状态
+      const treeNodeBefore = this.$refs.resultTree.getNode(node.id);
+      const isExpandedBefore = treeNodeBefore ? treeNodeBefore.expanded : false;
+
+      getStandardByProjectId(params).then(res => {
+        this.$set(node, '_loaded', true);
+        if (res.code == 200 && res.data && res.data.length > 0) {
+          let children = res.data.map(item => {
+            return {
+              ...item,
+              label: item.categoryName || item.label || item.name,
+              children: [] // 初始化空子节点数组
+            };
+          });
+          this.$set(node, 'children', children);
+          
+          this.$nextTick(() => {
+            const treeNode = this.$refs.resultTree.getNode(node.id);
+            if (treeNode) {
+              // 1. 如果节点之前没有展开（首次加载），请求完毕后将其展开
+              // 2. 如果节点之前已经展开（重复点击刷新），则保持展开状态（避免收起又展开）
+              treeNode.expanded = true;
+            }
+          });
+        } else {
+           // 如果没有查到数据，根据 el-tree 的 expand-on-click-node 逻辑，
+           // 它可能会被默认收起。如果希望即使没数据也恢复它之前的展开状态（如果它原来是展开的）：
+           this.$nextTick(() => {
+             const treeNode = this.$refs.resultTree.getNode(node.id);
+             if (treeNode && isExpandedBefore) {
+               treeNode.expanded = true;
+             }
+           });
+        }
+      });
     },
     collectTreeNodeFilterIds(node) {
       const ids = new Set()
@@ -956,13 +1027,13 @@ export default {
         }
       }
       walkChildren(node)
-      this.findAllAncestors(this.categoryList, node.id).forEach(id => ids.add(id))
+      this.findAllAncestors(this.treeList, node.id).forEach(id => ids.add(id))
       return Array.from(ids)
     },
     getNodePathLabel(nodeId) {
-      const node = this.findNodeById(this.categoryList, nodeId)
+      const node = this.findNodeById(this.treeList, nodeId)
       if (!node) return ''
-      const parentLabels = this.findParentLabelsById(this.categoryList, nodeId)
+      const parentLabels = this.findParentLabelsById(this.treeList, nodeId)
       return parentLabels ? `${parentLabels.join('-')}-${node.categoryName || node.label}` : (node.categoryName || node.label || '')
     },
     findNodeById(tree, nodeId) {
@@ -978,7 +1049,7 @@ export default {
     },
     getListTableByProject() {
       let data = {
-        databaseId: this.drawerDataInfo.id ? this.drawerDataInfo.id : Number(sessionStorage.getItem('databaseId')),
+        databaseId: this.drawerDataInfo.databaseId || this.drawerDataInfo.id || Number(sessionStorage.getItem('databaseId')),
         databaseName: this.queryParams.databaseName
       }
       listTableByProject(data).then(res => {
@@ -2078,5 +2149,28 @@ export default {
   .toolbar-group-right {
     margin-left: 0;
   }
+}
+
+.custom-tree-node .expand-all-btn {
+  margin-left: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.custom-tree-node .expand-all-btn svg {
+  color: #ffffff;
+  transition: color 0.3s;
+}
+
+.custom-tree-node:hover .expand-all-btn svg {
+  color: #9ca3af;
+}
+
+.custom-tree-node .expand-all-btn:hover svg {
+  color: #3b82f6 !important;
 }
 </style>

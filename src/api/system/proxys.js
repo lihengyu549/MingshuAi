@@ -411,3 +411,21 @@ export function getGenerateStandard (params) {
     params: params
   })
 }
+
+// 结果查看实时查询左侧树   
+export function getStandardByProjectId (params) {
+  return request({
+    url: '/system/category/getStandardByProjectId',
+    method: 'get',
+    params: params
+  })
+}
+
+// 结果查看左侧树全部展开接口
+export function getStandardTreeByProjectId (params) {
+  return request({
+    url: '/system/category/getStandardTreeByProjectId',
+    method: 'get',
+    params: params
+  })
+}
