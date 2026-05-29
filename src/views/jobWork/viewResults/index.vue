@@ -697,11 +697,8 @@ export default {
       return currentLabel || sourceName || '识别结果'
     },
     contentDescription() {
-      const description = this.currentTreeNode?.categoryDescribe || this.currentTreeNode?.remark || this.currentTreeNode?.description || this.currentTreeNode?.additional
+      const description = this.currentTreeNode?.categoryDescribe || ''
       if (description) return description
-      const descParts = [this.drawerDataInfo?.projectName, this.drawerDataInfo?.businessName, this.drawerDataInfo?.sourceName]
-        .filter(Boolean)
-      return descParts.length ? descParts.join(' / ') : '通过左侧节点和筛选条件查看当前识别结果。'
     },
     currentTreeLevel() {
       // 通过当前树节点的实际层级（node.level）来计算
@@ -1348,6 +1345,7 @@ export default {
         securityLevel: '',
         securityLevelIds: this.queryParams.securityLevel,
       }
+      delete params.categoryId
       selectResultsById(params).then(response => {
         this.proxysList = response.data.rows;
         this.proxysList.forEach(ele => {
