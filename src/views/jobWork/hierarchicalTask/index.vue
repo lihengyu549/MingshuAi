@@ -83,7 +83,7 @@
         <el-table-column type="selection" width="60" align="center" :selectable="selectableFn" />
 
         <template v-for="item in filteredCheckedColumn">
-          <el-table-column v-if="item.prop === 'tasksName'" :key="item.prop" :label="item.label" width="140"
+          <el-table-column v-if="item.prop === 'tasksName'" :key="item.prop" :label="item.label" width="150"
             align="left" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon
@@ -91,20 +91,20 @@
                   style="font-size: 14px; margin-right: 5px;" />{{ scope.row.tasksName }}</span>
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'sourceName'" :key="item.prop" :label="item.label" width="140"
-            align="left" :prop="item.prop" show-overflow-tooltip>
+          <el-table-column v-else-if="item.prop === 'sourceName'" :key="item.prop" :label="item.label" width="200"
+            align="center" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               {{ scope.row.sourceName }}
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'businessName'" :key="item.prop" :label="item.label" width="140"
-            align="left" :prop="item.prop" show-overflow-tooltip>
+          <el-table-column v-else-if="item.prop === 'businessName'" :key="item.prop" :label="item.label" width="200"
+            align="center" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               {{ scope.row.businessName }}
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'projectName'" :key="item.prop" :label="item.label" width="240"
-            align="left" :prop="item.prop" show-overflow-tooltip>
+          <el-table-column v-else-if="item.prop === 'projectName'" :key="item.prop" :label="item.label" width="300"
+            align="center" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               {{ scope.row.projectName }}
             </template>
@@ -114,20 +114,20 @@
             <span>{{ scope.row.aiAnalyticsEngine == 1 ? '快速响应' : '深度思考' }}</span>
           </template>
         </el-table-column> -->
-          <el-table-column v-else-if="item.prop === 'fieldCount'" :key="item.prop" :label="item.label" width="120"
+          <el-table-column v-else-if="item.prop === 'fieldCount'" :key="item.prop" :label="item.label" width="150"
             align="center" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               {{ emptyHandler(scope.row.fieldCount) }}
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'fileCount'" :key="item.prop" :label="item.label" width="120"
+          <el-table-column v-else-if="item.prop === 'fileCount'" :key="item.prop" :label="item.label" width="150"
             align="center" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
               {{ emptyHandler(scope.row.fileCount) }}
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'maskComplete'" :key="item.prop" :label="item.label" align="center"
-            width="120" :prop="item.prop">
+            width="150" :prop="item.prop">
             <template slot-scope="scope">
               <div class="runType">
                 <i v-if="scope.row.maskComplete == 'STAYEXECUTE' || scope.row.maskComplete == 'RUNNING' || scope.row.maskComplete == 'PAUSEDING' || scope.row.maskComplete == 'KILLEDING'"
@@ -147,7 +147,7 @@
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'updateTime'" :key="item.prop" :label="item.label" align="center"
-            :prop="item.prop" show-overflow-tooltip />
+            :prop="item.prop" width="150" show-overflow-tooltip />
         </template>
 
         <el-table-column :label="$t('hierarchicalTask.columns.taskActions')" align="center" width="200"
@@ -1742,6 +1742,7 @@ export default {
 .runType {
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 /* 1. 单选组容器：左右并列，占满父容器宽度 */
