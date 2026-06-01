@@ -144,7 +144,7 @@
     </el-card>
 
     <!-- 分类推理 -->
-    <el-card class="card" shadow="never">
+    <!-- <el-card class="card" shadow="never">
       <template slot="header">
         <span class="title">
           <div class="icon">
@@ -160,7 +160,7 @@
         <el-switch v-model="allData.ClassificationInference.state" active-color="#009dff" inactive-color="#e0e0e0">
         </el-switch>
       </div>
-    </el-card>
+    </el-card> -->
 
     <!-- <div>
         <h4 class="title">
