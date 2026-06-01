@@ -12,8 +12,7 @@
           </div>
 
           <!-- 2. 新增:全选框(左) + 导出按钮(右) 区域 -->
-          <div class="tree-operation-bar"
-            style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <div class="tree-operation-bar">
             <!-- 左侧全选框(带文字说明) -->
             <el-checkbox v-model="isTreeAllChecked" @change="handleTreeAllCheck"
               :indeterminate="isTreeAllChecked === null" style="font-size: 14px; margin-left: 20px;">
@@ -49,19 +48,18 @@
             <div class="file-manager-wrapper" style="display: flex; flex-direction: column; height: 100%;">
               <el-card class="file-manager-card" shadow="never" style="flex: 1; display: flex; flex-direction: column;"
                 :body-style="{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }">
-                <div slot="header" class="header-title"
-                  style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div slot="header" class="header-title">
                   <div>
                     <span style="font-size: 18px; font-weight: bold; display: flex; align-items: center;">
                       <svg-icon icon-class="home-dataAsset" style="font-size: 18px;margin-right: 10px;"></svg-icon>
                       数据源：{{ currentNodeData ? currentNodeData.label : '' }}
                     </span>
+                    <span style="color: #909399; font-size: 13px;">共 {{ dataSourceDetail.databaseCount }} 个数据库</span>
                     <div style="margin-top: 10px; font-size: 13px; color: #606266;"
                       v-if="dataSourceDetail.systemName || dataSourceDetail.systemRemark">
                       {{ dataSourceDetail.systemName }}：{{ dataSourceDetail.systemRemark }}
                     </div>
                   </div>
-                  <span style="color: #909399; font-size: 13px;">共 {{ dataSourceDetail.databaseCount }} 个数据库</span>
                 </div>
 
                 <div class="file-manager-content" style="flex: 1; display: flex; flex-direction: column; height: 100%;">
@@ -110,6 +108,7 @@
                       <svg-icon icon-class="databaseSolid" style="font-size: 18px;margin-right: 10px;" />
                       数据库：{{ currentNodeData ? currentNodeData.label : '' }}
                     </span>
+                    <span style="color: #909399; font-size: 13px;">共 {{ total }} 张表</span>
                   </div>
                 </div>
 
@@ -253,18 +252,17 @@
 
               <el-card class="file-manager-card" shadow="never" style="flex: 1; display: flex; flex-direction: column;"
                 :body-style="{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }">
-                <div slot="header" class="header-title"
-                  style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div slot="header" class="header-title">
                   <div>
                     <span style="font-size: 18px; font-weight: bold; display: flex; align-items: center;">
                       <svg-icon icon-class="table1" style="margin-right: 8px; color: #409EFF;" />
                       {{ currentNodeData ? currentNodeData.label : '' }}
                     </span>
+                    <span style="color: #909399; font-size: 13px;">共 {{ drawerTotal }} 个字段</span>
                     <div style="font-size: 13px; color: #606266; margin-top: 10px;">
                       {{ currentTableRemark }}
                     </div>
                   </div>
-                  <span style="color: #909399; font-size: 13px;">共 {{ drawerTotal }} 个字段</span>
                 </div>
 
                 <div class="file-manager-content"
@@ -1710,14 +1708,14 @@ export default {
         const processedParams = queryParams ? { ...queryParams } : { ...this.fileQueryParams };
         // 如果外部传了明确的 categoryIds 就保留，否则尝试从 category 取
         processedParams.categoryIds = processedParams.categoryIds || processedParams.category;
-        
+
         if (Array.isArray(processedParams.securityLevel)) {
           processedParams.securityLevelIds = [...processedParams.securityLevel];
           processedParams.securityLevel = processedParams.securityLevel.join(',');
         } else {
           processedParams.securityLevelIds = processedParams.securityLevelIds || (processedParams.securityLevel ? processedParams.securityLevel.split(',') : []);
         }
-        
+
         delete processedParams.categoryName;
         delete processedParams.category;
 
@@ -3854,6 +3852,12 @@ export default {
 /* 新增:树操作栏(全选框+导出按钮)样式 */
 .tree-operation-bar {
   padding: 0 3px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #dcdfe6;
+  border-bottom: 1px solid #dcdfe6;
   /* 与输入框、树组件保持一致的内边距 */
 }
 
