@@ -1396,21 +1396,7 @@ export default {
               this.isTreeAllChecked = true;
 
               // 根据类型初始化右侧视图
-              if (this.categoryList[0].type == '0') {
-                // 结构化数据源，模拟点击触发 handleTreeNodeClick，进入第一层视图
-                this.handleTreeNodeClick(this.categoryList[0]);
-              } else {
-                // 非结构化数据源，初始化加载文件列表
-                this.currentNodeData = this.categoryList[0];
-                this.currentNodeType = this.categoryList[0].type || '0';
-                this.currentFolderId = null;
-                this.breadcrumbList = [];
-                this.loadFileListData(this.categoryList[0], {
-                  folderId: null,
-                  keepCurrentFolderName: false,
-                  immediate: true
-                });
-              }
+              this.handleTreeNodeClick(this.categoryList[0]);
             });
           } else {
             this.categoryList = [];
@@ -1724,8 +1710,14 @@ export default {
         const processedParams = queryParams ? { ...queryParams } : { ...this.fileQueryParams };
         // 如果外部传了明确的 categoryIds 就保留，否则尝试从 category 取
         processedParams.categoryIds = processedParams.categoryIds || processedParams.category;
-        processedParams.securityLevelIds = Array.isArray(processedParams.securityLevel) ? [...processedParams.securityLevel] : [];
-        processedParams.securityLevel = Array.isArray(processedParams.securityLevel) ? processedParams.securityLevel.join(',') : '';
+        
+        if (Array.isArray(processedParams.securityLevel)) {
+          processedParams.securityLevelIds = [...processedParams.securityLevel];
+          processedParams.securityLevel = processedParams.securityLevel.join(',');
+        } else {
+          processedParams.securityLevelIds = processedParams.securityLevelIds || (processedParams.securityLevel ? processedParams.securityLevel.split(',') : []);
+        }
+        
         delete processedParams.categoryName;
         delete processedParams.category;
 
@@ -1870,6 +1862,10 @@ export default {
       this.currentNodeData = data; // 保存当前节点数据
 
       if (this.currentNodeType == '1') {
+        // 获取下拉选项
+        this.fetchLevelOptions(data.id);
+        this.fetchCategoryOptions(data.id);
+
         // 文件管理模式 (非结构化，一层)
         this.breadcrumbList = [];
         this.currentFolderId = null;
