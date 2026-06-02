@@ -146,14 +146,14 @@
                       </el-table-column>
                       <el-table-column label="数据量(行)" prop="dataMagnitude" width="150"></el-table-column>
                       <el-table-column label="数据大小" prop="dataSize" width="150"></el-table-column>
-                      <el-table-column label="敏感等级" width="150" align="center">
+                      <el-table-column label="敏感等级" width="150" align="left">
                         <template slot-scope="scope">
                           <el-tag type="danger" size="mini" v-if="scope.row.tableSecurityLevel"
                             :style="getRiskStyle(scope.row.tableSecurityLevel)">{{
                               scope.row.tableSecurityLevelName }}</el-tag>
                         </template>
                       </el-table-column>
-                      <el-table-column label="分类" width="150" align="center">
+                      <el-table-column label="分类" width="150" align="left">
                         <template slot-scope="scope">
                           <span style="color: #409EFF;">{{ scope.row.tableCategoryName || scope.row.categoryName
                           }}</span>
@@ -325,7 +325,7 @@
                       :header-cell-style="{ background: '#f8f8f9', color: '#606266' }">
                       <el-table-column type="selection" width="55" align="center"></el-table-column>
                       <el-table-column v-for="item in checkedFieldColumnDef" :key="item.prop" :label="item.label"
-                        :prop="item.prop" :width="item.width" show-overflow-tooltip align="center">
+                        :prop="item.prop" :width="item.width" show-overflow-tooltip align="left">
                         <template slot-scope="scope">
                           <template v-if="item.prop === 'fieldName'">
                             {{ scope.row.fieldName }} <el-tag size="mini" type="warning"
@@ -355,7 +355,7 @@
                                   style="width: 100%">
                                   <el-table-column type="index" label="序号" width="50" align="center" />
                                   <el-table-column prop="value" label="字段值" width="100" show-overflow-tooltip
-                                    align="center" />
+                                    align="left" />
                                 </el-table>
                               </div>
                               <i class="el-icon-view" style="font-size: 18px; cursor: pointer;"></i>
@@ -420,10 +420,10 @@
                           :value="item.value"></el-option>
                       </el-select>
                     </el-form-item>
-                    <el-form-item label="所属文件夹">
+                    <!-- <el-form-item label="所属文件夹">
                       <el-input v-model="fileQueryParams.fileParentPath" placeholder="请输入所属文件夹" clearable
                         @input="handleFileQuery" @clear="handleFileQuery"></el-input>
-                    </el-form-item>
+                    </el-form-item> -->
                     <el-form-item label="归类原因">
                       <el-select v-model="fileQueryParams.classificationReasons" placeholder="全部" clearable
                         @change="handleFileQuery">
@@ -498,13 +498,13 @@
                     <div v-for="folder in folderList" :key="folder.id" class="folder-item"
                       @click="handleFolderClick(folder)">
                       <i class="el-icon-folder folder-icon"></i>
-                      <span class="folder-item-name">{{ folder.name }}</span>
+                      <span class="folder-item-name">{{ folder.name }}<span style="font-size: 12px; color: #909399;">（{{ folder.itemCount || 0 }}）</span></span>
                     </div>
                   </div>
                 </div>
 
                 <!-- (5) 文件列表展示 -->
-                <div v-if="fileList.length > 0 || folderList.length > 0" class="file-section">
+                <div v-if="fileList.length > 0" class="file-section">
                   <div class="section-title"
                     style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <span>{{ $t('assetCatalog.file') }}</span>
@@ -544,7 +544,7 @@
                     <!-- 右侧按钮 -->
                     <div>
                       <el-button plain size="medium" @click="toggleFileSearch" style="margin-right: 10px;">
-                        <i :class="showFileSearch ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
+                        <i class="el-icon-s-finance"></i>
                         {{ showFileSearch ? '收起筛选' : '展开筛选' }}
                       </el-button>
                       <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
@@ -556,7 +556,7 @@
                           <el-checkbox style="margin-bottom: 10px;" v-for="item in unstructuredColumnList"
                             :label="item.prop" :key="item.prop">{{ item.label }}</el-checkbox>
                         </el-checkbox-group>
-                        <el-button size="medium" slot="reference" icon="el-icon-setting">列设置</el-button>
+                        <el-button size="medium" slot="reference" icon="el-icon-s-tools">列设置</el-button>
                       </el-popover>
                     </div>
                   </div>
@@ -566,7 +566,7 @@
                     @selection-change="handleFileSelectionChange">
                     <el-table-column type="selection" width="55" align="center"></el-table-column>
                     <el-table-column v-for="item in checkedFileColumn" :key="item.prop" :label="item.label"
-                      :prop="item.prop" :width="item.width" show-overflow-tooltip align="center">
+                      :prop="item.prop" :width="item.width" :show-overflow-tooltip="item.prop !== 'fileContext'" align="left">
                       <template slot-scope="scope">
                         <!-- 确认状态样式定制 -->
                         <template v-if="item.prop === 'confirm'">
@@ -574,6 +574,9 @@
                             :style="{ color: scope.row.confirm === '0' || scope.row.confirm === 0 ? '#E6A23C' : '#67C23A' }">
                             {{ scope.row.confirm === '0' || scope.row.confirm === 0 ? '待确认' : '已确认' }}
                           </span>
+                        </template>
+                        <template v-else-if="item.prop === 'fileContext'">
+                          <el-tag type="primary" style="white-space: pre-wrap; height: auto; line-height: normal; padding: 5px;">{{ scope.row[item.prop] || '--' }}</el-tag>
                         </template>
                         <template v-else-if="item.prop === 'securityLevelName'">
                           <el-tag v-if="scope.row.securityLevelName" size="small" plain
@@ -653,17 +656,17 @@
         </el-card>
         <el-card class="table-card drawer-table-card" shadow="never">
           <el-table :data="filteredDrawerData" ref="tableRef" :key="tableKey" border class="tableBox" height="100%">
-            <el-table-column :label="$t('assetCatalog.fieldName')" align="center" prop="fieldName" width="200"
+            <el-table-column :label="$t('assetCatalog.fieldName')" align="left" prop="fieldName" width="200"
               show-overflow-tooltip />
-            <el-table-column :label="$t('assetCatalog.fieldType')" align="center" prop="fieldType" width="200"
+            <el-table-column :label="$t('assetCatalog.fieldType')" align="left" prop="fieldType" width="200"
               show-overflow-tooltip />
-            <el-table-column :label="$t('assetCatalog.fieldComment')" align="center" width="200" prop="oldFieldRemark"
+            <el-table-column :label="$t('assetCatalog.fieldComment')" align="left" width="200" prop="oldFieldRemark"
               show-overflow-tooltip>
               <template slot-scope="scope">
                 <span>{{ scope.row.oldFieldRemark }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('assetCatalog.aiFieldComment')" align="center" prop="aiFieldRemark"
+            <el-table-column :label="$t('assetCatalog.aiFieldComment')" align="left" prop="aiFieldRemark"
               min-width="200" show-overflow-tooltip>
               <template slot-scope="scope">
                 <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, 'aiFieldRemark')">{{
@@ -672,14 +675,14 @@
                   size="small" />
               </template>
             </el-table-column>
-            <!-- <el-table-column label="样本是否为空" align="center" prop="dataIsNull" width="100" show-overflow-tooltip />
-        <el-table-column label="样本重复率" align="center" prop="dataIsRepeat" width="100" show-overflow-tooltip>
+            <!-- <el-table-column label="样本是否为空" align="left" prop="dataIsNull" width="100" show-overflow-tooltip />
+        <el-table-column label="样本重复率" align="left" prop="dataIsRepeat" width="100" show-overflow-tooltip>
           <template slot-scope="scope">
             <span>{{ scope.row.dataIsRepeat ? scope.row.dataIsRepeat + '%' : '' }}</span>
           </template>
         </el-table-column> -->
-            <!-- <el-table-column label="样本长度过短" align="center" prop="sampleLengthShort" width="100" show-overflow-tooltip />
-        <el-table-column label="是否为脏数据（可编辑）" align="center" prop="dirtyData" width="200" show-overflow-tooltip>
+            <!-- <el-table-column label="样本长度过短" align="left" prop="sampleLengthShort" width="100" show-overflow-tooltip />
+        <el-table-column label="是否为脏数据（可编辑）" align="left" prop="dirtyData" width="200" show-overflow-tooltip>
           <template slot-scope="scope">
             <span v-if="!scope.row.drawerEditDirtyData" @click="drawerEditFn(scope.row, 'dirtyData')">{{
               scope.row.dirtyData }}</span>
@@ -690,7 +693,7 @@
             </el-select>
           </template>
         </el-table-column> -->
-            <el-table-column :label="$t('assetCatalog.sample')" align="center" width="80"
+            <el-table-column :label="$t('assetCatalog.sample')" align="left" width="80"
               class-name="small-padding fixed-width">
               <template slot-scope="scope">
                 <el-tooltip placement="bottom" effect="light">
@@ -706,9 +709,9 @@
                 </el-tooltip>
               </template>
             </el-table-column>
-            <!-- <el-table-column label="是否包含特征" align="center" prop="featureData" width="100" show-overflow-tooltip />
-        <el-table-column label="数据特征" align="center" min-width="150" prop="dataFeature" show-overflow-tooltip /> -->
-            <!-- <el-table-column label="是否添加为匹配策略" align="center" min-width="150" prop="isMatchStrategy"
+            <!-- <el-table-column label="是否包含特征" align="left" prop="featureData" width="100" show-overflow-tooltip />
+        <el-table-column label="数据特征" align="left" min-width="150" prop="dataFeature" show-overflow-tooltip /> -->
+            <!-- <el-table-column label="是否添加为匹配策略" align="left" min-width="150" prop="isMatchStrategy"
           show-overflow-tooltip /> -->
           </el-table>
 
@@ -3446,10 +3449,11 @@ export default {
 
   .folder-item-name {
     font-size: 14px;
-    color: #606266;
+    color: #000000;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-weight: 500;
   }
 }
 
