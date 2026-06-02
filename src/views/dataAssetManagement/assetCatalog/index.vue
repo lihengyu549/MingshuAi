@@ -586,7 +586,7 @@
                           <span v-else>--</span>
                         </template>
                         <template v-else-if="item.prop === 'fileName'">
-                          <span style="color: #409EFF; cursor: pointer;" @click="openFileDetailDrawer(scope.row)">
+                          <span style="color: #606266;">
                             <i class="el-icon-document" style="margin-right: 5px;"></i>{{ scope.row.fileName ||
                               scope.row.name }}
                           </span>
@@ -723,37 +723,7 @@
       </template>
     </Drawer>
 
-    <Drawer custom-class="fileDetailDrawer" :title="$t('assetCatalog.fileDetailsTitle')"
-      :visible.sync="fileDetailDrawerVisible" :destroy-on-close="false" direction="rtl" size="540px">
-      <template slot="body">
-        <div class="file-detail-panel">
-          <div class="file-detail-item">
-            <div class="file-detail-label">{{ $t('assetCatalog.fileName') }}</div>
-            <div class="file-detail-value">{{ fileDetailData.fileName }}</div>
-          </div>
-          <div class="file-detail-item">
-            <div class="file-detail-label">{{ $t('assetCatalog.fileSize') }}</div>
-            <div class="file-detail-value">{{ fileDetailData.fileSize }}</div>
-          </div>
-          <div class="file-detail-item">
-            <div class="file-detail-label">{{ $t('assetCatalog.fileType') }}</div>
-            <div class="file-detail-value">{{ fileDetailData.fileType }}</div>
-          </div>
-          <div class="file-detail-item">
-            <div class="file-detail-label">{{ $t('assetCatalog.absolutePath') }}</div>
-            <div class="file-detail-value">{{ fileDetailData.filePath }}</div>
-          </div>
-          <!-- <div class="file-detail-item">
-            <div class="file-detail-label">MD5</div>
-            <div class="file-detail-value">{{ fileDetailData.md5 }}</div>
-          </div>
-          <div class="file-detail-item">
-            <div class="file-detail-label">{{ currentFileTimeLabel }}</div>
-            <div class="file-detail-value">{{ fileDetailData.createTime }}</div>
-          </div> -->
-        </div>
-      </template>
-    </Drawer>
+
 
     <!-- 导出列配置弹窗 -->
     <el-dialog :title="$t('assetCatalog.exportColumn')" :visible.sync="exportColumnDialog.visible" width="760px"
@@ -922,15 +892,8 @@ export default {
       fileListTimer: null, // 防抖定时器
       folderClickTimer: null, // 文件夹点击节流定时器
 
-      fileDetailDrawerVisible: false,
-      fileDetailData: {
-        fileName: '--',
-        fileSize: '--',
-        fileType: '--',
-        filePath: '--',
-        md5: '--',
-        createTime: '--',
-      },
+
+
 
       drawerShow: false,
       drawerTitle: '',
@@ -1472,28 +1435,7 @@ export default {
       return this.sortOrders[field] === 'asc' ? 'el-icon-top' : 'el-icon-bottom';
     },
 
-    openFileDetailDrawer(file) {
-      const fileName = file.fileName || file.name || '--';
-      const suffixByName = fileName && fileName.includes('.') ? fileName.split('.').pop() : '';
-      const fileType = file.fileType || file.type || file.fileFormat || file.suffix || file.ext || suffixByName || '--';
 
-      this.fileDetailData = {
-        fileName: this.formatFileDetailValue(fileName),
-        fileSize: this.formatFileDetailValue(file.fileSize || file.fileSizeName),
-        fileType: this.formatFileDetailValue(fileType),
-        filePath: this.formatFileDetailValue(file.filePath || file.absolutePath || file.path || file.fileAbsolutePath),
-        md5: this.formatFileDetailValue(file.md5 || file.fileMd5),
-        createTime: this.formatFileDetailValue(file.createTime || file.fileCreateTime),
-      };
-      this.fileDetailDrawerVisible = true;
-    },
-
-    formatFileDetailValue(value) {
-      if (value === null || value === undefined || value === '') {
-        return '--';
-      }
-      return String(value);
-    },
 
     // 新增：文件相关方法 (添加防抖)
     handleFileQuery() {
