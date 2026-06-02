@@ -46,10 +46,10 @@
                     style="color: #909399; font-size: 12px; margin-left: 10px; flex-shrink: 0; background-color: #f4f4f5; padding: 2px 6px; border-radius: 4px;">
                     L{{ node.level - 1 }}
                   </span>
-                  <span v-if="treeList.length > 0 && data.id === treeList[0].id" class="expand-all-btn"
+                  <!-- <span v-if="treeList.length > 0 && data.id === treeList[0].id" class="expand-all-btn"
                     @click.stop="handleExpandAll(node, data)">
                     <svg-icon icon-class="全部展开" style="font-size: 14px;" />
-                  </span>
+                  </span> -->
                 </div>
               </span>
             </el-tree>
@@ -185,9 +185,9 @@
                   <svg-icon :icon-class="currentTreeLevel > 0 ? '表格' : '组织架构'" style="font-size: 20px;" />
                   {{ contentTitle }}
                 </span>
+                <div class="content-count">共 {{ total }} 条结果</div>
                 <div class="content-desc">{{ contentDescription }}</div>
               </div>
-              <span class="content-count">共 {{ total }} 条结果</span>
             </div>
             <div v-if="showNodeOverview" class="overview-grid">
               <div v-for="item in nodeOverviewCards" :key="item.label" class="overview-item">
@@ -236,7 +236,7 @@
               </div>
               <div class="toolbar-group toolbar-group-right">
                 <el-button plain size="medium" @click="toggleFilters">
-                  <i :class="showSearch ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
+                  <i class="el-icon-s-finance"></i>
                   {{ showSearch ? '收起筛选' : '展开筛选' }}
                 </el-button>
                 <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
@@ -249,7 +249,7 @@
                       :key="item.prop">{{
                         item.label }}</el-checkbox>
                   </el-checkbox-group>
-                  <el-button size="medium" slot="reference">{{ $t('columnSettings') }}</el-button>
+                  <el-button size="medium" icon="el-icon-s-tools" slot="reference">{{ $t('columnSettings') }}</el-button>
                 </el-popover>
                 <el-button type="info" plain size="medium" @click="handleBack">{{ $t('return') }}</el-button>
               </div>
@@ -513,40 +513,38 @@ export default {
         { labelKey: "fieldType", prop: "fieldType", width: "200" },
         { labelKey: "fieldRemark", prop: "fieldRemark", width: "150" },
         { labelKey: "aiFieldRemark", prop: "craftRemark", width: "200" },
-        { labelKey: "sourceBusinessSystem", prop: "businessName", width: "150" },
+        { labelKey: "category", prop: "categoryName" },
+        { labelKey: "securityLevel", prop: "securityLevelName" },
+        { labelKey: "sampleData", prop: "sampleData", width: "100" },
+        { labelKey: "confirm", prop: "confirm", width: "120" },
         { labelKey: "database", prop: "databaseName", width: "150" },
         { labelKey: "table", prop: "tableName", width: "150" },
         { labelKey: "tableRemark", prop: "tableRemark", width: "200" },
         { labelKey: "aiTableRemark", prop: "tableCraftRemark", width: "200" },
-        { labelKey: "category", prop: "categoryName" },
         { labelKey: "classificationStatus", prop: "classificationStateName", width: "250" },
         { labelKey: "classificationReason", prop: "classificationReasons", width: "150" },
         { labelKey: "piiReview", prop: "piiDetectionName", width: "250" },
         { labelKey: "detectionProcess", prop: "detectionProcess", width: "250" },
         { labelKey: "confidenceScore", prop: "confidenceScore", width: "100" },
         { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "100" },
-        { labelKey: "securityLevel", prop: "securityLevelName" },
         { labelKey: "sensitiveData", prop: "sensitiveDataName", width: "150" },
-        { labelKey: "sampleFeature", prop: "regularExpression", width: "150" },
-        { labelKey: "sampleData", prop: "sampleData", width: "100" },
-        { labelKey: "confirm", prop: "confirm", width: "120" }
+        { labelKey: "sampleFeature", prop: "regularExpression", width: "150" }
       ],
       // 非结构化（文件）列配置
       unstructuredColumnList: [
         { labelKey: "fileName", prop: "fileName", width: "200" },
-        { labelKey: "fileFormat", prop: "fileFormat", width: "150" },
-        { labelKey: "fileParentPath", prop: "fileParentPath", width: "200" },
-        { labelKey: "sourceBusinessSystem", prop: "businessName", width: "150" },
+        { labelKey: "fileSize", prop: "fileSizeName", width: "100" },
+        { labelKey: "fileType", prop: "fileType", width: "150" },
+        { labelKey: "fileContext", prop: "fileContext", width: "200" },
         { labelKey: "category", prop: "categoryName" },
-        { labelKey: "classificationStatus", prop: "classificationStateName", width: "250" },
-        { labelKey: "classificationReason", prop: "classificationReasons", width: "150" },
-        { labelKey: "piiReview", prop: "piiDetectionName", width: "250" },
-        { labelKey: "detectionProcess", prop: "detectionProcess", width: "250" },
-        { labelKey: "confidenceScore", prop: "confidenceScore", width: "100" },
-        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "100" },
         { labelKey: "securityLevel", prop: "securityLevelName" },
+        { labelKey: "confirm", prop: "confirm", width: "120" },
+        { labelKey: "classificationReason", prop: "classificationReasons", width: "150" },
+        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "100" },
+        { labelKey: "confidenceScore", prop: "confidenceScore", width: "100" },
         { labelKey: "sensitiveData", prop: "sensitiveDataName", width: "150" },
-        { labelKey: "confirm", prop: "confirm", width: "120" }
+        { labelKey: "lastModifiedTime", prop: "fileModifiedTime", width: "180" },
+        { labelKey: "fileUploadTime", prop: "fileUploadTime", width: "180" }
       ],
       // 弹出层标题
       title: "",
@@ -829,8 +827,8 @@ export default {
     initDefaultColumns() {
       // 设置默认展示的列（与ProtectTableField保持一致）
       this.checkedColumnProps = this.isFileSource
-        ? ['fileName', 'fileFormat', 'fileParentPath', 'categoryName', 'securityLevelName']
-        : ['fieldName', 'businessName', 'databaseName', 'tableName', 'categoryName', 'securityLevelName'];
+        ? ['fileName', 'fileSizeName', 'fileType', 'fileContext', 'categoryName', 'securityLevelName', 'confirm']
+        : ['fieldName', 'fieldType', 'fieldRemark', 'craftRemark', 'categoryName', 'securityLevelName', 'sampleData', 'confirm'];
       this.checkAll = false;
     },
 
@@ -1856,10 +1854,6 @@ export default {
 }
 
 .content-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
 }
 
 .content-header-main {
@@ -1876,16 +1870,16 @@ export default {
 }
 
 .content-desc {
-  margin-top: 10px;
+  margin-top: 8px;
   color: #606266;
   font-size: 13px;
   line-height: 20px;
 }
 
 .content-count {
+  margin-top: 8px;
   color: #909399;
   font-size: 13px;
-  white-space: nowrap;
 }
 
 .table-toolbar {
@@ -2158,10 +2152,6 @@ export default {
 
   .overview-grid {
     grid-template-columns: 1fr;
-  }
-
-  .content-header {
-    flex-direction: column;
   }
 
   .toolbar-group-right {
