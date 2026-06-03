@@ -21,12 +21,12 @@
 
                   <!-- 根节点图标 -->
                   <template v-if="node.level === 1">
-                    <i v-if="data.treeType == '0'" class="el-icon-circle-plus"
+                    <svg-icon v-if="data.treeType == '0'" icon-class="dunpai-2"
+                      style="font-size: 16px; color: #409EFF; margin-right: 5px;" />
+                    <i v-else-if="data.treeType == '1'" class="el-icon-question"
                       style="margin-right: 5px; color: #409EFF; font-size: 16px;"></i>
-                    <i v-else-if="data.treeType == '1'" class="el-icon-success"
-                      style="margin-right: 5px; color: #409EFF; font-size: 16px;"></i>
-                    <i v-else-if="data.treeType == '2'" class="el-icon-error"
-                      style="margin-right: 5px; color: #409EFF; font-size: 16px;"></i>
+                    <svg-icon v-if="data.treeType == '2'" icon-class="过滤"
+                      style="font-size: 16px; color: #409EFF; margin-right: 5px;" />
                   </template>
                   <!-- 非根节点图标 -->
                   <template v-else>
@@ -249,7 +249,8 @@
                       :key="item.prop">{{
                         item.label }}</el-checkbox>
                   </el-checkbox-group>
-                  <el-button size="medium" icon="el-icon-s-tools" slot="reference">{{ $t('columnSettings') }}</el-button>
+                  <el-button size="medium" icon="el-icon-s-tools" slot="reference">{{ $t('columnSettings')
+                  }}</el-button>
                 </el-popover>
                 <el-button type="info" plain size="medium" @click="handleBack">{{ $t('return') }}</el-button>
               </div>
@@ -257,6 +258,9 @@
             <el-table class="tableBox" style="flex: 1;" height="100%" v-loading="loading"
               :key="checkedColumnProps.length" :data="proxysList" @selection-change="handleSelectionChange"
               ref="tableRef">
+              <template slot="empty">
+                <el-empty :description="$t('noData')"></el-empty>
+              </template>
               <el-table-column type="selection" width="60" align="center" />
               <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label"
                 :align="item.prop === 'categoryName' ? 'left' : 'center'" :prop="item.prop" :width="item.width"
@@ -1856,8 +1860,7 @@ export default {
   gap: 16px;
 }
 
-.content-header {
-}
+.content-header {}
 
 .content-header-main {
   min-width: 0;
