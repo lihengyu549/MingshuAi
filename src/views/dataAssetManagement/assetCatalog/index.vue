@@ -137,7 +137,8 @@
                       <el-table-column label="AI表注释" prop="aiTableRemark">
                         <template slot-scope="scope">
                           <el-tag type="info" size="mini" v-if="scope.row.aiTableRemark">{{
-                            scope.row.aiTableRemark || '--' }}</el-tag>
+                            scope.row.aiTableRemark }}</el-tag>
+                          <span v-else>--</span>
                         </template>
                       </el-table-column>
                       <el-table-column label="数据质量评分" width="150">
@@ -150,8 +151,16 @@
                           </div>
                         </template>
                       </el-table-column>
-                      <el-table-column label="数据量(行)" prop="dataMagnitude" width="120"></el-table-column>
-                      <el-table-column label="数据大小" prop="dataSize" width="120"></el-table-column>
+                      <el-table-column label="数据量(行)" prop="dataMagnitude" width="120">
+                        <template slot-scope="scope">
+                          {{ scope.row.dataMagnitude || '--' }}
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="数据大小" prop="dataSize" width="120">
+                        <template slot-scope="scope">
+                          {{ scope.row.dataSize || '--' }}
+                        </template>
+                      </el-table-column>
                       <el-table-column label="分类" width="300" align="left">
                         <template slot-scope="scope">
                           <el-tag type="primary" size="mini">{{ scope.row.categoryName || '--'
@@ -162,7 +171,8 @@
                         <template slot-scope="scope">
                           <el-tag type="danger" size="mini" v-if="scope.row.tableSecurityLevel"
                             :style="getRiskStyle(scope.row.tableSecurityLevel)">{{
-                              scope.row.tableSecurityLevelName || '--' }}</el-tag>
+                              scope.row.tableSecurityLevelName }}</el-tag>
+                          <span v-else>--</span>
                         </template>
                       </el-table-column>
                     </el-table>

@@ -88,25 +88,25 @@
             <template slot-scope="scope">
               <span class="btnText" @click="handleUpdate(scope.row)" style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;"><svg-icon
                   :icon-class="databaseTypeIcon(scope.row.sourceTypeName)"
-                  style="font-size: 14px; margin-right: 5px; flex-shrink: 0;" />{{ scope.row.tasksName }}</span>
+                  style="font-size: 14px; margin-right: 5px; flex-shrink: 0;" />{{ scope.row.tasksName || '--' }}</span>
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'sourceName'" :key="item.prop" :label="item.label" width="200"
             align="left" :prop="item.prop">
             <template slot-scope="scope">
-              <el-tag type="info">{{ scope.row.sourceName }}</el-tag>
+              <el-tag type="info">{{ scope.row.sourceName || '--' }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'businessName'" :key="item.prop" :label="item.label" width="200"
             align="center" :prop="item.prop">
             <template slot-scope="scope">
-              {{ scope.row.businessName }}
+              {{ scope.row.businessName || '--' }}
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'projectName'" :key="item.prop" :label="item.label"
             align="left" :prop="item.prop">
             <template slot-scope="scope">
-              <el-tag type="primary" size="mini">{{ scope.row.projectName }}</el-tag>
+              <el-tag type="primary" size="mini">{{ scope.row.projectName || '--' }}</el-tag>
             </template>
           </el-table-column>
           <!-- <el-table-column label="AI分析引擎" align="center">
@@ -117,13 +117,13 @@
           <el-table-column v-else-if="item.prop === 'fieldCount'" :key="item.prop" :label="item.label" width="150"
             align="center" :prop="item.prop">
             <template slot-scope="scope">
-              {{ emptyHandler(scope.row.fieldCount) }}
+              {{ emptyHandler(scope.row.fieldCount) || '--' }}
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'fileCount'" :key="item.prop" :label="item.label" width="150"
             align="center" :prop="item.prop">
             <template slot-scope="scope">
-              {{ emptyHandler(scope.row.fileCount) }}
+              {{ emptyHandler(scope.row.fileCount) || '--' }}
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'maskComplete'" :key="item.prop" :label="item.label" align="center"
@@ -134,7 +134,7 @@
                   class="el-icon-loading" style="margin-right: 10px;font-size: 18px;"></i>
                 <svg-icon v-else :icon-class="scope.row.maskComplete" class="runIcon"
                   style="margin-right: 10px;width: 20px;height: 20px;"></svg-icon>
-                <span>{{ stateMsg(scope.row.maskComplete) }}</span>
+                <span>{{ stateMsg(scope.row.maskComplete) || '--' }}</span>
               </div>
             </template>
           </el-table-column>
@@ -143,7 +143,7 @@
             <template slot-scope="scope">
               <el-tag :type="scope.row.publishStatus == 0 ? 'info' : 'primary'">{{ scope.row.publishStatus == 0 ?
                 $t('hierarchicalTask.options.publishStatus.unpublished') :
-                $t('hierarchicalTask.options.publishStatus.published') }}</el-tag>
+                $t('hierarchicalTask.options.publishStatus.published') || '--' }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'updateTime'" :key="item.prop" :label="item.label" align="center"
