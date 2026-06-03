@@ -83,8 +83,8 @@
         <el-table-column type="selection" width="60" align="center" :selectable="selectableFn" />
 
         <template v-for="item in filteredCheckedColumn">
-          <el-table-column v-if="item.prop === 'tasksName'" :key="item.prop" :label="item.label" width="150"
-            align="left" :prop="item.prop">
+          <el-table-column v-if="item.prop === 'tasksName'" :key="item.prop" :label="item.label" width="180"
+            align="left" :prop="item.prop" show-overflow-tooltip="">
             <template slot-scope="scope">
               <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon
                   :icon-class="databaseTypeIcon(scope.row.sourceTypeName)"
@@ -94,7 +94,7 @@
           <el-table-column v-else-if="item.prop === 'sourceName'" :key="item.prop" :label="item.label" width="200"
             align="left" :prop="item.prop">
             <template slot-scope="scope">
-              <el-tag type="primary">{{ scope.row.sourceName }}</el-tag>
+              <el-tag type="info">{{ scope.row.sourceName }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'businessName'" :key="item.prop" :label="item.label" width="200"
@@ -106,7 +106,7 @@
           <el-table-column v-else-if="item.prop === 'projectName'" :key="item.prop" :label="item.label"
             align="left" :prop="item.prop">
             <template slot-scope="scope">
-              <el-tag type="info" size="mini">{{ scope.row.projectName }}</el-tag>
+              <el-tag type="primary" size="mini">{{ scope.row.projectName }}</el-tag>
             </template>
           </el-table-column>
           <!-- <el-table-column label="AI分析引擎" align="center">

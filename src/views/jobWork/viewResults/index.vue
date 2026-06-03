@@ -235,8 +235,8 @@
                   $t('viewResults.buttons.batchEdit') }}</el-button>
               </div>
               <div class="toolbar-group toolbar-group-right">
-                <el-button plain size="medium" @click="toggleFilters">
-                  <i class="el-icon-s-finance"></i>
+                <el-button type="text" size="medium" @click="toggleFilters" style="color: #7c8592;">
+                  <svg-icon icon-class="过滤" />
                   {{ showSearch ? '收起筛选' : '展开筛选' }}
                 </el-button>
                 <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
@@ -249,7 +249,7 @@
                       :key="item.prop">{{
                         item.label }}</el-checkbox>
                   </el-checkbox-group>
-                  <el-button size="medium" icon="el-icon-s-tools" slot="reference">{{ $t('columnSettings')
+                  <el-button type="text" size="medium" icon="el-icon-s-tools" slot="reference" style="color: #7c8592;">{{ $t('columnSettings')
                   }}</el-button>
                 </el-popover>
                 <el-button type="info" plain size="medium" @click="handleBack">{{ $t('return') }}</el-button>
@@ -263,7 +263,7 @@
               </template>
               <el-table-column type="selection" width="60" align="center" />
               <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label"
-                :align="item.prop === 'categoryName' || item.prop === 'fileName' || item.prop === 'fieldName' ? 'left' : 'center'" :prop="item.prop" :width="item.width">
+                align="left" :prop="item.prop" :width="item.width">
                 <template slot-scope="scope">
                   <template v-if="item.prop === (isFileSource ? 'fileName' : 'fieldName')">
                     <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">

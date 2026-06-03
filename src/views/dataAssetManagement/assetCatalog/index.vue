@@ -148,17 +148,17 @@
                       </el-table-column>
                       <el-table-column label="数据量(行)" prop="dataMagnitude" width="150"></el-table-column>
                       <el-table-column label="数据大小" prop="dataSize" width="150"></el-table-column>
-                      <el-table-column label="敏感等级" width="150" align="left">
-                        <template slot-scope="scope">
-                          <el-tag type="danger" size="mini" v-if="scope.row.tableSecurityLevel"
-                            :style="getRiskStyle(scope.row.tableSecurityLevel)">{{
-                              scope.row.tableSecurityLevelName || '--' }}</el-tag>
-                        </template>
-                      </el-table-column>
                       <el-table-column label="分类" width="150" align="left">
                         <template slot-scope="scope">
                           <el-tag type="primary" size="mini">{{ scope.row.categoryName || '--'
                           }}</el-tag>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="安全分级" width="150" align="left">
+                        <template slot-scope="scope">
+                          <el-tag type="danger" size="mini" v-if="scope.row.tableSecurityLevel"
+                            :style="getRiskStyle(scope.row.tableSecurityLevel)">{{
+                              scope.row.tableSecurityLevelName || '--' }}</el-tag>
                         </template>
                       </el-table-column>
                     </el-table>
@@ -282,7 +282,7 @@
                               <i class="el-icon-aim"></i> 确认勾选项
                             </el-dropdown-item>
                             <el-dropdown-item @click.native="handleEcelFn">
-                              <i class="el-icon-more"></i> 确认全部筛选结果
+                              <i class="el-icon-more"></i> 确认过滤项
                             </el-dropdown-item>
                           </el-dropdown-menu>
                         </el-dropdown>
@@ -291,10 +291,10 @@
                               class="el-icon-arrow-down el-icon--right"></i></el-button>
                           <el-dropdown-menu slot="dropdown">
                             <el-dropdown-item @click.native="handleAddFnClose">
-                              <i class="el-icon-refresh-left"></i> 取消确认勾选项
+                              <i class="el-icon-refresh-left"></i> 取消勾选项
                             </el-dropdown-item>
                             <el-dropdown-item @click.native="handleEcelFnClose">
-                              <i class="el-icon-magic-stick"></i> 取消确认全部筛选结果
+                              <i class="el-icon-magic-stick"></i> 取消过滤项
                             </el-dropdown-item>
                           </el-dropdown-menu>
                         </el-dropdown>
@@ -302,9 +302,9 @@
                           style="margin-left: 10px;">批量修改</el-button>
                       </div>
                       <div>
-                        <el-button plain size="medium" @click="showFieldSearch = !showFieldSearch"
-                          style="margin-right: 10px;">
-                          <i :class="showFieldSearch ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
+                        <el-button type="text" size="medium" @click="showFieldSearch = !showFieldSearch"
+                          style="margin-right: 10px; color: #7c8592;">
+                          <svg-icon icon-class="过滤" />
                           {{ showFieldSearch ? '收起筛选' : '展开筛选' }}
                         </el-button>
                         <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
@@ -316,7 +316,7 @@
                             <el-checkbox style="margin-bottom: 10px;" v-for="item in fieldColumnList" :label="item.prop"
                               :key="item.prop">{{ item.label }}</el-checkbox>
                           </el-checkbox-group>
-                          <el-button size="medium" slot="reference" icon="el-icon-setting">列设置</el-button>
+                          <el-button type="text" size="medium" slot="reference" icon="el-icon-s-tools" style="color: #7c8592;">列设置</el-button>
                         </el-popover>
                       </div>
                     </div>
@@ -337,8 +337,9 @@
                             <el-tag size="mini" type="warning" v-if="scope.row.isPk">PK</el-tag>
                           </template>
                           <template v-else-if="item.prop === 'confirmStatus' || item.prop === 'dirtyData'">
-                            <span :style="{ color: scope.row.dirtyData === '是' ? '#67C23A' : '#E6A23C' }">
-                              {{ scope.row.dirtyData === '是' ? '已确认' : '待确认' }}
+                            <span>
+                              <el-tag :type="scope.row.dirtyData === '是' ? 'primary' : 'info'" size="mini">{{
+                                scope.row.dirtyData === '是' ? '已确认' : '未确认' }}</el-tag>
                             </span>
                           </template>
                           <template v-else-if="item.prop === 'securityLevelName'">
@@ -543,7 +544,7 @@
                             <i class="el-icon-aim"></i> 确认勾选项
                           </el-dropdown-item>
                           <el-dropdown-item @click.native="handleFileEcelFn">
-                            <i class="el-icon-more"></i> 确认全部筛选结果
+                            <i class="el-icon-more"></i> 确认过滤项
                           </el-dropdown-item>
                         </el-dropdown-menu>
                       </el-dropdown>
@@ -552,10 +553,10 @@
                             class="el-icon-arrow-down el-icon--right"></i></el-button>
                         <el-dropdown-menu slot="dropdown">
                           <el-dropdown-item @click.native="handleFileAddFnClose">
-                            <i class="el-icon-refresh-left"></i> 取消确认勾选项
+                            <i class="el-icon-refresh-left"></i> 取消勾选项
                           </el-dropdown-item>
                           <el-dropdown-item @click.native="handleFileEcelFnClose">
-                            <i class="el-icon-magic-stick"></i> 取消确认全部筛选结果
+                            <i class="el-icon-magic-stick"></i> 取消过滤项
                           </el-dropdown-item>
                         </el-dropdown-menu>
                       </el-dropdown>
@@ -564,8 +565,8 @@
                     </div>
                     <!-- 右侧按钮 -->
                     <div>
-                      <el-button plain size="medium" @click="toggleFileSearch" style="margin-right: 10px;">
-                        <i class="el-icon-s-finance"></i>
+                      <el-button type="text" size="medium" @click="toggleFileSearch" style="margin-right: 10px; color: #7c8592;">
+                        <svg-icon icon-class="过滤" />
                         {{ showFileSearch ? '收起筛选' : '展开筛选' }}
                       </el-button>
                       <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
@@ -577,7 +578,7 @@
                           <el-checkbox style="margin-bottom: 10px;" v-for="item in unstructuredColumnList"
                             :label="item.prop" :key="item.prop">{{ item.label }}</el-checkbox>
                         </el-checkbox-group>
-                        <el-button size="medium" slot="reference" icon="el-icon-s-tools">列设置</el-button>
+                        <el-button type="text" size="medium" slot="reference" icon="el-icon-s-tools" style="color: #7c8592;">列设置</el-button>
                       </el-popover>
                     </div>
                   </div>
@@ -592,9 +593,9 @@
                         <template slot-scope="scope">
                           <!-- 确认状态样式定制 -->
                           <template v-if="item.prop === 'confirm'">
-                            <span
-                              :style="{ color: scope.row.confirm === '0' || scope.row.confirm === 0 ? '#E6A23C' : '#67C23A' }">
-                              {{ scope.row.confirm === '0' || scope.row.confirm === 0 ? '待确认' : '已确认' }}
+                            <span>
+                              <el-tag :type="scope.row.confirm === '0' || scope.row.confirm === 0 ? 'info' : 'primary'"
+                                size="mini">{{ scope.row.confirm === 0 ? '未确认' : '已确认' }}</el-tag>
                             </span>
                           </template>
                           <template v-else-if="item.prop === 'fileContext'">
@@ -1730,7 +1731,7 @@ export default {
       this.fixResultsDrawerVisible = true;
       this.fixResultsIsFileSource = this.currentNodeType == '1';
       this.fixResultsRow = { ...row };
-      
+
       // 直接解析当前行的 sampleData
       if (this.fixResultsRow.sampleData) {
         if (this.fixResultsIsFileSource) {
@@ -1901,7 +1902,7 @@ export default {
           if (res.code === 200) {
             this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'));
             // 更新本页面的数据
-            if(this.fixResultsRow) {
+            if (this.fixResultsRow) {
               this.fixResultsRow.confirm = 1;
             }
             // 刷新外层列表
@@ -1914,7 +1915,7 @@ export default {
         confirmIds([this.fixResultsRow?.id]).then(res => {
           if (res.code === 200) {
             this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'));
-            if(this.fixResultsRow) {
+            if (this.fixResultsRow) {
               this.fixResultsRow.confirm = 1;
             }
             // 刷新外层列表
