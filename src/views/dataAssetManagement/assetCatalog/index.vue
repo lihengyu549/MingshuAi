@@ -129,7 +129,11 @@
                           </div>
                         </template>
                       </el-table-column>
-                      <el-table-column label="表注释" prop="tableRemark" width="150"></el-table-column>
+                      <el-table-column label="表注释" prop="tableRemark" width="150">
+                        <template slot-scope="scope">
+                          {{ scope.row.tableRemark || '--' }}
+                        </template>
+                      </el-table-column>
                       <el-table-column label="AI表注释" prop="aiTableRemark">
                         <template slot-scope="scope">
                           <el-tag type="info" size="mini" v-if="scope.row.aiTableRemark">{{
@@ -316,7 +320,8 @@
                             <el-checkbox style="margin-bottom: 10px;" v-for="item in fieldColumnList" :label="item.prop"
                               :key="item.prop">{{ item.label }}</el-checkbox>
                           </el-checkbox-group>
-                          <el-button type="text" size="medium" slot="reference" icon="el-icon-s-tools" style="color: #7c8592;">列设置</el-button>
+                          <el-button type="text" size="medium" slot="reference" icon="el-icon-s-tools"
+                            style="color: #7c8592;">列设置</el-button>
                         </el-popover>
                       </div>
                     </div>
@@ -565,7 +570,8 @@
                     </div>
                     <!-- 右侧按钮 -->
                     <div>
-                      <el-button type="text" size="medium" @click="toggleFileSearch" style="margin-right: 10px; color: #7c8592;">
+                      <el-button type="text" size="medium" @click="toggleFileSearch"
+                        style="margin-right: 10px; color: #7c8592;">
                         <svg-icon icon-class="过滤" />
                         {{ showFileSearch ? '收起筛选' : '展开筛选' }}
                       </el-button>
@@ -578,7 +584,8 @@
                           <el-checkbox style="margin-bottom: 10px;" v-for="item in unstructuredColumnList"
                             :label="item.prop" :key="item.prop">{{ item.label }}</el-checkbox>
                         </el-checkbox-group>
-                        <el-button type="text" size="medium" slot="reference" icon="el-icon-s-tools" style="color: #7c8592;">列设置</el-button>
+                        <el-button type="text" size="medium" slot="reference" icon="el-icon-s-tools"
+                          style="color: #7c8592;">列设置</el-button>
                       </el-popover>
                     </div>
                   </div>

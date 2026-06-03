@@ -286,6 +286,9 @@
                   <template v-else-if="item.prop === 'fileContext'">
                     <el-tag type="info" size="mini">{{ scope.row.fileContext }}</el-tag>
                   </template>
+                  <template v-else-if="item.prop === 'fieldRemark'">
+                    {{ scope.row.fieldRemark || '--' }}
+                  </template>
                   <template v-else-if="item.prop === 'confirm'">
                     <el-tag :type="scope.row.confirm == 0 ? 'info' : 'primary'">{{ scope.row.confirm == 0 ?
                       $t('viewResults.options.confirm.unconfirmed') :
