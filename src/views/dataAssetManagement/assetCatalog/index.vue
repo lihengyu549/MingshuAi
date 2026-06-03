@@ -4,7 +4,7 @@
       <el-col :span="5" :xs="24">
         <el-card class="left-card" shadow="never">
           <!-- 1. 原有搜索输入框(保持不变,位于最上方) -->
-          <div class="head-container" style="margin-bottom: 15px;">
+          <div class="head-container" style="margin: 20px;">
             <el-input class="serachInput" v-model="filterText" :placeholder="$t('assetCatalog.pleaseInputSearch')"
               clearable>
               <i slot="prefix" class="el-input__icon el-icon-search"></i>
@@ -15,7 +15,7 @@
           <div class="tree-operation-bar">
             <!-- 左侧全选框(带文字说明) -->
             <el-checkbox v-model="isTreeAllChecked" @change="handleTreeAllCheck"
-              :indeterminate="isTreeAllChecked === null" style="font-size: 14px; margin-left: 20px;">
+              :indeterminate="isTreeAllChecked === null" style="font-size: 14px;">
               {{ $t('assetCatalog.selectAll') }}
             </el-checkbox>
             <!-- 右侧导出按钮(无选中节点时禁用) -->
@@ -26,7 +26,7 @@
             </el-button>
           </div>
 
-          <div class="head-container" v-loading="treeLoading">
+          <div class="head-container" v-loading="treeLoading" style="margin: 20px;">
             <div class="tree-scroll-container">
               <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :current-node-key="treeID"
                 :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree" node-key="id"
@@ -50,7 +50,8 @@
                 :body-style="{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }">
                 <div slot="header" class="header-title">
                   <div>
-                    <span style="font-size: 18px; font-weight: bold; display: flex; align-items: center;">
+                    <span
+                      style="font-size: 18px; font-weight: bold; display: flex; align-items: center; margin-bottom: 10px;">
                       <svg-icon icon-class="home-dataAsset" style="font-size: 18px;margin-right: 10px;"></svg-icon>
                       数据源：{{ currentNodeData ? currentNodeData.label : '' }}
                     </span>
@@ -104,7 +105,8 @@
                 <div slot="header" class="header-title"
                   style="display: flex; justify-content: space-between; align-items: flex-start;">
                   <div>
-                    <span style="font-size: 18px; font-weight: bold; display: flex; align-items: center;">
+                    <span
+                      style="font-size: 18px; font-weight: bold; display: flex; align-items: center; margin-bottom: 10px;">
                       <svg-icon icon-class="databaseSolid" style="font-size: 18px;margin-right: 10px;" />
                       数据库：{{ currentNodeData ? currentNodeData.label : '' }}
                     </span>
@@ -127,11 +129,12 @@
                           </div>
                         </template>
                       </el-table-column>
-                      <el-table-column label="表注释" prop="tableRemark" show-overflow-tooltip></el-table-column>
-                      <el-table-column label="AI表注释" prop="aiTableRemark" show-overflow-tooltip>
+                      <el-table-column label="表注释" prop="tableRemark"></el-table-column>
+                      <el-table-column label="AI表注释" prop="aiTableRemark">
                         <template slot-scope="scope">
-                          <el-tag type="primary" size="mini" v-if="scope.row.aiTableRemark">{{
-                            scope.row.aiTableRemark }}</el-tag>
+                          <el-tag type="primary" size="mini" v-if="scope.row.aiTableRemark"
+                            style="white-space: pre-wrap; height: auto; line-height: normal; padding: 5px; word-break: break-all;">{{
+                              scope.row.aiTableRemark }}</el-tag>
                         </template>
                       </el-table-column>
                       <el-table-column label="数据质量评分" width="150">
@@ -155,7 +158,7 @@
                       </el-table-column>
                       <el-table-column label="分类" width="150" align="left">
                         <template slot-scope="scope">
-                          <span style="color: #409EFF;">{{ scope.row.tableCategoryName || scope.row.categoryName
+                          <span>{{ scope.row.tableCategoryName || scope.row.categoryName
                           }}</span>
                         </template>
                       </el-table-column>
@@ -254,7 +257,8 @@
                 :body-style="{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }">
                 <div slot="header" class="header-title">
                   <div>
-                    <span style="font-size: 18px; font-weight: bold; display: flex; align-items: center;">
+                    <span
+                      style="font-size: 18px; font-weight: bold; display: flex; align-items: center; margin-bottom: 10px;">
                       <svg-icon icon-class="table1" style="margin-right: 8px; color: #409EFF;" />
                       {{ currentNodeData ? currentNodeData.label : '' }}
                     </span>
@@ -325,11 +329,13 @@
                       :header-cell-style="{ background: '#f8f8f9', color: '#606266' }">
                       <el-table-column type="selection" width="55" align="center"></el-table-column>
                       <el-table-column v-for="item in checkedFieldColumnDef" :key="item.prop" :label="item.label"
-                        :prop="item.prop" :width="item.width" show-overflow-tooltip align="left">
+                        :prop="item.prop" :width="item.width" align="left">
                         <template slot-scope="scope">
                           <template v-if="item.prop === 'fieldName'">
-                            {{ scope.row.fieldName }} <el-tag size="mini" type="warning"
-                              v-if="scope.row.isPk">PK</el-tag>
+                            <span style="color: #409EFF; cursor: pointer;" @click="openFixResultsDrawer(scope.row)">
+                              {{ scope.row.fieldName }}
+                            </span>
+                            <el-tag size="mini" type="warning" v-if="scope.row.isPk">PK</el-tag>
                           </template>
                           <template v-else-if="item.prop === 'confirmStatus' || item.prop === 'dirtyData'">
                             <span :style="{ color: scope.row.dirtyData === '是' ? '#67C23A' : '#E6A23C' }">
@@ -343,8 +349,15 @@
                             <span v-else>--</span>
                           </template>
                           <template v-else-if="item.prop === 'craftRemark'">
-                            <el-tag type="primary" size="mini" v-if="scope.row.craftRemark">{{ scope.row.craftRemark
-                            }}</el-tag>
+                            <el-tag type="primary" size="mini" v-if="scope.row.craftRemark"
+                              style="white-space: pre-wrap; height: auto; line-height: normal; padding: 5px; word-break: break-all;">{{
+                              scope.row.craftRemark }}</el-tag>
+                            <span v-else>--</span>
+                          </template>
+                          <template v-else-if="item.prop === 'tableCraftRemark'">
+                            <el-tag type="primary" size="mini" v-if="scope.row.tableCraftRemark"
+                              style="white-space: pre-wrap; height: auto; line-height: normal; padding: 5px; word-break: break-all;">{{
+                              scope.row.tableCraftRemark }}</el-tag>
                             <span v-else>--</span>
                           </template>
                           <template v-else-if="item.prop === 'sampleData'">
@@ -358,7 +371,10 @@
                                     align="left" />
                                 </el-table>
                               </div>
-                              <i class="el-icon-view" style="font-size: 18px; cursor: pointer;"></i>
+                              <span>
+                                {{ scope.row.sampleData[0].value }}
+                                <i class="el-icon-view" style="font-size: 18px; cursor: pointer;"></i>
+                              </span>
                             </el-tooltip>
                             <span v-else>--</span>
                           </template>
@@ -498,20 +514,23 @@
                     <div v-for="folder in folderList" :key="folder.id" class="folder-item"
                       @click="handleFolderClick(folder)">
                       <i class="el-icon-folder folder-icon"></i>
-                      <span class="folder-item-name">{{ folder.name }}<span style="font-size: 12px; color: #909399;">（{{ folder.itemCount || 0 }}）</span></span>
+                      <span class="folder-item-name">{{ folder.name }}<span style="font-size: 12px; color: #909399;">（{{
+                        folder.itemCount || 0 }}）</span></span>
                     </div>
                   </div>
                 </div>
 
                 <!-- (5) 文件列表展示 -->
-                <div v-if="fileList.length > 0" class="file-section">
+                <div v-if="fileList.length > 0" class="file-section"
+                  style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
                   <div class="section-title"
-                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-shrink: 0;">
                     <span>{{ $t('assetCatalog.file') }}</span>
                   </div>
 
                   <!-- 新增：操作按钮区域 -->
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                  <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0;">
                     <!-- 左侧按钮 -->
                     <div>
                       <el-dropdown trigger="click">
@@ -562,45 +581,49 @@
                   </div>
 
                   <!-- 新增：表格区域 -->
-                  <el-table ref="fileTableRef" :data="fileList" class="tableBox" style="width: 100%"
-                    @selection-change="handleFileSelectionChange">
-                    <el-table-column type="selection" width="55" align="center"></el-table-column>
-                    <el-table-column v-for="item in checkedFileColumn" :key="item.prop" :label="item.label"
-                      :prop="item.prop" :width="item.width" :show-overflow-tooltip="item.prop !== 'fileContext'" align="left">
-                      <template slot-scope="scope">
-                        <!-- 确认状态样式定制 -->
-                        <template v-if="item.prop === 'confirm'">
-                          <span
-                            :style="{ color: scope.row.confirm === '0' || scope.row.confirm === 0 ? '#E6A23C' : '#67C23A' }">
-                            {{ scope.row.confirm === '0' || scope.row.confirm === 0 ? '待确认' : '已确认' }}
-                          </span>
+                  <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                    <el-table ref="fileTableRef" :data="fileList" class="tableBox" style="width: 100%" height="100%"
+                      @selection-change="handleFileSelectionChange">
+                      <el-table-column type="selection" width="55" align="center"></el-table-column>
+                      <el-table-column v-for="item in checkedFileColumn" :key="item.prop" :label="item.label"
+                        :prop="item.prop" :width="item.width" align="left">
+                        <template slot-scope="scope">
+                          <!-- 确认状态样式定制 -->
+                          <template v-if="item.prop === 'confirm'">
+                            <span
+                              :style="{ color: scope.row.confirm === '0' || scope.row.confirm === 0 ? '#E6A23C' : '#67C23A' }">
+                              {{ scope.row.confirm === '0' || scope.row.confirm === 0 ? '待确认' : '已确认' }}
+                            </span>
+                          </template>
+                          <template v-else-if="item.prop === 'fileContext'">
+                            <el-tag type="primary"
+                              style="white-space: pre-wrap; height: auto; line-height: normal; padding: 5px;">{{
+                                scope.row[item.prop] || '--' }}</el-tag>
+                          </template>
+                          <template v-else-if="item.prop === 'securityLevelName'">
+                            <el-tag v-if="scope.row.securityLevelName" size="small" plain
+                              :style="getRiskStyle(scope.row.securityLevel)">{{
+                                scope.row.securityLevelName
+                              }}</el-tag>
+                            <span v-else>--</span>
+                          </template>
+                          <template v-else-if="item.prop === 'fileName'">
+                            <span style="color: #409EFF; cursor: pointer;" @click="openFixResultsDrawer(scope.row)">
+                              <i class="el-icon-document" style="margin-right: 5px;"></i>{{ scope.row.fileName ||
+                                scope.row.name }}
+                            </span>
+                          </template>
+                          <template v-else>
+                            {{ scope.row[item.prop] || '--' }}
+                          </template>
                         </template>
-                        <template v-else-if="item.prop === 'fileContext'">
-                          <el-tag type="primary" style="white-space: pre-wrap; height: auto; line-height: normal; padding: 5px;">{{ scope.row[item.prop] || '--' }}</el-tag>
-                        </template>
-                        <template v-else-if="item.prop === 'securityLevelName'">
-                          <el-tag v-if="scope.row.securityLevelName" size="small" plain
-                            :style="getRiskStyle(scope.row.securityLevel)">{{
-                              scope.row.securityLevelName
-                            }}</el-tag>
-                          <span v-else>--</span>
-                        </template>
-                        <template v-else-if="item.prop === 'fileName'">
-                          <span style="color: #606266;">
-                            <i class="el-icon-document" style="margin-right: 5px;"></i>{{ scope.row.fileName ||
-                              scope.row.name }}
-                          </span>
-                        </template>
-                        <template v-else>
-                          {{ scope.row[item.prop] || '--' }}
-                        </template>
-                      </template>
-                    </el-table-column>
-                  </el-table>
+                      </el-table-column>
+                    </el-table>
 
-                  <!-- 分页 -->
-                  <pagination v-show="fileTotal > 0" :total="fileTotal" :page.sync="fileQueryParams.pageNum"
-                    :pageSize.sync="fileQueryParams.pageSize" @pagination="handleFileQuery" />
+                    <!-- 分页 -->
+                    <pagination v-show="fileTotal > 0" :total="fileTotal" :page.sync="fileQueryParams.pageNum"
+                      :pageSize.sync="fileQueryParams.pageSize" @pagination="handleFileQuery" />
+                  </div>
                 </div>
 
                 <!-- 文件夹和文件都为空时显示的占位 -->
@@ -656,18 +679,15 @@
         </el-card>
         <el-card class="table-card drawer-table-card" shadow="never">
           <el-table :data="filteredDrawerData" ref="tableRef" :key="tableKey" border class="tableBox" height="100%">
-            <el-table-column :label="$t('assetCatalog.fieldName')" align="left" prop="fieldName" width="200"
-              show-overflow-tooltip />
-            <el-table-column :label="$t('assetCatalog.fieldType')" align="left" prop="fieldType" width="200"
-              show-overflow-tooltip />
-            <el-table-column :label="$t('assetCatalog.fieldComment')" align="left" width="200" prop="oldFieldRemark"
-              show-overflow-tooltip>
+            <el-table-column :label="$t('assetCatalog.fieldName')" align="left" prop="fieldName" width="200" />
+            <el-table-column :label="$t('assetCatalog.fieldType')" align="left" prop="fieldType" width="200" />
+            <el-table-column :label="$t('assetCatalog.fieldComment')" align="left" width="200" prop="oldFieldRemark">
               <template slot-scope="scope">
                 <span>{{ scope.row.oldFieldRemark }}</span>
               </template>
             </el-table-column>
             <el-table-column :label="$t('assetCatalog.aiFieldComment')" align="left" prop="aiFieldRemark"
-              min-width="200" show-overflow-tooltip>
+              min-width="200">
               <template slot-scope="scope">
                 <span v-if="!scope.row.drawerEdit" @click="drawerEditFn(scope.row, 'aiFieldRemark')">{{
                   scope.row.aiFieldRemark }}</span>
@@ -851,6 +871,351 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- ======== 新增 fixResults 抽屉 开始 ======== -->
+    <el-drawer :title="fixResultsTitleText" :visible.sync="fixResultsDrawerVisible" direction="rtl" size="88%"
+      :destroy-on-close="true" custom-class="fix-results-drawer">
+      <div class="fix-results-container" v-loading="fixResultsLoading" v-if="fixResultsRow">
+        <!-- 顶部标题和按钮区域 -->
+        <el-card class="top-section" shadow="never"
+          style="margin-bottom: 20px; border-radius: 10px; border: 1px solid #ebeef5;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="margin: 0;"><el-tag type="info" style="font-size: 18px;">ID：{{ fixResultsRow.id }}</el-tag> {{
+              fixResultsTitleText }}</h2>
+            <div class="top-buttons" style="display: flex; gap: 10px;">
+              <el-button @click="fixResultsHandleNext('0')">{{ $t('previous') }}</el-button>
+              <el-button @click="fixResultsHandleNext('1')">{{ $t('next') }}</el-button>
+              <el-button type="primary" plain @click="fixResultsHandleManualConfirm">{{
+                $t('fixResults.top.manualConfirm')
+              }}</el-button>
+            </div>
+          </div>
+
+        </el-card>
+
+        <!-- 下方左右分栏区域 -->
+        <div class="content-section" style="display: flex; justify-content: space-between;">
+          <div class="left-section" style="width: 65%;">
+            <el-card class="box-card" shadow="never" style="border-radius: 10px; border: 1px solid #e2e8f0;">
+              <template v-if="fixResultsIsFileSource">
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.fileType') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.fileFormat || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.fileSize') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.fileSizeName || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.fileSummary') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.fileContext || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.filePath') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.filePath || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.sampleFeature') }}：</label>
+                  <div class="info-content">
+                    <el-button size="mini" plain
+                      @click="fixResultsIsSampleFeatureExpanded = !fixResultsIsSampleFeatureExpanded"
+                      style="border-radius: 4px;">{{ fixResultsIsSampleFeatureExpanded ?
+                        $t('fixResults.texts.collapse') : $t('fixResults.texts.expandAll') }}</el-button>
+                  </div>
+                </div>
+                <el-collapse-transition>
+                  <div v-show="fixResultsIsSampleFeatureExpanded" style="margin-top: 10px;">
+                    <el-table :data="fixResultsRow.unSampleList" border class="tableCla"
+                      style="width: 100%; border-radius: 8px; overflow: hidden;">
+                      <template slot="empty">
+                        <el-empty :description="$t('noData')"></el-empty>
+                      </template>
+                      <el-table-column prop="key" :label="$t('fixResults.texts.keyword')"
+                        show-overflow-tooltip></el-table-column>
+                      <el-table-column prop="value" :label="$t('fixResults.texts.keyValue')"
+                        show-overflow-tooltip></el-table-column>
+                    </el-table>
+                  </div>
+                </el-collapse-transition>
+              </template>
+              <template v-else>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.fieldRemark') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.fieldRemark || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.aiFieldRemark') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.craftRemark || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.fieldTopic') }}：</label>
+                  <div class="info-content">
+                    <el-tag v-for="tag in (fixResultsRow.fieldTopic ? JSON.parse(fixResultsRow.fieldTopic) : [])"
+                      :key="tag" style="margin-right: 5px; border-radius: 8px;">{{ tag ||
+                        '--' }}</el-tag>
+                  </div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.dataPath') }}：</label>
+                  <div class="info-content">
+                    {{ fixResultsRow.businessName + ' / ' + fixResultsRow.databaseName + ' / ' + fixResultsRow.tableName
+                    }}
+                  </div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.tableRemark') }}：</label>
+                  <div class="info-content">
+                    {{ fixResultsRow.tableRemark || '--' }}
+                  </div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.aiTableRemark') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.tableCraftRemark || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.tableTopic') }}：</label>
+                  <div class="info-content">
+                    <el-tag type="success"
+                      v-for="tag in (fixResultsRow.tableTopic ? JSON.parse(fixResultsRow.tableTopic) : [])" :key="tag"
+                      style="margin-right: 5px; border-radius: 8px;">{{ tag ||
+                        '--' }}</el-tag>
+                  </div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.samplePreview') }}：</label>
+                  <div class="info-content">
+                    <el-tooltip placement="bottom" effect="light">
+                      <div slot="content">
+                        <el-table :data="fixResultsRow.sampleList" height="250" border class="tableCla"
+                          style="width: 100%">
+                          <el-table-column type="index" :label="$t('index')" width="50" />
+                          <el-table-column prop="value" :label="$t('fieldValue')" width="100" show-overflow-tooltip>
+                          </el-table-column>
+                        </el-table>
+                      </div>
+                      <el-button size="mini" type="text">{{ $t('view') }}</el-button>
+                    </el-tooltip>
+                  </div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.sampleFeature') }}：</label>
+                  <div class="info-content">
+                    <el-tag type="info" style="margin-right: 5px; border-radius: 8px;">{{
+                      fixResultsRow.regularExpression
+                      ||
+                      '--' }}</el-tag>
+                  </div>
+                </div>
+              </template>
+            </el-card>
+
+            <el-card shadow="never" style="margin-top: 20px; border-radius: 10px;">
+              <template slot="header">
+                <div
+                  style="font-weight: bold; font-size: 16px; margin-bottom: 0; display: flex; justify-content: space-between; align-items: center;">
+                  <span>{{ $t('fixResults.sections.reasoningProcess') }}</span>
+                  <el-button v-if="fixResultsIsFileSource" size="mini" plain @click="fixResultsToggleAllReasoning"
+                    style="border-radius: 4px; margin-right: 10px;">
+                    {{ fixResultsIsAllReasoningExpanded ? $t('fixResults.texts.collapseAll') :
+                      $t('fixResults.texts.expandAll') }}
+                  </el-button>
+                </div>
+              </template>
+              <el-card class="box-card" shadow="never" v-for="(item, index) in fixResultsRow.inferenceProcessList"
+                :key="index" style="margin-bottom: 20px;">
+                <template slot="header">
+                  <span class="header-name">{{ item.name }}</span>
+                  <span style="float: right; display: flex; align-items: center;">
+                    <span class="header-confidence" style="margin-right: 10px;">{{
+                      `${$t('fixResults.sections.currentConfidence')}：${item.value * 100}%` }}</span>
+                    <i v-if="fixResultsIsFileSource" :class="item.expanded ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"
+                      style="cursor: pointer; padding: 5px; font-weight: bold; color: #909399; font-size: 12px;"
+                      @click="item.expanded = !item.expanded"></i>
+                  </span>
+                </template>
+                <el-collapse-transition>
+                  <div v-show="!fixResultsIsFileSource || item.expanded">
+                    <div class="info-item">
+                      <label class="info-label"><svg-icon icon-class="home-aiAuto"
+                          style="font-size: 18px; margin-right: 10px; flex-shrink: 0;" />{{
+                            $t('fixResults.sections.aiReasoning') }}：</label>
+                      <div class="info-content">{{ item.text }}</div>
+                    </div>
+                  </div>
+                </el-collapse-transition>
+              </el-card>
+
+              <el-card class="box-card" shadow="never" style="margin-top: 20px;">
+                <template slot="header">
+                  <span class="header-name">{{ $t('fixResults.sections.finalGrade') }}：{{
+                    fixResultsRow.securityLevelName }}</span>
+                  <span style="float: right; display: flex; align-items: center;">
+                    <el-tag size="small" type="primary" color="#ffc5e0" style="border-radius: 8px; color: #dc478f;">{{
+                      $t('fixResults.sections.higherLevelRule') }}</el-tag>
+                  </span>
+                </template>
+                <div class="info-item">
+                  <label class="info-label"><svg-icon icon-class="home-aiAuto"
+                      style="font-size: 18px; margin-right: 10px; flex-shrink: 0;" />{{
+                        $t('fixResults.sections.aiReasoning') }}：</label>
+                  <div class="info-content">
+                    {{ fixResultsRow.dynamicGrading }}<br />
+                    <template
+                      v-if="fixResultsRow.oldSecurityLevel || fixResultsRow.newSecurityLevel || fixResultsRow.piiLevel">
+                      {{ $t('fixResults.sections.classificationResult') }}<el-tag size="small" type="primary"
+                        style="border-radius: 8px;">{{
+                          fixResultsRow.oldSecurityLevel }}{{ $t('fixResults.texts.level') }}</el-tag>，
+                      <template v-if="fixResultsRow.newSecurityLevel">
+                        {{ $t('fixResults.texts.dynamicRuleTriggered') }}<el-tag size="small" type="success"
+                          style="border-radius: 8px;">{{
+                            fixResultsRow.newSecurityLevel }}{{ $t('fixResults.texts.level') }}</el-tag>
+                      </template>
+                      <template v-else>
+                        {{ $t('fixResults.texts.dynamicRuleNotTriggered') }}
+                      </template>。
+                      <template v-if="fixResultsRow.piiLevel">
+                        {{ $t('fixResults.texts.piiResultLevel') }}<el-tag size="small" type="info"
+                          style="border-radius: 8px;">{{
+                            fixResultsRow.piiLevel }}{{ $t('fixResults.texts.level') }}</el-tag>
+                      </template>
+                      <template v-else>
+                        {{ $t('fixResults.texts.piiNotEnabled') }}
+                      </template>
+                    </template>
+                  </div>
+                </div>
+              </el-card>
+            </el-card>
+          </div>
+
+          <div class="right-section" style="width: 32%;">
+            <el-card class="box-card" shadow="never">
+              <template slot="header">
+                <div style="font-weight: bold; font-size: 16px; margin-bottom: 0;">
+                  <span>{{ $t('fixResults.sections.manualReview') }}</span>
+                </div>
+              </template>
+              <div class="audit-status" style="display: flex; align-items: center;">
+                <span>{{ fixResultsRow.confirm == '1' ? $t('fixResults.texts.confirmed') :
+                  $t('fixResults.texts.unconfirmed')
+                }}</span>
+                <el-badge is-dot style="margin-left: 5px;"></el-badge>
+              </div>
+              <div class="info-container" style="margin-top: 20px;">
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.sections.classificationResult') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.categoryName || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.sections.gradingResult') }}：</label>
+                  <div class="info-content">
+                    <el-tag :style="getRiskStyle(Number(fixResultsRow.securityLevel))">{{
+                      fixResultsRow.securityLevelName ||
+                      '--'
+                    }}</el-tag>
+                  </div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.sections.overallConfidence') }}：</label>
+                  <div class="info-content">
+                    <el-progress :percentage="Number(fixResultsRow.confidenceScore) * 100"
+                      style="line-height: 2.3;"></el-progress>
+                  </div>
+                </div>
+                <div class="info-item" v-if="!fixResultsIsFileSource">
+                  <label class="info-label">{{ $t('fixResults.sections.piiReview') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.piiDetectionName || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <el-button type="primary" plain class="full-width-btn" @click="fixResultsHandleModifyResult"
+                    style="width: 100%; border-radius: 5px; font-weight: 500;">{{
+                      $t('fixResults.sections.modifyResult') }}</el-button>
+                </div>
+              </div>
+            </el-card>
+
+            <el-card class="box-card" shadow="never" style="margin-top: 20px;">
+              <template slot="header">
+                <div style="font-weight: bold; font-size: 16px; margin-bottom: 0;">
+                  <span>{{ $t('fixResults.sections.aiSuggestedCategory') }}</span>
+                </div>
+              </template>
+              <template v-if="fixResultsRow.suggestClassifyJson">
+                <el-card
+                  style="padding: 20px; line-height: 1.8; border-radius: 10px; background-color: rgb(249 249 250);"
+                  shadow="never">
+                  <h4 style="margin: 0 0 15px 0; font-size: 14px; font-weight: bold;"><svg-icon icon-class="dot"
+                      style="margin-right: 5px;" />{{
+                        fixResultsRow.suggestClassifyJson.categoryName }}</h4>
+                  <p style="margin: 0 0 15px 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
+                    {{ fixResultsRow.suggestClassifyJson.categoryDescription }}
+                  </p>
+                  <h5 style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold;"><svg-icon icon-class="star-hollow"
+                      style="margin-right: 5px;" />{{
+                        $t('fixResults.sections.recommendationReason') }}:</h5>
+                  <p style="margin: 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
+                    {{ fixResultsRow.suggestClassifyJson.createReason }}
+                  </p>
+                </el-card>
+              </template>
+              <template v-else>
+                <div
+                  style="text-align: center; padding: 40px 20px; background-color: rgb(249 249 250); border-radius: 10px;">
+                  <div style="margin-bottom: 15px; color: #c0c4cc;">
+                    <svg-icon icon-class="info" style="font-size: 32px;" />
+                  </div>
+                  <p style="font-size: 14px; color: #606266; margin: 0;">{{
+                    $t('fixResults.sections.noSuggestedCategory') }}</p>
+                  <p style="font-size: 12px; color: #909399; margin-top: 8px;">{{
+                    $t('fixResults.sections.noSuggestedCategoryDesc') }}</p>
+                </div>
+              </template>
+            </el-card>
+          </div>
+        </div>
+
+        <el-dialog class="addMsg" :title="$t('fixResults.dialog.title')" :visible.sync="fixResultsDialogVisible"
+          width="700px" append-to-body>
+          <el-form :model="fixResultsResultForm" ref="fixResultsResultForm" size="small" label-width="auto"
+            label-position="top">
+            <el-form-item :label="$t('fixResults.dialog.category')" class="addSelectClass">
+              <el-select ref="fixResultsResultSelectRef" v-model="fixResultsResultFormNodeName" filterable
+                :filter-method="fixResultsHandleSearch" clearable @focus="fixResultsClearResultFilter">
+                <el-option style="height: 100%; padding: 0" value="">
+                  <el-tree :data="categoryList" :props="defaultProps" filterable :expand-on-click-node="true"
+                    :filter-node-method="filterNode" ref="fixResultsTreeSelectSec" node-key="id" highlight-current
+                    @node-click="fixResultsResultHandleNodeClick" />
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item :label="$t('fixResults.dialog.securityLevel')" class="addSelectClass" prop="securityLevel">
+              <el-select v-model="fixResultsResultForm.securityLevel" disabled :placeholder="$t('pleaseSelect')">
+                <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item :label="$t('fixResults.dialog.piiReview')" class="addSelectClass" prop="piiDetection"
+              v-if="!fixResultsIsFileSource">
+              <el-select ref="fixResultsPiiSelectRef" v-model="fixResultsPiiNodeName" clearable>
+                <el-option style="height: 100%; padding: 0" value="">
+                  <el-tree :data="personalProtectionOptions" :props="defaultProps" :expand-on-click-node="true"
+                    :filter-node-method="filterNode" ref="fixResultsTreeSelect" node-key="id" highlight-current
+                    @node-click="fixResultsPiiHandleNodeClick" />
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-form>
+          <template #footer>
+            <span>
+              <el-button type="primary" plain @click="fixResultsUpdataResultFn">{{ $t('confirm') }}</el-button>
+              <el-button @click="fixResultsUpdataResultCanelFn">{{ $t('cancel') }}</el-button>
+            </span>
+          </template>
+        </el-dialog>
+      </div>
+    </el-drawer>
+    <!-- ======== 新增 fixResults 抽屉 结束 ======== -->
+
   </div>
 </template>
 <script>
@@ -859,11 +1224,11 @@ import {
   getAllProxys, getTableListByProxysId, getAllFieldListByTableIdAndDatabaseId,
   getSelectTableNames, callAIPaddingComments, updateDataQualityAssessment, updateFieldListByFieldId,
   callAIPaddingCommentsByAll, updateDataQualityAssessmentByAll, propertyCatalogueExport,
-  getTables, getPropertyList, getCategorySchemaLevelList, treeListI
+  getTables, getPropertyList, getCategorySchemaLevelList, treeListI, getProtectTableFieldById
 } from "@/api/system/protectCategory";
 import { getDicts } from "@/api/system/dict/data";
 // 引入getProjectFileList接口
-import { getProjectFileList, updateResultByFile, confirmListByFile, cancelConfirmByFile } from "@/api/system/unstructured";
+import { getProjectFileList, updateResultByFile, confirmListByFile, cancelConfirmByFile, selectLastOrNextByFileId } from "@/api/system/unstructured";
 import { confirmIds, confirmList, cancelConfirm, cancelConfirmData, updateFiledRule, getCategoryAttachData } from "@/api/system/proxys";
 import Treeselect from "@riophae/vue-treeselect";
 export default {
@@ -996,6 +1361,26 @@ export default {
       isTreeAllChecked: false, // 全选框的勾选状态（双向绑定）
       selectedTreeNodeIds: [], // 存储所有勾选的节点ID（用于导出和状态判断）
       defaultCheckedKeys: [], // 树初始化时默认勾选的节点ID（可空）
+
+      // ======== 新增 fixResults 抽屉 相关数据 开始 ========
+      fixResultsDrawerVisible: false,
+      fixResultsLoading: false,
+      fixResultsRow: null,
+      fixResultsIsFileSource: false,
+      fixResultsIsSampleFeatureExpanded: false,
+      fixResultsIsAllReasoningExpanded: false,
+      fixResultsDialogVisible: false,
+      fixResultsResultForm: {
+        categoryId: '',
+        securityLevel: '',
+        id: '',
+        piiDetection: '',
+        classificationLogic: '',
+        reasoningProcess: ''
+      },
+      fixResultsResultFormNodeName: '',
+      fixResultsPiiNodeName: '',
+      // ======== 新增 fixResults 抽屉 相关数据 结束 ========
 
       // 导出列配置相关数据
       exportColumnDialog: {
@@ -1196,6 +1581,12 @@ export default {
     };
   },
   computed: {
+    // ======== 新增 fixResults 抽屉 computed 开始 ========
+    fixResultsTitleText() {
+      if (!this.fixResultsRow) return '';
+      return this.fixResultsRow.id + ' ' + (this.fixResultsIsFileSource ? this.fixResultsRow.fileName : this.fixResultsRow.fieldName);
+    },
+    // ======== 新增 fixResults 抽屉 computed 结束 ========
     checkedFieldColumnDef() {
       return this.fieldColumnList.filter(item => this.checkedFieldColumns.includes(item.prop));
     },
@@ -1333,6 +1724,277 @@ export default {
   mounted() {
   },
   methods: {
+    // ======== 新增 fixResults 抽屉 methods 开始 ========
+    openFixResultsDrawer(row) {
+      this.fixResultsDrawerVisible = true;
+      this.fixResultsIsFileSource = this.currentNodeType == '1';
+      this.fixResultsRow = { ...row };
+      if (this.levelOptions.length === 0) {
+        this.fixResultsFetchLevelOptions(this.fixResultsRow.categoryId);
+      }
+      if (this.personalProtectionOptions.length === 0) {
+        this.fixResultsGetPiiList();
+      } else {
+        this.piiList = this.personalProtectionOptions; // 借用原页面的
+      }
+      this.fixResultsHandleNext('2'); // Fetch detail
+    },
+    fixResultsToggleAllReasoning() {
+      this.fixResultsIsAllReasoningExpanded = !this.fixResultsIsAllReasoningExpanded;
+      if (this.fixResultsRow && this.fixResultsRow.inferenceProcessList) {
+        this.fixResultsRow.inferenceProcessList.forEach(item => {
+          item.expanded = this.fixResultsIsAllReasoningExpanded;
+        });
+      }
+    },
+    fixResultsFetchLevelOptions(categoryId) {
+      const params = {};
+      if (categoryId) params.projectId = categoryId;
+      getCategorySchemaLevelList(params).then(res => {
+        const payload = res && res.data ? res.data : res;
+        const list = payload.records || payload.rows || payload.list || payload || [];
+        this.levelOptions = list.map(it => ({
+          value: it.level,
+          label: it.levelName
+        }));
+      });
+    },
+    fixResultsGetPiiList() {
+      let data = {
+        parentId: 1,
+        needSub: 1,
+        ifAddUnclassified: 2
+      };
+      treeListI(data).then((resp) => {
+        this.piiList = resp.data;
+        if (resp.data.length > 0) {
+          let tempList = JSON.parse(JSON.stringify(this.piiList));
+          for (let item of tempList) {
+            item.label = item.categoryName;
+          }
+          this.piiList = this.handleTree(tempList, "id");
+        }
+      });
+    },
+    fixResultsUpdataResultFn() {
+      this.fixResultsLoading = true;
+      let params = {
+        reasoningProcess: this.fixResultsResultForm.reasoningProcess,
+        tableFieldIds: [this.fixResultsRow.id],
+        categoryId: this.fixResultsResultForm.categoryId,
+        securityLevel: this.fixResultsResultForm.securityLevel,
+        auditRecommendation: this.fixResultsResultForm.auditRecommendation,
+        confidenceLevel: this.fixResultsResultForm.confidenceLevel,
+        piiDetection: this.fixResultsResultForm.piiDetection,
+        detectionProcess: this.fixResultsResultForm.detectionProcess,
+      };
+      if (this.fixResultsIsFileSource) {
+        let fileParams = {
+          fileIds: [this.fixResultsRow.id],
+          categoryId: this.fixResultsResultForm.categoryId,
+          securityLevel: this.fixResultsResultForm.securityLevel
+        };
+        updateResultByFile(fileParams).then(res => {
+          if (res.code == 200) {
+            this.$message.success(res.msg);
+            this.fixResultsHandleNext('2');
+          }
+          this.fixResultsDialogVisible = false;
+          this.fixResultsResultFormNodeName = '';
+          this.fixResultsLoading = false;
+        }).catch(() => { this.fixResultsDialogVisible = false; this.fixResultsLoading = false; });
+      } else {
+        updateFiledRule(params).then(res => {
+          if (res.code == 200) {
+            this.$message.success(res.msg);
+            this.fixResultsHandleNext('2');
+          }
+          this.fixResultsDialogVisible = false;
+          this.fixResultsResultFormNodeName = '';
+          this.fixResultsLoading = false;
+        }).catch(() => { this.fixResultsDialogVisible = false; this.fixResultsLoading = false; });
+      }
+    },
+    fixResultsUpdataResultCanelFn() {
+      this.fixResultsDialogVisible = false;
+      this.fixResultsResultFormNodeName = '';
+      this.fixResultsPiiNodeName = '';
+    },
+    fixResultsResultHandleNodeClick(node) {
+      if (node.children && node.children.length > 0) {
+        node.disabled = true;
+      } else {
+        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+        if (parentLabels) {
+          this.fixResultsResultFormNodeName = parentLabels.join('-') + '-' + node.categoryName;
+        } else {
+          this.fixResultsResultFormNodeName = node.categoryName;
+        }
+        this.fixResultsResultForm.categoryId = node.id;
+        this.$refs.fixResultsResultSelectRef.blur();
+        getCategoryAttachData({ categoryId: node.id, piiId: this.fixResultsResultForm.piiDetection }).then(res => {
+          this.fixResultsResultForm.securityLevel = res.data.minSecurityLevel + '';
+        });
+      }
+    },
+    fixResultsPiiHandleNodeClick(node) {
+      if (node.children && node.children.length > 0) {
+        node.disabled = true;
+      } else {
+        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+        if (parentLabels) {
+          this.fixResultsPiiNodeName = parentLabels.join('-') + '-' + node.categoryName;
+        } else {
+          this.fixResultsPiiNodeName = node.categoryName;
+        }
+        this.fixResultsResultForm.piiDetection = node.id;
+        this.$refs.fixResultsPiiSelectRef.blur();
+        getCategoryAttachData({ piiId: node.id, categoryId: this.fixResultsResultForm.categoryId }).then(res => {
+          this.fixResultsResultForm.securityLevel = res.data.minSecurityLevel + '';
+        });
+      }
+    },
+    fixResultsHandleSearch(val) {
+      this.$refs.fixResultsTreeSelectSec.filter(val);
+    },
+    fixResultsClearResultFilter() {
+      this.$refs.fixResultsTreeSelectSec.filter('');
+    },
+    fixResultsHandleNext(lastOrNext) {
+      this.fixResultsLoading = true;
+      let queryParams = {};
+      if (this.fixResultsIsFileSource) {
+        queryParams = this.fileQueryParams || {};
+      } else {
+        queryParams = this.drawerQueryParams || {};
+      }
+
+      const params = {
+        ...queryParams,
+        securityLevelIds: Array.isArray(queryParams.securityLevel) ? [...queryParams.securityLevel] : [],
+        securityLevel: queryParams.securityLevel?.toString() || '',
+        id: this.fixResultsRow?.id || '',
+        lastOrNext: lastOrNext || '0'
+      };
+
+      if (this.fixResultsIsFileSource) {
+        params.categoryIds = params.category ? params.category.split(',') : [];
+        selectLastOrNextByFileId(params).then(res => {
+          this.fixResultsHandleNextResponse(res, lastOrNext);
+        }).catch(() => {
+          this.fixResultsLoading = false;
+          this.$message.error(this.$t('fixResults.messages.loadFailed'));
+        });
+      } else {
+        getProtectTableFieldById(params).then(res => {
+          this.fixResultsHandleNextResponse(res, lastOrNext);
+        }).catch(() => {
+          this.fixResultsLoading = false;
+          this.$message.error(this.$t('fixResults.messages.loadFailed'));
+        });
+      }
+    },
+    fixResultsHandleNextResponse(res, lastOrNext) {
+      if (!res) {
+        this.fixResultsLoading = false;
+        return;
+      }
+
+      if (res.code === 200 && res.data) {
+        if (this.fixResultsIsFileSource && res.data.sampleData) {
+          try {
+            const parsedData = JSON.parse(res.data.sampleData);
+            if (Array.isArray(parsedData)) {
+              res.data.sampleList = parsedData.map(item => ({ key: Object.keys(item)[0], value: Object.values(item)[0] }));
+            }
+          } catch (e) {
+            res.data.sampleList = [];
+          }
+        } else if (res.data.sampleData) {
+          try {
+            res.data.sampleList = JSON.parse(res.data.sampleData).map(item => ({ value: item }));
+          } catch (e) {
+            res.data.sampleList = [];
+          }
+        }
+
+        if (res.data.inferenceProcessList) {
+          res.data.inferenceProcessList = res.data.inferenceProcessList.map(item => ({
+            ...item,
+            expanded: this.fixResultsIsAllReasoningExpanded
+          }));
+        }
+
+        this.fixResultsRow = res.data;
+
+        if (res.data.reasoningProcess !== undefined) {
+          this.fixResultsResultForm.reasoningProcess = res.data.reasoningProcess;
+        }
+
+        if (lastOrNext === '0') {
+          this.$message.success(this.$t('fixResults.messages.switchedPrevious'));
+        } else if (lastOrNext === '1') {
+          this.$message.success(this.$t('fixResults.messages.switchedNext'));
+        } else if (lastOrNext === '2') {
+          this.$message.success(this.$t('fixResults.messages.refreshedCurrent'));
+        }
+      } else {
+        let message;
+        switch (lastOrNext) {
+          case '0':
+            message = this.$t('fixResults.messages.noPrevious');
+            break;
+          case '1':
+            message = this.$t('fixResults.messages.noNext');
+            break;
+          case '2':
+            message = this.$t('fixResults.messages.currentUnavailable');
+            break;
+          default:
+            message = this.$t('fixResults.messages.operationFailed');
+        }
+        this.$message.warning(message);
+      }
+      this.fixResultsLoading = false;
+    },
+    fixResultsHandleManualConfirm() {
+      if (this.fixResultsIsFileSource) {
+        confirmListByFile([this.fixResultsRow?.id]).then(res => {
+          if (res.code === 200) {
+            this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'));
+            this.fixResultsHandleNext('2');
+          } else {
+            this.$message.error(res.msg || this.$t('fixResults.messages.manualConfirmFailed'));
+          }
+        });
+      } else {
+        confirmIds([this.fixResultsRow?.id]).then(res => {
+          if (res.code === 200) {
+            this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'));
+            this.fixResultsHandleNext('2');
+          } else {
+            this.$message.error(res.msg || this.$t('fixResults.messages.manualConfirmFailed'));
+          }
+        });
+      }
+    },
+    fixResultsHandleModifyResult() {
+      this.fixResultsResultForm = {
+        categoryId: this.fixResultsRow.categoryId || '',
+        securityLevel: this.fixResultsRow.securityLevel || '',
+        id: this.fixResultsRow.id || '',
+        piiDetection: this.fixResultsRow.piiDetection || '',
+        classificationLogic: ''
+      };
+      if (this.fixResultsRow.categoryName) {
+        this.fixResultsResultFormNodeName = this.fixResultsRow.categoryName;
+      }
+      if (this.fixResultsRow.piiDetection) {
+        this.fixResultsPiiNodeName = this.fixResultsRow.piiDetectionName;
+      }
+      this.fixResultsDialogVisible = true;
+    },
+    // ======== 新增 fixResults 抽屉 methods 结束 ========
     // 获取安全分级 
 
     // 敏感等级与安全分级tag样式
@@ -3190,6 +3852,70 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+/* ======== 新增 fixResults 抽屉 CSS 开始 ======== */
+::v-deep .fix-results-drawer .el-drawer__body {
+  padding: 0;
+  overflow: hidden;
+}
+
+.fix-results-container {
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.fix-results-container .info-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin: 10px 0;
+}
+
+.fix-results-container .info-label {
+  width: 120px;
+  font-weight: 500;
+  text-align: left;
+  font-size: 13px;
+  color: #909399;
+  flex-shrink: 0;
+}
+
+.fix-results-container .info-content {
+  flex: 1;
+  font-size: 13px;
+  color: #606266;
+}
+
+.fix-results-container .box-card {
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.fix-results-container .box-card ::v-deep .el-card__body {
+  padding: 20px;
+}
+
+.fix-results-container .box-card ::v-deep .el-card__header {
+  background-color: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fix-results-container .header-name {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.fix-results-container .header-confidence {
+  font-size: 12px;
+  color: #909399;
+  float: right;
+}
+
+/* ======== 新增 fixResults 抽屉 CSS 结束 ======== */
+
 ::v-deep .el-row {
   display: flex;
   align-items: stretch;
@@ -3589,7 +4315,6 @@ export default {
 }
 
 .serachInput {
-  margin-bottom: 20px;
 
   .el-input__inner {
     background-color: #f8fafc;
@@ -3797,7 +4522,7 @@ export default {
 
 /* 新增:树操作栏(全选框+导出按钮)样式 */
 .tree-operation-bar {
-  padding: 0 3px;
+  padding: 0 15px;
   margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
@@ -4264,7 +4989,7 @@ export default {
   }
 }
 
-.left-card {
+::v-deep .left-card {
   border-radius: 10px;
   height: 100%;
   max-height: 100%;
@@ -4274,6 +4999,7 @@ export default {
     height: 100%;
     max-height: 100%;
     overflow: auto;
+    padding: 0;
   }
 }
 

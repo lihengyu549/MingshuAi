@@ -70,7 +70,8 @@
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
       <div style="float: right; margin-right: 10px;">
-        <el-button type="info" plain icon="el-icon-refresh" size="medium" @click="getList" style="margin-right: 10px;">{{ $t('refresh') }}</el-button>
+        <el-button type="info" plain icon="el-icon-refresh" size="medium" @click="getList"
+          style="margin-right: 10px;">{{ $t('refresh') }}</el-button>
         <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
           <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{
             $t('selectAll') }}</el-checkbox>
@@ -169,7 +170,8 @@
           <template slot-scope="scope">
             <el-button size="mini" type="text" @click="scanStateClickFn(scope.row)"
               :disabled="scope.row.scanState == 'RUNNING' || !isScanOperableSource(scope.row) || (loadingMap[scope.row.id] && loadingMap[scope.row.id].start)"
-              :loading="loadingMap[scope.row.id] && loadingMap[scope.row.id].start">{{ $t('dataFrom.startScan') }}</el-button>
+              :loading="loadingMap[scope.row.id] && loadingMap[scope.row.id].start">{{ $t('dataFrom.startScan')
+              }}</el-button>
             <el-button size="mini" type="text" @click="stopScan(scope.row)"
               :disabled="scope.row.scanState !== 'RUNNING' || !isScanOperableSource(scope.row) || (loadingMap[scope.row.id] && loadingMap[scope.row.id].stop)"
               :loading="loadingMap[scope.row.id] && loadingMap[scope.row.id].stop">{{
@@ -319,6 +321,7 @@
         <el-form-item :label="$t('dataFrom.businessSystem')" prop="businessName">
           <el-input v-model="importData.businessName" maxlength="50"
             :placeholder="$t('dataFrom.pleaseInputSourceBusinessSystem')"></el-input>
+          <div style="font-size: 12px; font-style: italic;">{{ $t('dataFrom.businessSystemExample') }}</div>
         </el-form-item>
         <el-form-item :label="$t('dataFrom.businessSystemDescription')" prop="businessComment">
           <el-input type="textarea" v-model="importData.businessComment" maxlength="1000" show-word-limit
@@ -370,6 +373,7 @@
         <el-form-item :label="$t('dataFrom.businessName')" prop="businessName">
           <el-input v-model="fileDirectoryData.businessName" maxlength="50"
             :placeholder="$t('dataFrom.pleaseInputBusinessName')"></el-input>
+          <div style="font-size: 12px; font-style: italic;">{{ $t('dataFrom.businessSystemExample') }}</div>
         </el-form-item>
         <el-form-item :label="$t('dataFrom.businessSystemDescription')" prop="businessComment">
           <el-input type="textarea" v-model="fileDirectoryData.businessComment" maxlength="1000" show-word-limit
@@ -451,6 +455,7 @@
         <el-form-item :label="$t('dataFrom.businessName')" prop="businessName">
           <el-input v-model="fileShareServerForm.businessName" maxlength="50"
             :placeholder="$t('dataFrom.pleaseInputBusinessName')" />
+          <div style="font-size: 12px; font-style: italic;">{{ $t('dataFrom.businessSystemExample') }}</div>
         </el-form-item>
 
         <el-form-item :label="$t('dataFrom.businessSystemDescription')" prop="businessComment">
@@ -800,7 +805,7 @@ export default {
               const ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
               const domainPattern = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
               const hostnamePattern = /^[a-zA-Z0-9\-]+$/;
-              
+
               if (ipPattern.test(value) || domainPattern.test(value) || hostnamePattern.test(value) || value === 'localhost') {
                 callback();
               } else {
@@ -948,7 +953,7 @@ export default {
               const ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
               const domainPattern = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
               const hostnamePattern = /^[a-zA-Z0-9\-]+$/;
-              
+
               if (ipPattern.test(value) || domainPattern.test(value) || hostnamePattern.test(value) || value === 'localhost') {
                 callback();
               } else {
@@ -1025,7 +1030,7 @@ export default {
     isScanOperableSource(row) {
       return ['FILE_SERVER', 'DATABASE'].includes(row.sourceType);
     },
-    isFileSource(row) { 
+    isFileSource(row) {
       return ['FILE_SERVER', 'FILE_CATALOGUE'].includes(row.sourceType);
     },
     triggerDataScan(row) {

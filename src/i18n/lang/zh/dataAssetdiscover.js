@@ -11,7 +11,7 @@ export default {
   daily: "每天",
   weekly: "每周",
   monthly: "每月",
-  servicesNum: "服务数",
+  servicesNum: "数据源",
   updateTime: "更新时间",
   operation: "操作",
   editTask: "编辑任务",
