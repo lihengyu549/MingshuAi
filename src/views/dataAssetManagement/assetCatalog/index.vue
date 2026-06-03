@@ -120,7 +120,7 @@
                     <el-table :data="dataAll" v-loading="loading" class="tableBox"
                       style="width: 100%; margin-top: 20px;" height="100%"
                       :header-cell-style="{ background: '#f8f8f9', color: '#606266' }">
-                      <el-table-column label="表名" min-width="180">
+                      <el-table-column label="表名" width="180">
                         <template slot-scope="scope">
                           <div style="display: flex; align-items: center; cursor: pointer; color: #409EFF;"
                             @click="handleTableClick(scope.row)">
@@ -129,8 +129,8 @@
                           </div>
                         </template>
                       </el-table-column>
-                      <el-table-column label="表注释" prop="tableRemark"></el-table-column>
-                      <el-table-column label="AI表注释" prop="aiTableRemark" width="250">
+                      <el-table-column label="表注释" prop="tableRemark" width="150"></el-table-column>
+                      <el-table-column label="AI表注释" prop="aiTableRemark">
                         <template slot-scope="scope">
                           <el-tag type="info" size="mini" v-if="scope.row.aiTableRemark">{{
                             scope.row.aiTableRemark || '--' }}</el-tag>
@@ -886,8 +886,6 @@
             <h2 style="margin: 0;"><el-tag type="info" style="font-size: 18px;">ID：{{ fixResultsRow.id }}</el-tag> {{
               fixResultsTitleText }}</h2>
             <div class="top-buttons" style="display: flex; gap: 10px;">
-              <el-button @click="fixResultsHandleNext('0')">{{ $t('previous') }}</el-button>
-              <el-button @click="fixResultsHandleNext('1')">{{ $t('next') }}</el-button>
               <el-button type="primary" plain @click="fixResultsHandleManualConfirm">{{
                 $t('fixResults.top.manualConfirm')
               }}</el-button>
@@ -1537,10 +1535,10 @@ export default {
         { label: '文件名', prop: 'fileName', width: '200' },
         { label: '文件大小', prop: 'fileSizeName', width: '100' },
         { label: '文件类型', prop: 'fileType', width: '100' },
-        { label: '内容摘要', prop: 'fileContext', width: '250' },
+        { label: '内容摘要', prop: 'fileContext' },
         { label: '分类', prop: 'categoryName', width: '150' },
         { label: '安全分级', prop: 'securityLevelName', width: '150' },
-        { label: '确认状态', prop: 'confirm' },
+        { label: '确认状态', prop: 'confirm', width: '150' },
         { label: '归类原因', prop: 'classificationReasons', width: '150' },
         { label: '置信度', prop: 'confidenceLevel', width: '100' },
         { label: '置信度分数', prop: 'confidenceScore', width: '120' },
@@ -1561,11 +1559,11 @@ export default {
         { label: '字段名', prop: 'fieldName', width: '180' },
         { label: '数据类型', prop: 'fieldType', width: '120' },
         { label: '字段注释', prop: 'fieldRemark', width: '180' },
-        { label: 'AI字段注释', prop: 'craftRemark', width: '250' },
+        { label: 'AI字段注释', prop: 'craftRemark' },
         { label: '分类', prop: 'categoryName', width: '150' },
         { label: '安全分级', prop: 'securityLevelName', width: '150' },
         { label: '样本', prop: 'sampleData', width: '150' },
-        { label: '确认状态', prop: 'confirmStatus' },
+        { label: '确认状态', prop: 'confirmStatus', width: '120' },
         { label: '所属库', prop: 'databaseName' },
         { label: '所属表', prop: 'tableName' },
         { label: '表注释', prop: 'tableRemark' },
@@ -1732,6 +1730,41 @@ export default {
       this.fixResultsDrawerVisible = true;
       this.fixResultsIsFileSource = this.currentNodeType == '1';
       this.fixResultsRow = { ...row };
+      
+      // 直接解析当前行的 sampleData
+      if (this.fixResultsRow.sampleData) {
+        if (this.fixResultsIsFileSource) {
+          try {
+            const parsedData = JSON.parse(this.fixResultsRow.sampleData);
+            if (Array.isArray(parsedData)) {
+              this.fixResultsRow.sampleList = parsedData.map(item => ({ key: Object.keys(item)[0], value: Object.values(item)[0] }));
+            }
+          } catch (e) {
+            this.fixResultsRow.sampleList = [];
+          }
+        } else {
+          try {
+            this.fixResultsRow.sampleList = JSON.parse(this.fixResultsRow.sampleData).map(item => ({ value: item }));
+          } catch (e) {
+            this.fixResultsRow.sampleList = [];
+          }
+        }
+      } else {
+        this.fixResultsRow.sampleList = [];
+      }
+
+      // 展开 inferenceProcessList 属性
+      if (this.fixResultsRow.inferenceProcessList) {
+        this.fixResultsRow.inferenceProcessList = this.fixResultsRow.inferenceProcessList.map(item => ({
+          ...item,
+          expanded: this.fixResultsIsAllReasoningExpanded
+        }));
+      }
+
+      if (this.fixResultsRow.reasoningProcess !== undefined) {
+        this.fixResultsResultForm.reasoningProcess = this.fixResultsRow.reasoningProcess;
+      }
+
       if (this.levelOptions.length === 0) {
         this.fixResultsFetchLevelOptions(this.fixResultsRow.categoryId);
       }
@@ -1740,7 +1773,6 @@ export default {
       } else {
         this.piiList = this.personalProtectionOptions; // 借用原页面的
       }
-      this.fixResultsHandleNext('2'); // Fetch detail
     },
     fixResultsToggleAllReasoning() {
       this.fixResultsIsAllReasoningExpanded = !this.fixResultsIsAllReasoningExpanded;
@@ -1863,109 +1895,17 @@ export default {
     fixResultsClearResultFilter() {
       this.$refs.fixResultsTreeSelectSec.filter('');
     },
-    fixResultsHandleNext(lastOrNext) {
-      this.fixResultsLoading = true;
-      let queryParams = {};
-      if (this.fixResultsIsFileSource) {
-        queryParams = this.fileQueryParams || {};
-      } else {
-        queryParams = this.drawerQueryParams || {};
-      }
-
-      const params = {
-        ...queryParams,
-        securityLevelIds: Array.isArray(queryParams.securityLevel) ? [...queryParams.securityLevel] : [],
-        securityLevel: queryParams.securityLevel?.toString() || '',
-        id: this.fixResultsRow?.id || '',
-        lastOrNext: lastOrNext || '0'
-      };
-
-      if (this.fixResultsIsFileSource) {
-        params.categoryIds = params.category ? params.category.split(',') : [];
-        selectLastOrNextByFileId(params).then(res => {
-          this.fixResultsHandleNextResponse(res, lastOrNext);
-        }).catch(() => {
-          this.fixResultsLoading = false;
-          this.$message.error(this.$t('fixResults.messages.loadFailed'));
-        });
-      } else {
-        getProtectTableFieldById(params).then(res => {
-          this.fixResultsHandleNextResponse(res, lastOrNext);
-        }).catch(() => {
-          this.fixResultsLoading = false;
-          this.$message.error(this.$t('fixResults.messages.loadFailed'));
-        });
-      }
-    },
-    fixResultsHandleNextResponse(res, lastOrNext) {
-      if (!res) {
-        this.fixResultsLoading = false;
-        return;
-      }
-
-      if (res.code === 200 && res.data) {
-        if (this.fixResultsIsFileSource && res.data.sampleData) {
-          try {
-            const parsedData = JSON.parse(res.data.sampleData);
-            if (Array.isArray(parsedData)) {
-              res.data.sampleList = parsedData.map(item => ({ key: Object.keys(item)[0], value: Object.values(item)[0] }));
-            }
-          } catch (e) {
-            res.data.sampleList = [];
-          }
-        } else if (res.data.sampleData) {
-          try {
-            res.data.sampleList = JSON.parse(res.data.sampleData).map(item => ({ value: item }));
-          } catch (e) {
-            res.data.sampleList = [];
-          }
-        }
-
-        if (res.data.inferenceProcessList) {
-          res.data.inferenceProcessList = res.data.inferenceProcessList.map(item => ({
-            ...item,
-            expanded: this.fixResultsIsAllReasoningExpanded
-          }));
-        }
-
-        this.fixResultsRow = res.data;
-
-        if (res.data.reasoningProcess !== undefined) {
-          this.fixResultsResultForm.reasoningProcess = res.data.reasoningProcess;
-        }
-
-        if (lastOrNext === '0') {
-          this.$message.success(this.$t('fixResults.messages.switchedPrevious'));
-        } else if (lastOrNext === '1') {
-          this.$message.success(this.$t('fixResults.messages.switchedNext'));
-        } else if (lastOrNext === '2') {
-          this.$message.success(this.$t('fixResults.messages.refreshedCurrent'));
-        }
-      } else {
-        let message;
-        switch (lastOrNext) {
-          case '0':
-            message = this.$t('fixResults.messages.noPrevious');
-            break;
-          case '1':
-            message = this.$t('fixResults.messages.noNext');
-            break;
-          case '2':
-            message = this.$t('fixResults.messages.currentUnavailable');
-            break;
-          default:
-            message = this.$t('fixResults.messages.operationFailed');
-        }
-        this.$message.warning(message);
-      }
-      this.fixResultsLoading = false;
-    },
     fixResultsHandleManualConfirm() {
       if (this.fixResultsIsFileSource) {
         confirmListByFile([this.fixResultsRow?.id]).then(res => {
           if (res.code === 200) {
             this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'));
-            this.fixResultsHandleNext('2');
+            // 更新本页面的数据
+            if(this.fixResultsRow) {
+              this.fixResultsRow.confirm = 1;
+            }
+            // 刷新外层列表
+            this.handleFileQuery();
           } else {
             this.$message.error(res.msg || this.$t('fixResults.messages.manualConfirmFailed'));
           }
@@ -1974,7 +1914,11 @@ export default {
         confirmIds([this.fixResultsRow?.id]).then(res => {
           if (res.code === 200) {
             this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'));
-            this.fixResultsHandleNext('2');
+            if(this.fixResultsRow) {
+              this.fixResultsRow.confirm = 1;
+            }
+            // 刷新外层列表
+            this.getDrawerData();
           } else {
             this.$message.error(res.msg || this.$t('fixResults.messages.manualConfirmFailed'));
           }

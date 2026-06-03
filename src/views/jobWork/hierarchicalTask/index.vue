@@ -103,7 +103,7 @@
               {{ scope.row.businessName }}
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'projectName'" :key="item.prop" :label="item.label" width="300"
+          <el-table-column v-else-if="item.prop === 'projectName'" :key="item.prop" :label="item.label"
             align="left" :prop="item.prop">
             <template slot-scope="scope">
               <el-tag type="info" size="mini">{{ scope.row.projectName }}</el-tag>

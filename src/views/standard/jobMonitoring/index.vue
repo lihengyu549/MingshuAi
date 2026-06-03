@@ -83,14 +83,14 @@
             </template>
             <el-table-column type="selection" width="60" align="center">
             </el-table-column>
-            <el-table-column :label="$t('jobMonitoring.subclassName')" align="left" width="200" prop="attachData"
+            <el-table-column :label="$t('jobMonitoring.subclassName')" align="left" prop="attachData"
               show-overflow-tooltip>
               <template slot-scope="scope">
                 <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />
                 {{ scope.row.attachData }}
               </template>
             </el-table-column>
-            <el-table-column :label="$t('jobMonitoring.securityLevel')" align="center" show-overflow-tooltip>
+            <el-table-column :label="$t('jobMonitoring.securityLevel')" align="center" width="200" show-overflow-tooltip>
               <template slot-scope="scope">
                 <el-tag :style="getRiskStyle(Number(scope.row.minSecurityLevel))">
                   {{ scope.row.securityLevelName }}
@@ -108,7 +108,7 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('jobMonitoring.dataOwner')" align="center" prop="dataOwner"
+            <el-table-column :label="$t('jobMonitoring.dataOwner')" align="center" width="150" prop="dataOwner"
               show-overflow-tooltip />
             <el-table-column :label="$t('jobMonitoring.confirmProtectMethod')" prop="confirmProtectMethod" width="200">
               <template slot="header">
@@ -122,8 +122,7 @@
               </template>
             </el-table-column>
             <!-- <el-table-column label="来源" align="center" prop="dataSource" show-overflow-tooltip /> -->
-            <el-table-column :label="$t('jobMonitoring.baseParent')" align="center" prop="baseParent"
-              show-overflow-tooltip />
+            <el-table-column :label="$t('jobMonitoring.baseParent')" align="center" width="200" prop="baseParent" />
             <el-table-column :label="$t('operation')" align="center" width="180">
               <template slot-scope="scope">
                 <el-button type="text" size="medium"
