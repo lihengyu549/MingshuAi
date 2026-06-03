@@ -84,11 +84,11 @@
 
         <template v-for="item in filteredCheckedColumn">
           <el-table-column v-if="item.prop === 'tasksName'" :key="item.prop" :label="item.label" width="180"
-            align="left" :prop="item.prop" show-overflow-tooltip="">
+            align="left" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
-              <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon
+              <span class="btnText" @click="handleUpdate(scope.row)" style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;"><svg-icon
                   :icon-class="databaseTypeIcon(scope.row.sourceTypeName)"
-                  style="font-size: 14px; margin-right: 5px;" />{{ scope.row.tasksName }}</span>
+                  style="font-size: 14px; margin-right: 5px; flex-shrink: 0;" />{{ scope.row.tasksName }}</span>
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'sourceName'" :key="item.prop" :label="item.label" width="200"

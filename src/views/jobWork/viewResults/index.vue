@@ -525,10 +525,10 @@ export default {
       // 结构化（数据库）列配置
       columnList: [
         { labelKey: "fieldName", prop: "fieldName", width: "150" },
-        { labelKey: "fieldType", prop: "fieldType", width: "150" },
-        { labelKey: "fieldRemark", prop: "fieldRemark", width: "150" },
+        { labelKey: "fieldType", prop: "fieldType", width: "120" },
+        { labelKey: "fieldRemark", prop: "fieldRemark", width: "120" },
         { labelKey: "aiFieldRemark", prop: "craftRemark" },
-        { labelKey: "category", prop: "categoryName", width: "150" },
+        { labelKey: "category", prop: "categoryName", width: "300" },
         { labelKey: "securityLevel", prop: "securityLevelName", width: "150" },
         { labelKey: "sampleData", prop: "sampleData", width: "100" },
         { labelKey: "confirm", prop: "confirm", width: "120" },
@@ -549,9 +549,9 @@ export default {
       unstructuredColumnList: [
         { labelKey: "fileName", prop: "fileName", width: "200" },
         { labelKey: "fileSize", prop: "fileSizeName", width: "100" },
-        { labelKey: "fileType", prop: "fileType", width: "150" },
+        { labelKey: "fileType", prop: "fileType", width: "120" },
         { labelKey: "fileContext", prop: "fileContext" },
-        { labelKey: "category", prop: "categoryName", width: "150" },
+        { labelKey: "category", prop: "categoryName", width: "300" },
         { labelKey: "securityLevel", prop: "securityLevelName", width: "150" },
         { labelKey: "confirm", prop: "confirm", width: "120" },
         { labelKey: "classificationReason", prop: "classificationReasons", width: "150" },

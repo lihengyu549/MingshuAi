@@ -129,7 +129,7 @@
                           </div>
                         </template>
                       </el-table-column>
-                      <el-table-column label="表注释" prop="tableRemark" width="150">
+                      <el-table-column label="表注释" prop="tableRemark" width="120">
                         <template slot-scope="scope">
                           {{ scope.row.tableRemark || '--' }}
                         </template>
@@ -150,9 +150,9 @@
                           </div>
                         </template>
                       </el-table-column>
-                      <el-table-column label="数据量(行)" prop="dataMagnitude" width="150"></el-table-column>
-                      <el-table-column label="数据大小" prop="dataSize" width="150"></el-table-column>
-                      <el-table-column label="分类" width="150" align="left">
+                      <el-table-column label="数据量(行)" prop="dataMagnitude" width="120"></el-table-column>
+                      <el-table-column label="数据大小" prop="dataSize" width="120"></el-table-column>
+                      <el-table-column label="分类" width="300" align="left">
                         <template slot-scope="scope">
                           <el-tag type="primary" size="mini">{{ scope.row.categoryName || '--'
                           }}</el-tag>
@@ -1544,7 +1544,7 @@ export default {
         { label: '文件大小', prop: 'fileSizeName', width: '100' },
         { label: '文件类型', prop: 'fileType', width: '100' },
         { label: '内容摘要', prop: 'fileContext' },
-        { label: '分类', prop: 'categoryName', width: '150' },
+        { label: '分类', prop: 'categoryName', width: '300' },
         { label: '安全分级', prop: 'securityLevelName', width: '150' },
         { label: '确认状态', prop: 'confirm', width: '150' },
         { label: '归类原因', prop: 'classificationReasons', width: '150' },
@@ -1566,9 +1566,9 @@ export default {
       fieldColumnList: [
         { label: '字段名', prop: 'fieldName', width: '180' },
         { label: '数据类型', prop: 'fieldType', width: '120' },
-        { label: '字段注释', prop: 'fieldRemark', width: '180' },
+        { label: '字段注释', prop: 'fieldRemark', width: '120' },
         { label: 'AI字段注释', prop: 'craftRemark' },
-        { label: '分类', prop: 'categoryName', width: '150' },
+        { label: '分类', prop: 'categoryName', width: '300' },
         { label: '安全分级', prop: 'securityLevelName', width: '150' },
         { label: '样本', prop: 'sampleData', width: '150' },
         { label: '确认状态', prop: 'confirmStatus', width: '120' },
