@@ -125,16 +125,15 @@
                           <div style="display: flex; align-items: center; cursor: pointer; color: #409EFF;"
                             @click="handleTableClick(scope.row)">
                             <svg-icon icon-class="table1" style="margin-right: 8px;" />
-                            {{ scope.row.tableName }}
+                            {{ scope.row.tableName || '--' }}
                           </div>
                         </template>
                       </el-table-column>
                       <el-table-column label="表注释" prop="tableRemark"></el-table-column>
-                      <el-table-column label="AI表注释" prop="aiTableRemark">
+                      <el-table-column label="AI表注释" prop="aiTableRemark" width="250">
                         <template slot-scope="scope">
-                          <el-tag type="primary" size="mini" v-if="scope.row.aiTableRemark"
-                            style="white-space: pre-wrap; height: auto; line-height: normal; padding: 5px; word-break: break-all;">{{
-                              scope.row.aiTableRemark }}</el-tag>
+                          <el-tag type="info" size="mini" v-if="scope.row.aiTableRemark">{{
+                            scope.row.aiTableRemark || '--' }}</el-tag>
                         </template>
                       </el-table-column>
                       <el-table-column label="数据质量评分" width="150">
@@ -143,7 +142,7 @@
                             @click="showScoreDialog(scope.row)">
                             <el-progress :percentage="Number(scope.row.score)" color="#f4a63e" :show-text="false"
                               style="width: 60px; margin-right: 10px;"></el-progress>
-                            <span style="color: #f4a63e; font-weight: bold;">{{ scope.row.score }}</span>
+                            <span style="color: #f4a63e; font-weight: bold;">{{ scope.row.score || '--' }}</span>
                           </div>
                         </template>
                       </el-table-column>
@@ -153,13 +152,13 @@
                         <template slot-scope="scope">
                           <el-tag type="danger" size="mini" v-if="scope.row.tableSecurityLevel"
                             :style="getRiskStyle(scope.row.tableSecurityLevel)">{{
-                              scope.row.tableSecurityLevelName }}</el-tag>
+                              scope.row.tableSecurityLevelName || '--' }}</el-tag>
                         </template>
                       </el-table-column>
                       <el-table-column label="分类" width="150" align="left">
                         <template slot-scope="scope">
-                          <span>{{ scope.row.tableCategoryName || scope.row.categoryName
-                          }}</span>
+                          <el-tag type="primary" size="mini">{{ scope.row.categoryName || '--'
+                          }}</el-tag>
                         </template>
                       </el-table-column>
                     </el-table>
@@ -349,14 +348,17 @@
                             <span v-else>--</span>
                           </template>
                           <template v-else-if="item.prop === 'craftRemark'">
-                            <el-tag type="primary" size="mini" v-if="scope.row.craftRemark"
-                              style="white-space: pre-wrap; height: auto; line-height: normal; padding: 5px; word-break: break-all;">{{
+                            <el-tag type="info" size="mini" v-if="scope.row.craftRemark">{{
                               scope.row.craftRemark }}</el-tag>
                             <span v-else>--</span>
                           </template>
+                          <template v-else-if="item.prop === 'categoryName'">
+                            <el-tag type="primary" size="mini" v-if="scope.row.categoryName">{{
+                              scope.row.categoryName }}</el-tag>
+                            <span v-else>--</span>
+                          </template>
                           <template v-else-if="item.prop === 'tableCraftRemark'">
-                            <el-tag type="primary" size="mini" v-if="scope.row.tableCraftRemark"
-                              style="white-space: pre-wrap; height: auto; line-height: normal; padding: 5px; word-break: break-all;">{{
+                            <el-tag type="primary" size="mini" v-if="scope.row.tableCraftRemark">{{
                               scope.row.tableCraftRemark }}</el-tag>
                             <span v-else>--</span>
                           </template>
@@ -596,9 +598,10 @@
                             </span>
                           </template>
                           <template v-else-if="item.prop === 'fileContext'">
-                            <el-tag type="primary"
-                              style="white-space: pre-wrap; height: auto; line-height: normal; padding: 5px;">{{
-                                scope.row[item.prop] || '--' }}</el-tag>
+                            <el-tag type="info">{{ scope.row[item.prop] || '--' }}</el-tag>
+                          </template>
+                          <template v-else-if="item.prop === 'categoryName'">
+                            <el-tag type="primary">{{ scope.row[item.prop] || '--' }}</el-tag>
                           </template>
                           <template v-else-if="item.prop === 'securityLevelName'">
                             <el-tag v-if="scope.row.securityLevelName" size="small" plain
@@ -1534,9 +1537,9 @@ export default {
         { label: '文件名', prop: 'fileName', width: '200' },
         { label: '文件大小', prop: 'fileSizeName', width: '100' },
         { label: '文件类型', prop: 'fileType', width: '100' },
-        { label: '内容摘要', prop: 'fileContext', width: '200' },
+        { label: '内容摘要', prop: 'fileContext', width: '250' },
         { label: '分类', prop: 'categoryName', width: '150' },
-        { label: '安全分级', prop: 'securityLevelName', width: '120' },
+        { label: '安全分级', prop: 'securityLevelName', width: '150' },
         { label: '确认状态', prop: 'confirm' },
         { label: '归类原因', prop: 'classificationReasons', width: '150' },
         { label: '置信度', prop: 'confidenceLevel', width: '100' },
@@ -1557,10 +1560,10 @@ export default {
       fieldColumnList: [
         { label: '字段名', prop: 'fieldName', width: '180' },
         { label: '数据类型', prop: 'fieldType', width: '120' },
-        { label: '字段注释', prop: 'fieldRemark', width: '150' },
-        { label: 'AI字段注释', prop: 'craftRemark', width: '200' },
+        { label: '字段注释', prop: 'fieldRemark', width: '180' },
+        { label: 'AI字段注释', prop: 'craftRemark', width: '250' },
         { label: '分类', prop: 'categoryName', width: '150' },
-        { label: '安全分级', prop: 'securityLevelName', width: '120' },
+        { label: '安全分级', prop: 'securityLevelName', width: '150' },
         { label: '样本', prop: 'sampleData', width: '150' },
         { label: '确认状态', prop: 'confirmStatus' },
         { label: '所属库', prop: 'databaseName' },
@@ -5133,5 +5136,19 @@ export default {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* 全局表格及其内部标签允许换行展示 */
+::v-deep .el-table .cell {
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+  line-height: normal !important;
+}
+
+::v-deep .el-table .el-tag {
+  white-space: pre-wrap !important;
+  height: auto !important;
+  line-height: normal !important;
+  padding: 5px !important;
 }
 </style>

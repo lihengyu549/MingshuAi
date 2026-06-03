@@ -263,8 +263,7 @@
               </template>
               <el-table-column type="selection" width="60" align="center" />
               <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label"
-                :align="item.prop === 'categoryName' ? 'left' : 'center'" :prop="item.prop" :width="item.width"
-                show-overflow-tooltip>
+                :align="item.prop === 'categoryName' || item.prop === 'fileName' || item.prop === 'fieldName' ? 'left' : 'center'" :prop="item.prop" :width="item.width">
                 <template slot-scope="scope">
                   <template v-if="item.prop === (isFileSource ? 'fileName' : 'fieldName')">
                     <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
@@ -281,6 +280,12 @@
                       :type="scope.row.categoryName == $t('viewResults.options.unclassified') || scope.row.categoryName == $t('viewResults.options.noiseData') ? 'info' : 'primary'">
                       {{ scope.row.categoryName }}</el-tag>
                   </template>
+                  <template v-else-if="item.prop === 'craftRemark'">
+                    <el-tag type="info" size="mini">{{ scope.row.craftRemark }}</el-tag>
+                  </template>
+                  <template v-else-if="item.prop === 'fileContext'">
+                    <el-tag type="info" size="mini">{{ scope.row.fileContext }}</el-tag>
+                  </template>
                   <template v-else-if="item.prop === 'confirm'">
                     <el-tag :type="scope.row.confirm == 0 ? 'info' : 'primary'">{{ scope.row.confirm == 0 ?
                       $t('viewResults.options.confirm.unconfirmed') :
@@ -291,7 +296,7 @@
                       <div slot="content">
                         <el-table :data="scope.row.sampleList" height="250" border class="tableCla" style="width: 100%">
                           <el-table-column type="index" :label="$t('index')" width="50" />
-                          <el-table-column prop="value" :label="$t('fieldValue')" width="100" show-overflow-tooltip>
+                          <el-table-column prop="value" :label="$t('fieldValue')" width="100">
                           </el-table-column>
                         </el-table>
                       </div>
@@ -517,9 +522,9 @@ export default {
       // 结构化（数据库）列配置
       columnList: [
         { labelKey: "fieldName", prop: "fieldName", width: "150" },
-        { labelKey: "fieldType", prop: "fieldType", width: "200" },
+        { labelKey: "fieldType", prop: "fieldType", width: "150" },
         { labelKey: "fieldRemark", prop: "fieldRemark", width: "150" },
-        { labelKey: "aiFieldRemark", prop: "craftRemark", width: "200" },
+        { labelKey: "aiFieldRemark", prop: "craftRemark", width: "250" },
         { labelKey: "category", prop: "categoryName" },
         { labelKey: "securityLevel", prop: "securityLevelName" },
         { labelKey: "sampleData", prop: "sampleData", width: "100" },
@@ -542,9 +547,9 @@ export default {
         { labelKey: "fileName", prop: "fileName", width: "200" },
         { labelKey: "fileSize", prop: "fileSizeName", width: "100" },
         { labelKey: "fileType", prop: "fileType", width: "150" },
-        { labelKey: "fileContext", prop: "fileContext", width: "200" },
+        { labelKey: "fileContext", prop: "fileContext", width: "250" },
         { labelKey: "category", prop: "categoryName" },
-        { labelKey: "securityLevel", prop: "securityLevelName" },
+        { labelKey: "securityLevel", prop: "securityLevelName", width: "150" },
         { labelKey: "confirm", prop: "confirm", width: "120" },
         { labelKey: "classificationReason", prop: "classificationReasons", width: "150" },
         { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "100" },
@@ -2186,5 +2191,19 @@ export default {
 
 .custom-tree-node .expand-all-btn:hover svg {
   color: #3b82f6 !important;
+}
+
+/* 全局表格及其内部标签允许换行展示 */
+::v-deep .el-table .cell {
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+  line-height: normal !important;
+}
+
+::v-deep .el-table .el-tag {
+  white-space: pre-wrap !important;
+  height: auto !important;
+  line-height: normal !important;
+  padding: 5px !important;
 }
 </style>

@@ -84,7 +84,7 @@
 
         <template v-for="item in filteredCheckedColumn">
           <el-table-column v-if="item.prop === 'tasksName'" :key="item.prop" :label="item.label" width="150"
-            align="left" :prop="item.prop" show-overflow-tooltip>
+            align="left" :prop="item.prop">
             <template slot-scope="scope">
               <span class="btnText" @click="handleUpdate(scope.row)"><svg-icon
                   :icon-class="databaseTypeIcon(scope.row.sourceTypeName)"
@@ -92,21 +92,21 @@
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'sourceName'" :key="item.prop" :label="item.label" width="200"
-            align="center" :prop="item.prop" show-overflow-tooltip>
+            align="left" :prop="item.prop">
             <template slot-scope="scope">
-              {{ scope.row.sourceName }}
+              <el-tag type="primary">{{ scope.row.sourceName }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'businessName'" :key="item.prop" :label="item.label" width="200"
-            align="center" :prop="item.prop" show-overflow-tooltip>
+            align="center" :prop="item.prop">
             <template slot-scope="scope">
               {{ scope.row.businessName }}
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'projectName'" :key="item.prop" :label="item.label" width="300"
-            align="center" :prop="item.prop" show-overflow-tooltip>
+            align="left" :prop="item.prop">
             <template slot-scope="scope">
-              {{ scope.row.projectName }}
+              <el-tag type="info" size="mini">{{ scope.row.projectName }}</el-tag>
             </template>
           </el-table-column>
           <!-- <el-table-column label="AI分析引擎" align="center">
@@ -115,13 +115,13 @@
           </template>
         </el-table-column> -->
           <el-table-column v-else-if="item.prop === 'fieldCount'" :key="item.prop" :label="item.label" width="150"
-            align="center" :prop="item.prop" show-overflow-tooltip>
+            align="center" :prop="item.prop">
             <template slot-scope="scope">
               {{ emptyHandler(scope.row.fieldCount) }}
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'fileCount'" :key="item.prop" :label="item.label" width="150"
-            align="center" :prop="item.prop" show-overflow-tooltip>
+            align="center" :prop="item.prop">
             <template slot-scope="scope">
               {{ emptyHandler(scope.row.fileCount) }}
             </template>
@@ -147,7 +147,7 @@
             </template>
           </el-table-column>
           <el-table-column v-else-if="item.prop === 'updateTime'" :key="item.prop" :label="item.label" align="center"
-            :prop="item.prop" width="150" show-overflow-tooltip />
+            :prop="item.prop" width="150" />
         </template>
 
         <el-table-column :label="$t('hierarchicalTask.columns.taskActions')" align="center" width="200"
@@ -156,17 +156,20 @@
             <div class="iconBtnBox">
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.executeTask')"
                 placement="top-start">
-                <i class="el-icon-video-play" @click="(scope.row.publishStatus != 1 && !['RUNNING', 'STAYEXECUTE', 'PAUSEDING', 'PAUSING', 'KILLEDING', 'KILLING'].includes(scope.row.maskComplete)) && implementFn(scope.row)"
+                <i class="el-icon-video-play"
+                  @click="(scope.row.publishStatus != 1 && !['RUNNING', 'STAYEXECUTE', 'PAUSEDING', 'PAUSING', 'KILLEDING', 'KILLING'].includes(scope.row.maskComplete)) && implementFn(scope.row)"
                   :style="(scope.row.publishStatus == 1 || ['RUNNING', 'STAYEXECUTE', 'PAUSEDING', 'PAUSING', 'KILLEDING', 'KILLING'].includes(scope.row.maskComplete)) ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.pauseTask')"
                 placement="top-start">
-                <i class="el-icon-video-pause" @click="(scope.row.publishStatus != 1 && !['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) && suspendWorkFn(scope.row)"
+                <i class="el-icon-video-pause"
+                  @click="(scope.row.publishStatus != 1 && !['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) && suspendWorkFn(scope.row)"
                   :style="(scope.row.publishStatus == 1 || ['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.terminateTask')"
                 placement="top-start">
-                <i class="el-icon-switch-button" @click="(scope.row.publishStatus != 1 && !['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) && terminationWorkFn(scope.row)"
+                <i class="el-icon-switch-button"
+                  @click="(scope.row.publishStatus != 1 && !['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) && terminationWorkFn(scope.row)"
                   :style="(scope.row.publishStatus == 1 || ['NONE', 'COMPLETE', 'ERR', 'KILLED'].includes(scope.row.maskComplete)) ? { cursor: 'not-allowed', opacity: 0.6, color: '#C0C4CC' } : {}"></i>
               </el-tooltip>
               <el-tooltip class="item" effect="dark" :content="$t('hierarchicalTask.buttons.taskMonitoring')"
@@ -351,11 +354,13 @@
         <div class="feature-container">
           <div class="feature-grid" v-if="isFileSource"> <!-- 非结构化 -->
             <!-- 语义缓存 -->
-            <div class="feature-item" :class="{ highlight: form.ifStartRuleMatching }" @click="toggleFeature('ifStartRuleMatching')">
+            <div class="feature-item" :class="{ highlight: form.ifStartRuleMatching }"
+              @click="toggleFeature('ifStartRuleMatching')">
               <div class="feature-content">
                 <div class="feature-title">{{ $t('hierarchicalTask.features.semanticCaching') }}</div>
                 <div class="feature-desc">{{ $t('hierarchicalTask.features.semanticCachingDesc') }}</div>
-                <el-checkbox v-model="form.ifStartRuleMatching" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.ifStartRuleMatching" class="checkbox-right round-checkbox"
+                  @click.stop></el-checkbox>
               </div>
             </div>
             <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
@@ -365,18 +370,22 @@
                 <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
               </div>
             </div>
-            <div class="feature-item" :class="{ highlight: form.ifStartDynamicGrading }" @click="toggleFeature('ifStartDynamicGrading')">
+            <div class="feature-item" :class="{ highlight: form.ifStartDynamicGrading }"
+              @click="toggleFeature('ifStartDynamicGrading')">
               <div class="feature-content">
                 <div class="feature-title">{{ $t('hierarchicalTask.features.dynamicRating') }}</div>
                 <div class="feature-desc">{{ $t('hierarchicalTask.features.dynamicRatingDesc') }}</div>
-                <el-checkbox v-model="form.ifStartDynamicGrading" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.ifStartDynamicGrading" class="checkbox-right round-checkbox"
+                  @click.stop></el-checkbox>
               </div>
             </div>
-            <div class="feature-item" :class="{ highlight: form.ifStartFeatureExtract }" @click="toggleFeature('ifStartFeatureExtract')">
+            <div class="feature-item" :class="{ highlight: form.ifStartFeatureExtract }"
+              @click="toggleFeature('ifStartFeatureExtract')">
               <div class="feature-content">
                 <div class="feature-title">{{ $t('hierarchicalTask.features.featureExtract') }}</div>
                 <div class="feature-desc">{{ $t('hierarchicalTask.features.featureExtractDesc') }}</div>
-                <el-checkbox v-model="form.ifStartFeatureExtract" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.ifStartFeatureExtract" class="checkbox-right round-checkbox"
+                  @click.stop></el-checkbox>
               </div>
             </div>
           </div>
@@ -2039,5 +2048,19 @@ export default {
 
 .feature-item.highlight .feature-title {
   color: #3b82f6;
+}
+
+/* 全局表格及其内部标签允许换行展示 */
+::v-deep .el-table .cell {
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+  line-height: normal !important;
+}
+
+::v-deep .el-table .el-tag {
+  white-space: pre-wrap !important;
+  height: auto !important;
+  line-height: normal !important;
+  padding: 5px !important;
 }
 </style>

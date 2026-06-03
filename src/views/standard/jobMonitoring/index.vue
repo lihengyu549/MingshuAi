@@ -83,7 +83,7 @@
             </template>
             <el-table-column type="selection" width="60" align="center">
             </el-table-column>
-            <el-table-column :label="$t('jobMonitoring.subclassName')" align="left" width="140" prop="attachData"
+            <el-table-column :label="$t('jobMonitoring.subclassName')" align="left" width="200" prop="attachData"
               show-overflow-tooltip>
               <template slot-scope="scope">
                 <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />
