@@ -291,7 +291,10 @@
                           </el-table-column>
                         </el-table>
                       </div>
-                      <i class="el-icon-view" style="font-size: 18px; cursor: pointer;"></i>
+                      <span>
+                        {{ scope.row.sampleList[0].value }}
+                        <i class="el-icon-view" style="font-size: 16px;"></i>
+                      </span>
                     </el-tooltip>
                   </template>
                   <template v-else>
