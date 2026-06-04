@@ -2458,7 +2458,6 @@ export default {
     // 新增：获取分类下拉选项
     fetchCategoryOptions(projectId) {
       const resolvedProjectId = projectId || this.currentProjectId || this.resolveProjectId(this.currentNodeData);
-      if (!resolvedProjectId) return;
       let data = {
         parentId: resolvedProjectId,
         needSub: 1,
@@ -2466,19 +2465,12 @@ export default {
       };
       treeListI(data).then(res => {
         this.categoryOptions = this.handleTree(res.data, "id") || res.data
-        console.log('categoryOptions:', this.categoryOptions);
       });
     },
 
     resolveProjectId(source) {
       const row = source || this.currentNodeData || {};
       return row.projectId
-        || row.projectID
-        || (row.row && (row.row.projectId || row.row.projectID))
-        || this.currentProjectId
-        || row.databaseId
-        || row.id
-        || '';
     },
 
 
