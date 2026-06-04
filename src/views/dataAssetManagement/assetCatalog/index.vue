@@ -1268,6 +1268,7 @@ export default {
         file_size: 'asc'
       },
       currentNodeData: null, // 存储当前选中的节点数据
+      currentProjectId: '', // 当前上下文对应的 projectId
       folderList: [], // 文件夹列表
       fileList: [], // 文件列表
       fileTotal: 0, // 总条目数（后端 titleNum）
@@ -1745,6 +1746,10 @@ export default {
   methods: {
     // ======== 新增 fixResults 抽屉 methods 开始 ========
     openFixResultsDrawer(row) {
+      const projectId = this.resolveProjectId(row);
+      if (projectId) {
+        this.currentProjectId = projectId;
+      }
       this.fixResultsDrawerVisible = true;
       this.fixResultsIsFileSource = this.currentNodeType == '1';
       this.fixResultsRow = { ...row };
@@ -2008,6 +2013,7 @@ export default {
           if (resp.data && resp.data.length > 0) {
             this.categoryList = this.processTreeData(resp.data);
             this.treeID = resp.data[0].id;
+            this.currentProjectId = this.resolveProjectId(this.categoryList[0]);
             this.$nextTick(() => {
               this.$refs.tree.setCurrentKey(this.treeID);
               this.isTreeAllChecked = true;
@@ -2225,6 +2231,7 @@ export default {
       // 通过树组件模拟点击左侧树节点，以保持参数传递完全一致
       const node = this.$refs.tree.getNode(db.id);
       if (node) {
+        node.data.projectId = node.data.projectId || db.projectId || db.projectID || this.resolveProjectId(this.currentNodeData);
         this.$refs.tree.setCurrentKey(db.id);
         this.handleTreeNodeClick(node.data);
       } else {
@@ -2234,7 +2241,8 @@ export default {
           label: db.databaseName || db.label,
           parentId: this.currentNodeData.id,
           type: '0',
-          level: 2
+          level: 2,
+          projectId: db.projectId || db.projectID || this.resolveProjectId(this.currentNodeData)
         };
         this.handleTreeNodeClick(data);
       }
@@ -2245,6 +2253,7 @@ export default {
         tableNode = this.currentNodeData.children.find(child => child.label === row.tableName);
       }
       if (tableNode) {
+        tableNode.projectId = tableNode.projectId || row.projectId || row.projectID || this.resolveProjectId(this.currentNodeData);
         this.$refs.tree.setCurrentKey(tableNode.id);
         this.handleTreeNodeClick(tableNode);
       } else {
@@ -2253,7 +2262,8 @@ export default {
           label: row.tableName,
           parentId: this.currentNodeData ? this.currentNodeData.id : null,
           type: '0',
-          row: row
+          row: row,
+          projectId: row.projectId || row.projectID || this.resolveProjectId(this.currentNodeData)
         };
         this.handleTreeNodeClick(dummyNode);
       }
@@ -2281,6 +2291,7 @@ export default {
       });
       this.currentFolderId = folder.id;
       this.currentFolderName = folder.name;
+      this.currentProjectId = folder.projectId || folder.projectID || this.currentProjectId;
 
       this.loadFolderData(folder.id, true);
     },
@@ -2323,7 +2334,8 @@ export default {
           // 调整databaseList参数结构,使其符合getProjectFileList接口要求
           databaseList: [{
             parentId: data.id,
-            label: data.label
+            label: data.label,
+            projectId: this.resolveProjectId(data)
           }],
           ...processedParams
         };
@@ -2340,8 +2352,14 @@ export default {
             const normalizedFolderList = Array.isArray(data.folder) ? data.folder : [];
             const parsedTitleNum = Number(data.titleNum);
 
-            this.fileList = normalizedFileList;
-            this.folderList = normalizedFolderList;
+            this.fileList = normalizedFileList.map(item => ({
+              ...item,
+              projectId: item.projectId || item.projectID || this.resolveProjectId(data)
+            }));
+            this.folderList = normalizedFolderList.map(item => ({
+              ...item,
+              projectId: item.projectId || item.projectID || this.resolveProjectId(data)
+            }));
             this.fileTotal = Number.isFinite(parsedTitleNum) ? parsedTitleNum : 0;
 
             if (data.title) {
@@ -2434,22 +2452,33 @@ export default {
       treeListI(data).then(res => {
         const treeData = this.handleTree(res.data, "id") || res.data || [];
         this.personalProtectionOptions = treeData;
-        console.log('[assetCatalog][fixResults] personalProtectionOptions raw:', res.data);
-        console.log('[assetCatalog][fixResults] personalProtectionOptions tree:', treeData);
-        console.log('[assetCatalog][fixResults] personalProtectionOptions first node:', treeData && treeData[0]);
       });
     },
 
     // 新增：获取分类下拉选项
-    fetchCategoryOptions(databaseId) {
+    fetchCategoryOptions(projectId) {
+      const resolvedProjectId = projectId || this.currentProjectId || this.resolveProjectId(this.currentNodeData);
+      if (!resolvedProjectId) return;
       let data = {
-        parentId: databaseId,
+        parentId: resolvedProjectId,
         needSub: 1,
         ifAddUnclassified: 1
       };
       treeListI(data).then(res => {
         this.categoryOptions = this.handleTree(res.data, "id") || res.data
+        console.log('categoryOptions:', this.categoryOptions);
       });
+    },
+
+    resolveProjectId(source) {
+      const row = source || this.currentNodeData || {};
+      return row.projectId
+        || row.projectID
+        || (row.row && (row.row.projectId || row.row.projectID))
+        || this.currentProjectId
+        || row.databaseId
+        || row.id
+        || '';
     },
 
 
@@ -2460,11 +2489,12 @@ export default {
     handleTreeNodeClick(data) {
       this.currentNodeType = data.type || '0';
       this.currentNodeData = data; // 保存当前节点数据
+      this.currentProjectId = this.resolveProjectId(data);
 
       if (this.currentNodeType == '1') {
         // 获取下拉选项
         this.fetchLevelOptions(data.id);
-        this.fetchCategoryOptions(data.id);
+        this.fetchCategoryOptions(this.currentProjectId);
 
         // 文件管理模式 (非结构化，一层)
         this.breadcrumbList = [];
@@ -2481,7 +2511,7 @@ export default {
           // 获取安全分级下拉选项
           this.fetchLevelOptions(data.id);
           this.fetchPersonalProtectionOptions();
-          this.fetchCategoryOptions(data.id);
+          this.fetchCategoryOptions(this.currentProjectId);
 
           // 点击第一层：数据源
           // 手动控制同级其他数据源节点收起
@@ -2540,7 +2570,8 @@ export default {
                   parentId: data.id,
                   type: '0',
                   level: 3, // 明确标识为第3层
-                  row: table
+                  row: table,
+                  projectId: this.resolveProjectId(data) || table.projectId || table.projectID || ''
                 }));
                 this.$set(data, 'children', tableNodes);
 
