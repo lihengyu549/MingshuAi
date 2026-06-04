@@ -1201,7 +1201,7 @@
               <el-select ref="fixResultsResultSelectRef" v-model="fixResultsResultFormNodeName" filterable
                 :filter-method="fixResultsHandleSearch" clearable @focus="fixResultsClearResultFilter">
                 <el-option style="height: 100%; padding: 0" value="">
-                  <el-tree :data="categoryList" :props="defaultProps" filterable :expand-on-click-node="true"
+                  <el-tree :data="categoryOptions" :props="{ label: 'categoryName', children: 'children' }" filterable :expand-on-click-node="true"
                     :filter-node-method="filterNode" ref="fixResultsTreeSelectSec" node-key="id" highlight-current
                     @node-click="fixResultsResultHandleNodeClick" />
                 </el-option>
@@ -1217,7 +1217,7 @@
               v-if="!fixResultsIsFileSource">
               <el-select ref="fixResultsPiiSelectRef" v-model="fixResultsPiiNodeName" clearable>
                 <el-option style="height: 100%; padding: 0" value="">
-                  <el-tree :data="personalProtectionOptions" :props="defaultProps" :expand-on-click-node="true"
+                  <el-tree :data="personalProtectionOptions" :props="{ label: 'categoryName', children: 'children' }" :expand-on-click-node="true"
                     :filter-node-method="filterNode" ref="fixResultsTreeSelect" node-key="id" highlight-current
                     @node-click="fixResultsPiiHandleNodeClick" />
                 </el-option>
@@ -1749,27 +1749,11 @@ export default {
       this.fixResultsIsFileSource = this.currentNodeType == '1';
       this.fixResultsRow = { ...row };
 
-      // 直接解析当前行的 sampleData
-      if (this.fixResultsRow.sampleData) {
-        if (this.fixResultsIsFileSource) {
-          try {
-            const parsedData = JSON.parse(this.fixResultsRow.sampleData);
-            if (Array.isArray(parsedData)) {
-              this.fixResultsRow.sampleList = parsedData.map(item => ({ key: Object.keys(item)[0], value: Object.values(item)[0] }));
-            }
-          } catch (e) {
-            this.fixResultsRow.sampleList = [];
-          }
-        } else {
-          try {
-            this.fixResultsRow.sampleList = JSON.parse(this.fixResultsRow.sampleData).map(item => ({ value: item }));
-          } catch (e) {
-            this.fixResultsRow.sampleList = [];
-          }
-        }
-      } else {
-        this.fixResultsRow.sampleList = [];
-      }
+      // 归一化当前行的 sampleData，兼容后端字符串和页面内已转成数组的两种形态
+      this.fixResultsRow.sampleList = this.normalizeFixResultsSampleList(
+        this.fixResultsRow.sampleData,
+        this.fixResultsIsFileSource
+      );
 
       // 展开 inferenceProcessList 属性
       if (this.fixResultsRow.inferenceProcessList) {
@@ -1799,6 +1783,48 @@ export default {
           item.expanded = this.fixResultsIsAllReasoningExpanded;
         });
       }
+    },
+    normalizeFixResultsSampleList(sampleData, isFileSource) {
+      if (!sampleData) {
+        return [];
+      }
+
+      let parsedData = sampleData;
+      if (typeof sampleData === 'string') {
+        try {
+          parsedData = JSON.parse(sampleData);
+        } catch (e) {
+          return [];
+        }
+      }
+
+      if (!Array.isArray(parsedData)) {
+        return [];
+      }
+
+      return parsedData.map(item => {
+        if (isFileSource) {
+          if (item && typeof item === 'object' && !Array.isArray(item)) {
+            const entries = Object.entries(item);
+            if (entries.length > 0) {
+              return { key: entries[0][0], value: entries[0][1] };
+            }
+          }
+          return { value: item };
+        }
+
+        if (item && typeof item === 'object' && !Array.isArray(item)) {
+          if (Object.prototype.hasOwnProperty.call(item, 'value')) {
+            return { value: item.value };
+          }
+          const entries = Object.entries(item);
+          if (entries.length > 0) {
+            return { value: entries[0][1] };
+          }
+        }
+
+        return { value: item };
+      });
     },
     fixResultsFetchLevelOptions(categoryId) {
       const params = {};
@@ -1877,11 +1903,11 @@ export default {
       if (node.children && node.children.length > 0) {
         node.disabled = true;
       } else {
-        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+        const parentLabels = this.findParentLabelsById(this.categoryOptions, node.id);
         if (parentLabels) {
-          this.fixResultsResultFormNodeName = parentLabels.join('-') + '-' + node.categoryName;
+          this.fixResultsResultFormNodeName = parentLabels.join('-') + '-' + (node.categoryName || node.label || '');
         } else {
-          this.fixResultsResultFormNodeName = node.categoryName;
+          this.fixResultsResultFormNodeName = node.categoryName || node.label || '';
         }
         this.fixResultsResultForm.categoryId = node.id;
         this.$refs.fixResultsResultSelectRef.blur();
@@ -1894,11 +1920,11 @@ export default {
       if (node.children && node.children.length > 0) {
         node.disabled = true;
       } else {
-        const parentLabels = this.findParentLabelsById(this.categoryList, node.id);
+        const parentLabels = this.findParentLabelsById(this.personalProtectionOptions, node.id);
         if (parentLabels) {
-          this.fixResultsPiiNodeName = parentLabels.join('-') + '-' + node.categoryName;
+          this.fixResultsPiiNodeName = parentLabels.join('-') + '-' + (node.categoryName || node.label || '');
         } else {
-          this.fixResultsPiiNodeName = node.categoryName;
+          this.fixResultsPiiNodeName = node.categoryName || node.label || '';
         }
         this.fixResultsResultForm.piiDetection = node.id;
         this.$refs.fixResultsPiiSelectRef.blur();
@@ -2406,7 +2432,11 @@ export default {
         ifAddUnclassified: 2
       };
       treeListI(data).then(res => {
-        this.personalProtectionOptions = this.handleTree(res.data, "id") || res.data
+        const treeData = this.handleTree(res.data, "id") || res.data || [];
+        this.personalProtectionOptions = treeData;
+        console.log('[assetCatalog][fixResults] personalProtectionOptions raw:', res.data);
+        console.log('[assetCatalog][fixResults] personalProtectionOptions tree:', treeData);
+        console.log('[assetCatalog][fixResults] personalProtectionOptions first node:', treeData && treeData[0]);
       });
     },
 
