@@ -49,8 +49,8 @@ export default {
     aiSuggestDesc: 'Provide intelligent suggestions for fields with unmatched factors',
     featureExtract: 'Sample Feature Extraction',
     featureExtractDesc: 'Extract key features from data samples',
-    dynamicRating: 'Dynamic Rating',
-    dynamicRatingDesc: 'Dynamically adjust security/sensitivity level based on data content'
+    dynamicRating: 'Auto Review',
+    dynamicRatingDesc: 'Review and validate data classification grading results for accuracy'
   },
   form: {
     taskName: 'Task Name',

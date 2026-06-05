@@ -443,6 +443,15 @@
                   @click.stop></el-checkbox>
               </div>
             </div> -->
+            <div class="feature-item" :class="{ highlight: form.ifStartDynamicGrading }"
+              @click="toggleFeature('ifStartDynamicGrading')">
+              <div class="feature-content">
+                <div class="feature-title">{{ $t('hierarchicalTask.features.dynamicRating') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.dynamicRatingDesc') }}</div>
+                <el-checkbox v-model="form.ifStartDynamicGrading" class="checkbox-right round-checkbox"
+                  @click.stop></el-checkbox>
+              </div>
+            </div>
             <div class="feature-item" :class="{ highlight: form.ifStartFeatureExtract }"
               @click="toggleFeature('ifStartFeatureExtract')">
               <div class="feature-content">
