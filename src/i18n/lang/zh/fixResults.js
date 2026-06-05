@@ -51,7 +51,9 @@ export default {
     collapseAll: '全部收起',
     collapse: '收起',
     keyword: '关键词',
-    keyValue: '关键值'
+    keyValue: '关键值',
+    index: '序号',
+    sampleValue: '样本值'
   },
   messages: {
     loadFailed: '数据加载失败，请稍后重试',

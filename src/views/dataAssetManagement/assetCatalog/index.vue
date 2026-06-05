@@ -894,9 +894,9 @@
     </el-dialog>
 
     <!-- ======== 新增 fixResults 抽屉 开始 ======== -->
-    <el-drawer :title="fixResultsTitleText" :visible.sync="fixResultsDrawerVisible" direction="rtl" size="88%"
+    <Drawer :title="fixResultsTitleText" :visible.sync="fixResultsDrawerVisible" direction="rtl" size="88%"
       :destroy-on-close="true" custom-class="fix-results-drawer">
-      <div class="fix-results-container" v-loading="fixResultsLoading" v-if="fixResultsRow">
+      <div slot="body" class="fix-results-container" v-loading="fixResultsLoading" v-if="fixResultsRow">
         <!-- 顶部标题和按钮区域 -->
         <el-card class="top-section" shadow="never"
           style="margin-bottom: 20px; border-radius: 10px; border: 1px solid #ebeef5;">
@@ -904,6 +904,9 @@
             <h2 style="margin: 0;"><el-tag type="info" style="font-size: 18px;">ID：{{ fixResultsRow.id }}</el-tag> {{
               fixResultsTitleText }}</h2>
             <div class="top-buttons" style="display: flex; gap: 10px;">
+              <el-button type="primary" plain @click="fixResultsHandleModifyResult">{{
+                $t('fixResults.sections.modifyResult')
+              }}</el-button>
               <el-button type="primary" plain @click="fixResultsHandleManualConfirm">{{
                 $t('fixResults.top.manualConfirm')
               }}</el-button>
@@ -916,6 +919,7 @@
         <div class="content-section" style="display: flex; justify-content: space-between;">
           <div class="left-section" style="width: 65%;">
             <el-card class="box-card" shadow="never" style="border-radius: 10px; border: 1px solid #e2e8f0;">
+              <!-- 非结构化 -->
               <template v-if="fixResultsIsFileSource">
                 <div class="info-item">
                   <label class="info-label">{{ $t('fixResults.top.fileType') }}：</label>
@@ -935,28 +939,21 @@
                 </div>
                 <div class="info-item">
                   <label class="info-label">{{ $t('fixResults.top.sampleFeature') }}：</label>
-                  <div class="info-content">
-                    <el-button size="mini" plain
-                      @click="fixResultsIsSampleFeatureExpanded = !fixResultsIsSampleFeatureExpanded"
-                      style="border-radius: 4px;">{{ fixResultsIsSampleFeatureExpanded ?
-                        $t('fixResults.texts.collapse') : $t('fixResults.texts.expandAll') }}</el-button>
-                  </div>
                 </div>
-                <el-collapse-transition>
-                  <div v-show="fixResultsIsSampleFeatureExpanded" style="margin-top: 10px;">
-                    <el-table :data="fixResultsRow.unSampleList" border class="tableCla"
-                      style="width: 100%; border-radius: 8px; overflow: hidden;">
-                      <template slot="empty">
-                        <el-empty :description="$t('noData')"></el-empty>
-                      </template>
-                      <el-table-column prop="key" :label="$t('fixResults.texts.keyword')"
-                        show-overflow-tooltip></el-table-column>
-                      <el-table-column prop="value" :label="$t('fixResults.texts.keyValue')"
-                        show-overflow-tooltip></el-table-column>
-                    </el-table>
-                  </div>
-                </el-collapse-transition>
+                <div style="margin-top: 10px;">
+                  <el-table :data="fixResultsRow.unSampleList" border class="tableCla"
+                    style="width: 100%; border-radius: 8px; overflow: hidden;">
+                    <template slot="empty">
+                      <el-empty :description="$t('noData')"></el-empty>
+                    </template>
+                    <el-table-column prop="key" :label="$t('fixResults.texts.keyword')"
+                      show-overflow-tooltip></el-table-column>
+                    <el-table-column prop="value" :label="$t('fixResults.texts.keyValue')"
+                      show-overflow-tooltip></el-table-column>
+                  </el-table>
+                </div>
               </template>
+              <!-- 结构化 -->
               <template v-else>
                 <div class="info-item">
                   <label class="info-label">{{ $t('fixResults.top.fieldRemark') }}：</label>
@@ -1001,22 +998,6 @@
                   </div>
                 </div>
                 <div class="info-item">
-                  <label class="info-label">{{ $t('fixResults.top.samplePreview') }}：</label>
-                  <div class="info-content">
-                    <el-tooltip placement="bottom" effect="light">
-                      <div slot="content">
-                        <el-table :data="fixResultsRow.sampleList" height="250" border class="tableCla"
-                          style="width: 100%">
-                          <el-table-column type="index" :label="$t('index')" width="50" />
-                          <el-table-column prop="value" :label="$t('fieldValue')" width="100" show-overflow-tooltip>
-                          </el-table-column>
-                        </el-table>
-                      </div>
-                      <el-button size="mini" type="text">{{ $t('view') }}</el-button>
-                    </el-tooltip>
-                  </div>
-                </div>
-                <div class="info-item">
                   <label class="info-label">{{ $t('fixResults.top.sampleFeature') }}：</label>
                   <div class="info-content">
                     <el-tag type="info" style="margin-right: 5px; border-radius: 8px;">{{
@@ -1025,170 +1006,72 @@
                       '--' }}</el-tag>
                   </div>
                 </div>
-              </template>
-            </el-card>
-
-            <el-card shadow="never" style="margin-top: 20px; border-radius: 10px;">
-              <template slot="header">
-                <div
-                  style="font-weight: bold; font-size: 16px; margin-bottom: 0; display: flex; justify-content: space-between; align-items: center;">
-                  <span>{{ $t('fixResults.sections.reasoningProcess') }}</span>
-                  <el-button v-if="fixResultsIsFileSource" size="mini" plain @click="fixResultsToggleAllReasoning"
-                    style="border-radius: 4px; margin-right: 10px;">
-                    {{ fixResultsIsAllReasoningExpanded ? $t('fixResults.texts.collapseAll') :
-                      $t('fixResults.texts.expandAll') }}
-                  </el-button>
-                </div>
-              </template>
-              <el-card class="box-card" shadow="never" v-for="(item, index) in fixResultsRow.inferenceProcessList"
-                :key="index" style="margin-bottom: 20px;">
-                <template slot="header">
-                  <span class="header-name">{{ item.name }}</span>
-                  <span style="float: right; display: flex; align-items: center;">
-                    <span class="header-confidence" style="margin-right: 10px;">{{
-                      `${$t('fixResults.sections.currentConfidence')}：${item.value * 100}%` }}</span>
-                    <i v-if="fixResultsIsFileSource" :class="item.expanded ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"
-                      style="cursor: pointer; padding: 5px; font-weight: bold; color: #909399; font-size: 12px;"
-                      @click="item.expanded = !item.expanded"></i>
-                  </span>
-                </template>
-                <el-collapse-transition>
-                  <div v-show="!fixResultsIsFileSource || item.expanded">
-                    <div class="info-item">
-                      <label class="info-label"><svg-icon icon-class="home-aiAuto"
-                          style="font-size: 18px; margin-right: 10px; flex-shrink: 0;" />{{
-                            $t('fixResults.sections.aiReasoning') }}：</label>
-                      <div class="info-content">{{ item.text }}</div>
-                    </div>
-                  </div>
-                </el-collapse-transition>
-              </el-card>
-
-              <el-card class="box-card" shadow="never" style="margin-top: 20px;">
-                <template slot="header">
-                  <span class="header-name">{{ $t('fixResults.sections.finalGrade') }}：{{
-                    fixResultsRow.securityLevelName }}</span>
-                  <span style="float: right; display: flex; align-items: center;">
-                    <el-tag size="small" type="primary" color="#ffc5e0" style="border-radius: 8px; color: #dc478f;">{{
-                      $t('fixResults.sections.higherLevelRule') }}</el-tag>
-                  </span>
-                </template>
                 <div class="info-item">
-                  <label class="info-label"><svg-icon icon-class="home-aiAuto"
-                      style="font-size: 18px; margin-right: 10px; flex-shrink: 0;" />{{
-                        $t('fixResults.sections.aiReasoning') }}：</label>
-                  <div class="info-content">
-                    {{ fixResultsRow.dynamicGrading }}<br />
-                    <template
-                      v-if="fixResultsRow.oldSecurityLevel || fixResultsRow.newSecurityLevel || fixResultsRow.piiLevel">
-                      {{ $t('fixResults.sections.classificationResult') }}<el-tag size="small" type="primary"
-                        style="border-radius: 8px;">{{
-                          fixResultsRow.oldSecurityLevel }}{{ $t('fixResults.texts.level') }}</el-tag>，
-                      <template v-if="fixResultsRow.newSecurityLevel">
-                        {{ $t('fixResults.texts.dynamicRuleTriggered') }}<el-tag size="small" type="success"
-                          style="border-radius: 8px;">{{
-                            fixResultsRow.newSecurityLevel }}{{ $t('fixResults.texts.level') }}</el-tag>
-                      </template>
-                      <template v-else>
-                        {{ $t('fixResults.texts.dynamicRuleNotTriggered') }}
-                      </template>。
-                      <template v-if="fixResultsRow.piiLevel">
-                        {{ $t('fixResults.texts.piiResultLevel') }}<el-tag size="small" type="info"
-                          style="border-radius: 8px;">{{
-                            fixResultsRow.piiLevel }}{{ $t('fixResults.texts.level') }}</el-tag>
-                      </template>
-                      <template v-else>
-                        {{ $t('fixResults.texts.piiNotEnabled') }}
-                      </template>
-                    </template>
-                  </div>
+                  <label class="info-label">{{ $t('fixResults.top.samplePreview') }}：</label>
                 </div>
-              </el-card>
+                <div style="margin-top: 10px;">
+                  <el-table :data="fixResultsRow.sampleList" border class="tableCla"
+                    style="width: 100%; border-radius: 8px; overflow: hidden;">
+                    <template slot="empty">
+                      <el-empty :description="$t('noData')"></el-empty>
+                    </template>
+                    <el-table-column type="index" :label="$t('fixResults.texts.index')" show-overflow-tooltip>
+                    </el-table-column>
+                    <el-table-column prop="value" :label="$t('fixResults.texts.sampleValue')"
+                      show-overflow-tooltip></el-table-column>
+                  </el-table>
+                </div>
+              </template>
             </el-card>
+
           </div>
 
           <div class="right-section" style="width: 32%;">
-            <el-card class="box-card" shadow="never">
-              <template slot="header">
-                <div style="font-weight: bold; font-size: 16px; margin-bottom: 0;">
-                  <span>{{ $t('fixResults.sections.manualReview') }}</span>
+            <el-card class="box-card ai-review-card" :class="`ai-review-card--${fixResultsAiReviewStatus}`" shadow="never">
+              <div class="ai-review-card__header">
+                <div class="ai-review-card__title">
+                  <i class="el-icon-lightning ai-review-card__title-icon"></i>
+                  <span>AI智能审查结果</span>
                 </div>
-              </template>
-              <div class="audit-status" style="display: flex; align-items: center;">
-                <span>{{ fixResultsRow.confirm == '1' ? $t('fixResults.texts.confirmed') :
-                  $t('fixResults.texts.unconfirmed')
-                }}</span>
-                <el-badge is-dot style="margin-left: 5px;"></el-badge>
+                <el-tag :type="fixResultsAiReviewTagType" effect="plain" class="ai-review-card__status-tag">
+                  <i :class="fixResultsAiReviewIcon"></i>
+                  <span>{{ fixResultsAiReviewLabel }}</span>
+                </el-tag>
               </div>
-              <div class="info-container" style="margin-top: 20px;">
-                <div class="info-item">
-                  <label class="info-label">{{ $t('fixResults.sections.classificationResult') }}：</label>
-                  <div class="info-content">{{ fixResultsRow.categoryName || '--' }}</div>
+              <div class="ai-review-card__body">
+                <div class="ai-review-card__section">
+                  <div class="ai-review-card__label">分类</div>
+                  <div class="ai-review-card__value-box">{{ fixResultsRow.categoryName || '--' }}</div>
                 </div>
-                <div class="info-item">
-                  <label class="info-label">{{ $t('fixResults.sections.gradingResult') }}：</label>
-                  <div class="info-content">
-                    <el-tag :style="getRiskStyle(Number(fixResultsRow.securityLevel))">{{
-                      fixResultsRow.securityLevelName ||
-                      '--'
-                    }}</el-tag>
+                <div class="ai-review-card__section">
+                  <div class="ai-review-card__label-row">
+                    <span class="ai-review-card__label">综合置信度</span>
+                    <span class="ai-review-card__score">{{ fixResultsConfidenceText }}</span>
+                  </div>
+                  <el-progress :percentage="fixResultsConfidencePercentage" :stroke-width="8" :show-text="false"
+                    :color="fixResultsProgressColor"></el-progress>
+                </div>
+                <div class="ai-review-card__section">
+                  <div class="ai-review-card__reason-box">
+                    <span class="ai-review-card__reason-title">分类研判：</span>
+                    <span class="ai-review-card__reason-text">{{ fixResultsClassificationReasonText }}</span>
                   </div>
                 </div>
-                <div class="info-item">
-                  <label class="info-label">{{ $t('fixResults.sections.overallConfidence') }}：</label>
-                  <div class="info-content">
-                    <el-progress :percentage="Number(fixResultsRow.confidenceScore) * 100"
-                      style="line-height: 2.3;"></el-progress>
+                <div class="ai-review-card__section">
+                  <div class="ai-review-card__label">安全分级</div>
+                  <div class="ai-review-card__tag-wrap">
+                    <el-tag v-if="fixResultsRow.securityLevelName" plain
+                      :style="getRiskStyle(Number(fixResultsRow.securityLevel))">{{ fixResultsRow.securityLevelName }}</el-tag>
+                    <el-tag v-else plain :style="getRiskStyle()">{{ '--' }}</el-tag>
                   </div>
                 </div>
-                <div class="info-item" v-if="!fixResultsIsFileSource">
-                  <label class="info-label">{{ $t('fixResults.sections.piiReview') }}：</label>
-                  <div class="info-content">{{ fixResultsRow.piiDetectionName || '--' }}</div>
-                </div>
-                <div class="info-item">
-                  <el-button type="primary" plain class="full-width-btn" @click="fixResultsHandleModifyResult"
-                    style="width: 100%; border-radius: 5px; font-weight: 500;">{{
-                      $t('fixResults.sections.modifyResult') }}</el-button>
+                <div class="ai-review-card__section">
+                  <div class="ai-review-card__reason-box">
+                    <span class="ai-review-card__reason-title">敏感分级研判：</span>
+                    <span class="ai-review-card__reason-text">{{ fixResultsSecurityReasonText }}</span>
+                  </div>
                 </div>
               </div>
-            </el-card>
-
-            <el-card class="box-card" shadow="never" style="margin-top: 20px;">
-              <template slot="header">
-                <div style="font-weight: bold; font-size: 16px; margin-bottom: 0;">
-                  <span>{{ $t('fixResults.sections.aiSuggestedCategory') }}</span>
-                </div>
-              </template>
-              <template v-if="fixResultsRow.suggestClassifyJson">
-                <el-card
-                  style="padding: 20px; line-height: 1.8; border-radius: 10px; background-color: rgb(249 249 250);"
-                  shadow="never">
-                  <h4 style="margin: 0 0 15px 0; font-size: 14px; font-weight: bold;"><svg-icon icon-class="dot"
-                      style="margin-right: 5px;" />{{
-                        fixResultsRow.suggestClassifyJson.categoryName }}</h4>
-                  <p style="margin: 0 0 15px 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
-                    {{ fixResultsRow.suggestClassifyJson.categoryDescription }}
-                  </p>
-                  <h5 style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold;"><svg-icon icon-class="star-hollow"
-                      style="margin-right: 5px;" />{{
-                        $t('fixResults.sections.recommendationReason') }}:</h5>
-                  <p style="margin: 0; font-size: 12px; color: #606266; text-align: left; text-indent: 24px;">
-                    {{ fixResultsRow.suggestClassifyJson.createReason }}
-                  </p>
-                </el-card>
-              </template>
-              <template v-else>
-                <div
-                  style="text-align: center; padding: 40px 20px; background-color: rgb(249 249 250); border-radius: 10px;">
-                  <div style="margin-bottom: 15px; color: #c0c4cc;">
-                    <svg-icon icon-class="info" style="font-size: 32px;" />
-                  </div>
-                  <p style="font-size: 14px; color: #606266; margin: 0;">{{
-                    $t('fixResults.sections.noSuggestedCategory') }}</p>
-                  <p style="font-size: 12px; color: #909399; margin-top: 8px;">{{
-                    $t('fixResults.sections.noSuggestedCategoryDesc') }}</p>
-                </div>
-              </template>
             </el-card>
           </div>
         </div>
@@ -1201,9 +1084,9 @@
               <el-select ref="fixResultsResultSelectRef" v-model="fixResultsResultFormNodeName" filterable
                 :filter-method="fixResultsHandleSearch" clearable @focus="fixResultsClearResultFilter">
                 <el-option style="height: 100%; padding: 0" value="">
-                  <el-tree :data="categoryOptions" :props="{ label: 'categoryName', children: 'children' }" filterable :expand-on-click-node="true"
-                    :filter-node-method="filterNode" ref="fixResultsTreeSelectSec" node-key="id" highlight-current
-                    @node-click="fixResultsResultHandleNodeClick" />
+                  <el-tree :data="categoryOptions" :props="{ label: 'categoryName', children: 'children' }" filterable
+                    :expand-on-click-node="true" :filter-node-method="filterNode" ref="fixResultsTreeSelectSec"
+                    node-key="id" highlight-current @node-click="fixResultsResultHandleNodeClick" />
                 </el-option>
               </el-select>
             </el-form-item>
@@ -1217,9 +1100,9 @@
               v-if="!fixResultsIsFileSource">
               <el-select ref="fixResultsPiiSelectRef" v-model="fixResultsPiiNodeName" clearable>
                 <el-option style="height: 100%; padding: 0" value="">
-                  <el-tree :data="personalProtectionOptions" :props="{ label: 'categoryName', children: 'children' }" :expand-on-click-node="true"
-                    :filter-node-method="filterNode" ref="fixResultsTreeSelect" node-key="id" highlight-current
-                    @node-click="fixResultsPiiHandleNodeClick" />
+                  <el-tree :data="personalProtectionOptions" :props="{ label: 'categoryName', children: 'children' }"
+                    :expand-on-click-node="true" :filter-node-method="filterNode" ref="fixResultsTreeSelect"
+                    node-key="id" highlight-current @node-click="fixResultsPiiHandleNodeClick" />
                 </el-option>
               </el-select>
             </el-form-item>
@@ -1232,7 +1115,7 @@
           </template>
         </el-dialog>
       </div>
-    </el-drawer>
+    </Drawer>
     <!-- ======== 新增 fixResults 抽屉 结束 ======== -->
 
   </div>
@@ -1387,7 +1270,6 @@ export default {
       fixResultsLoading: false,
       fixResultsRow: null,
       fixResultsIsFileSource: false,
-      fixResultsIsSampleFeatureExpanded: false,
       fixResultsIsAllReasoningExpanded: false,
       fixResultsDialogVisible: false,
       fixResultsResultForm: {
@@ -1606,6 +1488,63 @@ export default {
       if (!this.fixResultsRow) return '';
       return this.fixResultsRow.id + ' ' + (this.fixResultsIsFileSource ? this.fixResultsRow.fileName : this.fixResultsRow.fieldName);
     },
+    fixResultsConfidencePercentage() {
+      const score = Number(this.fixResultsRow && this.fixResultsRow.confidenceScore);
+      if (Number.isNaN(score) || score <= 0) {
+        return 0;
+      }
+      return score <= 1 ? Math.round(score * 100) : Math.round(score);
+    },
+    fixResultsConfidenceText() {
+      const score = Number(this.fixResultsRow && this.fixResultsRow.confidenceScore);
+      if (Number.isNaN(score) || score <= 0) {
+        return '--';
+      }
+      return `${this.fixResultsConfidencePercentage}%`;
+    },
+    fixResultsAiReviewStatus() {
+      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
+      if (!confidenceLevel) {
+        return 'info';
+      }
+      return confidenceLevel == '低' ? 'warning' : 'success';
+    },
+    fixResultsAiReviewTagType() {
+      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
+      if (!confidenceLevel) {
+        return 'info';
+      }
+      return confidenceLevel == '低' ? 'warning' : 'success';
+    },
+    fixResultsAiReviewLabel() {
+      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
+      if (!confidenceLevel) {
+        return '待审查';  
+      }
+      return confidenceLevel == '低' ? '需人工介入' : 'AI审核通过';
+    },
+    fixResultsAiReviewIcon() {
+      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
+      if (!confidenceLevel) {
+        return 'el-icon-info';
+      }
+      return confidenceLevel == '低' ? 'el-icon-warning-outline' : 'el-icon-check';
+    },
+    fixResultsProgressColor() {
+      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
+      if (!confidenceLevel) {
+        return '#909399';
+      }
+      return confidenceLevel == '低' ? '#f97316' : '#3b82f6';
+    },
+    fixResultsClassificationReasonText() {
+      const row = this.fixResultsRow || {};
+      return row.reasoningProcess || '--';
+    },
+    fixResultsSecurityReasonText() {
+      const row = this.fixResultsRow || {};
+      return row.dynamicGrading || '--';
+    },
     // ======== 新增 fixResults 抽屉 computed 结束 ========
     checkedFieldColumnDef() {
       return this.fieldColumnList.filter(item => this.checkedFieldColumns.includes(item.prop));
@@ -1751,6 +1690,7 @@ export default {
         this.currentProjectId = projectId;
       }
       this.fixResultsDrawerVisible = true;
+      console.log(row);
       this.fixResultsIsFileSource = this.currentNodeType == '1';
       this.fixResultsRow = { ...row };
 
@@ -3930,6 +3870,151 @@ export default {
   font-size: 12px;
   color: #909399;
   float: right;
+}
+
+.fix-results-container .ai-review-card {
+  border-radius: 16px;
+  border: 1px solid #d6e4ff;
+  overflow: hidden;
+}
+
+.fix-results-container .ai-review-card ::v-deep .el-card__body {
+  padding: 0;
+}
+
+.fix-results-container .ai-review-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e7eefc;
+}
+
+.fix-results-container .ai-review-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f3f8e;
+}
+
+.fix-results-container .ai-review-card__title-icon {
+  font-size: 20px;
+  color: #3b82f6;
+}
+
+.fix-results-container .ai-review-card__status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fix-results-container .ai-review-card__status-tag i {
+  font-size: 14px;
+}
+
+.fix-results-container .ai-review-card__body {
+  padding: 20px;
+}
+
+.fix-results-container .ai-review-card__section + .ai-review-card__section {
+  margin-top: 18px;
+}
+
+.fix-results-container .ai-review-card__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.fix-results-container .ai-review-card__label {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #7b8ba7;
+}
+
+.fix-results-container .ai-review-card__score {
+  font-size: 20px;
+  font-weight: 700;
+  color: #3b82f6;
+}
+
+.fix-results-container .ai-review-card__value-box {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #f5f7fb;
+  color: #1f2a44;
+  font-size: 16px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.fix-results-container .ai-review-card__reason-box {
+  padding: 14px 16px;
+  border: 1px solid #dbe7fb;
+  border-radius: 10px;
+  background: #f8fbff;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.fix-results-container .ai-review-card__reason-title {
+  color: #2f5fe3;
+  font-weight: 600;
+}
+
+.fix-results-container .ai-review-card__reason-text {
+  word-break: break-word;
+}
+
+.fix-results-container .ai-review-card__tag-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.fix-results-container .ai-review-card ::v-deep .el-progress-bar__outer {
+  background-color: #dbeafe;
+}
+
+.fix-results-container .ai-review-card ::v-deep .el-progress-bar__inner {
+  border-radius: 999px;
+}
+
+.fix-results-container .ai-review-card--warning .ai-review-card__score {
+  color: #f97316;
+}
+
+.fix-results-container .ai-review-card--warning .ai-review-card__reason-box {
+  border-color: #fed7aa;
+  background: #fff7ed;
+}
+
+.fix-results-container .ai-review-card--warning .ai-review-card__reason-title {
+  color: #f97316;
+}
+
+.fix-results-container .ai-review-card--info .ai-review-card__score {
+  color: #909399;
+}
+
+.fix-results-container .ai-review-card--info .ai-review-card__reason-box {
+  border-color: #dcdfe6;
+  background: #f4f4f5;
+}
+
+.fix-results-container .ai-review-card--info .ai-review-card__reason-title {
+  color: #909399;
+}
+
+.fix-results-container .ai-review-card--info ::v-deep .el-progress-bar__outer {
+  background-color: #ebeef5;
 }
 
 /* ======== 新增 fixResults 抽屉 CSS 结束 ======== */

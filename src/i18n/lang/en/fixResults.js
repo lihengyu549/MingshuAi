@@ -51,7 +51,9 @@ export default {
     collapseAll: 'Collapse All',
     collapse: 'Collapse',
     keyword: 'Keyword',
-    keyValue: 'Key Value'
+    keyValue: 'Key Value',
+    index: 'Index',
+    sampleValue: 'Sample Value'
   },
   messages: {
     loadFailed: 'Failed to load data. Please try again later.',
