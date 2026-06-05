@@ -23,7 +23,7 @@
                             <el-menu-item v-for="model in filteredModels" :key="model.name" :index="model.name"
                                 :style="{ backgroundColor: activeModel === model.id ? '#eaf1ff' : '' }">
                                 <svg-icon
-                                    :icon-class="model.label == 'Ollama' ? 'Ollama' : model.label == '阿里云百炼' ? 'alybl' : model.label == 'Deepseek深度求索' ? 'deepseek' : model.label == '灵启系统' ? 'lingqi' : model.label == 'local' ? 'local' : ''"
+                                    :icon-class="model.label == 'Ollama' ? 'Ollama' : model.label == '阿里云百炼' ? 'alybl' : model.label == 'Deepseek深度求索' ? 'deepseek' : model.label == '灵启系统' ? 'lingqi' : model.label == 'Open AI' ? 'openAi' : 'local'" 
                                     style="margin-right: 10px;"></svg-icon>
                                 <span>{{ model.label }}</span>
                                 <!-- 左侧菜单开关 - 调整为内部显示ON/OFF -->
@@ -41,7 +41,7 @@
                     <div class="right-content">
                         <div class="content-header">
                             <svg-icon
-                                :icon-class="currentModel.label == 'Ollama' ? 'Ollama' : currentModel.label == '阿里云百炼' ? 'alybl' : currentModel.label == 'Deepseek深度求索' ? 'deepseek' : currentModel.label == '灵启系统' ? 'lingqi' : currentModel.label == 'local' ? 'local' : ''"
+                                :icon-class="currentModel.label == 'Ollama' ? 'Ollama' : currentModel.label == '阿里云百炼' ? 'alybl' : currentModel.label == 'Deepseek深度求索' ? 'deepseek' : currentModel.label == '灵启系统' ? 'lingqi' : currentModel.label == 'Open AI' ? 'openAi' : 'local'"
                                 style="margin-right: 10px;"></svg-icon>
                             <span>{{ currentModel.label || $t('textModel.pleaseSelectModel') }}</span>
                             <!-- 右侧主开关 - 调整为内部显示ON/OFF，右侧开关只读展示 -->
