@@ -711,6 +711,7 @@ export default {
             }
             // 非结构化时，展示四步：语义缓存，AI分类打标，动态定级，样本特征提取
             const unstructuredSteps = [
+                { name: '文本摘要', status: 'null', completedTime: '' },
                 { name: '语义缓存', status: 'null', completedTime: '' },
                 { name: 'AI分类打标', status: 'null', completedTime: '' },
                 { name: '动态定级', status: 'null', completedTime: '' },

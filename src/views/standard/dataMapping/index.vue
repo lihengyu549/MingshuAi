@@ -223,19 +223,19 @@
                 对外提供给
               </el-checkbox>
               <el-input v-if="dataBaselineForm.externalProvisionBox" v-model="dataBaselineForm.externalProvision"
-                placeholder="请输入具体对象" maxlength="30"></el-input>
+                placeholder="请输入接收方单位名称" maxlength="30"></el-input>
 
               <el-checkbox v-model="dataBaselineForm.entrustBox" :disabled="dataBaselineForm.noInteraction">
                 委托
               </el-checkbox>
-              <el-input v-if="dataBaselineForm.entrustBox" v-model="dataBaselineForm.entrust" placeholder="请输入具体对象"
+              <el-input v-if="dataBaselineForm.entrustBox" v-model="dataBaselineForm.entrust" placeholder="请输入委托处理方单位名称"
                 maxlength="30"></el-input>
 
               <el-checkbox v-model="dataBaselineForm.jointDisposalBox" :disabled="dataBaselineForm.noInteraction">
                 与……共同处理
               </el-checkbox>
               <el-input v-if="dataBaselineForm.jointDisposalBox" v-model="dataBaselineForm.jointDisposal"
-                placeholder="请输入具体对象" maxlength="30"></el-input>
+                placeholder="请输入共同处理方单位名称" maxlength="30"></el-input>
 
               <el-checkbox v-model="dataBaselineForm.noInteraction" @change="handleNoInteractionChange">
                 无交互
