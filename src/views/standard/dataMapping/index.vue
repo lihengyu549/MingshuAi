@@ -251,57 +251,116 @@
 
             <div class="storage-section">
               <div class="field-label">云类型（可多选）</div>
-              <div class="storage-grid">
-                <el-checkbox v-model="dataBaselineForm.privateCloudBox">私有云</el-checkbox>
-                <el-input v-if="dataBaselineForm.privateCloudBox" v-model="dataBaselineForm.privateCloud"
-                  placeholder="请输入具体对象" maxlength="30"></el-input>
+              <div class="storage-stack">
+                <div class="storage-option">
+                  <el-checkbox v-model="dataBaselineForm.privateCloudBox">私有云</el-checkbox>
+                  <el-input
+                    v-if="dataBaselineForm.privateCloudBox"
+                    v-model="dataBaselineForm.privateCloud"
+                    placeholder="请输入具体对象"
+                    maxlength="30"
+                  ></el-input>
+                </div>
 
-                <el-checkbox v-model="dataBaselineForm.publicCloudBox">公有云</el-checkbox>
-                <el-input v-if="dataBaselineForm.publicCloudBox" v-model="dataBaselineForm.publicCloud"
-                  placeholder="请输入具体对象" maxlength="30"></el-input>
+                <div class="storage-option">
+                  <el-checkbox v-model="dataBaselineForm.publicCloudBox">公有云</el-checkbox>
+                  <el-input
+                    v-if="dataBaselineForm.publicCloudBox"
+                    v-model="dataBaselineForm.publicCloud"
+                    placeholder="请输入具体对象"
+                    maxlength="30"
+                  ></el-input>
+                </div>
 
-                <el-checkbox v-model="dataBaselineForm.mixtureCloudBox">混合云</el-checkbox>
-                <el-input v-if="dataBaselineForm.mixtureCloudBox" v-model="dataBaselineForm.mixtureCloud"
-                  placeholder="请输入具体对象" maxlength="30"></el-input>
+                <div class="storage-option">
+                  <el-checkbox v-model="dataBaselineForm.mixtureCloudBox">混合云</el-checkbox>
+                  <el-input
+                    v-if="dataBaselineForm.mixtureCloudBox"
+                    v-model="dataBaselineForm.mixtureCloud"
+                    placeholder="请输入具体对象"
+                    maxlength="30"
+                  ></el-input>
+                </div>
 
-                <el-checkbox v-model="dataBaselineForm.governmentCloudBox">政务云</el-checkbox>
-                <el-input v-if="dataBaselineForm.governmentCloudBox" v-model="dataBaselineForm.governmentCloud"
-                  placeholder="请输入具体对象" maxlength="30"></el-input>
+                <div class="storage-option">
+                  <el-checkbox v-model="dataBaselineForm.governmentCloudBox">政务云</el-checkbox>
+                  <el-input
+                    v-if="dataBaselineForm.governmentCloudBox"
+                    v-model="dataBaselineForm.governmentCloud"
+                    placeholder="请输入具体对象"
+                    maxlength="30"
+                  ></el-input>
+                </div>
 
-                <el-checkbox v-model="dataBaselineForm.noCloudComputingPlatformBox">非云计算平台</el-checkbox>
-                <el-input v-if="dataBaselineForm.noCloudComputingPlatformBox"
-                  v-model="dataBaselineForm.noCloudComputingPlatform" placeholder="请输入具体对象" maxlength="30"></el-input>
+                <div class="storage-option">
+                  <el-checkbox v-model="dataBaselineForm.noCloudComputingPlatformBox">非云计算平台</el-checkbox>
+                  <el-input
+                    v-if="dataBaselineForm.noCloudComputingPlatformBox"
+                    v-model="dataBaselineForm.noCloudComputingPlatform"
+                    placeholder="请输入具体对象"
+                    maxlength="30"
+                  ></el-input>
+                </div>
               </div>
             </div>
 
             <div class="storage-section">
               <div class="field-label">机房类型（可多选）</div>
-              <div class="storage-grid">
-                <el-checkbox v-model="dataBaselineForm.thisUnitMachineRoomBox">本单位机房</el-checkbox>
-                <el-input v-if="dataBaselineForm.thisUnitMachineRoomBox" v-model="dataBaselineForm.thisUnitMachineRoom"
-                  placeholder="请输入具体对象" maxlength="30"></el-input>
+              <div class="storage-stack">
+                <div class="storage-option">
+                  <el-checkbox v-model="dataBaselineForm.thisUnitMachineRoomBox">本单位机房</el-checkbox>
+                  <el-input
+                    v-if="dataBaselineForm.thisUnitMachineRoomBox"
+                    v-model="dataBaselineForm.thisUnitMachineRoom"
+                    placeholder="请输入具体对象"
+                    maxlength="30"
+                  ></el-input>
+                </div>
 
-                <el-checkbox v-model="dataBaselineForm.outerUnitMachineRoomBox">外单位机房</el-checkbox>
-                <el-input v-if="dataBaselineForm.outerUnitMachineRoomBox"
-                  v-model="dataBaselineForm.outerUnitMachineRoom" placeholder="请输入具体对象" maxlength="30"></el-input>
+                <div class="storage-option">
+                  <el-checkbox v-model="dataBaselineForm.outerUnitMachineRoomBox">外单位机房</el-checkbox>
+                  <el-input
+                    v-if="dataBaselineForm.outerUnitMachineRoomBox"
+                    v-model="dataBaselineForm.outerUnitMachineRoom"
+                    placeholder="请输入具体对象"
+                    maxlength="30"
+                  ></el-input>
+                </div>
 
-                <el-checkbox v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox">第三方托管机房</el-checkbox>
-                <el-input v-if="dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox"
-                  v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoom" placeholder="请输入具体对象"
-                  maxlength="30"></el-input>
+                <div class="storage-option">
+                  <el-checkbox v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox">第三方托管机房</el-checkbox>
+                  <el-input
+                    v-if="dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox"
+                    v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoom"
+                    placeholder="请输入具体对象"
+                    maxlength="30"
+                  ></el-input>
+                </div>
               </div>
             </div>
 
             <div class="storage-section storage-section-last">
               <div class="field-label">存储地域（可多选）</div>
-              <div class="storage-grid">
-                <el-checkbox v-model="dataBaselineForm.domesticBox">境内</el-checkbox>
-                <el-input v-if="dataBaselineForm.domesticBox" v-model="dataBaselineForm.domestic" placeholder="请输入具体对象"
-                  maxlength="30"></el-input>
+              <div class="storage-stack">
+                <div class="storage-option">
+                  <el-checkbox v-model="dataBaselineForm.domesticBox">境内</el-checkbox>
+                  <el-input
+                    v-if="dataBaselineForm.domesticBox"
+                    v-model="dataBaselineForm.domestic"
+                    placeholder="请输入具体对象"
+                    maxlength="30"
+                  ></el-input>
+                </div>
 
-                <el-checkbox v-model="dataBaselineForm.overseasBox">境外</el-checkbox>
-                <el-input v-if="dataBaselineForm.overseasBox" v-model="dataBaselineForm.overseas" placeholder="请输入具体对象"
-                  maxlength="30"></el-input>
+                <div class="storage-option">
+                  <el-checkbox v-model="dataBaselineForm.overseasBox">境外</el-checkbox>
+                  <el-input
+                    v-if="dataBaselineForm.overseasBox"
+                    v-model="dataBaselineForm.overseas"
+                    placeholder="请输入具体对象"
+                    maxlength="30"
+                  ></el-input>
+                </div>
               </div>
             </div>
           </div>
@@ -1212,6 +1271,24 @@ export default {
   border-bottom: none;
 }
 
+.storage-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.storage-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+
+  ::v-deep .el-input {
+    width: 320px;
+    max-width: 100%;
+  }
+}
+
 .storage-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(120px, 1fr));
@@ -1259,10 +1336,6 @@ export default {
   .checkbox-grid {
     grid-template-columns: repeat(3, minmax(120px, 1fr));
   }
-
-  .storage-grid {
-    grid-template-columns: repeat(3, minmax(120px, 1fr));
-  }
 }
 
 @media (max-width: 900px) {
@@ -1286,8 +1359,7 @@ export default {
     width: 100%;
   }
 
-  .checkbox-grid,
-  .storage-grid {
+  .checkbox-grid {
     grid-template-columns: repeat(2, minmax(120px, 1fr));
   }
 }
