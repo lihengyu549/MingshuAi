@@ -50,7 +50,9 @@ export default {
     featureExtract: 'Sample Feature Extraction',
     featureExtractDesc: 'Extract key features from data samples',
     dynamicRating: 'Auto Review',
-    dynamicRatingDesc: 'Review and validate data classification grading results for accuracy'
+    dynamicRatingDesc: 'Review and validate data classification grading results for accuracy',
+    textSummarization: 'Text Summarization',
+    textSummarizationDesc: 'Extract the core content of the original text and simplify the long text'
   },
   form: {
     taskName: 'Task Name',

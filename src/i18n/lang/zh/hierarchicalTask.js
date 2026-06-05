@@ -50,7 +50,9 @@ export default {
     featureExtract: '样本特征提取',
     featureExtractDesc: '从数据样本中提取关键特征',
     dynamicRating: '自动审核',
-    dynamicRatingDesc: '审核校验数据分类分级结果合理性'
+    dynamicRatingDesc: '审核校验数据分类分级结果合理性',
+    textSummarization: '文本摘要',
+    textSummarizationDesc: '提炼原文核心内容，精简冗长文本'
   },
   form: {
     taskName: '任务名称',

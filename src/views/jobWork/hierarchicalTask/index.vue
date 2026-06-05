@@ -86,7 +86,8 @@
           <el-table-column v-if="item.prop === 'tasksName'" :key="item.prop" :label="item.label" width="180"
             align="left" :prop="item.prop" show-overflow-tooltip>
             <template slot-scope="scope">
-              <span class="btnText" @click="handleUpdate(scope.row)" style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;"><svg-icon
+              <span class="btnText" @click="handleUpdate(scope.row)"
+                style="display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;"><svg-icon
                   :icon-class="databaseTypeIcon(scope.row.sourceTypeName)"
                   style="font-size: 14px; margin-right: 5px; flex-shrink: 0;" />{{ scope.row.tasksName || '--' }}</span>
             </template>
@@ -103,8 +104,8 @@
               {{ scope.row.businessName || '--' }}
             </template>
           </el-table-column>
-          <el-table-column v-else-if="item.prop === 'projectName'" :key="item.prop" :label="item.label"
-            align="left" :prop="item.prop">
+          <el-table-column v-else-if="item.prop === 'projectName'" :key="item.prop" :label="item.label" align="left"
+            :prop="item.prop">
             <template slot-scope="scope">
               <el-tag type="primary" size="mini">{{ scope.row.projectName || '--' }}</el-tag>
             </template>
@@ -353,6 +354,14 @@
         <Title :title="$t('hierarchicalTask.titles.enableFeatures')" />
         <div class="feature-container">
           <div class="feature-grid" v-if="isFileSource"> <!-- 非结构化 -->
+            <!-- 写死文本摘要 -->
+            <div class="feature-item" :class="{ highlight: true }">
+              <div class="feature-content">
+                <div class="feature-title">{{ $t('hierarchicalTask.features.textSummarization') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.textSummarizationDesc') }}</div>
+                <el-checkbox v-model="textSummarizationChecked" disabled class="checkbox-right round-checkbox"></el-checkbox>
+              </div>
+            </div>
             <!-- 语义缓存 -->
             <div class="feature-item" :class="{ highlight: form.ifStartRuleMatching }"
               @click="toggleFeature('ifStartRuleMatching')">
@@ -799,6 +808,8 @@ export default {
         scheduleTime: '',
         sourceType: '',
       },
+      // 文本摘要开关
+      textSummarizationChecked: true,
       executeCycle: '1',
       // 表单校验
       rules: {
