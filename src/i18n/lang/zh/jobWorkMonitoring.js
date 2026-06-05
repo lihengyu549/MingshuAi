@@ -52,6 +52,7 @@ export default {
   logConnectionError: '日志连接异常，请刷新页面重试',
   analysisLogFailed: '获取分析日志失败，请稍后重试',
   stepLabels: {
+    '文本摘要': '文本摘要',
     '噪音数据过滤': '噪音数据过滤',
     '语义填充': '语义填充',
     '匹配规则': '匹配规则',
