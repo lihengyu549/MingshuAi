@@ -41,7 +41,7 @@
                     <div class="right-content">
                         <div class="content-header">
                             <svg-icon
-                                :icon-class="currentModel.label == 'Ollama' ? 'Ollama' : currentModel.label == '阿里云百炼' ? 'alybl' : currentModel.label == 'Deepseek深度求索' ? 'deepseek' : currentModel.label == '灵启系统' ? 'lingqi' :'openAi'"
+                                :icon-class="currentModel.label == 'Ollama' ? 'Ollama' : currentModel.label == '阿里云百炼' ? 'alybl' : currentModel.label == 'Deepseek深度求索' ? 'deepseek' : currentModel.label == '灵启系统' ? 'lingqi' : currentModel.label == 'local' ? 'local' : ''"
                                 style="margin-right: 10px;"></svg-icon>
                             <span>{{ currentModel.label || $t('textModel.pleaseSelectModel') }}</span>
                             <!-- 右侧主开关 - 调整为内部显示ON/OFF，右侧开关只读展示 -->
@@ -62,7 +62,7 @@
                                     style="width: 100%;"></el-input>
                             </el-form-item>
 
-                            <el-form-item :label="$t('textModel.modelName')">
+                            <el-form-item v-if="currentModel.name != 'local'" :label="$t('textModel.modelName')">
                                 <el-select v-model="currentModel.modelName" :placeholder="$t('textModel.pleaseSelectModel')" style="width: 70%;">
                                     <el-option v-for="item in currentModel.availableModels" :key="item.value"
                                         :label="item.label" :value="item.value"></el-option>
@@ -80,7 +80,7 @@
                         </el-tooltip>
                     </el-form-item> -->
 
-                            <el-form-item :label="$t('textModel.modelTemperature')">
+                            <el-form-item v-if="currentModel.name != 'local'" :label="$t('textModel.modelTemperature')">
                                 <div class="slider-container">
                                     <el-slider v-model="currentModel.temperature" :max="1" :min="0" :step="0.1"
                                         show-tooltip style="flex: 1;" class="temperature"></el-slider>
