@@ -400,6 +400,7 @@
         <div class="content-section" style="display: flex; justify-content: space-between;">
           <div class="left-section" style="width: 65%;">
             <el-card class="box-card" shadow="never" style="border-radius: 10px; border: 1px solid #e2e8f0;">
+              <!-- 非结构化这里 -->
               <template v-if="fixResultsIsFileSource">
                 <div class="info-item">
                   <label class="info-label">{{ $t('fixResults.top.fileType') }}：</label>
@@ -433,6 +434,7 @@
                   </el-table>
                 </div>
               </template>
+              <!-- 结构化这里 -->
               <template v-else>
                 <div class="info-item">
                   <label class="info-label">{{ $t('fixResults.top.fieldRemark') }}：</label>
@@ -1578,9 +1580,6 @@ export default {
         this.fixResultsRow.sampleData,
         this.fixResultsIsFileSource
       )
-      if (this.fixResultsIsFileSource) {
-        this.fixResultsRow.unSampleList = this.fixResultsRow.sampleList
-      }
       if (this.fixResultsRow.reasoningProcess !== undefined) {
         this.fixResultsResultForm.reasoningProcess = this.fixResultsRow.reasoningProcess
       }

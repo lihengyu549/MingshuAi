@@ -1690,7 +1690,6 @@ export default {
         this.currentProjectId = projectId;
       }
       this.fixResultsDrawerVisible = true;
-      console.log(row);
       this.fixResultsIsFileSource = this.currentNodeType == '1';
       this.fixResultsRow = { ...row };
 
