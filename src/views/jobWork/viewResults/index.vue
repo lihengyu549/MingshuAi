@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="app-container view-results-page" v-loading="loading">
     <el-row :gutter="20" class="page-layout">
       <el-col :span="5" :xs="24">
@@ -266,7 +266,7 @@
                 align="left" :prop="item.prop" :width="item.width">
                 <template slot-scope="scope">
                   <template v-if="item.prop === (isFileSource ? 'fileName' : 'fieldName')">
-                    <span @click="resultExdit(scope.row)" style="cursor: pointer; color: #409EFF;">
+                    <span @click="openFixResultsDrawer(scope.row)" style="cursor: pointer; color: #409EFF;">
                       <svg-icon icon-class="text" style="font-size: 14px; margin-right: 5px;" />
                       {{ scope.row[item.prop] }}</span>
                   </template>
@@ -377,6 +377,217 @@
         </span>
       </template>
     </el-dialog>
+
+    <Drawer :title="fixResultsTitleText" :visible.sync="fixResultsDrawerVisible" direction="rtl" size="88%"
+      :destroy-on-close="true" custom-class="fix-results-drawer">
+      <div slot="body" class="fix-results-container" v-loading="fixResultsLoading" v-if="fixResultsRow">
+        <el-card class="top-section" shadow="never"
+          style="margin-bottom: 20px; border-radius: 10px; border: 1px solid #ebeef5;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="margin: 0;"><el-tag type="info" style="font-size: 18px;">ID：{{ fixResultsRow.id }}</el-tag> {{
+              fixResultsTitleText }}</h2>
+            <div class="top-buttons" style="display: flex; gap: 10px;">
+              <el-button type="primary" plain @click="fixResultsHandleModifyResult">{{
+                $t('fixResults.sections.modifyResult')
+              }}</el-button>
+              <el-button type="primary" plain @click="fixResultsHandleManualConfirm">{{
+                $t('fixResults.top.manualConfirm')
+              }}</el-button>
+            </div>
+          </div>
+        </el-card>
+
+        <div class="content-section" style="display: flex; justify-content: space-between;">
+          <div class="left-section" style="width: 65%;">
+            <el-card class="box-card" shadow="never" style="border-radius: 10px; border: 1px solid #e2e8f0;">
+              <template v-if="fixResultsIsFileSource">
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.fileType') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.fileFormat || fixResultsRow.fileType || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.fileSize') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.fileSizeName || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.fileSummary') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.fileContext || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.filePath') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.filePath || fixResultsRow.fileParentPath || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.sampleFeature') }}：</label>
+                </div>
+                <div style="margin-top: 10px;">
+                  <el-table :data="fixResultsRow.unSampleList" border class="tableCla"
+                    style="width: 100%; border-radius: 8px; overflow: hidden;">
+                    <template slot="empty">
+                      <el-empty :description="$t('noData')"></el-empty>
+                    </template>
+                    <el-table-column prop="key" :label="$t('fixResults.texts.keyword')"
+                      show-overflow-tooltip></el-table-column>
+                    <el-table-column prop="value" :label="$t('fixResults.texts.keyValue')"
+                      show-overflow-tooltip></el-table-column>
+                  </el-table>
+                </div>
+              </template>
+              <template v-else>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.fieldRemark') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.fieldRemark || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.aiFieldRemark') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.craftRemark || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.fieldTopic') }}：</label>
+                  <div class="info-content">
+                    <el-tag v-for="tag in (fixResultsRow.fieldTopic ? JSON.parse(fixResultsRow.fieldTopic) : [])"
+                      :key="tag" style="margin-right: 5px; border-radius: 8px;">{{ tag || '--' }}</el-tag>
+                  </div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.dataPath') }}：</label>
+                  <div class="info-content">
+                    {{ fixResultsRow.businessName + ' / ' + fixResultsRow.databaseName + ' / ' + fixResultsRow.tableName
+                    }}
+                  </div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.tableRemark') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.tableRemark || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.aiTableRemark') }}：</label>
+                  <div class="info-content">{{ fixResultsRow.tableCraftRemark || '--' }}</div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.tableTopic') }}：</label>
+                  <div class="info-content">
+                    <el-tag type="success"
+                      v-for="tag in (fixResultsRow.tableTopic ? JSON.parse(fixResultsRow.tableTopic) : [])" :key="tag"
+                      style="margin-right: 5px; border-radius: 8px;">{{ tag || '--' }}</el-tag>
+                  </div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.sampleFeature') }}：</label>
+                  <div class="info-content">
+                    <el-tag type="info" style="margin-right: 5px; border-radius: 8px;">{{
+                      fixResultsRow.regularExpression || '--' }}</el-tag>
+                  </div>
+                </div>
+                <div class="info-item">
+                  <label class="info-label">{{ $t('fixResults.top.samplePreview') }}：</label>
+                </div>
+                <div style="margin-top: 10px;">
+                  <el-table :data="fixResultsRow.sampleList" border class="tableCla"
+                    style="width: 100%; border-radius: 8px; overflow: hidden;">
+                    <template slot="empty">
+                      <el-empty :description="$t('noData')"></el-empty>
+                    </template>
+                    <el-table-column type="index" :label="$t('fixResults.texts.index')" show-overflow-tooltip>
+                    </el-table-column>
+                    <el-table-column prop="value" :label="$t('fixResults.texts.sampleValue')"
+                      show-overflow-tooltip></el-table-column>
+                  </el-table>
+                </div>
+              </template>
+            </el-card>
+          </div>
+
+          <div class="right-section" style="width: 32%;">
+            <el-card class="box-card ai-review-card" :class="`ai-review-card--${fixResultsAiReviewStatus}`" shadow="never">
+              <div class="ai-review-card__header">
+                <div class="ai-review-card__title">
+                  <i class="el-icon-lightning ai-review-card__title-icon"></i>
+                  <span>AI智能审查结果</span>
+                </div>
+                <el-tag :type="fixResultsAiReviewTagType" effect="plain" class="ai-review-card__status-tag">
+                  <i :class="fixResultsAiReviewIcon"></i>
+                  <span>{{ fixResultsAiReviewLabel }}</span>
+                </el-tag>
+              </div>
+              <div class="ai-review-card__body">
+                <div class="ai-review-card__section">
+                  <div class="ai-review-card__label">分类</div>
+                  <div class="ai-review-card__value-box">{{ fixResultsRow.categoryName || '--' }}</div>
+                </div>
+                <div class="ai-review-card__section">
+                  <div class="ai-review-card__label-row">
+                    <span class="ai-review-card__label">综合置信度</span>
+                    <span class="ai-review-card__score">{{ fixResultsConfidenceText }}</span>
+                  </div>
+                  <el-progress :percentage="fixResultsConfidencePercentage" :stroke-width="8" :show-text="false"
+                    :color="fixResultsProgressColor"></el-progress>
+                </div>
+                <div class="ai-review-card__section">
+                  <div class="ai-review-card__reason-box">
+                    <span class="ai-review-card__reason-title">分类研判：</span>
+                    <span class="ai-review-card__reason-text">{{ fixResultsClassificationReasonText }}</span>
+                  </div>
+                </div>
+                <div class="ai-review-card__section">
+                  <div class="ai-review-card__label">安全分级</div>
+                  <div class="ai-review-card__tag-wrap">
+                    <el-tag v-if="fixResultsRow.securityLevelName" plain
+                      :style="getRiskStyle(Number(fixResultsRow.securityLevel))">{{ fixResultsRow.securityLevelName }}</el-tag>
+                    <el-tag v-else plain :style="getRiskStyle()">{{ '--' }}</el-tag>
+                  </div>
+                </div>
+                <div class="ai-review-card__section">
+                  <div class="ai-review-card__reason-box">
+                    <span class="ai-review-card__reason-title">敏感分级研判：</span>
+                    <span class="ai-review-card__reason-text">{{ fixResultsSecurityReasonText }}</span>
+                  </div>
+                </div>
+              </div>
+            </el-card>
+          </div>
+        </div>
+
+        <el-dialog class="addMsg" :title="$t('fixResults.dialog.title')" :visible.sync="fixResultsDialogVisible"
+          width="700px" append-to-body>
+          <el-form :model="fixResultsResultForm" ref="fixResultsResultForm" size="small" label-width="auto"
+            label-position="top">
+            <el-form-item :label="$t('fixResults.dialog.category')" class="addSelectClass">
+              <el-select ref="fixResultsResultSelectRef" v-model="fixResultsResultFormNodeName" filterable
+                :filter-method="fixResultsHandleSearch" clearable @focus="fixResultsClearResultFilter">
+                <el-option style="height: 100%; padding: 0" value="">
+                  <el-tree :data="categoryList" :props="defaultProps" filterable :expand-on-click-node="true"
+                    :filter-node-method="filterNode" ref="fixResultsTreeSelectSec" node-key="id" highlight-current
+                    @node-click="fixResultsResultHandleNodeClick" />
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item :label="$t('fixResults.dialog.securityLevel')" class="addSelectClass" prop="securityLevel">
+              <el-select v-model="fixResultsResultForm.securityLevel" disabled :placeholder="$t('pleaseSelect')">
+                <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item :label="$t('fixResults.dialog.piiReview')" class="addSelectClass" prop="piiDetection"
+              v-if="!fixResultsIsFileSource">
+              <el-select ref="fixResultsPiiSelectRef" v-model="fixResultsPiiNodeName" clearable>
+                <el-option style="height: 100%; padding: 0" value="">
+                  <el-tree :data="piiList" :props="defaultProps" :expand-on-click-node="true"
+                    :filter-node-method="filterNode" ref="fixResultsTreeSelect" node-key="id" highlight-current
+                    @node-click="fixResultsPiiHandleNodeClick" />
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-form>
+          <template #footer>
+            <span>
+              <el-button type="primary" plain @click="fixResultsUpdataResultFn">{{ $t('confirm') }}</el-button>
+              <el-button @click="fixResultsUpdataResultCanelFn">{{ $t('cancel') }}</el-button>
+            </span>
+          </template>
+        </el-dialog>
+      </div>
+    </Drawer>
   </div>
 </template>
 
@@ -461,6 +672,22 @@ export default {
       show: true,
       serialNumber: "",
       deleteVisible: false,
+      fixResultsDrawerVisible: false,
+      fixResultsLoading: false,
+      fixResultsRow: null,
+      fixResultsIsFileSource: false,
+      fixResultsIsAllReasoningExpanded: false,
+      fixResultsDialogVisible: false,
+      fixResultsResultForm: {
+        categoryId: '',
+        securityLevel: '',
+        id: '',
+        piiDetection: '',
+        classificationLogic: '',
+        reasoningProcess: ''
+      },
+      fixResultsResultFormNodeName: '',
+      fixResultsPiiNodeName: '',
       markingId: '',
       radio: '0',
       markingVisible: false,
@@ -686,6 +913,74 @@ export default {
   computed: {
     isFileSource() {
       return this.queryParams.sourceType === 'FILE_CATALOGUE' || this.queryParams.sourceType === 'FILE_SERVER';
+    },
+    fixResultsTitleText() {
+      if (!this.fixResultsRow) return '';
+      return this.fixResultsRow.id + ' ' + (this.fixResultsIsFileSource ? this.fixResultsRow.fileName : this.fixResultsRow.fieldName);
+    },
+    fixResultsConfidencePercentage() {
+      const score = Number(this.fixResultsRow && this.fixResultsRow.confidenceScore);
+      if (Number.isNaN(score) || score <= 0) {
+        return 0;
+      }
+      return score <= 1 ? Math.round(score * 100) : Math.round(score);
+    },
+    fixResultsConfidenceText() {
+      const score = Number(this.fixResultsRow && this.fixResultsRow.confidenceScore);
+      if (Number.isNaN(score) || score <= 0) {
+        return '--';
+      }
+      return `${this.fixResultsConfidencePercentage}%`;
+    },
+    fixResultsAiReviewStatus() {
+      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
+      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
+        return 'info';
+      }
+      return confidenceLevel === '低' ? 'warning' : 'success';
+    },
+    fixResultsAiReviewTagType() {
+      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
+      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
+        return 'info';
+      }
+      return confidenceLevel === '低' ? 'warning' : 'success';
+    },
+    fixResultsAiReviewLabel() {
+      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
+      if (!confidenceLevel) {
+        return '待审查';
+      }
+      return confidenceLevel === '低' ? '需人工介入' : 'AI审核通过';
+    },
+    fixResultsAiReviewIcon() {
+      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
+      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
+        return 'el-icon-info';
+      }
+      return confidenceLevel === '低' ? 'el-icon-warning-outline' : 'el-icon-check';
+    },
+    fixResultsProgressColor() {
+      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
+      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
+        return '#909399';
+      }
+      return confidenceLevel === '低' ? '#f97316' : '#3b82f6';
+    },
+    fixResultsClassificationReasonText() {
+      const row = this.fixResultsRow || {};
+      return row.reasoningProcess || '--';
+    },
+    fixResultsSecurityReasonText() {
+      const row = this.fixResultsRow || {};
+      return row.dynamicGrading || '--';
+    },
+    fixResultsAiReviewLabel() {
+      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
+      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
+        return '待审查';
+      }
+      return confidenceLevel === '低' ? '需人工介入' : 'AI审核通过';
     },
     // 列设置列表（根据类型返回不同列表）
     setList() {
@@ -1275,6 +1570,239 @@ export default {
       this.inputSearch()
       this.getListTableByProject()
     },
+    openFixResultsDrawer(row) {
+      this.fixResultsDrawerVisible = true
+      this.fixResultsIsFileSource = this.isFileSource
+      this.fixResultsRow = { ...row }
+      this.fixResultsRow.sampleList = this.normalizeFixResultsSampleList(
+        this.fixResultsRow.sampleData,
+        this.fixResultsIsFileSource
+      )
+      if (this.fixResultsIsFileSource) {
+        this.fixResultsRow.unSampleList = this.fixResultsRow.sampleList
+      }
+      if (this.fixResultsRow.reasoningProcess !== undefined) {
+        this.fixResultsResultForm.reasoningProcess = this.fixResultsRow.reasoningProcess
+      }
+      if (this.levelOptions.length === 0) {
+        this.fixResultsFetchLevelOptions(this.fixResultsRow.categoryId || this.drawerDataInfo.projectId)
+      }
+      if (this.piiList.length === 0) {
+        this.fixResultsGetPiiList()
+      }
+    },
+    normalizeFixResultsSampleList(sampleData, isFileSource) {
+      if (!sampleData) {
+        return []
+      }
+      let parsedData = sampleData
+      if (typeof sampleData === 'string') {
+        try {
+          parsedData = JSON.parse(sampleData)
+        } catch (e) {
+          return []
+        }
+      }
+      if (!Array.isArray(parsedData)) {
+        return []
+      }
+      return parsedData.map(item => {
+        if (isFileSource) {
+          if (item && typeof item === 'object' && !Array.isArray(item)) {
+            const entries = Object.entries(item)
+            if (entries.length > 0) {
+              return { key: entries[0][0], value: entries[0][1] }
+            }
+          }
+          return { value: item }
+        }
+        if (item && typeof item === 'object' && !Array.isArray(item)) {
+          if (Object.prototype.hasOwnProperty.call(item, 'value')) {
+            return { value: item.value }
+          }
+          const entries = Object.entries(item)
+          if (entries.length > 0) {
+            return { value: entries[0][1] }
+          }
+        }
+        return { value: item }
+      })
+    },
+    fixResultsFetchLevelOptions(categoryId) {
+      const params = {}
+      if (categoryId) params.projectId = categoryId
+      getCategorySchemaLevelList(params).then(res => {
+        const payload = res && res.data ? res.data : res
+        const list = payload.records || payload.rows || payload.list || payload || []
+        this.levelOptions = list.map(it => ({
+          value: it.level,
+          label: it.levelName
+        }))
+      })
+    },
+    fixResultsGetPiiList() {
+      let data = {
+        parentId: 1,
+        needSub: 1,
+        ifAddUnclassified: 2
+      }
+      treeListI(data).then((resp) => {
+        this.piiList = resp.data
+        if (resp.data.length > 0) {
+          let tempList = JSON.parse(JSON.stringify(this.piiList))
+          for (let item of tempList) {
+            item.label = item.categoryName
+          }
+          this.piiList = this.handleTree(tempList, "id")
+        }
+      })
+    },
+    fixResultsUpdataResultFn() {
+      this.fixResultsLoading = true
+      let params = {
+        reasoningProcess: this.fixResultsResultForm.reasoningProcess,
+        tableFieldIds: [this.fixResultsRow.id],
+        categoryId: this.fixResultsResultForm.categoryId,
+        securityLevel: this.fixResultsResultForm.securityLevel,
+        auditRecommendation: this.fixResultsResultForm.auditRecommendation,
+        confidenceLevel: this.fixResultsResultForm.confidenceLevel,
+        piiDetection: this.fixResultsResultForm.piiDetection,
+        detectionProcess: this.fixResultsResultForm.detectionProcess,
+      }
+      if (this.fixResultsIsFileSource) {
+        let fileParams = {
+          fileIds: [this.fixResultsRow.id],
+          categoryId: this.fixResultsResultForm.categoryId,
+          securityLevel: this.fixResultsResultForm.securityLevel
+        }
+        updateResultByFile(fileParams).then(res => {
+          if (res.code == 200) {
+            this.$message.success(res.msg)
+            this.fixResultsRow.categoryId = this.fixResultsResultForm.categoryId
+            this.fixResultsRow.categoryName = this.fixResultsResultFormNodeName || this.fixResultsRow.categoryName
+            this.fixResultsRow.securityLevel = this.fixResultsResultForm.securityLevel
+            const level = this.levelOptions.find(item => String(item.value) === String(this.fixResultsResultForm.securityLevel))
+            this.fixResultsRow.securityLevelName = level ? level.label : this.fixResultsRow.securityLevelName
+            this.getList()
+          }
+          this.fixResultsDialogVisible = false
+          this.fixResultsResultFormNodeName = ''
+          this.fixResultsLoading = false
+        }).catch(() => {
+          this.fixResultsDialogVisible = false
+          this.fixResultsLoading = false
+        })
+      } else {
+        updateFiledRule(params).then(res => {
+          if (res.code == 200) {
+            this.$message.success(res.msg)
+            this.fixResultsRow.categoryId = this.fixResultsResultForm.categoryId
+            this.fixResultsRow.categoryName = this.fixResultsResultFormNodeName || this.fixResultsRow.categoryName
+            this.fixResultsRow.securityLevel = this.fixResultsResultForm.securityLevel
+            this.fixResultsRow.piiDetection = this.fixResultsResultForm.piiDetection
+            this.fixResultsRow.piiDetectionName = this.fixResultsPiiNodeName || this.fixResultsRow.piiDetectionName
+            const level = this.levelOptions.find(item => String(item.value) === String(this.fixResultsResultForm.securityLevel))
+            this.fixResultsRow.securityLevelName = level ? level.label : this.fixResultsRow.securityLevelName
+            this.getList()
+          }
+          this.fixResultsDialogVisible = false
+          this.fixResultsResultFormNodeName = ''
+          this.fixResultsLoading = false
+        }).catch(() => {
+          this.fixResultsDialogVisible = false
+          this.fixResultsLoading = false
+        })
+      }
+    },
+    fixResultsUpdataResultCanelFn() {
+      this.fixResultsDialogVisible = false
+      this.fixResultsResultFormNodeName = ''
+      this.fixResultsPiiNodeName = ''
+    },
+    fixResultsResultHandleNodeClick(node) {
+      if (node.children && node.children.length > 0) {
+        node.disabled = true
+      } else {
+        const parentLabels = this.findParentLabelsById(this.categoryList, node.id)
+        if (parentLabels) {
+          this.fixResultsResultFormNodeName = parentLabels.join('-') + '-' + (node.categoryName || node.label || '')
+        } else {
+          this.fixResultsResultFormNodeName = node.categoryName || node.label || ''
+        }
+        this.fixResultsResultForm.categoryId = node.id
+        this.$refs.fixResultsResultSelectRef.blur()
+        getCategoryAttachData({ categoryId: node.id, piiId: this.fixResultsResultForm.piiDetection }).then(res => {
+          this.fixResultsResultForm.securityLevel = res.data.minSecurityLevel + ''
+        })
+      }
+    },
+    fixResultsPiiHandleNodeClick(node) {
+      if (node.children && node.children.length > 0) {
+        node.disabled = true
+      } else {
+        const parentLabels = this.findParentLabelsById(this.piiList, node.id)
+        if (parentLabels) {
+          this.fixResultsPiiNodeName = parentLabels.join('-') + '-' + (node.categoryName || node.label || '')
+        } else {
+          this.fixResultsPiiNodeName = node.categoryName || node.label || ''
+        }
+        this.fixResultsResultForm.piiDetection = node.id
+        this.$refs.fixResultsPiiSelectRef.blur()
+        getCategoryAttachData({ piiId: node.id, categoryId: this.fixResultsResultForm.categoryId }).then(res => {
+          this.fixResultsResultForm.securityLevel = res.data.minSecurityLevel + ''
+        })
+      }
+    },
+    fixResultsHandleSearch(val) {
+      this.$refs.fixResultsTreeSelectSec.filter(val)
+    },
+    fixResultsClearResultFilter() {
+      this.$refs.fixResultsTreeSelectSec.filter('')
+    },
+    fixResultsHandleManualConfirm() {
+      if (this.fixResultsIsFileSource) {
+        confirmListByFile([this.fixResultsRow && this.fixResultsRow.id]).then(res => {
+          if (res.code === 200) {
+            this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'))
+            if (this.fixResultsRow) {
+              this.fixResultsRow.confirm = 1
+            }
+            this.getList()
+          } else {
+            this.$message.error(res.msg || this.$t('fixResults.messages.manualConfirmFailed'))
+          }
+        })
+      } else {
+        confirmIds([this.fixResultsRow && this.fixResultsRow.id]).then(res => {
+          if (res.code === 200) {
+            this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'))
+            if (this.fixResultsRow) {
+              this.fixResultsRow.confirm = 1
+            }
+            this.getList()
+          } else {
+            this.$message.error(res.msg || this.$t('fixResults.messages.manualConfirmFailed'))
+          }
+        })
+      }
+    },
+    fixResultsHandleModifyResult() {
+      this.fixResultsResultForm = {
+        categoryId: this.fixResultsRow.categoryId || '',
+        securityLevel: this.fixResultsRow.securityLevel || '',
+        id: this.fixResultsRow.id || '',
+        piiDetection: this.fixResultsRow.piiDetection || '',
+        classificationLogic: '',
+        reasoningProcess: this.fixResultsRow.reasoningProcess || ''
+      }
+      if (this.fixResultsRow.categoryName) {
+        this.fixResultsResultFormNodeName = this.fixResultsRow.categoryName
+      }
+      if (this.fixResultsRow.piiDetection) {
+        this.fixResultsPiiNodeName = this.fixResultsRow.piiDetectionName
+      }
+      this.fixResultsDialogVisible = true
+    },
     handleBatchFix() {
       // 使用表格ref直接获取选中的数据
       const selection = this.$refs.tableRef.selection
@@ -1431,10 +1959,7 @@ export default {
       };
       sessionStorage.setItem('viewResults_search_state', JSON.stringify(stateToSave));
 
-      this.$router.push({
-        path: '/classificationTask/fixResults',
-        query: { row: row, categoryList: this.categoryList, drawerData: this.$route.query.drawerData }
-      });
+      this.openFixResultsDrawer(row);
     },
     addHandleNodeCheck(node, checkData) {
       // 筛选出选中的叶子节点（无children的节点）
@@ -1733,6 +2258,206 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.fix-results-container {
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.fix-results-container .info-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin: 10px 0;
+}
+
+.fix-results-container .info-label {
+  width: 120px;
+  font-weight: 500;
+  text-align: left;
+  font-size: 13px;
+  color: #909399;
+  flex-shrink: 0;
+}
+
+.fix-results-container .info-content {
+  flex: 1;
+  font-size: 13px;
+  color: #606266;
+}
+
+.fix-results-container .box-card {
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.fix-results-container .box-card ::v-deep .el-card__body {
+  padding: 20px;
+}
+
+.fix-results-container .box-card ::v-deep .el-card__header {
+  background-color: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fix-results-container .header-name {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.fix-results-container .header-confidence {
+  font-size: 12px;
+  color: #909399;
+  float: right;
+}
+
+.fix-results-container .ai-review-card {
+  border-radius: 16px;
+  border: 1px solid #d6e4ff;
+  overflow: hidden;
+}
+
+.fix-results-container .ai-review-card ::v-deep .el-card__body {
+  padding: 0;
+}
+
+.fix-results-container .ai-review-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e7eefc;
+}
+
+.fix-results-container .ai-review-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f3f8e;
+}
+
+.fix-results-container .ai-review-card__title-icon {
+  font-size: 20px;
+  color: #3b82f6;
+}
+
+.fix-results-container .ai-review-card__status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fix-results-container .ai-review-card__status-tag i {
+  font-size: 14px;
+}
+
+.fix-results-container .ai-review-card__body {
+  padding: 20px;
+}
+
+.fix-results-container .ai-review-card__section + .ai-review-card__section {
+  margin-top: 18px;
+}
+
+.fix-results-container .ai-review-card__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.fix-results-container .ai-review-card__label {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #7b8ba7;
+}
+
+.fix-results-container .ai-review-card__score {
+  font-size: 20px;
+  font-weight: 700;
+  color: #3b82f6;
+}
+
+.fix-results-container .ai-review-card__value-box {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #f5f7fb;
+  color: #1f2a44;
+  font-size: 16px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.fix-results-container .ai-review-card__reason-box {
+  padding: 14px 16px;
+  border: 1px solid #dbe7fb;
+  border-radius: 10px;
+  background: #f8fbff;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.fix-results-container .ai-review-card__reason-title {
+  color: #2f5fe3;
+  font-weight: 600;
+}
+
+.fix-results-container .ai-review-card__reason-text {
+  word-break: break-word;
+}
+
+.fix-results-container .ai-review-card__tag-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.fix-results-container .ai-review-card ::v-deep .el-progress-bar__outer {
+  background-color: #dbeafe;
+}
+
+.fix-results-container .ai-review-card ::v-deep .el-progress-bar__inner {
+  border-radius: 999px;
+}
+
+.fix-results-container .ai-review-card--warning .ai-review-card__score {
+  color: #f97316;
+}
+
+.fix-results-container .ai-review-card--warning .ai-review-card__reason-box {
+  border-color: #fed7aa;
+  background: #fff7ed;
+}
+
+.fix-results-container .ai-review-card--warning .ai-review-card__reason-title {
+  color: #f97316;
+}
+
+.fix-results-container .ai-review-card--info .ai-review-card__score {
+  color: #909399;
+}
+
+.fix-results-container .ai-review-card--info .ai-review-card__reason-box {
+  border-color: #dcdfe6;
+  background: #f4f4f5;
+}
+
+.fix-results-container .ai-review-card--info .ai-review-card__reason-title {
+  color: #909399;
+}
+
+.fix-results-container .ai-review-card--info ::v-deep .el-progress-bar__outer {
+  background-color: #ebeef5;
+}
 ::v-deep .el-row {
   display: flex;
   align-items: stretch;
