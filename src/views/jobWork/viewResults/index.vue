@@ -380,7 +380,7 @@
       </template>
     </el-dialog>
 
-    <Drawer :title="fixResultsTitleText" :visible.sync="fixResultsDrawerVisible" direction="rtl" size="88%"
+    <Drawer :title="fixResultsTitleText" :visible.sync="fixResultsDrawerVisible" direction="rtl" size="60%"
       :destroy-on-close="true" custom-class="fix-results-drawer">
       <div slot="body" class="fix-results-container" v-loading="fixResultsLoading" v-if="fixResultsRow">
         <el-card class="top-section" shadow="never"
