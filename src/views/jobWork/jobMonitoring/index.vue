@@ -1573,6 +1573,12 @@ export default {
 .task-progress-container {
     width: 100%;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 52px);
+    min-height: 0;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .task-info-card {
@@ -1583,6 +1589,7 @@ export default {
     padding: 24px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
 }
 
 .task-info-card:hover {
@@ -1691,9 +1698,13 @@ export default {
 
 .main-content-wrapper {
     display: flex;
+    flex: 1 1 0;
     gap: 24px;
     align-items: stretch;
     margin-bottom: 24px;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .left-panel {
@@ -1702,13 +1713,16 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    height: 100%;
+    min-height: 0;
 }
 
 .right-panel {
-    flex: 1;
+    flex: 1 1 0;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    height: 100%;
     min-height: 0;
 }
 
@@ -1725,14 +1739,19 @@ export default {
 }
 
 .steps-card {
+    flex: 1 1 0;
     display: flex;
     flex-direction: column;
+    height: 0;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .tab-card {
-    flex: 1;
+    flex: 1 1 0;
     display: flex;
     flex-direction: column;
+    height: 0;
     min-height: 0;
     overflow: hidden;
 }
@@ -1908,8 +1927,14 @@ export default {
 
 .steps-list {
     display: flex;
+    flex: 1 1 0;
     flex-direction: column;
     gap: 10px;
+    height: 0;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-right: 4px;
 }
 
 .step-item {
@@ -2058,8 +2083,9 @@ export default {
 
 .tab-card /deep/ .el-tabs {
     display: flex;
-    flex: 1;
+    flex: 1 1 0;
     flex-direction: column;
+    height: 100%;
     min-height: 0;
 }
 
@@ -2087,7 +2113,8 @@ export default {
 }
 
 .tab-card /deep/ .el-tabs__content {
-    flex: 1;
+    flex: 1 1 0;
+    height: 0;
     min-height: 0;
 }
 
@@ -3009,6 +3036,7 @@ export default {
     display: flex;
     gap: 12px;
     justify-content: flex-end;
+    flex-shrink: 0;
 }
 
 /deep/ .el-button {
