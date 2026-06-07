@@ -751,6 +751,9 @@ export default {
             const stepName = this.currentProcessingStep && this.currentProcessingStep.name;
             return this.getAnimationKeyByStepName(stepName);
         },
+        realtimeLogCount() {
+            return this.realtimeLogs.length;
+        },
     },
     watch: {
         status: {
@@ -770,6 +773,8 @@ export default {
                 this.$nextTick(() => {
                     this.startAIAnimations();
                 });
+            } else if (newTab === 'realtime') {
+                this.scrollToBottom();
             }
         },
         currentAnimationKey() {
@@ -777,6 +782,11 @@ export default {
                 this.$nextTick(() => {
                     this.startAIAnimations();
                 });
+            }
+        },
+        realtimeLogCount() {
+            if (this.activeTab === 'realtime') {
+                this.scrollToBottom();
             }
         }
     },
@@ -1021,9 +1031,11 @@ export default {
         },
         scrollToBottom() {
             this.$nextTick(() => {
-                const logContainer = this.$el.querySelector('.log-container');
+                const logContainer = this.$refs.logContainer;
                 if (logContainer) {
-                    logContainer.scrollTop = logContainer.scrollHeight;
+                    requestAnimationFrame(() => {
+                        logContainer.scrollTop = logContainer.scrollHeight;
+                    });
                 }
             });
         },
