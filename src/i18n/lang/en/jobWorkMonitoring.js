@@ -60,6 +60,7 @@ export default {
     '样本特征提取': 'Sample Feature Extraction',
     '语义缓存': 'Semantic Caching',
     '动态定级': 'Dynamic Rating',
+    '自动审核': 'Automatic Audit',
     '文本摘要': 'Text Summary'
   },
   analysisLabels: {

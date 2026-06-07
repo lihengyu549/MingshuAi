@@ -601,14 +601,13 @@ export default {
             prevTableName: '',
             nextTableName: '',
             processingSteps: [
-                { name: '噪音数据过滤', status: 'null', completedTime: '' },
                 { name: '语义填充', status: 'null', completedTime: '' },
+                { name: '噪音数据过滤', status: 'null', completedTime: '' },
                 { name: '匹配规则', status: 'null', completedTime: '' },
-                { name: 'AI分类打标', status: 'null', completedTime: '' },
                 { name: '个人信息识别', status: 'null', completedTime: '' },
+                { name: 'AI分类打标', status: 'null', completedTime: '' },
+                { name: '自动审核', status: 'null', completedTime: '' },
                 { name: '样本特征提取', status: 'null', completedTime: '' },
-                { name: '语义缓存', status: 'null', completedTime: '' },
-                { name: '动态定级', status: 'null', completedTime: '' }
             ],
             // AI动效相关数据
             animationId: null,
@@ -714,7 +713,7 @@ export default {
                 { name: '文本摘要', status: 'null', completedTime: '' },
                 { name: '语义缓存', status: 'null', completedTime: '' },
                 { name: 'AI分类打标', status: 'null', completedTime: '' },
-                { name: '动态定级', status: 'null', completedTime: '' },
+                { name: '自动审核', status: 'null', completedTime: '' },
                 { name: '样本特征提取', status: 'null', completedTime: '' }
             ];
             
@@ -1693,6 +1692,7 @@ export default {
 .main-content-wrapper {
     display: flex;
     gap: 24px;
+    align-items: stretch;
     margin-bottom: 24px;
 }
 
@@ -1709,11 +1709,7 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 20px;
-}
-
-.steps-card,
-.tab-card {
-    height: 536px;
+    min-height: 0;
 }
 
 .table-carousel-card,
@@ -1726,6 +1722,19 @@ export default {
     padding: 20px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.steps-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.tab-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
 }
 
 /*CURRENT_CHANGE*/
@@ -2047,6 +2056,13 @@ export default {
     color: #111827;
 }
 
+.tab-card /deep/ .el-tabs {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
 /deep/ .el-tabs__header {
     border-bottom: 1px solid #e5e7eb !important;
     margin: 0 0 20px 0 !important;
@@ -2071,11 +2087,25 @@ export default {
 }
 
 .tab-card /deep/ .el-tabs__content {
-    height: calc(100% - 48px);
+    flex: 1;
+    min-height: 0;
+}
+
+.tab-card /deep/ .el-tab-pane {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
 }
 
 /* ========== AI视图样式 ========== */
 .ai-vision-container {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
     padding: 0;
     background: transparent;
     height: 100%;
@@ -2083,8 +2113,11 @@ export default {
 
 .ai-effect-wrapper {
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 16px;
+    min-width: 0;
+    min-height: 0;
     height: 100%;
 }
 
@@ -2144,7 +2177,9 @@ export default {
 
 /* 将画布区域改为浅色背景 */
 .ai-canvas-container {
-    height: 430px;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
     border-radius: 12px;
     border: 1px solid #e2e8f0;
@@ -2830,7 +2865,13 @@ export default {
 /* 日志容器样式 */
 .log-container,
 .analysis-log-container {
-    height: 430px;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
     padding: 20px;
     background: #f9fafb;
@@ -2949,8 +2990,18 @@ export default {
 }
 
 .empty-state {
-    padding: 60px 20px;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 0;
+    padding: 20px;
     text-align: center;
+}
+
+.empty-state /deep/ .el-empty {
+    padding: 0;
 }
 
 .button-group {
@@ -2995,6 +3046,10 @@ export default {
 
     .left-panel {
         width: 100%;
+    }
+
+    .tab-card {
+        min-height: 536px;
     }
 
     .other-info {
