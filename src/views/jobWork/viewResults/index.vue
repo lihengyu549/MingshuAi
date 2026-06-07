@@ -637,6 +637,7 @@ export default {
       categoryList: [],
       yuanCategoryList: [],
       addNodeName: '',
+      selectedCategoryFilterIds: [],
       piiNodeName: '',
       categoryListEdit: [],
       defaultProps: {
@@ -1125,6 +1126,9 @@ export default {
             const state = JSON.parse(savedState);
             this.queryParams = { ...this.queryParams, ...state.queryParams };
             this.addNodeName = state.addNodeName || '';
+            this.selectedCategoryFilterIds = Array.isArray(state.selectedCategoryFilterIds)
+              ? state.selectedCategoryFilterIds.map(item => String(item))
+              : this.getRestoredCategoryFilterIds(state.queryParams?.categoryIds, state.treeID || state.queryParams?.categoryId);
             this.piiNodeName = state.piiNodeName || '';
             this.treeID = state.treeID || '';
             this.showSearch = typeof state.showSearch === 'boolean' ? state.showSearch : this.showSearch;
@@ -1294,9 +1298,8 @@ export default {
     handleTreeNodeClick(node) {
       this.currentTreeNode = node
       this.treeID = node.id
-      this.addNodeName = this.getNodePathLabel(node.id)
       this.queryParams.categoryId = node.id
-      this.queryParams.categoryIds = this.collectTreeNodeFilterIds(node).join(',')
+      this.syncCategoryIds()
 
       // 更新右侧表格数据
       this.handleQuery()
@@ -1344,18 +1347,27 @@ export default {
         }
       });
     },
-    collectTreeNodeFilterIds(node) {
+    syncCategoryIds() {
       const ids = new Set()
-      const walkChildren = (currentNode) => {
-        if (!currentNode) return
-        ids.add(currentNode.id)
-        if (Array.isArray(currentNode.children)) {
-          currentNode.children.forEach(child => walkChildren(child))
-        }
+      if (this.currentTreeNode && this.currentTreeNode.id !== undefined && this.currentTreeNode.id !== null) {
+        ids.add(String(this.currentTreeNode.id))
       }
-      walkChildren(node)
-      this.findAllAncestors(this.treeList, node.id).forEach(id => ids.add(id))
-      return Array.from(ids)
+      this.selectedCategoryFilterIds.forEach(id => {
+        if (id !== undefined && id !== null && id !== '') {
+          ids.add(String(id))
+        }
+      })
+      this.queryParams.categoryIds = Array.from(ids).join(',')
+    },
+    getRestoredCategoryFilterIds(categoryIds, currentTreeId) {
+      if (!categoryIds) {
+        return []
+      }
+      const restoredIds = String(categoryIds).split(',').filter(Boolean).map(item => String(item))
+      if (!currentTreeId) {
+        return restoredIds
+      }
+      return restoredIds.filter(id => id !== String(currentTreeId))
     },
     getNodePathLabel(nodeId) {
       const node = this.findNodeById(this.treeList, nodeId)
@@ -1889,6 +1901,8 @@ export default {
         securityLevelIds: this.queryParams.securityLevel,
       }
       delete params.categoryId
+      this.syncCategoryIds()
+      params.categoryIds = this.queryParams.categoryIds
       selectResultsById(params).then(response => {
         this.proxysList = response.data.rows;
         this.proxysList.forEach(ele => {
@@ -1923,6 +1937,7 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.addNodeName = ''
+      this.selectedCategoryFilterIds = []
       this.piiNodeName = ''
       this.resetForm("queryParams");
       // 重置分类树形组件的勾选状态
@@ -1940,8 +1955,7 @@ export default {
       }
       if (this.currentTreeNode) {
         this.queryParams.categoryId = this.currentTreeNode.id
-        this.queryParams.categoryIds = this.collectTreeNodeFilterIds(this.currentTreeNode).join(',')
-        this.addNodeName = this.getNodePathLabel(this.currentTreeNode.id)
+        this.syncCategoryIds()
       }
       this.handleQuery();
     },
@@ -1955,6 +1969,7 @@ export default {
       const stateToSave = {
         queryParams: this.queryParams,
         addNodeName: this.addNodeName,
+        selectedCategoryFilterIds: this.selectedCategoryFilterIds,
         piiNodeName: this.piiNodeName,
         treeID: this.treeID,
         showSearch: this.showSearch
@@ -1964,42 +1979,21 @@ export default {
       this.openFixResultsDrawer(row);
     },
     addHandleNodeCheck(node, checkData) {
-      // 筛选出选中的叶子节点（无children的节点）
-      const checkedLeafNodes = checkData.checkedNodes.filter(item => !item.children);
-
-      // 无选中节点或无选中子项（叶子节点），清空展示
-      if (checkData.checkedKeys.length === 0 || checkedLeafNodes.length === 0) {
+      const checkedKeys = checkData.checkedKeys.map(item => String(item));
+      if (checkedKeys.length === 0) {
         this.addNodeName = '';
-        this.queryParams.categoryIds = '';
+        this.selectedCategoryFilterIds = [];
+        this.syncCategoryIds();
         this.getList();
         return;
       }
 
-      // 收集所有选中叶子节点对应的根节点（去重）
-      const rootNodeNames = new Set();
-      checkedLeafNodes.forEach(leafNode => {
-        const rootNode = this.findRootNode(this.categoryList, leafNode.id);
-        if (rootNode) {
-          rootNodeNames.add(rootNode.categoryName); // 根节点名称
-        }
-      });
-
-      // 展示根节点名称（用逗号分隔）
-      this.addNodeName = Array.from(rootNodeNames).join(',');
-
-      // 收集叶子节点及其所有祖先节点的ID
-      const allCategoryIds = new Set();
-      checkedLeafNodes.forEach(leafNode => {
-        // 添加叶子节点自身
-        allCategoryIds.add(leafNode.id);
-
-        // 递归收集所有祖先节点（包括父节点、爷节点等）
-        const ancestors = this.findAllAncestors(this.categoryList, leafNode.id);
-        ancestors.forEach(ancestorId => allCategoryIds.add(ancestorId));
-      });
-
-      // 更新查询参数，包含叶子节点和所有祖先节点ID
-      this.queryParams.categoryIds = Array.from(allCategoryIds).join(',');
+      this.selectedCategoryFilterIds = checkedKeys;
+      this.addNodeName = checkData.checkedNodes
+        .map(item => item.categoryName || item.label)
+        .filter(Boolean)
+        .join(',');
+      this.syncCategoryIds();
       this.getList();
     },
     // 查找节点对应的根节点
@@ -2229,8 +2223,8 @@ export default {
               this.currentTreeNode = this.findNodeById(this.categoryList, selectedId)
             }
           }
-          if (this.$route.query.isReturn && this.queryParams.categoryIds && this.$refs.treeSelectQuery) {
-            this.$refs.treeSelectQuery.setCheckedKeys(this.queryParams.categoryIds.split(','));
+          if (this.$route.query.isReturn && this.selectedCategoryFilterIds.length && this.$refs.treeSelectQuery) {
+            this.$refs.treeSelectQuery.setCheckedKeys(this.selectedCategoryFilterIds);
           }
         });
       });
