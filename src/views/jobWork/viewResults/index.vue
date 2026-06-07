@@ -306,7 +306,7 @@
                         </el-table>
                       </div>
                       <span>
-                        {{ scope.row.sampleList[0].value }}
+                        {{ (scope.row.sampleList && scope.row.sampleList[0] && scope.row.sampleList[0].value !== undefined) ? scope.row.sampleList[0].value : '--' }}
                         <i class="el-icon-view" style="font-size: 16px;"></i>
                       </span>
                     </el-tooltip>
