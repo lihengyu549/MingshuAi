@@ -631,8 +631,8 @@ export default {
       // aiAnalyticsEngine: '1',
       confidenceLevelList: [
         { name: this.$t('hierarchicalTask.options.confidence.all'), value: "0" },
-        { name: this.$t('hierarchicalTask.options.confidence.low'), value: "1" },
-        { name: this.$t('hierarchicalTask.options.confidence.high'), value: "2" },
+        { name: '需人工介入', value: "1" },
+        { name: '审查通过', value: "2" },
       ],
       confirmList: [
         { name: this.$t('hierarchicalTask.options.confirm.all'), value: "-1" },

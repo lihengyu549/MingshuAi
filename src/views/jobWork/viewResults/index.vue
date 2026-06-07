@@ -633,8 +633,8 @@ export default {
       drawerDataInfo: {},
       // classificationReasonsList: ['策略匹配', 'AI推理', '脏数据识别'],
       confidenceLevelList: [
-        { name: this.$t('viewResults.options.confidence.low'), id: 1, value: "1" },
-        { name: this.$t('viewResults.options.confidence.high'), id: 2, value: "2" }
+        { name: '需人工介入', id: 1, value: "1" },
+        { name: '审查通过', id: 2, value: "2" }
       ],
       resultFormNodeName: '',
       treeID: '',
@@ -1292,7 +1292,7 @@ export default {
       if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
         return '待审查';
       }
-      return confidenceLevel === '低' ? '需人工介入' : 'AI审核通过';
+      return confidenceLevel === '低' ? '需人工介入' : '审查通过';
     },
     handleCheckAllChange(val) {
       this.checkedColumnProps = val ? this.setList.map(item => item.prop) : [];

@@ -13,7 +13,7 @@ export default {
     database: '所属库',
     table: '所属表',
     classificationReason: '归类原因',
-    confidenceLevel: '置信度',
+    confidenceLevel: '自动审查',
     piiReview: '个保合规',
     sampleFeature: '样本特征',
     expandFilters: '展开筛选',

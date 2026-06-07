@@ -99,7 +99,7 @@ export default {
   confirmName: 'Confirmation Status',
   classificationReasons: 'Classification Reason',
   sensitiveDataName: 'Sensitive Data',
-  confidenceLevel: 'Confidence Level',
+  confidenceLevel: 'Auto Review',
   confidenceScore: 'Confidence Score',
   categoryName: 'Category',
   securityLevelName: 'Security Level'

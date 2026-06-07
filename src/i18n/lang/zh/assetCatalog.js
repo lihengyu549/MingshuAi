@@ -99,8 +99,9 @@ export default {
   confirmName: '确认状态',
   classificationReasons: '归类原因',
   sensitiveDataName: '敏感数据',
-  confidenceLevel: '置信度',
+  confidenceLevel: '自动审查',
   confidenceScore: '置信度分数',
   categoryName: '分类',
   securityLevelName: '安全分级'
+  
 }

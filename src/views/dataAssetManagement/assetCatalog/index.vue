@@ -236,7 +236,7 @@
                             :label="item.label" :value="item.value"></el-option>
                         </el-select>
                       </el-form-item>
-                      <el-form-item label="置信度">
+                      <el-form-item label="自动审查">
                         <el-select v-model="drawerQueryParams.confidenceLevel" placeholder="全部" clearable
                           @change="handleDrawerSearch">
                           <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name"
@@ -471,7 +471,7 @@
                           :label="item.label" :value="item.value"></el-option>
                       </el-select>
                     </el-form-item>
-                    <el-form-item label="置信度">
+                    <el-form-item label="自动审查">
                       <el-select v-model="fileQueryParams.confidenceLevel" placeholder="全部" clearable
                         @change="handleFileQuery">
                         <el-option v-for="item in confidenceLevelList" :key="item.value" :label="item.name"
@@ -1211,8 +1211,8 @@ export default {
         },
       ],
       confidenceLevelList: [
-        { name: this.$t('viewResults.options.confidence.low'), id: 1, value: "1" },
-        { name: this.$t('viewResults.options.confidence.high'), id: 2, value: "2" }
+        { name: '需人工介入', id: 1, value: "1" }, //需人工介入
+        { name: '审查通过', id: 2, value: "2" }, //审查通过
       ],
       categoryList: [],
       isChildrenNode: true,
@@ -1703,7 +1703,7 @@ export default {
       if (!confidenceLevel) {
         return '待审查';
       }
-      return confidenceLevel === '低' ? '需人工介入' : 'AI审核通过';
+      return confidenceLevel === '低' ? '需人工介入' : '审查通过';
     },
     // ======== 新增 fixResults 抽屉 methods 开始 ========
     openFixResultsDrawer(row) {
