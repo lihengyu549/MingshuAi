@@ -941,8 +941,7 @@
                   <label class="info-label">{{ $t('fixResults.top.sampleFeature') }}：</label>
                 </div>
                 <div style="margin-top: 10px;">
-                  <el-table :data="fixResultsRow.unSampleList" border class="tableCla"
-                    style="width: 100%; border-radius: 8px; overflow: hidden;">
+                  <el-table :data="fixResultsRow.unSampleList" height="650" border style="width: 100%; border-radius: 8px;">
                     <template slot="empty">
                       <el-empty :description="$t('noData')"></el-empty>
                     </template>
@@ -1010,8 +1009,7 @@
                   <label class="info-label">{{ $t('fixResults.top.samplePreview') }}：</label>
                 </div>
                 <div style="margin-top: 10px;">
-                  <el-table :data="fixResultsRow.sampleList" border class="tableCla"
-                    style="width: 100%; border-radius: 8px; overflow: hidden;">
+                  <el-table :data="fixResultsRow.sampleList" height="650" border style="width: 100%; border-radius: 8px;">
                     <template slot="empty">
                       <el-empty :description="$t('noData')"></el-empty>
                     </template>
