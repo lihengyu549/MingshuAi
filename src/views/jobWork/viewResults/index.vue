@@ -78,7 +78,7 @@
                 <el-form-item :label="$t('viewResults.search.category')" prop="categoryId">
                   <el-select ref="addSelectRef" v-model="addNodeName" :filter-method="filterCategoryTree">
                     <el-option style="height: 100%; padding: 0" value="">
-                      <el-tree :data="categoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
+                      <el-tree :data="searchCategoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
                         :filter-node-method="filterNode" ref="treeSelectQuery" node-key="id" highlight-current
                         @check="addHandleNodeCheck" />
                     </el-option>
@@ -635,6 +635,7 @@ export default {
       treeList: [],
       isAllExpanded: false,
       categoryList: [],
+      searchCategoryList: [],
       yuanCategoryList: [],
       addNodeName: '',
       selectedCategoryFilterIds: [],
@@ -1299,6 +1300,8 @@ export default {
       this.currentTreeNode = node
       this.treeID = node.id
       this.queryParams.categoryId = node.id
+      this.addNodeName = ''
+      this.selectedCategoryFilterIds = []
       this.syncCategoryIds()
 
       // 更新右侧表格数据
@@ -1326,8 +1329,12 @@ export default {
             };
           });
           this.$set(node, 'children', children);
+          this.searchCategoryList = this.handleTree(JSON.parse(JSON.stringify(children)), "id");
 
           this.$nextTick(() => {
+            if (this.$refs.treeSelectQuery) {
+              this.$refs.treeSelectQuery.setCheckedKeys([]);
+            }
             const treeNode = this.$refs.resultTree.getNode(node.id);
             if (treeNode) {
               // 1. 如果节点之前没有展开（首次加载），请求完毕后将其展开
@@ -1336,9 +1343,13 @@ export default {
             }
           });
         } else {
+          this.searchCategoryList = [];
           // 如果没有查到数据，根据 el-tree 的 expand-on-click-node 逻辑，
           // 它可能会被默认收起。如果希望即使没数据也恢复它之前的展开状态（如果它原来是展开的）：
           this.$nextTick(() => {
+            if (this.$refs.treeSelectQuery) {
+              this.$refs.treeSelectQuery.setCheckedKeys([]);
+            }
             const treeNode = this.$refs.resultTree.getNode(node.id);
             if (treeNode && isExpandedBefore) {
               treeNode.expanded = true;
@@ -2211,6 +2222,7 @@ export default {
             item.label = item.categoryName
           }
           this.categoryList = this.handleTree(tempList, "id")
+          this.searchCategoryList = JSON.parse(JSON.stringify(this.categoryList))
           this.categoryListEdit = this.handleTree(tempList, "id")
         }
         this.Loading = false
