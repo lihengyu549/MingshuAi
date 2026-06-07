@@ -1030,7 +1030,7 @@
             <el-card class="box-card ai-review-card" :class="`ai-review-card--${fixResultsAiReviewStatus}`" shadow="never">
               <div class="ai-review-card__header">
                 <div class="ai-review-card__title">
-                  <i class="el-icon-lightning ai-review-card__title-icon"></i>
+                  <svg-icon icon-class="home-aiAuto" style="font-size: 24px;"></svg-icon>
                   <span>AI智能审查结果</span>
                 </div>
                 <el-tag :type="fixResultsAiReviewTagType" effect="plain" class="ai-review-card__status-tag">
@@ -3896,11 +3896,6 @@ export default {
   font-size: 18px;
   font-weight: 600;
   color: #1f3f8e;
-}
-
-.fix-results-container .ai-review-card__title-icon {
-  font-size: 20px;
-  color: #3b82f6;
 }
 
 .fix-results-container .ai-review-card__status-tag {

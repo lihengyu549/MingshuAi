@@ -249,8 +249,10 @@
                       :key="item.prop">{{
                         item.label }}</el-checkbox>
                   </el-checkbox-group>
-                  <el-button type="text" size="medium" icon="el-icon-s-tools" slot="reference" style="color: #7c8592;">{{ $t('columnSettings')
-                  }}</el-button>
+                  <el-button type="text" size="medium" icon="el-icon-s-tools" slot="reference"
+                    style="color: #7c8592;">{{
+                      $t('columnSettings')
+                    }}</el-button>
                 </el-popover>
                 <el-button type="info" plain size="medium" @click="handleBack">{{ $t('return') }}</el-button>
               </div>
@@ -262,8 +264,8 @@
                 <el-empty :description="$t('noData')"></el-empty>
               </template>
               <el-table-column type="selection" width="60" align="center" />
-              <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label"
-                align="left" :prop="item.prop" :width="item.width">
+              <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label" align="left"
+                :prop="item.prop" :width="item.width">
                 <template slot-scope="scope">
                   <template v-if="item.prop === (isFileSource ? 'fileName' : 'fieldName')">
                     <span @click="openFixResultsDrawer(scope.row)" style="cursor: pointer; color: #409EFF;">
@@ -422,8 +424,7 @@
                   <label class="info-label">{{ $t('fixResults.top.sampleFeature') }}：</label>
                 </div>
                 <div style="margin-top: 10px;">
-                  <el-table :data="fixResultsRow.unSampleList" border class="tableCla"
-                    style="width: 100%; border-radius: 8px; overflow: hidden;">
+                  <el-table :data="fixResultsRow.unSampleList" border style="width: 100%; border-radius: 8px;">
                     <template slot="empty">
                       <el-empty :description="$t('noData')"></el-empty>
                     </template>
@@ -485,8 +486,7 @@
                   <label class="info-label">{{ $t('fixResults.top.samplePreview') }}：</label>
                 </div>
                 <div style="margin-top: 10px;">
-                  <el-table :data="fixResultsRow.sampleList" border class="tableCla"
-                    style="width: 100%; border-radius: 8px; overflow: hidden;">
+                  <el-table :data="fixResultsRow.sampleList" border style="width: 100%; border-radius: 8px;">
                     <template slot="empty">
                       <el-empty :description="$t('noData')"></el-empty>
                     </template>
@@ -501,10 +501,11 @@
           </div>
 
           <div class="right-section" style="width: 32%;">
-            <el-card class="box-card ai-review-card" :class="`ai-review-card--${fixResultsAiReviewStatus}`" shadow="never">
+            <el-card class="box-card ai-review-card" :class="`ai-review-card--${fixResultsAiReviewStatus}`"
+              shadow="never">
               <div class="ai-review-card__header">
                 <div class="ai-review-card__title">
-                  <i class="el-icon-lightning ai-review-card__title-icon"></i>
+                  <svg-icon icon-class="home-aiAuto" style="font-size: 24px;"></svg-icon>
                   <span>AI智能审查结果</span>
                 </div>
                 <el-tag :type="fixResultsAiReviewTagType" effect="plain" class="ai-review-card__status-tag">
@@ -535,7 +536,8 @@
                   <div class="ai-review-card__label">安全分级</div>
                   <div class="ai-review-card__tag-wrap">
                     <el-tag v-if="fixResultsRow.securityLevelName" plain
-                      :style="getRiskStyle(Number(fixResultsRow.securityLevel))">{{ fixResultsRow.securityLevelName }}</el-tag>
+                      :style="getRiskStyle(Number(fixResultsRow.securityLevel))">{{ fixResultsRow.securityLevelName
+                      }}</el-tag>
                     <el-tag v-else plain :style="getRiskStyle()">{{ '--' }}</el-tag>
                   </div>
                 </div>
@@ -1576,6 +1578,7 @@ export default {
       this.fixResultsDrawerVisible = true
       this.fixResultsIsFileSource = this.isFileSource
       this.fixResultsRow = { ...row }
+
       this.fixResultsRow.sampleList = this.normalizeFixResultsSampleList(
         this.fixResultsRow.sampleData,
         this.fixResultsIsFileSource
@@ -2340,11 +2343,6 @@ export default {
   color: #1f3f8e;
 }
 
-.fix-results-container .ai-review-card__title-icon {
-  font-size: 20px;
-  color: #3b82f6;
-}
-
 .fix-results-container .ai-review-card__status-tag {
   display: inline-flex;
   align-items: center;
@@ -2363,7 +2361,7 @@ export default {
   padding: 20px;
 }
 
-.fix-results-container .ai-review-card__section + .ai-review-card__section {
+.fix-results-container .ai-review-card__section+.ai-review-card__section {
   margin-top: 18px;
 }
 
@@ -2457,6 +2455,7 @@ export default {
 .fix-results-container .ai-review-card--info ::v-deep .el-progress-bar__outer {
   background-color: #ebeef5;
 }
+
 ::v-deep .el-row {
   display: flex;
   align-items: stretch;
@@ -2840,10 +2839,6 @@ export default {
 
 .addSelectClass ::v-deep .el-select {
   width: calc(100%);
-}
-
-.tableCla {
-  height: 266px !important;
 }
 
 /* 呼吸灯动效 */
