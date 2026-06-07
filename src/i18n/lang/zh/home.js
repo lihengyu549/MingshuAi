@@ -26,7 +26,7 @@ export default {
   aiClassificationLabeling: "AI 分类打标",
   personalInformationRecognition: "个人信息识别",
   sampleFeatureExtraction: "样本特征提取",
-  progress: "整体进度",
+  progress: "当前进度",
   taskQueue: "任务队列",
   seeAllResults: "查看所有结果"
 }

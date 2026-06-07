@@ -14,7 +14,7 @@ export default {
   noProcessingTable: 'No table is currently being processed',
   noProcessingFile: 'No file is currently being processed',
   processingSteps: 'Processing Steps',
-  overallProgress: 'Overall Progress',
+  overallProgress: 'Current Progress',
   aiVision: 'AI View',
   aiFilter: 'AI Filter',
   realtimeLog: 'Real-time Log',

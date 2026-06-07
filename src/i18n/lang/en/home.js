@@ -26,7 +26,7 @@ export default {
   aiClassificationLabeling: "AI Classification Labeling",
   personalInformationRecognition: "Personal Information Recognition",
   sampleFeatureExtraction: "Sample Feature Extraction",
-  progress: "Overall Progress",
+  progress: "Current Progress",
   taskQueue: "Task Queue",
   seeAllResults: "See All Results"
 }

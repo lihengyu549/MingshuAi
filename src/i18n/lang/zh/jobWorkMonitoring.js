@@ -14,7 +14,7 @@ export default {
   noProcessingTable: '无正在处理的表',
   noProcessingFile: '无正在处理文件',
   processingSteps: '处理步骤',
-  overallProgress: '整体进度',
+  overallProgress: '当前进度',
   aiVision: 'AI视图',
   aiFilter: 'AI过滤器',
   realtimeLog: '实时日志',
