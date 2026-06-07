@@ -613,7 +613,7 @@ export default {
                 { name: '匹配规则', status: 'null', completedTime: '' },
                 { name: '个人信息识别', status: 'null', completedTime: '' },
                 { name: 'AI分类打标', status: 'null', completedTime: '' },
-                { name: '自动审核', status: 'null', completedTime: '' },
+                { name: '自动审查', status: 'null', completedTime: '' },
                 { name: '样本特征提取', status: 'null', completedTime: '' },
             ],
             // AI动效相关数据
@@ -720,7 +720,7 @@ export default {
                 { name: '文本摘要', status: 'null', completedTime: '' },
                 { name: '语义缓存', status: 'null', completedTime: '' },
                 { name: 'AI分类打标', status: 'null', completedTime: '' },
-                { name: '自动审核', status: 'null', completedTime: '' },
+                { name: '自动审查', status: 'null', completedTime: '' },
                 { name: '样本特征提取', status: 'null', completedTime: '' }
             ];
             
