@@ -51,6 +51,7 @@ export default {
   forcedTerminationFailed: 'Force termination failed',
   logConnectionError: 'Log connection error. Please refresh the page and try again.',
   analysisLogFailed: 'Failed to get analysis logs. Please try again later.',
+  noAnimation: 'No Animation Available',
   stepLabels: {
     '噪音数据过滤': 'Noise Data Filtering',
     '语义填充': 'Semantic Filling',

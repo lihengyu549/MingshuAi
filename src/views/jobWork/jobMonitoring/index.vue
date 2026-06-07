@@ -135,7 +135,7 @@
                                     <!-- 动效画布区域 -->
                                     <div class="ai-canvas-container">
                                         <!-- 步骤1: 噪音数据过滤 - 粒子过滤动效 -->
-                                        <div v-show="currentStepIndex === 0" class="effect-panel noise-filter">
+                                        <div v-show="currentAnimationKey === 'noise-filter'" class="effect-panel noise-filter">
                                             <canvas ref="noiseCanvas" class="effect-canvas"></canvas>
                                             <div class="effect-overlay">
                                                 <div class="filter-gate">
@@ -148,7 +148,7 @@
                                         </div>
 
                                         <!-- 步骤2: 语义填充 - 打字机动效 -->
-                                        <div v-show="currentStepIndex === 1" class="effect-panel semantic-fill">
+                                        <div v-show="currentAnimationKey === 'semantic-fill'" class="effect-panel semantic-fill">
                                             <div class="typewriter-container">
                                                 <div class="typewriter-line">
                                                     <span ref="typewriterText" class="typewriter-text">{{
@@ -160,7 +160,7 @@
                                         </div>
 
                                         <!-- 步骤3: 匹配规则 - 连线匹配动效 -->
-                                        <div v-show="currentStepIndex === 2" class="effect-panel rule-match">
+                                        <div v-show="currentAnimationKey === 'rule-match'" class="effect-panel rule-match">
                                             <svg ref="matchSvg" class="match-svg" viewBox="0 0 800 300">
                                                 <defs>
                                                     <linearGradient id="matchGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -209,7 +209,7 @@
                                         </div>
 
                                         <!-- 步骤4: AI分类打标 - 替换为SVG机器人打标签动效，填满容器 -->
-                                        <div v-show="currentStepIndex === 3" class="effect-panel ai-classify">
+                                        <div v-show="currentAnimationKey === 'ai-classify'" class="effect-panel ai-classify">
                                             <svg class="robot-labeling-svg" viewBox="0 0 800 400"
                                                 preserveAspectRatio="xMidYMid meet">
                                                 <defs>
@@ -449,7 +449,7 @@
                                         </div>
 
                                         <!-- 步骤5: 个人信息识别 - 扫描识别动效 -->
-                                        <div v-show="currentStepIndex === 4" class="effect-panel personal-scan">
+                                        <div v-show="currentAnimationKey === 'personal-scan'" class="effect-panel personal-scan">
                                             <div class="scan-area">
                                                 <div class="data-rows">
                                                     <div v-for="(row, idx) in scanRows" :key="idx" class="data-row"
@@ -484,7 +484,7 @@
                                         </div>
 
                                         <!-- 步骤6: 样本特征提取 - 神经网络动效 -->
-                                        <div v-show="currentStepIndex === 5" class="effect-panel feature-extract">
+                                        <div v-show="currentAnimationKey === 'feature-extract'" class="effect-panel feature-extract">
                                             <canvas ref="neuralCanvas" class="effect-canvas"></canvas>
                                             <div class="feature-output">
                                                 <div class="output-label">{{ $t('jobWorkMonitoring.featureExtracted') }}
@@ -494,6 +494,13 @@
                                                         class="feature-bar" :style="{ height: bar.height + '%' }"></div>
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        <div v-if="!currentAnimationKey" class="effect-panel no-animation-state">
+                                            <el-empty :description="$t('jobWorkMonitoring.noAnimation')"></el-empty>
+                                            <p v-if="currentProcessingStep" class="no-animation-step">
+                                                {{ getStepLabel(currentProcessingStep.name) }}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -702,7 +709,7 @@ export default {
             return this.routeData.sourceType === 'FILE_CATALOGUE' || this.routeData.sourceType === 'FILE_SERVER';
         },
         showAiVision() {
-            return !this.isFileServerTask;
+            return true;
         },
         visibleProcessingSteps() {
             if (!this.isFileServerTask) {
@@ -732,6 +739,18 @@ export default {
             const idx = steps?.findIndex(s => s.status === 'processing');
             return idx >= 0 ? idx : steps?.findIndex(s => s.status === 'pending');
         },
+        currentProcessingStep() {
+            const steps = this.visibleProcessingSteps || [];
+            const processingStep = steps.find(s => s.status === 'processing');
+            if (processingStep) {
+                return processingStep;
+            }
+            return steps.find(s => s.status === 'pending') || null;
+        },
+        currentAnimationKey() {
+            const stepName = this.currentProcessingStep && this.currentProcessingStep.name;
+            return this.getAnimationKeyByStepName(stepName);
+        },
     },
     watch: {
         status: {
@@ -753,7 +772,7 @@ export default {
                 });
             }
         },
-        currentStepIndex() {
+        currentAnimationKey() {
             if (this.activeTab === 'ai-vision' && this.showAiVision) {
                 this.$nextTick(() => {
                     this.startAIAnimations();
@@ -890,8 +909,8 @@ export default {
                             if (semanticFill.typewriterOutput !== this.typewriterText) {
                                 this.typewriterText = semanticFill.typewriterOutput;
                                 this.typewriterCompleted = false;
-                                // 如果当前在AI视图且是步骤1，重启打字机动画
-                                if (this.activeTab === 'ai-vision' && this.currentStepIndex === 1) {
+                                // 当前步骤命中语义类动画时，重启打字机动画
+                                if (this.activeTab === 'ai-vision' && this.currentAnimationKey === 'semantic-fill') {
                                     this.restartTypewriterAnimation();
                                 }
                             }
@@ -964,7 +983,7 @@ export default {
             if (exists) return;
 
             this.fieldQueue.push({ field: fieldName, label: label || '' });
-            if (!this.isProcessingField && this.activeTab === 'ai-vision' && this.currentStepIndex === 3) {
+            if (!this.isProcessingField && this.activeTab === 'ai-vision' && this.currentAnimationKey === 'ai-classify') {
                 this.startAIClassifyAnimation();
             }
         },
@@ -1019,7 +1038,21 @@ export default {
             return labelMap[key] || key;
         },
         getStepLabel(name) {
-            return this.$t(`jobWorkMonitoring.stepLabels.${name}`);
+            const i18nKey = `jobWorkMonitoring.stepLabels.${name}`;
+            return this.$te(i18nKey) ? this.$t(i18nKey) : name;
+        },
+        getAnimationKeyByStepName(stepName) {
+            const animationMap = {
+                '噪音数据过滤': 'noise-filter',
+                '语义填充': 'semantic-fill',
+                '文本摘要': 'semantic-fill',
+                '语义缓存': 'semantic-fill',
+                '匹配规则': 'rule-match',
+                'AI分类打标': 'ai-classify',
+                '个人信息识别': 'personal-scan',
+                '样本特征提取': 'feature-extract'
+            };
+            return stepName ? (animationMap[stepName] || '') : '';
         },
         // ========== AI动效方法 ==========
         stopAllAnimations() {
@@ -1059,51 +1092,32 @@ export default {
             this.robotStamping = false;
         },
         startAIAnimations() {
-            // 对于扫描动画(case 4)，如果已经在运行就不重复启动
-            if (this.currentStepIndex === 4 && this.scanInterval) {
+            if (this.currentAnimationKey === 'personal-scan' && this.scanInterval) {
                 return;
             }
 
             this.stopAllAnimations();
-            
-            // 针对非结构化数据
-            if (this.isFileServerTask) {
-                switch (this.currentStepIndex) {
-                    case 0:
-                        // 语义缓存，暂时不写专属动画
-                        break;
-                    case 1:
-                        this.startAIClassifyAnimation();
-                        break;
-                    case 2:
-                        // 动态定级，暂时不写专属动画
-                        break;
-                    case 3:
-                        this.startFeatureExtractAnimation();
-                        break;
-                }
-                return;
-            }
-            
-            // 针对结构化数据
-            switch (this.currentStepIndex) {
-                case 0:
+
+            switch (this.currentAnimationKey) {
+                case 'noise-filter':
                     this.startNoiseFilterAnimation();
                     break;
-                case 1:
+                case 'semantic-fill':
                     this.startSemanticFillAnimation();
                     break;
-                case 2:
+                case 'rule-match':
                     this.startRuleMatchAnimation();
                     break;
-                case 3:
+                case 'ai-classify':
                     this.startAIClassifyAnimation();
                     break;
-                case 4:
+                case 'personal-scan':
                     this.startPersonalScanAnimation();
                     break;
-                case 5:
+                case 'feature-extract':
                     this.startFeatureExtractAnimation();
+                    break;
+                default:
                     break;
             }
         },
@@ -1255,7 +1269,7 @@ export default {
             this.typewriterCompleted = false;
             // 延迟一小段时间再开始，让用户能看到文本清空
             setTimeout(() => {
-                if (this.currentStepIndex === 1 && this.activeTab === 'ai-vision') {
+                if (this.currentAnimationKey === 'semantic-fill' && this.activeTab === 'ai-vision') {
                     this.startSemanticFillAnimation();
                 }
             }, 100);
@@ -2219,6 +2233,22 @@ export default {
     width: 100%;
     height: 100%;
     position: relative;
+}
+
+.no-animation-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px;
+}
+
+.no-animation-step {
+    margin: 0;
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
 }
 
 .effect-canvas {
