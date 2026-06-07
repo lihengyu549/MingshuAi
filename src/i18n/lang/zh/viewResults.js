@@ -83,7 +83,7 @@ export default {
     piiReview: '个保合规',
     detectionProcess: '识别过程',
     confidenceScore: '置信度分数',
-    confidenceLevel: '置信度',
+    confidenceLevel: '自动审查',
     securityLevel: '安全分级',
     sensitiveData: '敏感数据',
     sampleFeature: '样本特征',

@@ -396,6 +396,12 @@
                             </el-tooltip>
                             <span v-else>--</span>
                           </template>
+                          <template v-else-if="item.prop === 'confidenceLevel'">
+                            <el-tag :type="getAiReviewTagType(scope.row)" effect="plain" class="table-ai-review-tag">
+                              <i :class="getAiReviewIcon(scope.row)"></i>
+                              <span>{{ getAiReviewLabel(scope.row) }}</span>
+                            </el-tag>
+                          </template>
                           <template v-else>
                             {{ scope.row[item.prop] || '--' }}
                           </template>
@@ -633,6 +639,12 @@
                               <i class="el-icon-document" style="margin-right: 5px;"></i>{{ scope.row.fileName ||
                                 scope.row.name }}
                             </span>
+                          </template>
+                          <template v-else-if="item.prop === 'confidenceLevel'">
+                            <el-tag :type="getAiReviewTagType(scope.row)" effect="plain" class="table-ai-review-tag">
+                              <i :class="getAiReviewIcon(scope.row)"></i>
+                              <span>{{ getAiReviewLabel(scope.row) }}</span>
+                            </el-tag>
                           </template>
                           <template v-else>
                             {{ scope.row[item.prop] || '--' }}
@@ -941,7 +953,8 @@
                   <label class="info-label">{{ $t('fixResults.top.sampleFeature') }}：</label>
                 </div>
                 <div style="margin-top: 10px;">
-                  <el-table :data="fixResultsRow.unSampleList" max-height="650" border style="width: 100%; border-radius: 8px;">
+                  <el-table :data="fixResultsRow.unSampleList" max-height="650" border
+                    style="width: 100%; border-radius: 8px;">
                     <template slot="empty">
                       <el-empty :description="$t('noData')"></el-empty>
                     </template>
@@ -1009,7 +1022,8 @@
                   <label class="info-label">{{ $t('fixResults.top.samplePreview') }}：</label>
                 </div>
                 <div style="margin-top: 10px;">
-                  <el-table :data="fixResultsRow.sampleList" max-height="650" border style="width: 100%; border-radius: 8px;">
+                  <el-table :data="fixResultsRow.sampleList" max-height="650" border
+                    style="width: 100%; border-radius: 8px;">
                     <template slot="empty">
                       <el-empty :description="$t('noData')"></el-empty>
                     </template>
@@ -1025,7 +1039,8 @@
           </div>
 
           <div class="right-section" style="width: 32%;">
-            <el-card class="box-card ai-review-card" :class="`ai-review-card--${fixResultsAiReviewStatus}`" shadow="never">
+            <el-card class="box-card ai-review-card" :class="`ai-review-card--${fixResultsAiReviewStatus}`"
+              shadow="never">
               <div class="ai-review-card__header">
                 <div class="ai-review-card__title">
                   <svg-icon icon-class="home-aiAuto" style="font-size: 24px;"></svg-icon>
@@ -1059,7 +1074,8 @@
                   <div class="ai-review-card__label">安全分级</div>
                   <div class="ai-review-card__tag-wrap">
                     <el-tag v-if="fixResultsRow.securityLevelName" plain
-                      :style="getRiskStyle(Number(fixResultsRow.securityLevel))">{{ fixResultsRow.securityLevelName }}</el-tag>
+                      :style="getRiskStyle(Number(fixResultsRow.securityLevel))">{{ fixResultsRow.securityLevelName
+                      }}</el-tag>
                     <el-tag v-else plain :style="getRiskStyle()">{{ '--' }}</el-tag>
                   </div>
                 </div>
@@ -1437,15 +1453,15 @@ export default {
         { label: '内容摘要', prop: 'fileContext' },
         { label: '分类', prop: 'categoryName', width: '300' },
         { label: '安全分级', prop: 'securityLevelName', width: '150' },
+        { label: '自动审查', prop: 'confidenceLevel', width: '130' },
         { label: '确认状态', prop: 'confirm', width: '150' },
         { label: '归类原因', prop: 'classificationReasons', width: '150' },
-        { label: '置信度', prop: 'confidenceLevel', width: '100' },
         { label: '置信度分数', prop: 'confidenceScore', width: '120' },
         { label: '敏感数据', prop: 'sensitiveDataName', width: '150' },
         { label: '最后修改时间', prop: 'fileModifiedTime', width: '180' },
         { label: '文件上传时间', prop: 'fileUploadTime', width: '180' }
       ],
-      checkedUnstructuredColumns: ['fileName', 'fileSizeName', 'fileType', 'fileContext', 'categoryName', 'securityLevelName', 'confirm'],
+      checkedUnstructuredColumns: ['fileName', 'fileSizeName', 'fileType', 'fileContext', 'categoryName', 'securityLevelName', 'confidenceLevel'],
       selectedFileNodes: [],
 
       levelOptions: [], // 安全分级下拉选项数据
@@ -1462,6 +1478,7 @@ export default {
         { label: '分类', prop: 'categoryName', width: '300' },
         { label: '安全分级', prop: 'securityLevelName', width: '150' },
         { label: '样本', prop: 'sampleData', width: '150' },
+        { label: '自动审查', prop: 'confidenceLevel', width: '130' },
         { label: '确认状态', prop: 'confirmStatus', width: '120' },
         { label: '所属库', prop: 'databaseName' },
         { label: '所属表', prop: 'tableName' },
@@ -1472,11 +1489,10 @@ export default {
         { label: '个保合规', prop: 'piiDetectionName' },
         { label: '识别过程', prop: 'detectionProcess' },
         { label: '置信度分数', prop: 'confidenceScore' },
-        { label: '置信度', prop: 'confidenceLevel' },
         { label: '敏感数据', prop: 'sensitiveDataName' },
         { label: '样本特征', prop: 'regularExpression' }
       ],
-      checkedFieldColumns: ['fieldName', 'fieldType', 'fieldRemark', 'craftRemark', 'categoryName', 'securityLevelName', 'sampleData', 'confirmStatus'],
+      checkedFieldColumns: ['fieldName', 'fieldType', 'fieldRemark', 'craftRemark', 'categoryName', 'securityLevelName', 'sampleData', 'confidenceLevel'],
       selectedFieldNodes: [],
     };
   },
@@ -1501,32 +1517,16 @@ export default {
       return `${this.fixResultsConfidencePercentage}%`;
     },
     fixResultsAiReviewStatus() {
-      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
-      if (!confidenceLevel) {
-        return 'info';
-      }
-      return confidenceLevel == '低' ? 'warning' : 'success';
+      return this.getAiReviewTagType(this.fixResultsRow);
     },
     fixResultsAiReviewTagType() {
-      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
-      if (!confidenceLevel) {
-        return 'info';
-      }
-      return confidenceLevel == '低' ? 'warning' : 'success';
+      return this.getAiReviewTagType(this.fixResultsRow);
     },
     fixResultsAiReviewLabel() {
-      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
-      if (!confidenceLevel) {
-        return '待审查';  
-      }
-      return confidenceLevel == '低' ? '需人工介入' : 'AI审核通过';
+      return this.getAiReviewLabel(this.fixResultsRow);
     },
     fixResultsAiReviewIcon() {
-      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
-      if (!confidenceLevel) {
-        return 'el-icon-info';
-      }
-      return confidenceLevel == '低' ? 'el-icon-warning-outline' : 'el-icon-check';
+      return this.getAiReviewIcon(this.fixResultsRow);
     },
     fixResultsProgressColor() {
       const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
@@ -1681,6 +1681,30 @@ export default {
   mounted() {
   },
   methods: {
+    getAiReviewConfidenceLevel(row) {
+      return String((row && row.confidenceLevel) || '');
+    },
+    getAiReviewTagType(row) {
+      const confidenceLevel = this.getAiReviewConfidenceLevel(row);
+      if (!confidenceLevel) {
+        return 'info';
+      }
+      return confidenceLevel === '低' ? 'warning' : 'success';
+    },
+    getAiReviewIcon(row) {
+      const confidenceLevel = this.getAiReviewConfidenceLevel(row);
+      if (!confidenceLevel) {
+        return 'el-icon-info';
+      }
+      return confidenceLevel === '低' ? 'el-icon-warning-outline' : 'el-icon-check';
+    },
+    getAiReviewLabel(row) {
+      const confidenceLevel = this.getAiReviewConfidenceLevel(row);
+      if (!confidenceLevel) {
+        return '待审查';
+      }
+      return confidenceLevel === '低' ? '需人工介入' : 'AI审核通过';
+    },
     // ======== 新增 fixResults 抽屉 methods 开始 ========
     openFixResultsDrawer(row) {
       const projectId = this.resolveProjectId(row);
@@ -3910,11 +3934,25 @@ export default {
   font-size: 14px;
 }
 
+.table-ai-review-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.table-ai-review-tag i {
+  font-size: 14px;
+}
+
 .fix-results-container .ai-review-card__body {
   padding: 20px;
 }
 
-.fix-results-container .ai-review-card__section + .ai-review-card__section {
+.fix-results-container .ai-review-card__section+.ai-review-card__section {
   margin-top: 18px;
 }
 

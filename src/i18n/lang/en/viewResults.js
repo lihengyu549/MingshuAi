@@ -79,7 +79,7 @@ export default {
     piiReview: 'PIPL Compliance Review',
     detectionProcess: 'Detection Process',
     confidenceScore: 'Confidence Score',
-    confidenceLevel: 'Confidence Level',
+    confidenceLevel: 'Auto Review',
     securityLevel: 'Security Level',
     sensitiveData: 'Sensitive Data',
     sampleFeature: 'Sample Feature',

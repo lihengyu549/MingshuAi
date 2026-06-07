@@ -296,6 +296,12 @@
                       $t('viewResults.options.confirm.unconfirmed') :
                       $t('viewResults.options.confirm.confirmed') }}</el-tag>
                   </template>
+                  <template v-else-if="item.prop === 'confidenceLevel'">
+                    <el-tag :type="getAiReviewTagType(scope.row)" effect="plain" class="table-ai-review-tag">
+                      <i :class="getAiReviewIcon(scope.row)"></i>
+                      <span>{{ getAiReviewLabel(scope.row) }}</span>
+                    </el-tag>
+                  </template>
                   <template v-else-if="item.prop === 'sampleData'">
                     <el-tooltip placement="bottom" effect="light">
                       <div slot="content">
@@ -764,6 +770,7 @@ export default {
         { labelKey: "category", prop: "categoryName", width: "300" },
         { labelKey: "securityLevel", prop: "securityLevelName", width: "150" },
         { labelKey: "sampleData", prop: "sampleData", width: "100" },
+        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "130" },
         { labelKey: "confirm", prop: "confirm", width: "120" },
         { labelKey: "database", prop: "databaseName", width: "150" },
         { labelKey: "table", prop: "tableName", width: "150" },
@@ -774,7 +781,6 @@ export default {
         { labelKey: "piiReview", prop: "piiDetectionName", width: "250" },
         { labelKey: "detectionProcess", prop: "detectionProcess", width: "250" },
         { labelKey: "confidenceScore", prop: "confidenceScore", width: "100" },
-        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "100" },
         { labelKey: "sensitiveData", prop: "sensitiveDataName", width: "150" },
         { labelKey: "sampleFeature", prop: "regularExpression", width: "150" }
       ],
@@ -786,9 +792,9 @@ export default {
         { labelKey: "fileContext", prop: "fileContext" },
         { labelKey: "category", prop: "categoryName", width: "300" },
         { labelKey: "securityLevel", prop: "securityLevelName", width: "150" },
+        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "130" },
         { labelKey: "confirm", prop: "confirm", width: "120" },
         { labelKey: "classificationReason", prop: "classificationReasons", width: "150" },
-        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "100" },
         { labelKey: "confidenceScore", prop: "confidenceScore", width: "100" },
         { labelKey: "sensitiveData", prop: "sensitiveDataName", width: "150" },
         { labelKey: "lastModifiedTime", prop: "fileModifiedTime", width: "180" },
@@ -939,32 +945,13 @@ export default {
       return `${this.fixResultsConfidencePercentage}%`;
     },
     fixResultsAiReviewStatus() {
-      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
-      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
-        return 'info';
-      }
-      return confidenceLevel === '低' ? 'warning' : 'success';
+      return this.getAiReviewTagType(this.fixResultsRow);
     },
     fixResultsAiReviewTagType() {
-      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
-      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
-        return 'info';
-      }
-      return confidenceLevel === '低' ? 'warning' : 'success';
-    },
-    fixResultsAiReviewLabel() {
-      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
-      if (!confidenceLevel) {
-        return '待审查';
-      }
-      return confidenceLevel === '低' ? '需人工介入' : 'AI审核通过';
+      return this.getAiReviewTagType(this.fixResultsRow);
     },
     fixResultsAiReviewIcon() {
-      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
-      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
-        return 'el-icon-info';
-      }
-      return confidenceLevel === '低' ? 'el-icon-warning-outline' : 'el-icon-check';
+      return this.getAiReviewIcon(this.fixResultsRow);
     },
     fixResultsProgressColor() {
       const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
@@ -982,11 +969,7 @@ export default {
       return row.dynamicGrading || '--';
     },
     fixResultsAiReviewLabel() {
-      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
-      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
-        return '待审查';
-      }
-      return confidenceLevel === '低' ? '需人工介入' : 'AI审核通过';
+      return this.getAiReviewLabel(this.fixResultsRow);
     },
     // 列设置列表（根据类型返回不同列表）
     setList() {
@@ -1146,8 +1129,8 @@ export default {
     initDefaultColumns() {
       // 设置默认展示的列（与ProtectTableField保持一致）
       this.checkedColumnProps = this.isFileSource
-        ? ['fileName', 'fileSizeName', 'fileType', 'fileContext', 'categoryName', 'securityLevelName', 'confirm']
-        : ['fieldName', 'fieldType', 'fieldRemark', 'craftRemark', 'categoryName', 'securityLevelName', 'sampleData', 'confirm'];
+        ? ['fileName', 'fileSizeName', 'fileType', 'fileContext', 'categoryName', 'securityLevelName', 'confidenceLevel']
+        : ['fieldName', 'fieldType', 'fieldRemark', 'craftRemark', 'categoryName', 'securityLevelName', 'sampleData', 'confidenceLevel'];
       this.checkAll = false;
     },
 
@@ -1286,6 +1269,30 @@ export default {
     },
     handleSearch(val) {
       this.$refs.treeSelectSec.filter(val);
+    },
+    getAiReviewConfidenceLevel(row) {
+      return String((row && row.confidenceLevel) || '');
+    },
+    getAiReviewTagType(row) {
+      const confidenceLevel = this.getAiReviewConfidenceLevel(row);
+      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
+        return 'info';
+      }
+      return confidenceLevel === '低' ? 'warning' : 'success';
+    },
+    getAiReviewIcon(row) {
+      const confidenceLevel = this.getAiReviewConfidenceLevel(row);
+      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
+        return 'el-icon-info';
+      }
+      return confidenceLevel === '低' ? 'el-icon-warning-outline' : 'el-icon-check';
+    },
+    getAiReviewLabel(row) {
+      const confidenceLevel = this.getAiReviewConfidenceLevel(row);
+      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
+        return '待审查';
+      }
+      return confidenceLevel === '低' ? '需人工介入' : 'AI审核通过';
     },
     handleCheckAllChange(val) {
       this.checkedColumnProps = val ? this.setList.map(item => item.prop) : [];
@@ -2595,6 +2602,20 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.table-ai-review-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.table-ai-review-tag i {
+  font-size: 14px;
 }
 
 .content-header {}
