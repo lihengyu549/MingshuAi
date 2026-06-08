@@ -211,7 +211,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('hierarchicalTask.form.dataSourceName')" prop="id" :rules="rules.id">
-              <el-select v-model="form.id" clearable @change="projectChangeEdit($event)">
+              <el-select :disabled="editIsFlag" v-model="form.id" clearable @change="projectChangeEdit($event)">
                 <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.sourceName" :value="item.id">
                 </el-option>
               </el-select>
