@@ -1,5 +1,5 @@
 <template>
-  <el-drawer v-bind="$attrs" v-on="$listeners" :title="title" :visible="visible" direction="rtl" :size="size" :wrapper-closable="false">
+  <el-drawer v-bind="$attrs" v-on="$listeners" :title="title" :visible="visible" direction="rtl" :size="size" :wrapper-closable="wrapperClosable">
     <slot name="body">
     </slot>
     <slot name="footer">
@@ -24,6 +24,10 @@ export default {
       type: String,
       default: '40%'
     },
+    wrapperClosable: {
+      type: Boolean,
+      default: false
+    }
   },
   data() {
     return {

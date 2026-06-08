@@ -387,7 +387,7 @@
     </el-dialog>
 
     <Drawer :title="fixResultsTitleText" :visible.sync="fixResultsDrawerVisible" direction="rtl" size="60%"
-      :destroy-on-close="true" custom-class="fix-results-drawer">
+      :destroy-on-close="true" custom-class="fix-results-drawer" :wrapperClosable="true">
       <div slot="body" class="fix-results-container" v-loading="fixResultsLoading" v-if="fixResultsRow">
         <el-card class="top-section" shadow="never"
           style="margin-bottom: 20px; border-radius: 10px; border: 1px solid #ebeef5;">
