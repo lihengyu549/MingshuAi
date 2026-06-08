@@ -858,7 +858,6 @@ export default {
 }
 
 .security-level {
-    color: white !important;
     font-size: 12px !important;
 }
 
