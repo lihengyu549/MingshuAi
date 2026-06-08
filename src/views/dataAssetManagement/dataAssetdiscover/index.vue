@@ -94,6 +94,7 @@
         </el-form-item>
         <el-form-item :label="$t('dataAssetdiscover.ipScope')" prop="ipScope">
           <el-input v-model="addOrEditFormData.ipScope" maxlength="50" :placeholder="$t('dataAssetdiscover.ipScope')"></el-input>
+          <div style="font-size: 12px; font-style: italic;">{{ $t('dataAssetdiscover.ipScopeExample') }}</div>
         </el-form-item>
         <el-form-item :label="$t('dataAssetdiscover.ports')" prop="ports">
           <el-input v-model="addOrEditFormData.ports" maxlength="50" :placeholder="$t('dataAssetdiscover.ports')"></el-input>

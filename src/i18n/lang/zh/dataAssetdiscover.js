@@ -17,6 +17,7 @@ export default {
   editTask: "编辑任务",
   stopTask: "终止任务",
   scanResult: "扫描结果",
+  ipScopeExample: "范围示例:单个IP 192.168.1.1，IP段192.168.1.1-192.168.1.100，多个地址以英文逗号隔开",
   portsExample: "端口范围示例：0-65535，多个端口以英文逗号隔开",
   scheduleTime: "计划时间",
   monday: "周一",

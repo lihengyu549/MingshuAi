@@ -16,7 +16,7 @@ export default {
   operation: "Operation",
   editTask: "Edit Task",
   stopTask: "Stop Task",
-  scanResult: "Scan Result",
+  ipScopeExample: "Range example: Single IP 192.168.1.1, IP range 192.168.1.1-192.168.1.100, multiple addresses separated by commas",
   portsExample: "Port range example: 0-65535, multiple ports separated by commas",
   scheduleTime: "Schedule Time",
   monday: "Monday",
