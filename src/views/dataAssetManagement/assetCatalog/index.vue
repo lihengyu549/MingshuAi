@@ -1564,14 +1564,24 @@ export default {
       return 'el-icon-d-caret';
     },
     currentTableRemark() {
-      if (this.currentNodeData?.tableRemark) {
-        return this.currentNodeData.tableRemark;
+      const currentTableId = this.currentNodeData?.row?.tableId || this.currentNodeData?.id;
+      const currentTableName = this.currentNodeData?.row?.tableName || this.currentNodeData?.label;
+      const matchedTable = (this.dataAll || []).find(item => {
+        const itemTableId = item.tableId || item.id;
+        if (currentTableId !== undefined && currentTableId !== null && itemTableId !== undefined && itemTableId !== null) {
+          return String(itemTableId) === String(currentTableId);
+        }
+        return item.tableName === currentTableName;
+      });
+
+      if (matchedTable?.aiTableRemark) {
+        return matchedTable.aiTableRemark;
       }
-      if (this.currentNodeData?.row?.tableRemark) {
-        return this.currentNodeData.row.tableRemark;
+      if (this.currentNodeData?.row?.aiTableRemark) {
+        return this.currentNodeData.row.aiTableRemark;
       }
-      if (this.filteredDrawerData?.length > 0 && this.filteredDrawerData[0].tableRemark) {
-        return this.filteredDrawerData[0].tableRemark;
+      if (this.currentNodeData?.aiTableRemark) {
+        return this.currentNodeData.aiTableRemark;
       }
       return '暂无表注释信息';
     },

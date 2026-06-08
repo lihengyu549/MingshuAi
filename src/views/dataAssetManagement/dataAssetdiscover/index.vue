@@ -31,7 +31,9 @@
           {{ $t('dataAssetdiscover.deleteTask') }}
         </el-button>
       </el-col>
-      <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
+      <el-button type="info" plain icon="el-icon-refresh" size="medium" @click="handleQuery" style="float: right;">
+        {{ $t('refresh') }}
+      </el-button>
     </el-row>
     <el-card class="table-card" shadow="never">
       <el-table v-loading="loading" height="860px" class="tableBox" :data="proxysList"
