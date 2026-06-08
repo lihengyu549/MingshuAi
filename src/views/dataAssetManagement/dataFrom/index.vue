@@ -341,7 +341,8 @@
       <el-button size="small" type="text" @click="downloadFile" id="btnDownload" icon="el-icon-download">{{
         $t('dataFrom.sampleDownload') }}</el-button>
       <div slot="footer">
-        <el-button type="primary" plain @click="submitFormExcelFn">{{ $t('confirm') }}</el-button>
+        <el-button type="primary" plain @click="submitFormExcelFn" :loading="importDataLoading">{{ $t('confirm')
+        }}</el-button>
         <el-button @click="importcancel">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
@@ -422,7 +423,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer">
-        <el-button type="primary" plain @click="submitFileDirectoryForm">{{ $t('confirm') }}</el-button>
+        <el-button type="primary" plain @click="submitFileDirectoryForm" :loading="fileDirectoryLoading">{{
+          $t('confirm') }}</el-button>
         <el-button @click="fileDirectoryCancel">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
@@ -1290,51 +1292,46 @@ export default {
       this.$message.success(`${res.msg},${flag}${res.data}${this.$t('dataFrom.countSuffix')}`)
     },
     async submitFormExcelFn() {
-      this.$refs["importData"].validate(async valid => {
-        if (valid) {
-          if (!await this.getimortantNameTestingFn()) {
-            return
-          }
-          this.importDataLoading = true
-          const formData = new FormData();
-          if (this.importData.id) {
-            formData.append('id', this.importData.id || '');
-            // updateDatabaseAndTables(data)
-          }
-          // 将文件数组添加到 FormData 对象中
-          if (this.importData.fileList && this.importData.fileList.length) {
-            formData.append('file', this.importData.fileList[0].raw);
-          }
-          formData.append('frameworkNameId', this.importData.categoryId);
-          formData.append('sourceName', this.importData.sourceName);
-          formData.append('businessName', this.importData.businessName);
-          formData.append('businessComment', this.importData.businessComment);
-          formData.append('tabelCheckedName', this.importData.importFile);
-          await importExcel(formData).then(res => {
-            this.messsucc(res, this.$t('dataFrom.importItemCountPrefix'));
-            // this.getList();
-            this.importData.categoryName = ''
-            this.importData.importFile = ''
-            this.importData.sourceName = ''
-            this.importData.categoryId = ''
-            this.importData.fileList = []
-            this.importData.businessName = ''
-            this.importData.businessComment = ''
-            this.resetQuery()
-            this.importData.importShow = false
-            this.importDataLoading = false
-          })
-            .catch((err) => {
-              this.importDataLoading = false
-              this.importData.importFile = ''
-              this.importData.fileList = []
-            })
-          // await this.rulsNameIsRight(this.importData.categoryId, params.name)
+      if (this.importDataLoading) return
 
-        } else {
-          return false
+      this.importDataLoading = true
+      try {
+        const valid = await this.$refs.importData.validate().catch(() => false)
+        if (!valid) return
+        if (!await this.getimortantNameTestingFn()) {
+          return
         }
-      });
+
+        const formData = new FormData();
+        if (this.importData.id) {
+          formData.append('id', this.importData.id || '');
+        }
+        if (this.importData.fileList && this.importData.fileList.length) {
+          formData.append('file', this.importData.fileList[0].raw);
+        }
+        formData.append('frameworkNameId', this.importData.categoryId);
+        formData.append('sourceName', this.importData.sourceName);
+        formData.append('businessName', this.importData.businessName);
+        formData.append('businessComment', this.importData.businessComment);
+        formData.append('tabelCheckedName', this.importData.importFile);
+
+        const res = await importExcel(formData)
+        this.messsucc(res, this.$t('dataFrom.importItemCountPrefix'));
+        this.importData.categoryName = ''
+        this.importData.importFile = ''
+        this.importData.sourceName = ''
+        this.importData.categoryId = ''
+        this.importData.fileList = []
+        this.importData.businessName = ''
+        this.importData.businessComment = ''
+        this.resetQuery()
+        this.importData.importShow = false
+      } catch (err) {
+        this.importData.importFile = ''
+        this.importData.fileList = []
+      } finally {
+        this.importDataLoading = false
+      }
     },
     handleClose() {
       this.drawerShow = false
@@ -1467,57 +1464,52 @@ export default {
     },
     /** 提交按钮 */
     async submitForm() {
-      if (this.submitLoading) return;
-      this.submitLoading = true;
+      if (this.submitLoading) return
+      this.submitLoading = true
       try {
-        await this.$refs["form"].validate(async valid => {
-          let data = JSON.parse(JSON.stringify(this.form))
-          delete data.projectName
-          if (!Array.isArray(data.targetDatabase)) {
-            let str = data.targetDatabase
-            data.targetDatabase = str.trim() // 去除字符串首尾的空白字符
-              .replace(/^"|"$/g, '') // 移除首尾的引号
-              .split(',') // 按逗号分割字符串
-              .filter(Boolean); // 过滤掉空字符串
-          }
-          data.targetDatabase = JSON.stringify(data.targetDatabase)
-          data.connectionType = this.connectionType
-          data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
-          console.log(data);
-          if (!this.editIsFlag && !data.tables) {
-            this.$message({ message: this.$t('dataFrom.scanContentRequired'), type: 'warning' })
-            this.submitLoading = false;
-            return
-          } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
-            this.$message({ message: this.$t('dataFrom.scanContentRequired'), type: 'warning' })
-            this.submitLoading = false;
-            return
-          }
-          if (valid) {
-            if (!await this.getNameTestingFn()) {
-              this.submitLoading = false;
-              return
-            }
-            if (this.form.id != null) {
-              data.id = this.form.id
-              await updateDatabaseAndTables(data)
-              this.$modal.msgSuccess(this.$t('editSuccess'));
-              this.open = false;
-              this.getList();
-            } else {
-              await saveDatabaseAndTables(data)
-              this.$modal.msgSuccess(this.$t('addSuccess'));
-              this.open = false;
-              this.getList();
-            }
-          } else {
-            this.submitLoading = false;
-          }
-        });
+        const valid = await this.$refs.form.validate().catch(() => false)
+        if (!valid) return
+
+        let data = JSON.parse(JSON.stringify(this.form))
+        delete data.projectName
+        if (!Array.isArray(data.targetDatabase)) {
+          let str = data.targetDatabase
+          data.targetDatabase = str.trim()
+            .replace(/^"|"$/g, '')
+            .split(',')
+            .filter(Boolean);
+        }
+        data.targetDatabase = JSON.stringify(data.targetDatabase)
+        data.connectionType = this.connectionType
+        data.targetIpPort = this.form.targetIp + ":" + this.form.targetPort
+
+        if (!this.editIsFlag && !data.tables) {
+          this.$message({ message: this.$t('dataFrom.scanContentRequired'), type: 'warning' })
+          return
+        } else if (this.editIsFlag && data.targetDatabase == '[]' || this.editIsFlag && !data.targetDatabase) {
+          this.$message({ message: this.$t('dataFrom.scanContentRequired'), type: 'warning' })
+          return
+        }
+
+        if (!await this.getNameTestingFn()) {
+          return
+        }
+        if (this.form.id != null) {
+          data.id = this.form.id
+          await updateDatabaseAndTables(data)
+          this.$modal.msgSuccess(this.$t('editSuccess'));
+          this.open = false;
+          this.getList();
+        } else {
+          await saveDatabaseAndTables(data)
+          this.$modal.msgSuccess(this.$t('addSuccess'));
+          this.open = false;
+          this.getList();
+        }
       } catch (error) {
         console.error('提交表单出错:', error);
       } finally {
-        this.submitLoading = false;
+        this.submitLoading = false
       }
     },
     /** 删除按钮操作 */
@@ -1936,44 +1928,41 @@ export default {
     },
 
     async submitFileDirectoryForm() {
-      this.$refs["fileDirectoryForm"].validate(async valid => {
-        if (valid) {
-          if (!await this.checkFileDirectoryNameFn()) {
-            this.fileDirectoryLoading = false
-            return
-          }
-          this.fileDirectoryLoading = true
-          // TODO: 调用API保存文件目录数据
-          const formData = new FormData();
-          formData.append('sourceName', this.fileDirectoryData.sourceName);
-          formData.append('businessName', this.fileDirectoryData.businessName);
-          formData.append('businessComment', this.fileDirectoryData.businessComment);
+      if (this.fileDirectoryLoading) return
 
-          if (this.fileDirectoryData.id) {
-            formData.append('id', this.fileDirectoryData.id);
-          }
-
-          // 添加所有上传的文件到FormData
-          this.fileDirectoryData.uploadFiles.forEach((file, index) => {
-            formData.append('files', file.raw);
-          });
-
-          // 这里应该调用实际的API，暂时模拟成功
-          addOrUpdateFileDataList(formData).then(res => {
-            if (res.code == 200) {
-              this.$modal.msgSuccess(this.fileDirectoryData.id ? this.$t('editSuccess') : this.$t('addSuccess'));
-              this.fileDirectoryData.show = false
-              this.fileDirectoryLoading = false
-              this.resetFileDirectoryForm()
-              this.getList()
-            }
-          }).catch(() => {
-            this.fileDirectoryLoading = false
-          })
-        } else {
-          return false
+      this.fileDirectoryLoading = true
+      try {
+        const valid = await this.$refs.fileDirectoryForm.validate().catch(() => false)
+        if (!valid) return
+        if (!await this.checkFileDirectoryNameFn()) {
+          return
         }
-      })
+
+        const formData = new FormData();
+        formData.append('sourceName', this.fileDirectoryData.sourceName);
+        formData.append('businessName', this.fileDirectoryData.businessName);
+        formData.append('businessComment', this.fileDirectoryData.businessComment);
+
+        if (this.fileDirectoryData.id) {
+          formData.append('id', this.fileDirectoryData.id);
+        }
+
+        this.fileDirectoryData.uploadFiles.forEach(file => {
+          formData.append('files', file.raw);
+        });
+
+        const res = await addOrUpdateFileDataList(formData)
+        if (res.code == 200) {
+          this.$modal.msgSuccess(this.fileDirectoryData.id ? this.$t('editSuccess') : this.$t('addSuccess'));
+          this.fileDirectoryData.show = false
+          this.resetFileDirectoryForm()
+          this.getList()
+        }
+      } catch (error) {
+        console.error('提交文件目录表单出错:', error);
+      } finally {
+        this.fileDirectoryLoading = false
+      }
     },
 
     fileDirectoryCancel() {
@@ -2001,61 +1990,49 @@ export default {
     async submitFileShareServerForm() {
       if (this.fileShareServerSubmitLoading) return
 
-      this.$refs["fileShareServerForm"].validate(async valid => {
-        if (valid) {
-          if (!await this.checkFileShareServerNameFn()) {
-            this.fileShareServerSubmitLoading = false
-            return
-          }
-
-          this.fileShareServerSubmitLoading = true
-
-          // TODO: 调用API保存文件共享服务器数据
-          let fileDataListArray = [];
-          if (this.fileShareServerForm.fileDataList) {
-            try {
-              let parsed = this.fileShareServerForm.fileDataList;
-              if (typeof parsed === 'string') {
-                parsed = JSON.parse(parsed);
-              }
-              fileDataListArray = parsed;
-            } catch (e) {
-              console.error(e);
-            }
-          }
-
-          const params = {
-            ...this.fileShareServerForm,
-            targetIpPort: this.fileShareServerForm.targetIp + ":" + this.fileShareServerForm.targetPort,
-            fileDataList: fileDataListArray,
-            sourceType: 'FILE_SERVER', // 如果后端需要区分数据源类型
-          }
-
-          if (this.fileShareServerForm.id) {
-            params.id = this.fileShareServerForm.id;
-            updateFileServer(params).then(res => {
-              this.$modal.msgSuccess(this.$t('editSuccess'));
-              this.fileShareServerOpen = false
-              this.fileShareServerSubmitLoading = false
-              this.getList()
-            }).catch(() => {
-              this.fileShareServerSubmitLoading = false
-            })
-          } else {
-            saveFileServer(params).then(res => {
-              this.$modal.msgSuccess(this.$t('addSuccess'));
-              this.fileShareServerOpen = false
-              this.fileShareServerSubmitLoading = false
-              this.getList()
-            }).catch(() => {
-              this.fileShareServerSubmitLoading = false
-            })
-          }
-        } else {
-          this.fileShareServerSubmitLoading = false
-          return false
+      this.fileShareServerSubmitLoading = true
+      try {
+        const valid = await this.$refs.fileShareServerForm.validate().catch(() => false)
+        if (!valid) return
+        if (!await this.checkFileShareServerNameFn()) {
+          return
         }
-      })
+
+        let fileDataListArray = [];
+        if (this.fileShareServerForm.fileDataList) {
+          try {
+            let parsed = this.fileShareServerForm.fileDataList;
+            if (typeof parsed === 'string') {
+              parsed = JSON.parse(parsed);
+            }
+            fileDataListArray = parsed;
+          } catch (e) {
+            console.error(e);
+          }
+        }
+
+        const params = {
+          ...this.fileShareServerForm,
+          targetIpPort: this.fileShareServerForm.targetIp + ":" + this.fileShareServerForm.targetPort,
+          fileDataList: fileDataListArray,
+          sourceType: 'FILE_SERVER',
+        }
+
+        if (this.fileShareServerForm.id) {
+          params.id = this.fileShareServerForm.id;
+          await updateFileServer(params)
+          this.$modal.msgSuccess(this.$t('editSuccess'));
+        } else {
+          await saveFileServer(params)
+          this.$modal.msgSuccess(this.$t('addSuccess'));
+        }
+        this.fileShareServerOpen = false
+        this.getList()
+      } catch (error) {
+        console.error('提交文件共享服务器表单出错:', error);
+      } finally {
+        this.fileShareServerSubmitLoading = false
+      }
     },
 
     fileShareServerCancel() {
