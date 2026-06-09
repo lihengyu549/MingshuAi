@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container" v-loading="Loading">
-    <el-row :gutter="20">
+  <div class="app-container job-monitoring-page" v-loading="Loading">
+    <el-row :gutter="20" class="page-layout">
       <!-- 左侧卡片：树形菜单 -->
       <el-col :span="5" :xs="24">
         <el-card class="left-card" shadow="never">
@@ -11,10 +11,10 @@
               </el-option>
             </el-select>
           </div>
-          <div class="head-container" v-loading="treeLoading">
+          <div class="head-container tree-container" v-loading="treeLoading">
             <el-input class="serachInput" v-model="filterName" :placeholder="$t('jobMonitoring.searchTreeNodes')"
               clearable />
-            <el-tree :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
+            <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
               :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
               node-key="id" highlight-current @node-click="handleNodeClick" :render-content="renderContent">
             </el-tree>
@@ -23,124 +23,155 @@
       </el-col>
       <!-- 右侧卡片：搜索表单和数据表格 -->
       <el-col :span="19" :xs="24">
-        <el-card class="search-card" shadow="never">
-          <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true"
-            v-show="showSearch">
-            <el-form-item :label="$t('jobMonitoring.subclassName')" prop="name">
-              <el-input v-model="queryParams.name" @input="inputSearch" :placeholder="$t('jobMonitoring.subclassName')"
-                clearable @keyup.enter.native="handleQuery" />
-            </el-form-item>
-            <el-form-item :label="$t('jobMonitoring.confirmProtectMethod')" prop="confirmProtectMethod">
-              <el-select v-model="queryParams.confirmProtectMethod" @change="selectProjectIdChange" multiple
-                :placeholder="$t('jobMonitoring.confirmProtectMethod')">
-                <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
-                  :value="item.dictLabel">
-                </el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item :label="$t('jobMonitoring.dataSource')" prop="dataSourceId">
-              <el-select v-model="queryParams.dataSourceId" clearable @change="dataSourceIdIdChange"
-                :placeholder="$t('jobMonitoring.dataSource')" :loading="loading">
-                <el-option v-for="item in sourceList" :key="item.value" :label="translateDataSource(item.label)"
-                  :value="item.value">
-                </el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item :label="$t('jobMonitoring.securityLevel')" prop="levelId">
-              <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple
-                :placeholder="$t('jobMonitoring.securityLevel')">
-                <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
-                </el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item :label="$t('jobMonitoring.dataOwner')" prop="dataOwner">
-              <el-select v-model="queryParams.dataOwner" @change="selectProjectIdChange" clearable
-                :placeholder="$t('jobMonitoring.dataOwner')">
-                <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
-                </el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item :label="$t('jobMonitoring.baseParent')" prop="baseParent">
-              <el-input v-model="queryParams.baseParent" @input="inputSearch"
-                :placeholder="$t('jobMonitoring.baseParent')" clearable @keyup.enter.native="handleQuery" />
-            </el-form-item>
-          </el-form>
-        </el-card>
-        <div class="search-actions">
-          <el-button type="primary" plain icon="el-icon-plus" :disabled="isBuiltInSource(dataSource)" size="medium"
-            @click="addFn">
-            {{ $t('add') }}
-          </el-button>
-          <el-button type="danger" plain icon="el-icon-close" :disabled="isBuiltInSource(dataSource)" size="medium"
-            @click="enabledFn('delete')">
-            {{ $t('delete') }}
-          </el-button>
-        </div>
+        <el-collapse-transition>
+          <div v-show="showSearch" class="search-wrapper">
+            <el-card class="searchCard" shadow="never">
+              <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true">
+                <el-form-item :label="$t('jobMonitoring.subclassName')" prop="name">
+                  <el-input v-model="queryParams.name" @input="inputSearch" :placeholder="$t('jobMonitoring.subclassName')"
+                    clearable @keyup.enter.native="handleQuery" />
+                </el-form-item>
+                <el-form-item :label="$t('jobMonitoring.confirmProtectMethod')" prop="confirmProtectMethod">
+                  <el-select v-model="queryParams.confirmProtectMethod" @change="selectProjectIdChange" multiple
+                    :placeholder="$t('jobMonitoring.confirmProtectMethod')">
+                    <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="item.dictLabel"
+                      :value="item.dictLabel">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item :label="$t('jobMonitoring.dataSource')" prop="dataSourceId">
+                  <el-select v-model="queryParams.dataSourceId" clearable @change="dataSourceIdIdChange"
+                    :placeholder="$t('jobMonitoring.dataSource')" :loading="loading">
+                    <el-option v-for="item in sourceList" :key="item.value" :label="translateDataSource(item.label)"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item :label="$t('jobMonitoring.securityLevel')" prop="levelId">
+                  <el-select v-model="queryParams.levelId" @change="selectProjectIdChange" multiple
+                    :placeholder="$t('jobMonitoring.securityLevel')">
+                    <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item :label="$t('jobMonitoring.dataOwner')" prop="dataOwner">
+                  <el-select v-model="queryParams.dataOwner" @change="selectProjectIdChange" clearable
+                    :placeholder="$t('jobMonitoring.dataOwner')">
+                    <el-option v-for="item in userList" :key="item.id" :label="item.userName" :value="item.userName">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item :label="$t('jobMonitoring.baseParent')" prop="baseParent">
+                  <el-input v-model="queryParams.baseParent" @input="inputSearch"
+                    :placeholder="$t('jobMonitoring.baseParent')" clearable @keyup.enter.native="handleQuery" />
+                </el-form-item>
+              </el-form>
+            </el-card>
+          </div>
+        </el-collapse-transition>
+
         <el-card class="table-card" shadow="never">
-          <el-table v-loading="loading" :data="protectTableFieldList" height="860px" ref="tableRef" class="tableBox">
-            <template slot="empty">
-              <el-empty :description="$t('noData')"></el-empty>
-            </template>
-            <el-table-column type="selection" width="60" align="center">
-            </el-table-column>
-            <el-table-column :label="$t('jobMonitoring.subclassName')" align="left" prop="attachData"
-              show-overflow-tooltip>
-              <template slot-scope="scope">
-                <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />
-                {{ scope.row.attachData }}
-              </template>
-            </el-table-column>
-            <el-table-column :label="$t('jobMonitoring.securityLevel')" align="center" width="200" show-overflow-tooltip>
-              <template slot-scope="scope">
-                <el-tag :style="getRiskStyle(Number(scope.row.minSecurityLevel))">
-                  {{ scope.row.securityLevelName }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column :label="$t('jobMonitoring.suggestProtectMethod')" prop="protectMethodName" width="200">
-              <template slot="header">
-                <div style="text-align: center;">{{ $t('jobMonitoring.suggestProtectMethod') }}</div>
-              </template>
-              <template slot-scope="scope">
-                <el-tag class="tagsBox custom-plain-tag" v-for="(item, index) in scope.row.protectMethodNameList"
-                  :key="item + index" plain>
-                  {{ item }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column :label="$t('jobMonitoring.dataOwner')" align="center" width="150" prop="dataOwner"
-              show-overflow-tooltip />
-            <el-table-column :label="$t('jobMonitoring.confirmProtectMethod')" prop="confirmProtectMethod" width="200">
-              <template slot="header">
-                <div style="text-align: center;">{{ $t('jobMonitoring.confirmProtectMethod') }}</div>
-              </template>
-              <template slot-scope="scope">
-                <el-tag class="tagsBox custom-plain-tag" v-for="item in scope.row.confirmProtectMethodList" :key="item"
-                  plain>
-                  {{ item }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <!-- <el-table-column label="来源" align="center" prop="dataSource" show-overflow-tooltip /> -->
-            <el-table-column :label="$t('jobMonitoring.baseParent')" align="center" width="200" prop="baseParent" />
-            <el-table-column :label="$t('operation')" align="center" width="180">
-              <template slot-scope="scope">
-                <el-button type="text" size="medium"
-                  :disabled="(isBuiltInSource(scope.row.dataSource) || scope.row.dataOwner !== $store.state.user.name) && !$store.state.user.roles.includes('admin')"
-                  @click="editFn(scope.row)">
-                  {{ $t('edit') }}
+          <div slot="header" class="table-card-header">
+            <div class="content-header">
+              <div class="content-header-main">
+                <span class="content-title">
+                  <svg-icon icon-class="表格" style="font-size: 20px;" />
+                  {{ headerTitle }}
+                </span>
+                <div class="content-count">{{ headerResultText }}</div>
+                <div class="content-desc">{{ headerRemark }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-card-content">
+            <div class="table-toolbar">
+              <div class="toolbar-group">
+                <el-button type="primary" plain icon="el-icon-plus" :disabled="isBuiltInSource(dataSource)" size="medium"
+                  @click="addFn">
+                  {{ $t('add') }}
                 </el-button>
-                <el-button type="text" size="medium" @click="lookFn(scope.row)">
-                  {{ $t('view') }}
+                <el-button type="danger" plain icon="el-icon-close" :disabled="isBuiltInSource(dataSource)" size="medium"
+                  @click="enabledFn('delete')">
+                  {{ $t('delete') }}
                 </el-button>
-                <el-button type="text" size="medium" @click="dataFn(scope.row)">
-                  {{ $t('jobMonitoring.dataBenchmark') }}
+              </div>
+              <div class="toolbar-group toolbar-group-right">
+                <el-button type="text" size="medium" @click="toggleFilters" style="color: #7c8592;">
+                  <svg-icon icon-class="过滤" />
+                  {{ showSearch ? '收起筛选' : '展开筛选' }}
                 </el-button>
+                <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
+                  <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{
+                    $t('selectAll') }}</el-checkbox>
+                  <el-checkbox-group v-model="checkedColumnProps" @change="handleCheckedCitiesChange"
+                    class="checkboxGroup"
+                    style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
+                    <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item.prop" :key="item.prop">{{
+                      item.label }}</el-checkbox>
+                  </el-checkbox-group>
+                  <el-button type="text" size="medium" icon="el-icon-s-tools" slot="reference"
+                    style="color: #7c8592;">{{ $t('columnSettings') }}</el-button>
+                </el-popover>
+              </div>
+            </div>
+            <el-table class="tableBox" style="flex: 1;" height="100%" v-loading="loading"
+              :key="checkedColumnProps.join(',')" :data="protectTableFieldList" ref="tableRef">
+              <template slot="empty">
+                <el-empty :description="$t('noData')"></el-empty>
               </template>
-            </el-table-column>
-          </el-table>
-          <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
-            :page-size.sync="queryParams.pageSize" @pagination="getList" />
+              <el-table-column type="selection" width="60" align="center" />
+              <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label"
+                :align="item.prop === 'attachData' ? 'left' : 'center'" :prop="item.prop" :width="item.width"
+                show-overflow-tooltip>
+                <template slot-scope="scope">
+                  <template v-if="item.prop === 'attachData'">
+                    <span class="subclass-name-cell" :class="{ disabled: !canEditRow(scope.row) }"
+                      @click="handleNameClick(scope.row)">
+                      <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />
+                      {{ scope.row.attachData }}
+                    </span>
+                  </template>
+                  <template v-else-if="item.prop === 'minSecurityLevel'">
+                    <el-tag :style="getRiskStyle(Number(scope.row.minSecurityLevel))">
+                      {{ scope.row.securityLevelName }}
+                    </el-tag>
+                  </template>
+                  <template v-else-if="item.prop === 'protectMethodName'">
+                    <el-tag class="tagsBox custom-plain-tag" v-for="(protectItem, index) in scope.row.protectMethodNameList"
+                      :key="protectItem + index" plain>
+                      {{ protectItem }}
+                    </el-tag>
+                  </template>
+                  <template v-else-if="item.prop === 'confirmProtectMethod'">
+                    <el-tag class="tagsBox custom-plain-tag" v-for="confirmItem in scope.row.confirmProtectMethodList"
+                      :key="confirmItem" plain>
+                      {{ confirmItem }}
+                    </el-tag>
+                  </template>
+                  <template v-else-if="item.prop === 'dataOwner'">
+                    <svg-icon iconClass="user" style="margin-right: 5px; font-size: 14px;" />
+                    {{ scope.row.dataOwner || '--' }}
+                  </template>
+                  <template v-else>
+                    {{ scope.row[item.prop] || '--' }}
+                  </template>
+                </template>
+              </el-table-column>
+              <el-table-column :label="$t('operation')" align="center" width="180">
+                <template slot-scope="scope">
+                  <el-button type="text" size="medium" @click="lookFn(scope.row)">
+                    {{ $t('view') }}
+                  </el-button>
+                  <el-button type="text" size="medium" @click="dataFn(scope.row)">
+                    {{ $t('jobMonitoring.dataBenchmark') }}
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+              :page-size.sync="queryParams.pageSize" @pagination="getList" />
+          </div>
         </el-card>
       </el-col>
     </el-row>
@@ -169,7 +200,7 @@
           </el-col>
         </el-row>
         <el-form-item class="addSelectClass" :label="$t('jobMonitoring.baseParent')" prop="categoryId">
-          <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3" filterable
+          <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3 || addOrEdit.flag == 2" filterable
             :filter-method="handleAddSelectInput" @visible-change="handleAddSelectVisibleChange">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" filterable :props="defaultProps" :expand-on-click-node="true"
@@ -203,7 +234,7 @@
             </el-form-item>
           </el-col> -->
         </el-row>
-        <el-form-item v-if="true" class="addSelectClass AiStudesCont" :label="$t('jobMonitoring.tags')" prop="tags">
+        <el-form-item v-if="true" class="addSelectClass AiStudesCont" :label="$t('jobMonitoring.tags')">
           <div class="tagsClass" :style="tagsShow ? heightSmall : heightBig" style="width: 100%;">
             <el-tag v-for="(tag, index) in tags" type="info" size="small" :key="tag + index" class="mx-1"
               :closable="addOrEdit.flag !== 3" @close="handleClose(tag, index, 'tags')" style="margin: 0 10px;">
@@ -621,7 +652,9 @@ export default {
         categoryId: '',//左侧树id
         name: '',//子类名称
         dataSourceId: '',//来源
+        confirmProtectMethod: [],
         levelId: [],//安全级别，
+        dataOwner: '',
         baseParent: '',//直属父类
         dataSource: '',
       },
@@ -664,7 +697,19 @@ export default {
       // 遮罩层
       loading: false,
       // 显示搜索条件
-      showSearch: true,
+      showSearch: false,
+      isIndeterminate: true,
+      checkAll: false,
+      columnOptions: [
+        { label: this.$t('jobMonitoring.subclassName'), prop: 'attachData', width: '200' },
+        { label: this.$t('jobMonitoring.securityLevel'), prop: 'minSecurityLevel', width: '200' },
+        { label: this.$t('jobMonitoring.suggestProtectMethod'), prop: 'protectMethodName' },
+        { label: this.$t('jobMonitoring.dataOwner'), prop: 'dataOwner', width: '150' },
+        { label: this.$t('jobMonitoring.confirmProtectMethod'), prop: 'confirmProtectMethod', width: '220' },
+        { label: this.$t('jobMonitoring.dataSource'), prop: 'dataSource', width: '160' },
+        { label: this.$t('jobMonitoring.baseParent'), prop: 'baseParent', width: '220' }
+      ],
+      checkedColumnProps: ['attachData', 'minSecurityLevel', 'protectMethodName', 'dataOwner'],
       // 总条数
       total: 0,
       // 数据库字段名表格数据
@@ -746,6 +791,26 @@ export default {
     this.getDictData()
     this.getSelectUserListAll()
     // this.fetchLevelOptions(this.queryParams.categoryId)
+  },
+  computed: {
+    setList() {
+      return this.columnOptions
+    },
+    checkedColumn() {
+      return this.setList.filter(item => this.checkedColumnProps.includes(item.prop))
+    },
+    currentCategoryNode() {
+      return this.findTreeNodeById(this.categoryList, this.treeID) || {}
+    },
+    headerTitle() {
+      return this.currentCategoryNode.categoryName || ''
+    },
+    headerResultText() {
+      return `共 ${this.total} 条结果`
+    },
+    headerRemark() {
+      return this.currentCategoryNode.categoryDescribe || ''
+    }
   },
   watch: {
     'queryParams.categoryId'(val) {
@@ -928,6 +993,47 @@ export default {
     },
     isBuiltInSource(value) {
       return value === '内置'
+    },
+    canEditRow(row) {
+      return !((this.isBuiltInSource(row.dataSource) || row.dataOwner !== this.$store.state.user.name) && !this.$store.state.user.roles.includes('admin'))
+    },
+    handleNameClick(row) {
+      if (!this.canEditRow(row)) {
+        return
+      }
+      this.editFn(row)
+    },
+    findTreeNodeById(tree, nodeId) {
+      if (!Array.isArray(tree) || !nodeId) {
+        return null
+      }
+      for (const node of tree) {
+        if (node.id === nodeId) {
+          return node
+        }
+        if (node.children && node.children.length > 0) {
+          const found = this.findTreeNodeById(node.children, nodeId)
+          if (found) {
+            return found
+          }
+        }
+      }
+      return null
+    },
+    toggleFilters() {
+      this.showSearch = !this.showSearch
+    },
+    isColumnVisible(prop) {
+      return this.checkedColumnProps.includes(prop)
+    },
+    handleCheckAllChange(val) {
+      this.checkedColumnProps = val ? this.setList.map(item => item.prop) : []
+      this.isIndeterminate = false
+    },
+    handleCheckedCitiesChange(value) {
+      const checkedCount = value.length
+      this.checkAll = checkedCount === this.setList.length
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.setList.length
     },
     getActionText(action) {
       const actionMap = {
@@ -1772,7 +1878,6 @@ export default {
     },
     // 数据摸底表单方法
     dataFn(row) {
-      console.log('row', row);
       this.$router.push({
         path: '/dataMapping',
         query: { row: row }
@@ -1811,8 +1916,8 @@ export default {
 };
 </script>
 
-<style scoped>
-.el-popup-parent--hidden /deep/ .el-loading-mask {
+<style lang="scss" scoped>
+.el-popup-parent--hidden ::v-deep .el-loading-mask {
   background: "rgba(0, 0, 0, 0.7)" !important;
 }
 
@@ -1824,7 +1929,7 @@ export default {
   color: #f56c6c;
 }
 
-.el-tree-node /deep/ .el-tree-node {
+.el-tree-node ::v-deep .el-tree-node {
   display: none;
 }
 
@@ -1841,12 +1946,12 @@ export default {
   }
 }
 
-.importForm /deep/ .el-form-item--medium {
+.importForm ::v-deep .el-form-item--medium {
   width: 70%;
 
 }
 
-.importForm /deep/ .el-form-item__content {
+.importForm ::v-deep .el-form-item__content {
   width: calc(100% - 145px);
 }
 
@@ -1854,28 +1959,33 @@ export default {
   width: 20% !important;
 }
 
-.addSelectClass /deep/ .el-select {
+.addSelectClass ::v-deep .el-select {
   width: calc(100%);
 }
 
 .tableBox {
-  overflow-y: auto;
-  border: none;
-  border-radius: 0;
-  border-bottom: 1px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  flex: 1;
+  min-height: 0;
 }
 
-.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar {
+.tableBox ::v-deep .el-table__body-wrapper::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
+  height: 10px;
 }
 
-.tableBox /deep/ .el-table__body-wrapper::-webkit-scrollbar-thumb {
+.tableBox ::v-deep .el-table__body-wrapper::-webkit-scrollbar-thumb {
   background-color: #0003;
+  border-radius: 10px;
   transition: all .2s ease-in-out;
 }
 
-.AiStudesCont /deep/ .el-form-item__content {
+.tableBox ::v-deep .el-table__body-wrapper::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+.AiStudesCont ::v-deep .el-form-item__content {
   display: flex;
   justify-content: space-between;
 }
@@ -1918,32 +2028,32 @@ export default {
   height: 100%;
 }
 
-.searchBtn /deep/ .el-form-item__content {
+.searchBtn ::v-deep .el-form-item__content {
   margin-left: 225px
 }
 
-.yuanDataClass /deep/ .el-form-item {
+  .yuanDataClass ::v-deep .el-form-item {
   width: 30%;
 }
 
-.yuanDataClass /deep/ .el-form-item:nth-child(3n) {
+.yuanDataClass ::v-deep .el-form-item:nth-child(3n) {
   margin-right: 0;
 }
 
-.yuanDataClass /deep/ .el-form-item:nth-last-child(-n+3) {
+.yuanDataClass ::v-deep .el-form-item:nth-last-child(-n+3) {
   margin-bottom: 0;
 }
 
-.yuanDataClass /deep/ .el-form-item__label {
+.yuanDataClass ::v-deep .el-form-item__label {
   width: 25%;
   white-space: nowrap;
 }
 
-.yuanDataClass /deep/ .el-form-item__content {
+.yuanDataClass ::v-deep .el-form-item__content {
   width: 75%;
 }
 
-.yuanDataClass /deep/ .el-select {
+.yuanDataClass ::v-deep .el-select {
   width: 100%;
 }
 
@@ -2083,13 +2193,14 @@ export default {
   display: flex;
   align-items: stretch;
   flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
 ::v-deep .el-col {
   display: flex;
   flex-direction: column;
-  max-height: 100%;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -2100,19 +2211,13 @@ export default {
 .left-card {
   border-radius: 10px;
   height: 100%;
-  max-height: 100%;
-  overflow: auto;
 
   .el-card__body {
     height: 100%;
-    max-height: 100%;
-    overflow: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
   }
-}
-
-.search-card {
-  border-radius: 10px;
-  margin-bottom: 20px;
 }
 
 .table-card {
@@ -2122,7 +2227,7 @@ export default {
   display: flex;
   flex-direction: column;
 
-  .el-card__body {
+  ::v-deep .el-card__body {
     padding: 0;
     flex: 1;
     display: flex;
@@ -2131,13 +2236,122 @@ export default {
   }
 }
 
-.search-actions {
+.table-card ::v-deep .el-card__header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.searchCard {
+  border-radius: 10px;
+  margin-bottom: 16px;
+
+  ::v-deep .el-card__body {
+    padding: 24px;
+  }
+}
+
+.search-wrapper {
+  flex-shrink: 0;
+}
+
+.head-container+.head-container {
+  margin-top: 16px;
+}
+
+.tree-container {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.treeBox {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.table-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.content-header-main {
+  min-width: 0;
+}
+
+.content-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.content-count {
+  margin-top: 8px;
+  color: #909399;
+  font-size: 13px;
+}
+
+.content-desc {
+  margin-top: 8px;
+  color: #606266;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.table-card-content {
+  padding: 0 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.toolbar-group-right {
+  margin-left: auto;
+}
+
+.subclass-name-cell {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  color: #409eff;
+  cursor: pointer;
+}
+
+.subclass-name-cell.disabled {
+  color: #c0c4cc;
+  cursor: not-allowed;
 }
 
 .dialog-footer {
   display: flex;
   justify-content: end;
+}
+
+@media screen and (max-width: 768px) {
+  .toolbar-group-right {
+    margin-left: 0;
+  }
 }
 </style>
