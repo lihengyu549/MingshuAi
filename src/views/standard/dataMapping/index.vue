@@ -376,11 +376,7 @@
 </template>
 
 <script>
-import {
-  addOrUpdateDataFeelBottomByCategoryId,
-  getCategoryAttachDataFeelBottomByCategoryId,
-  getFrameworks
-} from "@/api/system/protectCategory";
+import { getFrameworks } from "@/api/system/protectCategory";
 import { getCategorySchemaLevelList } from "@/api/data";
 
 const createDefaultForm = () => ({
@@ -697,7 +693,7 @@ export default {
     handleExport() {
       this.$message.info("导出功能暂未接入");
     },
-    async handleViewDetails(row, forceOpen = false) {
+    handleViewDetails(row, forceOpen = false) {
       if (!forceOpen && this.activeSurveyRow && this.activeSurveyRow.rowKey === row.rowKey) {
         this.handleCloseDetails();
         return;
@@ -705,77 +701,9 @@ export default {
 
       this.activeSurveyRow = row;
       this.dataBaselineForm = this.deepClone(row.seedForm || createDefaultForm());
-
-      if (row.isReal && row.id) {
-        await this.initData(row);
-      }
     },
     handleCloseDetails() {
       this.activeSurveyRow = null;
-    },
-    mergeSurveyForm(rawData = {}, baseForm) {
-      const safeBase = this.deepClone(baseForm || createDefaultForm());
-      return Object.assign(safeBase, {
-        id: rawData.id || safeBase.id,
-        dataName: rawData.dataName || safeBase.dataName,
-        dataLevel: rawData.dataLevel ? String(rawData.dataLevel) : safeBase.dataLevel,
-        dataType: rawData.dataType || safeBase.dataType,
-        dataOwner: rawData.dataOwner || safeBase.dataOwner,
-        deptName: rawData.deptName || safeBase.deptName,
-        noPersonalData: rawData.noPersonalData === "1" ? true : safeBase.noPersonalData,
-        ordinaryPersonalData: rawData.ordinaryPersonalData === "1" ? true : safeBase.ordinaryPersonalData,
-        sensitivePersonalData: rawData.sensitivePersonalData === "1" ? true : safeBase.sensitivePersonalData,
-        personalData: rawData.personalData === "1" ? true : safeBase.personalData,
-        dateSize: rawData.dateSize || safeBase.dateSize,
-        piiCount: rawData.piiCount || safeBase.piiCount,
-        monthAmountOfIncrease: rawData.monthAmountOfIncrease || safeBase.monthAmountOfIncrease,
-        systemGather: rawData.systemGather === "1",
-        systemProduction: rawData.systemProduction === "1",
-        artificialFillIn: rawData.artificialFillIn === "1",
-        dealBuy: rawData.dealBuy === "1",
-        shareExchange: rawData.shareExchange === "1",
-        other: rawData.other !== "-1" && rawData.other != null,
-        otherInput: rawData.other !== "-1" && rawData.other != null ? rawData.other : "",
-        externalProvisionBox: rawData.externalProvision !== "-1" && rawData.externalProvision != null,
-        externalProvision: rawData.externalProvision !== "-1" && rawData.externalProvision != null ? rawData.externalProvision : "",
-        entrustBox: rawData.entrust !== "-1" && rawData.entrust != null,
-        entrust: rawData.entrust !== "-1" && rawData.entrust != null ? rawData.entrust : "",
-        jointDisposalBox: rawData.jointDisposal !== "-1" && rawData.jointDisposal != null,
-        jointDisposal: rawData.jointDisposal !== "-1" && rawData.jointDisposal != null ? rawData.jointDisposal : "",
-        noInteraction: rawData.noInteraction === "1",
-        privateCloudBox: rawData.privateCloud !== "-1" && rawData.privateCloud != null,
-        privateCloud: rawData.privateCloud !== "-1" && rawData.privateCloud != null ? rawData.privateCloud : "",
-        publicCloudBox: rawData.publicCloud !== "-1" && rawData.publicCloud != null,
-        publicCloud: rawData.publicCloud !== "-1" && rawData.publicCloud != null ? rawData.publicCloud : "",
-        mixtureCloudBox: rawData.mixtureCloud !== "-1" && rawData.mixtureCloud != null,
-        mixtureCloud: rawData.mixtureCloud !== "-1" && rawData.mixtureCloud != null ? rawData.mixtureCloud : "",
-        governmentCloudBox: rawData.governmentCloud !== "-1" && rawData.governmentCloud != null,
-        governmentCloud: rawData.governmentCloud !== "-1" && rawData.governmentCloud != null ? rawData.governmentCloud : "",
-        noCloudComputingPlatformBox: rawData.noCloudComputingPlatform !== "-1" && rawData.noCloudComputingPlatform != null,
-        noCloudComputingPlatform: rawData.noCloudComputingPlatform !== "-1" && rawData.noCloudComputingPlatform != null ? rawData.noCloudComputingPlatform : "",
-        thisUnitMachineRoomBox: rawData.thisUnitMachineRoom !== "-1" && rawData.thisUnitMachineRoom != null,
-        thisUnitMachineRoom: rawData.thisUnitMachineRoom !== "-1" && rawData.thisUnitMachineRoom != null ? rawData.thisUnitMachineRoom : "",
-        outerUnitMachineRoomBox: rawData.outerUnitMachineRoom !== "-1" && rawData.outerUnitMachineRoom != null,
-        outerUnitMachineRoom: rawData.outerUnitMachineRoom !== "-1" && rawData.outerUnitMachineRoom != null ? rawData.outerUnitMachineRoom : "",
-        thirdPartyTrusteeshipMachineRoomBox: rawData.thirdPartyTrusteeshipMachineRoom !== "-1" && rawData.thirdPartyTrusteeshipMachineRoom != null,
-        thirdPartyTrusteeshipMachineRoom: rawData.thirdPartyTrusteeshipMachineRoom !== "-1" && rawData.thirdPartyTrusteeshipMachineRoom != null ? rawData.thirdPartyTrusteeshipMachineRoom : "",
-        domesticBox: rawData.domestic !== "-1" && rawData.domestic != null,
-        domestic: rawData.domestic !== "-1" && rawData.domestic != null ? rawData.domestic : "",
-        overseasBox: rawData.overseas !== "-1" && rawData.overseas != null,
-        overseas: rawData.overseas !== "-1" && rawData.overseas != null ? rawData.overseas : "",
-        dataSources: rawData.dataSources && rawData.dataSources.length > 0 ? rawData.dataSources : [{ content: "" }],
-        dataflow: rawData.dataflow && rawData.dataflow.length > 0 ? rawData.dataflow : [{ content: "" }]
-      });
-    },
-    async initData(row) {
-      try {
-        const res = await getCategoryAttachDataFeelBottomByCategoryId({ categoryId: row.id });
-        if (res.code === 200 && this.activeSurveyRow && this.activeSurveyRow.rowKey === row.rowKey) {
-          this.dataBaselineForm = this.mergeSurveyForm(res.data || {}, row.seedForm);
-        }
-      } catch (error) {
-        console.error("获取数据摸底详情失败:", error);
-      }
     },
     handlePersonalDataChange(type) {
       if (type === "personalData" && this.dataBaselineForm.personalData) {
@@ -843,7 +771,7 @@ export default {
     handleRemoveFlowOutUnit(index) {
       this.dataBaselineForm.dataflow.splice(index, 1);
     },
-    async handleSubmit() {
+    handleSubmit() {
       let isUnitValid = true;
 
       this.dataBaselineForm.dataSources.forEach((item) => {
@@ -881,54 +809,10 @@ export default {
         return;
       }
 
-      if (!this.activeSurveyRow.isReal) {
-        this.activeSurveyRow.seedForm = this.deepClone(this.dataBaselineForm);
-        this.activeSurveyRow.status = "reported";
-        this.surveyTableData = [...this.surveyTableData];
-        this.$message.success("当前为演示数据，页面已暂存修改");
-        return;
-      }
-
-      const params = {
-        id: this.dataBaselineForm.id,
-        categoryDataId: this.activeSurveyRow.id,
-        systemGather: this.dataBaselineForm.systemGather ? "1" : "0",
-        systemProduction: this.dataBaselineForm.systemProduction ? "1" : "0",
-        artificialFillIn: this.dataBaselineForm.artificialFillIn ? "1" : "0",
-        dealBuy: this.dataBaselineForm.dealBuy ? "1" : "0",
-        shareExchange: this.dataBaselineForm.shareExchange ? "1" : "0",
-        other: this.dataBaselineForm.other ? this.dataBaselineForm.otherInput : "-1",
-        externalProvision: this.dataBaselineForm.externalProvisionBox ? this.dataBaselineForm.externalProvision : "-1",
-        entrust: this.dataBaselineForm.entrustBox ? this.dataBaselineForm.entrust : "-1",
-        jointDisposal: this.dataBaselineForm.jointDisposalBox ? this.dataBaselineForm.jointDisposal : "-1",
-        noInteraction: this.dataBaselineForm.noInteraction ? "1" : "0",
-        privateCloud: this.dataBaselineForm.privateCloudBox ? this.dataBaselineForm.privateCloud : "-1",
-        publicCloud: this.dataBaselineForm.publicCloudBox ? this.dataBaselineForm.publicCloud : "-1",
-        mixtureCloud: this.dataBaselineForm.mixtureCloudBox ? this.dataBaselineForm.mixtureCloud : "-1",
-        governmentCloud: this.dataBaselineForm.governmentCloudBox ? this.dataBaselineForm.governmentCloud : "-1",
-        noCloudComputingPlatform: this.dataBaselineForm.noCloudComputingPlatformBox ? this.dataBaselineForm.noCloudComputingPlatform : "-1",
-        thisUnitMachineRoom: this.dataBaselineForm.thisUnitMachineRoomBox ? this.dataBaselineForm.thisUnitMachineRoom : "-1",
-        outerUnitMachineRoom: this.dataBaselineForm.outerUnitMachineRoomBox ? this.dataBaselineForm.outerUnitMachineRoom : "-1",
-        thirdPartyTrusteeshipMachineRoom: this.dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox ? this.dataBaselineForm.thirdPartyTrusteeshipMachineRoom : "-1",
-        domestic: this.dataBaselineForm.domesticBox ? this.dataBaselineForm.domestic : "-1",
-        overseas: this.dataBaselineForm.overseasBox ? this.dataBaselineForm.overseas : "-1",
-        dataSources: this.dataBaselineForm.dataSources,
-        dataflow: this.dataBaselineForm.dataflow
-      };
-
-      try {
-        const res = await addOrUpdateDataFeelBottomByCategoryId(params);
-        if (res.code === 200) {
-          this.activeSurveyRow.seedForm = this.deepClone(this.dataBaselineForm);
-          this.activeSurveyRow.status = "reported";
-          this.surveyTableData = [...this.surveyTableData];
-          this.$message.success("提交成功");
-        } else {
-          this.$message.error(res.msg || "提交失败");
-        }
-      } catch (error) {
-        this.$message.error("提交失败");
-      }
+      this.activeSurveyRow.seedForm = this.deepClone(this.dataBaselineForm);
+      this.activeSurveyRow.status = "reported";
+      this.surveyTableData = [...this.surveyTableData];
+      this.$message.success("当前页面已暂存修改");
     },
     handleReset() {
       this.$router.back();
