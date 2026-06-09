@@ -1504,6 +1504,7 @@ export default {
         securityLevelIds: [...this.queryParams.securityLevel],
         securityLevel: toString(this.queryParams.securityLevel)
       }
+      delete params.categoryId
       confirmList(params).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
@@ -1530,6 +1531,7 @@ export default {
         securityLevelIds: [...this.queryParams.securityLevel],
         securityLevel: toString(this.queryParams.securityLevel)
       }
+      delete params.categoryId
       cancelConfirmData(params).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
