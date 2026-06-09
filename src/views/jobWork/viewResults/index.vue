@@ -1497,8 +1497,10 @@ export default {
     },
     handleEcelFn() {
       this.loading = true
+      const treeId = this.currentTreeNode ? this.currentTreeNode.id : (this.drawerDataInfo.projectId || sessionStorage.getItem('projectId'))
       let params = {
         ...this.queryParams,
+        treeId: treeId,
         securityLevelIds: [...this.queryParams.securityLevel],
         securityLevel: toString(this.queryParams.securityLevel)
       }
@@ -1521,8 +1523,10 @@ export default {
     },
     handleEcelFnClose() {
       this.loading = true
+      const treeId = this.currentTreeNode ? this.currentTreeNode.id : (this.drawerDataInfo.projectId || sessionStorage.getItem('projectId'))
       let params = {
         ...this.queryParams,
+        treeId: treeId,
         securityLevelIds: [...this.queryParams.securityLevel],
         securityLevel: toString(this.queryParams.securityLevel)
       }
