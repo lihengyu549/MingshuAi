@@ -39,8 +39,8 @@
         <template slot="empty">
           <el-empty description="暂无数据"></el-empty>
         </template>
-        <el-table-column prop="categoryName" label="分类名称" min-width="220" />
-        <el-table-column prop="description" label="分类描述" min-width="420" show-overflow-tooltip />
+        <el-table-column prop="categoryName" label="分类名称" min-width="250" />
+        <el-table-column prop="description" label="分类描述" min-width="300" show-overflow-tooltip />
         <el-table-column label="填报情况" width="160" align="center">
           <template slot-scope="scope">
             <span class="status-tag" :class="scope.row.status === 'reported' ? 'status-reported' : 'status-pending'">
@@ -627,7 +627,7 @@ export default {
 
       this.Loading = true;
       try {
-        const res = await listDataMappingCategories({ standardId: this.selectedStandard });
+        const res = await listDataMappingCategories({ categoryId: this.selectedStandard });
         const payload = res && res.data ? res.data : res;
         const list = Array.isArray(payload)
           ? payload
@@ -726,8 +726,8 @@ export default {
       this.Loading = true;
       try {
         const res = await getDataMappingDetail({
-          standardId: this.selectedStandard,
-          categoryDataId: row.id
+          rootId: this.selectedStandard,
+          categoryId: row.id
         });
         if (res.code === 200 && this.activeSurveyRow && this.activeSurveyRow.rowKey === row.rowKey) {
           this.dataBaselineForm = this.mergeSurveyForm(res.data || {}, row.seedForm);

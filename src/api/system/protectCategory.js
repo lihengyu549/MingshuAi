@@ -437,7 +437,7 @@ export function listDataFeelBottomSurvey(params) {
 // 数据资源摸底-数据大类清单
 export function listDataMappingCategories(params) {
   return request({
-    url: '/system/category/listDataMappingCategories',
+    url: '/system/dashboard/listDataFeel',
     method: 'get',
     params: params,
   })
@@ -446,7 +446,7 @@ export function listDataMappingCategories(params) {
 // 数据资源摸底-详情
 export function getDataMappingDetail(params) {
   return request({
-    url: '/system/category/getDataMappingDetail',
+    url: '/system/dashboard/listDataFeelById',
     method: 'get',
     params: params,
   })
