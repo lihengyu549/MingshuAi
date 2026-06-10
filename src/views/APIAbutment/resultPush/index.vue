@@ -17,7 +17,12 @@
               <div class="platform-card__header">
                 <div class="platform-card__title-wrap">
                   <div class="platform-card__icon">
-                    <i :class="getPlatformIcon(item)"></i>
+                    <template v-if="item.pushType === '3'">
+                      <i :class="getPlatformIcon(item)"></i>
+                    </template>
+                    <template v-else>
+                      <svg-icon :iconClass="getPlatformIcon(item)" />
+                    </template>
                   </div>
                   <div class="platform-card__title">{{ item.providerName || "--" }}</div>
                 </div>
@@ -50,7 +55,12 @@
             <div class="content-header">
               <div class="content-header__title">
                 <div class="content-header__icon" :class="`content-header__icon--${getPlatformTheme(currentConfig)}`">
-                  <i :class="getPlatformIcon(currentConfig)"></i>
+                  <template v-if="currentConfig.pushType === '3'">
+                    <i :class="getPlatformIcon(currentConfig)"></i>
+                  </template>
+                  <template v-else>
+                    <svg-icon :iconClass="getPlatformIcon(currentConfig)" />
+                  </template>
                 </div>
                 <span>{{ currentConfig.providerName || "--" }}</span>
               </div>
@@ -369,7 +379,7 @@ export default {
       return String(item.pushType) === "3" ? "cyan" : "red";
     },
     getPlatformIcon(item) {
-      return String(item.pushType) === "3" ? "el-icon-lock" : "el-icon-s-check";
+      return String(item.pushType) === "3" ? "el-icon-lock" : "dunpai-red";
     },
     getStatusTheme(status) {
       return String(status) === "1" ? "success" : "muted";
