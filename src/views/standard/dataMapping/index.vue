@@ -376,7 +376,11 @@
 </template>
 
 <script>
-import { getFrameworks } from "@/api/system/protectCategory";
+import {
+  getFrameworks,
+  getDataMappingDetail,
+  listDataMappingCategories
+} from "@/api/system/protectCategory";
 import { getCategorySchemaLevelList } from "@/api/data";
 
 const createDefaultForm = () => ({
@@ -524,10 +528,7 @@ export default {
   async mounted() {
     await this.loadStandardOptions();
     await this.fetchLevelOptions();
-    this.buildSurveyTableData();
-    if (this.surveyTableData.length) {
-      this.handleViewDetails(this.surveyTableData[0], true);
-    }
+    await this.fetchSurveyTableData();
   },
   methods: {
     normalizeRouteRow(row) {
@@ -582,128 +583,166 @@ export default {
       }
       return "";
     },
-    buildSurveyTableData() {
-      const currentStandard = String(this.selectedStandard || "");
-      const currentBelongsToSelected =
-        this.query.id &&
-        (!this.query.categoryId || String(this.query.categoryId) === currentStandard);
-
-      const realRow = currentBelongsToSelected
-        ? {
-          id: this.query.id,
-          rowKey: `real-${this.query.id}`,
-          categoryName: this.query.attachData || "经营-人力数据",
-          description: this.query.attachDescribe || "包含员工基本信息、考勤、薪酬等敏感数据",
-          status: "reported",
-          isReal: true,
-          seedForm: this.createSeedForm({
-            dataName: this.query.attachData || "经营-人力数据",
-            dataLevel: this.query.minSecurityLevel ? String(this.query.minSecurityLevel) : this.getDefaultLevelValue(),
-            dataType: this.query.baseParent || "经营管理类数据",
-            deptName: this.query.baseParent || "人力资源部",
-            dataOwner: this.query.dataOwner || "",
-            ordinaryPersonalData: true,
-            dateSize: "200GB",
-            piiCount: "10万条",
-            monthAmountOfIncrease: "10GB"
-          })
-        }
-        : null;
-
-      const mockRows = [
-        {
-          id: "mock-pending",
-          rowKey: `mock-pending-${currentStandard || "default"}`,
-          categoryName: "客户-交易数据",
-          description: "涉及客户订单、支付记录、物流信息等",
-          status: "pending",
-          isReal: false,
-          seedForm: this.createSeedForm({
-            dataName: "客户-交易数据",
-            dataLevel: this.getDefaultLevelValue(),
-            dataType: "客户运营类数据",
-            deptName: "运营管理部",
-            dataOwner: "张敏",
-            sensitivePersonalData: true,
-            ordinaryPersonalData: true,
-            dateSize: "360GB",
-            piiCount: "26万条",
-            monthAmountOfIncrease: "18GB",
-            systemGather: true,
-            shareExchange: true,
-            dataSources: [{ content: "线上交易平台" }, { content: "客户服务中心" }],
-            dataflow: [{ content: "支付结算系统" }],
-            externalProvisionBox: true,
-            externalProvision: "第三方物流平台",
-            privateCloudBox: true,
-            privateCloud: "华北一区私有云",
-            domesticBox: true,
-            domestic: "北京"
-          })
-        }
-      ];
-
-      const rows = realRow ? [realRow, ...mockRows] : [
-        {
-          id: "mock-reported",
-          rowKey: `mock-reported-${currentStandard || "default"}`,
-          categoryName: "经营-人力数据",
-          description: "包含员工基本信息、考勤、薪酬等敏感数据",
-          status: "reported",
-          isReal: false,
-          seedForm: this.createSeedForm({
-            dataName: "经营-人力数据",
-            dataLevel: this.getDefaultLevelValue(),
-            dataType: "经营管理类数据",
-            deptName: "人力资源部",
-            dataOwner: "李娜",
-            ordinaryPersonalData: true,
-            dateSize: "200GB",
-            piiCount: "10万条",
-            monthAmountOfIncrease: "10GB",
-            systemGather: true,
-            systemProduction: true,
-            dataSources: [{ content: "人力资源系统" }],
-            dataflow: [{ content: "薪酬管理系统" }],
-            privateCloudBox: true,
-            privateCloud: "总部私有云",
-            domesticBox: true,
-            domestic: "上海"
-          })
-        },
-        ...mockRows
-      ];
-
-      this.surveyTableData = rows;
-
-      if (
-        this.activeSurveyRow &&
-        !this.surveyTableData.find((item) => item.rowKey === this.activeSurveyRow.rowKey)
-      ) {
-        this.activeSurveyRow = null;
+    normalizeSurveyStatus(value) {
+      if (value === true || value === 1 || value === "1" || value === "reported") {
+        return "reported";
       }
+      return "pending";
+    },
+    hasDetailValue(value) {
+      return value !== "-1" && value !== -1 && value !== null && value !== undefined && value !== "";
+    },
+    isChecked(value) {
+      return value === true || value === 1 || value === "1" || value === "true";
+    },
+    mapSurveyTableItem(item = {}, index = 0) {
+      const detailId = item.categoryDataId || item.id || item.attachDataId || item.categoryAttachDataId || "";
+      return {
+        ...item,
+        id: detailId,
+        rowKey: `survey-${detailId || index}`,
+        categoryName: item.categoryName || item.attachData || item.dataName || "--",
+        description: item.description || item.attachDescribe || item.dataType || "--",
+        status: this.normalizeSurveyStatus(item.status || item.reportStatus || item.fillStatus || item.isReport),
+        seedForm: this.createSeedForm({
+          id: item.detailId || item.dataFeelBottomId || "",
+          dataName: item.dataName || item.attachData || item.categoryName || "",
+          dataLevel: item.dataLevel != null
+            ? String(item.dataLevel)
+            : item.minSecurityLevel != null
+              ? String(item.minSecurityLevel)
+              : this.getDefaultLevelValue(),
+          dataType: item.dataType || item.baseParent || "",
+          dataOwner: item.dataOwner || "",
+          deptName: item.deptName || ""
+        })
+      };
+    },
+    async fetchSurveyTableData() {
+      if (!this.selectedStandard) {
+        this.surveyTableData = [];
+        this.handleCloseDetails(true);
+        return;
+      }
+
+      this.Loading = true;
+      try {
+        const res = await listDataMappingCategories({ standardId: this.selectedStandard });
+        const payload = res && res.data ? res.data : res;
+        const list = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload && payload.rows)
+            ? payload.rows
+            : Array.isArray(payload && payload.list)
+              ? payload.list
+              : [];
+
+        this.surveyTableData = list.map((item, index) => this.mapSurveyTableItem(item, index));
+
+        if (
+          this.activeSurveyRow &&
+          !this.surveyTableData.find((item) => item.rowKey === this.activeSurveyRow.rowKey)
+        ) {
+          this.handleCloseDetails(true);
+        }
+      } catch (error) {
+        this.surveyTableData = [];
+        this.handleCloseDetails(true);
+        console.error("Failed to load data-mapping categories:", error);
+      } finally {
+        this.Loading = false;
+      }
+    },
+    mergeSurveyForm(rawData = {}, baseForm) {
+      const safeBase = this.deepClone(baseForm || createDefaultForm());
+      return Object.assign(safeBase, {
+        id: rawData.id || safeBase.id,
+        dataName: rawData.dataName || safeBase.dataName,
+        dataLevel: this.hasDetailValue(rawData.dataLevel) ? String(rawData.dataLevel) : safeBase.dataLevel,
+        dataType: rawData.dataType || safeBase.dataType,
+        dataOwner: rawData.dataOwner || safeBase.dataOwner,
+        deptName: rawData.deptName || safeBase.deptName,
+        noPersonalData: this.isChecked(rawData.noPersonalData),
+        ordinaryPersonalData: this.isChecked(rawData.ordinaryPersonalData),
+        sensitivePersonalData: this.isChecked(rawData.sensitivePersonalData),
+        personalData: this.isChecked(rawData.personalData),
+        dateSize: rawData.dateSize || safeBase.dateSize,
+        piiCount: rawData.piiCount || safeBase.piiCount,
+        monthAmountOfIncrease: rawData.monthAmountOfIncrease || safeBase.monthAmountOfIncrease,
+        systemGather: this.isChecked(rawData.systemGather),
+        systemProduction: this.isChecked(rawData.systemProduction),
+        artificialFillIn: this.isChecked(rawData.artificialFillIn),
+        dealBuy: this.isChecked(rawData.dealBuy),
+        shareExchange: this.isChecked(rawData.shareExchange),
+        other: this.hasDetailValue(rawData.other),
+        otherInput: this.hasDetailValue(rawData.other) ? rawData.other : "",
+        externalProvisionBox: this.hasDetailValue(rawData.externalProvision),
+        externalProvision: this.hasDetailValue(rawData.externalProvision) ? rawData.externalProvision : "",
+        entrustBox: this.hasDetailValue(rawData.entrust),
+        entrust: this.hasDetailValue(rawData.entrust) ? rawData.entrust : "",
+        jointDisposalBox: this.hasDetailValue(rawData.jointDisposal),
+        jointDisposal: this.hasDetailValue(rawData.jointDisposal) ? rawData.jointDisposal : "",
+        noInteraction: this.isChecked(rawData.noInteraction),
+        privateCloudBox: this.hasDetailValue(rawData.privateCloud),
+        privateCloud: this.hasDetailValue(rawData.privateCloud) ? rawData.privateCloud : "",
+        publicCloudBox: this.hasDetailValue(rawData.publicCloud),
+        publicCloud: this.hasDetailValue(rawData.publicCloud) ? rawData.publicCloud : "",
+        mixtureCloudBox: this.hasDetailValue(rawData.mixtureCloud),
+        mixtureCloud: this.hasDetailValue(rawData.mixtureCloud) ? rawData.mixtureCloud : "",
+        governmentCloudBox: this.hasDetailValue(rawData.governmentCloud),
+        governmentCloud: this.hasDetailValue(rawData.governmentCloud) ? rawData.governmentCloud : "",
+        noCloudComputingPlatformBox: this.hasDetailValue(rawData.noCloudComputingPlatform),
+        noCloudComputingPlatform: this.hasDetailValue(rawData.noCloudComputingPlatform) ? rawData.noCloudComputingPlatform : "",
+        thisUnitMachineRoomBox: this.hasDetailValue(rawData.thisUnitMachineRoom),
+        thisUnitMachineRoom: this.hasDetailValue(rawData.thisUnitMachineRoom) ? rawData.thisUnitMachineRoom : "",
+        outerUnitMachineRoomBox: this.hasDetailValue(rawData.outerUnitMachineRoom),
+        outerUnitMachineRoom: this.hasDetailValue(rawData.outerUnitMachineRoom) ? rawData.outerUnitMachineRoom : "",
+        thirdPartyTrusteeshipMachineRoomBox: this.hasDetailValue(rawData.thirdPartyTrusteeshipMachineRoom),
+        thirdPartyTrusteeshipMachineRoom: this.hasDetailValue(rawData.thirdPartyTrusteeshipMachineRoom) ? rawData.thirdPartyTrusteeshipMachineRoom : "",
+        domesticBox: this.hasDetailValue(rawData.domestic),
+        domestic: this.hasDetailValue(rawData.domestic) ? rawData.domestic : "",
+        overseasBox: this.hasDetailValue(rawData.overseas),
+        overseas: this.hasDetailValue(rawData.overseas) ? rawData.overseas : "",
+        dataSources: Array.isArray(rawData.dataSources) && rawData.dataSources.length > 0 ? rawData.dataSources : [{ content: "" }],
+        dataflow: Array.isArray(rawData.dataflow) && rawData.dataflow.length > 0 ? rawData.dataflow : [{ content: "" }]
+      });
     },
     async handleStandardChange() {
       await this.fetchLevelOptions();
-      this.buildSurveyTableData();
-      if (this.surveyTableData.length) {
-        this.handleViewDetails(this.surveyTableData[0], true);
-      }
+      this.handleCloseDetails(true);
+      await this.fetchSurveyTableData();
     },
     handleExport() {
       this.$message.info("导出功能暂未接入");
     },
-    handleViewDetails(row, forceOpen = false) {
+    async handleViewDetails(row, forceOpen = false) {
       if (!forceOpen && this.activeSurveyRow && this.activeSurveyRow.rowKey === row.rowKey) {
-        this.handleCloseDetails();
+        this.handleCloseDetails(true);
         return;
       }
 
       this.activeSurveyRow = row;
       this.dataBaselineForm = this.deepClone(row.seedForm || createDefaultForm());
+      this.Loading = true;
+      try {
+        const res = await getDataMappingDetail({
+          standardId: this.selectedStandard,
+          categoryDataId: row.id
+        });
+        if (res.code === 200 && this.activeSurveyRow && this.activeSurveyRow.rowKey === row.rowKey) {
+          this.dataBaselineForm = this.mergeSurveyForm(res.data || {}, row.seedForm);
+        }
+      } catch (error) {
+        console.error("Failed to load data-mapping detail:", error);
+      } finally {
+        this.Loading = false;
+      }
     },
-    handleCloseDetails() {
+    handleCloseDetails(resetForm = false) {
       this.activeSurveyRow = null;
+      if (resetForm) {
+        this.dataBaselineForm = createDefaultForm();
+      }
     },
     handlePersonalDataChange(type) {
       if (type === "personalData" && this.dataBaselineForm.personalData) {

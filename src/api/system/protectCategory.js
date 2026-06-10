@@ -434,6 +434,24 @@ export function listDataFeelBottomSurvey(params) {
   })
 }
 
+// 数据资源摸底-数据大类清单
+export function listDataMappingCategories(params) {
+  return request({
+    url: '/system/category/listDataMappingCategories',
+    method: 'get',
+    params: params,
+  })
+}
+
+// 数据资源摸底-详情
+export function getDataMappingDetail(params) {
+  return request({
+    url: '/system/category/getDataMappingDetail',
+    method: 'get',
+    params: params,
+  })
+}
+
 // 敏感数据接口
 export function listSensitiveDataRiskAssessmentReport(params) {
   return request({
