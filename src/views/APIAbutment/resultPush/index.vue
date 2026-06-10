@@ -196,7 +196,7 @@
       </el-col>
     </el-row>
 
-    <el-dialog title="推送内容" :visible.sync="contentShow" width="950px" append-to-body>
+    <el-dialog class="pushContent" title="推送内容" :visible.sync="contentShow" width="950px" append-to-body>
       <template v-if="activePushTab === '1'">
         <Result
           v-if="contentShow"
@@ -887,5 +887,8 @@ input[aria-hidden=true] {
   .cert-row {
     flex-wrap: wrap;
   }
+}
+.pushContent ::v-deep .el-dialog {
+  border-radius: 16px;
 }
 </style>
