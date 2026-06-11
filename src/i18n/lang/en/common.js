@@ -1,5 +1,5 @@
 export default {
-  homeTitle: 'Situation Awareness Dashboard',
+  homeTitle: 'Home',
   dataScreen: 'Data Screen',
   profile: 'Profile',
   assignRole: 'Assign Role',
