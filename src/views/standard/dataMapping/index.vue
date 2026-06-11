@@ -379,7 +379,8 @@
 import {
   getFrameworks,
   getDataMappingDetail,
-  listDataMappingCategories
+  listDataMappingCategories,
+  addOrUpdateDataFeelBottomByCategoryId
 } from "@/api/system/protectCategory";
 import { getCategorySchemaLevelList } from "@/api/data";
 
@@ -446,6 +447,7 @@ export default {
       levelOptions: [],
       surveyTableData: [],
       activeSurveyRow: null,
+      activeSurveyRawData: {},
       dataBaselineForm: createDefaultForm()
     };
   },
@@ -595,6 +597,23 @@ export default {
     isChecked(value) {
       return value === true || value === 1 || value === "1" || value === "true";
     },
+    toFlag(value) {
+      return value ? "1" : "0";
+    },
+    toDetailText(enabled, value) {
+      if (!enabled) {
+        return "-1";
+      }
+      return value == null ? "" : String(value).trim();
+    },
+    normalizeFlowUnits(list = []) {
+      return (Array.isArray(list) ? list : [])
+        .map((item) => ({
+          ...item,
+          content: item && item.content != null ? String(item.content).trim() : ""
+        }))
+        .filter((item) => item.content);
+    },
     mapSurveyTableItem(item = {}, index = 0) {
       const detailId = item.categoryDataId || item.id || item.attachDataId || item.categoryAttachDataId || "";
       return {
@@ -707,6 +726,75 @@ export default {
         dataflow: Array.isArray(rawData.dataflow) && rawData.dataflow.length > 0 ? rawData.dataflow : [{ content: "" }]
       });
     },
+    buildSurveySubmitPayload() {
+      const payload = Object.assign({}, this.deepClone(this.activeSurveyRawData || {}), {
+        id: this.dataBaselineForm.id || (this.activeSurveyRawData && this.activeSurveyRawData.id) || "",
+        rootId: this.selectedStandard,
+        dataName: this.dataBaselineForm.dataName,
+        dataLevel: this.dataBaselineForm.dataLevel,
+        dataType: this.dataBaselineForm.dataType,
+        dataOwner: this.dataBaselineForm.dataOwner,
+        deptName: this.dataBaselineForm.deptName,
+        dateSize: this.dataBaselineForm.dateSize,
+        piiCount: this.dataBaselineForm.piiCount,
+        monthAmountOfIncrease: this.dataBaselineForm.monthAmountOfIncrease,
+        noPersonalData: this.toFlag(this.dataBaselineForm.noPersonalData),
+        ordinaryPersonalData: this.toFlag(this.dataBaselineForm.ordinaryPersonalData),
+        sensitivePersonalData: this.toFlag(this.dataBaselineForm.sensitivePersonalData),
+        personalData: this.toFlag(this.dataBaselineForm.personalData),
+        systemGather: this.toFlag(this.dataBaselineForm.systemGather),
+        systemProduction: this.toFlag(this.dataBaselineForm.systemProduction),
+        artificialFillIn: this.toFlag(this.dataBaselineForm.artificialFillIn),
+        dealBuy: this.toFlag(this.dataBaselineForm.dealBuy),
+        shareExchange: this.toFlag(this.dataBaselineForm.shareExchange),
+        other: this.toDetailText(this.dataBaselineForm.other, this.dataBaselineForm.otherInput),
+        externalProvision: this.toDetailText(
+          this.dataBaselineForm.externalProvisionBox && !this.dataBaselineForm.noInteraction,
+          this.dataBaselineForm.externalProvision
+        ),
+        entrust: this.toDetailText(
+          this.dataBaselineForm.entrustBox && !this.dataBaselineForm.noInteraction,
+          this.dataBaselineForm.entrust
+        ),
+        jointDisposal: this.toDetailText(
+          this.dataBaselineForm.jointDisposalBox && !this.dataBaselineForm.noInteraction,
+          this.dataBaselineForm.jointDisposal
+        ),
+        noInteraction: this.toFlag(this.dataBaselineForm.noInteraction),
+        privateCloud: this.toDetailText(this.dataBaselineForm.privateCloudBox, this.dataBaselineForm.privateCloud),
+        publicCloud: this.toDetailText(this.dataBaselineForm.publicCloudBox, this.dataBaselineForm.publicCloud),
+        mixtureCloud: this.toDetailText(this.dataBaselineForm.mixtureCloudBox, this.dataBaselineForm.mixtureCloud),
+        governmentCloud: this.toDetailText(this.dataBaselineForm.governmentCloudBox, this.dataBaselineForm.governmentCloud),
+        noCloudComputingPlatform: this.toDetailText(
+          this.dataBaselineForm.noCloudComputingPlatformBox,
+          this.dataBaselineForm.noCloudComputingPlatform
+        ),
+        thisUnitMachineRoom: this.toDetailText(
+          this.dataBaselineForm.thisUnitMachineRoomBox,
+          this.dataBaselineForm.thisUnitMachineRoom
+        ),
+        outerUnitMachineRoom: this.toDetailText(
+          this.dataBaselineForm.outerUnitMachineRoomBox,
+          this.dataBaselineForm.outerUnitMachineRoom
+        ),
+        thirdPartyTrusteeshipMachineRoom: this.toDetailText(
+          this.dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox,
+          this.dataBaselineForm.thirdPartyTrusteeshipMachineRoom
+        ),
+        domestic: this.toDetailText(this.dataBaselineForm.domesticBox, this.dataBaselineForm.domestic),
+        overseas: this.toDetailText(this.dataBaselineForm.overseasBox, this.dataBaselineForm.overseas),
+        dataSources: this.normalizeFlowUnits(this.dataBaselineForm.dataSources),
+        dataflow: this.normalizeFlowUnits(this.dataBaselineForm.dataflow)
+      });
+
+      if (this.activeSurveyRow) {
+        payload.categoryId = payload.categoryId || this.activeSurveyRow.id;
+        payload.categoryDataId = payload.categoryDataId || this.activeSurveyRow.categoryDataId || this.activeSurveyRow.id;
+        payload.categoryAttachDataId = payload.categoryAttachDataId || this.activeSurveyRow.categoryAttachDataId || "";
+      }
+
+      return payload;
+    },
     async handleStandardChange() {
       await this.fetchLevelOptions();
       this.handleCloseDetails(true);
@@ -723,6 +811,13 @@ export default {
 
       this.activeSurveyRow = row;
       this.dataBaselineForm = this.deepClone(row.seedForm || createDefaultForm());
+      this.activeSurveyRawData = {
+        id: this.dataBaselineForm.id || "",
+        rootId: this.selectedStandard,
+        categoryId: row.id,
+        categoryDataId: row.categoryDataId || row.id,
+        categoryAttachDataId: row.categoryAttachDataId || ""
+      };
       this.Loading = true;
       try {
         const res = await getDataMappingDetail({
@@ -730,7 +825,9 @@ export default {
           categoryId: row.id
         });
         if (res.code === 200 && this.activeSurveyRow && this.activeSurveyRow.rowKey === row.rowKey) {
-          this.dataBaselineForm = this.mergeSurveyForm(res.data || {}, row.seedForm);
+          const detailData = res.data || {};
+          this.activeSurveyRawData = this.deepClone(detailData);
+          this.dataBaselineForm = this.mergeSurveyForm(detailData, row.seedForm);
         }
       } catch (error) {
         console.error("Failed to load data-mapping detail:", error);
@@ -740,6 +837,7 @@ export default {
     },
     handleCloseDetails(resetForm = false) {
       this.activeSurveyRow = null;
+      this.activeSurveyRawData = {};
       if (resetForm) {
         this.dataBaselineForm = createDefaultForm();
       }
@@ -810,7 +908,7 @@ export default {
     handleRemoveFlowOutUnit(index) {
       this.dataBaselineForm.dataflow.splice(index, 1);
     },
-    handleSubmit() {
+    async handleSubmit() {
       let isUnitValid = true;
 
       this.dataBaselineForm.dataSources.forEach((item) => {
@@ -848,10 +946,34 @@ export default {
         return;
       }
 
-      this.activeSurveyRow.seedForm = this.deepClone(this.dataBaselineForm);
-      this.activeSurveyRow.status = "reported";
-      this.surveyTableData = [...this.surveyTableData];
-      this.$message.success("当前页面已暂存修改");
+      const payload = this.buildSurveySubmitPayload();
+      delete payload.updateBy
+      delete payload.updateTime
+      this.Loading = true;
+      try {
+        const res = await addOrUpdateDataFeelBottomByCategoryId(payload);
+        if (res.code !== 200) {
+          this.$message.error(res.msg || "保存失败");
+          return;
+        }
+
+        const savedId = res.data && (res.data.id || res.data.dataFeelBottomId);
+        if (savedId) {
+          this.dataBaselineForm.id = savedId;
+          payload.id = savedId;
+        }
+
+        this.activeSurveyRawData = this.deepClone(payload);
+        this.activeSurveyRow.seedForm = this.deepClone(this.dataBaselineForm);
+        this.activeSurveyRow.status = "reported";
+        this.surveyTableData = [...this.surveyTableData];
+        this.$message.success(res.msg || "保存成功");
+      } catch (error) {
+        console.error("Failed to save data-mapping detail:", error);
+        this.$message.error("保存失败");
+      } finally {
+        this.Loading = false;
+      }
     },
     handleReset() {
       this.$router.back();
