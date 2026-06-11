@@ -254,52 +254,32 @@
               <div class="storage-stack">
                 <div class="storage-option">
                   <el-checkbox v-model="dataBaselineForm.privateCloudBox">私有云</el-checkbox>
-                  <el-input
-                    v-if="dataBaselineForm.privateCloudBox"
-                    v-model="dataBaselineForm.privateCloud"
-                    placeholder="请输入具体对象"
-                    maxlength="30"
-                  ></el-input>
+                  <el-input v-if="dataBaselineForm.privateCloudBox" v-model="dataBaselineForm.privateCloud"
+                    placeholder="请输入具体对象" maxlength="30"></el-input>
                 </div>
 
                 <div class="storage-option">
                   <el-checkbox v-model="dataBaselineForm.publicCloudBox">公有云</el-checkbox>
-                  <el-input
-                    v-if="dataBaselineForm.publicCloudBox"
-                    v-model="dataBaselineForm.publicCloud"
-                    placeholder="请输入具体对象"
-                    maxlength="30"
-                  ></el-input>
+                  <el-input v-if="dataBaselineForm.publicCloudBox" v-model="dataBaselineForm.publicCloud"
+                    placeholder="请输入具体对象" maxlength="30"></el-input>
                 </div>
 
                 <div class="storage-option">
                   <el-checkbox v-model="dataBaselineForm.mixtureCloudBox">混合云</el-checkbox>
-                  <el-input
-                    v-if="dataBaselineForm.mixtureCloudBox"
-                    v-model="dataBaselineForm.mixtureCloud"
-                    placeholder="请输入具体对象"
-                    maxlength="30"
-                  ></el-input>
+                  <el-input v-if="dataBaselineForm.mixtureCloudBox" v-model="dataBaselineForm.mixtureCloud"
+                    placeholder="请输入具体对象" maxlength="30"></el-input>
                 </div>
 
                 <div class="storage-option">
                   <el-checkbox v-model="dataBaselineForm.governmentCloudBox">政务云</el-checkbox>
-                  <el-input
-                    v-if="dataBaselineForm.governmentCloudBox"
-                    v-model="dataBaselineForm.governmentCloud"
-                    placeholder="请输入具体对象"
-                    maxlength="30"
-                  ></el-input>
+                  <el-input v-if="dataBaselineForm.governmentCloudBox" v-model="dataBaselineForm.governmentCloud"
+                    placeholder="请输入具体对象" maxlength="30"></el-input>
                 </div>
 
                 <div class="storage-option">
                   <el-checkbox v-model="dataBaselineForm.noCloudComputingPlatformBox">非云计算平台</el-checkbox>
-                  <el-input
-                    v-if="dataBaselineForm.noCloudComputingPlatformBox"
-                    v-model="dataBaselineForm.noCloudComputingPlatform"
-                    placeholder="请输入具体对象"
-                    maxlength="30"
-                  ></el-input>
+                  <el-input v-if="dataBaselineForm.noCloudComputingPlatformBox"
+                    v-model="dataBaselineForm.noCloudComputingPlatform" placeholder="请输入具体对象" maxlength="30"></el-input>
                 </div>
               </div>
             </div>
@@ -309,32 +289,21 @@
               <div class="storage-stack">
                 <div class="storage-option">
                   <el-checkbox v-model="dataBaselineForm.thisUnitMachineRoomBox">本单位机房</el-checkbox>
-                  <el-input
-                    v-if="dataBaselineForm.thisUnitMachineRoomBox"
-                    v-model="dataBaselineForm.thisUnitMachineRoom"
-                    placeholder="请输入具体对象"
-                    maxlength="30"
-                  ></el-input>
+                  <el-input v-if="dataBaselineForm.thisUnitMachineRoomBox"
+                    v-model="dataBaselineForm.thisUnitMachineRoom" placeholder="请输入具体对象" maxlength="30"></el-input>
                 </div>
 
                 <div class="storage-option">
                   <el-checkbox v-model="dataBaselineForm.outerUnitMachineRoomBox">外单位机房</el-checkbox>
-                  <el-input
-                    v-if="dataBaselineForm.outerUnitMachineRoomBox"
-                    v-model="dataBaselineForm.outerUnitMachineRoom"
-                    placeholder="请输入具体对象"
-                    maxlength="30"
-                  ></el-input>
+                  <el-input v-if="dataBaselineForm.outerUnitMachineRoomBox"
+                    v-model="dataBaselineForm.outerUnitMachineRoom" placeholder="请输入具体对象" maxlength="30"></el-input>
                 </div>
 
                 <div class="storage-option">
                   <el-checkbox v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox">第三方托管机房</el-checkbox>
-                  <el-input
-                    v-if="dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox"
-                    v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoom"
-                    placeholder="请输入具体对象"
-                    maxlength="30"
-                  ></el-input>
+                  <el-input v-if="dataBaselineForm.thirdPartyTrusteeshipMachineRoomBox"
+                    v-model="dataBaselineForm.thirdPartyTrusteeshipMachineRoom" placeholder="请输入具体对象"
+                    maxlength="30"></el-input>
                 </div>
               </div>
             </div>
@@ -344,22 +313,14 @@
               <div class="storage-stack">
                 <div class="storage-option">
                   <el-checkbox v-model="dataBaselineForm.domesticBox">境内</el-checkbox>
-                  <el-input
-                    v-if="dataBaselineForm.domesticBox"
-                    v-model="dataBaselineForm.domestic"
-                    placeholder="请输入具体对象"
-                    maxlength="30"
-                  ></el-input>
+                  <el-input v-if="dataBaselineForm.domesticBox" v-model="dataBaselineForm.domestic"
+                    placeholder="请输入具体对象" maxlength="30"></el-input>
                 </div>
 
                 <div class="storage-option">
                   <el-checkbox v-model="dataBaselineForm.overseasBox">境外</el-checkbox>
-                  <el-input
-                    v-if="dataBaselineForm.overseasBox"
-                    v-model="dataBaselineForm.overseas"
-                    placeholder="请输入具体对象"
-                    maxlength="30"
-                  ></el-input>
+                  <el-input v-if="dataBaselineForm.overseasBox" v-model="dataBaselineForm.overseas"
+                    placeholder="请输入具体对象" maxlength="30"></el-input>
                 </div>
               </div>
             </div>
@@ -991,11 +952,11 @@ export default {
 
 .page-header {
   display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eaeaea;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eaeaea;
 
   h2 {
     margin: 0;
@@ -1020,7 +981,11 @@ export default {
 }
 
 .export-btn {
-  border-radius: 10px;
+  margin-left: 0;
+  background-color: #263fa8;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
 }
 
 .legal-basis-card,

@@ -1166,6 +1166,7 @@ export default {
       },
       currentNodeData: null, // 存储当前选中的节点数据
       currentProjectId: '', // 当前上下文对应的 projectId
+      routeTaskRow: null, // 从 hierarchicalTask 跳转携带的行数据
       folderList: [], // 文件夹列表
       fileList: [], // 文件列表
       fileTotal: 0, // 总条目数（后端 titleNum）
@@ -1609,6 +1610,12 @@ export default {
     }
   },
   watch: {
+    '$route.fullPath'() {
+      this.routeTaskRow = this.getRouteTaskRow();
+      if (this.categoryList.length > 0) {
+        this.applyInitialTreeSelection();
+      }
+    },
     filterText(val) {
       this.$refs.tree.filter(val);
 
@@ -1686,6 +1693,7 @@ export default {
     }
   },
   created() {
+    this.routeTaskRow = this.getRouteTaskRow();
     this.getProtectCategory()
   },
   mounted() {
@@ -1714,6 +1722,51 @@ export default {
         return '待审查';
       }
       return confidenceLevel === '低' ? '需人工介入' : '审查通过';
+    },
+    getRouteTaskRow() {
+      const routeTaskRow = this.$route?.query?.taskRow || this.$route?.query?.row || this.$route?.query?.drawerData;
+      if (!routeTaskRow) return null;
+      if (typeof routeTaskRow === 'string') {
+        try {
+          return JSON.parse(routeTaskRow);
+        } catch (error) {
+          return null;
+        }
+      }
+      return routeTaskRow;
+    },
+    findMatchedSourceNode(taskRow) {
+      if (!taskRow || !Array.isArray(this.categoryList) || this.categoryList.length === 0) {
+        return null;
+      }
+
+      const taskSourceId = taskRow.id || taskRow.sourceId || taskRow.datasourceId || taskRow.databaseId;
+      const taskSourceName = (taskRow.sourceName || taskRow.label || '').trim();
+
+      return this.categoryList.find(node => {
+        const nodeId = node.id || node.sourceId || node.datasourceId || node.databaseId;
+        const nodeLabel = (node.label || node.sourceName || '').trim();
+
+        if (taskSourceId !== undefined && taskSourceId !== null && taskSourceId !== '') {
+          return String(nodeId) === String(taskSourceId);
+        }
+        return taskSourceName && nodeLabel === taskSourceName;
+      }) || null;
+    },
+    applyInitialTreeSelection() {
+      const matchedNode = this.findMatchedSourceNode(this.routeTaskRow);
+      const targetNode = matchedNode || this.categoryList[0];
+      if (!targetNode) return;
+
+      this.treeID = targetNode.id;
+      this.currentProjectId = this.resolveProjectId(targetNode);
+      this.$nextTick(() => {
+        if (this.$refs.tree) {
+          this.$refs.tree.setCurrentKey(targetNode.id);
+        }
+        this.isTreeAllChecked = true;
+        this.handleTreeNodeClick(targetNode);
+      });
     },
     // ======== 新增 fixResults 抽屉 methods 开始 ========
     openFixResultsDrawer(row) {
@@ -1983,15 +2036,7 @@ export default {
         if (resp.code == 200) {
           if (resp.data && resp.data.length > 0) {
             this.categoryList = this.processTreeData(resp.data);
-            this.treeID = resp.data[0].id;
-            this.currentProjectId = this.resolveProjectId(this.categoryList[0]);
-            this.$nextTick(() => {
-              this.$refs.tree.setCurrentKey(this.treeID);
-              this.isTreeAllChecked = true;
-
-              // 根据类型初始化右侧视图
-              this.handleTreeNodeClick(this.categoryList[0]);
-            });
+            this.applyInitialTreeSelection();
           } else {
             this.categoryList = [];
           }

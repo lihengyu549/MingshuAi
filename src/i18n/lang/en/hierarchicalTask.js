@@ -20,9 +20,7 @@ export default {
     pauseTask: 'Pause Task',
     terminateTask: 'Terminate Task',
     taskMonitoring: 'Task Monitoring',
-    resultView: 'View Result',
-    resultPublish: 'Publish Result',
-    publishWithdraw: 'Withdraw Publish',
+    resultView: 'Classification View',
     save: 'Confirm'
   },
   titles: {
@@ -133,7 +131,8 @@ export default {
     publishStatus: 'Publish Status',
     updateTime: 'Updated Time',
     taskActions: 'Task Actions',
-    resultActions: 'Result Actions'
+    resultActions: 'Result View',
+    assetView: 'Asset View'
   },
   result: {
     fieldName: 'Field Name',
@@ -172,7 +171,6 @@ export default {
     repetitionThresholdRange: 'Please enter a value between 1 and 100'
   },
   messages: {
-    withdrawReleaseConfirm: 'Are you sure you want to withdraw the published result?',
     currentTaskWait: 'The current task is {status}. Please wait until the operation finishes before continuing',
     continueExecutionConfirm: 'The current task is paused. Are you sure you want to continue?',
     restartExecutionConfirm: 'The current task has been terminated. Are you sure you want to run it again?',
@@ -185,7 +183,6 @@ export default {
     deleteTaskWithResultsConfirm: 'Deleting the task will also delete all execution results associated with this data source. Continue?',
     deleteSelectedConfirm: 'Are you sure you want to delete the selected items?',
     selectAtLeastOne: 'Please select at least one record',
-    cannotPublishWhenRunning: 'The current status is Running, so publishing is not allowed',
     cannotPauseInStatus: 'The current status is {status}, so pause cannot be performed',
     pauseTaskConfirm: 'Are you sure you want to pause this task?',
     cannotTerminateInStatus: 'The current status is {status}, so termination cannot be performed',

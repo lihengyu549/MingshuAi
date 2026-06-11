@@ -20,9 +20,8 @@ export default {
     pauseTask: '暂停任务',
     terminateTask: '终止任务',
     taskMonitoring: '任务监控',
-    resultView: '结果查看',
-    resultPublish: '结果发布',
-    publishWithdraw: '发布撤回',
+    resultView: '分类视角',
+    assetView: '资产视角',
     save: '确定'
   },
   titles: {
@@ -133,7 +132,7 @@ export default {
     publishStatus: '发布状态',
     updateTime: '更新时间',
     taskActions: '任务操作',
-    resultActions: '结果操作'
+    resultActions: '结果查看'
   },
   result: {
     fieldName: '字段名',
@@ -172,7 +171,6 @@ export default {
     repetitionThresholdRange: '请输入1-100之间的数值'
   },
   messages: {
-    withdrawReleaseConfirm: '确定撤回已发布的结果？',
     currentTaskWait: '当前任务{status}，请等待操作完成后再执行',
     continueExecutionConfirm: '当前任务已暂停，确定继续执行？',
     restartExecutionConfirm: '当前任务已终止，确定重新执行？',
@@ -185,7 +183,6 @@ export default {
     deleteTaskWithResultsConfirm: '删除任务，将会删除数据源所关联的所有执行结果,确定删除吗',
     deleteSelectedConfirm: '确定删除所选中的项吗',
     selectAtLeastOne: '至少选择一条数据',
-    cannotPublishWhenRunning: '当前状态为运行中，无法发布',
     cannotPauseInStatus: '当前状态为{status}，无法执行暂停操作',
     pauseTaskConfirm: '确定暂停任务吗',
     cannotTerminateInStatus: '当前状态为{status}，无法执行终止操作',

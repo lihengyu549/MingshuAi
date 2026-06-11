@@ -182,15 +182,11 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('hierarchicalTask.columns.resultActions')" align="center" width="230"
+        <el-table-column :label="$t('hierarchicalTask.columns.resultActions')" align="center" width="200"
           class-name="small-padding fixed-width">
           <template slot-scope="scope">
-            <el-button size="mini" type="text" @click="resultLookFn(scope.row)">{{
-              $t('hierarchicalTask.buttons.resultView') }}</el-button>
-            <el-button size="mini" type="text" :disabled="scope.row.publishStatus == 1"
-              @click="resultReleaseFn(scope.row)">{{ $t('hierarchicalTask.buttons.resultPublish') }}</el-button>
-            <el-button size="mini" type="text" :disabled="scope.row.publishStatus != 1"
-              @click="resultWithdraw(scope.row)">{{ $t('hierarchicalTask.buttons.publishWithdraw') }}</el-button>
+            <el-tag type="success" @click="resultLookFn(scope.row)" style="border: none;cursor: pointer; margin-right: 10px;">{{ $t('hierarchicalTask.buttons.resultView') }}</el-tag>
+            <el-tag type="primary" @click="assetLookFn(scope.row)" style="border: none;cursor: pointer;">{{ $t('hierarchicalTask.buttons.assetView') }}</el-tag>
           </template>
         </el-table-column>
       </el-table>
@@ -359,7 +355,8 @@
               <div class="feature-content">
                 <div class="feature-title">{{ $t('hierarchicalTask.features.textSummarization') }}</div>
                 <div class="feature-desc">{{ $t('hierarchicalTask.features.textSummarizationDesc') }}</div>
-                <el-checkbox v-model="textSummarizationChecked" disabled class="checkbox-right round-checkbox"></el-checkbox>
+                <el-checkbox v-model="textSummarizationChecked" disabled
+                  class="checkbox-right round-checkbox"></el-checkbox>
               </div>
             </div>
             <!-- 语义缓存 -->
@@ -599,7 +596,6 @@
 
 <script>
 import {
-  publish,
   getScanCompleteData,
   addScanCompleteDataTasks,
   deleteScanCompleteDataTasks,
@@ -610,7 +606,6 @@ import {
   pauseTask,
   recoveryTask,
   terminateTask,
-  withdrawReleaseState,
 } from "@/api/system/proxys";
 import { addScanCompleteDataTasksByFile, editScanCompleteDataByFile, selectFileResult } from "@/api/system/unstructured"
 
@@ -1011,21 +1006,6 @@ export default {
         return true
       }
     },
-    // 发布撤回
-    resultWithdraw(row) {
-      this.$confirm(this.$t('hierarchicalTask.messages.withdrawReleaseConfirm'), this.$t('tip'), {
-        confirmButtonText: this.$t('confirm'),
-        cancelButtonText: this.$t('cancel'),
-        type: 'warning'
-      }).then(() => {
-        withdrawReleaseState({ proxyId: row.id }).then(res => {
-          if (res.code == 200) {
-            this.$message.success(res.msg)
-            this.getList()
-          }
-        })
-      })
-    },
     // 获取新增任务中 数据源名称
     getScanCompleteDataFn(id) {
       this.formLoading = true
@@ -1410,22 +1390,15 @@ export default {
         this.$router.push({ name: 'ProtectTableField', params: row });
       }
     },
-    resultReleaseFn(row) {
-      if (row.state == 'RUNNING') {
-        this.$message({ message: this.$t('hierarchicalTask.messages.cannotPublishWhenRunning'), type: 'warning' })
-        return
-      }
-      this.loading = true
-      publish(row.id).then(res => {
-        if (res.code == 200) {
-          this.$message({ message: res.msg, type: 'success' })
-          this.getList()
-          this.loading = false
+    // 资产视角
+    assetLookFn(row) {
+      sessionStorage.setItem('hierarchicalTask_search_state', JSON.stringify(this.queryParams));
+      this.$router.push({
+        path: '/dataAssetManagement/assetCatalog',
+        query: {
+          taskRow: JSON.stringify(row)
         }
-      })
-        .catch(err => {
-          this.loading = false
-        })
+      });
     },
     // 执行状态中文
     stateMsg(val) {
