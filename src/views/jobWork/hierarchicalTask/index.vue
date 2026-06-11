@@ -36,13 +36,13 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item :label="$t('hierarchicalTask.search.publishStatus')" prop="publishStatus">
+        <!-- <el-form-item :label="$t('hierarchicalTask.search.publishStatus')" prop="publishStatus">
           <el-select clearable v-model="queryParams.publishStatus" @change="inputSearch"
             :placeholder="$t('hierarchicalTask.search.publishStatusPlaceholder')">
             <el-option v-for="item in publishStatus" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <!-- <el-form-item class="searchBtn">
         <el-button icon="el-icon-refresh" size="small" @click="resetQuery">重置</el-button>
       </el-form-item> -->
@@ -185,8 +185,10 @@
         <el-table-column :label="$t('hierarchicalTask.columns.resultActions')" align="center" width="200"
           class-name="small-padding fixed-width">
           <template slot-scope="scope">
-            <el-tag type="success" @click="resultLookFn(scope.row)" style="border: none;cursor: pointer; margin-right: 10px;">{{ $t('hierarchicalTask.buttons.resultView') }}</el-tag>
-            <el-tag type="primary" @click="assetLookFn(scope.row)" style="border: none;cursor: pointer;">{{ $t('hierarchicalTask.buttons.assetView') }}</el-tag>
+            <el-tag type="success" @click="resultLookFn(scope.row)" style="border: none;cursor: pointer; margin-right: 10px;">
+              <i class="el-icon-view" style="margin-right: 5px;"></i>{{ $t('hierarchicalTask.buttons.resultView') }}</el-tag>
+            <el-tag type="primary" @click="assetLookFn(scope.row)" style="border: none;cursor: pointer;">
+              <i class="el-icon-view" style="margin-right: 5px;"></i>{{ $t('hierarchicalTask.buttons.assetView') }}</el-tag>
           </template>
         </el-table-column>
       </el-table>
@@ -687,10 +689,10 @@ export default {
           label: this.$t('hierarchicalTask.columns.executionStatus'),
           prop: 'maskComplete'
         },
-        {
-          label: this.$t('hierarchicalTask.columns.publishStatus'),
-          prop: 'publishStatus'
-        },
+        // {
+        //   label: this.$t('hierarchicalTask.columns.publishStatus'),
+        //   prop: 'publishStatus'
+        // },
         {
           label: this.$t('hierarchicalTask.columns.updateTime'),
           prop: 'updateTime'

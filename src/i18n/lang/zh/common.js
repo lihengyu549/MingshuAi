@@ -1,5 +1,5 @@
 export default {
-  homeTitle: '态势感知驾驶舱',
+  homeTitle: '首页',
   dataScreen: '数据大屏',
   profile: '个人中心',
   assignRole: '分配角色',
