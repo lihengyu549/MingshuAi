@@ -122,11 +122,11 @@
               </template>
               <el-table-column type="selection" width="60" align="center" />
               <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label"
-                :align="item.prop === 'attachData' ? 'left' : 'center'" :prop="item.prop" :width="item.width"
+                :align="item.prop === 'attachData' || item.prop === 'protectMethodName' ? 'left' : 'center'" :prop="item.prop" :width="item.width"
                 show-overflow-tooltip>
                 <template slot-scope="scope">
                   <template v-if="item.prop === 'attachData'">
-                    <span class="subclass-name-cell" :class="{ disabled: !canEditRow(scope.row) }"
+                    <span class="subclass-name-cell" :class="{ readonly: !canEditRow(scope.row) }"
                       @click="handleNameClick(scope.row)">
                       <svg-icon icon-class="yezibiaoqian" style="margin-right: 5px; font-size: 14px;" />
                       {{ scope.row.attachData }}
@@ -156,16 +156,6 @@
                   <template v-else>
                     {{ scope.row[item.prop] || '--' }}
                   </template>
-                </template>
-              </el-table-column>
-              <el-table-column :label="$t('operation')" align="center" width="180">
-                <template slot-scope="scope">
-                  <el-button type="text" size="medium" @click="lookFn(scope.row)">
-                    {{ $t('view') }}
-                  </el-button>
-                  <el-button type="text" size="medium" @click="dataFn(scope.row)">
-                    {{ $t('jobMonitoring.dataBenchmark') }}
-                  </el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -701,7 +691,7 @@ export default {
       isIndeterminate: true,
       checkAll: false,
       columnOptions: [
-        { label: this.$t('jobMonitoring.subclassName'), prop: 'attachData', width: '200' },
+        { label: this.$t('jobMonitoring.subclassName'), prop: 'attachData', width: '220' },
         { label: this.$t('jobMonitoring.securityLevel'), prop: 'minSecurityLevel', width: '200' },
         { label: this.$t('jobMonitoring.suggestProtectMethod'), prop: 'protectMethodName' },
         { label: this.$t('jobMonitoring.dataOwner'), prop: 'dataOwner', width: '150' },
@@ -995,20 +985,21 @@ export default {
       return value === '内置'
     },
     canEditRow(row) {
-      return !((this.isBuiltInSource(row.dataSource) || row.dataOwner !== this.$store.state.user.name) && !this.$store.state.user.roles.includes('admin'))
+      return row.dataOwner === this.$store.state.user.name
     },
     handleNameClick(row) {
-      if (!this.canEditRow(row)) {
-        return
+      if (this.canEditRow(row)) {
+        this.editFn(row)
+      } else {
+        this.lookFn(row)
       }
-      this.editFn(row)
     },
     findTreeNodeById(tree, nodeId) {
       if (!Array.isArray(tree) || !nodeId) {
         return null
       }
       for (const node of tree) {
-        if (node.id === nodeId) {
+        if (node.id === nodeId) { 
           return node
         }
         if (node.children && node.children.length > 0) {
@@ -1877,12 +1868,6 @@ export default {
         })
     },
     // 数据摸底表单方法
-    dataFn(row) {
-      this.$router.push({
-        path: '/dataMapping',
-        query: { row: row }
-      });
-    },
     // Helper function to get the path from the root to a given node
     getNodePath(tree, nodeId, path = []) {
       if (!Array.isArray(tree)) {
@@ -2339,9 +2324,8 @@ export default {
   cursor: pointer;
 }
 
-.subclass-name-cell.disabled {
-  color: #c0c4cc;
-  cursor: not-allowed;
+.subclass-name-cell.readonly {
+  color: #67c23a;
 }
 
 .dialog-footer {
