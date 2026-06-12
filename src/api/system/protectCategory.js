@@ -550,3 +550,12 @@ export function resultPushByParentId(params) {
     params: params,
   })
 }
+
+// 数据摸底导出
+export function exportDataFeel(params) {
+  return request({
+    url: '/system/dashboard/exportDataFeel',
+    method: 'post',
+    data: params,
+  })
+}

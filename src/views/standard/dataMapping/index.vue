@@ -341,7 +341,8 @@ import {
   getFrameworks,
   getDataMappingDetail,
   listDataMappingCategories,
-  addOrUpdateDataFeelBottomByCategoryId
+  addOrUpdateDataFeelBottomByCategoryId,
+  exportDataFeel
 } from "@/api/system/protectCategory";
 import { getCategorySchemaLevelList } from "@/api/data";
 
@@ -762,7 +763,14 @@ export default {
       await this.fetchSurveyTableData();
     },
     handleExport() {
-      this.$message.info("导出功能暂未接入");
+      let data = { rootId: this.selectedStandard }
+      exportDataFeel(data).then(res => {
+        if (res.code === 200) {
+          this.$message.success("导出成功");
+        } else {
+          this.$message.error("导出失败");
+        }
+      })
     },
     async handleViewDetails(row, forceOpen = false) {
       if (!forceOpen && this.activeSurveyRow && this.activeSurveyRow.rowKey === row.rowKey) {
