@@ -351,10 +351,10 @@
                             </span>
                             <el-tag size="mini" type="warning" v-if="scope.row.isPk">PK</el-tag>
                           </template>
-                          <template v-else-if="item.prop === 'confirmStatus' || item.prop === 'dirtyData'">
+                          <template v-else-if="item.prop === 'confirm'">
                             <span>
-                              <el-tag :type="scope.row.dirtyData === '是' ? 'primary' : 'info'" size="mini">{{
-                                scope.row.dirtyData === '是' ? '已确认' : '未确认' }}</el-tag>
+                              <el-tag :type="scope.row.confirm === 1 ? 'primary' : 'info'" size="mini">{{
+                                scope.row.confirm === 1 ? '已确认' : '未确认' }}</el-tag>
                             </span>
                           </template>
                           <template v-else-if="item.prop === 'securityLevelName'">
@@ -1480,7 +1480,7 @@ export default {
         { label: '安全分级', prop: 'securityLevelName', width: '150' },
         { label: '样本', prop: 'sampleData', width: '150' },
         { label: '自动审查', prop: 'confidenceLevel', width: '130' },
-        { label: '确认状态', prop: 'confirmStatus', width: '120' },
+        { label: '确认状态', prop: 'confirm', width: '120' },
         { label: '所属库', prop: 'databaseName' },
         { label: '所属表', prop: 'tableName' },
         { label: '表注释', prop: 'tableRemark' },
