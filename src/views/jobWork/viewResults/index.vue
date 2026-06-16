@@ -254,7 +254,7 @@
                       $t('columnSettings')
                     }}</el-button>
                 </el-popover>
-                <el-button type="info" plain size="medium" @click="handleBack">{{ $t('return') }}</el-button>
+                <el-button type="text" size="medium" style="color: #7c8592;" @click="handleBack">{{ $t('return') }}</el-button>
               </div>
             </div>
             <el-table class="tableBox" style="flex: 1;" height="100%" v-loading="loading"
@@ -386,7 +386,7 @@
       </template>
     </el-dialog>
 
-    <Drawer :title="fixResultsTitleText" :visible.sync="fixResultsDrawerVisible" direction="rtl" size="60%"
+    <Drawer title=" " :visible.sync="fixResultsDrawerVisible" direction="rtl" size="60%"
       :destroy-on-close="true" custom-class="fix-results-drawer" :wrapperClosable="true">
       <div slot="body" class="fix-results-container" v-loading="fixResultsLoading" v-if="fixResultsRow">
         <el-card class="top-section" shadow="never"

@@ -906,7 +906,7 @@
     </el-dialog>
 
     <!-- ======== 新增 fixResults 抽屉 开始 ======== -->
-    <Drawer :title="fixResultsTitleText" :visible.sync="fixResultsDrawerVisible" direction="rtl" size="60%"
+    <Drawer title=" " :visible.sync="fixResultsDrawerVisible" direction="rtl" size="60%"
       :destroy-on-close="true" custom-class="fix-results-drawer" :wrapperClosable="true">
       <div slot="body" class="fix-results-container" v-loading="fixResultsLoading" v-if="fixResultsRow">
         <!-- 顶部标题和按钮区域 -->
