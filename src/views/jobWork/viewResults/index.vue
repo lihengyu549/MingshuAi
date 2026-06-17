@@ -298,7 +298,8 @@
                   </template>
                   <template v-else-if="item.prop === 'confidenceLevel'">
                     <el-tag :type="getAiReviewTagType(scope.row)" effect="plain" class="table-ai-review-tag">
-                      <i :class="getAiReviewIcon(scope.row)"></i>
+                      <svg-icon v-if="isAiReviewSvgIcon(scope.row)" :icon-class="getAiReviewIcon(scope.row)"></svg-icon>
+                      <i v-else :class="getAiReviewIcon(scope.row)"></i>
                       <span>{{ getAiReviewLabel(scope.row) }}</span>
                     </el-tag>
                   </template>
@@ -515,7 +516,8 @@
                   <span>AI智能审查结果</span>
                 </div>
                 <el-tag :type="fixResultsAiReviewTagType" effect="plain" class="ai-review-card__status-tag">
-                  <i :class="fixResultsAiReviewIcon"></i>
+                  <svg-icon v-if="fixResultsAiReviewUseSvgIcon" :icon-class="fixResultsAiReviewIcon"></svg-icon>
+                  <i v-else :class="fixResultsAiReviewIcon"></i>
                   <span>{{ fixResultsAiReviewLabel }}</span>
                 </el-tag>
               </div>
@@ -617,7 +619,7 @@ import {
 import { getCategorySchemaLevelList } from "@/api/data"
 
 export default {
-  dicts: ['sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un'],
+  dicts: ['sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un', 'sys_confidence_level_status'],
   name: "ProxysResult",
   data() {
     return {
@@ -770,7 +772,7 @@ export default {
         { labelKey: "category", prop: "categoryName", width: "300" },
         { labelKey: "securityLevel", prop: "securityLevelName", width: "150" },
         { labelKey: "sampleData", prop: "sampleData", width: "100" },
-        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "130" },
+        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "150" },
         { labelKey: "confirm", prop: "confirm", width: "120" },
         { labelKey: "database", prop: "databaseName", width: "150" },
         { labelKey: "table", prop: "tableName", width: "150" },
@@ -792,7 +794,7 @@ export default {
         { labelKey: "fileContext", prop: "fileContext" },
         { labelKey: "category", prop: "categoryName", width: "300" },
         { labelKey: "securityLevel", prop: "securityLevelName", width: "150" },
-        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "130" },
+        { labelKey: "confidenceLevel", prop: "confidenceLevel", width: "150" },
         { labelKey: "confirm", prop: "confirm", width: "120" },
         { labelKey: "classificationReason", prop: "classificationReasons", width: "150" },
         { labelKey: "confidenceScore", prop: "confidenceScore", width: "100" },
@@ -953,12 +955,11 @@ export default {
     fixResultsAiReviewIcon() {
       return this.getAiReviewIcon(this.fixResultsRow);
     },
+    fixResultsAiReviewUseSvgIcon() {
+      return this.isAiReviewSvgIcon(this.fixResultsRow);
+    },
     fixResultsProgressColor() {
-      const confidenceLevel = String((this.fixResultsRow && this.fixResultsRow.confidenceLevel) || '');
-      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
-        return '#909399';
-      }
-      return confidenceLevel === '低' ? '#f97316' : '#3b82f6';
+      return this.getAiReviewProgressColor(this.fixResultsRow);
     },
     fixResultsClassificationReasonText() {
       const row = this.fixResultsRow || {};
@@ -1271,28 +1272,57 @@ export default {
       this.$refs.treeSelectSec.filter(val);
     },
     getAiReviewConfidenceLevel(row) {
-      return String((row && row.confidenceLevel) || '');
+      const confidenceLevel = row && row.confidenceLevel;
+      return confidenceLevel === undefined || confidenceLevel === null || confidenceLevel === '' ? '0' : String(confidenceLevel);
+    },
+    getAiReviewStatusConfig(row) {
+      const confidenceLevel = this.getAiReviewConfidenceLevel(row);
+      const configMap = {
+        '0': {
+          type: 'info',
+          icon: 'el-icon-info',
+          label: this.selectDictLabel(this.dict.type.sys_confidence_level_status, '0') || '待审查',
+          useSvgIcon: false,
+          progressColor: '#909399',
+        },
+        '1': {
+          type: 'warning',
+          icon: 'el-icon-warning-outline',
+          label: this.selectDictLabel(this.dict.type.sys_confidence_level_status, '1') || '需要人工介入',
+          useSvgIcon: false,
+          progressColor: '#f97316',
+        },
+        '2': {
+          type: 'primary',
+          icon: 'deepseek',
+          label: this.selectDictLabel(this.dict.type.sys_confidence_level_status, '2') || '审查通过',
+          useSvgIcon: true,
+          progressColor: '#3b82f6',
+        },
+        '3': {
+          type: 'primary',
+          icon: 'pass',
+          label: this.selectDictLabel(this.dict.type.sys_confidence_level_status, '3') || '人工审查通过',
+          useSvgIcon: true,
+          progressColor: '#3b82f6',
+        }
+      };
+      return configMap[confidenceLevel] || configMap['0'];
     },
     getAiReviewTagType(row) {
-      const confidenceLevel = this.getAiReviewConfidenceLevel(row);
-      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
-        return 'info';
-      }
-      return confidenceLevel === '低' ? 'warning' : 'success';
+      return this.getAiReviewStatusConfig(row).type;
     },
     getAiReviewIcon(row) {
-      const confidenceLevel = this.getAiReviewConfidenceLevel(row);
-      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
-        return 'el-icon-info';
-      }
-      return confidenceLevel === '低' ? 'el-icon-warning-outline' : 'el-icon-check';
+      return this.getAiReviewStatusConfig(row).icon;
+    },
+    isAiReviewSvgIcon(row) {
+      return this.getAiReviewStatusConfig(row).useSvgIcon;
     },
     getAiReviewLabel(row) {
-      const confidenceLevel = this.getAiReviewConfidenceLevel(row);
-      if (!confidenceLevel || (confidenceLevel !== '低' && confidenceLevel !== '高')) {
-        return '待审查';
-      }
-      return confidenceLevel === '低' ? '需人工介入' : '审查通过';
+      return this.getAiReviewStatusConfig(row).label;
+    },
+    getAiReviewProgressColor(row) {
+      return this.getAiReviewStatusConfig(row).progressColor;
     },
     handleCheckAllChange(val) {
       this.checkedColumnProps = val ? this.setList.map(item => item.prop) : [];
@@ -2376,6 +2406,10 @@ export default {
   font-size: 14px;
 }
 
+.fix-results-container .ai-review-card__status-tag .svg-icon {
+  font-size: 14px;
+}
+
 .fix-results-container .ai-review-card__body {
   padding: 20px;
 }
@@ -2456,6 +2490,19 @@ export default {
 
 .fix-results-container .ai-review-card--warning .ai-review-card__reason-title {
   color: #f97316;
+}
+
+.fix-results-container .ai-review-card--primary .ai-review-card__score {
+  color: #3b82f6;
+}
+
+.fix-results-container .ai-review-card--primary .ai-review-card__reason-box {
+  border-color: #dbe7fb;
+  background: #f8fbff;
+}
+
+.fix-results-container .ai-review-card--primary .ai-review-card__reason-title {
+  color: #2f5fe3;
 }
 
 .fix-results-container .ai-review-card--info .ai-review-card__score {
@@ -2621,6 +2668,10 @@ export default {
 }
 
 .table-ai-review-tag i {
+  font-size: 14px;
+}
+
+.table-ai-review-tag .svg-icon {
   font-size: 14px;
 }
 
