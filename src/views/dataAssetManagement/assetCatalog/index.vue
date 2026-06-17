@@ -1177,6 +1177,7 @@ export default {
 
       fileListTimer: null, // 防抖定时器
       folderClickTimer: null, // 文件夹点击节流定时器
+      treeNodeClickLock: false, // 左侧树节点切换锁，防止快速点击并发请求
 
 
 
@@ -2500,8 +2501,8 @@ export default {
     },
     // 新增：获取安全分级下拉选项
     fetchLevelOptions(databaseId) {
-      if (!databaseId) return;
-      getCategorySchemaLevelList({ databaseId }).then(res => {
+      if (!databaseId) return Promise.resolve();
+      return getCategorySchemaLevelList({ databaseId }).then(res => {
         const payload = res && res.data ? res.data : res;
         const list = payload.records || payload.rows || payload.list || payload || [];
         this.levelOptions = list.map(it => ({
@@ -2518,7 +2519,7 @@ export default {
         needSub: 1,
         ifAddUnclassified: 2
       };
-      treeListI(data).then(res => {
+      return treeListI(data).then(res => {
         const treeData = this.handleTree(res.data, "id") || res.data || [];
         this.personalProtectionOptions = treeData;
       });
@@ -2532,7 +2533,7 @@ export default {
         needSub: 1,
         ifAddUnclassified: 1
       };
-      treeListI(data).then(res => {
+      return treeListI(data).then(res => {
         this.categoryOptions = this.handleTree(res.data, "id") || res.data
       });
     },
@@ -2547,60 +2548,61 @@ export default {
      * 点击树节点事件:点击节点展示右侧列表
      * @param {Object} data - 点击的节点数据
      */
-    handleTreeNodeClick(data) {
+    async handleTreeNodeClick(data) {
+      if (this.treeNodeClickLock) {
+        return
+      }
+      this.treeNodeClickLock = true
+      this.Loading = true
       this.currentNodeType = data.type || '0';
       this.currentNodeData = data; // 保存当前节点数据
       this.currentProjectId = this.resolveProjectId(data);
 
-      if (this.currentNodeType == '1') {
-        // 获取下拉选项
-        this.fetchLevelOptions(data.id);
-        this.fetchCategoryOptions(this.currentProjectId);
+      try {
+        if (this.currentNodeType == '1') {
+          await Promise.all([
+            this.fetchLevelOptions(data.id),
+            this.fetchCategoryOptions(this.currentProjectId)
+          ]);
 
-        // 文件管理模式 (非结构化，一层)
-        this.breadcrumbList = [];
-        this.currentFolderId = null;
-        this.loadFileListData(data, {
-          folderId: null,
-          keepCurrentFolderName: false,
-          immediate: true
-        });
-      } else {
-        // 结构化模式 (数据源 -> 库 -> 表)
-        const level = this.currentNodeLevel;
-        if (level === 1) {
-          // 获取安全分级下拉选项
-          this.fetchLevelOptions(data.id);
-          this.fetchPersonalProtectionOptions();
-          this.fetchCategoryOptions(this.currentProjectId);
-
-          // 点击第一层：数据源
-          // 手动控制同级其他数据源节点收起
-          const rootNodes = this.$refs.tree.store.root.childNodes;
-          if (rootNodes) {
-            rootNodes.forEach(child => {
-              if (child.data.id !== data.id) {
-                child.expanded = false;
-                // 同时把它们下面所有的子节点也全部收起，防止下次展开时状态错乱
-                if (child.childNodes && child.childNodes.length > 0) {
-                  child.childNodes.forEach(subChild => {
-                    subChild.expanded = false;
-                  });
+          this.breadcrumbList = [];
+          this.currentFolderId = null;
+          await this.loadFileListData(data, {
+            folderId: null,
+            keepCurrentFolderName: false,
+            immediate: true
+          });
+        } else {
+          const level = this.currentNodeLevel;
+          if (level === 1) {
+            const rootNodes = this.$refs.tree.store.root.childNodes;
+            if (rootNodes) {
+              rootNodes.forEach(child => {
+                if (child.data.id !== data.id) {
+                  child.expanded = false;
+                  if (child.childNodes && child.childNodes.length > 0) {
+                    child.childNodes.forEach(subChild => {
+                      subChild.expanded = false;
+                    });
+                  }
                 }
-              }
-            });
-          }
-          this.$refs.tree.store.nodesMap[data.id].expanded = true;
+              });
+            }
+            this.$refs.tree.store.nodesMap[data.id].expanded = true;
 
-          // 从后端获取第一层数据源详情和其下的数据库列表
-          this.loading = true;
-          const params = {
-            queryType: '1',
-            databaseId: data.id // 数据源ID
-          };
-          getPropertyList(params).then(res => {
-            if (res.code === 200) {
-              const resData = res.data || {};
+            this.loading = true;
+            const params = {
+              queryType: '1',
+              databaseId: data.id
+            };
+            const [, , propertyRes] = await Promise.all([
+              this.fetchLevelOptions(data.id),
+              this.fetchPersonalProtectionOptions(),
+              getPropertyList(params),
+              this.fetchCategoryOptions(this.currentProjectId)
+            ]);
+            if (propertyRes.code === 200) {
+              const resData = propertyRes.data || {};
               this.dataSourceDetail = {
                 systemName: resData.systemName || '',
                 systemRemark: resData.systemRemark || '',
@@ -2608,35 +2610,37 @@ export default {
                 databaseList: resData.databaseList || []
               };
             }
-          }).finally(() => {
             this.loading = false;
-          });
-
-        } else if (level === 2) {
-          // 点击第二层：数据库，展开节点、获取表数据并插入到树中，右侧展示表列表
-          this.loading = true;
-          // 第一步：调用新增的 getTables 接口获取该库下的表数据塞进树节点
-          const treeParams = {
-            parentId: data.parentId, // 数据源ID
-            databaseName: data.label  // 数据库名称
-          };
-
-          getTables(treeParams).then(res => {
-            if (res.code === 200) {
-              const tables = res.data || [];
+          } else if (level === 2) {
+            this.loading = true;
+            const treeParams = {
+              parentId: data.parentId,
+              databaseName: data.label
+            };
+            const tableParams = {
+              queryType: '2',
+              databaseId: data.parentId,
+              databaseName: data.label,
+              pageNum: this.queryParams.pageNum,
+              pageSize: this.queryParams.pageSize
+            };
+            const [tablesRes, detailRes] = await Promise.all([
+              getTables(treeParams),
+              getPropertyList(tableParams)
+            ]);
+            if (tablesRes.code === 200) {
+              const tables = tablesRes.data || [];
               if (!data.children || data.children.length === 0) {
                 const tableNodes = tables.map(table => ({
                   id: table.tableId || table.id || Math.random().toString(36).substr(2, 9),
                   label: table.tableName,
                   parentId: data.id,
                   type: '0',
-                  level: 3, // 明确标识为第3层
+                  level: 3,
                   row: table,
                   projectId: this.resolveProjectId(data) || table.projectId || table.projectID || ''
                 }));
                 this.$set(data, 'children', tableNodes);
-
-                // 如果当前数据库节点是被勾选的，则新塞入的表节点也应该被勾选
                 this.$nextTick(() => {
                   const dbNode = this.$refs.tree.getNode(data.id);
                   if (dbNode && dbNode.checked) {
@@ -2646,7 +2650,6 @@ export default {
                   }
                 });
               }
-              // 手动控制同级其他节点收起
               const parentNode = this.$refs.tree.getNode(data.parentId);
               if (parentNode && parentNode.childNodes) {
                 parentNode.childNodes.forEach(child => {
@@ -2659,29 +2662,20 @@ export default {
                 this.$refs.tree.store.nodesMap[data.id].expanded = true;
               }
             }
-          });
-
-          // 第二步：调用 getPropertyList 获取右侧表格的分页详情数据
-          const tableParams = {
-            queryType: '2',
-            databaseId: data.parentId, // 数据源ID
-            databaseName: data.label,
-            pageNum: this.queryParams.pageNum,
-            pageSize: this.queryParams.pageSize
-          };
-          getPropertyList(tableParams).then(res => {
-            if (res.code === 200) {
-              this.dataAll = res.data.list || [];
-              this.total = res.data.total || 0;
+            if (detailRes.code === 200) {
+              this.dataAll = detailRes.data.list || [];
+              this.total = detailRes.data.total || 0;
             }
-          }).finally(() => {
             this.loading = false;
-          });
-        } else if (level === 3) {
-          // 点击第三层：表，右侧展示表字段信息
-          const row = data.row || { tableId: data.id, databaseId: data.parentId, tableName: data.label };
-          this.fieldInformationFn(row);
+          } else if (level === 3) {
+            const row = data.row || { tableId: data.id, databaseId: data.parentId, tableName: data.label };
+            await this.fieldInformationFn(row);
+          }
         }
+      } finally {
+        this.loading = false
+        this.Loading = false
+        this.treeNodeClickLock = false
       }
     },
 
@@ -3173,7 +3167,7 @@ export default {
       this.drawerTitle = this.$t('assetCatalog.tableNameLabel') + row.tableName
 
       // 初始化筛选
-      this.handleDrawerSearch()
+      return this.handleDrawerSearch()
     },
     // 抽屉筛选处理 (添加防抖)
     handleDrawerSearch() {
