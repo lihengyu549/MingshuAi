@@ -112,7 +112,7 @@
                 <!-- 整体进度条 -->
                 <div class="progress-card">
                     <div class="progress-header">
-                        <span class="progress-label">{{ $t('jobWorkMonitoring.overallProgress') }}</span>
+                        <span class="progress-label">{{ progressText }}</span>
                         <span class="progress-text">{{ progressCurrent }}/{{ progressTotal }} ({{ progressPercent
                         }}%)</span>
                     </div>
@@ -594,6 +594,7 @@ export default {
             // 进度条数据
             progressTotal: 0,
             progressCurrent: 0,
+            progressText: '',
             // 实时日志
             realtimeLogs: [],
             socket: null,
@@ -865,8 +866,8 @@ export default {
             const currentUrl = new URL(window.location.href);
             const hostName = currentUrl.hostname;
             this.socket = new WebSocket(
-                `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`, // 线上
-                // `ws://192.168.7.84:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
+                // `wss://${hostName}:443/prod-api/system/websocket/${this.routeData.id}/${uuid}`, // 线上
+                `ws://192.168.7.51:8080/system/websocket/${this.routeData.id}/${uuid}`,  // 本地
                 protocols  // 只有当token存在时才传递子协议
             );
             this.socket.onopen = () => {
@@ -895,6 +896,7 @@ export default {
                     // 进度条更新
                     this.progressCurrent = message.realtimeLogs?.progressCurrent !== undefined ? message.realtimeLogs.progressCurrent : this.progressCurrent;
                     this.progressTotal = message.realtimeLogs?.progressTotal !== undefined ? message.realtimeLogs.progressTotal : this.progressTotal;
+                    this.progressText = message.realtimeLogs?.progressText != '' ? message.realtimeLogs.progressText : this.$t('jobWorkMonitoring.overallProgress');
                     // 当前处理表更新（兼容缺失的前/后表名，以及不同命名）
                     const tc = message.tableCarousel || message.tablecarousel;
                     if (tc) {
