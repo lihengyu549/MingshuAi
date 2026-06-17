@@ -1827,32 +1827,34 @@ export default {
     fixResultsClearResultFilter() {
       this.$refs.fixResultsTreeSelectSec.filter('')
     },
-    fixResultsHandleManualConfirm() {
-      if (this.fixResultsIsFileSource) {
-        confirmListByFile([this.fixResultsRow && this.fixResultsRow.id]).then(res => {
-          if (res.code === 200) {
-            this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'))
-            if (this.fixResultsRow) {
-              this.fixResultsRow.confirm = 1
-            }
-            this.getList()
-          } else {
-            this.$message.error(res.msg || this.$t('fixResults.messages.manualConfirmFailed'))
-          }
-        })
-      } else {
-        confirmIds([this.fixResultsRow && this.fixResultsRow.id]).then(res => {
-          if (res.code === 200) {
-            this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'))
-            if (this.fixResultsRow) {
-              this.fixResultsRow.confirm = 1
-            }
-            this.getList()
-          } else {
-            this.$message.error(res.msg || this.$t('fixResults.messages.manualConfirmFailed'))
-          }
-        })
+    syncFixResultsRowFromLatestList() {
+      if (!this.fixResultsRow || !this.fixResultsRow.id || !Array.isArray(this.proxysList)) {
+        return
       }
+      const latestRow = this.proxysList.find(item => String(item.id) === String(this.fixResultsRow.id))
+      if (!latestRow) {
+        return
+      }
+      const normalizedRow = {
+        ...latestRow,
+        sampleList: this.normalizeFixResultsSampleList(latestRow.sampleData, this.fixResultsIsFileSource)
+      }
+      this.fixResultsRow = normalizedRow
+    },
+    fixResultsHandleManualConfirm() {
+      confirmIds([this.fixResultsRow && this.fixResultsRow.id]).then(res => {
+        if (res.code === 200) {
+          this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'))
+          if (this.fixResultsRow) {
+            this.fixResultsRow.confirm = 1
+          }
+          this.getList().then(() => {
+            this.syncFixResultsRowFromLatestList()
+          })
+        } else {
+          this.$message.error(res.msg || this.$t('fixResults.messages.manualConfirmFailed'))
+        }
+      })
     },
     fixResultsHandleModifyResult() {
       this.fixResultsResultForm = {
@@ -1957,7 +1959,7 @@ export default {
       delete params.categoryId
       this.syncCategoryIds()
       params.categoryIds = this.queryParams.categoryIds
-      selectResultsById(params).then(response => {
+      return selectResultsById(params).then(response => {
         this.proxysList = response.data.rows;
         this.proxysList.forEach(ele => {
           if (ele.sampleData) {
@@ -1981,6 +1983,9 @@ export default {
         })
         this.total = response.data.total;
         this.loading = false;
+      }).catch(err => {
+        this.loading = false;
+        throw err;
       });
     },
     /** 搜索按钮操作 */

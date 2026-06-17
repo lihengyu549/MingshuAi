@@ -1703,7 +1703,7 @@ export default {
   methods: {
     getAiReviewConfidenceLevel(row) {
       const confidenceLevel = row && row.confidenceLevel;
-      return confidenceLevel === undefined || confidenceLevel === null || confidenceLevel === '' ? '0' : String(confidenceLevel);
+      return confidenceLevel
     },
     getAiReviewStatusConfig(row) {
       const confidenceLevel = this.getAiReviewConfidenceLevel(row);
@@ -1999,35 +1999,50 @@ export default {
     fixResultsClearResultFilter() {
       this.$refs.fixResultsTreeSelectSec.filter('');
     },
-    fixResultsHandleManualConfirm() {
-      if (this.fixResultsIsFileSource) {
-        confirmListByFile([this.fixResultsRow?.id]).then(res => {
-          if (res.code === 200) {
-            this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'));
-            // 更新本页面的数据
-            if (this.fixResultsRow) {
-              this.fixResultsRow.confirm = 1;
-            }
-            // 刷新外层列表
-            this.handleFileQuery();
-          } else {
-            this.$message.error(res.msg || this.$t('fixResults.messages.manualConfirmFailed'));
-          }
-        });
-      } else {
-        confirmIds([this.fixResultsRow?.id]).then(res => {
-          if (res.code === 200) {
-            this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'));
-            if (this.fixResultsRow) {
-              this.fixResultsRow.confirm = 1;
-            }
-            // 刷新外层列表
-            this.getDrawerData();
-          } else {
-            this.$message.error(res.msg || this.$t('fixResults.messages.manualConfirmFailed'));
-          }
-        });
+    syncFixResultsRowFromLatestList() {
+      if (!this.fixResultsRow || !this.fixResultsRow.id) {
+        return;
       }
+      const currentList = this.fixResultsIsFileSource ? this.fileList : this.filteredDrawerData;
+      if (!Array.isArray(currentList) || currentList.length === 0) {
+        return;
+      }
+      const latestRow = currentList.find(item => String(item.id) === String(this.fixResultsRow.id));
+      if (!latestRow) {
+        return;
+      }
+      const normalizedRow = {
+        ...latestRow,
+        sampleList: this.normalizeFixResultsSampleList(latestRow.sampleData, this.fixResultsIsFileSource)
+      };
+      if (latestRow.inferenceProcessList) {
+        normalizedRow.inferenceProcessList = latestRow.inferenceProcessList.map(item => ({
+          ...item,
+          expanded: this.fixResultsIsAllReasoningExpanded
+        }));
+      }
+      this.fixResultsRow = normalizedRow;
+    },
+    fixResultsHandleManualConfirm() {
+      confirmIds([this.fixResultsRow?.id]).then(res => {
+        if (res.code === 200) {
+          this.$message.success(this.$t('fixResults.messages.manualConfirmSuccess'));
+          if (this.fixResultsRow) {
+            this.fixResultsRow.confirm = 1;
+          }
+          if (this.fixResultsIsFileSource) {
+            this.handleFileQuery().then(() => {
+              this.syncFixResultsRowFromLatestList();
+            });
+          } else {
+            this.handleDrawerSearch().then(() => {
+              this.syncFixResultsRowFromLatestList();
+            });
+          }
+        } else {
+          this.$message.error(res.msg || this.$t('fixResults.messages.manualConfirmFailed'));
+        }
+      });
     },
     fixResultsHandleModifyResult() {
       this.fixResultsResultForm = {
@@ -2146,25 +2161,29 @@ export default {
     // 新增：文件相关方法 (添加防抖)
     handleFileQuery() {
       clearTimeout(this.fileInputTimer);
-      this.fileInputTimer = setTimeout(() => {
-        if (this.currentNodeData) {
-          // 在此处将多选参数和其他参数结构与 viewResults 页面对齐并传入请求
-          const queryParams = {
-            ...this.fileQueryParams,
-            categoryIds: this.fileQueryParams.category, // 将 category 映射为 categoryIds
-            securityLevelIds: Array.isArray(this.fileQueryParams.securityLevel) ? [...this.fileQueryParams.securityLevel] : [],
-            securityLevel: Array.isArray(this.fileQueryParams.securityLevel) ? this.fileQueryParams.securityLevel.join(',') : '',
-            // classificationStateIds 和 classificationReasons 由于在模板中 v-model 直接绑定的数组/字符串，直接透传即可
-          };
-          delete queryParams.category;
-          this.loadFileListData(this.currentNodeData, {
-            folderId: this.currentFolderId,
-            keepCurrentFolderName: true,
-            immediate: true,
-            queryParams: queryParams
-          });
-        }
-      }, 500);
+      return new Promise((resolve) => {
+        this.fileInputTimer = setTimeout(() => {
+          if (this.currentNodeData) {
+            // 在此处将多选参数和其他参数结构与 viewResults 页面对齐并传入请求
+            const queryParams = {
+              ...this.fileQueryParams,
+              categoryIds: this.fileQueryParams.category, // 将 category 映射为 categoryIds
+              securityLevelIds: Array.isArray(this.fileQueryParams.securityLevel) ? [...this.fileQueryParams.securityLevel] : [],
+              securityLevel: Array.isArray(this.fileQueryParams.securityLevel) ? this.fileQueryParams.securityLevel.join(',') : '',
+              // classificationStateIds 和 classificationReasons 由于在模板中 v-model 直接绑定的数组/字符串，直接透传即可
+            };
+            delete queryParams.category;
+            this.loadFileListData(this.currentNodeData, {
+              folderId: this.currentFolderId,
+              keepCurrentFolderName: true,
+              immediate: true,
+              queryParams: queryParams
+            }).then(resolve).catch(resolve);
+          } else {
+            resolve();
+          }
+        }, 500);
+      });
     },
     toggleFileSearch() {
       this.showFileSearch = !this.showFileSearch;
@@ -2242,7 +2261,7 @@ export default {
         tableName: data.label,     // 表名
       };
 
-      getPropertyList(params).then(res => {
+      return getPropertyList(params).then(res => {
         if (res.code === 200) {
           const resData = res.data || {};
           const listData = resData.list || resData.records || resData.rows || [];
@@ -2389,7 +2408,7 @@ export default {
         if (folderId !== null && folderId !== undefined && folderId !== '') {
           response.folderId = folderId;
         }
-        getProjectFileList(response).then(res => {
+        return getProjectFileList(response).then(res => {
           if (res.code === 200) {
             const data = res.data || {};
             const rawFileList = data.fileList;
@@ -2419,6 +2438,7 @@ export default {
         }).catch(err => {
           console.error('加载文件列表失败:', err);
           this.$message.error(this.$t('assetCatalog.loadFileListFailed'));
+          throw err;
         });
       };
 
@@ -2426,14 +2446,16 @@ export default {
         if (this.fileListTimer) {
           clearTimeout(this.fileListTimer);
         }
-        fetchList();
+        return fetchList();
       } else {
-        if (this.fileListTimer) {
-          clearTimeout(this.fileListTimer);
-        }
-        this.fileListTimer = setTimeout(() => {
-          fetchList();
-        }, 500);
+        return new Promise((resolve, reject) => {
+          if (this.fileListTimer) {
+            clearTimeout(this.fileListTimer);
+          }
+          this.fileListTimer = setTimeout(() => {
+            fetchList().then(resolve).catch(reject);
+          }, 500);
+        });
       }
     },
 
@@ -3156,11 +3178,13 @@ export default {
     // 抽屉筛选处理 (添加防抖)
     handleDrawerSearch() {
       clearTimeout(this.drawerInputTimer);
-      this.drawerInputTimer = setTimeout(() => {
-        // 重置页码
-        this.drawerQueryParams.pageNum = 1
-        this.getTableFieldsData()
-      }, 500);
+      return new Promise((resolve) => {
+        this.drawerInputTimer = setTimeout(() => {
+          // 重置页码
+          this.drawerQueryParams.pageNum = 1
+          this.getTableFieldsData().then(resolve).catch(resolve);
+        }, 500);
+      });
     },
     // 分页处理
     getPagedData(data) {
