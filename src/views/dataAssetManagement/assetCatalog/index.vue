@@ -288,6 +288,7 @@
                     <!-- 操作按钮区域 -->
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                       <div>
+                        <template v-if="canShowNodeActionButtons">
                         <el-dropdown trigger="click">
                           <el-button type="primary" plain size="medium">确认结果<i
                               class="el-icon-arrow-down el-icon--right"></i></el-button>
@@ -314,6 +315,7 @@
                         </el-dropdown>
                         <el-button type="primary" plain size="medium" @click="handleBatchFix"
                           style="margin-left: 10px;">批量修改</el-button>
+                        </template>
                       </div>
                       <div>
                         <el-button type="text" size="medium" @click="showFieldSearch = !showFieldSearch"
@@ -558,6 +560,7 @@
                     style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0;">
                     <!-- 左侧按钮 -->
                     <div>
+                      <template v-if="canShowNodeActionButtons">
                       <el-dropdown trigger="click">
                         <el-button type="primary" plain size="medium">确认结果<i
                             class="el-icon-arrow-down el-icon--right"></i></el-button>
@@ -584,6 +587,7 @@
                       </el-dropdown>
                       <el-button type="primary" plain size="medium" @click="handleFileBatchFix"
                         style="margin-left: 10px;">批量修改</el-button>
+                      </template>
                     </div>
                     <!-- 右侧按钮 -->
                     <div>
@@ -917,7 +921,7 @@
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <h2 style="margin: 0;"><el-tag type="info" style="font-size: 18px;">ID：{{ fixResultsRow.id }}</el-tag> {{
               fixResultsTitleText }}</h2>
-            <div class="top-buttons" style="display: flex; gap: 10px;">
+            <div v-if="canShowNodeActionButtons" class="top-buttons" style="display: flex; gap: 10px;">
               <el-button type="primary" plain @click="fixResultsHandleModifyResult">{{
                 $t('fixResults.sections.modifyResult')
               }}</el-button>
@@ -1591,6 +1595,10 @@ export default {
     },
     checkedFileColumn() {
       return this.unstructuredColumnList.filter(item => this.checkedUnstructuredColumns.includes(item.prop));
+    },
+    canShowNodeActionButtons() {
+      const projectId = this.resolveProjectId(this.currentNodeData)
+      return String(projectId) !== '0'
     },
     currentNodeLevel() {
       if (this.currentNodeType == '1') return 0;
