@@ -1894,7 +1894,7 @@ export default {
         const payload = res && res.data ? res.data : res;
         const list = payload.records || payload.rows || payload.list || payload || [];
         this.levelOptions = list.map(it => ({
-          value: it.level,
+          value: String(it.level),
           label: it.levelName
         }));
       });
@@ -2506,7 +2506,7 @@ export default {
         const payload = res && res.data ? res.data : res;
         const list = payload.records || payload.rows || payload.list || payload || [];
         this.levelOptions = list.map(it => ({
-          value: it.level,
+          value: String(it.level),
           label: it.levelName
         }));
       });
