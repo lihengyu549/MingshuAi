@@ -1477,8 +1477,9 @@ export default {
           confirmIds(data).then(res => {
             if (res.code == 200) {
               this.$message({ message: res.msg, type: 'success' })
-              this.getList()
-              this.loading = false
+              this.refreshCurrentList().finally(() => {
+                this.loading = false
+              })
             }
           })
             .catch(() => {
@@ -1509,8 +1510,9 @@ export default {
           cancelConfirm(data).then(res => {
             if (res.code == 200) {
               this.$message({ message: res.msg, type: 'success' })
-              this.getList()
-              this.loading = false
+              this.refreshCurrentList().finally(() => {
+                this.loading = false
+              })
             }
           })
             .catch(() => {
@@ -1538,8 +1540,9 @@ export default {
       confirmList(params).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
-          this.getList()
-          this.loading = false
+          this.refreshCurrentList().finally(() => {
+            this.loading = false
+          })
         }
       })
         .catch(err => {
@@ -1565,8 +1568,9 @@ export default {
       cancelConfirmData(params).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
-          this.getList()
-          this.loading = false
+          this.refreshCurrentList().finally(() => {
+            this.loading = false
+          })
         }
       })
         .catch(err => {
@@ -1751,7 +1755,7 @@ export default {
             this.fixResultsRow.securityLevel = this.fixResultsResultForm.securityLevel
             const level = this.levelOptions.find(item => String(item.value) === String(this.fixResultsResultForm.securityLevel))
             this.fixResultsRow.securityLevelName = level ? level.label : this.fixResultsRow.securityLevelName
-            this.getList()
+            this.refreshCurrentList()
           }
           this.fixResultsDialogVisible = false
           this.fixResultsResultFormNodeName = ''
@@ -1771,7 +1775,7 @@ export default {
             this.fixResultsRow.piiDetectionName = this.fixResultsPiiNodeName || this.fixResultsRow.piiDetectionName
             const level = this.levelOptions.find(item => String(item.value) === String(this.fixResultsResultForm.securityLevel))
             this.fixResultsRow.securityLevelName = level ? level.label : this.fixResultsRow.securityLevelName
-            this.getList()
+            this.refreshCurrentList()
           }
           this.fixResultsDialogVisible = false
           this.fixResultsResultFormNodeName = ''
@@ -1848,7 +1852,7 @@ export default {
           if (this.fixResultsRow) {
             this.fixResultsRow.confirm = 1
           }
-          this.getList().then(() => {
+          this.refreshCurrentList().then(() => {
             this.syncFixResultsRowFromLatestList()
           })
         } else {
@@ -1922,8 +1926,9 @@ export default {
         this.resultFormNodeName = ''
         this.resetForm('resultForm')
         this.resultForm.selectedIds = null
-        this.getList()
-        this.updataLoading = false
+        this.refreshCurrentList().finally(() => {
+          this.updataLoading = false
+        })
       })
         .catch(err => {
           this.updataLoading = false
@@ -1987,6 +1992,9 @@ export default {
         this.loading = false;
         throw err;
       });
+    },
+    refreshCurrentList() {
+      return this.getList();
     },
     /** 搜索按钮操作 */
     handleQuery() {
