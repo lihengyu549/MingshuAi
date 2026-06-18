@@ -1300,6 +1300,9 @@ export default {
         securityLevel: '',
         id: '',
         piiDetection: '',
+        confidenceLevel: '',
+        auditRecommendation: '',
+        detectionProcess: '',
         classificationLogic: '',
         reasoningProcess: ''
       },
@@ -1948,22 +1951,36 @@ export default {
         updateResultByFile(fileParams).then(res => {
           if (res.code == 200) {
             this.$message.success(res.msg);
-            this.fixResultsHandleNext('2');
+            this.handleFileQuery().then(() => {
+              this.syncFixResultsRowFromLatestList();
+              this.fixResultsHandleNext('2');
+            });
           }
           this.fixResultsDialogVisible = false;
           this.fixResultsResultFormNodeName = '';
+          this.fixResultsPiiNodeName = '';
           this.fixResultsLoading = false;
-        }).catch(() => { this.fixResultsDialogVisible = false; this.fixResultsLoading = false; });
+        }).catch(() => {
+          this.fixResultsDialogVisible = false;
+          this.fixResultsLoading = false;
+        });
       } else {
         updateFiledRule(params).then(res => {
           if (res.code == 200) {
             this.$message.success(res.msg);
-            this.fixResultsHandleNext('2');
+            this.getTableFieldsData().then(() => {
+              this.syncFixResultsRowFromLatestList();
+              this.fixResultsHandleNext('2');
+            });
           }
           this.fixResultsDialogVisible = false;
           this.fixResultsResultFormNodeName = '';
+          this.fixResultsPiiNodeName = '';
           this.fixResultsLoading = false;
-        }).catch(() => { this.fixResultsDialogVisible = false; this.fixResultsLoading = false; });
+        }).catch(() => {
+          this.fixResultsDialogVisible = false;
+          this.fixResultsLoading = false;
+        });
       }
     },
     fixResultsUpdataResultCanelFn() {
@@ -2062,6 +2079,10 @@ export default {
         securityLevel: this.fixResultsRow.securityLevel || '',
         id: this.fixResultsRow.id || '',
         piiDetection: this.fixResultsRow.piiDetection || '',
+        confidenceLevel: this.fixResultsRow.confidenceLevel || '',
+        auditRecommendation: this.fixResultsRow.auditRecommendation || '',
+        detectionProcess: this.fixResultsRow.detectionProcess || '',
+        reasoningProcess: this.fixResultsRow.reasoningProcess || '',
         classificationLogic: ''
       };
       if (this.fixResultsRow.categoryName) {
