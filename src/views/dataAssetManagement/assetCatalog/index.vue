@@ -28,11 +28,12 @@
 
           <div class="head-container" v-loading="treeLoading" style="margin: 20px;">
             <div class="tree-scroll-container">
-              <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :current-node-key="treeID"
+              <VirtualTree class="treeBox" :data="categoryList" :props="defaultProps" :current-node-key="treeID"
                 :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree" node-key="id"
                 highlight-current show-checkbox :check-strictly="false" :accordion="true"
-                :default-checked-keys="defaultCheckedKeys" @node-click="handleTreeNodeClick" @check="handleTreeCheck"
-                :render-content="renderContent" />
+                :default-checked-keys="defaultCheckedKeys" :render-content="renderContent"
+                :checkbox-visible-method="isTreeNodeCheckboxVisible" @node-click="handleTreeNodeClick"
+                @check="handleTreeCheck" />
             </div>
           </div>
         </el-card>
@@ -1154,10 +1155,11 @@ import { getDicts } from "@/api/system/dict/data";
 import { getProjectFileList, updateResultByFile, confirmListByFile, cancelConfirmByFile, selectLastOrNextByFileId } from "@/api/system/unstructured";
 import { confirmIds, confirmList, cancelConfirm, cancelConfirmData, updateFiledRule, getCategoryAttachData } from "@/api/system/proxys";
 import Treeselect from "@riophae/vue-treeselect";
+import VirtualTree from "./components/VirtualTree.vue";
 export default {
   dicts: ['sys_export_column', 'sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un', 'sys_confidence_level_status'],
   name: "assetCatalog",
-  components: { Treeselect },
+  components: { Treeselect, VirtualTree },
   data() {
     return {
       currentNodeType: '0', // 当前节点的type值,默认为'0'
@@ -1679,7 +1681,9 @@ export default {
 
       if (newVal) {
         // 全选：勾选所有树节点
-        const allNodeIds = this.getAllTreeIds(this.categoryList);
+        const allNodeIds = this.getAllTreeIds(this.categoryList, {
+          onlyCheckable: true
+        });
         treeRef.setCheckedKeys(allNodeIds);
         this.selectedTreeNodeIds = [...allNodeIds];
       } else {
@@ -1692,7 +1696,9 @@ export default {
 
     // 监听选中节点ID数组变化，同步全选框状态
     selectedTreeNodeIds(newVal) {
-      const allNodeIds = this.getAllTreeIds(this.categoryList);
+      const allNodeIds = this.getAllTreeIds(this.categoryList, {
+        onlyCheckable: true
+      });
       if (allNodeIds.length === 0) {
         this.isTreeAllChecked = false;
         return;
@@ -2536,16 +2542,17 @@ export default {
      * @param {Array} treeData - 树数据源(categoryList)
      * @returns {Array} 所有节点的ID数组
      */
-    getAllTreeIds(treeData) {
+    getAllTreeIds(treeData, options = {}) {
       let ids = [];
       if (!Array.isArray(treeData)) return ids;
+      const { onlyCheckable = false } = options;
 
       treeData.forEach(node => {
-        if (node && node.id) {
+        if (node && node.id && (!onlyCheckable || this.isTreeNodeCheckboxVisible(node))) {
           ids.push(node.id);
           // 递归处理子节点
           if (node.children && node.children.length > 0) {
-            ids = [...ids, ...this.getAllTreeIds(node.children)];
+            ids = [...ids, ...this.getAllTreeIds(node.children, options)];
           }
         }
       });
@@ -2568,6 +2575,12 @@ export default {
       // 获取所有勾选的节点ID(包括半选节点的子节点)
       const checkedIds = this.getCheckedNodeIds(this.categoryList);
       this.selectedTreeNodeIds = checkedIds;
+    },
+    isTreeNodeCheckboxVisible(data, node) {
+      const level = data && data.level !== undefined && data.level !== null
+        ? Number(data.level)
+        : (node && node.level !== undefined && node.level !== null ? Number(node.level) : 1);
+      return level !== 3;
     },
     // 新增：获取安全分级下拉选项
     fetchLevelOptions(databaseId) {
@@ -2776,6 +2789,12 @@ export default {
       if (!Array.isArray(treeData)) return checkedIds;
 
       treeData.forEach(node => {
+        if (!this.isTreeNodeCheckboxVisible(node)) {
+          if (node.children && node.children.length > 0) {
+            checkedIds.push(...this.getCheckedNodeIds(node.children));
+          }
+          return;
+        }
         const nodeStatus = this.$refs.tree.getNode(node.id);
         if (nodeStatus && nodeStatus.checked) {
           checkedIds.push(node.id);

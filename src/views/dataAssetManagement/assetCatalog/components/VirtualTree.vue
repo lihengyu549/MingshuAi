@@ -23,7 +23,7 @@
             <i v-if="item.childNodes.length" class="el-icon-caret-right" />
           </span>
           <el-checkbox
-            v-if="showCheckbox"
+            v-if="shouldShowCheckbox(item)"
             v-model="item.checked"
             :indeterminate="item.indeterminate"
             :disabled="item.disabled"
@@ -128,6 +128,10 @@ export default {
       default: () => []
     },
     renderContent: {
+      type: Function,
+      default: null
+    },
+    checkboxVisibleMethod: {
       type: Function,
       default: null
     }
@@ -299,6 +303,11 @@ export default {
           return true
         })
         .map(node => node.data)
+    },
+    shouldShowCheckbox(node) {
+      if (!this.showCheckbox) return false
+      if (typeof this.checkboxVisibleMethod !== 'function') return true
+      return this.checkboxVisibleMethod(node.data, node)
     },
     updateChildrenChecked(node, checked) {
       node.childNodes.forEach(child => {
