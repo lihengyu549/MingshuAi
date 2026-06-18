@@ -4759,14 +4759,16 @@ export default {
 }
 
 .treeBox {
-  overflow-y: auto;
   border: none;
   border-radius: 0;
+  height: 100%;
+  min-height: 0;
 }
 
 .tree-scroll-container {
-  overflow-y: auto;
-  max-height: calc(100vh - 350px);
+  height: calc(100vh - 350px);
+  min-height: 320px;
+  overflow: hidden;
 }
 
 .treeBox ::v-deep .el-tree__body-wrapper::-webkit-scrollbar {

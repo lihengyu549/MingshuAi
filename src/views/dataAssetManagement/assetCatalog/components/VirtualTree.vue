@@ -5,6 +5,8 @@
       :items="visibleNodes"
       :item-size="rowHeight"
       key-field="key"
+      :buffer="200"
+      emit-update
     >
       <template #default="{ item }">
         <div
@@ -385,11 +387,13 @@ export default {
 .virtual-tree {
   width: 100%;
   height: 100%;
+  min-height: 0;
 }
 
 .virtual-tree-scroller {
   width: 100%;
   height: 100%;
+  min-height: 0;
   overflow-x: hidden;
 }
 
