@@ -2218,6 +2218,12 @@ export default {
         }, 500);
       });
     },
+    refreshCurrentVisibleList() {
+      if (this.currentNodeType === '1') {
+        return this.handleFileQuery();
+      }
+      return this.getTableFieldsData();
+    },
     toggleFileSearch() {
       this.showFileSearch = !this.showFileSearch;
     },
@@ -3440,8 +3446,9 @@ export default {
           confirmIds(data).then(res => {
             if (res.code == 200) {
               this.$message({ message: res.msg, type: 'success' })
-              this.handleFileQuery()
-              this.loading = false
+              this.refreshCurrentVisibleList().finally(() => {
+                this.loading = false
+              })
             }
           }).catch(() => {
             this.loading = false
@@ -3468,8 +3475,9 @@ export default {
           cancelConfirm(data).then(res => {
             if (res.code == 200) {
               this.$message({ message: res.msg, type: 'success' })
-              this.handleFileQuery()
-              this.loading = false
+              this.refreshCurrentVisibleList().finally(() => {
+                this.loading = false
+              })
             }
           }).catch(() => {
             this.loading = false
@@ -3496,8 +3504,9 @@ export default {
       confirmListByFile(params).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
-          this.handleFileQuery()
-          this.loading = false
+          this.refreshCurrentVisibleList().finally(() => {
+            this.loading = false
+          })
         }
       }).catch(err => {
         this.loading = false
@@ -3509,8 +3518,9 @@ export default {
       cancelConfirmByFile(params).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
-          this.handleFileQuery()
-          this.loading = false
+          this.refreshCurrentVisibleList().finally(() => {
+            this.loading = false
+          })
         }
       }).catch(err => {
         this.loading = false
@@ -3747,8 +3757,9 @@ export default {
           confirmIds(data).then(res => {
             if (res.code == 200) {
               this.$message({ message: res.msg, type: 'success' })
-              this.getTableFieldsData()
-              this.loading = false
+              this.refreshCurrentVisibleList().finally(() => {
+                this.loading = false
+              })
             }
           }).catch(() => {
             this.loading = false
@@ -3777,8 +3788,9 @@ export default {
           cancelConfirm(data).then(res => {
             if (res.code == 200) {
               this.$message({ message: res.msg, type: 'success' })
-              this.getTableFieldsData()
-              this.loading = false
+              this.refreshCurrentVisibleList().finally(() => {
+                this.loading = false
+              })
             }
           }).catch(() => {
             this.loading = false
@@ -3823,8 +3835,9 @@ export default {
       confirmList(params).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
-          this.getTableFieldsData()
-          this.loading = false
+          this.refreshCurrentVisibleList().finally(() => {
+            this.loading = false
+          })
         }
       }).catch(err => {
         this.loading = false
@@ -3836,8 +3849,9 @@ export default {
       cancelConfirmData(params).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
-          this.getTableFieldsData()
-          this.loading = false
+          this.refreshCurrentVisibleList().finally(() => {
+            this.loading = false
+          })
         }
       }).catch(err => {
         this.loading = false
@@ -3957,8 +3971,9 @@ export default {
           this.resultFormNodeName = ''
           this.resetForm('resultForm')
           this.resultForm.selectedIds = null
-          this.handleFileQuery()
-          this.updataLoading = false
+          this.refreshCurrentVisibleList().finally(() => {
+            this.updataLoading = false
+          })
         }).catch(err => {
           this.updataLoading = false
         })
@@ -3975,8 +3990,9 @@ export default {
           this.resultFormNodeName = ''
           this.resetForm('resultForm')
           this.resultForm.selectedIds = null
-          this.getTableFieldsData()
-          this.updataLoading = false
+          this.refreshCurrentVisibleList().finally(() => {
+            this.updataLoading = false
+          })
         }).catch(err => {
           this.updataLoading = false
         })
