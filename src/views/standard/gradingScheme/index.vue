@@ -12,7 +12,8 @@
 
         <el-row :gutter="10" class="mb8">
             <el-col :span="1.5">
-                <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">{{ $t('gradingScheme.addScheme') }}</el-button>
+                <el-button type="primary" plain icon="el-icon-plus" size="medium" @click="handleAdd">{{
+                    $t('gradingScheme.addScheme') }}</el-button>
             </el-col>
         </el-row>
         <el-card class="table-card" shadow="never">
@@ -20,13 +21,15 @@
                 <template slot="empty">
                     <el-empty :description="$t('noData')"></el-empty>
                 </template>
-                <el-table-column :label="$t('gradingScheme.schemeName')" align="left" width="220" prop="schemeName" show-overflow-tooltip>
+                <el-table-column :label="$t('gradingScheme.schemeName')" align="left" width="220" prop="schemeName"
+                    show-overflow-tooltip>
                     <template slot-scope="scope">
                         <span style="display:inline-flex;align-items:center;">
                             <i class="el-icon-lock" style="font-size:16px;color:#64748b;margin-right:6px;"></i>
-                            <span @click="handleEdit(scope.row)" style="cursor:pointer;color:#3b82f6;">{{ scope.row.schemeName }}</span>
-                            <el-tag v-if="scope.row.schemeType == '0'" type="primary"
-                                size="mini" effect="plain" style="margin-left:8px;">{{ $t('gradingScheme.defaultTag') }}</el-tag>
+                            <span @click="handleEdit(scope.row)" style="cursor:pointer;color:#3b82f6;">{{
+                                scope.row.schemeName }}</span>
+                            <el-tag v-if="scope.row.schemeType == '0'" type="primary" size="mini" effect="plain"
+                                style="margin-left:8px;">{{ $t('gradingScheme.defaultTag') }}</el-tag>
                         </span>
                     </template>
                 </el-table-column>
@@ -35,11 +38,13 @@
                         <span>{{ getSchemeTypeLabel(scope.row.schemeType) }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column :label="$t('gradingScheme.useCount')" align="center" width="120" prop="useCount" show-overflow-tooltip />
+                <el-table-column :label="$t('gradingScheme.useCount')" align="center" width="120" prop="useCount"
+                    show-overflow-tooltip />
                 <el-table-column :label="$t('updateTime')" align="center" prop="updateTime" show-overflow-tooltip />
                 <el-table-column :label="$t('operation')" align="center" class-name="small-padding fixed-width">
                     <template slot-scope="scope">
-                        <el-button type="text" :disabled="scope.row.schemeType == '0'" @click="handleDelete(scope.row)">{{ $t('delete') }}</el-button>
+                        <el-button type="text" :disabled="scope.row.schemeType == '0'"
+                            @click="handleDelete(scope.row)">{{ $t('delete') }}</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -51,7 +56,8 @@
             <el-form :model="addForm" :rules="addRules" ref="addForm" label-width="100px" size="medium"
                 label-position="top">
                 <el-form-item :label="$t('gradingScheme.schemeName')" prop="schemeName">
-                    <el-input v-model="addForm.schemeName" :placeholder="$t('gradingScheme.examplePlaceholder')" clearable :disabled="addForm.schemeType === '0'" />
+                    <el-input v-model="addForm.schemeName" :placeholder="$t('gradingScheme.examplePlaceholder')"
+                        clearable :disabled="addForm.schemeType === '0'" />
                 </el-form-item>
                 <el-form-item :label="$t('gradingScheme.sensitiveDataDefinition')">
                     <div style="display:flex;align-items:center;gap:10px;">
@@ -62,7 +68,8 @@
                 </el-form-item>
                 <el-form-item :label="$t('gradingScheme.schemeDetails')">
                     <el-table :data="levelRows">
-                        <el-table-column :label="$t('gradingScheme.levelNumber')" prop="level" width="100" align="center" />
+                        <el-table-column :label="$t('gradingScheme.levelNumber')" prop="level" width="100"
+                            align="center" />
                         <el-table-column :label="$t('gradingScheme.levelName')" align="center" width="150">
                             <template slot-scope="scope">
                                 <el-input v-model="scope.row.name" />
@@ -75,16 +82,28 @@
                         </el-table-column>
                         <el-table-column :label="$t('gradingScheme.recommendedProtection')" align="center" width="200">
                             <template slot-scope="scope">
-                                <el-select v-model="scope.row.defaultProtectMethod" multiple placeholder="" :disabled="addForm.schemeType === '0'">
-                                    <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue" :label="getProtectMethodLabel(item.dictLabel)" :value="item.dictLabel"></el-option>
+                                <el-select v-model="scope.row.defaultProtectMethod" multiple placeholder=""
+                                    :disabled="addForm.schemeType === '0'">
+                                    <el-option v-for="item in confirmProtectMethodList" :key="item.dictValue"
+                                        :label="getProtectMethodLabel(item.dictLabel)"
+                                        :value="item.dictLabel"></el-option>
                                 </el-select>
                             </template>
                         </el-table-column>
                         <el-table-column :label="$t('enable')" width="120" align="center">
                             <template slot-scope="scope">
-                                <el-switch v-model="scope.row.enabled" :disabled="scope.row.level === 0 || addForm.schemeType === '0'" />
+                                <el-switch v-model="scope.row.enabled"
+                                    :disabled="scope.row.level === 0 || addForm.schemeType === '0'" />
                             </template>
                         </el-table-column>
+                    </el-table>
+                </el-form-item>
+                <el-form-item v-if="addForm.id" :label="$t('gradingScheme.useDetail')">
+                    <el-table :data="useDetailRows" border>
+                        <template slot="empty">
+                            <el-empty :description="$t('noData')"></el-empty>
+                        </template>
+                        <el-table-column :label="$t('gradingScheme.standardName')" prop="standardName" />
                     </el-table>
                 </el-form-item>
             </el-form>
@@ -115,6 +134,7 @@ export default {
             },
             addRules: {},
             levelRows: [],
+            useDetailRows: [],
             queryParams: {
                 pageNum: 1,
                 pageSize: 10,
@@ -234,6 +254,7 @@ export default {
             this.addVisible = true
             this.addForm = { id: null, schemeName: '', schemeType: '1', threshold: 0 }
             this.levelRows = this.createDefaultLevels()
+            this.useDetailRows = []
         },
         handleEdit(row) {
             this.addVisible = true
@@ -251,6 +272,14 @@ export default {
                 defaultProtectMethod: it.defaultProtectMethod ? it.defaultProtectMethod.split(',') : []
             }))
             this.levelRows = levels.length ? levels : this.createDefaultLevels()
+            this.useDetailRows = this.getUseDetailRows(row)
+        },
+        getUseDetailRows(row) {
+            const rawList = row.useDetailList || []
+
+            if (!Array.isArray(rawList)) return []
+
+            return rawList.map(item => ({ standardName: item.standardName })).filter(item => item.standardName)
         },
         handleDelete(row) {
             this.$confirm(this.$t('gradingScheme.deleteConfirm'), this.$t('tip'), {
