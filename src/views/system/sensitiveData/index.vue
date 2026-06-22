@@ -93,6 +93,7 @@
                                     }"
                                     @click="toggleLevelFilter(tag)" size="medium">
                                     {{ tag.label }}
+                                    <span v-if="!isLevelTagEnabled(tag)" class="empty-badge">空</span>
                                 </el-tag>
                             </div>
                         </div>
@@ -111,9 +112,10 @@
                 </div>
 
                 <div class="sensitive-categories">
-                    <div class="category-item" v-for="category in filteredCategories" :key="category.id">
+                    <div class="category-item" v-for="(category, index) in filteredCategories" :key="category.id">
                         <div class="category-header">
                             <div class="category-title-row">
+                                <span class="category-index">{{ index + 1 }}</span>
                                 <h2 class="full-path">{{ category.attachDataName }}</h2>
                             </div>
                             <div class="category-tags-row">
@@ -848,6 +850,17 @@ export default {
     background-color: #f3f4f6 !important;
 }
 
+.empty-badge {
+    display: inline-block;
+    background-color: #fee2e2;
+    color: #ef4444;
+    border-radius: 10px;
+    padding: 0 5px;
+    margin-left: 4px;
+    font-size: 12px;
+    line-height: 18px;
+}
+
 .category-search {
     flex: 1;
     min-width: 200px;
@@ -872,7 +885,8 @@ export default {
 
 .category-item {
     margin-bottom: 20px;
-    padding: 15px;
+    padding: 15px 15px 20px;
+    border-bottom: 1px solid #e5e7eb;
     // background-color: #f9f9f9;
     border-radius: 5px;
 }
@@ -977,6 +991,26 @@ export default {
 
 .category-title-row {
     margin-bottom: 5px; // 标题行与标签行之间的间距
+}
+
+.category-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.category-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: 1px solid #d1d5db;
+    border-radius: 50%;
+    color: #6b7280;
+    font-size: 12px;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 .category-tags-row {
