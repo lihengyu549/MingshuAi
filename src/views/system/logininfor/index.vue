@@ -25,11 +25,11 @@
     </el-card>
     <div class="search-actions">
       <el-row :gutter="10" class="mb8">
-        <!-- <el-col :span="1.5">
-          <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
+        <el-col :span="1.5">
+          <el-button type="danger" plain icon="el-icon-delete" :disabled="multiple" @click="handleDelete"
             v-hasPermi="['system:logininfor:remove']">{{ $t('delete') }}</el-button>
         </el-col>
-        <el-col :span="1.5">
+        <!-- <el-col :span="1.5">
           <el-button type="danger" plain icon="el-icon-delete" size="mini" @click="handleClean"
             v-hasPermi="['system:logininfor:remove']">{{ $t('clean') }}</el-button>
         </el-col>
