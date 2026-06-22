@@ -2584,7 +2584,7 @@ export default {
 .tree-container {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .treeBox {
