@@ -87,14 +87,17 @@
                             <span class="filter-group-label">{{ $t('sensitiveData.riskLevel') }}：</span>
                             <div class="filter-tags level-filter">
                                 <el-tag v-for="tag in levelFilterTags" :key="tag.value"
-                                    :class="{ 'active-tag': levelFilterValue === tag.value }"
-                                    @click="toggleLevelFilter(tag.value)" size="medium">
+                                    :class="{
+                                        'active-tag': levelFilterValue === tag.value,
+                                        'disabled-tag': !isLevelTagEnabled(tag)
+                                    }"
+                                    @click="toggleLevelFilter(tag)" size="medium">
                                     {{ tag.label }}
                                 </el-tag>
                             </div>
                         </div>
 
-                        <div class="filter-group">
+                        <!-- <div class="filter-group">
                             <span class="filter-group-label">{{ $t('sensitiveData.protectionStatus') }}：</span>
                             <div class="filter-tags status-filter">
                                 <el-tag v-for="tag in statusFilterTags" :key="tag.value"
@@ -103,7 +106,7 @@
                                     {{ tag.label }}
                                 </el-tag>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
 
@@ -135,7 +138,7 @@
                         <div class="legal-basis">
                             <p><strong>{{ $t('sensitiveData.legalBasis') }}：</strong></p>
                             <span><svg-icon icon-class="law" style="margin-right: 5px;" />{{ category.regulatoryBasis
-                            }}</span>
+                                }}</span>
                         </div>
 
                         <template v-if="type == '0'">
@@ -209,7 +212,7 @@
                                     </div>
                                 </template>
                             </el-table-column> -->
-                                <el-table-column prop="isEncrypt" :label="$t('sensitiveData.isEncrypted')"
+                                <!-- <el-table-column prop="isEncrypt" :label="$t('sensitiveData.isEncrypted')"
                                     align="center" width="100">
                                     <template slot-scope="scope">
                                         <div style="display: flex; align-items: center; justify-content: center;">
@@ -218,7 +221,7 @@
                                             {{ scope.row.isEncrypt == '1' ? $t('yes') : $t('no') }}
                                         </div>
                                     </template>
-                                </el-table-column>
+                                </el-table-column> -->
                             </el-table>
                         </template>
                         <template v-else>
@@ -351,10 +354,10 @@ export default {
     computed: {
         levelFilterTags() {
             return [
-                { label: this.$t('sensitiveData.levelTags.level5'), value: 'level5' },
-                { label: this.$t('sensitiveData.levelTags.level4'), value: 'level4' },
-                { label: this.$t('sensitiveData.levelTags.level3'), value: 'level3' },
-                { label: this.$t('sensitiveData.levelTags.level2'), value: 'level2' }
+                { label: this.$t('sensitiveData.levelTags.level5'), value: 'level5', securityLevel: '5' },
+                { label: this.$t('sensitiveData.levelTags.level4'), value: 'level4', securityLevel: '4' },
+                { label: this.$t('sensitiveData.levelTags.level3'), value: 'level3', securityLevel: '3' },
+                { label: this.$t('sensitiveData.levelTags.level2'), value: 'level2', securityLevel: '2' }
             ]
         },
         statusFilterTags() {
@@ -491,7 +494,7 @@ export default {
             this.datasourceId = row.datasourceId;
             this.type = row.type;
             this.pagination.currentPage = 1;
-            this.levelFilterValue = '';
+            this.levelFilterValue = this.getDefaultLevelFilterValue(row);
             this.statusFilterValue = '';
             this.searchKeyword = '';
             this.activeDatabaseId = null;
@@ -549,12 +552,32 @@ export default {
             }
         },
 
-        toggleLevelFilter(value) {
-            if (this.levelFilterValue === value) {
-                this.levelFilterValue = '';
-            } else {
-                this.levelFilterValue = value;
+        getAvailableLevelFilterValues(row = this.currentDataSource) {
+            const riskStatistics = Array.isArray(row && row.riskStatistics) ? row.riskStatistics : [];
+            return new Set(
+                riskStatistics
+                    .map(item => String(item.securityLevel || ''))
+                    .filter(level => level)
+            );
+        },
+
+        isLevelTagEnabled(tag) {
+            return this.getAvailableLevelFilterValues().has(String(tag.securityLevel));
+        },
+
+        getDefaultLevelFilterValue(row = this.currentDataSource) {
+            const availableLevels = this.getAvailableLevelFilterValues(row);
+            const firstAvailableTag = this.levelFilterTags.find(tag =>
+                availableLevels.has(String(tag.securityLevel))
+            );
+            return firstAvailableTag ? firstAvailableTag.value : '';
+        },
+
+        toggleLevelFilter(tag) {
+            if (!this.isLevelTagEnabled(tag) || this.levelFilterValue === tag.value) {
+                return;
             }
+            this.levelFilterValue = tag.value;
             this.pagination.currentPage = 1;
             this.loadRiskDetails(this.datasourceId);
         },
@@ -813,6 +836,16 @@ export default {
 .active-tag {
     background-color: #263fa8 !important;
     color: white !important;
+}
+
+.disabled-tag {
+    cursor: not-allowed !important;
+    color: #9ca3af !important;
+    background-color: #f3f4f6 !important;
+}
+
+.filter-tags .disabled-tag:hover {
+    background-color: #f3f4f6 !important;
 }
 
 .category-search {

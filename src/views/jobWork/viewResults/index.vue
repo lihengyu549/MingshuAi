@@ -344,7 +344,7 @@
           </el-select>
         </el-form-item>
         <el-form-item :label="$t('viewResults.dialog.securityLevel')" class="addSelectClass" prop="securityLevel">
-          <el-select v-model="resultForm.securityLevel" disabled :placeholder="$t('pleaseSelect')">
+          <el-select v-model="resultForm.securityLevel" :placeholder="$t('pleaseSelect')">
             <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -575,7 +575,7 @@
               </el-select>
             </el-form-item>
             <el-form-item :label="$t('fixResults.dialog.securityLevel')" class="addSelectClass" prop="securityLevel">
-              <el-select v-model="fixResultsResultForm.securityLevel" disabled :placeholder="$t('pleaseSelect')">
+              <el-select v-model="fixResultsResultForm.securityLevel" :placeholder="$t('pleaseSelect')">
                 <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
