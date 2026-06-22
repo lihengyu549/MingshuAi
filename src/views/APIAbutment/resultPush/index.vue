@@ -198,7 +198,7 @@
 
             <div class="footer-actions">
               <el-button plain icon="el-icon-lightning" @click="handleTest">测试链接</el-button>
-              <el-button type="primary" icon="el-icon-upload2" @click="handleSave">保存配置</el-button>
+              <el-button type="primary" icon="el-icon-upload2" :loading="saveLoading" @click="handleSave">保存配置</el-button>
             </div>
           </template>
           <el-empty v-else description="请选择左侧平台配置"></el-empty>
@@ -271,6 +271,7 @@ export default {
   data() {
     return {
       mainLoading: false,
+      saveLoading: false,
       contentShow: false,
       showPassword: false,
       showCertPassword: false,
@@ -328,9 +329,9 @@ export default {
         ...row,
         id: row.id != null ? String(row.id) : "",
         pushType,
-        standardId: row.standardId != null ? String(row.standardId) : "",
+        standardId: pushType === "1" && row.standardId != null ? String(row.standardId) : "",
         sourceId: pushType === "2" && row.standardId != null ? String(row.standardId) : row.sourceId != null ? String(row.sourceId) : "",
-        pushBodyList: row.pushBody ? String(row.pushBody).split(",").filter(Boolean) : [],
+        pushBodyList: row.pushBody != null && row.pushBody !== "" ? String(row.pushBody).split(",").filter(Boolean) : [],
         useInnerCert: !(row.useInnerCert === "0" || row.useInnerCert === 0 || row.useInnerCert === false)
       };
     },
@@ -340,7 +341,7 @@ export default {
         pageSize: 999
       };
       const res = await getResultPushList(params);
-      const rows = res && res.data && Array.isArray(res.data.rows) ? res.data.rows : [];
+      const rows = res && Array.isArray(res.rows) ? res.rows : (res && res.data && Array.isArray(res.data.rows) ? res.data.rows : []);
       this.platformList = rows.map((item) => this.normalizeConfig(item));
       if (this.platformList.length) {
         const current = this.platformList.find((item) => item.id === this.activePlatformId) || this.platformList[0];
@@ -478,8 +479,10 @@ export default {
       return formData;
     },
     async handleSave() {
+      if (this.saveLoading) return;
       this.$refs.configForm.validate(async (valid) => {
         if (!valid) return;
+        this.saveLoading = true;
         try {
           const formData = this.buildSubmitFormData();
           if (this.currentConfig.id) {
@@ -492,6 +495,8 @@ export default {
           await this.fetchPlatformList();
         } catch (error) {
           this.$message.error(error.message || "保存失败");
+        } finally {
+          this.saveLoading = false;
         }
       });
     },
