@@ -1948,8 +1948,10 @@ export default {
             message: res.msg,
             type: 'success'
           })
-          // 刷新左侧树状态
+          // 刷新分类筛选树
           this.getProtectCategory();
+          // 重新请求左侧主树
+          this.getInitialTreeData();
         }
         this.deleteVisible = false
         this.resultFormNodeName = ''
