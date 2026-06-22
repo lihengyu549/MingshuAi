@@ -983,14 +983,9 @@
                 </div>
                 <div class="info-item">
                   <label class="info-label">{{ $t('fixResults.top.aiFieldRemark') }}：</label>
-                  <div class="info-content">{{ fixResultsRow.craftRemark || '--' }}</div>
-                </div>
-                <div class="info-item">
-                  <label class="info-label">{{ $t('fixResults.top.fieldTopic') }}：</label>
                   <div class="info-content">
-                    <el-tag v-for="tag in (fixResultsRow.fieldTopic ? JSON.parse(fixResultsRow.fieldTopic) : [])"
-                      :key="tag" style="margin-right: 5px; border-radius: 8px;">{{ tag ||
-                        '--' }}</el-tag>
+                    <el-tag type="info" style="margin-right: 5px; border-radius: 8px;">{{
+                      fixResultsRow.craftRemark || '--' }}</el-tag>
                   </div>
                 </div>
                 <div class="info-item">
@@ -1008,15 +1003,9 @@
                 </div>
                 <div class="info-item">
                   <label class="info-label">{{ $t('fixResults.top.aiTableRemark') }}：</label>
-                  <div class="info-content">{{ fixResultsRow.tableCraftRemark || '--' }}</div>
-                </div>
-                <div class="info-item">
-                  <label class="info-label">{{ $t('fixResults.top.tableTopic') }}：</label>
                   <div class="info-content">
-                    <el-tag type="success"
-                      v-for="tag in (fixResultsRow.tableTopic ? JSON.parse(fixResultsRow.tableTopic) : [])" :key="tag"
-                      style="margin-right: 5px; border-radius: 8px;">{{ tag ||
-                        '--' }}</el-tag>
+                    <el-tag type="info" style="margin-right: 5px; border-radius: 8px;">{{
+                      fixResultsRow.tableCraftRemark || '--' }}</el-tag>
                   </div>
                 </div>
                 <div class="info-item">
