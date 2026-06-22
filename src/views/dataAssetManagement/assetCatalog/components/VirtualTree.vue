@@ -167,7 +167,7 @@ export default {
       const result = []
       const traverse = nodes => {
         nodes.forEach(node => {
-          if (!node.visible) return
+        if (!node.visible) return
           result.push(node)
           const shouldShowChildren = this.filterValue ? true : node.expanded
           if (shouldShowChildren && node.childNodes.length > 0) {
@@ -197,6 +197,45 @@ export default {
     this.rebuildTree()
   },
   methods: {
+    // 新增一个 append 方法，提供给外部调用动态插入节点
+    append(data, parentId) {
+      const parentNode = this.getNode(parentId);
+      if (!parentNode) return;
+      
+      const createNode = (item, level, parent) => {
+        const key = item[this.nodeKey];
+        const node = {
+          key,
+          id: key,
+          label: item[this.labelKey],
+          data: item,
+          level,
+          parent,
+          childNodes: [],
+          expanded: false,
+          checked: parent.checked && !this.checkStrictly,
+          indeterminate: false,
+          visible: true,
+          disabled: !!item[this.disabledKey]
+        };
+        this.store.nodesMap[String(key)] = node;
+        const children = Array.isArray(item[this.childrenKey]) ? item[this.childrenKey] : [];
+        node.childNodes = children.map(child => createNode(child, level + 1, node));
+        return node;
+      };
+
+      const items = Array.isArray(data) ? data : [data];
+      const newNodes = items.map(item => createNode(item, parentNode.level + 1, parentNode));
+      parentNode.childNodes.push(...newNodes);
+      
+      // 更新源数据，以防 rebuildTree 时丢失
+      if (!Array.isArray(parentNode.data[this.childrenKey])) {
+        this.$set(parentNode.data, this.childrenKey, []);
+      }
+      parentNode.data[this.childrenKey].push(...items);
+      
+      this.filter(this.filterValue); // 触发可见性更新
+    },
     rebuildTree() {
       const previousStateMap = {}
       Object.keys(this.store.nodesMap || {}).forEach(key => {
@@ -211,8 +250,9 @@ export default {
       const root = { level: 0, data: null, key: '__root__', parent: null, childNodes: [] }
       const nodesMap = {}
       const createNode = (item, level, parent) => {
-        const key = item[this.nodeKey]
-        const previous = previousStateMap[String(key)] || {}
+        // 防止数据中 key 冲突，使用唯一标识
+        const key = item[this.nodeKey] !== undefined ? String(item[this.nodeKey]) : `node_${Math.random().toString(36).substr(2, 9)}`;
+        const previous = previousStateMap[key] || {}
         const node = {
           key,
           id: key,
@@ -251,16 +291,48 @@ export default {
     setCurrentKey(nodeId) {
       this.currentNodeKeyInner = nodeId
     },
+    updateFilteredNodes() {
+      // 重新执行过滤逻辑，如果 filterValue 为空，它会重置所有节点的 visible 属性为 true
+      this.filter(this.filterValue);
+    },
     filter(value) {
       this.filterValue = value || ''
       const matcher = this.filterNodeMethod
       const visit = node => {
         const selfMatch = matcher ? matcher(this.filterValue, node.data) : true
+        // 确保如果有匹配的子节点，父节点也显示
         const childMatch = node.childNodes.some(child => visit(child))
         node.visible = !this.filterValue ? true : (selfMatch || childMatch)
+        
+        // 核心修复：如果自身匹配，它的所有层级的子节点也都应该默认可见
+        if (this.filterValue && selfMatch && !childMatch) {
+            const makeChildrenVisible = (n) => {
+               n.childNodes.forEach(c => {
+                   c.visible = true;
+                   makeChildrenVisible(c);
+               })
+            }
+            makeChildrenVisible(node);
+        }
+        
         return node.visible
       }
-      ;(this.store.root.childNodes || []).forEach(node => visit(node))
+      
+      if(this.filterValue) {
+        ;(this.store.root.childNodes || []).forEach(node => visit(node))
+      } else {
+          // 过滤完成后，恢复所有未被过滤的节点的可见性
+          // 特别注意：如果没有过滤词，则全部可见
+          const makeVisible = (nodes) => {
+              nodes.forEach(n => {
+                  n.visible = true;
+                  if (n.childNodes && n.childNodes.length > 0) {
+                     makeVisible(n.childNodes);
+                  }
+              })
+          };
+          makeVisible(this.store.root.childNodes || []);
+      }
     },
     setChecked(nodeId, checked, deep = !this.checkStrictly) {
       const node = this.getNode(nodeId)

@@ -1641,6 +1641,15 @@ export default {
       // 如果清空了搜索框，强制折叠所有节点，并仅展开当前选中的节点
       if (!val) {
         this.$nextTick(() => {
+          // 清空搜索框后，通知 VirtualTree 重新计算过滤后的节点以恢复完整列表
+          if (this.$refs.tree && this.$refs.tree.updateFilteredNodes) {
+             this.$refs.tree.updateFilteredNodes();
+          }
+          // 特别注意：如果存在动态加载的节点（如通过append加载），需要重新触发一下树的重构来保证最新节点渲染
+          if (this.$refs.tree && this.$refs.tree.rebuildTree) {
+             this.$refs.tree.rebuildTree();
+          }
+          
           // 1. 折叠所有节点
           const rootNodes = this.$refs.tree.store.root.childNodes;
           if (rootNodes) {
@@ -2654,6 +2663,12 @@ export default {
         return
       }
       this.treeNodeClickLock = true
+      // 避免重复点击当前已经选中的非结构化节点时重新加载
+      if (this.currentNodeData && this.currentNodeData.id === data.id && this.currentNodeType === '1') {
+         this.treeNodeClickLock = false;
+         return;
+      }
+      
       this.Loading = true
       this.currentNodeType = data.type || '0';
       this.currentNodeData = data; // 保存当前节点数据
@@ -2731,21 +2746,32 @@ export default {
             ]);
             if (tablesRes.code === 200) {
               const tables = tablesRes.data || [];
-              if (!data.children || data.children.length === 0) {
-                const tableNodes = tables.map(table => ({
-                  id: table.tableId || table.id || Math.random().toString(36).substr(2, 9),
-                  label: table.tableName,
-                  parentId: data.id,
-                  type: '0',
-                  level: 3,
-                  row: table,
-                  projectId: this.pickProjectId(
-                    table.projectId,
-                    table.projectID,
-                    this.resolveProjectId(data)
-                  )
-                }));
-                this.$set(data, 'children', tableNodes);
+              const tableNodes = tables.map(table => ({
+                id: `table_${data.id}_${table.tableId || table.id || Math.random().toString(36).substr(2, 9)}`,
+                label: table.tableName,
+                parentId: data.id,
+                type: '0',
+                level: 3,
+                row: table,
+                projectId: this.pickProjectId(
+                  table.projectId,
+                  table.projectID,
+                  this.resolveProjectId(data)
+                )
+              }));
+
+              if (!data.children) {
+                this.$set(data, 'children', []);
+              }
+              // 判断是否已经存在避免重复添加
+              if (data.children.length === 0) {
+                // 如果是使用的自定义的 VirtualTree 组件
+                if (this.$refs.tree && typeof this.$refs.tree.append === 'function') {
+                  this.$refs.tree.append(tableNodes, data.id);
+                } else {
+                  // 兜底原生 el-tree
+                  data.children = tableNodes;
+                }
                 this.$nextTick(() => {
                   const dbNode = this.$refs.tree.getNode(data.id);
                   if (dbNode && dbNode.checked) {
@@ -3663,7 +3689,7 @@ export default {
     // 树节点过滤方法
     filterNode(value, data) {
       if (!value) return true;
-      return data.label.indexOf(value) !== -1;
+      return data.label && data.label.indexOf(value) !== -1;
     },
     selectProjectIdChange(val) {
       console.log('val', val);
