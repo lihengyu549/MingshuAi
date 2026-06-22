@@ -1155,7 +1155,7 @@ import {
 } from "@/api/system/protectCategory";
 import { getDicts } from "@/api/system/dict/data";
 // 引入getProjectFileList接口
-import { getProjectFileList, updateResultByFile, confirmListByFile, cancelConfirmByFile, selectLastOrNextByFileId } from "@/api/system/unstructured";
+import { getProjectFileList, selectLastOrNextByFileId } from "@/api/system/unstructured";
 import { confirmIds, confirmList, cancelConfirm, cancelConfirmData, updateFiledRule, getCategoryAttachData } from "@/api/system/proxys";
 import Treeselect from "@riophae/vue-treeselect";
 import VirtualTree from "./components/VirtualTree.vue";
@@ -1975,32 +1975,15 @@ export default {
         this.fixResultsLoading = false;
       };
 
-      if (this.fixResultsIsFileSource) {
-        let fileParams = {
-          fileIds: [this.fixResultsRow.id],
-          categoryId: this.fixResultsResultForm.categoryId,
-          securityLevel: this.fixResultsResultForm.securityLevel
-        };
-        updateResultByFile(fileParams).then(res => {
-          if (res.code == 200) {
-            this.$message.success(res.msg);
-            return syncLatestRow();
-          }
-        }).catch(() => {
-        }).finally(() => {
-          closeDialog();
-        });
-      } else {
-        updateFiledRule(params).then(res => {
-          if (res.code == 200) {
-            this.$message.success(res.msg);
-            return syncLatestRow();
-          }
-        }).catch(() => {
-        }).finally(() => {
-          closeDialog();
-        });
-      }
+      updateFiledRule(params).then(res => {
+        if (res.code == 200) {
+          this.$message.success(res.msg);
+          return syncLatestRow();
+        }
+      }).catch(() => {
+      }).finally(() => {
+        closeDialog();
+      });
     },
     fixResultsUpdataResultCanelFn() {
       this.fixResultsDialogVisible = false;
@@ -3544,17 +3527,21 @@ export default {
       }
     },
     getProcessedParamsForFileConfirm() {
-      return {
+      const params = {
         ...this.fileQueryParams,
         securityLevelIds: Array.isArray(this.fileQueryParams.securityLevel) ? [...this.fileQueryParams.securityLevel] : [],
         securityLevel: Array.isArray(this.fileQueryParams.securityLevel) ? this.fileQueryParams.securityLevel.join(',') : '',
-        databaseId: this.currentFolderId ? this.currentFolderId : this.currentNodeData.id,
+        databaseId: this.currentNodeData ? this.currentNodeData.id : '',
       }
+      if (this.currentFolderId !== null && this.currentFolderId !== undefined && this.currentFolderId !== '') {
+        params.folderId = this.currentFolderId
+      }
+      return params
     },
     handleFileEcelFn() {
       this.loading = true
       let params = this.getProcessedParamsForFileConfirm()
-      confirmListByFile(params).then(res => {
+      confirmList(params).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
           this.refreshCurrentVisibleList().finally(() => {
@@ -3568,7 +3555,7 @@ export default {
     handleFileEcelFnClose() {
       this.loading = true
       let params = this.getProcessedParamsForFileConfirm()
-      cancelConfirmByFile(params).then(res => {
+      cancelConfirmData(params).then(res => {
         if (res.code === 200) {
           this.$message.success(res.msg)
           this.refreshCurrentVisibleList().finally(() => {

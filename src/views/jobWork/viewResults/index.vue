@@ -608,7 +608,7 @@
 </template>
 
 <script>
-import { selectFileResult, updateResultByFile, confirmListByFile, cancelConfirmByFile } from "@/api/system/unstructured"
+import { selectFileResult } from "@/api/system/unstructured"
 import {
   listProxys, getProxys, connectTestI, delProxys, addProxys, updateProxys, importExcel, createProxys,
   startI, stopI, databaseMaskI, strategyPushI, strategyAll,
