@@ -1784,52 +1784,26 @@ export default {
         piiDetection: this.fixResultsResultForm.piiDetection,
         detectionProcess: this.fixResultsResultForm.detectionProcess,
       }
-      if (this.fixResultsIsFileSource) {
-        const fileParams = {
-          fileIds: [this.fixResultsRow.id],
-          categoryId: this.fixResultsResultForm.categoryId,
-          securityLevel: this.fixResultsResultForm.securityLevel
+      updateFiledRule(params).then(res => {
+        if (res.code == 200) {
+          this.$message.success(res.msg)
+          this.fixResultsRow.categoryId = this.fixResultsResultForm.categoryId
+          this.fixResultsRow.categoryName = this.fixResultsResultFormNodeName || this.fixResultsRow.categoryName
+          this.fixResultsRow.securityLevel = this.fixResultsResultForm.securityLevel
+          this.fixResultsRow.piiDetection = this.fixResultsResultForm.piiDetection
+          this.fixResultsRow.piiDetectionName = this.fixResultsPiiNodeName || this.fixResultsRow.piiDetectionName
+          const level = this.levelOptions.find(item => String(item.value) === String(this.fixResultsResultForm.securityLevel))
+          this.fixResultsRow.securityLevelName = level ? level.label : this.fixResultsRow.securityLevelName
+          return this.refreshCurrentList().then(() => {
+            this.syncFixResultsRowFromLatestList()
+          })
         }
-        updateResultByFile(fileParams).then(res => {
-          if (res.code == 200) {
-            this.$message.success(res.msg)
-            this.fixResultsRow.categoryId = this.fixResultsResultForm.categoryId
-            this.fixResultsRow.categoryName = this.fixResultsResultFormNodeName || this.fixResultsRow.categoryName
-            this.fixResultsRow.securityLevel = this.fixResultsResultForm.securityLevel
-            const level = this.levelOptions.find(item => String(item.value) === String(this.fixResultsResultForm.securityLevel))
-            this.fixResultsRow.securityLevelName = level ? level.label : this.fixResultsRow.securityLevelName
-            return this.refreshCurrentList().then(() => {
-              this.syncFixResultsRowFromLatestList()
-            })
-          }
-        }).catch(() => {
-        }).finally(() => {
-          this.fixResultsDialogVisible = false
-          this.fixResultsResultFormNodeName = ''
-          this.fixResultsLoading = false
-        })
-      } else {
-        updateFiledRule(params).then(res => {
-          if (res.code == 200) {
-            this.$message.success(res.msg)
-            this.fixResultsRow.categoryId = this.fixResultsResultForm.categoryId
-            this.fixResultsRow.categoryName = this.fixResultsResultFormNodeName || this.fixResultsRow.categoryName
-            this.fixResultsRow.securityLevel = this.fixResultsResultForm.securityLevel
-            this.fixResultsRow.piiDetection = this.fixResultsResultForm.piiDetection
-            this.fixResultsRow.piiDetectionName = this.fixResultsPiiNodeName || this.fixResultsRow.piiDetectionName
-            const level = this.levelOptions.find(item => String(item.value) === String(this.fixResultsResultForm.securityLevel))
-            this.fixResultsRow.securityLevelName = level ? level.label : this.fixResultsRow.securityLevelName
-            return this.refreshCurrentList().then(() => {
-              this.syncFixResultsRowFromLatestList()
-            })
-          }
-        }).catch(() => {
-        }).finally(() => {
-          this.fixResultsDialogVisible = false
-          this.fixResultsResultFormNodeName = ''
-          this.fixResultsLoading = false
-        })
-      }
+      }).catch(() => {
+      }).finally(() => {
+        this.fixResultsDialogVisible = false
+        this.fixResultsResultFormNodeName = ''
+        this.fixResultsLoading = false
+      })
     },
     fixResultsUpdataResultCanelFn() {
       this.fixResultsDialogVisible = false
