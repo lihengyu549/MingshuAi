@@ -290,32 +290,32 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                       <div>
                         <template v-if="canShowNodeActionButtons">
-                        <el-dropdown trigger="click">
-                          <el-button type="primary" plain size="medium">确认结果<i
-                              class="el-icon-arrow-down el-icon--right"></i></el-button>
-                          <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item @click.native="handleAdd">
-                              <i class="el-icon-aim"></i> 确认勾选项
-                            </el-dropdown-item>
-                            <el-dropdown-item @click.native="handleEcelFn">
-                              <i class="el-icon-more"></i> 确认过滤项
-                            </el-dropdown-item>
-                          </el-dropdown-menu>
-                        </el-dropdown>
-                        <el-dropdown trigger="click" style="margin-left: 10px;">
-                          <el-button type="danger" plain size="medium">取消操作<i
-                              class="el-icon-arrow-down el-icon--right"></i></el-button>
-                          <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item @click.native="handleAddFnClose">
-                              <i class="el-icon-refresh-left"></i> 取消勾选项
-                            </el-dropdown-item>
-                            <el-dropdown-item @click.native="handleEcelFnClose">
-                              <i class="el-icon-magic-stick"></i> 取消过滤项
-                            </el-dropdown-item>
-                          </el-dropdown-menu>
-                        </el-dropdown>
-                        <el-button type="primary" plain size="medium" @click="handleBatchFix"
-                          style="margin-left: 10px;">批量修改</el-button>
+                          <el-dropdown trigger="click">
+                            <el-button type="primary" plain size="medium">确认结果<i
+                                class="el-icon-arrow-down el-icon--right"></i></el-button>
+                            <el-dropdown-menu slot="dropdown">
+                              <el-dropdown-item @click.native="handleAdd">
+                                <i class="el-icon-aim"></i> 确认勾选项
+                              </el-dropdown-item>
+                              <el-dropdown-item @click.native="handleEcelFn">
+                                <i class="el-icon-more"></i> 确认过滤项
+                              </el-dropdown-item>
+                            </el-dropdown-menu>
+                          </el-dropdown>
+                          <el-dropdown trigger="click" style="margin-left: 10px;">
+                            <el-button type="danger" plain size="medium">取消操作<i
+                                class="el-icon-arrow-down el-icon--right"></i></el-button>
+                            <el-dropdown-menu slot="dropdown">
+                              <el-dropdown-item @click.native="handleAddFnClose">
+                                <i class="el-icon-refresh-left"></i> 取消勾选项
+                              </el-dropdown-item>
+                              <el-dropdown-item @click.native="handleEcelFnClose">
+                                <i class="el-icon-magic-stick"></i> 取消过滤项
+                              </el-dropdown-item>
+                            </el-dropdown-menu>
+                          </el-dropdown>
+                          <el-button type="primary" plain size="medium" @click="handleBatchFix"
+                            style="margin-left: 10px;">批量修改</el-button>
                         </template>
                       </div>
                       <div>
@@ -331,7 +331,8 @@
                             class="checkboxGroup"
                             style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
                             <el-checkbox style="margin-bottom: 10px;" v-for="item in fieldColumnList" :label="item.prop"
-                              :key="item.prop">{{ item.label }}</el-checkbox>
+                              :key="item.prop">{{
+                              item.label }}</el-checkbox>
                           </el-checkbox-group>
                           <el-button type="text" size="medium" slot="reference" icon="el-icon-s-tools"
                             style="color: #7c8592;">列设置</el-button>
@@ -401,7 +402,8 @@
                           </template>
                           <template v-else-if="item.prop === 'confidenceLevel'">
                             <el-tag :type="getAiReviewTagType(scope.row)" effect="plain" class="table-ai-review-tag">
-                              <svg-icon v-if="isAiReviewSvgIcon(scope.row)" :icon-class="getAiReviewIcon(scope.row)"></svg-icon>
+                              <svg-icon v-if="isAiReviewSvgIcon(scope.row)"
+                                :icon-class="getAiReviewIcon(scope.row)"></svg-icon>
                               <i v-else :class="getAiReviewIcon(scope.row)"></i>
                               <span>{{ getAiReviewLabel(scope.row) }}</span>
                             </el-tag>
@@ -562,32 +564,32 @@
                     <!-- 左侧按钮 -->
                     <div>
                       <template v-if="canShowNodeActionButtons">
-                      <el-dropdown trigger="click">
-                        <el-button type="primary" plain size="medium">确认结果<i
-                            class="el-icon-arrow-down el-icon--right"></i></el-button>
-                        <el-dropdown-menu slot="dropdown">
-                          <el-dropdown-item @click.native="handleFileAdd">
-                            <i class="el-icon-aim"></i> 确认勾选项
-                          </el-dropdown-item>
-                          <el-dropdown-item @click.native="handleFileEcelFn">
-                            <i class="el-icon-more"></i> 确认过滤项
-                          </el-dropdown-item>
-                        </el-dropdown-menu>
-                      </el-dropdown>
-                      <el-dropdown trigger="click" style="margin-left: 10px;">
-                        <el-button type="danger" plain size="medium">取消操作<i
-                            class="el-icon-arrow-down el-icon--right"></i></el-button>
-                        <el-dropdown-menu slot="dropdown">
-                          <el-dropdown-item @click.native="handleFileAddFnClose">
-                            <i class="el-icon-refresh-left"></i> 取消勾选项
-                          </el-dropdown-item>
-                          <el-dropdown-item @click.native="handleFileEcelFnClose">
-                            <i class="el-icon-magic-stick"></i> 取消过滤项
-                          </el-dropdown-item>
-                        </el-dropdown-menu>
-                      </el-dropdown>
-                      <el-button type="primary" plain size="medium" @click="handleFileBatchFix"
-                        style="margin-left: 10px;">批量修改</el-button>
+                        <el-dropdown trigger="click">
+                          <el-button type="primary" plain size="medium">确认结果<i
+                              class="el-icon-arrow-down el-icon--right"></i></el-button>
+                          <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item @click.native="handleFileAdd">
+                              <i class="el-icon-aim"></i> 确认勾选项
+                            </el-dropdown-item>
+                            <el-dropdown-item @click.native="handleFileEcelFn">
+                              <i class="el-icon-more"></i> 确认过滤项
+                            </el-dropdown-item>
+                          </el-dropdown-menu>
+                        </el-dropdown>
+                        <el-dropdown trigger="click" style="margin-left: 10px;">
+                          <el-button type="danger" plain size="medium">取消操作<i
+                              class="el-icon-arrow-down el-icon--right"></i></el-button>
+                          <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item @click.native="handleFileAddFnClose">
+                              <i class="el-icon-refresh-left"></i> 取消勾选项
+                            </el-dropdown-item>
+                            <el-dropdown-item @click.native="handleFileEcelFnClose">
+                              <i class="el-icon-magic-stick"></i> 取消过滤项
+                            </el-dropdown-item>
+                          </el-dropdown-menu>
+                        </el-dropdown>
+                        <el-button type="primary" plain size="medium" @click="handleFileBatchFix"
+                          style="margin-left: 10px;">批量修改</el-button>
                       </template>
                     </div>
                     <!-- 右侧按钮 -->
@@ -648,7 +650,8 @@
                           </template>
                           <template v-else-if="item.prop === 'confidenceLevel'">
                             <el-tag :type="getAiReviewTagType(scope.row)" effect="plain" class="table-ai-review-tag">
-                              <svg-icon v-if="isAiReviewSvgIcon(scope.row)" :icon-class="getAiReviewIcon(scope.row)"></svg-icon>
+                              <svg-icon v-if="isAiReviewSvgIcon(scope.row)"
+                                :icon-class="getAiReviewIcon(scope.row)"></svg-icon>
                               <i v-else :class="getAiReviewIcon(scope.row)"></i>
                               <span>{{ getAiReviewLabel(scope.row) }}</span>
                             </el-tag>
@@ -913,8 +916,8 @@
     </el-dialog>
 
     <!-- ======== 新增 fixResults 抽屉 开始 ======== -->
-    <Drawer title=" " :visible.sync="fixResultsDrawerVisible" direction="rtl" size="60%"
-      :destroy-on-close="true" custom-class="fix-results-drawer" :wrapperClosable="true">
+    <Drawer title=" " :visible.sync="fixResultsDrawerVisible" direction="rtl" size="60%" :destroy-on-close="true"
+      custom-class="fix-results-drawer" :wrapperClosable="true">
       <div slot="body" class="fix-results-container" v-loading="fixResultsLoading" v-if="fixResultsRow">
         <!-- 顶部标题和按钮区域 -->
         <el-card class="top-section" shadow="never"
@@ -1643,13 +1646,13 @@ export default {
         this.$nextTick(() => {
           // 清空搜索框后，通知 VirtualTree 重新计算过滤后的节点以恢复完整列表
           if (this.$refs.tree && this.$refs.tree.updateFilteredNodes) {
-             this.$refs.tree.updateFilteredNodes();
+            this.$refs.tree.updateFilteredNodes();
           }
           // 特别注意：如果存在动态加载的节点（如通过append加载），需要重新触发一下树的重构来保证最新节点渲染
           if (this.$refs.tree && this.$refs.tree.rebuildTree) {
-             this.$refs.tree.rebuildTree();
+            this.$refs.tree.rebuildTree();
           }
-          
+
           // 1. 折叠所有节点
           const rootNodes = this.$refs.tree.store.root.childNodes;
           if (rootNodes) {
@@ -1957,6 +1960,21 @@ export default {
         piiDetection: this.fixResultsResultForm.piiDetection,
         detectionProcess: this.fixResultsResultForm.detectionProcess,
       };
+      const syncLatestRow = () => {
+        return this.refreshCurrentVisibleList().then(() => {
+          this.syncFixResultsRowFromLatestList();
+          if (typeof this.fixResultsHandleNext === 'function') {
+            this.fixResultsHandleNext('2');
+          }
+        });
+      };
+      const closeDialog = () => {
+        this.fixResultsDialogVisible = false;
+        this.fixResultsResultFormNodeName = '';
+        this.fixResultsPiiNodeName = '';
+        this.fixResultsLoading = false;
+      };
+
       if (this.fixResultsIsFileSource) {
         let fileParams = {
           fileIds: [this.fixResultsRow.id],
@@ -1966,35 +1984,21 @@ export default {
         updateResultByFile(fileParams).then(res => {
           if (res.code == 200) {
             this.$message.success(res.msg);
-            this.handleFileQuery().then(() => {
-              this.syncFixResultsRowFromLatestList();
-              this.fixResultsHandleNext('2');
-            });
+            return syncLatestRow();
           }
-          this.fixResultsDialogVisible = false;
-          this.fixResultsResultFormNodeName = '';
-          this.fixResultsPiiNodeName = '';
-          this.fixResultsLoading = false;
         }).catch(() => {
-          this.fixResultsDialogVisible = false;
-          this.fixResultsLoading = false;
+        }).finally(() => {
+          closeDialog();
         });
       } else {
         updateFiledRule(params).then(res => {
           if (res.code == 200) {
             this.$message.success(res.msg);
-            this.getTableFieldsData().then(() => {
-              this.syncFixResultsRowFromLatestList();
-              this.fixResultsHandleNext('2');
-            });
+            return syncLatestRow();
           }
-          this.fixResultsDialogVisible = false;
-          this.fixResultsResultFormNodeName = '';
-          this.fixResultsPiiNodeName = '';
-          this.fixResultsLoading = false;
         }).catch(() => {
-          this.fixResultsDialogVisible = false;
-          this.fixResultsLoading = false;
+        }).finally(() => {
+          closeDialog();
         });
       }
     },
@@ -2074,15 +2078,9 @@ export default {
           if (this.fixResultsRow) {
             this.fixResultsRow.confirm = 1;
           }
-          if (this.fixResultsIsFileSource) {
-            this.handleFileQuery().then(() => {
-              this.syncFixResultsRowFromLatestList();
-            });
-          } else {
-            this.handleDrawerSearch().then(() => {
-              this.syncFixResultsRowFromLatestList();
-            });
-          }
+          this.refreshCurrentVisibleList().then(() => {
+            this.syncFixResultsRowFromLatestList();
+          });
         } else {
           this.$message.error(res.msg || this.$t('fixResults.messages.manualConfirmFailed'));
         }
@@ -2234,10 +2232,19 @@ export default {
       });
     },
     refreshCurrentVisibleList() {
-      if (this.currentNodeType === '1') {
+      if (!this.currentNodeData) {
+        return Promise.resolve();
+      }
+      if (String(this.currentNodeType) === '1') {
         return this.handleFileQuery();
       }
-      return this.getTableFieldsData();
+      if (this.currentNodeLevel === 2) {
+        return this.getDatabaseTablesData();
+      }
+      if (this.currentNodeLevel === 3) {
+        return this.getTableFieldsData();
+      }
+      return Promise.resolve();
     },
     toggleFileSearch() {
       this.showFileSearch = !this.showFileSearch;
@@ -2269,7 +2276,7 @@ export default {
         pageSize: this.queryParams.pageSize
       };
 
-      getPropertyList(params).then(res => {
+      return getPropertyList(params).then(res => {
         if (res.code === 200) {
           this.dataAll = res.data.list || res.data.records || [];
           this.total = res.data.total || 0;
@@ -2664,13 +2671,13 @@ export default {
       }
       this.treeNodeClickLock = true
       // 避免重复点击当前已经选中的非结构化节点时重新加载
-      if (this.currentNodeData && this.currentNodeData.id === data.id && this.currentNodeType === '1') {
-         this.treeNodeClickLock = false;
-         return;
+      if (this.currentNodeData && this.currentNodeData.id === data.id && String(this.currentNodeType) === '1') {
+        this.treeNodeClickLock = false;
+        return;
       }
-      
+
       this.Loading = true
-      this.currentNodeType = data.type || '0';
+      this.currentNodeType = String(data.type || '0');
       this.currentNodeData = data; // 保存当前节点数据
       this.currentProjectId = this.resolveProjectId(data);
 
@@ -4002,46 +4009,24 @@ export default {
         securityLevel: this.resultForm.securityLevel,
         piiDetection: this.resultForm.piiDetection,
       }
-
-      if (this.currentNodeType === '1') {
-        // 非结构化批量修改
-        updateResultByFile(params).then(res => {
-          if (res.code == 200) {
-            this.$message({
-              message: res.msg,
-              type: 'success'
-            })
-          }
-          this.deleteVisible = false
-          this.resultFormNodeName = ''
-          this.resetForm('resultForm')
-          this.resultForm.selectedIds = null
-          this.refreshCurrentVisibleList().finally(() => {
-            this.updataLoading = false
+      // 批量修改
+      updateFiledRule(params).then(res => {
+        if (res.code == 200) {
+          this.$message({
+            message: res.msg,
+            type: 'success'
           })
-        }).catch(err => {
+        }
+        this.deleteVisible = false
+        this.resultFormNodeName = ''
+        this.resetForm('resultForm')
+        this.resultForm.selectedIds = null
+        this.refreshCurrentVisibleList().finally(() => {
           this.updataLoading = false
         })
-      } else {
-        // 结构化批量修改
-        updateFiledRule(params).then(res => {
-          if (res.code == 200) {
-            this.$message({
-              message: res.msg,
-              type: 'success'
-            })
-          }
-          this.deleteVisible = false
-          this.resultFormNodeName = ''
-          this.resetForm('resultForm')
-          this.resultForm.selectedIds = null
-          this.refreshCurrentVisibleList().finally(() => {
-            this.updataLoading = false
-          })
-        }).catch(err => {
-          this.updataLoading = false
-        })
-      }
+      }).catch(err => {
+        this.updataLoading = false
+      })
     },
     updataResultCanelFn() {
       this.deleteVisible = false

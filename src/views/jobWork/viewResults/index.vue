@@ -1755,13 +1755,14 @@ export default {
             this.fixResultsRow.securityLevel = this.fixResultsResultForm.securityLevel
             const level = this.levelOptions.find(item => String(item.value) === String(this.fixResultsResultForm.securityLevel))
             this.fixResultsRow.securityLevelName = level ? level.label : this.fixResultsRow.securityLevelName
-            this.refreshCurrentList()
+            return this.refreshCurrentList().then(() => {
+              this.syncFixResultsRowFromLatestList()
+            })
           }
+        }).catch(() => {
+        }).finally(() => {
           this.fixResultsDialogVisible = false
           this.fixResultsResultFormNodeName = ''
-          this.fixResultsLoading = false
-        }).catch(() => {
-          this.fixResultsDialogVisible = false
           this.fixResultsLoading = false
         })
       } else {
@@ -1775,13 +1776,14 @@ export default {
             this.fixResultsRow.piiDetectionName = this.fixResultsPiiNodeName || this.fixResultsRow.piiDetectionName
             const level = this.levelOptions.find(item => String(item.value) === String(this.fixResultsResultForm.securityLevel))
             this.fixResultsRow.securityLevelName = level ? level.label : this.fixResultsRow.securityLevelName
-            this.refreshCurrentList()
+            return this.refreshCurrentList().then(() => {
+              this.syncFixResultsRowFromLatestList()
+            })
           }
+        }).catch(() => {
+        }).finally(() => {
           this.fixResultsDialogVisible = false
           this.fixResultsResultFormNodeName = ''
-          this.fixResultsLoading = false
-        }).catch(() => {
-          this.fixResultsDialogVisible = false
           this.fixResultsLoading = false
         })
       }
