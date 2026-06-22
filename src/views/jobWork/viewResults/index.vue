@@ -2319,6 +2319,7 @@ export default {
         parentId: this.drawerDataInfo.projectId ? this.drawerDataInfo.projectId : Number(sessionStorage.getItem('projectId')),
         needSub: 1,
         ifAddUnclassified: 1,
+        ifFile: this.isFileSource ? '1' : '0'
       };
       treeListI(data).then((resp) => {
         this.categoryList = resp.data

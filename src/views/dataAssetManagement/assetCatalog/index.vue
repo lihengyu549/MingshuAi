@@ -2634,7 +2634,8 @@ export default {
       let data = {
         parentId: resolvedProjectId,
         needSub: 1,
-        ifAddUnclassified: 1
+        ifAddUnclassified: 1,
+        ifFile: this.currentNodeType || '0'
       };
       return treeListI(data).then(res => {
         this.categoryOptions = this.handleTree(res.data, "id") || res.data
