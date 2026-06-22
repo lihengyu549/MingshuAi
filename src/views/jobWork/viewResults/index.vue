@@ -255,7 +255,7 @@
                     }}</el-button>
                 </el-popover>
                 <el-button type="text" size="medium" style="color: #7c8592;" @click="handleBack">{{ $t('return')
-                  }}</el-button>
+                }}</el-button>
               </div>
             </div>
             <el-table class="tableBox" style="flex: 1;" height="100%" v-loading="loading"
@@ -1974,6 +1974,8 @@ export default {
             message: res.msg,
             type: 'success'
           })
+          // 刷新左侧树状态
+          this.getProtectCategory();
         }
         this.deleteVisible = false
         this.resultFormNodeName = ''
