@@ -78,9 +78,9 @@
                 <el-form-item :label="$t('viewResults.search.category')" prop="categoryId">
                   <el-select ref="addSelectRef" v-model="addNodeName" :filter-method="filterCategoryTree">
                     <el-option style="height: 100%; padding: 0" value="">
-                      <el-tree :data="searchCategoryList" :props="defaultProps" show-checkbox :expand-on-click-node="true"
-                        :filter-node-method="filterNode" ref="treeSelectQuery" node-key="id" highlight-current
-                        @check="addHandleNodeCheck" />
+                      <el-tree :data="searchCategoryList" :props="defaultProps" show-checkbox
+                        :expand-on-click-node="true" :filter-node-method="filterNode" ref="treeSelectQuery"
+                        node-key="id" highlight-current @check="addHandleNodeCheck" />
                     </el-option>
                   </el-select>
                 </el-form-item>
@@ -254,7 +254,8 @@
                       $t('columnSettings')
                     }}</el-button>
                 </el-popover>
-                <el-button type="text" size="medium" style="color: #7c8592;" @click="handleBack">{{ $t('return') }}</el-button>
+                <el-button type="text" size="medium" style="color: #7c8592;" @click="handleBack">{{ $t('return')
+                  }}</el-button>
               </div>
             </div>
             <el-table class="tableBox" style="flex: 1;" height="100%" v-loading="loading"
@@ -313,7 +314,8 @@
                         </el-table>
                       </div>
                       <span>
-                        {{ (scope.row.sampleList && scope.row.sampleList[0] && scope.row.sampleList[0].value !== undefined) ? scope.row.sampleList[0].value : '--' }}
+                        {{ (scope.row.sampleList && scope.row.sampleList[0] && scope.row.sampleList[0].value !==
+                          undefined) ? scope.row.sampleList[0].value : '--' }}
                         <i class="el-icon-view" style="font-size: 16px;"></i>
                       </span>
                     </el-tooltip>
@@ -387,8 +389,8 @@
       </template>
     </el-dialog>
 
-    <Drawer title=" " :visible.sync="fixResultsDrawerVisible" direction="rtl" size="60%"
-      :destroy-on-close="true" custom-class="fix-results-drawer" :wrapperClosable="true">
+    <Drawer title=" " :visible.sync="fixResultsDrawerVisible" direction="rtl" size="60%" :destroy-on-close="true"
+      custom-class="fix-results-drawer" :wrapperClosable="true">
       <div slot="body" class="fix-results-container" v-loading="fixResultsLoading" v-if="fixResultsRow">
         <el-card class="top-section" shadow="never"
           style="margin-bottom: 20px; border-radius: 10px; border: 1px solid #ebeef5;">
@@ -431,7 +433,8 @@
                   <label class="info-label">{{ $t('fixResults.top.sampleFeature') }}：</label>
                 </div>
                 <div style="margin-top: 10px;">
-                  <el-table :data="fixResultsRow.unSampleList" max-height="650" border style="width: 100%; border-radius: 8px;">
+                  <el-table :data="fixResultsRow.unSampleList" max-height="650" border
+                    style="width: 100%; border-radius: 8px;">
                     <template slot="empty">
                       <el-empty :description="$t('noData')"></el-empty>
                     </template>
@@ -493,7 +496,8 @@
                   <label class="info-label">{{ $t('fixResults.top.samplePreview') }}：</label>
                 </div>
                 <div style="margin-top: 10px;">
-                  <el-table :data="fixResultsRow.sampleList" max-height="650" border style="width: 100%; border-radius: 8px;">
+                  <el-table :data="fixResultsRow.sampleList" max-height="650" border
+                    style="width: 100%; border-radius: 8px;">
                     <template slot="empty">
                       <el-empty :description="$t('noData')"></el-empty>
                     </template>
@@ -1434,6 +1438,45 @@ export default {
       }
       return null
     },
+    findCategoryNodeByMatcher(tree, matcher) {
+      if (!Array.isArray(tree)) return null
+      for (const node of tree) {
+        if (matcher(node)) return node
+        if (node.children && node.children.length) {
+          const childNode = this.findCategoryNodeByMatcher(node.children, matcher)
+          if (childNode) return childNode
+        }
+      }
+      return null
+    },
+    formatCategoryNodeName(node) {
+      if (!node) return ''
+      const parentLabels = this.findParentLabelsById(this.categoryList, node.id)
+      const nodeName = node.categoryName || node.label || ''
+      return parentLabels ? `${parentLabels.join('-')}-${nodeName}` : nodeName
+    },
+    resolveCategoryNode(categoryId, categoryName) {
+      const normalizedId = categoryId !== undefined && categoryId !== null && categoryId !== ''
+        ? String(categoryId)
+        : ''
+      const normalizedName = categoryName ? String(categoryName).trim() : ''
+
+      if (normalizedId) {
+        const matchedById = this.findCategoryNodeByMatcher(this.categoryList, node => String(node.id) === normalizedId)
+        if (matchedById) return matchedById
+      }
+
+      if (normalizedName) {
+        const matchedByName = this.findCategoryNodeByMatcher(this.categoryList, node => {
+          const nodeName = node.categoryName || node.label || ''
+          return String(nodeName).trim() === normalizedName
+        })
+        if (matchedByName) return matchedByName
+      }
+
+      return this.findCategoryNodeByMatcher(this.categoryList, node => String(node.id) === '-100')
+        || this.findCategoryNodeByMatcher(this.categoryList, node => !node.children || node.children.length === 0)
+    },
     getListTableByProject() {
       let data = {
         databaseId: this.drawerDataInfo.databaseId || this.drawerDataInfo.id || Number(sessionStorage.getItem('databaseId')),
@@ -1742,7 +1785,7 @@ export default {
         detectionProcess: this.fixResultsResultForm.detectionProcess,
       }
       if (this.fixResultsIsFileSource) {
-        let fileParams = {
+        const fileParams = {
           fileIds: [this.fixResultsRow.id],
           categoryId: this.fixResultsResultForm.categoryId,
           securityLevel: this.fixResultsResultForm.securityLevel
@@ -1863,15 +1906,18 @@ export default {
       })
     },
     fixResultsHandleModifyResult() {
+      const selectedCategoryNode = this.resolveCategoryNode(this.fixResultsRow.categoryId, this.fixResultsRow.categoryName)
       this.fixResultsResultForm = {
-        categoryId: this.fixResultsRow.categoryId || '',
+        categoryId: selectedCategoryNode ? selectedCategoryNode.id : (this.fixResultsRow.categoryId || ''),
         securityLevel: this.fixResultsRow.securityLevel || '',
         id: this.fixResultsRow.id || '',
         piiDetection: this.fixResultsRow.piiDetection || '',
         classificationLogic: '',
         reasoningProcess: this.fixResultsRow.reasoningProcess || ''
       }
-      if (this.fixResultsRow.categoryName) {
+      if (selectedCategoryNode) {
+        this.fixResultsResultFormNodeName = this.formatCategoryNodeName(selectedCategoryNode)
+      } else if (this.fixResultsRow.categoryName) {
         this.fixResultsResultFormNodeName = this.fixResultsRow.categoryName
       }
       if (this.fixResultsRow.piiDetection) {
@@ -1893,8 +1939,13 @@ export default {
       this.resultForm.selectedIds = selectedIds
 
       // 为分类下拉框设置默认选中未分类id-100
+      this.resultForm.categoryId = ''
       if (this.categoryList && this.categoryList.length > 0) {
-        this.resultFormNodeName = this.categoryList.find(item => item.id == '-100').categoryName
+        const defaultCategoryNode = this.resolveCategoryNode('-100')
+        if (defaultCategoryNode) {
+          this.resultFormNodeName = this.formatCategoryNodeName(defaultCategoryNode)
+          this.resultForm.categoryId = defaultCategoryNode.id
+        }
       }
 
       // 为安全分级下拉框设置默认选中第一项
