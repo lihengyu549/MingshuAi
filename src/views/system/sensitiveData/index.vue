@@ -123,12 +123,12 @@
                                     size="mini">
                                     {{ category.securityLevelName }}
                                 </el-tag>
-                                <el-tag class="protection-status"
+                                <!-- <el-tag class="protection-status"
                                     :type="category.protectionMeasure === '1' ? 'success' : 'warning'" size="mini">
                                     <i
                                         :class="category.protectionMeasure === '1' ? 'el-icon-success' : 'el-icon-warning'"></i>{{
                                             getProtectionStatusText(category.protectionMeasure) }}
-                                </el-tag>
+                                </el-tag> -->
                             </div>
                         </div>
 
