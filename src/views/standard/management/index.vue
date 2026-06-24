@@ -145,7 +145,7 @@
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item v-if="form && form.id" :label="$t('management.categorySchema')" prop="schemaId">
+            <el-form-item :label="$t('management.categorySchema')" prop="schemaId">
               <el-select v-model="form.schemaId" filterable clearable :placeholder="$t('management.categorySchema')"
                 :rules="[{ required: true, message: $t('management.categorySchemaRequired'), trigger: 'change' }]">
                 <el-option v-for="opt in schemaOptions" :key="opt.id" :label="opt.schemeName"
