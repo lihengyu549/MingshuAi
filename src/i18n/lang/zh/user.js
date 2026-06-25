@@ -1,6 +1,6 @@
 export default {
-  titleAdd: '添加用户',
-  titleEdit: '修改用户',
+  titleAdd: '新增用户',
+  titleEdit: '编辑用户',
   importUser: '用户导入',
   userId: '用户编号',
   userName: '用户名称',

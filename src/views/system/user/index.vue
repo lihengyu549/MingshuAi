@@ -140,12 +140,12 @@
               </el-table-column>
               <el-table-column :label="$t('operation')" align="center" width="260"
                 class-name="small-padding fixed-width">
-                <template v-if="scope.row.userId !== 1" slot-scope="scope">
+                <template slot-scope="scope">
                   <el-button v-hasPermi="['system:user:edit']" size="mini" type="text" icon="el-icon-edit"
                     @click="handleUpdate(scope.row)">
                     {{ $t('edit') }}
                   </el-button>
-                  <el-button v-hasPermi="['system:user:remove']" size="mini" type="text" class="text-danger"
+                  <el-button v-if="scope.row.userId !== 1" v-hasPermi="['system:user:remove']" size="mini" type="text" class="text-danger"
                     icon="el-icon-delete" @click="handleDelete(scope.row)">
                     {{ $t('delete') }}
                   </el-button>
@@ -181,7 +181,7 @@
         <el-row>
           <el-col>
             <el-form-item :label="$t('user.userName')" prop="userName">
-              <el-input v-model="form.userName" :placeholder="$t('user.inputUserName')" maxlength="30" />
+              <el-input v-model="form.userName" :placeholder="$t('user.inputUserName')" maxlength="30" :disabled="isAdminEdit" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -208,7 +208,7 @@
           <el-col>
             <el-form-item :label="$t('user.role')" prop="roleIds">
               <el-select v-model="form.roleIds" multiple :placeholder="$t('user.selectRole')" style="width: 100%"
-                @change="handleRoleSelectChange">
+                :disabled="isAdminEdit" @change="handleRoleSelectChange">
                 <el-option v-for="item in roleOptions" :key="item.roleId" :label="item.roleName" :value="item.roleId"
                   :disabled="item.status == 1" />
               </el-select>
@@ -231,7 +231,7 @@
         <el-row v-if="form.userId !== undefined">
           <el-col>
             <el-form-item :label="$t('status')" prop="status">
-              <el-select v-model="form.status" style="width: 100%">
+              <el-select v-model="form.status" style="width: 100%" :disabled="isAdminEdit">
                 <el-option v-for="dict in dict.type.sys_normal_disable" :key="dict.value" :label="dict.label" :value="dict.value" />
               </el-select>
             </el-form-item>
@@ -280,6 +280,75 @@
       </div>
     </el-dialog>
 
+    <el-dialog title="修改密码" class="custom-dialog" :visible.sync="resetPwdDialog.open" width="560px" append-to-body
+      :close-on-click-modal="false">
+      <el-form ref="resetPwdFormRef" :model="resetPwdForm" :rules="resetPwdRules" label-position="top">
+        <el-form-item label="目标用户">
+          <el-input :value="resetPwdForm.userName" disabled />
+        </el-form-item>
+        <el-form-item label="新密码" prop="password">
+          <el-input v-model="resetPwdForm.password" placeholder="请输入新密码" type="password" maxlength="20" show-password />
+        </el-form-item>
+        <el-form-item label="确认密码" prop="confirmPassword">
+          <el-input v-model="resetPwdForm.confirmPassword" placeholder="请再次输入新密码" type="password" maxlength="20" show-password />
+        </el-form-item>
+        <div class="form-tip">请输入新的登录密码，建议不少于 6 位。</div>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="closeResetPwdDialog">{{ $t('cancel') }}</el-button>
+        <el-button type="primary" :loading="resetPwdDialog.loading" @click="submitResetPwdDialog">{{ $t('confirm') }}</el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog title="移动部门" class="custom-dialog" :visible.sync="deptMoveDialog.open" width="560px" append-to-body
+      :close-on-click-modal="false">
+      <el-form ref="deptMoveFormRef" :model="deptMoveForm" label-position="top">
+        <el-form-item label="当前部门">
+          <el-input :value="currentDeptName" disabled />
+        </el-form-item>
+        <el-form-item label="移动到" prop="parentId">
+          <treeselect v-model="deptMoveForm.parentId" :options="deptMoveOptions" :normalizer="deptTreeNormalizer"
+            :show-count="true" placeholder="请选择目标部门" />
+          <div class="form-tip">移动部门后，其下所有子部门与用户会整体跟随，不会丢失数据。</div>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="closeDeptMoveDialog">{{ $t('cancel') }}</el-button>
+        <el-button type="primary" :loading="deptMoveDialog.loading" @click="submitDeptMoveDialog">{{ $t('confirm') }}</el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog title="新增下级部门" class="custom-dialog" :visible.sync="deptAddDialog.open" width="560px" append-to-body
+      :close-on-click-modal="false">
+      <el-form ref="deptAddFormRef" :model="deptAddForm" :rules="deptAddRules" label-position="top">
+        <el-form-item label="上级部门">
+          <el-input :value="currentDeptName" disabled />
+        </el-form-item>
+        <el-form-item label="部门名称" prop="deptName">
+          <el-input v-model="deptAddForm.deptName" placeholder="请输入部门名称" maxlength="30" />
+          <div class="form-tip">新增后的部门会自动挂载到当前选中部门下，可继续用于用户分配与筛选。</div>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="closeDeptAddDialog">{{ $t('cancel') }}</el-button>
+        <el-button type="primary" :loading="deptAddDialog.loading" @click="submitDeptAddDialog">{{ $t('confirm') }}</el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog title="重命名部门" class="custom-dialog" :visible.sync="deptRenameDialog.open" width="560px" append-to-body
+      :close-on-click-modal="false">
+      <el-form ref="deptRenameFormRef" :model="deptRenameForm" :rules="deptRenameRules" label-position="top">
+        <el-form-item label="部门名称" prop="deptName">
+          <el-input v-model="deptRenameForm.deptName" placeholder="请输入部门名称" maxlength="30" />
+          <div class="form-tip">部门重命名后，右侧用户「所属部门」标签会同步更新。</div>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="closeDeptRenameDialog">{{ $t('cancel') }}</el-button>
+        <el-button type="primary" :loading="deptRenameDialog.loading" @click="submitDeptRenameDialog">{{ $t('confirm') }}</el-button>
+      </div>
+    </el-dialog>
+
     <!-- 用户导入对话框 -->
     <el-dialog :title="uploadTitle" :visible.sync="upload.open" width="400px" append-to-body
       :close-on-click-modal="false">
@@ -312,6 +381,7 @@
 
 <script>
 import { listUser, getUser, delUser, addUser, updateUser, resetUserPwd, deptTreeSelect } from '@/api/system/user'
+import { getDept, addDept, updateDept as updateDeptInfo, delDept, listDeptExcludeChild } from '@/api/system/dept'
 import { getToken } from '@/utils/auth'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
@@ -373,10 +443,70 @@ export default {
       multiple: true,
       showSearch: false,
       currentDeptName: '全部用户',
+      selectedDept: null,
       total: 0,
       userList: [],
       titleKey: '',
       deptOptions: undefined,
+      deptMoveDialog: {
+        open: false,
+        loading: false
+      },
+      deptMoveOptions: [],
+      deptMoveForm: {
+        deptId: undefined,
+        parentId: undefined
+      },
+      deptAddDialog: {
+        open: false,
+        loading: false
+      },
+      deptAddForm: {
+        parentId: undefined,
+        deptName: ''
+      },
+      deptAddRules: {
+        deptName: [{ required: true, message: '部门名称不能为空', trigger: 'blur' }]
+      },
+      deptRenameDialog: {
+        open: false,
+        loading: false
+      },
+      deptRenameForm: {
+        deptId: undefined,
+        parentId: undefined,
+        deptName: ''
+      },
+      deptRenameRules: {
+        deptName: [{ required: true, message: '部门名称不能为空', trigger: 'blur' }]
+      },
+      resetPwdDialog: {
+        open: false,
+        loading: false
+      },
+      resetPwdForm: {
+        userId: undefined,
+        userName: '',
+        password: '',
+        confirmPassword: ''
+      },
+      resetPwdRules: {
+        password: [
+          { required: true, message: '请输入新密码', trigger: 'blur' },
+          { min: 6, max: 20, message: '密码长度必须介于 6 和 20 之间', trigger: 'blur' }
+        ],
+        confirmPassword: [
+          { required: true, message: '请再次输入新密码', trigger: 'blur' },
+          {
+            validator: (rule, value, callback) => {
+              if (!value) return callback()
+              if (value !== this.resetPwdForm.password) return callback(new Error('两次输入密码不一致'))
+              callback()
+            },
+            trigger: 'blur'
+          }
+        ]
+      },
       open: false,
       initPassword: undefined,
       dateRange: [],
@@ -413,6 +543,9 @@ export default {
     },
     uploadTitle() {
       return this.upload.titleKey ? this.$t(this.upload.titleKey) : ''
+    },
+    isAdminEdit() {
+      return this.form && this.form.userId !== undefined && String(this.form.userId) === '1'
     }
   },
   watch: {
@@ -446,21 +579,303 @@ export default {
       })
     },
     handleDeptAddChild() {
-      this.$message.info('功能开发中')
+      const deptId = this.queryParams.deptId
+      if (!deptId) {
+        this.$modal.msgError('请先选择要新增下级的部门')
+        return
+      }
+      this.deptAddForm = {
+        parentId: deptId,
+        deptName: ''
+      }
+      this.deptAddDialog.open = true
+      this.$nextTick(() => {
+        if (this.$refs.deptAddFormRef) {
+          this.$refs.deptAddFormRef.clearValidate && this.$refs.deptAddFormRef.clearValidate()
+        }
+      })
     },
     handleDeptRename() {
-      this.$message.info('功能开发中')
+      const deptId = this.queryParams.deptId
+      if (!deptId) {
+        this.$modal.msgError('请先选择要重命名的部门')
+        return
+      }
+      this.deptRenameDialog.open = true
+      this.deptRenameDialog.loading = true
+      getDept(deptId)
+        .then(res => {
+          this.deptRenameForm = { ...res.data }
+        })
+        .finally(() => {
+          this.deptRenameDialog.loading = false
+          this.$nextTick(() => {
+            if (this.$refs.deptRenameFormRef) {
+              this.$refs.deptRenameFormRef.clearValidate && this.$refs.deptRenameFormRef.clearValidate()
+            }
+          })
+        })
     },
     handleDeptMove() {
-      this.$message.info('功能开发中')
+      const deptId = this.queryParams.deptId
+      if (!deptId) {
+        this.$modal.msgError('请先选择要移动的部门')
+        return
+      }
+      if (this.isTopDept(deptId)) {
+        this.$modal.msgError('顶层部门不允许移动')
+        return
+      }
+      this.deptMoveDialog.open = true
+      this.deptMoveDialog.loading = true
+      Promise.all([getDept(deptId), listDeptExcludeChild(deptId)])
+        .then(([deptRes, listRes]) => {
+          this.deptMoveForm = { ...deptRes.data, parentId: undefined }
+          this.deptMoveOptions = Array.isArray(listRes.data) ? listRes.data : []
+        })
+        .finally(() => {
+          this.deptMoveDialog.loading = false
+        })
     },
-    handleDeptDelete() {
-      this.$message.info('功能开发中')
+    async handleDeptDelete() {
+      const deptId = this.queryParams.deptId
+      if (!deptId) {
+        this.$modal.msgError('请先选择要删除的部门')
+        return
+      }
+      const hasUsers = await this.checkDeptHasUsers(deptId)
+      if (hasUsers) {
+        this.$modal.msgError('当前部门或子部门下仍存在用户，不允许删除')
+        return
+      }
+      const deptName = this.currentDeptName || '当前部门'
+      try {
+        await this.$modal.confirm(`是否确认删除名称为“${deptName}”的部门？`)
+      } catch (e) {
+        return
+      }
+      try {
+        await delDept(deptId)
+      } catch (e) {
+        this.$modal.msgError('当前部门或子部门下仍存在用户，不允许删除')
+        return
+      }
+      this.$modal.msgSuccess('删除成功')
+      this.removeDeptNodeAndPromoteChildren(deptId)
+      this.queryParams.deptId = undefined
+      this.currentDeptName = '全部用户'
+      this.selectedDept = null
+      if (this.$refs.tree) {
+        this.$refs.tree.setCurrentKey(null)
+      }
+      this.getDeptTree()
+      this.handleQuery()
     },
     handleNodeClick(data) {
       this.queryParams.deptId = data.id
       this.currentDeptName = data.label || '全部用户'
+      this.selectedDept = data
       this.handleQuery()
+    },
+    closeDeptMoveDialog() {
+      this.deptMoveDialog.open = false
+      this.deptMoveDialog.loading = false
+      this.deptMoveForm = { deptId: undefined, parentId: undefined }
+      this.deptMoveOptions = []
+    },
+    isTopDept(deptId) {
+      if (!Array.isArray(this.deptOptions)) return false
+      return this.deptOptions.some(item => String(item.id) === String(deptId))
+    },
+    closeDeptAddDialog() {
+      this.deptAddDialog.open = false
+      this.deptAddDialog.loading = false
+      this.deptAddForm = { parentId: undefined, deptName: '' }
+      if (this.$refs.deptAddFormRef) {
+        this.$refs.deptAddFormRef.resetFields && this.$refs.deptAddFormRef.resetFields()
+      }
+    },
+    submitDeptAddDialog() {
+      if (!this.$refs.deptAddFormRef) return
+      this.$refs.deptAddFormRef.validate(valid => {
+        if (!valid) return
+        this.deptAddDialog.loading = true
+        const keepId = this.deptAddForm.parentId
+        addDept(this.deptAddForm)
+          .then(() => {
+            this.$modal.msgSuccess('新增成功')
+            this.closeDeptAddDialog()
+            this.getDeptTree()
+            this.$nextTick(() => {
+              if (this.$refs.tree) {
+                this.$refs.tree.setCurrentKey(keepId)
+              }
+            })
+          })
+          .finally(() => {
+            this.deptAddDialog.loading = false
+          })
+      })
+    },
+    closeDeptRenameDialog() {
+      this.deptRenameDialog.open = false
+      this.deptRenameDialog.loading = false
+      this.deptRenameForm = { deptId: undefined, parentId: undefined, deptName: '' }
+      if (this.$refs.deptRenameFormRef) {
+        this.$refs.deptRenameFormRef.resetFields && this.$refs.deptRenameFormRef.resetFields()
+      }
+    },
+    submitDeptRenameDialog() {
+      if (!this.$refs.deptRenameFormRef) return
+      this.$refs.deptRenameFormRef.validate(valid => {
+        if (!valid) return
+        this.deptRenameDialog.loading = true
+        const keepId = this.deptRenameForm.deptId
+        updateDeptInfo(this.deptRenameForm)
+          .then(() => {
+            this.$modal.msgSuccess('修改成功')
+            if (String(this.queryParams.deptId) === String(keepId)) {
+              this.currentDeptName = this.deptRenameForm.deptName
+              if (this.selectedDept) {
+                this.selectedDept.label = this.deptRenameForm.deptName
+              }
+            }
+            this.closeDeptRenameDialog()
+            this.getDeptTree()
+            this.$nextTick(() => {
+              if (this.$refs.tree) {
+                this.$refs.tree.setCurrentKey(keepId)
+              }
+            })
+          })
+          .finally(() => {
+            this.deptRenameDialog.loading = false
+          })
+      })
+    },
+    deptTreeNormalizer(node) {
+      return {
+        id: node.id || node.deptId,
+        label: node.label || node.deptName,
+        children: node.children
+      }
+    },
+    findDeptNodeById(list, id) {
+      if (!Array.isArray(list)) return null
+      for (let i = 0; i < list.length; i++) {
+        const item = list[i]
+        if (item && item.id === id) return item
+        if (item && item.children) {
+          const found = this.findDeptNodeById(item.children, id)
+          if (found) return found
+        }
+      }
+      return null
+    },
+    findDeptParentAndNode(list, id, parent = null) {
+      if (!Array.isArray(list)) return null
+      for (let i = 0; i < list.length; i++) {
+        const item = list[i]
+        if (item && item.id === id) {
+          return { parent, node: item, index: i, rootList: list }
+        }
+        if (item && item.children) {
+          const found = this.findDeptParentAndNode(item.children, id, item)
+          if (found) return found
+        }
+      }
+      return null
+    },
+    removeDeptNodeAndPromoteChildren(deptId) {
+      const found = this.findDeptParentAndNode(this.deptOptions, deptId)
+      if (!found) return
+      const children = Array.isArray(found.node.children) ? found.node.children : []
+      if (found.parent && Array.isArray(found.parent.children)) {
+        found.parent.children.splice(found.index, 1, ...children)
+        return
+      }
+      if (Array.isArray(found.rootList)) {
+        found.rootList.splice(found.index, 1, ...children)
+      }
+    },
+    isDeptDescendant(deptId, targetParentId) {
+      const root = this.findDeptNodeById(this.deptOptions, deptId)
+      if (!root) return false
+      const ids = []
+      const walk = n => {
+        if (!n || !Array.isArray(n.children)) return
+        n.children.forEach(child => {
+          ids.push(String(child.id))
+          walk(child)
+        })
+      }
+      walk(root)
+      return ids.includes(String(targetParentId))
+    },
+    hasUsersInSubtreeByTree(deptId) {
+      const node = this.findDeptNodeById(this.deptOptions, deptId)
+      if (!node) return false
+      let hasAnyCountField = false
+      let hasUsers = false
+      const walk = n => {
+        if (!n) return
+        if (n.userCount !== undefined || n.count !== undefined) {
+          hasAnyCountField = true
+          const c = Number(n.userCount !== undefined ? n.userCount : n.count)
+          if (!Number.isNaN(c) && c > 0) hasUsers = true
+        }
+        if (Array.isArray(n.children)) {
+          n.children.forEach(walk)
+        }
+      }
+      walk(node)
+      return hasAnyCountField ? hasUsers : false
+    },
+    checkDeptHasUsers(deptId) {
+      if (this.hasUsersInSubtreeByTree(deptId)) {
+        return Promise.resolve(true)
+      }
+      return listUser({ pageNum: 1, pageSize: 1, deptId })
+        .then(res => {
+          return Number(res.total) > 0
+        })
+        .catch(() => true)
+    },
+    submitDeptMoveDialog() {
+      const deptId = this.deptMoveForm.deptId || this.queryParams.deptId
+      const parentId = this.deptMoveForm.parentId
+      if (!deptId) {
+        this.$modal.msgError('请先选择要移动的部门')
+        return
+      }
+      if (!parentId) {
+        this.$modal.msgError('请选择目标部门')
+        return
+      }
+      if (String(parentId) === String(deptId)) {
+        this.$modal.msgError('目标部门不能选择当前部门自己')
+        return
+      }
+      if (this.isDeptDescendant(deptId, parentId)) {
+        this.$modal.msgError('目标部门不能选择当前部门的子部门')
+        return
+      }
+      this.deptMoveDialog.loading = true
+      updateDeptInfo(this.deptMoveForm)
+        .then(() => {
+          this.$modal.msgSuccess('移动成功')
+          const keepId = deptId
+          this.closeDeptMoveDialog()
+          this.getDeptTree()
+          this.$nextTick(() => {
+            if (this.$refs.tree) {
+              this.$refs.tree.setCurrentKey(keepId)
+            }
+          })
+        })
+        .finally(() => {
+          this.deptMoveDialog.loading = false
+        })
     },
     cancel() {
       this.open = false
@@ -492,6 +907,7 @@ export default {
       this.resetForm('queryForm')
       this.queryParams.deptId = undefined
       this.currentDeptName = '全部用户'
+      this.selectedDept = null
       if (this.$refs.tree) {
         this.$refs.tree.setCurrentKey(null)
       }
@@ -540,17 +956,46 @@ export default {
       })
     },
     handleResetPwd(row) {
-      this.$prompt(this.$t('user.resetPasswordPrompt', { name: row.userName }), this.$t('tip'), {
-        confirmButtonText: this.$t('confirm'),
-        cancelButtonText: this.$t('cancel'),
-        closeOnClickModal: false,
-        inputPattern: /^.{5,20}$/,
-        inputErrorMessage: this.$t('user.validation.passwordLength', { min: 5, max: 20 })
-      }).then(({ value }) => {
-        resetUserPwd(row.userId, value).then(() => {
-          this.$modal.msgSuccess(this.$t('user.resetPasswordSuccess', { password: value }))
-        })
-      }).catch(() => { })
+      this.resetPwdDialog.open = true
+      this.resetPwdDialog.loading = false
+      this.resetPwdForm = {
+        userId: row.userId,
+        userName: row.userName,
+        password: '',
+        confirmPassword: ''
+      }
+      this.$nextTick(() => {
+        if (this.$refs.resetPwdFormRef) {
+          this.$refs.resetPwdFormRef.clearValidate && this.$refs.resetPwdFormRef.clearValidate()
+        }
+      })
+    },
+    closeResetPwdDialog() {
+      this.resetPwdDialog.open = false
+      this.resetPwdDialog.loading = false
+      this.resetPwdForm = { userId: undefined, userName: '', password: '', confirmPassword: '' }
+      if (this.$refs.resetPwdFormRef) {
+        this.$refs.resetPwdFormRef.resetFields && this.$refs.resetPwdFormRef.resetFields()
+      }
+    },
+    submitResetPwdDialog() {
+      if (!this.$refs.resetPwdFormRef) return
+      this.$refs.resetPwdFormRef.validate(valid => {
+        if (!valid) return
+        if (this.resetPwdForm.password !== this.resetPwdForm.confirmPassword) {
+          this.$modal.msgError('两次输入密码不一致')
+          return
+        }
+        this.resetPwdDialog.loading = true
+        resetUserPwd(this.resetPwdForm.userId, this.resetPwdForm.password)
+          .then(() => {
+            this.$modal.msgSuccess('修改成功')
+            this.closeResetPwdDialog()
+          })
+          .finally(() => {
+            this.resetPwdDialog.loading = false
+          })
+      })
     },
     handleAuthRole(row) {
       const userId = row.userId

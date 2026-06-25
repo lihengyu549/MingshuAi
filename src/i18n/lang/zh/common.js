@@ -11,7 +11,7 @@ export default {
   confirm: '确认',
   cancel: '取消',
   add: '新增',
-  edit: '修改',
+  edit: '编辑',
   delete: '删除',
   operation: '操作',
   status: '状态',
