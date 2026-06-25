@@ -1,203 +1,160 @@
 <template>
-  <div class="app-container">
-    <el-row :gutter="20">
-      <!--部门数据-->
-      <!-- <el-col :span="5" :xs="24">
+  <div class="app-container user-page">
+    <el-row :gutter="20" class="page-layout">
+      <el-col :span="5" :xs="24">
         <el-card class="left-card" shadow="never">
-          <div class="head-container">
-            <el-input
-              v-model="deptName"
-              :placeholder="$t('user.inputDeptName')"
-              clearable
-              size="small"
-              prefix-icon="el-icon-search"
-              style="margin-bottom: 20px"
-            />
+          <div class="left-card__header">
+            <div class="left-card__title">组织架构</div>
           </div>
-          <div class="head-container">
-            <el-tree
-              ref="tree"
-              :data="deptOptions"
-              :props="defaultProps"
-              :expand-on-click-node="false"
-              :filter-node-method="filterNode"
-              node-key="id"
-              default-expand-all
-              highlight-current
-              @node-click="handleNodeClick"
-            />
+          <div class="left-card__desc">支持部门新增、重命名、移动与删除</div>
+          <div class="left-card__stats">
+            <div class="left-card__stat">
+              <div class="left-card__stat-label">部门数量</div>
+              <div class="left-card__stat-value">{{ Array.isArray(deptOptions) ? deptOptions.length : 0 }}</div>
+            </div>
+            <div class="left-card__stat">
+              <div class="left-card__stat-label">用户数量</div>
+              <div class="left-card__stat-value">{{ total }}</div>
+            </div>
+          </div>
+          <div class="left-card__actions">
+            <el-button type="primary" plain @click="handleDeptAddChild">新增下级</el-button>
+            <el-button type="primary" plain @click="handleDeptRename">重命名</el-button>
+            <el-button type="primary" plain @click="handleDeptMove">移动部门</el-button>
+            <el-button type="danger" plain @click="handleDeptDelete">删除部门</el-button>
+          </div>
+          <div class="tree-container">
+            <el-tree class="deptTree" ref="tree" :data="deptOptions" :props="defaultProps" :expand-on-click-node="false"
+              node-key="id" default-expand-all highlight-current @node-click="handleNodeClick">
+              <span class="dept-tree-node" slot-scope="{ node, data }">
+                <span class="dept-tree-node__left">
+                  <template v-if="node.level === 1">
+                    <svg-icon icon-class="dunpai-2" class="dept-tree-node__icon dept-tree-node__icon--root" />
+                  </template>
+                  <template v-else>
+                    <svg-icon :icon-class="node.expanded ? 'openFile' : 'closeFile'" class="dept-tree-node__icon" />
+                  </template>
+                  <span class="dept-tree-node__label" :title="node.label">{{ node.label }}</span>
+                </span>
+                <span class="dept-tree-node__count">{{ data.userCount || data.count || (Array.isArray(data.children) ?
+                  data.children.length : 0) }}</span>
+              </span>
+            </el-tree>
           </div>
         </el-card>
-      </el-col> -->
-      <!--用户数据-->
-      <el-col :span="24" :xs="24">
-        <el-card class="search-card" shadow="never">
-          <el-form
-            v-show="showSearch"
-            ref="queryForm"
-            :model="queryParams"
-            size="small"
-            :inline="true"
-            label-width="68px"
-          >
-            <el-form-item :label="$t('user.userName')" prop="userName">
-              <el-input
-                v-model="queryParams.userName"
-                :placeholder="$t('user.inputUserName')"
-                clearable
-                style="width: 240px"
-                @change="handleQuery"
-              />
-            </el-form-item>
-            <el-form-item :label="$t('user.phoneNumber')" prop="phonenumber">
-              <el-input
-                v-model="queryParams.phonenumber"
-                :placeholder="$t('user.inputPhoneNumber')"
-                clearable
-                style="width: 240px"
-                @change="handleQuery"
-              />
-            </el-form-item>
-            <el-form-item :label="$t('status')" prop="status">
-              <el-select
-                v-model="queryParams.status"
-                :placeholder="$t('user.statusPlaceholder')"
-                clearable
-                style="width: 240px"
-                @change="handleQuery"
-              >
-                <el-option
-                  v-for="dict in dict.type.sys_normal_disable"
-                  :key="dict.value"
-                  :label="dict.label"
-                  :value="dict.value"
-                />
-              </el-select>
-            </el-form-item>
-            <!-- <el-form-item :label="$t('createdTime')">
-              <el-date-picker
-                v-model="dateRange"
-                style="width: 240px"
-                value-format="yyyy-MM-dd"
-                type="daterange"
-                range-separator="-"
-                :start-placeholder="$t('user.startDate')"
-                :end-placeholder="$t('user.endDate')"
-                @change="handleQuery"
-              />
-            </el-form-item> -->
-            <!-- <el-form-item>
-              <el-button type="primary" plain icon="el-icon-search" size="mini" @click="handleQuery">
-                {{ $t('search') }}
-              </el-button>
-            </el-form-item> -->
-          </el-form>
-        </el-card>
-        <div class="search-actions">
-          <el-button
-            v-hasPermi="['system:user:add']"
-            type="primary"
-            plain
-            icon="el-icon-plus"
-            @click="handleAdd"
-          >
-            {{ $t('add') }}
-          </el-button>
-          <!-- <el-button type="success" plain icon="el-icon-edit" :disabled="single" @click="handleUpdate"
-            v-hasPermi="['system:user:edit']">{{ $t('edit') }}</el-button> -->
-          <el-button
-            v-hasPermi="['system:user:remove']"
-            type="danger"
-            plain
-            icon="el-icon-delete"
-            :disabled="multiple"
-            @click="handleDelete"
-          >
-            {{ $t('delete') }}
-          </el-button>
-          <!-- <el-button type="info" plain icon="el-icon-upload2" @click="handleImport"
-            v-hasPermi="['system:user:import']">{{ $t('import') }}</el-button>
-          <el-button type="warning" plain icon="el-icon-download" @click="handleExport"
-            v-hasPermi="['system:user:export']">{{ $t('export') }}</el-button> -->
-          <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar> -->
-        </div>
+      </el-col>
+
+      <el-col :span="19" :xs="24">
+        <el-collapse-transition>
+          <div v-show="showSearch" class="search-wrapper">
+            <el-card class="search-card" shadow="never">
+              <el-form ref="queryForm" :model="queryParams" size="small" :inline="true" label-width="68px">
+                <el-form-item :label="$t('user.userName')" prop="userName">
+                  <el-input v-model="queryParams.userName" :placeholder="$t('user.inputUserName')" clearable
+                    style="width: 240px" @change="handleQuery" />
+                </el-form-item>
+                <el-form-item :label="$t('user.phoneNumber')" prop="phonenumber">
+                  <el-input v-model="queryParams.phonenumber" :placeholder="$t('user.inputPhoneNumber')" clearable
+                    style="width: 240px" @change="handleQuery" />
+                </el-form-item>
+                <el-form-item :label="$t('status')" prop="status">
+                  <el-select v-model="queryParams.status" :placeholder="$t('user.statusPlaceholder')" clearable
+                    style="width: 240px" @change="handleQuery">
+                    <el-option v-for="dict in dict.type.sys_normal_disable" :key="dict.value" :label="dict.label"
+                      :value="dict.value" />
+                  </el-select>
+                </el-form-item>
+              </el-form>
+            </el-card>
+          </div>
+        </el-collapse-transition>
+
         <el-card class="table-card" shadow="never">
-          <el-table v-loading="loading" class="tableBox" :data="userList" @selection-change="handleSelectionChange">
-            <el-table-column type="selection" width="50" align="center" />
-            <!-- <el-table-column :label="$t('user.userId')" align="center" key="userId" prop="userId" v-if="columns[0].visible" /> -->
-            <el-table-column
-              v-if="columns[1].visible"
-              key="userName"
-              :label="$t('user.userName')"
-              align="center"
-              prop="userName"
-              :show-overflow-tooltip="true"
-            />
-            <!-- <el-table-column :label="$t('user.nickName')" align="center" key="nickName" prop="nickName" v-if="columns[2].visible"
-              :show-overflow-tooltip="true" /> -->
-            <!-- <el-table-column :label="$t('user.deptName')" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible"
-              :show-overflow-tooltip="true" /> -->
-            <el-table-column
-              v-if="columns[4].visible"
-              key="phonenumber"
-              :label="$t('user.phoneNumber')"
-              align="center"
-              prop="phonenumber"
-              width="120"
-            />
-            <el-table-column v-if="columns[5].visible" key="status" :label="$t('status')" align="center">
-              <template v-if="scope.row.userId !== 1" slot-scope="scope">
-                <el-switch
-                  v-model="scope.row.status"
-                  active-value="0"
-                  inactive-value="1"
-                  @change="handleStatusChange(scope.row)"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="columns[6].visible"
-              :label="$t('createdTime')"
-              align="center"
-              prop="createTime"
-              width="160"
-            >
-              <template slot-scope="scope">
-                <span>{{ parseTime(scope.row.createTime) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column :label="$t('operation')" align="center" width="260" class-name="small-padding fixed-width">
-              <template v-if="scope.row.userId !== 1" slot-scope="scope">
-                <el-button
-                  v-hasPermi="['system:user:edit']"
-                  size="mini"
-                  type="text"
-                  icon="el-icon-edit"
-                  @click="handleUpdate(scope.row)"
-                >
-                  {{ $t('edit') }}
+          <div class="table-card-content">
+            <div class="table-header">
+              <div class="table-header__title">{{ currentDeptName }}</div>
+              <div class="table-header__sub">共 {{ total }} 个用户</div>
+            </div>
+            <div class="table-toolbar">
+              <div class="toolbar-group">
+                <el-button v-hasPermi="['system:user:add']" type="primary" plain icon="el-icon-plus" @click="handleAdd">
+                  {{ $t('add') }}
                 </el-button>
-                <el-button
-                  v-hasPermi="['system:user:remove']"
-                  size="mini"
-                  type="text"
-                  class="text-danger"
-                  icon="el-icon-delete"
-                  @click="handleDelete(scope.row)"
-                >
+                <el-button v-hasPermi="['system:user:remove']" type="danger" plain icon="el-icon-delete"
+                  :disabled="multiple" @click="handleDelete">
                   {{ $t('delete') }}
                 </el-button>
-                <el-button
-                  v-hasPermi="['system:user:resetPwd']"
-                  size="mini"
-                  type="text"
-                  icon="el-icon-key"
-                  @click="handleResetPwd(scope.row)"
-                >
-                  {{ $t('resetPassword') }}
+              </div>
+              <div class="toolbar-group toolbar-group-right">
+                <el-button type="text" size="medium" @click="toggleFilters" style="color: #7c8592;">
+                  <svg-icon icon-class="过滤" />
+                  {{ showSearch ? '收起筛选' : '展开筛选' }}
                 </el-button>
+              </div>
+            </div>
 
-                <!-- <el-dropdown size="mini" @command="(command) => handleCommand(command, scope.row)"
+            <el-table v-loading="loading" class="tableBox" style="flex: 1;" height="100%" :data="userList"
+              @selection-change="handleSelectionChange">
+              <el-table-column type="selection" width="50" align="center" />
+              <!-- <el-table-column :label="$t('user.userId')" align="center" key="userId" prop="userId" v-if="columns[0].visible" /> -->
+              <el-table-column v-if="columns[1].visible" key="userName" :label="$t('user.userName')" align="center"
+                prop="userName" :show-overflow-tooltip="true" />
+              <!-- <el-table-column :label="$t('user.nickName')" align="center" key="nickName" prop="nickName" v-if="columns[2].visible"
+              :show-overflow-tooltip="true" /> -->
+              <!-- <el-table-column :label="$t('user.deptName')" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible"
+              :show-overflow-tooltip="true" /> -->
+              <el-table-column v-if="columns[4].visible" key="phonenumber" :label="$t('user.phoneNumber')"
+                align="center" prop="phonenumber" width="120">
+                <template slot-scope="scope">
+                  <span>{{ scope.row.phonenumber || '-' }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column :label="$t('user.role')" prop="remark" align="center">
+                <template slot-scope="scope">
+                  <span>{{ scope.row.remark || '-' }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column :label="$t('user.deptName')" prop="dept.deptName" align="center">
+                <template slot-scope="scope">
+                  <el-tag type="primary">{{ scope.row.dept ? scope.row.dept.deptName : '-' }}</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column v-if="columns[5].visible" key="status" :label="$t('status')" align="center">
+                <template slot-scope="scope">
+                  <span
+                    :class="[
+                      'status-pill',
+                      scope.row.status === '0' ? 'status-pill--enable' : 'status-pill--disable'
+                    ]"
+                  >
+                    <span class="status-pill__dot"></span>
+                    <span>{{ scope.row.status === '0' ? $t('enable') : $t('disable') }}</span>
+                  </span>
+                </template>
+              </el-table-column>
+              <el-table-column v-if="columns[6].visible" :label="$t('createdTime')" align="center" prop="createTime"
+                width="160">
+                <template slot-scope="scope">
+                  <span>{{ parseTime(scope.row.createTime) }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column :label="$t('operation')" align="center" width="260"
+                class-name="small-padding fixed-width">
+                <template v-if="scope.row.userId !== 1" slot-scope="scope">
+                  <el-button v-hasPermi="['system:user:edit']" size="mini" type="text" icon="el-icon-edit"
+                    @click="handleUpdate(scope.row)">
+                    {{ $t('edit') }}
+                  </el-button>
+                  <el-button v-hasPermi="['system:user:remove']" size="mini" type="text" class="text-danger"
+                    icon="el-icon-delete" @click="handleDelete(scope.row)">
+                    {{ $t('delete') }}
+                  </el-button>
+                  <el-button v-hasPermi="['system:user:resetPwd']" size="mini" type="text" icon="el-icon-key"
+                    @click="handleResetPwd(scope.row)">
+                    {{ $t('resetPassword') }}
+                  </el-button>
+
+                  <!-- <el-dropdown size="mini" @command="(command) => handleCommand(command, scope.row)"
                   v-hasPermi="['system:user:resetPwd', 'system:user:edit']">
                   <el-button size="mini" type="text" icon="el-icon-d-arrow-right">{{ $t('more') }}</el-button>
                   <el-dropdown-menu slot="dropdown">
@@ -207,30 +164,19 @@
                       v-hasPermi="['system:user:edit']">{{ $t('user.assignRole') }}</el-dropdown-item>
                   </el-dropdown-menu>
                 </el-dropdown> -->
-              </template>
-            </el-table-column>
-          </el-table>
-
-          <pagination
-            v-show="total > 0"
-            :total="total"
-            :page.sync="queryParams.pageNum"
-            :page-size.sync="queryParams.pageSize"
-            @pagination="getList"
-          />
+                </template>
+              </el-table-column>
+            </el-table>
+            <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+              :page-size.sync="queryParams.pageSize" @pagination="getList" />
+          </div>
         </el-card>
       </el-col>
     </el-row>
 
     <!-- 添加或修改用户配置对话框 -->
-    <el-dialog
-      :title="dialogTitle"
-      class="custom-dialog"
-      :visible.sync="open"
-      width="600px"
-      append-to-body
-      :close-on-click-modal="false"
-    >
+    <el-dialog :title="dialogTitle" class="custom-dialog" :visible.sync="open" width="600px" append-to-body
+      :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-position="top">
         <el-row>
           <el-col>
@@ -261,20 +207,10 @@
         <el-row>
           <el-col>
             <el-form-item :label="$t('user.role')" prop="roleIds">
-              <el-select
-                v-model="form.roleIds"
-                multiple
-                :placeholder="$t('user.selectRole')"
-                style="width: 100%"
-                @change="handleRoleSelectChange"
-              >
-                <el-option
-                  v-for="item in roleOptions"
-                  :key="item.roleId"
-                  :label="item.roleName"
-                  :value="item.roleId"
-                  :disabled="item.status == 1"
-                />
+              <el-select v-model="form.roleIds" multiple :placeholder="$t('user.selectRole')" style="width: 100%"
+                @change="handleRoleSelectChange">
+                <el-option v-for="item in roleOptions" :key="item.roleId" :label="item.roleName" :value="item.roleId"
+                  :disabled="item.status == 1" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -286,14 +222,18 @@
         </el-row>
         <el-row>
           <el-col>
-            <el-form-item v-if="form.userId === undefined" :label="$t('user.password')" prop="password">
-              <el-input
-                v-model="form.password"
-                :placeholder="$t('user.inputPassword')"
-                type="password"
-                maxlength="20"
-                show-password
-              />
+            <el-form-item label="所属部门" prop="deptId">
+              <treeselect v-model="form.deptId" :options="deptOptions" :show-count="true" :placeholder="$t('user.selectDept')" />
+              <div v-if="form.userId === undefined" class="form-tip">默认建议在当前选中部门下新增用户，便于后续直接归档到组织架构。</div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row v-if="form.userId !== undefined">
+          <el-col>
+            <el-form-item :label="$t('status')" prop="status">
+              <el-select v-model="form.status" style="width: 100%">
+                <el-option v-for="dict in dict.type.sys_normal_disable" :key="dict.value" :label="dict.label" :value="dict.value" />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -335,25 +275,17 @@
         </el-row> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" plain @click="submitForm">{{ $t('confirm') }}</el-button>
         <el-button @click="cancel">{{ $t('cancel') }}</el-button>
+        <el-button type="primary" @click="submitForm">{{ $t('confirm') }}</el-button>
       </div>
     </el-dialog>
 
     <!-- 用户导入对话框 -->
-    <el-dialog :title="uploadTitle" :visible.sync="upload.open" width="400px" append-to-body :close-on-click-modal="false">
-      <el-upload
-        ref="upload"
-        :limit="1"
-        accept=".xlsx, .xls"
-        :headers="upload.headers"
-        :action="upload.url + '?updateSupport=' + upload.updateSupport"
-        :disabled="upload.isUploading"
-        :on-progress="handleFileUploadProgress"
-        :on-success="handleFileSuccess"
-        :auto-upload="false"
-        drag
-      >
+    <el-dialog :title="uploadTitle" :visible.sync="upload.open" width="400px" append-to-body
+      :close-on-click-modal="false">
+      <el-upload ref="upload" :limit="1" accept=".xlsx, .xls" :headers="upload.headers"
+        :action="upload.url + '?updateSupport=' + upload.updateSupport" :disabled="upload.isUploading"
+        :on-progress="handleFileUploadProgress" :on-success="handleFileSuccess" :auto-upload="false" drag>
         <i class="el-icon-upload" />
         <div class="el-upload__text">
           {{ $t('user.uploadTextPrefix') }}<em>{{ $t('user.clickUpload') }}</em>
@@ -364,12 +296,8 @@
             {{ $t('user.updateExistingData') }}
           </div>
           <span>{{ $t('user.importFileTip') }}</span>
-          <el-link
-            type="primary"
-            :underline="false"
-            style="font-size: 12px; vertical-align: baseline;"
-            @click="importTemplate"
-          >
+          <el-link type="primary" :underline="false" style="font-size: 12px; vertical-align: baseline;"
+            @click="importTemplate">
             {{ $t('downloadTemplate') }}
           </el-link>
         </div>
@@ -383,8 +311,10 @@
 </template>
 
 <script>
-import { listUser, getUser, delUser, addUser, updateUser, resetUserPwd, changeUserStatus, deptTreeSelect } from '@/api/system/user'
+import { listUser, getUser, delUser, addUser, updateUser, resetUserPwd, deptTreeSelect } from '@/api/system/user'
 import { getToken } from '@/utils/auth'
+import Treeselect from '@riophae/vue-treeselect'
+import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 
 const createColumns = vm => [
   { key: 0, label: vm.$t('user.userId'), visible: true },
@@ -415,6 +345,9 @@ const createRules = vm => ({
   roleIds: [
     { required: true, message: vm.$t('user.validation.roleRequired'), trigger: 'change' }
   ],
+  deptId: [
+    { required: true, message: '所属部门不能为空', trigger: 'change' }
+  ],
   password: [
     { required: true, message: vm.$t('user.validation.passwordRequired'), trigger: 'blur' },
     { min: 5, max: 20, message: vm.$t('user.validation.passwordLength', { min: 5, max: 20 }), trigger: 'blur' }
@@ -431,19 +364,20 @@ const createRules = vm => ({
 export default {
   name: 'User',
   dicts: ['sys_normal_disable', 'sys_user_sex'],
+  components: { Treeselect },
   data() {
     return {
       loading: true,
       ids: [],
       single: true,
       multiple: true,
-      showSearch: true,
+      showSearch: false,
+      currentDeptName: '全部用户',
       total: 0,
       userList: [],
       titleKey: '',
       deptOptions: undefined,
       open: false,
-      deptName: undefined,
       initPassword: undefined,
       dateRange: [],
       postOptions: [],
@@ -482,11 +416,6 @@ export default {
     }
   },
   watch: {
-    deptName(val) {
-      if (this.$refs.tree) {
-        this.$refs.tree.filter(val)
-      }
-    },
     '$i18n.locale'() {
       this.columns = createColumns(this)
       this.rules = createRules(this)
@@ -500,8 +429,8 @@ export default {
     })
   },
   methods: {
-    getStatusAction(status) {
-      return this.$t(status === '0' ? 'enable' : 'disable')
+    toggleFilters() {
+      this.showSearch = !this.showSearch
     },
     getList() {
       this.loading = true
@@ -516,24 +445,22 @@ export default {
         this.deptOptions = response.data
       })
     },
-    filterNode(value, data) {
-      if (!value) return true
-      return data.label.indexOf(value) !== -1
+    handleDeptAddChild() {
+      this.$message.info('功能开发中')
+    },
+    handleDeptRename() {
+      this.$message.info('功能开发中')
+    },
+    handleDeptMove() {
+      this.$message.info('功能开发中')
+    },
+    handleDeptDelete() {
+      this.$message.info('功能开发中')
     },
     handleNodeClick(data) {
       this.queryParams.deptId = data.id
+      this.currentDeptName = data.label || '全部用户'
       this.handleQuery()
-    },
-    handleStatusChange(row) {
-      const action = this.getStatusAction(row.status)
-      this.$modal.confirm(this.$t('user.confirmStatusChange', { action, name: row.userName }))
-        .then(() => changeUserStatus(row.userId, row.status))
-        .then(() => {
-          this.$modal.msgSuccess(this.$t('user.statusChangeSuccess', { action }))
-        })
-        .catch(() => {
-          row.status = row.status === '0' ? '1' : '0'
-        })
     },
     cancel() {
       this.open = false
@@ -564,6 +491,7 @@ export default {
       this.dateRange = []
       this.resetForm('queryForm')
       this.queryParams.deptId = undefined
+      this.currentDeptName = '全部用户'
       if (this.$refs.tree) {
         this.$refs.tree.setCurrentKey(null)
       }
@@ -594,6 +522,7 @@ export default {
         this.open = true
         this.titleKey = 'user.titleAdd'
         this.form.password = this.initPassword
+        this.form.deptId = this.queryParams.deptId
       })
     },
     handleUpdate(row) {
@@ -621,7 +550,7 @@ export default {
         resetUserPwd(row.userId, value).then(() => {
           this.$modal.msgSuccess(this.$t('user.resetPasswordSuccess', { password: value }))
         })
-      }).catch(() => {})
+      }).catch(() => { })
     },
     handleAuthRole(row) {
       const userId = row.userId
@@ -654,7 +583,7 @@ export default {
           this.getList()
           this.$modal.msgSuccess(this.$t('user.deleteSuccess'))
         })
-        .catch(() => {})
+        .catch(() => { })
     },
     handleExport() {
       this.download('system/user/export', {
@@ -693,19 +622,64 @@ export default {
   }
 }
 </script>
-<style scoped>
-::v-deep .el-row {
+<style lang="scss" scoped>
+.page-layout {
   display: flex;
   align-items: stretch;
   flex: 1;
   overflow: hidden;
 }
 
-::v-deep .el-col {
+.page-layout>.el-col {
   display: flex;
   flex-direction: column;
   max-height: 100%;
   overflow: hidden;
+}
+
+.left-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.left-card__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2a37;
+}
+
+.left-card__desc {
+  font-size: 12px;
+  color: #909399;
+  margin-bottom: 16px;
+}
+
+.left-card__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.left-card__stat {
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: #f7f9fc;
+}
+
+.left-card__stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.left-card__stat-label {
+  font-size: 13px;
+  color: #7c8592;
+  margin-bottom: 10px;
 }
 
 .left-card {
@@ -714,25 +688,167 @@ export default {
   max-height: 100%;
   overflow: auto;
 
-  .el-card__body {
+  ::v-deep .el-card__body {
     height: 100%;
     max-height: 100%;
     overflow: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
   }
+}
+
+.left-card__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.left-card__actions ::v-deep .el-button {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.left-card__actions ::v-deep .el-button+.el-button {
+  margin-left: 0;
+}
+
+.left-card__actions ::v-deep .el-button--primary.is-plain {
+  background: #eff6ff;
+  border-color: #dbeafe;
+  color: #3b82f6;
+}
+
+.left-card__actions ::v-deep .el-button--danger.is-plain {
+  background: #fef2f2;
+  border-color: #fee2e2;
+  color: #ef4444;
 }
 
 .search-card {
   border-radius: 10px;
-  margin-bottom: 20px;
 
   .el-form-item {
     margin-bottom: 0;
   }
 }
 
-.search-actions {
-  gap: 12px;
+.search-wrapper {
   margin-bottom: 20px;
+}
+
+.tree-container {
+  background: #f7f9fc;
+  border-radius: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.deptTree {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.deptTree ::v-deep .el-tree-node__content {
+  height: 44px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  padding: 0 12px;
+}
+
+.deptTree ::v-deep .el-tree-node__content:hover {
+  background: #eff6ff;
+}
+
+.deptTree ::v-deep .el-tree-node.is-current>.el-tree-node__content {
+  background: #eff6ff;
+}
+
+.dept-tree-node {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.dept-tree-node__left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.dept-tree-node__icon {
+  font-size: 16px;
+  color: #909399;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.dept-tree-node__icon--root {
+  color: #409EFF;
+}
+
+.dept-tree-node__label {
+  font-size: 14px;
+  color: #303133;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dept-tree-node__count {
+  font-size: 12px;
+  color: #6b7280;
+  background: #eef2ff;
+  border-radius: 999px;
+  padding: 2px 10px;
+  flex-shrink: 0;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.status-pill__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-pill--enable {
+  color: #16a34a;
+  background: #eaf7ee;
+}
+
+.status-pill--enable .status-pill__dot {
+  background: #16a34a;
+}
+
+.status-pill--disable {
+  color: #f59e0b;
+  background: #fff7e6;
+}
+
+.status-pill--disable .status-pill__dot {
+  background: #f59e0b;
+}
+
+.form-tip {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #7c8592;
+  line-height: 18px;
 }
 
 .table-card {
@@ -742,7 +858,7 @@ export default {
   display: flex;
   flex-direction: column;
 
-  .el-card__body {
+  ::v-deep .el-card__body {
     padding: 0;
     flex: 1;
     display: flex;
@@ -751,19 +867,64 @@ export default {
   }
 }
 
+.table-card-content {
+  padding: 0 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.table-header {
+  margin-top: 20px;
+}
+
+.table-header__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2a37;
+  line-height: 22px;
+}
+
+.table-header__sub {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #7c8592;
+  line-height: 18px;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.toolbar-group-right {
+  margin-left: auto;
+}
+
 .tableBox {
-  overflow-y: auto;
-  border: none;
-  border-radius: 0;
-  border-bottom: 1px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
 }
 
 .custom-dialog {
-  .el-dialog {
+  ::v-deep .el-dialog {
     border-radius: 10px;
   }
 
-  .el-dialog__header {
+  ::v-deep .el-dialog__header {
     border-bottom: 1px solid #e2e8f0;
   }
 }

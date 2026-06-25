@@ -22,7 +22,7 @@ export default {
   export: '导出',
   downloadTemplate: '下载模板',
   importResult: '导入结果',
-  resetPassword: '重置密码',
+  resetPassword: '修改密码',
   enable: '启用',
   disable: '停用',
   clean: '清空',
