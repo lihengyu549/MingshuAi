@@ -287,7 +287,7 @@ export default {
     methods: {
         goBack() {
             this.$router.push({
-                path: 'standard/jobMonitoring',
+                path: '/standard/jobMonitoring',
                 query: this.$route.query.queryParams || {}
             });
         },

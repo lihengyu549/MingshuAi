@@ -28,8 +28,8 @@
             <el-card class="searchCard" shadow="never">
               <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="true">
                 <el-form-item :label="$t('jobMonitoring.subclassName')" prop="name">
-                  <el-input v-model="queryParams.name" @input="inputSearch" :placeholder="$t('jobMonitoring.subclassName')"
-                    clearable @keyup.enter.native="handleQuery" />
+                  <el-input v-model="queryParams.name" @input="inputSearch"
+                    :placeholder="$t('jobMonitoring.subclassName')" clearable @keyup.enter.native="handleQuery" />
                 </el-form-item>
                 <el-form-item :label="$t('jobMonitoring.confirmProtectMethod')" prop="confirmProtectMethod">
                   <el-select v-model="queryParams.confirmProtectMethod" @change="selectProjectIdChange" multiple
@@ -87,12 +87,12 @@
           <div class="table-card-content">
             <div class="table-toolbar">
               <div class="toolbar-group">
-                <el-button type="primary" plain icon="el-icon-plus" :disabled="isBuiltInSource(dataSource)" size="medium"
-                  @click="addFn">
+                <el-button type="primary" plain icon="el-icon-plus" :disabled="isBuiltInSource(dataSource)"
+                  size="medium" @click="addFn">
                   {{ $t('add') }}
                 </el-button>
-                <el-button type="danger" plain icon="el-icon-close" :disabled="isBuiltInSource(dataSource)" size="medium"
-                  @click="enabledFn('delete')">
+                <el-button type="danger" plain icon="el-icon-close" :disabled="isBuiltInSource(dataSource)"
+                  size="medium" @click="enabledFn('delete')">
                   {{ $t('delete') }}
                 </el-button>
               </div>
@@ -107,12 +107,16 @@
                   <el-checkbox-group v-model="checkedColumnProps" @change="handleCheckedCitiesChange"
                     class="checkboxGroup"
                     style="display: flex;flex-direction: column;flex-wrap: nowrap;height: 180px;margin-top: 10px; overflow-y: auto;">
-                    <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item.prop" :key="item.prop">{{
-                      item.label }}</el-checkbox>
+                    <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item.prop"
+                      :key="item.prop">{{
+                        item.label }}</el-checkbox>
                   </el-checkbox-group>
                   <el-button type="text" size="medium" icon="el-icon-s-tools" slot="reference"
                     style="color: #7c8592;">{{ $t('columnSettings') }}</el-button>
                 </el-popover>
+                <el-button type="text" size="medium" style="color: #7c8592;" @click="goBackToManagement">{{
+                  $t('return')
+                }}</el-button>
               </div>
             </div>
             <el-table class="tableBox" style="flex: 1;" height="100%" v-loading="loading"
@@ -122,8 +126,8 @@
               </template>
               <el-table-column type="selection" width="60" align="center" />
               <el-table-column v-for="item in checkedColumn" :key="item.prop" :label="item.label"
-                :align="item.prop === 'attachData' || item.prop === 'protectMethodName' ? 'left' : 'center'" :prop="item.prop" :width="item.width"
-                show-overflow-tooltip>
+                :align="item.prop === 'attachData' || item.prop === 'protectMethodName' ? 'left' : 'center'"
+                :prop="item.prop" :width="item.width" show-overflow-tooltip>
                 <template slot-scope="scope">
                   <template v-if="item.prop === 'attachData'">
                     <span class="subclass-name-cell" :class="{ readonly: !canEditRow(scope.row) }"
@@ -138,8 +142,8 @@
                     </el-tag>
                   </template>
                   <template v-else-if="item.prop === 'protectMethodName'">
-                    <el-tag class="tagsBox custom-plain-tag" v-for="(protectItem, index) in scope.row.protectMethodNameList"
-                      :key="protectItem + index" plain>
+                    <el-tag class="tagsBox custom-plain-tag"
+                      v-for="(protectItem, index) in scope.row.protectMethodNameList" :key="protectItem + index" plain>
                       {{ protectItem }}
                     </el-tag>
                   </template>
@@ -190,8 +194,8 @@
           </el-col>
         </el-row>
         <el-form-item class="addSelectClass" :label="$t('jobMonitoring.baseParent')" prop="categoryId">
-          <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3 || addOrEdit.flag == 2" filterable
-            :filter-method="handleAddSelectInput" @visible-change="handleAddSelectVisibleChange">
+          <el-select ref="addSelectRef" v-model="addNodeName" :disabled="addOrEdit.flag == 3 || addOrEdit.flag == 2"
+            filterable :filter-method="handleAddSelectInput" @visible-change="handleAddSelectVisibleChange">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" filterable :props="defaultProps" :expand-on-click-node="true"
                 :filter-node-method="filterNode" ref="treeSelect" node-key="id" highlight-current
@@ -808,6 +812,9 @@ export default {
     }
   },
   methods: {
+    goBackToManagement() {
+      this.$router.push({ path: '/standard/management' })
+    },
     getRiskStyle(level) {
       const styles = {
         1: { color: '#16a34a', backgroundColor: '#f0fdf4', border: 'none' },
@@ -999,7 +1006,7 @@ export default {
         return null
       }
       for (const node of tree) {
-        if (node.id === nodeId) { 
+        if (node.id === nodeId) {
           return node
         }
         if (node.children && node.children.length > 0) {
@@ -1338,7 +1345,7 @@ export default {
 
     goToMenuEdit(data) {
       this.$router.push({
-        path: '/editMenu',
+        path: '/standard/editMenu',
         query: { id: data.id }
       });
     },
@@ -2017,7 +2024,7 @@ export default {
   margin-left: 225px
 }
 
-  .yuanDataClass ::v-deep .el-form-item {
+.yuanDataClass ::v-deep .el-form-item {
   width: 30%;
 }
 
@@ -2294,6 +2301,11 @@ export default {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+}
+
+.table-card-footer {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .table-toolbar {
