@@ -1480,7 +1480,7 @@ export default {
       }
       sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(this.queryParams))
       sessionStorage.setItem('jobMonitoring_routeData', JSON.stringify(routeData))
-      this.$router.push({ path: '/jobMonitoring', query: { id: row.id } })
+      this.$router.push({ path: '/classificationTask/jobMonitoring', query: { id: row.id } })
     },
   }
 };

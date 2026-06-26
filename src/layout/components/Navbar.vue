@@ -3,6 +3,7 @@
     <top-nav id="topmenu-container" class="topmenu-container" v-if="topNav" />
     <div class="navbar-children" v-if="navbarChildren.length > 0">
       <router-link v-for="item in navbarChildren" :key="item.path" class="navbar-child-item"
+        :class="{ 'is-active': isNavbarChildActive(item) }"
         :to="{ path: item.path, query: item.query, fullPath: item.fullPath }">
         {{ getRouteTitle(item) }}
       </router-link>
@@ -132,6 +133,13 @@ import RuoYiGit from '@/components/RuoYi/Git'
 import RuoYiDoc from '@/components/RuoYi/Doc'
 import { listAll, downloadById } from "@/api/system/protectTableField";
 
+const navbarActiveOverrideList = [
+  { from: '/standard/jobMonitoring', to: '/standard/management' },
+  { from: '/standard/editMenu', to: '/standard/management' },
+  { from: '/classificationTask/viewResults', to: '/classificationTask/hierarchicalTask' },
+  { from: '/classificationTask/jobMonitoring', to: '/classificationTask/hierarchicalTask' }
+]
+
 export default {
   data() {
     return {
@@ -173,6 +181,10 @@ export default {
     navbarChildren() {
       return this.$store.state.tagsView.navbarChildren.filter(item => !item.hidden) || []
     },
+    navbarActivePath() {
+      const path = this.$route && this.$route.path ? this.$route.path : ''
+      return this.getNavbarActiveOverride(path) || path
+    },
     language() {
       return this.$store.state.app.language
     }
@@ -186,14 +198,34 @@ export default {
     this.updateNavbarChildren()
   },
   methods: {
+    getNavbarActiveOverride(currentPath) {
+      const path = currentPath || ''
+      const matched = navbarActiveOverrideList.find(item => path === item.from || path.startsWith(item.from + '/'))
+      return matched ? matched.to : ''
+    },
+    isNavbarChildActive(item) {
+      const p = item && item.path ? item.path : ''
+      const a = this.navbarActivePath || ''
+      if (!p || !a) return false
+      return a === p || a.startsWith(p + '/')
+    },
     updateNavbarChildren() {
       const currentPath = this.$route.path
+      const matchPath = this.getNavbarActiveOverride(currentPath) || currentPath
       const sidebarRouters = this.sidebarRouters
 
       for (const route of sidebarRouters) {
-        const result = this.findNavbarChildren(route, currentPath)
+        const result = this.findNavbarChildren(route, matchPath)
         if (result) {
-          this.$store.dispatch('tagsView/setNavbarChildren', result)
+          const children = Array.isArray(result.children) ? result.children : []
+          const basePath = result.basePath || ''
+          const normalized = children.map(item => {
+            const rawPath = item && item.path ? String(item.path) : ''
+            const isAbs = rawPath.startsWith('/') || rawPath.startsWith('http://') || rawPath.startsWith('https://')
+            const fullPath = !isAbs && basePath ? (basePath.endsWith('/') ? basePath + rawPath : basePath + '/' + rawPath) : rawPath
+            return { ...item, path: fullPath }
+          })
+          this.$store.dispatch('tagsView/setNavbarChildren', normalized)
           return
         }
       }
@@ -227,13 +259,13 @@ export default {
               if (grandChild) {
                 const grandChildPath = fullChildPath + '/' + grandChild.path
                 if (currentPath === grandChildPath || currentPath.startsWith(grandChildPath + '/')) {
-                  return grandChild.children
+                  return { children: grandChild.children, basePath: grandChildPath }
                 }
               }
             }
 
             if (currentPath === fullChildPath || currentPath.startsWith(fullChildPath + '/')) {
-              return child.children
+              return { children: child.children, basePath: fullChildPath }
             }
           }
           const nestedResult = this.findNavbarChildren(child, currentPath, fullChildPath)
@@ -242,7 +274,7 @@ export default {
 
         if (currentPath === fullChildPath || currentPath.startsWith(fullChildPath + '/')) {
           if (route.meta && route.meta.hideChildrenInNavbar && child.children) {
-            return child.children
+            return { children: child.children, basePath: fullChildPath }
           }
         }
       }
@@ -393,6 +425,11 @@ export default {
       }
 
       &.router-link-active {
+        background-color: #eff6ff;
+        color: #3b82f6;
+      }
+
+      &.is-active {
         background-color: #eff6ff;
         color: #3b82f6;
       }

@@ -181,10 +181,14 @@
           <div slot="header" class="table-card-header">
             <div class="content-header">
               <div class="content-header-main">
+                <div style="display: flex; align-items: center;justify-content: space-between;">
                 <span class="content-title">
                   <svg-icon :icon-class="currentTreeLevel > 0 ? '表格' : '组织架构'" style="font-size: 20px;" />
                   {{ contentTitle }}
                 </span>
+                <el-button type="primary" icon="el-icon-back" plain size="medium" @click="handleBack">{{ $t('return')
+                }}</el-button>
+                </div>
                 <div class="content-count">共 {{ total }} 条结果</div>
                 <div class="content-desc">{{ contentDescription }}</div>
               </div>
@@ -254,8 +258,6 @@
                       $t('columnSettings')
                     }}</el-button>
                 </el-popover>
-                <el-button type="text" size="medium" style="color: #7c8592;" @click="handleBack">{{ $t('return')
-                }}</el-button>
               </div>
             </div>
             <el-table class="tableBox" style="flex: 1;" height="100%" v-loading="loading"

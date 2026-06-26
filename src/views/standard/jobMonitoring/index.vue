@@ -6,7 +6,7 @@
         <el-card class="left-card" shadow="never">
           <div class="head-container">
             <el-select v-model="queryParams.categoryId" class="serachSelect" @change="treeOptionsSelectChange"
-              :placeholder="$t('all')" style="margin-bottom: 20px" filterable>
+              :placeholder="$t('all')" filterable>
               <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName" :value="item.id">
               </el-option>
             </el-select>
@@ -74,10 +74,16 @@
           <div slot="header" class="table-card-header">
             <div class="content-header">
               <div class="content-header-main">
-                <span class="content-title">
-                  <svg-icon icon-class="表格" style="font-size: 20px;" />
-                  {{ headerTitle }}
-                </span>
+                <div style="display: flex; align-items: center;justify-content: space-between;">
+                  <span class="content-title">
+                    <svg-icon icon-class="表格" style="font-size: 20px;" />
+                    {{ headerTitle }}
+                  </span>
+                  <el-button type="primary" plain icon="el-icon-back" size="medium" @click="goBackToManagement">{{
+                    $t('return')
+                  }}</el-button>
+                </div>
+
                 <div class="content-count">{{ headerResultText }}</div>
                 <div class="content-desc">{{ headerRemark }}</div>
               </div>
@@ -114,9 +120,6 @@
                   <el-button type="text" size="medium" icon="el-icon-s-tools" slot="reference"
                     style="color: #7c8592;">{{ $t('columnSettings') }}</el-button>
                 </el-popover>
-                <el-button type="text" size="medium" style="color: #7c8592;" @click="goBackToManagement">{{
-                  $t('return')
-                }}</el-button>
               </div>
             </div>
             <el-table class="tableBox" style="flex: 1;" height="100%" v-loading="loading"

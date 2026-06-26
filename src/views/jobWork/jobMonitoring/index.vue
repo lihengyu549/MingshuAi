@@ -1028,7 +1028,7 @@ export default {
             sessionStorage.setItem('prevPage', 'jobMonitoring');
             sessionStorage.removeItem('jobMonitoring_routeData');
             this.$router.push({
-                path: 'classificationTask/hierarchicalTask'
+                path: '/classificationTask/hierarchicalTask'
             });
         },
         scrollToBottom() {
