@@ -371,15 +371,15 @@
           <el-input v-model="fileDirectoryData.sourceName" maxlength="50"
             :placeholder="$t('dataFrom.pleaseInputSourceName')"></el-input>
         </el-form-item>
-        <el-form-item :label="$t('dataFrom.businessName')" prop="businessName">
+        <!-- <el-form-item :label="$t('dataFrom.businessName')" prop="businessName">
           <el-input v-model="fileDirectoryData.businessName" maxlength="50"
             :placeholder="$t('dataFrom.pleaseInputBusinessName')"></el-input>
           <div style="font-size: 12px; font-style: italic;">{{ $t('dataFrom.businessSystemExample') }}</div>
-        </el-form-item>
-        <el-form-item :label="$t('dataFrom.businessSystemDescription')" prop="businessComment">
+        </el-form-item> -->
+        <!-- <el-form-item :label="$t('dataFrom.businessSystemDescription')" prop="businessComment">
           <el-input type="textarea" v-model="fileDirectoryData.businessComment" maxlength="1000" show-word-limit
             :placeholder="$t('dataFrom.pleaseInputBusinessDescription')" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item :label="$t('dataFrom.fileUpload')" prop="uploadFiles">
           <el-upload ref="fileDirectoryUploadRef" class="upload-dragger-area" drag :action="''" :auto-upload="false"
             :multiple="true" :show-file-list="false" :limit="20" :file-list="fileDirectoryData.uploadFiles"
@@ -454,16 +454,16 @@
           </el-col>
         </el-row>
 
-        <el-form-item :label="$t('dataFrom.businessName')" prop="businessName">
+        <!-- <el-form-item :label="$t('dataFrom.businessName')" prop="businessName">
           <el-input v-model="fileShareServerForm.businessName" maxlength="50"
             :placeholder="$t('dataFrom.pleaseInputBusinessName')" />
           <div style="font-size: 12px; font-style: italic;">{{ $t('dataFrom.businessSystemExample') }}</div>
-        </el-form-item>
+        </el-form-item> -->
 
-        <el-form-item :label="$t('dataFrom.businessSystemDescription')" prop="businessComment">
+        <!-- <el-form-item :label="$t('dataFrom.businessSystemDescription')" prop="businessComment">
           <el-input type="textarea" v-model="fileShareServerForm.businessComment" maxlength="1000" show-word-limit
             :placeholder="$t('dataFrom.pleaseInputBusinessDescription')" />
-        </el-form-item>
+        </el-form-item> -->
 
         <el-row>
           <el-col :span="12">
