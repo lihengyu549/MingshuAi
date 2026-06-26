@@ -371,22 +371,26 @@
                   @click.stop></el-checkbox>
               </div>
             </div>
+            <!-- AI分类打标 -->
             <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
               <div class="feature-content">
                 <div class="feature-title">{{ $t('hierarchicalTask.features.aiTag') }}</div>
                 <div class="feature-desc">{{ $t('hierarchicalTask.features.aiTagDesc') }}</div>
-                <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop
+                  @change="handleAiTagAutoReviewChange"></el-checkbox>
               </div>
             </div>
+            <!-- 自动审查 -->
             <div class="feature-item" :class="{ highlight: form.ifStartDynamicGrading }"
               @click="toggleFeature('ifStartDynamicGrading')">
               <div class="feature-content">
                 <div class="feature-title">{{ $t('hierarchicalTask.features.dynamicRating') }}</div>
                 <div class="feature-desc">{{ $t('hierarchicalTask.features.dynamicRatingDesc') }}</div>
                 <el-checkbox v-model="form.ifStartDynamicGrading" class="checkbox-right round-checkbox"
-                  @click.stop></el-checkbox>
+                  @click.stop @change="handleAiTagAutoReviewChange"></el-checkbox>
               </div>
             </div>
+            <!-- 样本特征提取 -->
             <div class="feature-item" :class="{ highlight: form.ifStartFeatureExtract }"
               @click="toggleFeature('ifStartFeatureExtract')">
               <div class="feature-content">
@@ -398,6 +402,7 @@
             </div>
           </div>
           <div class="feature-grid" v-else> <!-- 结构化 -->
+            <!-- 语义填充 -->
             <div class="feature-item" :class="{ highlight: form.ifStartAiFill }"
               @click="toggleFeature('ifStartAiFill')">
               <div class="feature-content">
@@ -407,6 +412,7 @@
                   @click.stop></el-checkbox>
               </div>
             </div>
+            <!-- 噪音数据过滤 -->
             <div class="feature-item" :class="{ highlight: form.ifStartDirtyDataFilter }"
               @click="toggleFeature('ifStartDirtyDataFilter')">
               <div class="feature-content">
@@ -426,6 +432,7 @@
                   @click.stop></el-checkbox>
               </div>
             </div>
+            <!-- 个保法合规审查 -->
             <div class="feature-item" :class="{ highlight: form.piiDetectionFlag }"
               @click="toggleFeature('piiDetectionFlag')">
               <div class="feature-content">
@@ -435,11 +442,13 @@
                   @click.stop></el-checkbox>
               </div>
             </div>
+            <!-- AI分类打标 -->
             <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
               <div class="feature-content">
                 <div class="feature-title">{{ $t('hierarchicalTask.features.aiTag') }}</div>
                 <div class="feature-desc">{{ $t('hierarchicalTask.features.aiTagDesc') }}</div>
-                <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop></el-checkbox>
+                <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop
+                  @change="handleAiTagAutoReviewChange"></el-checkbox>
               </div>
             </div>
             <!-- <div class="feature-item" :class="{ highlight: form.ifStartAiClassifySuggest }"
@@ -451,15 +460,17 @@
                   @click.stop></el-checkbox>
               </div>
             </div> -->
+            <!-- 自动审查 -->
             <div class="feature-item" :class="{ highlight: form.ifStartDynamicGrading }"
               @click="toggleFeature('ifStartDynamicGrading')">
               <div class="feature-content">
                 <div class="feature-title">{{ $t('hierarchicalTask.features.dynamicRating') }}</div>
                 <div class="feature-desc">{{ $t('hierarchicalTask.features.dynamicRatingDesc') }}</div>
                 <el-checkbox v-model="form.ifStartDynamicGrading" class="checkbox-right round-checkbox"
-                  @click.stop></el-checkbox>
+                  @click.stop @change="handleAiTagAutoReviewChange"></el-checkbox>
               </div>
             </div>
+            <!-- 样本特征提取 -->
             <div class="feature-item" :class="{ highlight: form.ifStartFeatureExtract }"
               @click="toggleFeature('ifStartFeatureExtract')">
               <div class="feature-content">
@@ -942,7 +953,22 @@ export default {
     },
     // 处理启用功能模块选中方法
     toggleFeature(featureName) {
+      if (featureName === 'ifStartTask' || featureName === 'ifStartDynamicGrading') {
+        const nextVal = !this.form[featureName]
+        this.handleAiTagAutoReviewChange(nextVal)
+        return
+      }
       this.$set(this.form, featureName, !this.form[featureName]);
+    },
+    handleAiTagAutoReviewChange(val) {
+      const nextVal = !!val
+      this.$set(this.form, 'ifStartTask', nextVal)
+      this.$set(this.form, 'ifStartDynamicGrading', nextVal)
+    },
+    normalizeAiTagAutoReviewFlags() {
+      const nextVal = !!(this.form.ifStartTask || this.form.ifStartDynamicGrading)
+      this.$set(this.form, 'ifStartTask', nextVal)
+      this.$set(this.form, 'ifStartDynamicGrading', nextVal)
     },
     scheduleTypeChange(val) {
       if (val == '3') {
@@ -1206,6 +1232,7 @@ export default {
       this.$set(this.form, 'ifStartFeatureExtract', row.ifStartFeatureExtract == "1");
       this.$set(this.form, 'ifStartAiClassifySuggest', row.ifStartAiClassifySuggest == "1");
       this.$set(this.form, 'ifStartDynamicGrading', row.ifStartDynamicGrading == "1");
+      this.normalizeAiTagAutoReviewFlags()
       this.$set(this.form, 'ifConfigurationParameters', row.ifConfigurationParameters == "1");
       this.$set(this.form, 'ifTechnicalIdentifier', row.ifTechnicalIdentifier == "1");
       this.$set(this.form, 'ifRedundantFields', row.ifRedundantFields == "1");
