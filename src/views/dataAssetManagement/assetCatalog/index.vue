@@ -1087,6 +1087,21 @@
                 </div>
               </div>
             </el-card>
+            <el-card class="box-card ai-review-card ai-review-card--primary pii-review-card" shadow="never">
+              <div class="ai-review-card__header">
+                <div class="ai-review-card__title">
+                  <svg-icon icon-class="dunpai-2" style="font-size: 24px;"></svg-icon>
+                  <span>个保法合规审查</span>
+                </div>
+                <div></div>
+              </div>
+              <div class="ai-review-card__body">
+                <div class="ai-review-card__section">
+                  <div class="ai-review-card__label">个人信息识别</div>
+                  <div class="ai-review-card__value-box">{{ fixResultsRow.piiDetectionName || '--' }}</div>
+                </div>
+              </div>
+            </el-card>
           </div>
         </div>
 
@@ -1493,7 +1508,7 @@ export default {
         { label: '分类状态', prop: 'classificationStateName' },
         { label: '归类原因', prop: 'classificationReasons' },
         { label: '个保合规', prop: 'piiDetectionName' },
-        { label: '识别过程', prop: 'detectionProcess' },
+        // { label: '识别过程', prop: 'detectionProcess' },
         { label: '置信度分数', prop: 'confidenceScore' },
         { label: '敏感数据', prop: 'sensitiveDataName' },
         { label: '样本特征', prop: 'regularExpression' }
@@ -4110,6 +4125,10 @@ export default {
   border-radius: 16px;
   border: 1px solid #d6e4ff;
   overflow: hidden;
+}
+
+.fix-results-container .pii-review-card {
+  margin-top: 16px;
 }
 
 .fix-results-container .ai-review-card ::v-deep .el-card__body {
