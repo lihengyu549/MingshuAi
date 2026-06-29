@@ -1,7 +1,7 @@
 <template>
-  <div class="app-container" v-loading="Loading">
-    <el-row :gutter="20">
-      <el-col :span="5" :xs="24">
+  <div class="matching-strategy-container" v-loading="Loading">
+    <el-row :gutter="20" class="matching-layout">
+      <el-col :span="5" :xs="24" class="left-panel">
         <el-card class="left-card" shadow="never">
           <div class="head-container">
             <el-select v-model="queryParams.categoryId" class="serachInput" @change="treeOptionsSelectChange"
@@ -23,7 +23,7 @@
         </el-card>
       </el-col>
       <!--用户数据-->
-      <el-col :span="19" :xs="24">
+      <el-col :span="19" :xs="24" class="right-panel">
         <el-card class="search-card" shadow="never">
           <el-form :model="queryParams" ref="queryParams" class="yuanDataClass" size="small" :inline="false"
             v-show="showSearch" label-width="90px">
@@ -805,8 +805,27 @@ export default {
 <style scoped>
 .matching-strategy-container {
   height: 100%;
+  min-height: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.matching-layout {
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.left-panel,
+.right-panel {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .el-popup-parent--hidden /deep/ .el-loading-mask {
@@ -815,19 +834,26 @@ export default {
 
 .left-card {
   border-radius: 10px;
+  flex: 1;
   height: 100%;
-  max-height: 100%;
-  overflow: auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 
   .el-card__body {
+    flex: 1;
     height: 100%;
-    max-height: 100%;
-    overflow: auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 }
 
 .search-card {
   border-radius: 10px;
+  flex-shrink: 0;
   margin-bottom: 20px;
 }
 
@@ -847,7 +873,16 @@ export default {
   }
 }
 
+.head-container:last-child {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .search-actions {
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -1043,8 +1078,10 @@ export default {
 }
 
 .tree-scroll-container {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  max-height: calc(100vh - 350px);
+  max-height: none;
 }
 
 /* ::v-deep
@@ -1055,6 +1092,7 @@ export default {
 } */
 ::v-deep .el-row {
   display: flex;
+  height: 100%;
   align-items: stretch;
   flex: 1;
   overflow: hidden;
@@ -1062,6 +1100,7 @@ export default {
 
 ::v-deep .el-col {
   display: flex;
+  height: 100%;
   flex-direction: column;
   max-height: 100%;
   overflow: hidden;

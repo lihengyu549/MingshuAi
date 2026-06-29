@@ -205,17 +205,17 @@
         label-position="top">
         <el-row>
           <el-col :span="12">
+            <el-form-item :label="$t('dataFrom.sourceName')" prop="sourceName" :rules="rules.sourceName">
+              <el-input v-model="form.sourceName" maxlength="50" :placeholder="$t('dataFrom.pleaseInputSourceName')" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
             <el-form-item :label="$t('dataFrom.databaseType')" prop="databaseType" :rules="rules.databaseType">
               <el-select v-model="form.databaseType" :placeholder="$t('dataFrom.pleaseSelectDatabaseType')"
                 @change="databaseTypeChange($event)">
                 <el-option v-for="item in databaseTypeList" :key="item.id" :label="item.name" :value="item.value">
                 </el-option>
               </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item :label="$t('dataFrom.sourceName')" prop="sourceName" :rules="rules.sourceName">
-              <el-input v-model="form.sourceName" maxlength="50" :placeholder="$t('dataFrom.pleaseInputSourceName')" />
             </el-form-item>
           </el-col>
         </el-row>
