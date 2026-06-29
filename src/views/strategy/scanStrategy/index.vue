@@ -532,6 +532,7 @@ export default {
   font-weight: 500;
   cursor: pointer;
   user-select: none;
+  font-size: 14px;
 }
 
 .enhance-tab.active {
