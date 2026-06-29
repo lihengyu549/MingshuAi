@@ -1246,7 +1246,7 @@ export default {
         this.$set(this.form, 'scheduleInterval', '');
         this.$set(this.form, 'scheduleTime', '');
       }
-      if (row.classificationState == '0' || row.classificationReasons == null) {
+      if (row.classificationState == '0' || row.classificationState == null) {
         this.form.classificationState = []
       } else {
         this.form.classificationState = row.classificationState.split(',').map(item => {
@@ -1295,9 +1295,15 @@ export default {
             ifConfigurationParameters: this.form.ifConfigurationParameters ? '1' : '0',
             ifTechnicalIdentifier: this.form.ifTechnicalIdentifier ? '1' : '0',
             ifRedundantFields: this.form.ifRedundantFields ? '1' : '0',
-            classificationState: this.form.classificationState ? this.form.classificationState.join(',') : '0',
-            paddingStatus: this.form.paddingStatus ? this.form.paddingStatus.join(',') : '0',
-            classificationReasons: this.form.classificationReasons ? this.form.classificationReasons.join(',') : '0',
+            classificationState: this.form.classificationState && this.form.classificationState.length > 0
+              ? this.form.classificationState.join(',')
+              : '0',
+            paddingStatus: this.form.paddingStatus && this.form.paddingStatus.length > 0
+              ? this.form.paddingStatus.join(',')
+              : '0',
+            classificationReasons: this.form.classificationReasons && this.form.classificationReasons.length > 0
+              ? this.form.classificationReasons.join(',')
+              : '0',
 
           }
           if (this.form.isAddTasks === '1') {
