@@ -74,12 +74,12 @@
                     class="feature-form" label-position="top" :rules="rules">
                     <Title :title="$t('dataFeature.basicInfo')"></Title>
                     <el-row>
-                        <el-col :span="12">
+                        <!-- <el-col :span="12">
                             <el-form-item :label="$t('dataFeature.idLabel')" prop="id">
                                 <el-input class="form-input" :value="displayFeatureId" disabled />
                             </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
+                        </el-col> -->
+                        <el-col :span="24">
                             <el-form-item :label="$t('dataFeature.nameLabel')" prop="featureName">
                                 <el-input class="form-input" v-model="form.featureName" :placeholder="$t('dataFeature.pleaseInputName')" />
                             </el-form-item>
@@ -109,7 +109,7 @@
                     <el-form-item :label="$t('dataFeature.descriptionLabel')" prop="description">
                         <el-input type="textarea" v-model="form.description" :placeholder="$t('dataFeature.pleaseInputDescription')" rows="3" />
                     </el-form-item>
-                    <el-form-item :label="$t('dataFeature.featureValueLabel')" prop="featureValue">
+                    <el-form-item :label="$t('dataFeature.regexLabel')" prop="featureValue">
                         <el-input type="textarea" v-model="form.featureValue" :placeholder="$t('dataFeature.pleaseInputRegex')" rows="3" />
                     </el-form-item>
                 </el-form>
@@ -120,12 +120,12 @@
                     class="feature-form" :rules="rules" label-position="top">
                     <Title :title="$t('dataFeature.basicInfo')"></Title>
                     <el-row>
-                        <el-col :span="12">
+                        <!-- <el-col :span="12">
                             <el-form-item :label="$t('dataFeature.idLabel')" prop="id">
                                 <el-input class="form-input" :value="displayFeatureId" disabled />
                             </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
+                        </el-col> -->
+                        <el-col :span="24">
                             <el-form-item :label="$t('dataFeature.nameLabel')" prop="featureName">
                                 <el-input class="form-input" v-model="form.featureName" :placeholder="$t('dataFeature.pleaseInputName')" />
                             </el-form-item>
@@ -155,7 +155,7 @@
                     <el-form-item :label="$t('dataFeature.descriptionLabel')" prop="description">
                         <el-input type="textarea" v-model="form.description" :placeholder="$t('dataFeature.pleaseInputDescription')" rows="3" />
                     </el-form-item>
-                    <el-form-item :label="$t('dataFeature.featureValueLabel')" prop="mappingList">
+                    <el-form-item :label="$t('dataFeature.dataDictionaryLabel')" prop="mappingList">
                         <div class="mapping-table-container">
                             <!-- 新增：表格与右侧按钮组容器 -->
                             <div class="table-with-actions">
@@ -172,7 +172,7 @@
                                             size="small" @selection-change="handleMappingSelectionChange">
                                             <!-- 新增：复选框列 -->
                                             <el-table-column type="selection" width="45" />
-                                            <el-table-column prop="itemKey" :label="$t('dataFeature.featureValueLabel')" width="180" />
+                                            <el-table-column prop="itemKey" :label="$t('dataFeature.dataDictionaryLabel')" width="180" />
                                             <el-table-column prop="itemValue" :label="$t('dataFeature.mappingMeaning')" min-width="180" />
                                         </el-table>
                                     </template>
