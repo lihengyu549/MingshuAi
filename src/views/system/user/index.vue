@@ -10,11 +10,11 @@
           <div class="left-card__stats">
             <div class="left-card__stat">
               <div class="left-card__stat-label">部门数量</div>
-              <div class="left-card__stat-value">{{ Array.isArray(deptOptions) ? deptOptions.length : 0 }}</div>
+              <div class="left-card__stat-value">{{ departmentsNum }}</div>
             </div>
             <div class="left-card__stat">
               <div class="left-card__stat-label">用户数量</div>
-              <div class="left-card__stat-value">{{ total }}</div>
+              <div class="left-card__stat-value">{{ userNum }}</div>
             </div>
           </div>
           <div class="left-card__actions">
@@ -36,8 +36,7 @@
                   </template>
                   <span class="dept-tree-node__label" :title="node.label">{{ node.label }}</span>
                 </span>
-                <span class="dept-tree-node__count">{{ data.userCount || data.count || (Array.isArray(data.children) ?
-                  data.children.length : 0) }}</span>
+                <span class="dept-tree-node__count">{{ data.num || '0' }}</span>
               </span>
             </el-tree>
           </div>
@@ -444,6 +443,8 @@ export default {
       showSearch: false,
       currentDeptName: '全部用户',
       selectedDept: null,
+      departmentsNum: 0,
+      userNum: 0,
       total: 0,
       userList: [],
       titleKey: '',
@@ -575,7 +576,11 @@ export default {
     },
     getDeptTree() {
       deptTreeSelect().then(response => {
-        this.deptOptions = response.data
+        const data = response.data || {}
+        const treeData = Array.isArray(data.deptTree) ? data.deptTree : (Array.isArray(data) ? data : [])
+        this.deptOptions = treeData
+        this.departmentsNum = data.departmentsNum !== undefined && data.departmentsNum !== null ? Number(data.departmentsNum) : 0
+        this.userNum = data.userNum !== undefined && data.userNum !== null ? Number(data.userNum) : 0
       })
     },
     handleDeptAddChild() {
