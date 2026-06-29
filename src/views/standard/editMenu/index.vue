@@ -8,6 +8,7 @@
             <el-button type="primary" plain size="small" @click="toggleExpandAll">
                 {{ isAllExpanded ? $t('editMenu.collapseAll') : $t('editMenu.expandAll') }}
             </el-button>
+            <el-button type="primary" icon="el-icon-back" plain size="small" @click="goBack">{{ $t('return') }}</el-button>
         </div>
         <div class="tree-container" v-loading="treeLoading">
             <el-tree :indent="8" :data="filteredCategoryList" :props="defaultProps"
@@ -41,9 +42,6 @@
                     </span>
                 </span>
             </el-tree>
-        </div>
-        <div class="page-actions">
-            <el-button type="primary" plain @click="goBack">{{ $t('return') }}</el-button>
         </div>
 
         <!-- 新增/编辑分类Dialog -->
@@ -722,11 +720,6 @@ export default {
     margin-bottom: 16px;
     padding-bottom: 8px;
     border-bottom: 1px solid #f0f0f0;
-}
-
-.page-actions {
-    margin-top: 20px;
-    text-align: right;
 }
 
 .back-btn {
