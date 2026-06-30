@@ -336,9 +336,9 @@
     </el-row>
     <el-dialog :title="$t('viewResults.dialog.title')" class="addMsg" :visible.sync="deleteVisible" width="700px"
       append-to-body :close-on-click-modal="false">
-      <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto"
+    <el-form v-if="deleteVisible" :model="resultForm" :rules="resultFormRules" ref="resultForm" size="small" label-width="auto"
         label-position="top">
-        <el-form-item :label="$t('viewResults.dialog.category')" class="addSelectClass">
+        <el-form-item :label="$t('viewResults.dialog.category')" class="addSelectClass" prop="categoryId">
           <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable :filter-method="handleSearch">
             <el-option style="height: 100%; padding: 0" value="">
               <el-tree :data="categoryList" :props="defaultProps" filterable :expand-on-click-node="true"
@@ -574,9 +574,9 @@
 
         <el-dialog class="addMsg" :title="$t('fixResults.dialog.title')" :visible.sync="fixResultsDialogVisible"
           width="700px" append-to-body>
-          <el-form :model="fixResultsResultForm" ref="fixResultsResultForm" size="small" label-width="auto"
+          <el-form :model="fixResultsResultForm" :rules="fixResultsResultFormRules" ref="fixResultsResultForm" size="small" label-width="auto"
             label-position="top">
-            <el-form-item :label="$t('fixResults.dialog.category')" class="addSelectClass">
+            <el-form-item :label="$t('fixResults.dialog.category')" class="addSelectClass" prop="categoryId">
               <el-select ref="fixResultsResultSelectRef" v-model="fixResultsResultFormNodeName" filterable
                 :filter-method="fixResultsHandleSearch" clearable @focus="fixResultsClearResultFilter">
                 <el-option style="height: 100%; padding: 0" value="">
@@ -673,6 +673,10 @@ export default {
         classificationLogic: '',
         selectedIds: null,
       },
+      resultFormRules: {
+        categoryId: [{ required: true, message: this.$t('pleaseSelect'), trigger: 'change' }],
+        securityLevel: [{ required: true, message: this.$t('pleaseSelect'), trigger: 'change' }]
+      },
       tableData: [],
       addOptions: [
         {
@@ -711,6 +715,10 @@ export default {
         piiDetection: '',
         classificationLogic: '',
         reasoningProcess: ''
+      },
+      fixResultsResultFormRules: {
+        categoryId: [{ required: true, message: this.$t('pleaseSelect'), trigger: 'change' }],
+        securityLevel: [{ required: true, message: this.$t('pleaseSelect'), trigger: 'change' }]
       },
       fixResultsResultFormNodeName: '',
       fixResultsPiiNodeName: '',
@@ -1781,7 +1789,10 @@ export default {
       })
     },
     fixResultsUpdataResultFn() {
-      this.fixResultsLoading = true
+      if (!this.$refs.fixResultsResultForm) return;
+      this.$refs.fixResultsResultForm.validate((valid) => {
+        if (!valid) return;
+        this.fixResultsLoading = true
       let params = {
         reasoningProcess: this.fixResultsResultForm.reasoningProcess,
         tableFieldIds: [this.fixResultsRow.id],
@@ -1812,6 +1823,7 @@ export default {
         this.fixResultsResultFormNodeName = ''
         this.fixResultsLoading = false
       })
+      });
     },
     fixResultsUpdataResultCanelFn() {
       this.fixResultsDialogVisible = false
@@ -1938,7 +1950,10 @@ export default {
       this.deleteVisible = true
     },
     updataResultFn() {
-      this.updataLoading = true
+      if (!this.$refs.resultForm) return;
+      this.$refs.resultForm.validate((valid) => {
+        if (!valid) return;
+        this.updataLoading = true
       let params = {
         reasoningProcess: this.resultForm.reasoningProcess,
         // 传递数组格式的tableFieldIds
@@ -1972,6 +1987,7 @@ export default {
         .catch(err => {
           this.updataLoading = false
         })
+      });
     },
     updataResultCanelFn() {
       this.deleteVisible = false
