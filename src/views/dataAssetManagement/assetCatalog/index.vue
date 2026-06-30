@@ -1976,6 +1976,8 @@ export default {
         this.fixResultsDialogVisible = false;
         this.fixResultsResultFormNodeName = '';
         this.fixResultsPiiNodeName = '';
+        this.clearDisabledFlags(this.categoryOptions);
+        this.clearDisabledFlags(this.personalProtectionOptions);
         this.fixResultsLoading = false;
       };
 
@@ -1996,7 +1998,7 @@ export default {
     },
     fixResultsResultHandleNodeClick(node) {
       if (node.children && node.children.length > 0) {
-        node.disabled = true;
+        return;
       } else {
         const parentLabels = this.findParentLabelsById(this.categoryOptions, node.id);
         if (parentLabels) {
@@ -2013,7 +2015,7 @@ export default {
     },
     fixResultsPiiHandleNodeClick(node) {
       if (node.children && node.children.length > 0) {
-        node.disabled = true;
+        return;
       } else {
         const parentLabels = this.findParentLabelsById(this.personalProtectionOptions, node.id);
         if (parentLabels) {
@@ -3942,7 +3944,7 @@ export default {
     },
     resultHandleNodeClick(node) {
       if (node.children && node.children.length > 0) {
-        node.disabled = true;
+        return;
       } else {
         const parentLabels = this.findParentLabelsById(this.categoryOptions, node.id);
         if (parentLabels) {
@@ -3959,7 +3961,7 @@ export default {
     },
     piiHandleNodeClick(node) {
       if (node.children && node.children.length > 0) {
-        node.disabled = true;
+        return;
       } else {
         const parentLabels = this.findParentLabelsById(this.personalProtectionOptions, node.id);
         if (parentLabels) {
@@ -3993,6 +3995,17 @@ export default {
       }
       return null;
     },
+    clearDisabledFlags(tree) {
+      if (!Array.isArray(tree)) return;
+      tree.forEach((node) => {
+        if (node && Object.prototype.hasOwnProperty.call(node, 'disabled')) {
+          this.$delete(node, 'disabled');
+        }
+        if (node && Array.isArray(node.children) && node.children.length > 0) {
+          this.clearDisabledFlags(node.children);
+        }
+      });
+    },
     updataResultFn() {
       this.updataLoading = true
       let params = {
@@ -4013,6 +4026,8 @@ export default {
         this.resultFormNodeName = ''
         this.resetForm('resultForm')
         this.resultForm.selectedIds = null
+        this.clearDisabledFlags(this.categoryOptions);
+        this.clearDisabledFlags(this.personalProtectionOptions);
         this.refreshCurrentVisibleList().finally(() => {
           this.updataLoading = false
         })
@@ -4025,6 +4040,8 @@ export default {
       this.resultFormNodeName = ''
       this.resetForm('resultForm')
       this.resultForm.selectedIds = null
+      this.clearDisabledFlags(this.categoryOptions);
+      this.clearDisabledFlags(this.personalProtectionOptions);
     },
     /** 重置按钮操作 */
     resetQuery() {
