@@ -4,8 +4,11 @@
         <div class="task-info-card">
             <div class="task-info">
                 <div class="task-header">
-                    <p class="task-name">{{ $t('jobWorkMonitoring.taskName') }}：{{ tasksName }}</p>
-                    <el-tag :type="statusType" class="status-tag">{{ statusName }}</el-tag>
+                    <div class="task-header-left">
+                        <p class="task-name">{{ $t('jobWorkMonitoring.taskName') }}：{{ tasksName }}</p>
+                        <el-tag :type="statusType" class="status-tag">{{ statusName }}</el-tag>
+                    </div>
+                    <el-button type="primary" plain @click="handleReturn" icon="el-icon-back">{{ $t('return') }}</el-button>
                 </div>
                 <div class="other-info">
                     <div class="info-item">
@@ -549,7 +552,6 @@
 
         <!-- 操作按钮 -->
         <div class="button-group">
-            <el-button type="primary" @click="handleReturn">{{ $t('return') }}</el-button>
             <el-button @click="handleRefresh" v-if="activeTab === 'analysis'">
                 <i class="el-icon-refresh"></i> {{ $t('refresh') }}
             </el-button>
@@ -1647,6 +1649,13 @@ export default {
     justify-content: space-between;
     padding-bottom: 16px;
     border-bottom: 1px solid #e5e7eb;
+}
+
+.task-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
 }
 
 .task-name {
@@ -3088,16 +3097,6 @@ export default {
     font-weight: 500;
     letter-spacing: 0.5px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/deep/ .el-button--primary {
-    background: linear-gradient(135deg, #3b82f6, #6366f1);
-    border: none;
-    color: white;
-}
-
-/deep/ .el-button--primary:hover {
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
 }
 
 /deep/ .el-button--default {
