@@ -51,7 +51,7 @@
             <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
                 :page-size.sync="queryParams.pageSize" @pagination="getList" />
         </el-card>
-        <el-dialog class="custom-dialog" :title="getDialogTitle()" :visible.sync="addVisible" append-to-body
+        <el-dialog class="custom-dialog unified-dialog" :title="getDialogTitle()" :visible.sync="addVisible" append-to-body
             :close-on-click-modal="false" width="900px">
             <el-form :model="addForm" :rules="addRules" ref="addForm" label-width="100px" size="medium"
                 label-position="top">
@@ -401,5 +401,14 @@ export default {
     .el-dialog__header {
         border-bottom: 1px solid #e6e6e6;
     }
+}
+
+.unified-dialog ::v-deep .el-dialog {
+    max-width: 92vw;
+}
+
+.unified-dialog ::v-deep .el-dialog__body {
+    max-height: calc(70vh - 120px);
+    overflow: auto;
 }
 </style>
