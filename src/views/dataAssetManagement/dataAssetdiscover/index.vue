@@ -31,7 +31,7 @@
           {{ $t('dataAssetdiscover.deleteTask') }}
         </el-button>
       </el-col>
-      <el-button type="info" plain icon="el-icon-refresh" size="medium" @click="handleQuery" style="float: right;">
+      <el-button type="text" icon="el-icon-refresh" size="medium" @click="handleQuery" style="float: right; color: #7c8592;">
         {{ $t('refresh') }}
       </el-button>
     </el-row>

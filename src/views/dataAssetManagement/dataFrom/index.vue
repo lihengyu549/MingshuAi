@@ -70,8 +70,6 @@
       </el-col>
       <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
       <div style="float: right; margin-right: 10px;">
-        <el-button type="info" plain icon="el-icon-refresh" size="medium" @click="getList"
-          style="margin-right: 10px;">{{ $t('refresh') }}</el-button>
         <el-popover popper-class="popoverColumn" placement="bottom" width="150" trigger="click">
           <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">{{
             $t('selectAll') }}</el-checkbox>
@@ -80,9 +78,11 @@
             <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
               item.label }}</el-checkbox>
           </el-checkbox-group>
-
-          <el-button size="medium" slot="reference">{{ $t('columnSettings') }}</el-button>
+          <el-button size="text" slot="reference" style="color: #7c8592;" icon="el-icon-s-tools">{{ $t('columnSettings')
+            }}</el-button>
         </el-popover>
+        <el-button type="text" icon="el-icon-refresh" size="medium" @click="getList"
+          style="margin-left: 10px; color: #7c8592;">{{ $t('refresh') }}</el-button>
       </div>
     </el-row>
     <el-card shadow="never" class="table-card">
