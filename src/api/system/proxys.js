@@ -205,7 +205,7 @@ export function getDatabaseTableNameList (data) {
     url: '/system/proxy/database/listTablesByDatabaseName',
     method: 'post',
     data: data,
-    loading: true,
+    loading: false,
   })
 }
 // 数据源新增数据库--贺贺
