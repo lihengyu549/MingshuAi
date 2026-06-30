@@ -4,7 +4,7 @@
       <el-button size="medium" type="primary" plain @click="addApiKeys()">
         {{ $t('capacity.createApiKey') }}
       </el-button>
-      <el-button size="medium" type="primary" plain style="float:right" @click="showApiDoc = true">
+      <el-button size="medium" type="primary" plain @click="showApiDoc = true">
         {{ $t('capacity.viewApiDoc') }}
       </el-button>
     </div>

@@ -1,5 +1,6 @@
 <template>
-    <div class="main_div">
+    <div class="main_div" v-loading.fullscreen.lock="maskLoading" :element-loading-text="maskLoadingText"
+        element-loading-background="rgba(0, 0, 0, 0.7)">
         <div class="canChoose">
             <el-card class="left-panel">
                 <div slot="header" class="clearfix">{{ $t('dataAssetdiscover.tableSelector.optional') }}</div>
@@ -152,7 +153,11 @@ export default {
             searchQuery: '',
             serchListChildAll: [],
             returnArr: [],
-            isMiddleListAllChecked: false
+            isMiddleListAllChecked: false,
+            batchToken: 0,
+            maskLoading: false,
+            maskLoadingText: '请稍候...',
+            maskLoadingCount: 0
         };
     },
     mounted() {
@@ -252,6 +257,38 @@ export default {
         }
     },
     methods: {
+        startMaskLoading(text) {
+            this.maskLoadingCount += 1;
+            if (this.maskLoadingCount !== 1) return;
+            this.maskLoadingText = text || '请稍候...';
+            this.maskLoading = true;
+        },
+        stopMaskLoading() {
+            if (this.maskLoadingCount <= 0) return;
+            this.maskLoadingCount -= 1;
+            if (this.maskLoadingCount !== 0) return;
+            this.maskLoading = false;
+        },
+        sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        },
+        getBatchConfig(count) {
+            if (count <= 10) return { batchSize: count, delayMs: 0 };
+            if (count <= 20) return { batchSize: 8, delayMs: 300 };
+            if (count <= 50) return { batchSize: 6, delayMs: 500 };
+            return { batchSize: 4, delayMs: 800 };
+        },
+        async runBatched(list, handler, token) {
+            const { batchSize, delayMs } = this.getBatchConfig(list.length);
+            for (let i = 0; i < list.length; i += batchSize) {
+                if (token !== this.batchToken) return;
+                const chunk = list.slice(i, i + batchSize);
+                await Promise.all(chunk.map(handler));
+                if (delayMs > 0 && i + batchSize < list.length) {
+                    await this.sleep(delayMs);
+                }
+            }
+        },
         // 处理treeCheckedData的回显
         async handleTreeCheckedDataEcho() {
             console.log('处理treeCheckedData回显:', this.$props);
@@ -280,9 +317,15 @@ export default {
             });
 
             // 批量加载所有需要的表数据
-            await Promise.all(databasesToProcess.map(db =>
-                this.fetchTableNamesForEcho(db.name)
-            ));
+            const needMask = databasesToProcess.length > 15;
+            const token = ++this.batchToken;
+            const dbNames = databasesToProcess.map(db => db.name);
+            if (needMask) this.startMaskLoading('正在加载库表信息...');
+            try {
+                await this.runBatched(dbNames, (name) => this.fetchTableNamesForEcho(name), token);
+            } finally {
+                if (needMask) this.stopMaskLoading();
+            }
 
             // 记录第一个选中或半选的数据库
             let firstSelectedDatabase = null;
@@ -368,27 +411,39 @@ export default {
             }
         },
         // 全选复选框事件
-        handleCheckAllChange(checked) {
+        async handleCheckAllChange(checked) {
             this.isIndeterminate = false;
 
             if (checked) {
                 // 全选：加载所有表并选中，但不在中间列表展示
-                const fetchPromises = this.returnArr.map(item =>
-                    this.fetchTableNames(item.name).then(() => {
-                        item.checked = true;
-                        item.isActive = false;
-                        item.children.forEach(table => table.checked = true);
-                    })
-                );
+                const needMask = this.returnArr.length > 15;
+                const token = ++this.batchToken;
+                const dbNames = this.returnArr.map(item => item.name);
+                if (needMask) this.startMaskLoading('正在全选库表信息...');
+                try {
+                    await this.runBatched(dbNames, async (name) => {
+                        if (token !== this.batchToken) return;
+                        await this.fetchTableNames(name);
+                        const item = this.returnArr.find(d => d.name === name);
+                        if (!item) return;
+                            item.checked = true;
+                            item.isActive = false;
+                            item.children.forEach(table => table.checked = true);
+                    }, token);
+                } finally {
+                    if (needMask) this.stopMaskLoading();
+                }
 
-                Promise.all(fetchPromises).then(() => {
+                if (token !== this.batchToken) return;
+                {
                     // 全选时清空中间列表，不展示任何表
                     this.checkListChildAll = [];
                     this.serchListChildAll = [];
                     this.updateCheckList();
                     this.updateMiddleListCheckAllStatus();
-                });
+                }
             } else {
+                this.batchToken++;
                 // 取消全选：清除所有选中状态和中间列表
                 this.returnArr.forEach(item => {
                     item.checked = false;

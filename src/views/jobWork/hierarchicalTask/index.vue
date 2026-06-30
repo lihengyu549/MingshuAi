@@ -68,10 +68,11 @@
             <el-checkbox style="margin-bottom: 10px;" v-for="item in setList" :label="item" :key="item.label">{{
               item.label }}</el-checkbox>
           </el-checkbox-group>
-          <el-button size="medium" slot="reference">{{ $t('columnSettings') }}</el-button>
+          <el-button type="text" size="medium" slot="reference" style="color: #7c8592;" icon="el-icon-s-tools">{{
+            $t('columnSettings') }}</el-button>
         </el-popover>
-        <el-button type="primary" plain icon="el-icon-refresh" size="medium" @click="handleQuery">{{
-          $t('refresh') }}</el-button>
+        <el-button type="text" icon="el-icon-refresh" size="medium" @click="handleQuery"
+          style="color: #7c8592;">{{ $t('refresh') }}</el-button>
       </el-col>
     </el-row>
     <el-card class="table-card" shadow="never">
@@ -185,10 +186,13 @@
         <el-table-column :label="$t('hierarchicalTask.columns.resultActions')" align="center" width="200"
           class-name="small-padding fixed-width">
           <template slot-scope="scope">
-            <el-tag type="success" @click="resultLookFn(scope.row)" style="border: none;cursor: pointer; margin-right: 10px;">
-              <i class="el-icon-view" style="margin-right: 5px;"></i>{{ $t('hierarchicalTask.buttons.resultView') }}</el-tag>
+            <el-tag type="success" @click="resultLookFn(scope.row)"
+              style="border: none;cursor: pointer; margin-right: 10px;">
+              <i class="el-icon-view" style="margin-right: 5px;"></i>{{ $t('hierarchicalTask.buttons.resultView')
+              }}</el-tag>
             <el-tag type="primary" @click="assetLookFn(scope.row)" style="border: none;cursor: pointer;">
-              <i class="el-icon-view" style="margin-right: 5px;"></i>{{ $t('hierarchicalTask.buttons.assetView') }}</el-tag>
+              <i class="el-icon-view" style="margin-right: 5px;"></i>{{ $t('hierarchicalTask.buttons.assetView')
+              }}</el-tag>
           </template>
         </el-table-column>
       </el-table>
@@ -386,8 +390,8 @@
               <div class="feature-content">
                 <div class="feature-title">{{ $t('hierarchicalTask.features.dynamicRating') }}</div>
                 <div class="feature-desc">{{ $t('hierarchicalTask.features.dynamicRatingDesc') }}</div>
-                <el-checkbox v-model="form.ifStartDynamicGrading" class="checkbox-right round-checkbox"
-                  @click.stop @change="handleAiTagAutoReviewChange"></el-checkbox>
+                <el-checkbox v-model="form.ifStartDynamicGrading" class="checkbox-right round-checkbox" @click.stop
+                  @change="handleAiTagAutoReviewChange"></el-checkbox>
               </div>
             </div>
             <!-- 样本特征提取 -->
@@ -466,8 +470,8 @@
               <div class="feature-content">
                 <div class="feature-title">{{ $t('hierarchicalTask.features.dynamicRating') }}</div>
                 <div class="feature-desc">{{ $t('hierarchicalTask.features.dynamicRatingDesc') }}</div>
-                <el-checkbox v-model="form.ifStartDynamicGrading" class="checkbox-right round-checkbox"
-                  @click.stop @change="handleAiTagAutoReviewChange"></el-checkbox>
+                <el-checkbox v-model="form.ifStartDynamicGrading" class="checkbox-right round-checkbox" @click.stop
+                  @change="handleAiTagAutoReviewChange"></el-checkbox>
               </div>
             </div>
             <!-- 样本特征提取 -->

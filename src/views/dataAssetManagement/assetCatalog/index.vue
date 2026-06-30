@@ -877,9 +877,9 @@
 
     <el-dialog title="批量修改" class="addMsg" :visible.sync="deleteVisible" width="700px" append-to-body
       :close-on-click-modal="false">
-      <el-form v-if="deleteVisible" :model="resultForm" ref="resultForm" size="small" label-width="auto"
+      <el-form v-if="deleteVisible" :model="resultForm" :rules="resultFormRules" ref="resultForm" size="small" label-width="auto"
         label-position="top">
-        <el-form-item label="分类" class="addSelectClass">
+        <el-form-item label="分类" class="addSelectClass" prop="categoryId">
           <el-select ref="resultSelectRef" v-model="resultFormNodeName" filterable
             :filter-method="handleResultFormSearch">
             <el-option style="height: 100%; padding: 0" value="">
@@ -1107,9 +1107,9 @@
 
         <el-dialog class="addMsg" :title="$t('fixResults.dialog.title')" :visible.sync="fixResultsDialogVisible"
           width="700px" append-to-body>
-          <el-form :model="fixResultsResultForm" ref="fixResultsResultForm" size="small" label-width="auto"
+          <el-form :model="fixResultsResultForm" :rules="fixResultsResultFormRules" ref="fixResultsResultForm" size="small" label-width="auto"
             label-position="top">
-            <el-form-item :label="$t('fixResults.dialog.category')" class="addSelectClass">
+            <el-form-item :label="$t('fixResults.dialog.category')" class="addSelectClass" prop="categoryId">
               <el-select ref="fixResultsResultSelectRef" v-model="fixResultsResultFormNodeName" filterable
                 :filter-method="fixResultsHandleSearch" clearable @focus="fixResultsClearResultFilter">
                 <el-option style="height: 100%; padding: 0" value="">
@@ -1288,6 +1288,10 @@ export default {
         piiDetection: '',
         selectedIds: null,
       },
+      resultFormRules: {
+        categoryId: [{ required: true, message: '请选择分类', trigger: 'change' }],
+        securityLevel: [{ required: true, message: '请选择安全分级', trigger: 'change' }]
+      },
       categoryOptions: [],
       tableKey: 0,
       editMsg: '',
@@ -1314,6 +1318,10 @@ export default {
         detectionProcess: '',
         classificationLogic: '',
         reasoningProcess: ''
+      },
+      fixResultsResultFormRules: {
+        categoryId: [{ required: true, message: '请选择分类', trigger: 'change' }],
+        securityLevel: [{ required: true, message: '请选择安全分级', trigger: 'change' }]
       },
       fixResultsResultFormNodeName: '',
       fixResultsPiiNodeName: '',
@@ -1953,7 +1961,10 @@ export default {
       });
     },
     fixResultsUpdataResultFn() {
-      this.fixResultsLoading = true;
+      if (!this.$refs.fixResultsResultForm) return;
+      this.$refs.fixResultsResultForm.validate((valid) => {
+        if (!valid) return;
+        this.fixResultsLoading = true;
       let params = {
         reasoningProcess: this.fixResultsResultForm.reasoningProcess,
         tableFieldIds: [this.fixResultsRow.id],
@@ -1976,6 +1987,8 @@ export default {
         this.fixResultsDialogVisible = false;
         this.fixResultsResultFormNodeName = '';
         this.fixResultsPiiNodeName = '';
+        this.clearDisabledFlags(this.categoryOptions);
+        this.clearDisabledFlags(this.personalProtectionOptions);
         this.fixResultsLoading = false;
       };
 
@@ -1988,6 +2001,7 @@ export default {
       }).finally(() => {
         closeDialog();
       });
+      });
     },
     fixResultsUpdataResultCanelFn() {
       this.fixResultsDialogVisible = false;
@@ -1996,7 +2010,7 @@ export default {
     },
     fixResultsResultHandleNodeClick(node) {
       if (node.children && node.children.length > 0) {
-        node.disabled = true;
+        return;
       } else {
         const parentLabels = this.findParentLabelsById(this.categoryOptions, node.id);
         if (parentLabels) {
@@ -2013,7 +2027,7 @@ export default {
     },
     fixResultsPiiHandleNodeClick(node) {
       if (node.children && node.children.length > 0) {
-        node.disabled = true;
+        return;
       } else {
         const parentLabels = this.findParentLabelsById(this.personalProtectionOptions, node.id);
         if (parentLabels) {
@@ -3942,7 +3956,7 @@ export default {
     },
     resultHandleNodeClick(node) {
       if (node.children && node.children.length > 0) {
-        node.disabled = true;
+        return;
       } else {
         const parentLabels = this.findParentLabelsById(this.categoryOptions, node.id);
         if (parentLabels) {
@@ -3959,7 +3973,7 @@ export default {
     },
     piiHandleNodeClick(node) {
       if (node.children && node.children.length > 0) {
-        node.disabled = true;
+        return;
       } else {
         const parentLabels = this.findParentLabelsById(this.personalProtectionOptions, node.id);
         if (parentLabels) {
@@ -3993,8 +4007,22 @@ export default {
       }
       return null;
     },
+    clearDisabledFlags(tree) {
+      if (!Array.isArray(tree)) return;
+      tree.forEach((node) => {
+        if (node && Object.prototype.hasOwnProperty.call(node, 'disabled')) {
+          this.$delete(node, 'disabled');
+        }
+        if (node && Array.isArray(node.children) && node.children.length > 0) {
+          this.clearDisabledFlags(node.children);
+        }
+      });
+    },
     updataResultFn() {
-      this.updataLoading = true
+      if (!this.$refs.resultForm) return;
+      this.$refs.resultForm.validate((valid) => {
+        if (!valid) return;
+        this.updataLoading = true
       let params = {
         tableFieldIds: this.resultForm.selectedIds,
         categoryId: this.resultForm.categoryId,
@@ -4013,18 +4041,23 @@ export default {
         this.resultFormNodeName = ''
         this.resetForm('resultForm')
         this.resultForm.selectedIds = null
+        this.clearDisabledFlags(this.categoryOptions);
+        this.clearDisabledFlags(this.personalProtectionOptions);
         this.refreshCurrentVisibleList().finally(() => {
           this.updataLoading = false
         })
       }).catch(err => {
         this.updataLoading = false
       })
+      });
     },
     updataResultCanelFn() {
       this.deleteVisible = false
       this.resultFormNodeName = ''
       this.resetForm('resultForm')
       this.resultForm.selectedIds = null
+      this.clearDisabledFlags(this.categoryOptions);
+      this.clearDisabledFlags(this.personalProtectionOptions);
     },
     /** 重置按钮操作 */
     resetQuery() {

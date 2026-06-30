@@ -776,6 +776,13 @@ input[aria-hidden=true] {
   color: #909399;
 }
 
+.card-actions .btn-delete.is-disabled,
+.card-actions .btn-delete.is-disabled:hover,
+.card-actions .btn-delete.is-disabled:focus {
+  background-color: transparent;
+  color: #909399;
+}
+
 .card-actions .btn-delete:hover {
   background-color: #fef0f0;
   color: #f56c6c;
@@ -783,6 +790,13 @@ input[aria-hidden=true] {
 
 .card-actions .btn-primary {
   color: #606266;
+}
+
+.card-actions .btn-primary.is-disabled,
+.card-actions .btn-primary.is-disabled:hover,
+.card-actions .btn-primary.is-disabled:focus {
+  background-color: transparent;
+  color: #909399;
 }
 
 .card-actions .btn-primary:hover {
