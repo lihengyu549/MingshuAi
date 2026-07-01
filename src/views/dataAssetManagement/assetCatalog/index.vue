@@ -2884,16 +2884,40 @@ export default {
         }
       }
 
+      const fieldCountVal = (data && data.fieldCount !== undefined && data.fieldCount !== null && String(data.fieldCount) !== '')
+        ? data.fieldCount
+        : (data && data.row && data.row.fieldCount !== undefined && data.row.fieldCount !== null && String(data.row.fieldCount) !== '')
+          ? data.row.fieldCount
+          : ''
+
+      const fieldCountText = (level == 3 && String(fieldCountVal) !== '')
+        ? `(${fieldCountVal})`
+        : ''
+
       const labelPart = h('span', {
         class: 'node-label',
         attrs: { title: node.label },
         style: {
           fontSize: '14px',
+          flex: '1',
+          minWidth: '0',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap'
         }
       }, node.label);
+
+      const fieldCountPart = fieldCountText
+        ? h('span', {
+          class: 'node-field-count',
+          style: {
+            marginLeft: '6px',
+            color: '#909399',
+            fontSize: '12px',
+            flexShrink: '0'
+          }
+        }, fieldCountText)
+        : null
 
       const nodeContent = [
         h('svg-icon', {
@@ -2906,7 +2930,7 @@ export default {
         h('div', {
           class: 'node-label-wrapper',
           style: { flex: '1', minWidth: '0', overflow: 'hidden', display: 'flex', alignItems: 'center' }
-        }, [labelPart])
+        }, [labelPart, fieldCountPart])
       ];
 
       return h('span', {
