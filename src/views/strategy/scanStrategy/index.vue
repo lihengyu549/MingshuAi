@@ -35,6 +35,17 @@
                   <div class="switch-card">
                     <div class="switch-content">
                       <div class="switch-label">
+                        <div class="label-text">{{ allData.DirtyData.DirtyData8.label }}</div>
+                      </div>
+                      <el-switch v-model="allData.DirtyData.DirtyData8.state" active-color="#009dff"
+                        inactive-color="#e0e0e0"></el-switch>
+                    </div>
+                  </div>
+                </el-col>
+                <el-col :span="8">
+                  <div class="switch-card">
+                    <div class="switch-content">
+                      <div class="switch-label">
                         <div class="label-text">{{ allData.DirtyData.DirtyData1.label }}</div>
                       </div>
                       <el-switch v-model="allData.DirtyData.DirtyData1.state" active-color="#009dff"
@@ -53,6 +64,8 @@
                     </div>
                   </div>
                 </el-col>
+              </el-row>
+              <el-row :gutter="16">
                 <el-col :span="8">
                   <div class="switch-card">
                     <div class="switch-content">
@@ -70,8 +83,6 @@
                     </div>
                   </div>
                 </el-col>
-              </el-row>
-              <el-row :gutter="16">
                 <el-col :span="8">
                   <div class="switch-card">
                     <div class="switch-content">
@@ -96,6 +107,8 @@
                     </div>
                   </div>
                 </el-col>
+              </el-row>
+              <el-row :gutter="16">
                 <el-col :span="8">
                   <div class="switch-card">
                     <div class="switch-content">
@@ -151,7 +164,7 @@
                 <el-slider v-model="allData.SemanticCache.value" :min="0" :max="100" style="flex: 1;"></el-slider>
                 <div class="slider-tip">
                   <el-tag size="small" type="warning" effect="plain" class="min-tag">{{ $t('scanStrategy.minSetting')
-                    }}</el-tag>
+                  }}</el-tag>
                   <span class="tip-text">{{ $t('scanStrategy.disallowSaveBelow') }}</span>
                 </div>
               </div>
@@ -295,6 +308,7 @@ export default {
           DirtyData5: {},
           DirtyData6: {},
           DirtyData7: {},
+          DirtyData8: {},
         },
         SensitiveData: {},
         SampleExtraction: {},
@@ -387,10 +401,16 @@ export default {
     getlistData() {
       listByTacticsQueryUrl('sys_scan_tactics').then(res => {
         this.cardLoading = true
-        this.allData = res.data
+        const nextData = (res && res.data) ? res.data : {}
+        const dirtyData = nextData.DirtyData || {}
+        if (!dirtyData.DirtyData8) {
+          dirtyData.DirtyData8 = { label: '', state: false, value: '' }
+        }
+        nextData.DirtyData = dirtyData
+        this.allData = nextData
         if (res.code == 200) {
-          if (res.data.SecurityLevelList && res.data.SecurityLevelList.sysRiskLevel) {
-            res.data.SecurityLevelList.sysRiskLevel.forEach(item => {
+          if (nextData.SecurityLevelList && nextData.SecurityLevelList.sysRiskLevel) {
+            nextData.SecurityLevelList.sysRiskLevel.forEach(item => {
               item.status = item.status == '0' ? true : false
             })
           }

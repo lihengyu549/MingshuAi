@@ -63,7 +63,7 @@
                             </el-form-item>
 
                             <el-form-item v-if="currentModel.name != 'local'" :label="$t('textModel.modelName')">
-                                <el-select v-model="currentModel.modelName" :placeholder="$t('textModel.pleaseSelectModel')" style="width: 70%;">
+                                <el-select v-model="currentModel.modelName" :placeholder="$t('textModel.pleaseSelectModel')" style="width: 70%;" filterable clearable>
                                     <el-option v-for="item in currentModel.availableModels" :key="item.value"
                                         :label="item.label" :value="item.value"></el-option>
                                 </el-select>
