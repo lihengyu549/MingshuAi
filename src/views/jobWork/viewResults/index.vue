@@ -183,7 +183,15 @@
               <div class="content-header-main">
                 <div style="display: flex; align-items: center;justify-content: space-between;">
                 <span class="content-title">
-                  <svg-icon :icon-class="currentTreeLevel > 0 ? '表格' : '组织架构'" style="font-size: 20px;" />
+                  <template v-if="String(currentTreeNode && currentTreeNode.treeType) === '1'">
+                    <i class="el-icon-question" style="font-size: 20px; color: #409EFF; margin-right: 6px;"></i>
+                  </template>
+                  <template v-else-if="String(currentTreeNode && currentTreeNode.treeType) === '2'">
+                    <svg-icon icon-class="过滤" style="font-size: 20px; color: #409EFF; margin-right: 6px;" />
+                  </template>
+                  <template v-else>
+                    <svg-icon :icon-class="currentTreeLevel > 0 ? '表格' : '组织架构'" style="font-size: 20px;" />
+                  </template>
                   {{ contentTitle }}
                 </span>
                 <el-button type="primary" icon="el-icon-back" plain size="medium" @click="handleBack">{{ $t('return')
