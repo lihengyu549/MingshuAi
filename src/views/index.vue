@@ -153,7 +153,7 @@
         <el-card ref="assetMapCard" class="panel-card hoverable" shadow="never">
           <div slot="header" class="panel-header">
             <div class="panel-title">
-              数据资产地图<span v-if="mapDrillTitle" class="panel-path"> / {{ mapDrillTitle }}</span>
+              数据资产地图<span v-if="mapPathText" class="panel-path"> / {{ mapPathText }}</span>
             </div>
             <div class="panel-actions">
               <div class="map-legend">
@@ -166,7 +166,7 @@
                   <span>敏感数据占比</span>
                 </div>
               </div>
-              <el-button v-if="mapDrillTitle" type="primary" plain size="small" icon="el-icon-arrow-left"
+              <el-button v-if="mapPath.length" type="primary" plain size="small" icon="el-icon-arrow-left"
                 @click="handleMapBack" style="border-radius: 10px;">
                 返回
               </el-button>
@@ -186,7 +186,7 @@
                     <span class="tile-ratio-value tile-red">{{ item.sensitiveRatio }}%</span>
                   </div>
                 </div>
-                <div class="tile-desc">{{ item.desc }}</div>
+                <div class="tile-desc">子类：{{ item.desc }}</div>
                 <div class="tile-footer">
                   <div class="tile-tags">
                     <span v-for="(tag, tIdx) in item.sourceTags" :key="tIdx" class="source-tag">
@@ -345,14 +345,14 @@ const dataView = {
   }
 }
 
-const dataAssetMap = {
+const dataAssetMapStore = {
   "root": [
       {
         "id": "customer",
         "title": "客户",
         "ratio": 20,
         "sensitiveRatio": 12,
-        "desc": "子类：个人客户信息管理、单位客户档案维护、VIP客户分级标签",
+        "desc": "个人客户信息管理、单位客户档案维护、VIP客户分级标签",
         "sourceTags": [{ "label": "demo_sdd_202..." }],
         "moreCount": 2
       },
@@ -361,7 +361,7 @@ const dataAssetMap = {
         "title": "经营管理",
         "ratio": 10,
         "sensitiveRatio": 6,
-        "desc": "子类：财务报表核算系统、人力资源员工档案库、年度预算编制平台",
+        "desc": "财务报表核算系统、人力资源员工档案库、年度预算编制平台",
         "sourceTags": [{ "label": "prod_mysql_cr..." }],
         "moreCount": 1
       },
@@ -370,7 +370,7 @@ const dataAssetMap = {
         "title": "监管",
         "ratio": 15,
         "sensitiveRatio": 10,
-        "desc": "子类：监管审计报送接口、合规审查记录库、反洗钱交易监测",
+        "desc": "监管审计报送接口、合规审查记录库、反洗钱交易监测",
         "sourceTags": [{ "label": "dw_hive_us..." }],
         "moreCount": 1
       },
@@ -379,7 +379,7 @@ const dataAssetMap = {
         "title": "风控",
         "ratio": 12,
         "sensitiveRatio": 8,
-        "desc": "子类：反欺诈模型训练数据集、信用评分模型训练集、风险预警告警库",
+        "desc": "反欺诈模型训练数据集、信用评分模型训练集、风险预警告警库",
         "sourceTags": [{ "label": "demo_sdd_202..." }],
         "moreCount": 1
       },
@@ -388,7 +388,7 @@ const dataAssetMap = {
         "title": "营销",
         "ratio": 8,
         "sensitiveRatio": 4,
-        "desc": "子类：精准投放用户画像、多渠道触达记录、营销活动效果分析",
+        "desc": "精准投放用户画像、多渠道触达记录、营销活动效果分析",
         "sourceTags": [{ "label": "prod_mysql_cr..." }],
         "moreCount": 1
       },
@@ -397,7 +397,7 @@ const dataAssetMap = {
         "title": "产品",
         "ratio": 14,
         "sensitiveRatio": 5,
-        "desc": "子类：产品功能埋点数据集、用户行为路径分析、AB实验分流记录",
+        "desc": "产品功能埋点数据集、用户行为路径分析、AB实验分流记录",
         "sourceTags": [{ "label": "demo_sdd_202..." }],
         "moreCount": 1
       },
@@ -406,7 +406,7 @@ const dataAssetMap = {
         "title": "研发",
         "ratio": 9,
         "sensitiveRatio": 3,
-        "desc": "子类：测试环境脱敏数据集、系统运行日志归档、CI/CD构建产物",
+        "desc": "测试环境脱敏数据集、系统运行日志归档、CI/CD构建产物",
         "sourceTags": [{ "label": "demo_sdd_202..." }],
         "moreCount": 1
       },
@@ -415,7 +415,7 @@ const dataAssetMap = {
         "title": "法务",
         "ratio": 7,
         "sensitiveRatio": 5,
-        "desc": "子类：合同全生命周期管理库、知识产权登记系统、诉讼案件事实库",
+        "desc": "合同全生命周期管理库、知识产权登记系统、诉讼案件事实库",
         "sourceTags": [{ "label": "prod_mysql_cr..." }],
         "moreCount": 1
       },
@@ -424,7 +424,7 @@ const dataAssetMap = {
         "title": "运维",
         "ratio": 5,
         "sensitiveRatio": 1,
-        "desc": "子类：服务器监控指标库、告警事件处置记录、资源配置管理台账",
+        "desc": "服务器监控指标库、告警事件处置记录、资源配置管理台账",
         "sourceTags": [{ "label": "dw_hive_us..." }],
         "moreCount": 1
       }
@@ -436,7 +436,7 @@ const dataAssetMap = {
           "title": "反欺诈",
           "ratio": 24,
           "sensitiveRatio": 12,
-          "desc": "子类：交易反欺诈识别、设备指纹画像库、黑名单名单库",
+          "desc": "交易反欺诈识别、设备指纹画像库、黑名单名单库",
           "sourceTags": [{ "label": "demo_sdd_202..." }],
           "moreCount": 1
         },
@@ -445,7 +445,7 @@ const dataAssetMap = {
           "title": "信用评估",
           "ratio": 18,
           "sensitiveRatio": 9,
-          "desc": "子类：授信审批数据集、贷后监控指标库、风险定价模型库",
+          "desc": "授信审批数据集、贷后监控指标库、风险定价模型库",
           "sourceTags": [{ "label": "prod_mysql_cr..." }],
           "moreCount": 1
         },
@@ -454,7 +454,7 @@ const dataAssetMap = {
           "title": "预警告警",
           "ratio": 12,
           "sensitiveRatio": 6,
-          "desc": "子类：实时告警事件、规则命中记录、处置闭环追踪",
+          "desc": "实时告警事件、规则命中记录、处置闭环追踪",
           "sourceTags": [{ "label": "dw_hive_us..." }],
           "moreCount": 2
         }
@@ -686,11 +686,10 @@ export default {
       categoryId: '',
       standardOptions: [],
       dataView,
-      dataAssetMap,
+      dataAssetMap: dataAssetMapStore.root || [],
       dataLevelDistribution,
       sensitiveData: [],
-      mapDrillId: '',
-      mapDrillTitle: '',
+      mapPath: [],
       selectedLevelIndex: 0,
       middleBodyHeight: 0,
       charts: {
@@ -700,9 +699,11 @@ export default {
   },
   computed: {
     currentMapTiles() {
-      const children = (this.dataAssetMap.children || {})[this.mapDrillId]
-      if (this.mapDrillId && Array.isArray(children)) return children
-      return this.dataAssetMap.root || []
+      return Array.isArray(this.dataAssetMap) ? this.dataAssetMap : []
+    },
+    mapPathText() {
+      if (!Array.isArray(this.mapPath) || !this.mapPath.length) return ''
+      return this.mapPath.map(i => i.title).filter(Boolean).join(' / ')
     },
     maxLevelValue() {
       const list = this.dataLevelDistribution || []
@@ -758,25 +759,41 @@ export default {
       })
     },
     handleCategoryChange() {
-      this.mapDrillId = ''
-      this.mapDrillTitle = ''
+      this.mapPath = []
       this.selectedLevelIndex = 0
       this.fetchDataView()
+      this.fetchDataAssetMap()
       this.fetchSensitiveData()
     },
     handleMapTileClick(item) {
-      const children = (this.dataAssetMap.children || {})[item.id]
-      if (Array.isArray(children) && children.length) {
-        this.mapDrillId = item.id
-        this.mapDrillTitle = item.title
-      }
+      if (!item || !item.id) return
+      this.mapPath = [...this.mapPath, { id: item.id, title: item.title }]
+      this.fetchDataAssetMap(item.id)
     },
     handleMapBack() {
-      this.mapDrillId = ''
-      this.mapDrillTitle = ''
+      const next = Array.isArray(this.mapPath) ? this.mapPath.slice(0, -1) : []
+      this.mapPath = next
+      const parentId = next.length ? next[next.length - 1].id : ''
+      this.fetchDataAssetMap(parentId)
     },
     handleSelectLevel(idx) {
       this.selectedLevelIndex = idx
+    },
+    fetchDataAssetMap(parentId = '') {
+      const categoryId = this.categoryId
+      if (!categoryId) {
+        this.dataAssetMap = []
+        return
+      }
+      this.loadingCount += 1
+      this.loading = true
+      const list = parentId ? (dataAssetMapStore.children && dataAssetMapStore.children[parentId]) : dataAssetMapStore.root
+      Promise.resolve(Array.isArray(list) ? list : []).then((rows) => {
+        this.dataAssetMap = rows
+      }).finally(() => {
+        this.loadingCount = Math.max(this.loadingCount - 1, 0)
+        if (!this.loadingCount) this.loading = false
+      })
     },
     initLevelChart() {
       const dom = this.$refs.levelChart
