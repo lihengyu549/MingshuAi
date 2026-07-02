@@ -1,212 +1,722 @@
 <template>
-  <div class="app-container">
-    <!-- 上方四个卡片 -->
-    <div class="top-cards-wrapper">
-      <el-card class="stat-card card1" shadow="hover">
-        <div class="card-header-top">
-          <div class="icon-wrapper dataAsset">
-            <svg-icon icon-class="home-dataAsset" style="font-size: 24px;"></svg-icon>
-          </div>
-          <svg-icon icon-class="home-dataAsset-c" style="font-size: 58px; color: #e8eefb;"></svg-icon>
-        </div>
-        <p class="card-label">{{ $t('home.dataAssetDistribution') }}</p>
-        <div class="card-metrics">
-          <div class="metric-item dataAsset">
-            <span class="metric-key">{{ $t('home.dataTable') }}</span>
-            <count-to :start-val="getPrevVal('dataTable')" :end-val="cardData.dataTable" :duration="2000" class="metric-value" />
-          </div>
-          <div class="metric-item dataAsset">
-            <span class="metric-key">{{ $t('home.fileNum') }}</span>
-            <count-to :start-val="getPrevVal('fileNum')" :end-val="cardData.fileNum" :duration="2000" class="metric-value" />
-          </div>
-        </div>
-        <div class="scan-progress-wrapper">
-          <el-progress :percentage="cardData.scanPercentage" :show-text="false" />
-          <div class="scan-progress-text">
-            <span class="scan-label">{{ $t('home.scanProgress') }}</span>
-            <span class="scan-percentage">{{ cardData.scanPercentage }}%</span>
-          </div>
-        </div>
-      </el-card>
-
-      <!-- 卡片2：敏感数据库 -->
-      <el-card class="stat-card card2" shadow="hover">
-        <div class="card-header-top">
-          <div class="icon-wrapper sensitiveData">
-            <svg-icon icon-class="home-sensitiveData" style="font-size: 24px;"></svg-icon>
-          </div>
-          <svg-icon icon-class="home-sensitiveData-c" style="font-size: 58px; color: #f4eafd;"></svg-icon>
-        </div>
-        <p class="card-label">{{ $t('home.sensitiveData') }}</p>
-        <div class="card-metrics">
-          <div class="metric-item sensitiveData">
-            <span class="metric-key">{{ $t('home.sensitiveField') }}</span>
-            <count-to :start-val="getPrevVal('sensitiveField')" :end-val="cardData.sensitiveField" :duration="2000" class="metric-value" />
-          </div>
-          <div class="metric-item sensitiveData">
-            <span class="metric-key">{{ $t('home.sensitiveFile') }}</span>
-            <count-to :start-val="getPrevVal('sensitiveFile')" :end-val="cardData.sensitiveFile" :duration="2000" class="metric-value" />
-          </div>
-        </div>
-        <div class="card-description">{{ $t('home.assetRatio') }}：{{ cardData.assetRatio }}%</div>
-      </el-card>
-
-      <!-- 卡片3：AI自动化归档 -->
-      <el-card class="stat-card card3" shadow="hover">
-        <div class="card-header-top">
-          <div class="icon-wrapper aiAuto">
-            <svg-icon icon-class="home-aiAuto" style="font-size: 24px;"></svg-icon>
-          </div>
-          <svg-icon icon-class="home-aiAuto-c" style="font-size: 58px; color: #e8eefb;"></svg-icon>
-        </div>
-        <p class="card-label">{{ $t('home.aiAutoRecognition') }}</p>
-        <div class="card-metrics">
-          <div class="metric-item aiAuto">
-            <span class="metric-key">{{ $t('home.aiCoverage') }}</span>
-            <count-to :start-val="getPrevVal('aiCoverage')" :end-val="cardData.aiCoverage" :duration="2000" class="metric-value" />
-          </div>
-          <div class="metric-item aiAuto">
-            <span class="metric-key">{{ $t('home.aiSaveTime') }}</span>
-            <count-to :start-val="getPrevVal('aiSaveTime')" :end-val="cardData.aiSaveTime" :duration="2000" class="metric-value" />
-          </div>
-        </div>
-        <div class="card-description">{{ $t('home.aiSaveTimeDesc') }}</div>
-      </el-card>
-
-      <!-- 卡片4：资计分析资产 -->
-      <el-card class="stat-card card4" shadow="hover">
-        <div class="card-header-top">
-          <div class="icon-wrapper analysis">
-            <svg-icon icon-class="home-analysis" style="font-size: 24px;"></svg-icon>
-          </div>
-          <svg-icon icon-class="home-analysis-c" style="font-size: 58px; color: #f9f0e5;"></svg-icon>
-        </div>
-        <p class="card-label">{{ $t('home.analysisAsset') }}</p>
-        <div class="card-metrics">
-          <div class="metric-item analysis">
-            <span class="metric-key">{{ $t('home.analysisField') }}</span>
-            <count-to :start-val="getPrevVal('analysisField')" :end-val="cardData.analysisField" :duration="2000" class="metric-value" />
-          </div>
-          <div class="metric-item analysis">
-            <span class="metric-key">{{ $t('home.analysisFile') }}</span>
-            <count-to :start-val="getPrevVal('analysisFile')" :end-val="cardData.analysisFile" :duration="2000" class="metric-value" />
-          </div>
-        </div>
-        <div class="card-description">{{ $t('home.analysisConfidence') }}：{{ cardData.analysisConfidence }}% · {{ $t('home.analysisReview') }}：{{ cardData.analysisReview }}%
-        </div>
-      </el-card>
+  <div class="cockpit" v-loading="loading">
+    <div class="page-header">
+      <h2><b>数据安全驾驶舱</b></h2>
+      <div class="header-operations">
+        <label class="form-label">所属标准</label>
+        <el-select v-model="categoryId" placeholder="所属标准" size="small" class="standard-select">
+          <el-option v-for="item in standardOptions" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
+      </div>
     </div>
 
-    <!-- 下方两个大卡片 -->
-    <div class="bottom-cards-wrapper">
-      <el-row :gutter="16" style="height: 100%;">
-        <!-- 左侧：任务监控 -->
-        <el-col :xs="24" :lg="16" style="height: 100%; margin-bottom: 0;">
-          <el-card class="monitor-card" shadow="hover">
-            <div slot="header" class="monitor-header">
-              <span class="monitor-title">
-                <svg-icon icon-class="home-taskIcon" style="font-size: 22px;"></svg-icon>
-                {{ $t('home.taskMonitor') }}
-              </span>
-              <span class="header-link">{{ $t('home.realTimeTransmission') }}</span>
-            </div>
+    <el-row :gutter="16" class="section top-section" type="flex" align="stretch">
+      <el-col :span="18">
+        <el-row :gutter="16" type="flex" align="stretch" class="top-left-row">
+          <el-col :span="8" class="top-col">
+            <el-card class="panel-card top-card hoverable" shadow="never">
+              <div class="top-card-header">
+                <div class="top-card-icon top-card-icon-blue">
+                  <i class="el-icon-s-operation"></i>
+                </div>
+                <div class="top-card-head">
+                  <div class="top-card-title">数据总量</div>
+                  <div class="top-card-sub">当前纳管数据资产规模</div>
+                </div>
+              </div>
+              <div class="summary-metrics">
+                <div class="summary-metric">
+                  <div class="summary-value">
+                    <count-to :start-val="0" :end-val="topData.summary.objectCount" :duration="1500" />
+                  </div>
+                  <div class="summary-key">纳管对象</div>
+                  <div class="summary-subkey">字段+文件</div>
+                </div>
+                <div class="summary-metric">
+                  <div class="summary-value">
+                    <count-to :start-val="0" :end-val="topData.summary.capacityGB" :duration="1500" />
+                    <span class="summary-unit">GB</span>
+                  </div>
+                  <div class="summary-key">总容量</div>
+                  <div class="summary-subkey">存储占用</div>
+                </div>
+              </div>
+            </el-card>
+          </el-col>
 
-            <div class="monitor-content">
-              <!-- 左侧：表格和步骤 -->
-              <div class="monitor-left">
-                <!-- 表格部分 -->
-                <div class="table-section">
-                  <h4 class="section-title">{{ taskMonitor.type == '0' ? $t('home.currentlyProcessingTable') : $t('home.currentlyProcessingFile') }}</h4>
-                  <div class="table-item-wrapper">
-                    <transition name="slide-up" mode="out-in">
-                      <span :key="taskMonitor.currentTableIndex" class="table-item-name">{{
-                        taskMonitor.tableNames[taskMonitor.currentTableIndex] }}</span>
-                    </transition>
-                    <span class="table-dot"></span>
+          <el-col :span="16" class="top-col">
+            <el-card class="panel-card top-card hoverable source-combined-card" shadow="never">
+              <div class="source-split">
+                <div class="source-pane">
+                  <div class="top-card-header">
+                    <div class="top-card-icon top-card-icon-gray">
+                      <i class="el-icon-coin"></i>
+                    </div>
+                    <div class="top-card-head">
+                      <div class="top-card-title">结构化数据源</div>
+                    </div>
+                  </div>
+                  <div class="source-main">
+                    <div class="source-main-value">
+                      <count-to :start-val="0" :end-val="topData.structured.sourceCount" :duration="1500" />
+                      <span class="source-unit">个</span>
+                    </div>
+                    <div class="source-sub">
+                      {{ topData.structured.sizeGB }}GB · {{ topData.structured.fieldCount }}字段
+                    </div>
+                  </div>
+                  <div class="badge-row">
+                    <span class="warn-badge">
+                      <span class="warn-dot"></span>
+                      {{ topData.structured.sensitiveLabel }} {{ topData.structured.sensitivePercent }}%
+                    </span>
                   </div>
                 </div>
-
-                <!-- 步骤部分 -->
-                <div class="steps-section">
-                  <div class="steps-wrapper">
-                    <div class="step-item" v-for="(step, key) in taskMonitor.taskSteps" :key="key">
-                      <div class="step-item-content">
-                        <i :class="getStepIconClass(step.status)"></i>
-                        <div class="step-text-wrapper">
-                          <span class="step-text-main">{{ step.textMain }}</span>
-                          <span class="step-text-sub">{{ step.textSub }}</span>
-                        </div>
-                      </div>
+                <div class="source-divider"></div>
+                <div class="source-pane">
+                  <div class="top-card-header">
+                    <div class="top-card-icon top-card-icon-gray">
+                      <i class="el-icon-folder"></i>
                     </div>
+                    <div class="top-card-head">
+                      <div class="top-card-title">非结构化数据源</div>
+                    </div>
+                  </div>
+                  <div class="source-main">
+                    <div class="source-main-value">
+                      <count-to :start-val="0" :end-val="topData.unstructured.sourceCount" :duration="1500" />
+                      <span class="source-unit">个</span>
+                    </div>
+                    <div class="source-sub">
+                      {{ topData.unstructured.sizeGB }}GB · {{ topData.unstructured.fileCount }}个文件
+                    </div>
+                  </div>
+                  <div class="badge-row">
+                    <span class="warn-badge">
+                      <span class="warn-dot"></span>
+                      {{ topData.unstructured.sensitiveLabel }} {{ topData.unstructured.sensitivePercent }}%
+                    </span>
                   </div>
                 </div>
               </div>
+            </el-card>
+          </el-col>
+        </el-row>
+      </el-col>
 
-              <!-- 右侧：进度条和时间轴 -->
-              <div class="monitor-right">
-                <!-- 进度条部分 -->
-                <div class="progress-section" style="flex-shrink: 0; display: flex; flex-direction: column;">
-                  <div class="progress-box">
-                    <span class="progress-title">{{ $t('home.progress') }}</span>
-                    <span class="progress-info">{{ taskMonitor.progressCurrent }}/{{ taskMonitor.progressTotal }} ({{
-                      taskMonitor.progressPercent }}%)</span>
+      <el-col :span="6" class="top-right-col">
+        <div class="top-right-stack">
+          <el-card v-for="(item, idx) in topData.rightCards" :key="idx" class="panel-card mini-stat-card hoverable"
+            shadow="never">
+            <div class="mini-stat">
+              <div class="mini-left">
+                <div class="mini-brand">
+                  <div class="mini-icon" :style="{ color: item.iconColor }">
+                    <svg-icon :icon-class="item.iconSvg" class-name="mini-svg" />
                   </div>
-                  <el-progress :percentage="taskMonitor.progressPercent" color="#409EFF" :show-text="false"
-                    :stroke-width="12"></el-progress>
+                  <div class="mini-model">{{ item.model }}</div>
                 </div>
-
-                <!-- 时间轴部分 -->
-                <div class="timeline-section">
-                  <div class="timeline-wrapper">
-                    <div v-for="(item, index) in displayTimelineData" :key="index" class="timeline-item">
-                      <div class="timeline-dot" :class="{ 'timeline-dot-active': item.isActive }">
-                        <i v-if="item.isActive" class="el-icon-loading"></i>
-                      </div>
-                      <div class="timeline-connector" v-if="index < displayTimelineData.length - 1"></div>
-                      <div class="timeline-text-wrapper">
-                        <span class="timeline-text">{{ item.text }}</span>
-                        <!-- <span v-if="item.time" class="timeline-time">{{ item.time }}</span> -->
-                      </div>
-                    </div>
-                  </div>
+                <div class="mini-info">
+                  <div class="mini-title">{{ item.title }}</div>
+                  <div class="mini-desc">{{ item.modelDesc }}</div>
                 </div>
+              </div>
+              <div class="mini-value">
+                <count-to :start-val="0" :end-val="item.value" :duration="1500" />
               </div>
             </div>
           </el-card>
-        </el-col>
+        </div>
+      </el-col>
+    </el-row>
 
-        <!-- 右侧：任务队列 -->
-        <el-col :xs="24" :lg="8" style="height: 100%; margin-bottom: 0;">
-          <el-card class="queue-card" shadow="hover">
-            <div slot="header" class="queue-header">
-              <span class="queue-title">
-                {{ $t('home.taskQueue') }}
-              </span>
+    <el-row :gutter="16" class="section middle-section" type="flex" align="stretch">
+      <el-col :span="12" class="middle-col">
+        <el-card ref="assetMapCard" class="panel-card hoverable" shadow="never">
+          <div slot="header" class="panel-header">
+            <div class="panel-title">
+              数据资产地图<span v-if="mapDrillTitle" class="panel-path"> / {{ mapDrillTitle }}</span>
             </div>
-
-            <div class="queue-body-wrapper">
-              <div class="queue-content">
-                <div class="queue-item" v-for="(item, index) in queueData" :key="index">
-                  <div class="queue-item-header">
-                    <span class="queue-item-title">{{ item.title }}</span>
-                    <el-tag :type="getQueueTagType(item.status)" size="small"
-                      style="border: none; border-radius: 10px;">{{
-                        item.statusText }}</el-tag>
-                  </div>
-                  <span class="queue-item-info">{{ item.infoLabel }}：{{ item.infoValue }}</span>
+            <div class="panel-actions">
+              <div class="map-legend">
+                <div class="legend-item">
+                  <span class="legend-dot blue"></span>
+                  <span>数据占比</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot red"></span>
+                  <span>敏感数据占比</span>
                 </div>
               </div>
-              <el-button type="text" class="queue-footer" @click="seeAll">{{ $t('home.seeAllResults') }}</el-button>
+              <el-button v-if="mapDrillTitle" type="primary" plain size="small" icon="el-icon-arrow-left"
+                @click="handleMapBack" style="border-radius: 10px;">
+                返回
+              </el-button>
             </div>
-          </el-card>
-        </el-col>
-      </el-row>
-    </div>
+          </div>
+
+          <div class="asset-map-body" :style="middleBodyStyle">
+            <div class="asset-tile-grid">
+              <div v-for="item in currentMapTiles" :key="item.id" class="asset-tile hoverable-tile"
+                @click="handleMapTileClick(item)">
+                <div class="tile-title">{{ item.title }}</div>
+                <div class="tile-ratios">
+                  <div class="tile-ratio">
+                    <span class="tile-ratio-value tile-blue">{{ item.ratio }}%</span>
+                  </div>
+                  <div class="tile-ratio">
+                    <span class="tile-ratio-value tile-red">{{ item.sensitiveRatio }}%</span>
+                  </div>
+                </div>
+                <div class="tile-desc">{{ item.desc }}</div>
+                <div class="tile-footer">
+                  <div class="tile-tags">
+                    <span v-for="(tag, tIdx) in item.sourceTags" :key="tIdx" class="source-tag">
+                      {{ tag.label }}
+                    </span>
+                    <span v-if="item.moreCount" class="more-tag">+{{ item.moreCount }}</span>
+                  </div>
+                  <div class="tile-arrow">
+                    <i class="el-icon-arrow-right"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+
+      <el-col :span="12" class="middle-col">
+        <el-card ref="levelCard" class="panel-card hoverable" shadow="never">
+          <div slot="header" class="panel-header">
+            <div class="panel-title">数据等级分布</div>
+            <div class="panel-actions">
+              <span class="hint-badge">
+                <span class="warn-dot orange"></span>
+                {{ middleData.levelDistribution.hint }}
+              </span>
+            </div>
+          </div>
+
+          <div class="level-dist" :style="middleBodyStyle">
+            <div class="level-bars">
+              <div ref="levelChart" class="level-chart"></div>
+              <div class="chart-tip">点击条形图筛选右侧表格</div>
+            </div>
+
+            <div class="level-table">
+              <div class="level-table-head">
+                <div class="level-table-title">分类明细</div>
+                <span class="level-table-tag">{{ currentLevel.name }}</span>
+              </div>
+
+              <el-table :data="currentLevel.details" size="mini" height="100%" class="cockpit-table"
+                :header-cell-style="{ background: '#f7f9fc' }">
+                <el-table-column prop="category" label="数据类别" min-width="120" />
+                <el-table-column prop="count" label="数量" width="90" />
+                <el-table-column label="占比" width="70">
+                  <template slot-scope="{ row }">
+                    <span class="ratio-text">{{ row.ratio }}%</span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="数据源" min-width="140">
+                  <template slot-scope="{ row }">
+                    <div class="table-sources">
+                      <span v-for="(s, sIdx) in row.sources" :key="sIdx" class="table-source-tag">{{ s.label }}</span>
+                      <span v-if="row.moreCount" class="table-more-tag">+{{ row.moreCount }}</span>
+                    </div>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <el-card class="panel-card hoverable section bottom-section" shadow="never">
+      <div slot="header" class="panel-header">
+        <div class="panel-title">{{ bottomData.title }}</div>
+      </div>
+      <el-table :data="bottomData.rows" class="cockpit-table risk-table" :header-cell-style="{ background: '#f7f9fc' }">
+        <el-table-column label="数据源名称" min-width="210">
+          <template slot-scope="{ row }">
+            <div class="source-name-cell">
+              <div class="source-icon">
+                <i class="el-icon-s-management"></i>
+              </div>
+              <el-link type="primary" :underline="false" class="source-link" @click="handleSourceClick(row)">{{
+                row.sourceName }}</el-link>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="系统名称" width="110">
+          <template slot-scope="{ row }">
+            <span class="system-pill"><i class="el-icon-sunny"></i> {{ row.systemName }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="风险统计" min-width="260">
+          <template slot-scope="{ row }">
+            <div class="risk-tags">
+              <el-tag v-for="(t, idx) in row.riskStats" :key="idx" class="risk-level-tag"
+                :style="getHomeRiskStyle(t.level)">
+                {{ t.label }} * {{ t.value }}
+              </el-tag>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="数据安全负责部门" min-width="180">
+          <template slot-scope="{ row }">
+            <div class="dept-cell">
+              <i class="el-icon-office-building"></i>
+              <span>{{ row.dept }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="负责人" width="110">
+          <template slot-scope="{ row }">
+            <div class="owner-cell">
+              <span class="owner-avatar">{{ (row.owner || '').slice(0, 1) }}</span>
+              <span>{{ row.owner }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="140" align="center">
+          <template slot-scope="{ row }">
+            <el-button class="action-btn" @click="handleCompleteList(row)">完整清单 <i
+                class="el-icon-arrow-right"></i></el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
   </div>
 </template>
 
 <script>
 import CountTo from 'vue-count-to'
+import * as echarts from 'echarts'
+import { getFrameworks } from '@/api/system/protectCategory'
+const topData = {
+  "summary": {
+    "objectCount": 1000,
+    "capacityGB": 20
+  },
+  "structured": {
+    "sourceCount": 10,
+    "sizeGB": 5,
+    "fieldCount": 800,
+    "sensitiveLabel": "敏感字段",
+    "sensitivePercent": 60
+  },
+  "unstructured": {
+    "sourceCount": 5,
+    "sizeGB": 15,
+    "fileCount": 200,
+    "sensitiveLabel": "敏感文件",
+    "sensitivePercent": 60
+  },
+  "rightCards": [
+    {
+      "title": "识别数量",
+      "iconSvg": "qwen",
+      "iconColor": "#5b5cf6",
+      "model": "QWen",
+      "modelDesc": "由Qwen完成",
+      "value": 1000
+    },
+    {
+      "title": "审查数量",
+      "iconSvg": "deepseek",
+      "iconColor": "#5b5cf6",
+      "model": "deepseek",
+      "modelDesc": "由Deepseek完成",
+      "value": 500
+    }
+  ]
+}
+
+const middleData = {
+  "assetMap": {
+    "tabs": [
+      { "label": "数据占比", "value": "ratio" },
+      { "label": "敏感数据占比", "value": "sensitiveRatio" }
+    ],
+    "root": [
+      {
+        "id": "customer",
+        "title": "客户",
+        "ratio": 20,
+        "sensitiveRatio": 12,
+        "desc": "子类：个人客户信息管理、单位客户档案维护、VIP客户分级标签",
+        "sourceTags": [{ "label": "demo_sdd_202..." }],
+        "moreCount": 2
+      },
+      {
+        "id": "operation",
+        "title": "经营管理",
+        "ratio": 10,
+        "sensitiveRatio": 6,
+        "desc": "子类：财务报表核算系统、人力资源员工档案库、年度预算编制平台",
+        "sourceTags": [{ "label": "prod_mysql_cr..." }],
+        "moreCount": 1
+      },
+      {
+        "id": "supervision",
+        "title": "监管",
+        "ratio": 15,
+        "sensitiveRatio": 10,
+        "desc": "子类：监管审计报送接口、合规审查记录库、反洗钱交易监测",
+        "sourceTags": [{ "label": "dw_hive_us..." }],
+        "moreCount": 1
+      },
+      {
+        "id": "risk",
+        "title": "风控",
+        "ratio": 12,
+        "sensitiveRatio": 8,
+        "desc": "子类：反欺诈模型训练数据集、信用评分模型训练集、风险预警告警库",
+        "sourceTags": [{ "label": "demo_sdd_202..." }],
+        "moreCount": 1
+      },
+      {
+        "id": "marketing",
+        "title": "营销",
+        "ratio": 8,
+        "sensitiveRatio": 4,
+        "desc": "子类：精准投放用户画像、多渠道触达记录、营销活动效果分析",
+        "sourceTags": [{ "label": "prod_mysql_cr..." }],
+        "moreCount": 1
+      },
+      {
+        "id": "product",
+        "title": "产品",
+        "ratio": 14,
+        "sensitiveRatio": 5,
+        "desc": "子类：产品功能埋点数据集、用户行为路径分析、AB实验分流记录",
+        "sourceTags": [{ "label": "demo_sdd_202..." }],
+        "moreCount": 1
+      },
+      {
+        "id": "dev",
+        "title": "研发",
+        "ratio": 9,
+        "sensitiveRatio": 3,
+        "desc": "子类：测试环境脱敏数据集、系统运行日志归档、CI/CD构建产物",
+        "sourceTags": [{ "label": "demo_sdd_202..." }],
+        "moreCount": 1
+      },
+      {
+        "id": "legal",
+        "title": "法务",
+        "ratio": 7,
+        "sensitiveRatio": 5,
+        "desc": "子类：合同全生命周期管理库、知识产权登记系统、诉讼案件事实库",
+        "sourceTags": [{ "label": "prod_mysql_cr..." }],
+        "moreCount": 1
+      },
+      {
+        "id": "ops",
+        "title": "运维",
+        "ratio": 5,
+        "sensitiveRatio": 1,
+        "desc": "子类：服务器监控指标库、告警事件处置记录、资源配置管理台账",
+        "sourceTags": [{ "label": "dw_hive_us..." }],
+        "moreCount": 1
+      }
+    ],
+    "children": {
+      "risk": [
+        {
+          "id": "risk_1",
+          "title": "反欺诈",
+          "ratio": 24,
+          "sensitiveRatio": 12,
+          "desc": "子类：交易反欺诈识别、设备指纹画像库、黑名单名单库",
+          "sourceTags": [{ "label": "demo_sdd_202..." }],
+          "moreCount": 1
+        },
+        {
+          "id": "risk_2",
+          "title": "信用评估",
+          "ratio": 18,
+          "sensitiveRatio": 9,
+          "desc": "子类：授信审批数据集、贷后监控指标库、风险定价模型库",
+          "sourceTags": [{ "label": "prod_mysql_cr..." }],
+          "moreCount": 1
+        },
+        {
+          "id": "risk_3",
+          "title": "预警告警",
+          "ratio": 12,
+          "sensitiveRatio": 6,
+          "desc": "子类：实时告警事件、规则命中记录、处置闭环追踪",
+          "sourceTags": [{ "label": "dw_hive_us..." }],
+          "moreCount": 2
+        }
+      ]
+    }
+  },
+  "levelDistribution": {
+    "hint": "敏感分级：1级 · 2级 · 3级 · 4级 · 5级",
+    "levels": [
+      {
+        "name": "5级-国家安全数据",
+        "value": 50,
+        "tooltip": "5级-国家安全数据\n50 项 | 点击查看详情",
+        "details": [
+          {
+            "category": "国家安全数据",
+            "count": 12300,
+            "ratio": 42,
+            "sources": [{ "label": "demo_sdd..." }],
+            "moreCount": 3
+          },
+          {
+            "category": "军事保密信息",
+            "count": 8900,
+            "ratio": 30,
+            "sources": [{ "label": "prod_mysql..." }],
+            "moreCount": 2
+          },
+          {
+            "category": "核心商业机密",
+            "count": 5600,
+            "ratio": 19,
+            "sources": [{ "label": "demo_sdd..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "密码密钥信息",
+            "count": 1950,
+            "ratio": 7,
+            "sources": [{ "label": "mdm_cust..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "关键设施数据",
+            "count": 580,
+            "ratio": 2,
+            "sources": [{ "label": "dw_hive..." }],
+            "moreCount": 1
+          }
+        ]
+      },
+      {
+        "name": "4级-高度敏感数据",
+        "value": 28,
+        "tooltip": "4级-高度敏感数据\n28 项 | 点击查看详情",
+        "details": [
+          {
+            "category": "个人身份信息",
+            "count": 6800,
+            "ratio": 35,
+            "sources": [{ "label": "crm_sens..." }],
+            "moreCount": 2
+          },
+          {
+            "category": "财务结算信息",
+            "count": 5200,
+            "ratio": 27,
+            "sources": [{ "label": "prod_mysql..." }],
+            "moreCount": 2
+          },
+          {
+            "category": "授信审批材料",
+            "count": 4100,
+            "ratio": 21,
+            "sources": [{ "label": "demo_sdd..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "风控策略规则",
+            "count": 2850,
+            "ratio": 15,
+            "sources": [{ "label": "dw_hive..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "账号认证信息",
+            "count": 360,
+            "ratio": 2,
+            "sources": [{ "label": "iam_auth..." }],
+            "moreCount": 1
+          }
+        ]
+      },
+      {
+        "name": "3级-敏感数据",
+        "value": 22,
+        "tooltip": "3级-敏感数据\n22 项 | 点击查看详情",
+        "details": [
+          {
+            "category": "营销触达记录",
+            "count": 7200,
+            "ratio": 40,
+            "sources": [{ "label": "mkt_call..." }],
+            "moreCount": 2
+          },
+          {
+            "category": "用户行为日志",
+            "count": 5400,
+            "ratio": 30,
+            "sources": [{ "label": "dw_hive..." }],
+            "moreCount": 2
+          },
+          {
+            "category": "产品埋点数据",
+            "count": 3200,
+            "ratio": 18,
+            "sources": [{ "label": "demo_sdd..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "审计追踪记录",
+            "count": 1500,
+            "ratio": 8,
+            "sources": [{ "label": "audit_log..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "运维告警事件",
+            "count": 600,
+            "ratio": 4,
+            "sources": [{ "label": "ops_mon..." }],
+            "moreCount": 1
+          }
+        ]
+      },
+      {
+        "name": "2级-内部数据",
+        "value": 16,
+        "tooltip": "2级-内部数据\n16 项 | 点击查看详情",
+        "details": [
+          {
+            "category": "内部流程数据",
+            "count": 520,
+            "ratio": 32,
+            "sources": [{ "label": "demo_sdd..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "一般业务数据",
+            "count": 460,
+            "ratio": 28,
+            "sources": [{ "label": "prod_mysql..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "服务日志记录",
+            "count": 320,
+            "ratio": 20,
+            "sources": [{ "label": "dw_hive..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "系统配置数据",
+            "count": 230,
+            "ratio": 14,
+            "sources": [{ "label": "mdm_cust..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "其他内部数据",
+            "count": 90,
+            "ratio": 6,
+            "sources": [{ "label": "ops_mon..." }],
+            "moreCount": 1
+          }
+        ]
+      },
+      {
+        "name": "1级-公开数据",
+        "value": 8,
+        "tooltip": "1级-公开数据\n8 项 | 点击查看详情",
+        "details": [
+          {
+            "category": "设备指纹信息",
+            "count": 120,
+            "ratio": 24,
+            "sources": [{ "label": "demo_sdd..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "网络标识信息",
+            "count": 100,
+            "ratio": 20,
+            "sources": [{ "label": "demo_sdd..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "服务使用记录",
+            "count": 98,
+            "ratio": 20,
+            "sources": [{ "label": "prod_mysql..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "系统日志信息",
+            "count": 85,
+            "ratio": 17,
+            "sources": [{ "label": "dw_hive..." }],
+            "moreCount": 1
+          },
+          {
+            "category": "基础配置信息",
+            "count": 75,
+            "ratio": 15,
+            "sources": [{ "label": "mdm_cust..." }],
+            "moreCount": 1
+          }
+        ]
+      }
+    ]
+  }
+}
+
+
+const bottomData = {
+  "title": "敏感数据风险清单",
+  "rows": [
+    {
+      "sourceName": "demo_sdd_202592390293",
+      "systemName": "API",
+      "riskStats": [
+        { "label": "4级-重要数据", "value": 10, "level": 4 },
+        { "label": "3级-内部敏感", "value": 2, "level": 3 },
+        { "label": "2级-内部一般", "value": 2, "level": 2 }
+      ],
+      "moreRiskCount": 1,
+      "dept": "数据安全部",
+      "owner": "张三"
+    },
+    {
+      "sourceName": "crm_sensitive_profile_202406",
+      "systemName": "CRM",
+      "riskStats": [
+        { "label": "4级-重要数据", "value": 6, "level": 4 },
+        { "label": "3级-内部敏感", "value": 5, "level": 3 },
+        { "label": "2级-内部一般", "value": 3, "level": 2 }
+      ],
+      "moreRiskCount": 1,
+      "dept": "客户运营部",
+      "owner": "李敏"
+    },
+    {
+      "sourceName": "dw_finance_core_asset_202405",
+      "systemName": "DWH",
+      "riskStats": [
+        { "label": "4级-重要数据", "value": 8, "level": 4 },
+        { "label": "3级-内部敏感", "value": 4, "level": 3 },
+        { "label": "2级-内部一般", "value": 1, "level": 2 }
+      ],
+      "moreRiskCount": 1,
+      "dept": "财务管理部",
+      "owner": "王强"
+    }
+  ]
+}
+
+
 
 export default {
   name: 'Dashboard',
@@ -215,766 +725,983 @@ export default {
   },
   data() {
     return {
-      cardData: {
-        scanPercentage: 0,
-        dataTable: 0,
-        fileNum: 0,
-        sensitiveField: 0,
-        sensitiveFile: 0,
-        assetRatio: 0,
-        aiCoverage: 0,
-        aiSaveTime: 0,
-        analysisField: 0,
-        analysisFile: 0,
-        analysisConfidence: 0,
-        analysisReview: 0
-      },
-      cardDataPrev: {
-        scanPercentage: 0,
-        dataTable: 0,
-        fileNum: 0,
-        sensitiveField: 0,
-        sensitiveFile: 0,
-        assetRatio: 0,
-        aiCoverage: 0,
-        aiSaveTime: 0,
-        analysisField: 0,
-        analysisFile: 0,
-        analysisConfidence: 0,
-        analysisReview: 0
-      },
-      taskMonitor: {
-        type: '0',
-        status: '',
-        tableNames: [],
-        currentTableIndex: 0,
-        progressCurrent: 0,
-        progressTotal: 0,
-        progressPercent: 0,
-        taskSteps: {
-          step1: { status: 'wait', textMain: '噪音数据过滤', textSub: '等待中' },
-          step2: { status: 'wait', textMain: '语义填充', textSub: '等待中' },
-          step3: { status: 'wait', textMain: '匹配规则', textSub: '等待中' },
-          step4: { status: 'wait', textMain: 'AI分类打标', textSub: '等待中' },
-          step5: { status: 'wait', textMain: '个人信息识别', textSub: '等待中' },
-          step6: { status: 'wait', textMain: '样本特征提取', textSub: '等待中' }
-        },
-        timelineData: []
-      },
-      isConnected: false,
-      ws: null,
-      queueData: []
+      loading: false,
+      categoryId: '',
+      standardOptions: [],
+      topData,
+      middleData,
+      bottomData,
+      mapDrillId: '',
+      mapDrillTitle: '',
+      selectedLevelIndex: 0,
+      middleBodyHeight: 0,
+      charts: {
+        level: null
+      }
     }
   },
   computed: {
-    displayTimelineData() {
-      const list = this.taskMonitor.timelineData.map(item => {
-        return typeof item === 'string' ? { text: item, isActive: false } : { ...item, isActive: false }
+    currentMapTiles() {
+      const children = (this.middleData.assetMap.children || {})[this.mapDrillId]
+      if (this.mapDrillId && Array.isArray(children)) return children
+      return this.middleData.assetMap.root || []
+    },
+    maxLevelValue() {
+      const list = this.middleData.levelDistribution.levels || []
+      let max = 0
+      list.forEach(i => {
+        const v = Number(i.value) || 0
+        if (v > max) max = v
       })
-      if (this.taskMonitor.status === 'COMPLETE') {
-        return [...list, { text: '执行完成', isActive: false }]
+      return max || 1
+    },
+    currentLevel() {
+      const list = this.middleData.levelDistribution.levels || []
+      return list[this.selectedLevelIndex] || { name: '', details: [] }
+    },
+    middleBodyStyle() {
+      if (!this.middleBodyHeight) return {}
+      return {
+        height: `${this.middleBodyHeight}px`
       }
-      if (this.isConnected && this.taskMonitor.status != 'NONE') {
-        return [...list, { text: '正在执行中...', isActive: true }]
-      }
-      return list
+    }
+  },
+  watch: {
+    categoryId() {
+      this.handleCategoryChange()
+    },
+    selectedLevelIndex() {
+      this.updateLevelChart()
     }
   },
   mounted() {
-    this.connectWebSocket()
+    this.fetchFrameworkOptions()
+    this.$nextTick(() => {
+      this.syncMiddleBodyHeight()
+      this.initLevelChart()
+      window.addEventListener('resize', this.handleResize)
+    })
   },
   beforeDestroy() {
-    this.disconnectWebSocket()
+    window.removeEventListener('resize', this.handleResize)
+    if (this.charts.level) this.charts.level.dispose()
   },
   methods: {
-    getPrevVal(key) {
-      return this.cardDataPrev[key] || 0
-    },
-    getStepIconClass(status) {
-      const iconMap = {
-        success: ['success-icon', 'el-icon-circle-check'],
-        succeed: ['success-icon', 'el-icon-circle-check'],
-        progressing: ['processing-icon', 'el-icon-loading'],
-        skip: ['skip-icon', 'el-icon-circle-close'],
-        wait: ['skip-icon', 'el-icon-circle-close']
-      }
-      return ['step-icon', ...(iconMap[status] || ['skip-icon', 'el-icon-circle-close'])]
-    },
-    getQueueTagType(status) {
-      const typeMap = {
-        warning: 'warning',
-        success: 'success',
-        danger: 'danger',
-        info: 'info'
-      }
-      return typeMap[status] || 'info'
-    },
-    seeAll() {
-      this.$router.push({
-        path: 'classificationTask/hierarchicalTask',
+    fetchFrameworkOptions() {
+      getFrameworks().then((response) => {
+        const list = (response && response.data) ? response.data : []
+        this.standardOptions = list.map(it => ({
+          value: String(it.id),
+          label: it.categoryName
+        }))
+        if (!this.categoryId && this.standardOptions.length) {
+          this.categoryId = String(this.standardOptions[0].value)
+        }
       })
     },
-    connectWebSocket() {
-      const getCookie = (name) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-        return '';
-      };
-      const token = getCookie('Admin-Token');
-      const protocols = token ? [`${token}`] : [];
-      const currentUrl = new URL(window.location.href);
-      const hostName = currentUrl.hostname;
-      this.socket = new WebSocket(
-        `wss://${hostName}:443/prod-api/system/homePage/websocket`, // 线上
-        // `ws://192.168.7.84:8080/system/homePage/websocket`,  // 本地
-        protocols
-      );
-      this.socket.onopen = () => {
-        this.isConnected = true
-      }
-      this.socket.onmessage = (event) => {
-        const data = JSON.parse(event.data)
-        if (data.cardData) {
-          this.cardDataPrev = { ...this.cardData }
-          const normalizedCardData = { ...data.cardData }
-          if (normalizedCardData.scanPercentage !== undefined) {
-            normalizedCardData.scanPercentage = parseFloat(normalizedCardData.scanPercentage) || 0
-          }
-          if (normalizedCardData.assetRatio !== undefined) {
-            normalizedCardData.assetRatio = parseFloat(normalizedCardData.assetRatio) || 0
-          }
-          if (normalizedCardData.aiCoverage !== undefined) {
-            normalizedCardData.aiCoverage = parseFloat(normalizedCardData.aiCoverage) || 0
-          }
-          this.cardData = { ...this.cardData, ...normalizedCardData }
-        }
-        if (data.queueData) {
-          this.queueData = data.queueData
-        }
-        if (data.taskMonitor) {
-          if (data.taskMonitor.status !== undefined) {
-            this.taskMonitor.status = data.taskMonitor.status
-          }
-          if (data.taskMonitor.tableName) {
-            if (!this.taskMonitor.tableNames.includes(data.taskMonitor.tableName)) {
-              this.taskMonitor.tableNames.push(data.taskMonitor.tableName)
-              this.taskMonitor.currentTableIndex = this.taskMonitor.tableNames.length - 1
-            }
-          }
-          if (data.taskMonitor.progressCurrent !== undefined) {
-            this.taskMonitor.progressCurrent = data.taskMonitor.progressCurrent
-          }
-          if (data.taskMonitor.progressTotal !== undefined) {
-            this.taskMonitor.progressTotal = data.taskMonitor.progressTotal
-          }
-          if (data.taskMonitor.progressCurrent !== undefined && data.taskMonitor.progressTotal !== undefined) {
-            const percent = data.taskMonitor.progressTotal > 0 ? Math.round((data.taskMonitor.progressCurrent / data.taskMonitor.progressTotal) * 100) : 0
-            this.taskMonitor.progressPercent = percent
-          }
-          if (data.taskMonitor.taskSteps) {
-            // 如果后端返回的步骤数与前端不一致，说明发生了类型切换（比如结构化6步切换为非结构化4步）
-            // 我们直接使用后端返回的数据覆盖现有的，如果有些值没有就用默认的
-            const newSteps = {}
-            for (const key in data.taskMonitor.taskSteps) {
-              const incomingStep = data.taskMonitor.taskSteps[key]
-              const defaultStep = this.taskMonitor.taskSteps[key] || { status: 'wait', textMain: '', textSub: '等待中' }
-              newSteps[key] = { ...defaultStep, ...incomingStep }
-            }
-            this.taskMonitor.taskSteps = newSteps
-          }
-          if (data.taskMonitor.timelineData) {
-            const newItem = data.taskMonitor.timelineData
-            const lastItem = this.taskMonitor.timelineData[this.taskMonitor.timelineData.length - 1]
-            if (newItem !== lastItem) {
-              this.taskMonitor.timelineData.push(newItem)
-            }
-          }
-        }
-      }
-      this.socket.onclose = () => {
-        this.isConnected = false
-      }
-      this.socket.onerror = () => {
-        this.isConnected = false
+    handleCategoryChange() {
+      this.mapDrillId = ''
+      this.mapDrillTitle = ''
+      this.selectedLevelIndex = 0
+    },
+    handleMapTileClick(item) {
+      const children = (this.middleData.assetMap.children || {})[item.id]
+      if (Array.isArray(children) && children.length) {
+        this.mapDrillId = item.id
+        this.mapDrillTitle = item.title
       }
     },
-    disconnectWebSocket() {
-      if (this.socket) {
-        this.socket.close()
-        this.socket = null
+    handleMapBack() {
+      this.mapDrillId = ''
+      this.mapDrillTitle = ''
+    },
+    handleSelectLevel(idx) {
+      this.selectedLevelIndex = idx
+    },
+    initLevelChart() {
+      const dom = this.$refs.levelChart
+      if (!dom) return
+      if (this.charts.level) this.charts.level.dispose()
+      const chart = echarts.init(dom)
+      this.charts.level = chart
+      chart.off('click')
+      chart.on('click', (params) => {
+        if (typeof params.dataIndex === 'number') this.handleSelectLevel(params.dataIndex)
+      })
+      this.updateLevelChart()
+    },
+    syncMiddleBodyHeight() {
+      const card = this.$refs.levelCard && this.$refs.levelCard.$el
+      if (!card) return
+      const header = card.querySelector('.el-card__header')
+      const cardHeight = card.clientHeight || 0
+      const headerHeight = header ? header.offsetHeight : 0
+      const bodyPadding = 32
+      const nextHeight = Math.max(cardHeight - headerHeight - bodyPadding, 0)
+      this.middleBodyHeight = nextHeight
+      this.$nextTick(() => {
+        if (this.charts.level) this.charts.level.resize()
+      })
+    },
+    updateLevelChart() {
+      if (!this.charts.level) return
+      const levels = this.middleData.levelDistribution.levels || []
+      const names = levels.map(i => i.name)
+      const values = levels.map(i => Number(i.value) || 0)
+      const max = this.maxLevelValue
+      this.charts.level.setOption({
+        grid: { left: '6%', right: '4%', top: '10%', bottom: '10%', containLabel: true },
+        tooltip: {
+          trigger: 'item',
+          formatter: (p) => {
+            const item = levels[p.dataIndex] || {}
+            const levelName = item.name || p.name || ''
+            const value = Number(item.value != null ? item.value : p.value) || 0
+            return `${levelName}<br/>${value} 项 | 点击查看详情`
+          }
+        },
+        xAxis: {
+          type: 'value',
+          max,
+          splitNumber: 5,
+          axisLabel: { color: '#98a2b3' },
+          axisLine: { lineStyle: { color: '#eef0f6' } },
+          splitLine: { lineStyle: { color: '#eef0f6' } }
+        },
+        yAxis: {
+          type: 'category',
+          data: names,
+          inverse: true,
+          axisTick: { show: false },
+          axisLine: { show: false },
+          axisLabel: { show: false }
+        },
+        series: [
+          {
+            type: 'bar',
+            data: values,
+            barWidth: 18,
+            itemStyle: {
+              borderRadius: [6, 6, 6, 6],
+              color: (p) => (p.dataIndex === this.selectedLevelIndex ? '#5b5cf6' : '#d9dde6')
+            },
+            label: {
+              show: true,
+              position: [0, -18],
+              distance: 0,
+              align: 'left',
+              verticalAlign: 'bottom',
+              color: '#2c3e50',
+              fontWeight: 700,
+              fontSize: 12,
+              formatter: (p) => p.name
+            }
+          }
+        ]
+      })
+    },
+    handleResize() {
+      this.syncMiddleBodyHeight()
+    },
+    getHomeRiskStyle(level) {
+      const styles = {
+        1: { color: '#16a34a', backgroundColor: '#f0fdf4', border: 'none' },
+        2: { color: '#f97316', backgroundColor: '#fff7ed', border: 'none' },
+        3: { color: '#c2410c', backgroundColor: '#ffedd5', border: 'none' },
+        4: { color: '#dc2626', backgroundColor: '#fee2e2', border: 'none' },
+        5: { color: '#7c3aed', backgroundColor: '#f3e8ff', border: 'none' }
       }
+      return styles[level] || { color: '#64748b', backgroundColor: '#f8fafc', border: 'none' }
+    },
+    handleSourceClick() {
+    },
+    handleCompleteList() {
     }
   }
 }
 </script>
 
-<style scoped>
-/* ========== 上方四个卡片样式 ========== */
-.top-cards-wrapper {
-  flex-shrink: 0;
+<style lang="scss" scoped>
+.cockpit {
+  padding: 40px;
+  background: #f5f7fb;
+}
+
+.section {
+  margin-bottom: 16px;
+}
+
+.middle-section {
+  height: clamp(28rem, 60vh, 42rem);
+  overflow: hidden;
+}
+
+.top-section {
+  align-items: stretch;
+}
+
+.top-left-row {
+  height: 100%;
+}
+
+.top-col {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
 }
 
-.stat-card {
-  width: 24%;
-  transition: all 0.3s ease;
-  border-radius: 10px;
-}
-
-.stat-card:hover {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1) !important;
-}
-
-.stat-card .svg-icon {
-  transition: color 0.3s ease;
-}
-
-.card1:hover .svg-icon {
-  color: #d4e4fc !important;
-}
-
-.card2:hover .svg-icon {
-  color: #e8d4fb !important;
-}
-
-.card3:hover .svg-icon {
-  color: #d4e4fc !important;
-}
-
-.card4:hover .svg-icon {
-  color: #f5e3cd !important;
-}
-
-.stat-card /deep/ .el-card__header {
-  padding: 16px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.stat-card /deep/ .el-card__body {
-  padding: 20px;
-}
-
-.card-header-top {
+.top-right-col {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 12px;
 }
 
-.icon-wrapper {
+.top-right-stack {
+  flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
-}
-
-.dataAsset {
-  background: #eff6ff;
-}
-
-.sensitiveData {
-  background: #faf5ff;
-}
-
-.aiAuto {
-  background: #eff6ff;
-}
-
-.analysis {
-  background: #fff7ed;
-}
-
-.card-label {
-  font-size: 14px;
-  color: #606266;
-  font-weight: 500;
-}
-
-.card-metrics {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  flex-direction: column;
   gap: 12px;
-  margin-bottom: 12px;
 }
 
-.metric-item {
-  padding: 10px 12px;
-  border-radius: 10px;
+.middle-col {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+}
+
+.middle-col>.panel-card {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  min-height: 0;
+  height: 100%;
 }
 
-.metric-key {
-  font-size: 12px;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.metric-value {
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.card-description {
-  font-size: 12px;
-  color: #64748b;
-  line-height: 1.4;
-}
-
-.scan-progress-wrapper {
-  width: 100%;
-}
-
-.scan-progress-wrapper .el-progress {
-  width: 100%;
-}
-
-.scan-progress-wrapper .el-progress-bar__outer {
-  border-radius: 4px;
-}
-
-.scan-progress-wrapper .el-progress-bar__inner {
-  border-radius: 4px;
-}
-
-.scan-progress-text {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  font-size: 12px;
-}
-
-.scan-label {
-  color: #606266;
-}
-
-.scan-percentage {
-  color: #303133;
-  font-weight: 500;
-}
-
-/* ========== 下方卡片样式 ========== */
-.bottom-cards-wrapper {
+.middle-col>.panel-card>>>.el-card__body {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
-}
-
-.monitor-card,
-.queue-card {
-  border-radius: 10px;
-  height: 100%;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
 }
 
-.monitor-card:hover,
-.queue-card:hover {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1) !important;
+.panel-card {
+  border-radius: 12px;
+  border: 1px solid rgba(225, 232, 245, 0.8);
+  box-shadow: 0 2px 10px rgba(16, 24, 40, 0.04);
 }
 
-.monitor-card /deep/ .el-card__header,
-.queue-card /deep/ .el-card__header {
+.panel-card>>>.el-card__body {
   padding: 16px;
-  border-bottom: 1px solid #ebeef5;
 }
 
-.monitor-card /deep/ .el-card__body,
-.queue-card /deep/ .el-card__body {
-  flex: 1;
-  padding: 0px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+.panel-card>>>.el-card__header {
+  border-bottom: none;
+  padding: 14px 16px 10px;
 }
 
-.queue-body-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+.hoverable {
+  transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
 }
 
-.queue-body-wrapper .queue-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
+.hoverable:hover {
+  box-shadow: 0 10px 26px rgba(18, 27, 66, 0.10);
+  border-color: rgba(171, 195, 255, 0.65);
 }
 
-.queue-body-wrapper .queue-footer {
-  flex-shrink: 0;
-}
-
-.monitor-header,
-.queue-header {
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eaeaea;
 }
 
-.monitor-title,
-.queue-title {
-  font-size: 16px;
-  font-weight: 500;
-  color: #303133;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.page-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #222;
 }
 
-.monitor-title i,
-.queue-title i {
-  font-size: 18px;
-}
-
-.header-link {
-  font-size: 12px;
-}
-
-/* ========== 任务监控内容 ========== */
-.monitor-content {
-  display: grid;
-  grid-template-columns: 1fr 2.5fr;
-  /* gap: 20px; */
-  height: 100%;
-  background-color: #f8fafc;
-  overflow: hidden;
-}
-
-.monitor-left,
-.monitor-right {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.monitor-left {
-  padding: 15px;
-  background: white;
-  overflow-y: auto;
-}
-
-.monitor-right {
-  padding: 20px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.monitor-left::-webkit-scrollbar,
-.monitor-right::-webkit-scrollbar {
-  width: 6px;
-}
-
-.monitor-left::-webkit-scrollbar-thumb,
-.monitor-right::-webkit-scrollbar-thumb {
-  background: #d3d4d6;
-  border-radius: 3px;
-}
-
-.progress-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  flex-shrink: 0;
-}
-
-.progress-title {
+.form-label {
   font-weight: 600;
-  font-size: 16px;
-}
-
-.progress-info {
+  color: #26244ce0;
   font-size: 14px;
-  font-weight: 500;
-  color: #64748b;
+  margin-right: 10px;
 }
 
-/* 时间轴部分 */
-.section-title {
-  font-size: 12px;
-  font-weight: 500;
-  color: #94a3b8;
-  margin: 0 0 10px 0;
-}
-
-/* 表格部分 */
-.table-section {
-  flex-shrink: 0;
-}
-
-.table-item-wrapper {
+.header-operations {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 12px;
-  background-color: #eff6ff;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #409eff;
 }
 
-.table-dot {
-  width: 8px;
-  height: 8px;
-  background-color: #1d4ed8;
-  border-radius: 50%;
-  flex-shrink: 0;
+.standard-select {
+  width: 240px;
 }
 
-.table-item-name {
-  font-weight: 500;
-  color: #1d4ed8;
+.top-section .panel-card>>>.el-card__body {
+  padding: 18px 18px 14px;
 }
 
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
+.top-card {
+  flex: 1;
+  height: 100%;
 }
 
-.slide-up-enter {
-  transform: translateY(10px);
-  opacity: 0;
-}
-
-.slide-up-leave-to {
-  transform: translateY(-10px);
-  opacity: 0;
-}
-
-/* 步骤部分 */
-.steps-section {
-  flex-shrink: 0;
-}
-
-.steps-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.step-item {
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-  color: #606266;
-  margin-bottom: 10px;
-}
-
-.step-item-content {
+.top-card-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: 1;
 }
 
-.step-text-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.step-text-main {
-  font-size: 14px;
-  font-weight: 500;
-  color: #303133;
-}
-
-.step-text-sub {
-  font-size: 11px;
-  color: #909399;
-}
-
-.step-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  flex-shrink: 0;
-}
-
-.skip-icon,
-.success-icon,
-.processing-icon {
-  font-size: 16px;
-}
-
-.skip-icon {
-  background-color: #f5f7fa;
-  color: #909399;
-}
-
-.success-icon {
-  background-color: #f0f9ff;
-  color: #67c23a;
-}
-
-.processing-icon {
-  background-color: #fef3c7;
-  color: #e6a23c;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-
-/* 时间轴部分 */
-.timeline-section {
-  flex: 1;
-  min-height: 0;
-  padding: 20px;
-  overflow-y: auto;
-  background: white;
+.top-card-icon {
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
-  border: 1px solid #e5e7eb;
-}
-
-.timeline-wrapper {
-  position: relative;
-  padding-left: 20px;
-}
-
-.timeline-item {
-  position: relative;
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  margin-bottom: 20px;
-  font-size: 12px;
-  color: #606266;
-  padding-left: 20px;
-}
-
-.timeline-item:last-child {
-  margin-bottom: 0;
-}
-
-.timeline-connector {
-  position: absolute;
-  left: -13px;
-  top: 16px;
-  height: calc(100% + 20px);
-  width: 2px;
-  background: rgba(59, 130, 246, 0.3);
-  z-index: 0;
-}
-
-.timeline-dot {
-  position: absolute;
-  left: -17px;
-  top: 6px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #3b82f6;
-  border: none;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-}
-
-.timeline-dot-active {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
 }
 
-.timeline-dot-active .el-icon-loading {
-  font-size: 8px;
-  color: white;
+.top-card-icon-blue {
+  background: #eef5ff;
+  color: #3b82f6;
 }
 
-.timeline-text-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.top-card-icon-gray {
+  background: #f4f7ff;
+  color: #2c3e50;
 }
 
-.timeline-time {
-  font-size: 11px;
-  color: #909399;
+.top-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #15162b;
+  line-height: 1.2;
 }
 
-.timeline-text {
-  line-height: 1.5;
-  padding-top: 2px;
-  font-weight: 500;
+.top-card-sub {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #7b879f;
 }
 
-/* ========== 任务队列样式 ========== */
-.queue-content {
-  display: flex;
-  flex-direction: column;
+.summary-metrics {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
-  padding: 20px;
 }
 
-.queue-item {
-  padding: 12px;
-  background-color: #ffffff;
-  border-radius: 4px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+.summary-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #222;
+  line-height: 1;
 }
 
-.queue-item-header {
+.summary-unit {
+  font-size: 14px;
+  font-weight: 700;
+  margin-left: 4px;
+  color: #222;
+}
+
+.summary-key {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #1f2a44;
+  font-weight: 700;
+}
+
+.summary-subkey {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #90a0b7;
+}
+
+.source-main {
+  margin-top: 14px;
+}
+
+.source-split {
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+}
+
+.source-pane {
+  flex: 1;
+  min-width: 0;
+  padding: 0 1.2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.source-pane:first-child {
+  padding-left: 0;
+}
+
+.source-pane:last-child {
+  padding-right: 0;
+}
+
+.source-divider {
+  width: 1px;
+  background: #eef0f6;
+  align-self: stretch;
+  margin: 0 0.2rem;
+}
+
+.source-main-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: #15162b;
+  line-height: 1;
+}
+
+.source-unit {
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 4px;
+  color: #15162b;
+}
+
+.source-arrow {
+  font-size: 12px;
+  margin-left: 2px;
+  color: #15162b;
+}
+
+.source-sub {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6c7a90;
+}
+
+.badge-row {
+  margin-top: 12px;
+}
+
+.warn-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 18px;
+  background: #fff4f4;
+  color: #ff4d4f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.warn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff4d4f;
+}
+
+.warn-dot.orange {
+  background: #c2410c;
+}
+
+.mini-stat-card {
+  flex: 1;
+  height: 100%;
+}
+
+.mini-stat-card>>>.el-card__body {
+  padding: 16px 18px;
+}
+
+.mini-stat {
   display: flex;
   justify-content: space-between;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.mini-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.mini-brand {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 6px;
+  justify-content: space-between;
+  height: 100%;
+  flex-shrink: 0;
 }
 
-.queue-item-title {
+.mini-icon {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mini-svg {
+  font-size: 1.5rem;
+}
+
+.mini-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  min-width: 0;
+}
+
+.mini-title {
   font-size: 14px;
+  font-weight: 700;
+  color: #1f2a44;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-model {
+  font-size: 12px;
+  color: #2c3e50;
   font-weight: 500;
-  color: #303133;
+  line-height: 1.1;
 }
 
-.queue-item-info {
+.mini-desc {
+  color: #93a3bb;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 12px;
-  color: #909399;
-  display: block;
 }
 
-.queue-footer {
-  text-align: center;
-  padding: 20px;
+
+.mini-value {
+  font-size: 30px;
+  font-weight: 800;
+  color: #5b5cf6;
+  line-height: 1;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1f2a44;
+}
+
+.panel-path {
+  margin-left: 10px;
   font-size: 12px;
+  color: #3b82f6;
+}
+
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.map-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  background: #fff;
+  border: 1px solid #e7ebf5;
+  border-radius: 18px;
+  font-size: 12px;
+  color: #1f2a44;
+  font-weight: 700;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-dot.blue {
+  background: #2f63ff;
+}
+
+.legend-dot.red {
+  background: #ff4d4f;
+}
+
+.asset-map-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.asset-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.asset-tile {
+  border: 1px solid #eef0f6;
+  border-radius: 12px;
+  background: #fafbff;
+  padding: 14px 14px 12px;
   cursor: pointer;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 }
 
-/* ========== 响应式布局 ========== */
-@media (max-width: 1400px) {
-  .monitor-content {
-    grid-template-columns: 1fr;
-  }
+.asset-tile:hover {
+  border-color: #a8c5ff;
+  box-shadow: 0 10px 22px rgba(18, 27, 66, 0.08);
+  transform: translateY(-2px);
+}
+
+.tile-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #111827;
+  text-align: center;
+  margin-top: 2px;
+}
+
+.tile-ratios {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+
+.tile-ratio-value {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.tile-blue {
+  color: #2f63ff;
+}
+
+.tile-red {
+  color: #ff4d4f;
+}
+
+.tile-desc {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #8a98b2;
+  line-height: 1.45;
+  min-height: 44px;
+}
+
+.tile-footer {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  min-height: 28px;
+}
+
+.tile-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+  justify-content: center;
+  width: 100%;
+}
+
+.source-tag {
+  background: #eaf0ff;
+  color: #2f63ff;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.more-tag {
+  background: #f2f5ff;
+  color: #6b7280;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.tile-arrow {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #edf2ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2f63ff;
+  flex-shrink: 0;
+  opacity: 0;
+  transform: translate(4px, -50%);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.asset-tile:hover .tile-arrow {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+.hint-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 18px;
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.level-dist {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 12px;
+  height: 100%;
+}
+
+.level-bars {
+  flex: 1;
+  min-width: 0;
+  padding-right: 8px;
+  border-right: 1px solid #eef0f6;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.level-chart {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+}
+
+.level-table {
+  flex: 1;
+  padding-left: 8px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.chart-tip {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #98a2b3;
+  line-height: 1.2;
+}
+
+.level-table-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.level-table-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1f2a44;
+}
+
+.level-table-tag {
+  background: #eaf0ff;
+  color: #2f63ff;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cockpit-table {
+  flex: 1;
+}
+
+.cockpit-table>>>.el-table {
+  height: 100%;
+}
+
+.cockpit-table>>>.el-table__row td {
+  border-bottom: 1px solid #eef0f6;
+}
+
+.cockpit-table>>>.el-table__header-wrapper th {
+  border-bottom: 1px solid #eef0f6;
+  color: #7b879f;
+  font-weight: 700;
+}
+
+.cockpit-table>>>.el-table__body tr:hover>td {
+  background: #fbfcff;
+}
+
+.ratio-text {
+  color: #2f63ff;
+  font-weight: 800;
+}
+
+.table-sources {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.table-source-tag {
+  background: #eaf0ff;
+  color: #2f63ff;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.table-more-tag {
+  background: #f2f5ff;
+  color: #6b7280;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.bottom-section>>>.el-card__body {
+  padding: 0;
+}
+
+.bottom-section>>>.el-table {
+  border-radius: 12px;
+}
+
+.source-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.source-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f2f5ff;
+  color: #5b5cf6;
+}
+
+.source-link {
+  font-weight: 700;
+}
+
+.system-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 10px;
+  border-radius: 14px;
+  border: 1px solid #fde68a;
+  background: #fff7e6;
+  color: #fa8c16;
+  font-size: 12px;
+}
+
+.risk-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.risk-level-tag {
+  margin-right: 0;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+}
+
+.dept-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #7b879f;
+  font-weight: 700;
+}
+
+.owner-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2a44;
+  font-weight: 800;
+}
+
+.owner-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #2f63ff;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.action-btn {
+  border-radius: 16px;
+  border: 1px solid #2cc98d;
+  color: #2cc98d;
+  background: #f4fffb;
+  font-weight: 800;
+  padding: 8px 14px;
+}
+
+.action-btn:hover {
+  background: #e9fff7;
+  border-color: #2cc98d;
+  color: #2cc98d;
 }
 </style>
