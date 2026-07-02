@@ -106,23 +106,41 @@
 
       <el-col :span="6" class="top-right-col">
         <div class="top-right-stack">
-          <el-card v-for="(item, idx) in dataView.rightCards" :key="idx" class="panel-card mini-stat-card hoverable"
-            shadow="never">
+          <el-card class="panel-card mini-stat-card hoverable" shadow="never">
             <div class="mini-stat">
               <div class="mini-left">
                 <div class="mini-brand">
-                  <div class="mini-icon" :style="{ color: item.iconColor }">
-                    <svg-icon :icon-class="item.iconSvg" class-name="mini-svg" />
+                  <div class="mini-icon" :style="{ color: '#5b5cf6' }">
+                    <svg-icon icon-class="qwen" class-name="mini-svg" />
                   </div>
-                  <div class="mini-model">{{ item.model }}</div>
+                  <div class="mini-model">QWen</div>
                 </div>
                 <div class="mini-info">
-                  <div class="mini-title">{{ item.title }}</div>
-                  <div class="mini-desc">{{ item.modelDesc }}</div>
+                  <div class="mini-title">{{ dataView.rightCards.identify.title }}</div>
+                  <div class="mini-desc">由Qwen完成</div>
                 </div>
               </div>
               <div class="mini-value">
-                <count-to :start-val="0" :end-val="item.value" :duration="1500" />
+                <count-to :start-val="0" :end-val="dataView.rightCards.identify.value" :duration="1500" />
+              </div>
+            </div>
+          </el-card>
+          <el-card class="panel-card mini-stat-card hoverable" shadow="never">
+            <div class="mini-stat">
+              <div class="mini-left">
+                <div class="mini-brand">
+                  <div class="mini-icon" :style="{ color: '#5b5cf6' }">
+                    <svg-icon icon-class="deepseek" class-name="mini-svg" />
+                  </div>
+                  <div class="mini-model">deepseek</div>
+                </div>
+                <div class="mini-info">
+                  <div class="mini-title">{{ dataView.rightCards.review.title }}</div>
+                  <div class="mini-desc">由Deepseek完成</div>
+                </div>
+              </div>
+              <div class="mini-value">
+                <count-to :start-val="0" :end-val="dataView.rightCards.review.value" :duration="1500" />
               </div>
             </div>
           </el-card>
@@ -193,7 +211,7 @@
             <div class="panel-actions">
               <span class="hint-badge">
                 <span class="warn-dot orange"></span>
-                {{ dataLevelDistribution.hint }}
+                敏感分级：1级 · 2级 · 3级 · 4级 · 5级
               </span>
             </div>
           </div>
@@ -236,10 +254,10 @@
 
     <el-card class="panel-card hoverable section bottom-section" shadow="never">
       <div slot="header" class="panel-header">
-        <div class="panel-title">{{ sensitiveData.title }}</div>
+        <div class="panel-title">敏感数据风险清单</div>
       </div>
-      <el-table :data="sensitiveData.rows" class="cockpit-table risk-table" :header-cell-style="{ background: '#f7f9fc' }">
-        <el-table-column label="数据源名称" min-width="210">
+      <el-table :data="sensitiveData" class="cockpit-table risk-table" :header-cell-style="{ background: '#f7f9fc' }">
+        <el-table-column label="数据源名称" width="300">
           <template slot-scope="{ row }">
             <div class="source-name-cell">
               <div class="source-icon">
@@ -250,7 +268,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="系统名称" width="110">
+        <el-table-column label="系统名称" width="150">
           <template slot-scope="{ row }">
             <span class="system-pill"><i class="el-icon-sunny"></i> {{ row.systemName }}</span>
           </template>
@@ -273,7 +291,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="负责人" width="110">
+        <el-table-column label="负责人" width="150">
           <template slot-scope="{ row }">
             <div class="owner-cell">
               <span class="owner-avatar">{{ (row.owner || '').slice(0, 1) }}</span>
@@ -281,7 +299,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="140" align="center">
+        <el-table-column label="操作" width="150" align="center">
           <template slot-scope="{ row }">
             <el-button class="action-btn" @click="handleCompleteList(row)">完整清单 <i
                 class="el-icon-arrow-right"></i></el-button>
@@ -295,7 +313,7 @@
 <script>
 import CountTo from 'vue-count-to'
 import * as echarts from 'echarts'
-import { getFrameworks } from '@/api/system/protectCategory'
+import { getFrameworks, listSensitiveDataRiskAssessmentReport, getTopDataJson } from '@/api/system/protectCategory'
 const dataView = {
   "summary": {
     "objectCount": 1000,
@@ -315,24 +333,16 @@ const dataView = {
     "sensitiveLabel": "敏感文件",
     "sensitivePercent": 60
   },
-  "rightCards": [
-    {
+  "rightCards": {
+    "identify": {
       "title": "识别数量",
-      "iconSvg": "qwen",
-      "iconColor": "#5b5cf6",
-      "model": "QWen",
-      "modelDesc": "由Qwen完成",
       "value": 1000
     },
-    {
+    "review": {
       "title": "审查数量",
-      "iconSvg": "deepseek",
-      "iconColor": "#5b5cf6",
-      "model": "deepseek",
-      "modelDesc": "由Deepseek完成",
       "value": 500
     }
-  ]
+  }
 }
 
 const dataAssetMap = {
@@ -452,9 +462,7 @@ const dataAssetMap = {
     }
 }
 
-const dataLevelDistribution = {
-  "hint": "敏感分级：1级 · 2级 · 3级 · 4级 · 5级",
-  "levels": [
+const dataLevelDistribution = [
       {
         "name": "5级-国家安全数据",
         "value": 50,
@@ -666,53 +674,6 @@ const dataLevelDistribution = {
         ]
       }
     ]
-}
-
-
-const sensitiveData = {
-  "title": "敏感数据风险清单",
-  "rows": [
-    {
-      "sourceName": "demo_sdd_202592390293",
-      "systemName": "API",
-      "riskStats": [
-        { "label": "4级-重要数据", "value": 10, "level": 4 },
-        { "label": "3级-内部敏感", "value": 2, "level": 3 },
-        { "label": "2级-内部一般", "value": 2, "level": 2 }
-      ],
-      "moreRiskCount": 1,
-      "dept": "数据安全部",
-      "owner": "张三"
-    },
-    {
-      "sourceName": "crm_sensitive_profile_202406",
-      "systemName": "CRM",
-      "riskStats": [
-        { "label": "4级-重要数据", "value": 6, "level": 4 },
-        { "label": "3级-内部敏感", "value": 5, "level": 3 },
-        { "label": "2级-内部一般", "value": 3, "level": 2 }
-      ],
-      "moreRiskCount": 1,
-      "dept": "客户运营部",
-      "owner": "李敏"
-    },
-    {
-      "sourceName": "dw_finance_core_asset_202405",
-      "systemName": "DWH",
-      "riskStats": [
-        { "label": "4级-重要数据", "value": 8, "level": 4 },
-        { "label": "3级-内部敏感", "value": 4, "level": 3 },
-        { "label": "2级-内部一般", "value": 1, "level": 2 }
-      ],
-      "moreRiskCount": 1,
-      "dept": "财务管理部",
-      "owner": "王强"
-    }
-  ]
-}
-
-
-
 export default {
   name: 'Dashboard',
   components: {
@@ -721,12 +682,13 @@ export default {
   data() {
     return {
       loading: false,
+      loadingCount: 0,
       categoryId: '',
       standardOptions: [],
       dataView,
       dataAssetMap,
       dataLevelDistribution,
-      sensitiveData,
+      sensitiveData: [],
       mapDrillId: '',
       mapDrillTitle: '',
       selectedLevelIndex: 0,
@@ -743,7 +705,7 @@ export default {
       return this.dataAssetMap.root || []
     },
     maxLevelValue() {
-      const list = this.dataLevelDistribution.levels || []
+      const list = this.dataLevelDistribution || []
       let max = 0
       list.forEach(i => {
         const v = Number(i.value) || 0
@@ -752,7 +714,7 @@ export default {
       return max || 1
     },
     currentLevel() {
-      const list = this.dataLevelDistribution.levels || []
+      const list = this.dataLevelDistribution || []
       return list[this.selectedLevelIndex] || { name: '', details: [] }
     },
     middleBodyStyle() {
@@ -799,6 +761,8 @@ export default {
       this.mapDrillId = ''
       this.mapDrillTitle = ''
       this.selectedLevelIndex = 0
+      this.fetchDataView()
+      this.fetchSensitiveData()
     },
     handleMapTileClick(item) {
       const children = (this.dataAssetMap.children || {})[item.id]
@@ -841,7 +805,7 @@ export default {
     },
     updateLevelChart() {
       if (!this.charts.level) return
-      const levels = this.dataLevelDistribution.levels || []
+      const levels = this.dataLevelDistribution || []
       const names = levels.map(i => i.name)
       const values = levels.map(i => Number(i.value) || 0)
       const max = this.maxLevelValue
@@ -898,6 +862,95 @@ export default {
     },
     handleResize() {
       this.syncMiddleBodyHeight()
+    },
+    fetchSensitiveData() {
+      const categoryId = this.categoryId
+      if (!categoryId) {
+        this.sensitiveData = []
+        return
+      }
+      this.loadingCount += 1
+      this.loading = true
+      listSensitiveDataRiskAssessmentReport({ categoryId }).then((response) => {
+        const payload = response && response.data ? response.data : {}
+        const list = Array.isArray(payload.dataSourceList) ? payload.dataSourceList : []
+        this.sensitiveData = list.map((it) => {
+          const riskList = Array.isArray(it.riskStatistics) ? it.riskStatistics : []
+          return {
+            datasourceId: it.datasourceId,
+            sourceName: it.sourceName,
+            systemName: it.businessName,
+            riskStats: riskList.map(r => ({
+              label: r.securityLevelName,
+              value: r.num,
+              level: Number(r.securityLevel)
+            })),
+            dept: it.dept || it.deptName || it.securityDept || it.securityDeptName || '--',
+            owner: it.ownerUserName || it.responsiblePerson || it.principal || '--'
+          }
+        })
+      }).finally(() => {
+        this.loadingCount = Math.max(this.loadingCount - 1, 0)
+        if (!this.loadingCount) this.loading = false
+      })
+    },
+    fetchDataView() {
+      const categoryId = this.categoryId
+      this.loadingCount += 1
+      this.loading = true
+      getTopDataJson({ categoryId: categoryId }).then((response) => {
+        const payload = response && response.data ? response.data : {}
+        let data = payload && (payload.data || payload.topDataJson || payload.result) ? (payload.data || payload.topDataJson || payload.result) : payload
+        if (typeof data === 'string') {
+          try {
+            data = JSON.parse(data)
+          } catch (e) {
+            data = {}
+          }
+        }
+        if (!data || typeof data !== 'object') data = {}
+        const toNumber = (v) => {
+          const n = Number(v)
+          return Number.isFinite(n) ? n : 0
+        }
+        const summary = data.summary || data.summaryData || data.summaryInfo || {}
+        this.dataView.summary = {
+          objectCount: toNumber(summary.objectCount || summary.objectNum || summary.totalObjectCount),
+          capacityGB: toNumber(summary.capacityGB || summary.capacity || summary.totalCapacityGB)
+        }
+        const structured = data.structured || data.structuredData || {}
+        this.dataView.structured = {
+          sourceCount: toNumber(structured.sourceCount || structured.sourceNum || structured.count),
+          sizeGB: toNumber(structured.sizeGB || structured.capacityGB || structured.size),
+          fieldCount: toNumber(structured.fieldCount || structured.fieldNum || structured.fields),
+          sensitiveLabel: structured.sensitiveLabel || this.dataView.structured.sensitiveLabel,
+          sensitivePercent: toNumber(structured.sensitivePercent || structured.sensitiveRate || structured.percent)
+        }
+        const unstructured = data.unstructured || data.unstructuredData || {}
+        this.dataView.unstructured = {
+          sourceCount: toNumber(unstructured.sourceCount || unstructured.sourceNum || unstructured.count),
+          sizeGB: toNumber(unstructured.sizeGB || unstructured.capacityGB || unstructured.size),
+          fileCount: toNumber(unstructured.fileCount || unstructured.fileNum || unstructured.files),
+          sensitiveLabel: unstructured.sensitiveLabel || this.dataView.unstructured.sensitiveLabel,
+          sensitivePercent: toNumber(unstructured.sensitivePercent || unstructured.sensitiveRate || unstructured.percent)
+        }
+        const rightCards = (data.rightCards && typeof data.rightCards === 'object') ? data.rightCards : {}
+        const identifyItem = rightCards.identify || {}
+        const reviewItem = rightCards.review || {}
+        this.dataView.rightCards = {
+          identify: {
+            title: identifyItem.title || '识别数量',
+            value: toNumber(identifyItem.value)
+          },
+          review: {
+            title: reviewItem.title || '审查数量',
+            value: toNumber(reviewItem.value)
+          }
+        }
+      }).finally(() => {
+        this.loadingCount = Math.max(this.loadingCount - 1, 0)
+        if (!this.loadingCount) this.loading = false
+      })
     },
     getHomeRiskStyle(level) {
       const styles = {

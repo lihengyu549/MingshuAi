@@ -559,3 +559,12 @@ export function exportDataFeel(params) {
     data: params,
   })
 }
+
+// 首页TopDataJson
+export function getTopDataJson(params) {
+  return request({
+    url: '/system/dashboard/getTopDataJson',
+    method: 'get',
+    params: params,
+  })
+}
