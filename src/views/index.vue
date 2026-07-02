@@ -109,11 +109,8 @@
           <el-card class="panel-card mini-stat-card hoverable" shadow="never">
             <div class="mini-stat">
               <div class="mini-left">
-                <div class="mini-brand">
-                  <div class="mini-icon" :style="{ color: '#5b5cf6' }">
-                    <svg-icon icon-class="qwen" class-name="mini-svg" />
-                  </div>
-                  <div class="mini-model">QWen</div>
+                <div class="mini-icon" :style="{ color: '#5b5cf6' }">
+                  <svg-icon iconClass="QWen" class-name="mini-svg" />
                 </div>
                 <div class="mini-info">
                   <div class="mini-title">{{ dataView.rightCards.identify.title }}</div>
@@ -128,11 +125,8 @@
           <el-card class="panel-card mini-stat-card hoverable" shadow="never">
             <div class="mini-stat">
               <div class="mini-left">
-                <div class="mini-brand">
-                  <div class="mini-icon" :style="{ color: '#5b5cf6' }">
-                    <svg-icon icon-class="deepseek" class-name="mini-svg" />
-                  </div>
-                  <div class="mini-model">deepseek</div>
+                <div class="mini-icon" :style="{ color: '#5b5cf6' }">
+                  <svg-icon iconClass="deepseek" class-name="mini-svg" />
                 </div>
                 <div class="mini-info">
                   <div class="mini-title">{{ dataView.rightCards.review.title }}</div>
@@ -1277,35 +1271,28 @@ export default {
 
 .mini-stat-card>>>.el-card__body {
   padding: 16px 18px;
+  height: 100%;
 }
 
 .mini-stat {
   display: flex;
   justify-content: space-between;
-  align-items: stretch;
+  align-items: center;
   gap: 12px;
+  height: 100%;
 }
 
 .mini-left {
   flex: 1;
   min-width: 0;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 0.75rem;
 }
 
-.mini-brand {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  height: 100%;
-  flex-shrink: 0;
-}
-
 .mini-icon {
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1319,8 +1306,8 @@ export default {
 .mini-info {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
+  justify-content: center;
+  gap: 0.375rem;
   min-width: 0;
 }
 
@@ -1334,16 +1321,9 @@ export default {
   text-overflow: ellipsis;
 }
 
-.mini-model {
-  font-size: 12px;
-  color: #2c3e50;
-  font-weight: 500;
-  line-height: 1.1;
-}
-
 .mini-desc {
   color: #93a3bb;
-  line-height: 1.2;
+  line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1352,12 +1332,13 @@ export default {
 
 
 .mini-value {
-  font-size: 30px;
+  display: flex;
+  align-items: center;
+  font-size: clamp(1.5rem, 2vw, 1.875rem);
   font-weight: 800;
   color: #5b5cf6;
   line-height: 1;
   flex-shrink: 0;
-  align-self: center;
 }
 
 .panel-header {
