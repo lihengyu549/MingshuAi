@@ -27,14 +27,14 @@
               <div class="summary-metrics">
                 <div class="summary-metric">
                   <div class="summary-value">
-                    <count-to :start-val="0" :end-val="topData.summary.objectCount" :duration="1500" />
+                    <count-to :start-val="0" :end-val="dataView.summary.objectCount" :duration="1500" />
                   </div>
                   <div class="summary-key">纳管对象</div>
                   <div class="summary-subkey">字段+文件</div>
                 </div>
                 <div class="summary-metric">
                   <div class="summary-value">
-                    <count-to :start-val="0" :end-val="topData.summary.capacityGB" :duration="1500" />
+                    <count-to :start-val="0" :end-val="dataView.summary.capacityGB" :duration="1500" />
                     <span class="summary-unit">GB</span>
                   </div>
                   <div class="summary-key">总容量</div>
@@ -58,17 +58,17 @@
                   </div>
                   <div class="source-main">
                     <div class="source-main-value">
-                      <count-to :start-val="0" :end-val="topData.structured.sourceCount" :duration="1500" />
+                      <count-to :start-val="0" :end-val="dataView.structured.sourceCount" :duration="1500" />
                       <span class="source-unit">个</span>
                     </div>
                     <div class="source-sub">
-                      {{ topData.structured.sizeGB }}GB · {{ topData.structured.fieldCount }}字段
+                      {{ dataView.structured.sizeGB }}GB · {{ dataView.structured.fieldCount }}字段
                     </div>
                   </div>
                   <div class="badge-row">
                     <span class="warn-badge">
                       <span class="warn-dot"></span>
-                      {{ topData.structured.sensitiveLabel }} {{ topData.structured.sensitivePercent }}%
+                      {{ dataView.structured.sensitiveLabel }} {{ dataView.structured.sensitivePercent }}%
                     </span>
                   </div>
                 </div>
@@ -84,17 +84,17 @@
                   </div>
                   <div class="source-main">
                     <div class="source-main-value">
-                      <count-to :start-val="0" :end-val="topData.unstructured.sourceCount" :duration="1500" />
+                      <count-to :start-val="0" :end-val="dataView.unstructured.sourceCount" :duration="1500" />
                       <span class="source-unit">个</span>
                     </div>
                     <div class="source-sub">
-                      {{ topData.unstructured.sizeGB }}GB · {{ topData.unstructured.fileCount }}个文件
+                      {{ dataView.unstructured.sizeGB }}GB · {{ dataView.unstructured.fileCount }}个文件
                     </div>
                   </div>
                   <div class="badge-row">
                     <span class="warn-badge">
                       <span class="warn-dot"></span>
-                      {{ topData.unstructured.sensitiveLabel }} {{ topData.unstructured.sensitivePercent }}%
+                      {{ dataView.unstructured.sensitiveLabel }} {{ dataView.unstructured.sensitivePercent }}%
                     </span>
                   </div>
                 </div>
@@ -106,7 +106,7 @@
 
       <el-col :span="6" class="top-right-col">
         <div class="top-right-stack">
-          <el-card v-for="(item, idx) in topData.rightCards" :key="idx" class="panel-card mini-stat-card hoverable"
+          <el-card v-for="(item, idx) in dataView.rightCards" :key="idx" class="panel-card mini-stat-card hoverable"
             shadow="never">
             <div class="mini-stat">
               <div class="mini-left">
@@ -193,7 +193,7 @@
             <div class="panel-actions">
               <span class="hint-badge">
                 <span class="warn-dot orange"></span>
-                {{ middleData.levelDistribution.hint }}
+                {{ dataLevelDistribution.hint }}
               </span>
             </div>
           </div>
@@ -236,9 +236,9 @@
 
     <el-card class="panel-card hoverable section bottom-section" shadow="never">
       <div slot="header" class="panel-header">
-        <div class="panel-title">{{ bottomData.title }}</div>
+        <div class="panel-title">{{ sensitiveData.title }}</div>
       </div>
-      <el-table :data="bottomData.rows" class="cockpit-table risk-table" :header-cell-style="{ background: '#f7f9fc' }">
+      <el-table :data="sensitiveData.rows" class="cockpit-table risk-table" :header-cell-style="{ background: '#f7f9fc' }">
         <el-table-column label="数据源名称" min-width="210">
           <template slot-scope="{ row }">
             <div class="source-name-cell">
@@ -296,7 +296,7 @@
 import CountTo from 'vue-count-to'
 import * as echarts from 'echarts'
 import { getFrameworks } from '@/api/system/protectCategory'
-const topData = {
+const dataView = {
   "summary": {
     "objectCount": 1000,
     "capacityGB": 20
@@ -335,13 +335,8 @@ const topData = {
   ]
 }
 
-const middleData = {
-  "assetMap": {
-    "tabs": [
-      { "label": "数据占比", "value": "ratio" },
-      { "label": "敏感数据占比", "value": "sensitiveRatio" }
-    ],
-    "root": [
+const dataAssetMap = {
+  "root": [
       {
         "id": "customer",
         "title": "客户",
@@ -424,7 +419,7 @@ const middleData = {
         "moreCount": 1
       }
     ],
-    "children": {
+  "children": {
       "risk": [
         {
           "id": "risk_1",
@@ -455,10 +450,11 @@ const middleData = {
         }
       ]
     }
-  },
-  "levelDistribution": {
-    "hint": "敏感分级：1级 · 2级 · 3级 · 4级 · 5级",
-    "levels": [
+}
+
+const dataLevelDistribution = {
+  "hint": "敏感分级：1级 · 2级 · 3级 · 4级 · 5级",
+  "levels": [
       {
         "name": "5级-国家安全数据",
         "value": 50,
@@ -670,11 +666,10 @@ const middleData = {
         ]
       }
     ]
-  }
 }
 
 
-const bottomData = {
+const sensitiveData = {
   "title": "敏感数据风险清单",
   "rows": [
     {
@@ -728,9 +723,10 @@ export default {
       loading: false,
       categoryId: '',
       standardOptions: [],
-      topData,
-      middleData,
-      bottomData,
+      dataView,
+      dataAssetMap,
+      dataLevelDistribution,
+      sensitiveData,
       mapDrillId: '',
       mapDrillTitle: '',
       selectedLevelIndex: 0,
@@ -742,12 +738,12 @@ export default {
   },
   computed: {
     currentMapTiles() {
-      const children = (this.middleData.assetMap.children || {})[this.mapDrillId]
+      const children = (this.dataAssetMap.children || {})[this.mapDrillId]
       if (this.mapDrillId && Array.isArray(children)) return children
-      return this.middleData.assetMap.root || []
+      return this.dataAssetMap.root || []
     },
     maxLevelValue() {
-      const list = this.middleData.levelDistribution.levels || []
+      const list = this.dataLevelDistribution.levels || []
       let max = 0
       list.forEach(i => {
         const v = Number(i.value) || 0
@@ -756,7 +752,7 @@ export default {
       return max || 1
     },
     currentLevel() {
-      const list = this.middleData.levelDistribution.levels || []
+      const list = this.dataLevelDistribution.levels || []
       return list[this.selectedLevelIndex] || { name: '', details: [] }
     },
     middleBodyStyle() {
@@ -805,7 +801,7 @@ export default {
       this.selectedLevelIndex = 0
     },
     handleMapTileClick(item) {
-      const children = (this.middleData.assetMap.children || {})[item.id]
+      const children = (this.dataAssetMap.children || {})[item.id]
       if (Array.isArray(children) && children.length) {
         this.mapDrillId = item.id
         this.mapDrillTitle = item.title
@@ -845,7 +841,7 @@ export default {
     },
     updateLevelChart() {
       if (!this.charts.level) return
-      const levels = this.middleData.levelDistribution.levels || []
+      const levels = this.dataLevelDistribution.levels || []
       const names = levels.map(i => i.name)
       const values = levels.map(i => Number(i.value) || 0)
       const max = this.maxLevelValue
