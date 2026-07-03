@@ -577,3 +577,21 @@ export function getLeftDataJson(params) {
     params: params,
   })
 }
+
+// 首页等级分布1
+export function getRightLevel(params) {
+  return request({
+    url: '/system/dashboard/getRightLevel',
+    method: 'get',
+    params: params,
+  })
+}
+
+// 首页等级分布2
+export function getRightDataJson(params) {
+  return request({
+    url: '/system/dashboard/getRightDataJson',
+    method: 'get',
+    params: params,
+  })
+}

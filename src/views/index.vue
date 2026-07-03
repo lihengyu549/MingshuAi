@@ -220,10 +220,13 @@
             <div class="level-table">
               <div class="level-table-head">
                 <div class="level-table-title">分类明细</div>
-                <span class="level-table-tag">{{ selectedLevelName }}</span>
+                <span v-if="selectedLevelName" class="level-table-tag">{{ selectedLevelName }}</span>
               </div>
               <el-table :data="levelTableData" size="mini" height="100%" class="cockpit-table"
                 :header-cell-style="{ background: '#f7f9fc' }">
+                <template slot="empty">
+                  <el-empty :description="$t('noData')"></el-empty>
+                </template>
                 <el-table-column prop="category" label="数据类别" min-width="120" />
                 <el-table-column prop="count" label="数量" width="90" />
                 <el-table-column label="占比" width="70">
@@ -307,240 +310,8 @@
 <script>
 import CountTo from 'vue-count-to'
 import * as echarts from 'echarts'
-import { getFrameworks, listSensitiveDataRiskAssessmentReport, getTopDataJson, getLeftDataJson } from '@/api/system/protectCategory'
-const levelDistributionMock = [
-  {
-    "id": "level_5",
-    "name": "5级-国家安全数据",
-    "value": 50,
-    "tooltip": "5级-国家安全数据\n50 项 | 点击查看详情",
-    "details": [
-      {
-        "category": "国家安全数据",
-        "count": 12300,
-        "ratio": 42,
-        "sources": [{ "label": "demo_sdd..." }],
-        "moreCount": 3
-      },
-      {
-        "category": "军事保密信息",
-        "count": 8900,
-        "ratio": 30,
-        "sources": [{ "label": "prod_mysql..." }],
-        "moreCount": 2
-      },
-      {
-        "category": "核心商业机密",
-        "count": 5600,
-        "ratio": 19,
-        "sources": [{ "label": "demo_sdd..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "密码密钥信息",
-        "count": 1950,
-        "ratio": 7,
-        "sources": [{ "label": "mdm_cust..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "关键设施数据",
-        "count": 580,
-        "ratio": 2,
-        "sources": [{ "label": "dw_hive..." }],
-        "moreCount": 1
-      }
-    ]
-  },
-  {
-    "id": "level_4",
-    "name": "4级-高度敏感数据",
-    "value": 28,
-    "tooltip": "4级-高度敏感数据\n28 项 | 点击查看详情",
-    "details": [
-      {
-        "category": "个人身份信息",
-        "count": 6800,
-        "ratio": 35,
-        "sources": [{ "label": "crm_sens..." }],
-        "moreCount": 2
-      },
-      {
-        "category": "财务结算信息",
-        "count": 5200,
-        "ratio": 27,
-        "sources": [{ "label": "prod_mysql..." }],
-        "moreCount": 2
-      },
-      {
-        "category": "授信审批材料",
-        "count": 4100,
-        "ratio": 21,
-        "sources": [{ "label": "demo_sdd..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "风控策略规则",
-        "count": 2850,
-        "ratio": 15,
-        "sources": [{ "label": "dw_hive..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "账号认证信息",
-        "count": 360,
-        "ratio": 2,
-        "sources": [{ "label": "iam_auth..." }],
-        "moreCount": 1
-      }
-    ]
-  },
-  {
-    "id": "level_3",
-    "name": "3级-敏感数据",
-    "value": 22,
-    "tooltip": "3级-敏感数据\n22 项 | 点击查看详情",
-    "details": [
-      {
-        "category": "营销触达记录",
-        "count": 7200,
-        "ratio": 40,
-        "sources": [{ "label": "mkt_call..." }],
-        "moreCount": 2
-      },
-      {
-        "category": "用户行为日志",
-        "count": 5400,
-        "ratio": 30,
-        "sources": [{ "label": "dw_hive..." }],
-        "moreCount": 2
-      },
-      {
-        "category": "产品埋点数据",
-        "count": 3200,
-        "ratio": 18,
-        "sources": [{ "label": "demo_sdd..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "审计追踪记录",
-        "count": 1500,
-        "ratio": 8,
-        "sources": [{ "label": "audit_log..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "运维告警事件",
-        "count": 600,
-        "ratio": 4,
-        "sources": [{ "label": "ops_mon..." }],
-        "moreCount": 1
-      }
-    ]
-  },
-  {
-    "id": "level_2",
-    "name": "2级-内部数据",
-    "value": 16,
-    "tooltip": "2级-内部数据\n16 项 | 点击查看详情",
-    "details": [
-      {
-        "category": "内部流程数据",
-        "count": 520,
-        "ratio": 32,
-        "sources": [{ "label": "demo_sdd..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "一般业务数据",
-        "count": 460,
-        "ratio": 28,
-        "sources": [{ "label": "prod_mysql..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "服务日志记录",
-        "count": 320,
-        "ratio": 20,
-        "sources": [{ "label": "dw_hive..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "系统配置数据",
-        "count": 230,
-        "ratio": 14,
-        "sources": [{ "label": "mdm_cust..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "其他内部数据",
-        "count": 90,
-        "ratio": 6,
-        "sources": [{ "label": "ops_mon..." }],
-        "moreCount": 1
-      }
-    ]
-  },
-  {
-    "id": "level_1",
-    "name": "1级-公开数据",
-    "value": 8,
-    "tooltip": "1级-公开数据\n8 项 | 点击查看详情",
-    "details": [
-      {
-        "category": "设备指纹信息",
-        "count": 120,
-        "ratio": 24,
-        "sources": [{ "label": "demo_sdd..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "网络标识信息",
-        "count": 100,
-        "ratio": 20,
-        "sources": [{ "label": "demo_sdd..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "服务使用记录",
-        "count": 98,
-        "ratio": 20,
-        "sources": [{ "label": "prod_mysql..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "系统日志信息",
-        "count": 85,
-        "ratio": 17,
-        "sources": [{ "label": "dw_hive..." }],
-        "moreCount": 1
-      },
-      {
-        "category": "基础配置信息",
-        "count": 75,
-        "ratio": 15,
-        "sources": [{ "label": "mdm_cust..." }],
-        "moreCount": 1
-      }
-    ]
-  }
-]
-
-const levelDistributionChartMock = {
-  levelLegend: ['1级', '2级', '3级', '4级', '5级'],
-  levels: levelDistributionMock.map(item => ({
-    id: item.id,
-    name: item.name,
-    value: item.value,
-    tooltip: item.tooltip
-  }))
-}
-
-const levelDistributionTableStore = levelDistributionMock.reduce((acc, item) => {
-  acc[item.id] = Array.isArray(item.details) ? item.details : []
-  return acc
-}, {})
-
+import { getFrameworks, listSensitiveDataRiskAssessmentReport, getTopDataJson, getLeftDataJson, getRightLevel, getRightDataJson } from '@/api/system/protectCategory'
+import { Empty } from 'element-ui';
 export default {
   name: 'Dashboard',
   components: {
@@ -584,8 +355,8 @@ export default {
       },
       dataAssetMap: [],
       levelChartData: {
-        levelLegend: levelDistributionChartMock.levelLegend || [],
-        levels: levelDistributionChartMock.levels || []
+        levelLegend: [],
+        levels: []
       },
       levelTableData: [],
       sensitiveData: [],
@@ -764,37 +535,65 @@ export default {
       })
       this.updateLevelChart()
     },
-    requestLevelChartData() {
-      return Promise.resolve(levelDistributionChartMock)
+    requestLevelChartData(categoryId) {
+      return getRightLevel({ categoryId })
     },
-    requestLevelTableData(levelId) {
-      return Promise.resolve(levelDistributionTableStore[levelId] || [])
+    requestLevelTableData(levelId, categoryId) {
+      const raw = String(levelId)
+      const matched = raw.match(/\d+/)
+      const level = matched ? Number(matched[0]) : Number(levelId)
+      return getRightDataJson({
+        categoryId,
+        level: Number.isFinite(level) ? level : levelId
+      })
     },
     normalizeLevelChartData(payload) {
-      const data = payload && payload.data ? payload.data : payload
+      let data = payload && payload.data ? payload.data : payload
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data)
+        } catch (e) {
+          data = {}
+        }
+      }
       const rawLegend = Array.isArray(data && data.levelLegend)
         ? data.levelLegend
-        : (Array.isArray(data && data.sensitiveLevels) ? data.sensitiveLevels : [])
+        : (Array.isArray(data && data.sensitiveLevels) ? data.sensitiveLevels : (Array.isArray(data && data.legend) ? data.legend : []))
+      const levelLegend = typeof rawLegend === 'string'
+        ? rawLegend.split(/[,，;；|·]/).map(s => String(s).trim()).filter(Boolean)
+        : rawLegend
       const rawLevels = Array.isArray(data && data.levels)
         ? data.levels
-        : (Array.isArray(data && data.list) ? data.list : [])
+        : (Array.isArray(data && data.list) ? data.list : (Array.isArray(data && data.data) ? data.data : []))
       const levels = rawLevels.map((item, index) => ({
-        id: String(item.id || item.levelId || item.securityLevelId || item.code || item.name || index),
-        name: item.name || item.levelName || item.label || '',
+        id: String(item.level != null ? item.level : (item.securityLevel != null ? item.securityLevel : (item.id || item.levelId || item.securityLevelId || item.code || index))),
+        name: item.name || item.securityLevelName || item.levelName || item.label || '',
         value: Number(item.value != null ? item.value : (item.count != null ? item.count : item.num)) || 0,
-        tooltip: item.tooltip || ''
+        tooltip: item.tooltip || item.tip || ''
       }))
       return {
-        levelLegend: rawLegend,
+        levelLegend,
         levels
       }
     },
     getDefaultLevel(levels) {
       if (!Array.isArray(levels) || !levels.length) return null
-      return levels.reduce((maxItem, item) => {
-        if (!maxItem) return item
-        return (Number(item.value) || 0) > (Number(maxItem.value) || 0) ? item : maxItem
-      }, null)
+      const parsed = levels.map((item, index) => {
+        const idMatch = String(item.id).match(/\d+/)
+        const nameMatch = String(item.name || '').match(/^\s*(\d+)/)
+        const rank = idMatch ? Number(idMatch[0]) : (nameMatch ? Number(nameMatch[1]) : null)
+        return { item, index, rank: Number.isFinite(rank) ? rank : null }
+      })
+      parsed.sort((a, b) => {
+        const ar = a.rank
+        const br = b.rank
+        if (ar != null && br != null) return br - ar
+        if (ar != null) return -1
+        if (br != null) return 1
+        return a.index - b.index
+      })
+      const hit = parsed.find(i => (Number(i.item.value) || 0) > 0)
+      return hit ? hit.item : null
     },
     fetchLevelDistribution() {
       const categoryId = this.categoryId
@@ -843,9 +642,25 @@ export default {
         const data = response && response.data ? response.data : response
         const list = Array.isArray(data)
           ? data
-          : (Array.isArray(data && data.list) ? data.list : (Array.isArray(data && data.details) ? data.details : []))
-        this.levelTableData = list
-        return list
+          : (Array.isArray(data && data.data) ? data.data : (Array.isArray(data && data.list) ? data.list : (Array.isArray(data && data.details) ? data.details : [])))
+        const normalized = list.map((row) => {
+          const rawSources = Array.isArray(row.sources)
+            ? row.sources
+            : (Array.isArray(row.sourceList) ? row.sourceList : (Array.isArray(row.dataSources) ? row.dataSources : []))
+          const sources = rawSources.map(s => {
+            if (s && typeof s === 'object') return { label: s.label || s.name || s.title || '' }
+            return { label: s || '' }
+          }).filter(s => s.label)
+          return {
+            category: row.category || row.categoryName || row.classificationName || '',
+            count: Number(row.count != null ? row.count : (row.num != null ? row.num : row.total)) || 0,
+            ratio: Number(row.ratio != null ? row.ratio : (row.percent != null ? row.percent : row.rate)) || 0,
+            sources,
+            moreCount: Number(row.moreCount != null ? row.moreCount : (row.more != null ? row.more : row.moreNum)) || 0
+          }
+        })
+        this.levelTableData = normalized
+        return normalized
       }).finally(() => {
         if (manageLoading) {
           this.loadingCount = Math.max(this.loadingCount - 1, 0)
