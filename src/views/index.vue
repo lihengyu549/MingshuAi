@@ -1521,12 +1521,12 @@ export default {
   font-size: 12px;
   color: #8a98b2;
   line-height: 1.45;
-  min-height: calc(1.45em * 4);
+  height: calc(1.45em * 4);
+  max-height: calc(1.45em * 4);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 4;
   overflow: hidden;
-  flex: 1;
 }
 
 .tile-footer {
@@ -1616,7 +1616,6 @@ export default {
   flex: 1 1 0;
   min-width: 0;
   padding-right: 8px;
-  border-right: 1px solid #eef0f6;
   display: flex;
   flex-direction: column;
   height: 100%;
