@@ -568,3 +568,12 @@ export function getTopDataJson(params) {
     params: params,
   })
 }
+
+// 首页资产地图
+export function getLeftDataJson(params) {
+  return request({
+    url: '/system/dashboard/getLeftDataJson',
+    method: 'get',
+    params: params,
+  })
+}

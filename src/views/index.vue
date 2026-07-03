@@ -169,7 +169,8 @@
 
           <div class="asset-map-body" :style="middleBodyStyle">
             <div class="asset-tile-grid">
-              <div v-for="item in currentMapTiles" :key="item.id" class="asset-tile hoverable-tile"
+              <div v-for="item in currentMapTiles" :key="item.id"
+                :class="['asset-tile', 'hoverable-tile', { 'asset-tile-drillable': item.hasChildren }]"
                 @click="handleMapTileClick(item)">
                 <div class="tile-title">{{ item.title }}</div>
                 <div class="tile-ratios">
@@ -188,7 +189,7 @@
                     </span>
                     <span v-if="item.moreCount" class="more-tag">+{{ item.moreCount }}</span>
                   </div>
-                  <div class="tile-arrow">
+                  <div v-if="item.hasChildren" class="tile-arrow">
                     <i class="el-icon-arrow-right"></i>
                   </div>
                 </div>
@@ -205,7 +206,7 @@
             <div class="panel-actions">
               <span class="hint-badge">
                 <span class="warn-dot orange"></span>
-                敏感分级：1级 · 2级 · 3级 · 4级 · 5级
+                敏感分级：{{ levelLegendText }}
               </span>
             </div>
           </div>
@@ -219,10 +220,9 @@
             <div class="level-table">
               <div class="level-table-head">
                 <div class="level-table-title">分类明细</div>
-                <span class="level-table-tag">{{ currentLevel.name }}</span>
+                <span class="level-table-tag">{{ selectedLevelName }}</span>
               </div>
-
-              <el-table :data="currentLevel.details" size="mini" height="100%" class="cockpit-table"
+              <el-table :data="levelTableData" size="mini" height="100%" class="cockpit-table"
                 :header-cell-style="{ background: '#f7f9fc' }">
                 <el-table-column prop="category" label="数据类别" min-width="120" />
                 <el-table-column prop="count" label="数量" width="90" />
@@ -307,157 +307,10 @@
 <script>
 import CountTo from 'vue-count-to'
 import * as echarts from 'echarts'
-import { getFrameworks, listSensitiveDataRiskAssessmentReport, getTopDataJson } from '@/api/system/protectCategory'
-const dataView = {
-  "summary": {
-    "objectCount": 1000,
-    "capacityGB": 20
-  },
-  "structured": {
-    "sourceCount": 10,
-    "sizeGB": 5,
-    "fieldCount": 800,
-    "sensitiveLabel": "敏感字段",
-    "sensitivePercent": 60
-  },
-  "unstructured": {
-    "sourceCount": 5,
-    "sizeGB": 15,
-    "fileCount": 200,
-    "sensitiveLabel": "敏感文件",
-    "sensitivePercent": 60
-  },
-  "rightCards": {
-    "identify": {
-      "title": "识别数量",
-      "value": 1000
-    },
-    "review": {
-      "title": "审查数量",
-      "value": 500
-    }
-  }
-}
-
-const dataAssetMapStore = {
-  "root": [
-    {
-      "id": "customer",
-      "title": "客户",
-      "ratio": 20,
-      "sensitiveRatio": 12,
-      "desc": "个人客户信息管理、单位客户档案维护、VIP客户分级标签",
-      "sourceTags": [{ "label": "demo_sdd_202..." }],
-      "moreCount": 2
-    },
-    {
-      "id": "operation",
-      "title": "经营管理",
-      "ratio": 10,
-      "sensitiveRatio": 6,
-      "desc": "财务报表核算系统、人力资源员工档案库、年度预算编制平台",
-      "sourceTags": [{ "label": "prod_mysql_cr..." }],
-      "moreCount": 1
-    },
-    {
-      "id": "supervision",
-      "title": "监管",
-      "ratio": 15,
-      "sensitiveRatio": 10,
-      "desc": "监管审计报送接口、合规审查记录库、反洗钱交易监测",
-      "sourceTags": [{ "label": "dw_hive_us..." }],
-      "moreCount": 1
-    },
-    {
-      "id": "risk",
-      "title": "风控",
-      "ratio": 12,
-      "sensitiveRatio": 8,
-      "desc": "反欺诈模型训练数据集、信用评分模型训练集、风险预警告警库",
-      "sourceTags": [{ "label": "demo_sdd_202..." }],
-      "moreCount": 1
-    },
-    {
-      "id": "marketing",
-      "title": "营销",
-      "ratio": 8,
-      "sensitiveRatio": 4,
-      "desc": "精准投放用户画像、多渠道触达记录、营销活动效果分析",
-      "sourceTags": [{ "label": "prod_mysql_cr..." }],
-      "moreCount": 1
-    },
-    {
-      "id": "product",
-      "title": "产品",
-      "ratio": 14,
-      "sensitiveRatio": 5,
-      "desc": "产品功能埋点数据集、用户行为路径分析、AB实验分流记录",
-      "sourceTags": [{ "label": "demo_sdd_202..." }],
-      "moreCount": 1
-    },
-    {
-      "id": "dev",
-      "title": "研发",
-      "ratio": 9,
-      "sensitiveRatio": 3,
-      "desc": "测试环境脱敏数据集、系统运行日志归档、CI/CD构建产物",
-      "sourceTags": [{ "label": "demo_sdd_202..." }],
-      "moreCount": 1
-    },
-    {
-      "id": "legal",
-      "title": "法务",
-      "ratio": 7,
-      "sensitiveRatio": 5,
-      "desc": "合同全生命周期管理库、知识产权登记系统、诉讼案件事实库",
-      "sourceTags": [{ "label": "prod_mysql_cr..." }],
-      "moreCount": 1
-    },
-    {
-      "id": "ops",
-      "title": "运维",
-      "ratio": 5,
-      "sensitiveRatio": 1,
-      "desc": "服务器监控指标库、告警事件处置记录、资源配置管理台账",
-      "sourceTags": [{ "label": "dw_hive_us..." }],
-      "moreCount": 1
-    }
-  ],
-  "children": {
-    "risk": [
-      {
-        "id": "risk_1",
-        "title": "反欺诈",
-        "ratio": 24,
-        "sensitiveRatio": 12,
-        "desc": "交易反欺诈识别、设备指纹画像库、黑名单名单库",
-        "sourceTags": [{ "label": "demo_sdd_202..." }],
-        "moreCount": 1
-      },
-      {
-        "id": "risk_2",
-        "title": "信用评估",
-        "ratio": 18,
-        "sensitiveRatio": 9,
-        "desc": "授信审批数据集、贷后监控指标库、风险定价模型库",
-        "sourceTags": [{ "label": "prod_mysql_cr..." }],
-        "moreCount": 1
-      },
-      {
-        "id": "risk_3",
-        "title": "预警告警",
-        "ratio": 12,
-        "sensitiveRatio": 6,
-        "desc": "实时告警事件、规则命中记录、处置闭环追踪",
-        "sourceTags": [{ "label": "dw_hive_us..." }],
-        "moreCount": 2
-      }
-    ]
-  }
-}
-
-const dataLevelDistribution = [
+import { getFrameworks, listSensitiveDataRiskAssessmentReport, getTopDataJson, getLeftDataJson } from '@/api/system/protectCategory'
+const levelDistributionMock = [
   {
+    "id": "level_5",
     "name": "5级-国家安全数据",
     "value": 50,
     "tooltip": "5级-国家安全数据\n50 项 | 点击查看详情",
@@ -500,6 +353,7 @@ const dataLevelDistribution = [
     ]
   },
   {
+    "id": "level_4",
     "name": "4级-高度敏感数据",
     "value": 28,
     "tooltip": "4级-高度敏感数据\n28 项 | 点击查看详情",
@@ -542,6 +396,7 @@ const dataLevelDistribution = [
     ]
   },
   {
+    "id": "level_3",
     "name": "3级-敏感数据",
     "value": 22,
     "tooltip": "3级-敏感数据\n22 项 | 点击查看详情",
@@ -584,6 +439,7 @@ const dataLevelDistribution = [
     ]
   },
   {
+    "id": "level_2",
     "name": "2级-内部数据",
     "value": 16,
     "tooltip": "2级-内部数据\n16 项 | 点击查看详情",
@@ -626,6 +482,7 @@ const dataLevelDistribution = [
     ]
   },
   {
+    "id": "level_1",
     "name": "1级-公开数据",
     "value": 8,
     "tooltip": "1级-公开数据\n8 项 | 点击查看详情",
@@ -668,6 +525,22 @@ const dataLevelDistribution = [
     ]
   }
 ]
+
+const levelDistributionChartMock = {
+  levelLegend: ['1级', '2级', '3级', '4级', '5级'],
+  levels: levelDistributionMock.map(item => ({
+    id: item.id,
+    name: item.name,
+    value: item.value,
+    tooltip: item.tooltip
+  }))
+}
+
+const levelDistributionTableStore = levelDistributionMock.reduce((acc, item) => {
+  acc[item.id] = Array.isArray(item.details) ? item.details : []
+  return acc
+}, {})
+
 export default {
   name: 'Dashboard',
   components: {
@@ -679,12 +552,46 @@ export default {
       loadingCount: 0,
       categoryId: '',
       standardOptions: [],
-      dataView,
-      dataAssetMap: dataAssetMapStore.root || [],
-      dataLevelDistribution,
+      dataView: {
+        summary: {
+          objectCount: 0,
+          capacityGB: 0
+        },
+        structured: {
+          sourceCount: 0,
+          sizeGB: 0,
+          fieldCount: 0,
+          sensitiveLabel: '',
+          sensitivePercent: 0
+        },
+        unstructured: {
+          sourceCount: 0,
+          sizeGB: 0,
+          fileCount: 0,
+          sensitiveLabel: '',
+          sensitivePercent: 0
+        },
+        rightCards: {
+          identify: {
+            title: '识别数量',
+            value: 0
+          },
+          review: {
+            title: '审查数量',
+            value: 0
+          }
+        }
+      },
+      dataAssetMap: [],
+      levelChartData: {
+        levelLegend: levelDistributionChartMock.levelLegend || [],
+        levels: levelDistributionChartMock.levels || []
+      },
+      levelTableData: [],
       sensitiveData: [],
       mapPath: [],
-      selectedLevelIndex: 0,
+      selectedLevelId: '',
+      selectedLevelName: '',
       middleBodyHeight: 0,
       charts: {
         level: null
@@ -700,7 +607,7 @@ export default {
       return this.mapPath.map(i => i.title).filter(Boolean).join(' / ')
     },
     maxLevelValue() {
-      const list = this.dataLevelDistribution || []
+      const list = (this.levelChartData && Array.isArray(this.levelChartData.levels)) ? this.levelChartData.levels : []
       let max = 0
       list.forEach(i => {
         const v = Number(i.value) || 0
@@ -708,9 +615,13 @@ export default {
       })
       return max || 1
     },
-    currentLevel() {
-      const list = this.dataLevelDistribution || []
-      return list[this.selectedLevelIndex] || { name: '', details: [] }
+    selectedLevelIndex() {
+      const list = (this.levelChartData && Array.isArray(this.levelChartData.levels)) ? this.levelChartData.levels : []
+      return list.findIndex(i => String(i.id) === String(this.selectedLevelId))
+    },
+    levelLegendText() {
+      const list = (this.levelChartData && Array.isArray(this.levelChartData.levelLegend)) ? this.levelChartData.levelLegend : []
+      return list.filter(Boolean).join(' · ')
     },
     middleBodyStyle() {
       if (!this.middleBodyHeight) return {}
@@ -723,7 +634,7 @@ export default {
     categoryId() {
       this.handleCategoryChange()
     },
-    selectedLevelIndex() {
+    selectedLevelId() {
       this.updateLevelChart()
     }
   },
@@ -754,13 +665,17 @@ export default {
     },
     handleCategoryChange() {
       this.mapPath = []
-      this.selectedLevelIndex = 0
+      this.selectedLevelId = ''
+      this.selectedLevelName = ''
+      this.levelTableData = []
       this.fetchDataView()
       this.fetchDataAssetMap()
+      this.fetchLevelDistribution()
       this.fetchSensitiveData()
     },
     handleMapTileClick(item) {
       if (!item || !item.id) return
+      if (!item.hasChildren) return
       this.mapPath = [...this.mapPath, { id: item.id, title: item.title }]
       this.fetchDataAssetMap(item.id)
     },
@@ -770,8 +685,13 @@ export default {
       const parentId = next.length ? next[next.length - 1].id : ''
       this.fetchDataAssetMap(parentId)
     },
-    handleSelectLevel(idx) {
-      this.selectedLevelIndex = idx
+    handleSelectLevel(level) {
+      if (!level || !level.id) return
+      const nextId = String(level.id)
+      if (nextId === String(this.selectedLevelId)) return
+      this.selectedLevelId = nextId
+      this.selectedLevelName = level.name || ''
+      this.fetchLevelTableData(nextId, { levelName: this.selectedLevelName })
     },
     fetchDataAssetMap(parentId = '') {
       const categoryId = this.categoryId
@@ -779,11 +699,52 @@ export default {
         this.dataAssetMap = []
         return
       }
+      const targetParentId = parentId || categoryId
       this.loadingCount += 1
       this.loading = true
-      const list = parentId ? (dataAssetMapStore.children && dataAssetMapStore.children[parentId]) : dataAssetMapStore.root
-      Promise.resolve(Array.isArray(list) ? list : []).then((rows) => {
-        this.dataAssetMap = rows
+      getLeftDataJson({
+        categoryId,
+        parentId: targetParentId
+      }).then((response) => {
+        let payload = response && response.data ? response.data : {}
+        if (typeof payload === 'string') {
+          try {
+            payload = JSON.parse(payload)
+          } catch (e) {
+            payload = {}
+          }
+        }
+        let rows = []
+        if (Array.isArray(payload)) {
+          rows = payload
+        } else if (Array.isArray(payload.data)) {
+          rows = payload.data
+        } else if (Array.isArray(payload.rows)) {
+          rows = payload.rows
+        } else if (Array.isArray(payload.list)) {
+          rows = payload.list
+        }
+        this.dataAssetMap = rows.map(item => {
+          const rawTags = Array.isArray(item.sourceTags)
+            ? item.sourceTags
+            : (Array.isArray(item.labelList) ? item.labelList : [])
+          const sourceTags = rawTags.map(tag => {
+            if (tag && typeof tag === 'object') {
+              return { label: tag.label || tag.name || tag.title || '' }
+            }
+            return { label: tag || '' }
+          }).filter(tag => tag.label)
+          return {
+            id: item.id,
+            title: item.title || item.name || item.categoryName || '',
+            ratio: Number(item.ratio != null ? item.ratio : item.dataRatio) || 0,
+            sensitiveRatio: Number(item.sensitiveRatio != null ? item.sensitiveRatio : item.sensitiveDataRatio) || 0,
+            desc: item.desc || item.description || '',
+            sourceTags,
+            moreCount: Number(item.moreCount != null ? item.moreCount : item.more) || 0,
+            hasChildren: Boolean(item.hasChildren)
+          }
+        })
       }).finally(() => {
         this.loadingCount = Math.max(this.loadingCount - 1, 0)
         if (!this.loadingCount) this.loading = false
@@ -797,9 +758,100 @@ export default {
       this.charts.level = chart
       chart.off('click')
       chart.on('click', (params) => {
-        if (typeof params.dataIndex === 'number') this.handleSelectLevel(params.dataIndex)
+        const levels = (this.levelChartData && Array.isArray(this.levelChartData.levels)) ? this.levelChartData.levels : []
+        const level = typeof params.dataIndex === 'number' ? levels[params.dataIndex] : null
+        if (level) this.handleSelectLevel(level)
       })
       this.updateLevelChart()
+    },
+    requestLevelChartData() {
+      return Promise.resolve(levelDistributionChartMock)
+    },
+    requestLevelTableData(levelId) {
+      return Promise.resolve(levelDistributionTableStore[levelId] || [])
+    },
+    normalizeLevelChartData(payload) {
+      const data = payload && payload.data ? payload.data : payload
+      const rawLegend = Array.isArray(data && data.levelLegend)
+        ? data.levelLegend
+        : (Array.isArray(data && data.sensitiveLevels) ? data.sensitiveLevels : [])
+      const rawLevels = Array.isArray(data && data.levels)
+        ? data.levels
+        : (Array.isArray(data && data.list) ? data.list : [])
+      const levels = rawLevels.map((item, index) => ({
+        id: String(item.id || item.levelId || item.securityLevelId || item.code || item.name || index),
+        name: item.name || item.levelName || item.label || '',
+        value: Number(item.value != null ? item.value : (item.count != null ? item.count : item.num)) || 0,
+        tooltip: item.tooltip || ''
+      }))
+      return {
+        levelLegend: rawLegend,
+        levels
+      }
+    },
+    getDefaultLevel(levels) {
+      if (!Array.isArray(levels) || !levels.length) return null
+      return levels.reduce((maxItem, item) => {
+        if (!maxItem) return item
+        return (Number(item.value) || 0) > (Number(maxItem.value) || 0) ? item : maxItem
+      }, null)
+    },
+    fetchLevelDistribution() {
+      const categoryId = this.categoryId
+      if (!categoryId) {
+        this.levelChartData = { levelLegend: [], levels: [] }
+        this.levelTableData = []
+        this.selectedLevelId = ''
+        this.selectedLevelName = ''
+        return Promise.resolve()
+      }
+      this.loadingCount += 1
+      this.loading = true
+      return this.requestLevelChartData(categoryId).then((response) => {
+        const chartData = this.normalizeLevelChartData(response)
+        this.levelChartData = chartData
+        const defaultLevel = this.getDefaultLevel(chartData.levels)
+        if (!defaultLevel || !defaultLevel.id) {
+          this.selectedLevelId = ''
+          this.selectedLevelName = ''
+          this.levelTableData = []
+          return null
+        }
+        this.selectedLevelId = String(defaultLevel.id)
+        this.selectedLevelName = defaultLevel.name || ''
+        return this.fetchLevelTableData(defaultLevel.id, {
+          manageLoading: false,
+          levelName: this.selectedLevelName
+        })
+      }).finally(() => {
+        this.loadingCount = Math.max(this.loadingCount - 1, 0)
+        if (!this.loadingCount) this.loading = false
+      })
+    },
+    fetchLevelTableData(levelId, options = {}) {
+      const { manageLoading = true, levelName = '' } = options
+      if (!levelId) {
+        this.levelTableData = []
+        return Promise.resolve([])
+      }
+      if (levelName) this.selectedLevelName = levelName
+      if (manageLoading) {
+        this.loadingCount += 1
+        this.loading = true
+      }
+      return this.requestLevelTableData(levelId, this.categoryId).then((response) => {
+        const data = response && response.data ? response.data : response
+        const list = Array.isArray(data)
+          ? data
+          : (Array.isArray(data && data.list) ? data.list : (Array.isArray(data && data.details) ? data.details : []))
+        this.levelTableData = list
+        return list
+      }).finally(() => {
+        if (manageLoading) {
+          this.loadingCount = Math.max(this.loadingCount - 1, 0)
+          if (!this.loadingCount) this.loading = false
+        }
+      })
     },
     syncMiddleBodyHeight() {
       const card = this.$refs.levelCard && this.$refs.levelCard.$el
@@ -816,7 +868,7 @@ export default {
     },
     updateLevelChart() {
       if (!this.charts.level) return
-      const levels = this.dataLevelDistribution || []
+      const levels = (this.levelChartData && Array.isArray(this.levelChartData.levels)) ? this.levelChartData.levels : []
       const names = levels.map(i => i.name)
       const values = levels.map(i => Number(i.value) || 0)
       const max = this.maxLevelValue
@@ -828,7 +880,8 @@ export default {
             const item = levels[p.dataIndex] || {}
             const levelName = item.name || p.name || ''
             const value = Number(item.value != null ? item.value : p.value) || 0
-            return `${levelName}<br/>${value} 项 | 点击查看详情`
+            const tooltipText = item.tooltip || `${levelName}\n${value} 项 | 点击查看详情`
+            return String(tooltipText).replace(/\n/g, '<br/>')
           }
         },
         xAxis: {
@@ -1418,11 +1471,18 @@ export default {
   border-radius: 12px;
   background: #fafbff;
   padding: 14px 14px 12px;
-  cursor: pointer;
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  cursor: default;
   transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 }
 
-.asset-tile:hover {
+.asset-tile-drillable {
+  cursor: pointer;
+}
+
+.asset-tile-drillable:hover {
   border-color: #a8c5ff;
   box-shadow: 0 10px 22px rgba(18, 27, 66, 0.08);
   transform: translateY(-2px);
@@ -1461,11 +1521,17 @@ export default {
   font-size: 12px;
   color: #8a98b2;
   line-height: 1.45;
-  min-height: 44px;
+  min-height: calc(1.45em * 4);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+  flex: 1;
 }
 
 .tile-footer {
-  margin-top: 10px;
+  margin-top: auto;
+  padding-top: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1520,7 +1586,7 @@ export default {
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
-.asset-tile:hover .tile-arrow {
+.asset-tile-drillable:hover .tile-arrow {
   opacity: 1;
   transform: translate(0, -50%);
 }
@@ -1547,7 +1613,7 @@ export default {
 }
 
 .level-bars {
-  flex: 1;
+  flex: 1 1 0;
   min-width: 0;
   padding-right: 8px;
   border-right: 1px solid #eef0f6;
@@ -1564,7 +1630,7 @@ export default {
 }
 
 .level-table {
-  flex: 1;
+  flex: 1 1 0;
   padding-left: 8px;
   display: flex;
   flex-direction: column;
