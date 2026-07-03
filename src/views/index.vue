@@ -341,333 +341,333 @@ const dataView = {
 
 const dataAssetMapStore = {
   "root": [
-      {
-        "id": "customer",
-        "title": "客户",
-        "ratio": 20,
-        "sensitiveRatio": 12,
-        "desc": "个人客户信息管理、单位客户档案维护、VIP客户分级标签",
-        "sourceTags": [{ "label": "demo_sdd_202..." }],
-        "moreCount": 2
-      },
-      {
-        "id": "operation",
-        "title": "经营管理",
-        "ratio": 10,
-        "sensitiveRatio": 6,
-        "desc": "财务报表核算系统、人力资源员工档案库、年度预算编制平台",
-        "sourceTags": [{ "label": "prod_mysql_cr..." }],
-        "moreCount": 1
-      },
-      {
-        "id": "supervision",
-        "title": "监管",
-        "ratio": 15,
-        "sensitiveRatio": 10,
-        "desc": "监管审计报送接口、合规审查记录库、反洗钱交易监测",
-        "sourceTags": [{ "label": "dw_hive_us..." }],
-        "moreCount": 1
-      },
-      {
-        "id": "risk",
-        "title": "风控",
-        "ratio": 12,
-        "sensitiveRatio": 8,
-        "desc": "反欺诈模型训练数据集、信用评分模型训练集、风险预警告警库",
-        "sourceTags": [{ "label": "demo_sdd_202..." }],
-        "moreCount": 1
-      },
-      {
-        "id": "marketing",
-        "title": "营销",
-        "ratio": 8,
-        "sensitiveRatio": 4,
-        "desc": "精准投放用户画像、多渠道触达记录、营销活动效果分析",
-        "sourceTags": [{ "label": "prod_mysql_cr..." }],
-        "moreCount": 1
-      },
-      {
-        "id": "product",
-        "title": "产品",
-        "ratio": 14,
-        "sensitiveRatio": 5,
-        "desc": "产品功能埋点数据集、用户行为路径分析、AB实验分流记录",
-        "sourceTags": [{ "label": "demo_sdd_202..." }],
-        "moreCount": 1
-      },
-      {
-        "id": "dev",
-        "title": "研发",
-        "ratio": 9,
-        "sensitiveRatio": 3,
-        "desc": "测试环境脱敏数据集、系统运行日志归档、CI/CD构建产物",
-        "sourceTags": [{ "label": "demo_sdd_202..." }],
-        "moreCount": 1
-      },
-      {
-        "id": "legal",
-        "title": "法务",
-        "ratio": 7,
-        "sensitiveRatio": 5,
-        "desc": "合同全生命周期管理库、知识产权登记系统、诉讼案件事实库",
-        "sourceTags": [{ "label": "prod_mysql_cr..." }],
-        "moreCount": 1
-      },
-      {
-        "id": "ops",
-        "title": "运维",
-        "ratio": 5,
-        "sensitiveRatio": 1,
-        "desc": "服务器监控指标库、告警事件处置记录、资源配置管理台账",
-        "sourceTags": [{ "label": "dw_hive_us..." }],
-        "moreCount": 1
-      }
-    ],
-  "children": {
-      "risk": [
-        {
-          "id": "risk_1",
-          "title": "反欺诈",
-          "ratio": 24,
-          "sensitiveRatio": 12,
-          "desc": "交易反欺诈识别、设备指纹画像库、黑名单名单库",
-          "sourceTags": [{ "label": "demo_sdd_202..." }],
-          "moreCount": 1
-        },
-        {
-          "id": "risk_2",
-          "title": "信用评估",
-          "ratio": 18,
-          "sensitiveRatio": 9,
-          "desc": "授信审批数据集、贷后监控指标库、风险定价模型库",
-          "sourceTags": [{ "label": "prod_mysql_cr..." }],
-          "moreCount": 1
-        },
-        {
-          "id": "risk_3",
-          "title": "预警告警",
-          "ratio": 12,
-          "sensitiveRatio": 6,
-          "desc": "实时告警事件、规则命中记录、处置闭环追踪",
-          "sourceTags": [{ "label": "dw_hive_us..." }],
-          "moreCount": 2
-        }
-      ]
+    {
+      "id": "customer",
+      "title": "客户",
+      "ratio": 20,
+      "sensitiveRatio": 12,
+      "desc": "个人客户信息管理、单位客户档案维护、VIP客户分级标签",
+      "sourceTags": [{ "label": "demo_sdd_202..." }],
+      "moreCount": 2
+    },
+    {
+      "id": "operation",
+      "title": "经营管理",
+      "ratio": 10,
+      "sensitiveRatio": 6,
+      "desc": "财务报表核算系统、人力资源员工档案库、年度预算编制平台",
+      "sourceTags": [{ "label": "prod_mysql_cr..." }],
+      "moreCount": 1
+    },
+    {
+      "id": "supervision",
+      "title": "监管",
+      "ratio": 15,
+      "sensitiveRatio": 10,
+      "desc": "监管审计报送接口、合规审查记录库、反洗钱交易监测",
+      "sourceTags": [{ "label": "dw_hive_us..." }],
+      "moreCount": 1
+    },
+    {
+      "id": "risk",
+      "title": "风控",
+      "ratio": 12,
+      "sensitiveRatio": 8,
+      "desc": "反欺诈模型训练数据集、信用评分模型训练集、风险预警告警库",
+      "sourceTags": [{ "label": "demo_sdd_202..." }],
+      "moreCount": 1
+    },
+    {
+      "id": "marketing",
+      "title": "营销",
+      "ratio": 8,
+      "sensitiveRatio": 4,
+      "desc": "精准投放用户画像、多渠道触达记录、营销活动效果分析",
+      "sourceTags": [{ "label": "prod_mysql_cr..." }],
+      "moreCount": 1
+    },
+    {
+      "id": "product",
+      "title": "产品",
+      "ratio": 14,
+      "sensitiveRatio": 5,
+      "desc": "产品功能埋点数据集、用户行为路径分析、AB实验分流记录",
+      "sourceTags": [{ "label": "demo_sdd_202..." }],
+      "moreCount": 1
+    },
+    {
+      "id": "dev",
+      "title": "研发",
+      "ratio": 9,
+      "sensitiveRatio": 3,
+      "desc": "测试环境脱敏数据集、系统运行日志归档、CI/CD构建产物",
+      "sourceTags": [{ "label": "demo_sdd_202..." }],
+      "moreCount": 1
+    },
+    {
+      "id": "legal",
+      "title": "法务",
+      "ratio": 7,
+      "sensitiveRatio": 5,
+      "desc": "合同全生命周期管理库、知识产权登记系统、诉讼案件事实库",
+      "sourceTags": [{ "label": "prod_mysql_cr..." }],
+      "moreCount": 1
+    },
+    {
+      "id": "ops",
+      "title": "运维",
+      "ratio": 5,
+      "sensitiveRatio": 1,
+      "desc": "服务器监控指标库、告警事件处置记录、资源配置管理台账",
+      "sourceTags": [{ "label": "dw_hive_us..." }],
+      "moreCount": 1
     }
+  ],
+  "children": {
+    "risk": [
+      {
+        "id": "risk_1",
+        "title": "反欺诈",
+        "ratio": 24,
+        "sensitiveRatio": 12,
+        "desc": "交易反欺诈识别、设备指纹画像库、黑名单名单库",
+        "sourceTags": [{ "label": "demo_sdd_202..." }],
+        "moreCount": 1
+      },
+      {
+        "id": "risk_2",
+        "title": "信用评估",
+        "ratio": 18,
+        "sensitiveRatio": 9,
+        "desc": "授信审批数据集、贷后监控指标库、风险定价模型库",
+        "sourceTags": [{ "label": "prod_mysql_cr..." }],
+        "moreCount": 1
+      },
+      {
+        "id": "risk_3",
+        "title": "预警告警",
+        "ratio": 12,
+        "sensitiveRatio": 6,
+        "desc": "实时告警事件、规则命中记录、处置闭环追踪",
+        "sourceTags": [{ "label": "dw_hive_us..." }],
+        "moreCount": 2
+      }
+    ]
+  }
 }
 
 const dataLevelDistribution = [
+  {
+    "name": "5级-国家安全数据",
+    "value": 50,
+    "tooltip": "5级-国家安全数据\n50 项 | 点击查看详情",
+    "details": [
       {
-        "name": "5级-国家安全数据",
-        "value": 50,
-        "tooltip": "5级-国家安全数据\n50 项 | 点击查看详情",
-        "details": [
-          {
-            "category": "国家安全数据",
-            "count": 12300,
-            "ratio": 42,
-            "sources": [{ "label": "demo_sdd..." }],
-            "moreCount": 3
-          },
-          {
-            "category": "军事保密信息",
-            "count": 8900,
-            "ratio": 30,
-            "sources": [{ "label": "prod_mysql..." }],
-            "moreCount": 2
-          },
-          {
-            "category": "核心商业机密",
-            "count": 5600,
-            "ratio": 19,
-            "sources": [{ "label": "demo_sdd..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "密码密钥信息",
-            "count": 1950,
-            "ratio": 7,
-            "sources": [{ "label": "mdm_cust..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "关键设施数据",
-            "count": 580,
-            "ratio": 2,
-            "sources": [{ "label": "dw_hive..." }],
-            "moreCount": 1
-          }
-        ]
+        "category": "国家安全数据",
+        "count": 12300,
+        "ratio": 42,
+        "sources": [{ "label": "demo_sdd..." }],
+        "moreCount": 3
       },
       {
-        "name": "4级-高度敏感数据",
-        "value": 28,
-        "tooltip": "4级-高度敏感数据\n28 项 | 点击查看详情",
-        "details": [
-          {
-            "category": "个人身份信息",
-            "count": 6800,
-            "ratio": 35,
-            "sources": [{ "label": "crm_sens..." }],
-            "moreCount": 2
-          },
-          {
-            "category": "财务结算信息",
-            "count": 5200,
-            "ratio": 27,
-            "sources": [{ "label": "prod_mysql..." }],
-            "moreCount": 2
-          },
-          {
-            "category": "授信审批材料",
-            "count": 4100,
-            "ratio": 21,
-            "sources": [{ "label": "demo_sdd..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "风控策略规则",
-            "count": 2850,
-            "ratio": 15,
-            "sources": [{ "label": "dw_hive..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "账号认证信息",
-            "count": 360,
-            "ratio": 2,
-            "sources": [{ "label": "iam_auth..." }],
-            "moreCount": 1
-          }
-        ]
+        "category": "军事保密信息",
+        "count": 8900,
+        "ratio": 30,
+        "sources": [{ "label": "prod_mysql..." }],
+        "moreCount": 2
       },
       {
-        "name": "3级-敏感数据",
-        "value": 22,
-        "tooltip": "3级-敏感数据\n22 项 | 点击查看详情",
-        "details": [
-          {
-            "category": "营销触达记录",
-            "count": 7200,
-            "ratio": 40,
-            "sources": [{ "label": "mkt_call..." }],
-            "moreCount": 2
-          },
-          {
-            "category": "用户行为日志",
-            "count": 5400,
-            "ratio": 30,
-            "sources": [{ "label": "dw_hive..." }],
-            "moreCount": 2
-          },
-          {
-            "category": "产品埋点数据",
-            "count": 3200,
-            "ratio": 18,
-            "sources": [{ "label": "demo_sdd..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "审计追踪记录",
-            "count": 1500,
-            "ratio": 8,
-            "sources": [{ "label": "audit_log..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "运维告警事件",
-            "count": 600,
-            "ratio": 4,
-            "sources": [{ "label": "ops_mon..." }],
-            "moreCount": 1
-          }
-        ]
+        "category": "核心商业机密",
+        "count": 5600,
+        "ratio": 19,
+        "sources": [{ "label": "demo_sdd..." }],
+        "moreCount": 1
       },
       {
-        "name": "2级-内部数据",
-        "value": 16,
-        "tooltip": "2级-内部数据\n16 项 | 点击查看详情",
-        "details": [
-          {
-            "category": "内部流程数据",
-            "count": 520,
-            "ratio": 32,
-            "sources": [{ "label": "demo_sdd..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "一般业务数据",
-            "count": 460,
-            "ratio": 28,
-            "sources": [{ "label": "prod_mysql..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "服务日志记录",
-            "count": 320,
-            "ratio": 20,
-            "sources": [{ "label": "dw_hive..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "系统配置数据",
-            "count": 230,
-            "ratio": 14,
-            "sources": [{ "label": "mdm_cust..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "其他内部数据",
-            "count": 90,
-            "ratio": 6,
-            "sources": [{ "label": "ops_mon..." }],
-            "moreCount": 1
-          }
-        ]
+        "category": "密码密钥信息",
+        "count": 1950,
+        "ratio": 7,
+        "sources": [{ "label": "mdm_cust..." }],
+        "moreCount": 1
       },
       {
-        "name": "1级-公开数据",
-        "value": 8,
-        "tooltip": "1级-公开数据\n8 项 | 点击查看详情",
-        "details": [
-          {
-            "category": "设备指纹信息",
-            "count": 120,
-            "ratio": 24,
-            "sources": [{ "label": "demo_sdd..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "网络标识信息",
-            "count": 100,
-            "ratio": 20,
-            "sources": [{ "label": "demo_sdd..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "服务使用记录",
-            "count": 98,
-            "ratio": 20,
-            "sources": [{ "label": "prod_mysql..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "系统日志信息",
-            "count": 85,
-            "ratio": 17,
-            "sources": [{ "label": "dw_hive..." }],
-            "moreCount": 1
-          },
-          {
-            "category": "基础配置信息",
-            "count": 75,
-            "ratio": 15,
-            "sources": [{ "label": "mdm_cust..." }],
-            "moreCount": 1
-          }
-        ]
+        "category": "关键设施数据",
+        "count": 580,
+        "ratio": 2,
+        "sources": [{ "label": "dw_hive..." }],
+        "moreCount": 1
       }
     ]
+  },
+  {
+    "name": "4级-高度敏感数据",
+    "value": 28,
+    "tooltip": "4级-高度敏感数据\n28 项 | 点击查看详情",
+    "details": [
+      {
+        "category": "个人身份信息",
+        "count": 6800,
+        "ratio": 35,
+        "sources": [{ "label": "crm_sens..." }],
+        "moreCount": 2
+      },
+      {
+        "category": "财务结算信息",
+        "count": 5200,
+        "ratio": 27,
+        "sources": [{ "label": "prod_mysql..." }],
+        "moreCount": 2
+      },
+      {
+        "category": "授信审批材料",
+        "count": 4100,
+        "ratio": 21,
+        "sources": [{ "label": "demo_sdd..." }],
+        "moreCount": 1
+      },
+      {
+        "category": "风控策略规则",
+        "count": 2850,
+        "ratio": 15,
+        "sources": [{ "label": "dw_hive..." }],
+        "moreCount": 1
+      },
+      {
+        "category": "账号认证信息",
+        "count": 360,
+        "ratio": 2,
+        "sources": [{ "label": "iam_auth..." }],
+        "moreCount": 1
+      }
+    ]
+  },
+  {
+    "name": "3级-敏感数据",
+    "value": 22,
+    "tooltip": "3级-敏感数据\n22 项 | 点击查看详情",
+    "details": [
+      {
+        "category": "营销触达记录",
+        "count": 7200,
+        "ratio": 40,
+        "sources": [{ "label": "mkt_call..." }],
+        "moreCount": 2
+      },
+      {
+        "category": "用户行为日志",
+        "count": 5400,
+        "ratio": 30,
+        "sources": [{ "label": "dw_hive..." }],
+        "moreCount": 2
+      },
+      {
+        "category": "产品埋点数据",
+        "count": 3200,
+        "ratio": 18,
+        "sources": [{ "label": "demo_sdd..." }],
+        "moreCount": 1
+      },
+      {
+        "category": "审计追踪记录",
+        "count": 1500,
+        "ratio": 8,
+        "sources": [{ "label": "audit_log..." }],
+        "moreCount": 1
+      },
+      {
+        "category": "运维告警事件",
+        "count": 600,
+        "ratio": 4,
+        "sources": [{ "label": "ops_mon..." }],
+        "moreCount": 1
+      }
+    ]
+  },
+  {
+    "name": "2级-内部数据",
+    "value": 16,
+    "tooltip": "2级-内部数据\n16 项 | 点击查看详情",
+    "details": [
+      {
+        "category": "内部流程数据",
+        "count": 520,
+        "ratio": 32,
+        "sources": [{ "label": "demo_sdd..." }],
+        "moreCount": 1
+      },
+      {
+        "category": "一般业务数据",
+        "count": 460,
+        "ratio": 28,
+        "sources": [{ "label": "prod_mysql..." }],
+        "moreCount": 1
+      },
+      {
+        "category": "服务日志记录",
+        "count": 320,
+        "ratio": 20,
+        "sources": [{ "label": "dw_hive..." }],
+        "moreCount": 1
+      },
+      {
+        "category": "系统配置数据",
+        "count": 230,
+        "ratio": 14,
+        "sources": [{ "label": "mdm_cust..." }],
+        "moreCount": 1
+      },
+      {
+        "category": "其他内部数据",
+        "count": 90,
+        "ratio": 6,
+        "sources": [{ "label": "ops_mon..." }],
+        "moreCount": 1
+      }
+    ]
+  },
+  {
+    "name": "1级-公开数据",
+    "value": 8,
+    "tooltip": "1级-公开数据\n8 项 | 点击查看详情",
+    "details": [
+      {
+        "category": "设备指纹信息",
+        "count": 120,
+        "ratio": 24,
+        "sources": [{ "label": "demo_sdd..." }],
+        "moreCount": 1
+      },
+      {
+        "category": "网络标识信息",
+        "count": 100,
+        "ratio": 20,
+        "sources": [{ "label": "demo_sdd..." }],
+        "moreCount": 1
+      },
+      {
+        "category": "服务使用记录",
+        "count": 98,
+        "ratio": 20,
+        "sources": [{ "label": "prod_mysql..." }],
+        "moreCount": 1
+      },
+      {
+        "category": "系统日志信息",
+        "count": 85,
+        "ratio": 17,
+        "sources": [{ "label": "dw_hive..." }],
+        "moreCount": 1
+      },
+      {
+        "category": "基础配置信息",
+        "count": 75,
+        "ratio": 15,
+        "sources": [{ "label": "mdm_cust..." }],
+        "moreCount": 1
+      }
+    ]
+  }
+]
 export default {
   name: 'Dashboard',
   components: {
@@ -1033,7 +1033,7 @@ export default {
   height: 100%;
 }
 
-.middle-col>.panel-card>>>.el-card__body {
+.middle-col>.panel-card ::v-deep.el-card__body {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -1046,11 +1046,11 @@ export default {
   box-shadow: 0 2px 10px rgba(16, 24, 40, 0.04);
 }
 
-.panel-card>>>.el-card__body {
+.panel-card ::v-deep.el-card__body {
   padding: 16px;
 }
 
-.panel-card>>>.el-card__header {
+.panel-card ::v-deep.el-card__header {
   border-bottom: none;
   padding: 14px 16px 10px;
 }
@@ -1095,7 +1095,7 @@ export default {
   width: 240px;
 }
 
-.top-section .panel-card>>>.el-card__body {
+.top-section .panel-card ::v-deep.el-card__body {
   padding: 18px 18px 14px;
 }
 
@@ -1269,7 +1269,7 @@ export default {
   height: 100%;
 }
 
-.mini-stat-card>>>.el-card__body {
+.mini-stat-card ::v-deep.el-card__body {
   padding: 16px 18px;
   height: 100%;
 }
@@ -1300,7 +1300,7 @@ export default {
 }
 
 .mini-svg {
-  font-size: 1.5rem;
+  font-size: 2rem;
 }
 
 .mini-info {
@@ -1606,21 +1606,21 @@ export default {
   flex: 1;
 }
 
-.cockpit-table>>>.el-table {
+.cockpit-table ::v-deep.el-table {
   height: 100%;
 }
 
-.cockpit-table>>>.el-table__row td {
+.cockpit-table ::v-deep.el-table__row td {
   border-bottom: 1px solid #eef0f6;
 }
 
-.cockpit-table>>>.el-table__header-wrapper th {
+.cockpit-table ::v-deep.el-table__header-wrapper th {
   border-bottom: 1px solid #eef0f6;
   color: #7b879f;
   font-weight: 700;
 }
 
-.cockpit-table>>>.el-table__body tr:hover>td {
+.cockpit-table ::v-deep.el-table__body tr:hover>td {
   background: #fbfcff;
 }
 
@@ -1654,11 +1654,11 @@ export default {
   white-space: nowrap;
 }
 
-.bottom-section>>>.el-card__body {
+.bottom-section ::v-deep.el-card__body {
   padding: 0;
 }
 
-.bottom-section>>>.el-table {
+.bottom-section ::v-deep.el-table {
   border-radius: 12px;
 }
 
