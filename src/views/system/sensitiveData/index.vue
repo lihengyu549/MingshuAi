@@ -353,6 +353,20 @@ export default {
             }
         };
     },
+    watch: {
+        '$route.query.categoryId': {
+            handler(val) {
+                if (val == null || val === '') return
+                const nextId = String(val)
+                const hit = Array.isArray(this.treeOptions) ? this.treeOptions.find(i => String(i.id) === nextId) : null
+                if (!hit) return
+                if (String(this.categoryId) === String(hit.id)) return
+                this.categoryId = hit.id
+                this.getSensitiveDataList(hit.id)
+            },
+            immediate: false
+        }
+    },
     computed: {
         levelFilterTags() {
             return [
@@ -403,15 +417,27 @@ export default {
         },
         gettreeOptionsList() {
             getFrameworks().then((response) => {
-                this.treeOptions = response.data
-                if (response.data.length > 0) {
-                    this.categoryId = response.data[0].id;
+                const list = Array.isArray(response.data) ? response.data : []
+                this.treeOptions = list
+                if (!list.length) {
+                    this.categoryId = 0
+                    this.dataSourceList = []
+                    return
                 }
-                this.getSensitiveDataList(response.data[0].id)
+                const routeCategoryId = this.$route && this.$route.query ? this.$route.query.categoryId : ''
+                const routeId = routeCategoryId == null ? '' : String(routeCategoryId)
+                const hit = routeId ? list.find(i => String(i.id) === routeId) : null
+                const nextId = hit ? hit.id : list[0].id
+                this.categoryId = nextId
+                this.getSensitiveDataList(nextId)
             });
         },
         getSensitiveDataList(categoryId) {
             try {
+                if (!categoryId) {
+                    this.dataSourceList = []
+                    return
+                }
                 listSensitiveDataRiskAssessmentReport({ categoryId: categoryId }).then((response) => {
                     this.dataSourceList = response.data.dataSourceList;
                 });

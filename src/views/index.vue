@@ -260,8 +260,7 @@
               <div class="source-icon">
                 <i class="el-icon-s-management"></i>
               </div>
-              <el-link type="primary" :underline="false" class="source-link" @click="handleSourceClick(row)">{{
-                row.sourceName }}</el-link>
+              <span class="source-link">{{ row.sourceName }}</span>
             </div>
           </template>
         </el-table-column>
@@ -311,7 +310,6 @@
 import CountTo from 'vue-count-to'
 import * as echarts from 'echarts'
 import { getFrameworks, listSensitiveDataRiskAssessmentReport, getTopDataJson, getLeftDataJson, getRightLevel, getRightDataJson } from '@/api/system/protectCategory'
-import { Empty } from 'element-ui';
 export default {
   name: 'Dashboard',
   components: {
@@ -841,9 +839,11 @@ export default {
       }
       return styles[level] || { color: '#64748b', backgroundColor: '#f8fafc', border: 'none' }
     },
-    handleSourceClick() {
-    },
-    handleCompleteList() {
+    handleCompleteList(row) {
+      this.$router.push({
+        path: '/serverPrewies/sensitiveData',
+        query: { categoryId: this.categoryId }
+      });
     }
   }
 }
@@ -1561,6 +1561,7 @@ export default {
 
 .source-link {
   font-weight: 700;
+  color: #2f63ff;
 }
 
 .system-pill {
