@@ -1,5 +1,5 @@
 export default {
-  homeTitle: '首页',
+  homeTitle: '数据安全驾驶舱',
   dataScreen: '数据大屏',
   profile: '个人中心',
   assignRole: '分配角色',

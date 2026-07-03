@@ -1,5 +1,5 @@
 export default {
-  homeTitle: 'Home',
+  homeTitle: 'Data Security Cockpit',
   dataScreen: 'Data Screen',
   profile: 'Profile',
   assignRole: 'Assign Role',

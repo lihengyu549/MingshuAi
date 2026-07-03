@@ -11,7 +11,7 @@
         </div>
       </div>
       <div style="display: flex;align-items: center;">
-        <div><el-button type="primary" plain @click="goHome">首页</el-button></div>
+        <div><el-button type="primary" plain @click="goHome">{{ $t('common.homeTitle') }}</el-button></div>
         <div style="padding-right: 30px; margin-left: 30px;">
           <div style="font-weight: 700;font-size: 22px;">{{ formattedTime }} </div>
           <div>{{ currentDate }}</div>

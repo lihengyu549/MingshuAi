@@ -258,7 +258,7 @@
           <template slot-scope="{ row }">
             <div class="source-name-cell">
               <div class="source-icon">
-                <i class="el-icon-s-management"></i>
+                <i class="el-icon-coin"></i>
               </div>
               <span class="source-link">{{ row.sourceName }}</span>
             </div>
