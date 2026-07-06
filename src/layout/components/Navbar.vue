@@ -104,7 +104,7 @@
             <img :src="$store.state.user.avatar" style="width: 40px; height: 40px; border-radius: 50%;" />
             <div class="user-details">
               <div class="user-name">{{ $store.state.user.name }}</div>
-              <div class="user-email">{{ $store.state.user.projectData.email }}</div>
+              <!-- <div class="user-email">{{ $store.state.user.projectData.email }}</div> -->
             </div>
           </div>
           <router-link to="/user/profile">
