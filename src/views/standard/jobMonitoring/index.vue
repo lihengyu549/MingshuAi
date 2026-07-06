@@ -14,10 +14,12 @@
           <div class="head-container tree-container" v-loading="treeLoading">
             <el-input class="serachInput" v-model="filterName" :placeholder="$t('jobMonitoring.searchTreeNodes')"
               clearable />
-            <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
-              :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
-              node-key="id" highlight-current @node-click="handleNodeClick" :render-content="renderContent">
-            </el-tree>
+            <div class="tree-scroll-container">
+              <el-tree class="treeBox" :data="categoryList" :props="defaultProps" :default-expanded-keys="[treeID]"
+                :current-node-key="treeID" :expand-on-click-node="false" :filter-node-method="filterNode" ref="tree"
+                node-key="id" highlight-current @node-click="handleNodeClick" :render-content="renderContent">
+              </el-tree>
+            </div>
           </div>
         </el-card>
       </el-col>
@@ -2184,15 +2186,28 @@ export default {
   padding: 30px;
 }
 
-::v-deep .el-row {
+.job-monitoring-page {
+  height: calc(100vh - 84px);
+  min-height: 0;
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.page-layout {
   flex: 1;
   min-height: 0;
   overflow: hidden;
 }
 
-::v-deep .el-col {
+::v-deep .page-layout.el-row {
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+  overflow: hidden;
+}
+
+::v-deep .page-layout > .el-col {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -2203,15 +2218,20 @@ export default {
   margin-bottom: 0;
 }
 
-.left-card {
+::v-deep .left-card {
   border-radius: 10px;
   height: 100%;
+  max-height: 100%;
+  overflow: hidden;
 
   .el-card__body {
     height: 100%;
+    max-height: 100%;
     padding: 20px;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
   }
 }
 
@@ -2257,11 +2277,36 @@ export default {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tree-scroll-container {
+  flex: 1;
+  min-height: 320px;
+  height: calc(100vh - 250px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .treeBox {
-  height: 100%;
-  overflow-y: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+
+.treeBox::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.treeBox::-webkit-scrollbar-thumb {
+  background-color: #0003;
+  border-radius: 10px;
+  transition: all .2s ease-in-out;
+}
+
+.treeBox::-webkit-scrollbar-track {
+  border-radius: 10px;
 }
 
 .table-card-header {
