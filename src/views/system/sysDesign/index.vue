@@ -68,7 +68,7 @@
     </el-card>
 
     <!-- {{ $t('sysDesign.techSupport') }} -->
-    <el-card class="module-card" shadow="never">
+    <!-- <el-card class="module-card" shadow="never">
       <template slot="header">
         <div class="module-title">
           <i class="el-icon-phone" style="color: #3B82F6; font-size: 20px;"></i>
@@ -85,7 +85,7 @@
           </el-form-item>
         </el-form>
       </div>
-    </el-card>
+    </el-card> -->
 
     <!-- 底部按钮 -->
     <div class="foot_btn">

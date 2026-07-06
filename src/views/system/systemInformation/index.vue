@@ -77,7 +77,7 @@
       </div>
     </el-card>
 
-    <el-card class="card" shadow="never">
+    <!-- <el-card class="card" shadow="never">
       <template slot="header">
         <span class="title">
           {{ $t('systemInformation.techSupport') }}
@@ -95,7 +95,7 @@
           }}</span>
         </div>
       </div>
-    </el-card>
+    </el-card> -->
   </div>
 </template>
 <script>
