@@ -436,22 +436,22 @@
                   @click.stop></el-checkbox>
               </div>
             </div>
-            <!-- 个保法合规审查 -->
-            <div class="feature-item" :class="{ highlight: form.piiDetectionFlag }"
-              @click="toggleFeature('piiDetectionFlag')">
-              <div class="feature-content">
-                <div class="feature-title">{{ $t('hierarchicalTask.features.piiReview') }}</div>
-                <div class="feature-desc">{{ $t('hierarchicalTask.features.piiReviewDesc') }}</div>
-                <el-checkbox v-model="form.piiDetectionFlag" class="checkbox-right round-checkbox"
-                  @click.stop></el-checkbox>
-              </div>
-            </div>
             <!-- AI分类打标 -->
             <div class="feature-item" :class="{ highlight: form.ifStartTask }" @click="toggleFeature('ifStartTask')">
               <div class="feature-content">
                 <div class="feature-title">{{ $t('hierarchicalTask.features.aiTag') }}</div>
                 <div class="feature-desc">{{ $t('hierarchicalTask.features.aiTagDesc') }}</div>
                 <el-checkbox v-model="form.ifStartTask" class="checkbox-right round-checkbox" @click.stop
+                  @change="handleAiTagAutoReviewChange"></el-checkbox>
+              </div>
+            </div>
+            <!-- 自动审查 -->
+            <div class="feature-item" :class="{ highlight: form.ifStartDynamicGrading }"
+              @click="toggleFeature('ifStartDynamicGrading')">
+              <div class="feature-content">
+                <div class="feature-title">{{ $t('hierarchicalTask.features.dynamicRating') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.dynamicRatingDesc') }}</div>
+                <el-checkbox v-model="form.ifStartDynamicGrading" class="checkbox-right round-checkbox" @click.stop
                   @change="handleAiTagAutoReviewChange"></el-checkbox>
               </div>
             </div>
@@ -464,14 +464,14 @@
                   @click.stop></el-checkbox>
               </div>
             </div> -->
-            <!-- 自动审查 -->
-            <div class="feature-item" :class="{ highlight: form.ifStartDynamicGrading }"
-              @click="toggleFeature('ifStartDynamicGrading')">
+            <!-- 个保法合规审查 -->
+            <div class="feature-item" :class="{ highlight: form.piiDetectionFlag }"
+              @click="toggleFeature('piiDetectionFlag')">
               <div class="feature-content">
-                <div class="feature-title">{{ $t('hierarchicalTask.features.dynamicRating') }}</div>
-                <div class="feature-desc">{{ $t('hierarchicalTask.features.dynamicRatingDesc') }}</div>
-                <el-checkbox v-model="form.ifStartDynamicGrading" class="checkbox-right round-checkbox" @click.stop
-                  @change="handleAiTagAutoReviewChange"></el-checkbox>
+                <div class="feature-title">{{ $t('hierarchicalTask.features.piiReview') }}</div>
+                <div class="feature-desc">{{ $t('hierarchicalTask.features.piiReviewDesc') }}</div>
+                <el-checkbox v-model="form.piiDetectionFlag" class="checkbox-right round-checkbox"
+                  @click.stop></el-checkbox>
               </div>
             </div>
             <!-- 样本特征提取 -->
