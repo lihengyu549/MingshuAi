@@ -295,6 +295,24 @@
           </el-time-picker>
         </el-form-item>
 
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="数据安全责任人" prop="securityOwnerId">
+              <el-select v-model="form.securityOwnerId" filterable placeholder="请选择"
+                @change="handleSecurityOwnerChange('form', $event)">
+                <el-option v-for="item in securityUserOptions" :key="item.userId" :label="item.userName"
+                  :value="item.userId">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="所属部门" prop="securityDeptName">
+              <el-input v-model="form.securityDeptName" disabled></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
         <!-- <p>代理数据库信息</p>
         <el-form-item label="代理端口" prop="proxyPort">
           <el-input v-model="form.proxyPort" placeholder="请输入代理端口" />
@@ -337,6 +355,24 @@
             <el-button size="mini" type="primary" plain>{{ $t('dataFrom.selectFile') }}</el-button>
           </el-upload>
         </el-form-item>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="数据安全责任人" prop="securityOwnerId">
+              <el-select v-model="importData.securityOwnerId" filterable placeholder="请选择"
+                @change="handleSecurityOwnerChange('importData', $event)">
+                <el-option v-for="item in securityUserOptions" :key="item.userId" :label="item.userName"
+                  :value="item.userId">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="所属部门" prop="securityDeptName">
+              <el-input v-model="importData.securityDeptName" disabled></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <el-button size="small" type="text" @click="downloadFile" id="btnDownload" icon="el-icon-download">{{
         $t('dataFrom.sampleDownload') }}</el-button>
@@ -421,6 +457,24 @@
             </div>
           </div>
         </el-form-item>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="数据安全责任人" prop="securityOwnerId">
+              <el-select v-model="fileDirectoryData.securityOwnerId" filterable placeholder="请选择"
+                @change="handleSecurityOwnerChange('fileDirectoryData', $event, 'fileDirectoryForm')">
+                <el-option v-for="item in securityUserOptions" :key="item.userId" :label="item.userName"
+                  :value="item.userId">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="所属部门" prop="securityDeptName">
+              <el-input v-model="fileDirectoryData.securityDeptName" disabled></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <div slot="footer">
         <el-button type="primary" plain @click="submitFileDirectoryForm" :loading="fileDirectoryLoading">{{
@@ -530,6 +584,23 @@
           </el-time-picker>
         </el-form-item>
 
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="数据安全责任人" prop="securityOwnerId">
+              <el-select v-model="fileShareServerForm.securityOwnerId" filterable placeholder="请选择"
+                @change="handleSecurityOwnerChange('fileShareServerForm', $event, 'fileShareServerForm')">
+                <el-option v-for="item in securityUserOptions" :key="item.userId" :label="item.userName"
+                  :value="item.userId">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="所属部门" prop="securityDeptName">
+              <el-input v-model="fileShareServerForm.securityDeptName" disabled></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <div slot="footer">
         <el-button type="primary" plain @click="submitFileShareServerForm" :loading="fileShareServerSubmitLoading">{{
@@ -554,6 +625,7 @@ import Result from './components/result.vue'
 import TableSelector from './components/TableSelector.vue'
 import FileDirectoryTransfer from "./components/FileDirectoryTransfer.vue";
 import { getFeatureSelect, relevancyDataDict } from "@/api/system/IndustryExperience";
+import { listUser, getUserProfile } from "@/api/system/user";
 export default {
   dicts: ['sys_datasource_type', 'sys_db_type'],
   name: "Proxys",
@@ -745,6 +817,9 @@ export default {
         scheduleInterval: '',
         scheduleTime: '00:00',
         proceedOrOverwrite: '0',
+        securityOwnerId: null,
+        securityDeptId: null,
+        securityDeptName: '',
       },
       connectionType: '1',
       titleExcel: this.$t('dataFrom.addExcelFile'),
@@ -833,6 +908,12 @@ export default {
         businessComment: [
           { required: true, message: this.$t('dataFrom.pleaseInputBusinessSystemDescription'), trigger: "blur" },
         ],
+        securityOwnerId: [
+          { required: true, message: '请选择数据安全责任人', trigger: "change" }
+        ],
+        securityDeptName: [
+          { required: true, message: '所属部门不能为空', trigger: "change" }
+        ],
       },
       importDataLoading: false,
       importData: {
@@ -843,6 +924,9 @@ export default {
         businessName: '',
         businessComment: '',
         sourceName: '',
+        securityOwnerId: null,
+        securityDeptId: null,
+        securityDeptName: '',
         id: '' // 添加id字段用于编辑
       },
       isServiesNameRequired: false,
@@ -870,10 +954,18 @@ export default {
         importFile: [
           { required: true, message: this.$t('selectRequired', { field: this.$t('dataFrom.importFile') }), trigger: "blur" },
         ],
+        securityOwnerId: [
+          { required: true, message: '请选择数据安全责任人', trigger: "change" }
+        ],
+        securityDeptName: [
+          { required: true, message: '所属部门不能为空', trigger: "change" }
+        ],
       },
       tabelCheckedName: '',
       dictionaryList: [], // 数据字典列表
       currentRow: null, // 当前操作的行数据
+      securityUserOptions: [],
+      currentUserProfile: null,
 
       titleFileDirectory: this.$t('dataFrom.uploadFileTitle'),
       fileDirectoryLoading: false,
@@ -883,6 +975,9 @@ export default {
         businessName: '',
         businessComment: '',
         uploadFiles: [], // 将directoryPath改为uploadFiles数组
+        securityOwnerId: null,
+        securityDeptId: null,
+        securityDeptName: '',
         id: '', // 添加id字段用于编辑
       },
       fileDirectoryRules: {
@@ -908,6 +1003,12 @@ export default {
             trigger: "change"
           }
         ],
+        securityOwnerId: [
+          { required: true, message: '请选择数据安全责任人', trigger: "change" }
+        ],
+        securityDeptName: [
+          { required: true, message: '所属部门不能为空', trigger: "change" }
+        ],
       },
 
       titleFileShareServer: this.$t('dataFrom.addFileShareServer'),
@@ -929,6 +1030,9 @@ export default {
         scheduleInterval: '',
         scheduleTime: '00:00',
         proceedOrOverwrite: '0', // 默认传0
+        securityOwnerId: null,
+        securityDeptId: null,
+        securityDeptName: '',
         id: null,
       },
       fileShareServerRules: {
@@ -987,6 +1091,12 @@ export default {
         fileDataList: [
           { required: true, message: this.$t('dataFrom.scanContentRequired'), trigger: "change" }
         ],
+        securityOwnerId: [
+          { required: true, message: '请选择数据安全责任人', trigger: "change" }
+        ],
+        securityDeptName: [
+          { required: true, message: '所属部门不能为空', trigger: "change" }
+        ],
       },
     };
   },
@@ -1016,8 +1126,51 @@ export default {
     // this.queryParams.projectId = 0
     this.gettreeOptionsList()
     this.getList()
+    this.initSecurityMeta()
   },
   methods: {
+    async initSecurityMeta() {
+      try {
+        const [usersRes, profileRes] = await Promise.all([
+          listUser({ pageNum: 1, pageSize: 10000 }),
+          getUserProfile(),
+        ])
+        this.securityUserOptions = Array.isArray(usersRes.rows) ? usersRes.rows : []
+        this.currentUserProfile = profileRes.data || null
+        if (this.form && !this.form.securityOwnerId) this.applyDefaultSecurity(this.form)
+        if (this.importData && !this.importData.securityOwnerId) this.applyDefaultSecurity(this.importData)
+        if (this.fileDirectoryData && !this.fileDirectoryData.securityOwnerId) this.applyDefaultSecurity(this.fileDirectoryData)
+        if (this.fileShareServerForm && !this.fileShareServerForm.securityOwnerId) this.applyDefaultSecurity(this.fileShareServerForm)
+      } catch (e) {
+        this.securityUserOptions = []
+        this.currentUserProfile = null
+      }
+    },
+    applyDefaultSecurity(target) {
+      if (!target || !this.currentUserProfile || !this.currentUserProfile.userId) return
+      const profile = this.currentUserProfile
+      target.securityOwnerId = profile.userId
+      target.securityDeptId = profile.deptId || null
+      target.securityDeptName = (profile.dept && profile.dept.deptName) ? profile.dept.deptName : ''
+      this.applySecurityDeptByUserId(target, profile.userId)
+    },
+    applySecurityDeptByUserId(target, userId) {
+      if (!target) return
+      const matched = this.securityUserOptions.find(u => String(u.userId) === String(userId))
+      if (!matched) return
+      target.securityOwnerId = matched.userId
+      target.securityDeptId = matched.deptId || null
+      target.securityDeptName = matched.dept && matched.dept.deptName ? matched.dept.deptName : ''
+    },
+    handleSecurityOwnerChange(modelKey, userId, refKey) {
+      const target = this[modelKey]
+      if (!target) return
+      this.applySecurityDeptByUserId(target, userId)
+      const refName = refKey || modelKey
+      if (this.$refs[refName] && this.$refs[refName].clearValidate) {
+        this.$refs[refName].clearValidate(['securityOwnerId', 'securityDeptName'])
+      }
+    },
     percent(value) {
       return value;
     },
@@ -1314,6 +1467,8 @@ export default {
         formData.append('businessName', this.importData.businessName);
         formData.append('businessComment', this.importData.businessComment);
         formData.append('tabelCheckedName', this.importData.importFile);
+        formData.append('securityOwnerId', this.importData.securityOwnerId || '');
+        formData.append('securityDeptId', this.importData.securityDeptId || '');
 
         const res = await importExcel(formData)
         this.messsucc(res, this.$t('dataFrom.importItemCountPrefix'));
@@ -1419,9 +1574,13 @@ export default {
         scheduleInterval: '',
         scheduleTime: '00:00',
         proceedOrOverwrite: '0',
+        securityOwnerId: null,
+        securityDeptId: null,
+        securityDeptName: '',
       };
       this.isServiesNameRequired = false
       this.resetForm("form");
+      this.applyDefaultSecurity(this.form)
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -1530,6 +1689,10 @@ export default {
       this.importData.id = ''
       this.titleExcel = this.$t('dataFrom.addExcelFile')
       this.importData.fileList = []
+      this.importData.securityOwnerId = null
+      this.importData.securityDeptId = null
+      this.importData.securityDeptName = ''
+      this.applyDefaultSecurity(this.importData)
     },
     handleFileChange(file, fileList) {
       this.importData.importFile = file.raw.name
@@ -1542,6 +1705,9 @@ export default {
       this.importData.sourceName = ''
       this.importData.businessName = ''
       this.importData.fileList = []
+      this.importData.securityOwnerId = null
+      this.importData.securityDeptId = null
+      this.importData.securityDeptName = ''
       this.importData.importShow = false
     },
     downloadFile() {
@@ -1709,9 +1875,25 @@ export default {
         this.importData.sourceName = row.sourceName
         this.importData.businessName = row.businessName
         this.importData.businessComment = row.businessComment
+        this.importData.securityOwnerId = row.securityOwnerId != null ? row.securityOwnerId : null
+        this.importData.securityDeptId = row.securityDeptId != null ? row.securityDeptId : null
+        this.importData.securityDeptName = row.securityDeptName != null ? row.securityDeptName : ''
+        if (this.importData.securityOwnerId) {
+          this.applySecurityDeptByUserId(this.importData, this.importData.securityOwnerId)
+        } else {
+          this.applyDefaultSecurity(this.importData)
+        }
         this.importData.importShow = true
       } else if (row.sourceType == "DATABASE") {
         this.form = JSON.parse(JSON.stringify(row))
+        this.form.securityOwnerId = row.securityOwnerId != null ? row.securityOwnerId : null
+        this.form.securityDeptId = row.securityDeptId != null ? row.securityDeptId : null
+        this.form.securityDeptName = row.securityDeptName != null ? row.securityDeptName : ''
+        if (this.form.securityOwnerId) {
+          this.applySecurityDeptByUserId(this.form, this.form.securityOwnerId)
+        } else {
+          this.applyDefaultSecurity(this.form)
+        }
         this.form.tabelCheckedName = row.scanContent
         let targetDatabaseCopy = row.targetDatabase
         let targetDatabaseArr
@@ -1752,6 +1934,14 @@ export default {
         this.fileDirectoryData.sourceName = row.sourceName;
         this.fileDirectoryData.businessName = row.businessName;
         this.fileDirectoryData.businessComment = row.businessComment;
+        this.fileDirectoryData.securityOwnerId = row.securityOwnerId != null ? row.securityOwnerId : null
+        this.fileDirectoryData.securityDeptId = row.securityDeptId != null ? row.securityDeptId : null
+        this.fileDirectoryData.securityDeptName = row.securityDeptName != null ? row.securityDeptName : ''
+        if (this.fileDirectoryData.securityOwnerId) {
+          this.applySecurityDeptByUserId(this.fileDirectoryData, this.fileDirectoryData.securityOwnerId)
+        } else {
+          this.applyDefaultSecurity(this.fileDirectoryData)
+        }
         // 如果有已上传的文件信息，可以在这里处理回显
         // this.fileDirectoryData.uploadFiles = row.uploadFiles || [];
         this.fileDirectoryData.show = true;
@@ -1775,6 +1965,14 @@ export default {
         this.fileShareServerForm.scheduleTime = row.databaseProxysTimer?.scheduleTime || '00:00';
         this.fileShareServerForm.proceedOrOverwrite = row.proceedOrOverwrite || '0';
         this.fileShareServerForm.share = row.share || '';
+        this.fileShareServerForm.securityOwnerId = row.securityOwnerId != null ? row.securityOwnerId : null
+        this.fileShareServerForm.securityDeptId = row.securityDeptId != null ? row.securityDeptId : null
+        this.fileShareServerForm.securityDeptName = row.securityDeptName != null ? row.securityDeptName : ''
+        if (this.fileShareServerForm.securityOwnerId) {
+          this.applySecurityDeptByUserId(this.fileShareServerForm, this.fileShareServerForm.securityOwnerId)
+        } else {
+          this.applyDefaultSecurity(this.fileShareServerForm)
+        }
         this.fileShareServerOpen = true;
       }
     },
@@ -1866,6 +2064,10 @@ export default {
       this.fileDirectoryData.businessComment = ''
       this.fileDirectoryData.uploadFiles = []
       this.fileDirectoryData.id = ''
+      this.fileDirectoryData.securityOwnerId = null
+      this.fileDirectoryData.securityDeptId = null
+      this.fileDirectoryData.securityDeptName = ''
+      this.applyDefaultSecurity(this.fileDirectoryData)
     },
 
     handleFileDirectoryChange(file, fileList) {
@@ -1942,6 +2144,8 @@ export default {
         formData.append('sourceName', this.fileDirectoryData.sourceName);
         formData.append('businessName', this.fileDirectoryData.businessName);
         formData.append('businessComment', this.fileDirectoryData.businessComment);
+        formData.append('securityOwnerId', this.fileDirectoryData.securityOwnerId || '');
+        formData.append('securityDeptId', this.fileDirectoryData.securityDeptId || '');
 
         if (this.fileDirectoryData.id) {
           formData.append('id', this.fileDirectoryData.id);
@@ -1975,10 +2179,14 @@ export default {
       this.fileDirectoryData.businessName = ''
       this.fileDirectoryData.businessComment = ''
       this.fileDirectoryData.uploadFiles = []
+      this.fileDirectoryData.securityOwnerId = null
+      this.fileDirectoryData.securityDeptId = null
+      this.fileDirectoryData.securityDeptName = ''
       this.fileDirectoryData.id = ''
       if (this.$refs.fileDirectoryForm) {
         this.$refs.fileDirectoryForm.resetFields()
       }
+      this.applyDefaultSecurity(this.fileDirectoryData)
     },
 
     handleFileShareServerFn() {
@@ -2080,11 +2288,15 @@ export default {
         scheduleTime: '00:00',
         proceedOrOverwrite: '0',
         share: '', // SMB共享目录
+        securityOwnerId: null,
+        securityDeptId: null,
+        securityDeptName: '',
         id: null,
       }
       if (this.$refs.fileShareServerForm) {
         this.$refs.fileShareServerForm.resetFields()
       }
+      this.applyDefaultSecurity(this.fileShareServerForm)
     },
   }
 };
