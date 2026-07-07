@@ -142,7 +142,7 @@
       </el-col>
     </el-row>
 
-    <el-row :gutter="16" class="section middle-section" type="flex" align="stretch">
+    <el-row :gutter="16" class="section middle-section" :style="middleSectionStyle" type="flex" align="stretch">
       <el-col :span="12" class="middle-col">
         <el-card ref="assetMapCard" class="panel-card hoverable" shadow="never">
           <div slot="header" class="panel-header">
@@ -181,12 +181,11 @@
                     <span class="tile-ratio-value tile-red">{{ item.sensitiveRatio }}%</span>
                   </div>
                 </div>
-                <div class="tile-desc">子类：{{ item.desc }}</div>
+                <div class="tile-desc" v-show="item.desc != ''">子类涉及：{{ item.desc }}</div>
                 <div class="tile-footer">
                   <div class="tile-tags">
-                    <span v-for="(tag, tIdx) in item.sourceTags" :key="tIdx" class="source-tag">
-                      {{ tag.label }}
-                    </span>
+                    <span v-if="item.sourceTags && item.sourceTags.length" class="source-tag">{{ item.sourceTags[0].label }}</span>
+                    <span v-else class="source-tag">暂无数据</span>
                     <span v-if="item.moreCount" class="more-tag">+{{ item.moreCount }}</span>
                   </div>
                   <div v-if="item.hasChildren" class="tile-arrow">
@@ -229,15 +228,15 @@
                 </template>
                 <el-table-column prop="category" label="数据类别" min-width="120" />
                 <el-table-column prop="count" label="数量" width="90" />
-                <el-table-column label="占比" width="70">
+                <!-- <el-table-column label="占比" width="70">
                   <template slot-scope="{ row }">
                     <span class="ratio-text">{{ row.ratio }}%</span>
                   </template>
-                </el-table-column>
+                </el-table-column> -->
                 <el-table-column label="数据源" min-width="140">
                   <template slot-scope="{ row }">
                     <div class="table-sources">
-                      <span v-for="(s, sIdx) in row.sources" :key="sIdx" class="table-source-tag">{{ s.label }}</span>
+                      <span v-if="row.sources && row.sources.length" class="table-source-tag">{{ row.sources[0].label }}</span>
                       <span v-if="row.moreCount" class="table-more-tag">+{{ row.moreCount }}</span>
                     </div>
                   </template>
@@ -362,6 +361,7 @@ export default {
       selectedLevelId: '',
       selectedLevelName: '',
       middleBodyHeight: 0,
+      middleSectionHeight: 0,
       charts: {
         level: null
       }
@@ -396,6 +396,12 @@ export default {
       if (!this.middleBodyHeight) return {}
       return {
         height: `${this.middleBodyHeight}px`
+      }
+    },
+    middleSectionStyle() {
+      if (!this.middleSectionHeight) return {}
+      return {
+        height: `${this.middleSectionHeight}px`
       }
     }
   },
@@ -514,6 +520,9 @@ export default {
             hasChildren: Boolean(item.hasChildren)
           }
         })
+        this.$nextTick(() => {
+          this.syncMiddleBodyHeight()
+        })
       }).finally(() => {
         this.loadingCount = Math.max(this.loadingCount - 1, 0)
         if (!this.loadingCount) this.loading = false
@@ -567,6 +576,7 @@ export default {
         id: String(item.level != null ? item.level : (item.securityLevel != null ? item.securityLevel : (item.id || item.levelId || item.securityLevelId || item.code || index))),
         name: item.name || item.securityLevelName || item.levelName || item.label || '',
         value: Number(item.value != null ? item.value : (item.count != null ? item.count : item.num)) || 0,
+        percentText: item.percent != null ? String(item.percent) : '',
         tooltip: item.tooltip || item.tip || ''
       }))
       return {
@@ -667,14 +677,22 @@ export default {
       })
     },
     syncMiddleBodyHeight() {
-      const card = this.$refs.levelCard && this.$refs.levelCard.$el
-      if (!card) return
-      const header = card.querySelector('.el-card__header')
-      const cardHeight = card.clientHeight || 0
-      const headerHeight = header ? header.offsetHeight : 0
+      const mapCard = this.$refs.assetMapCard && this.$refs.assetMapCard.$el
+      const levelCard = this.$refs.levelCard && this.$refs.levelCard.$el
+      if (!mapCard || !levelCard) return
+      const tile = mapCard.querySelector('.asset-tile')
+      if (!tile) return
+      const tileHeight = tile.offsetHeight || 0
+      if (!tileHeight) return
+      const rows = 3
+      const gap = 14
+      const gridHeight = Math.max(tileHeight * rows + gap * (rows - 1), 0)
+      const header1 = mapCard.querySelector('.el-card__header')
+      const header2 = levelCard.querySelector('.el-card__header')
+      const headerHeight = Math.max(header1 ? header1.offsetHeight : 0, header2 ? header2.offsetHeight : 0)
       const bodyPadding = 32
-      const nextHeight = Math.max(cardHeight - headerHeight - bodyPadding, 0)
-      this.middleBodyHeight = nextHeight
+      this.middleBodyHeight = gridHeight
+      this.middleSectionHeight = headerHeight + bodyPadding + gridHeight
       this.$nextTick(() => {
         if (this.charts.level) this.charts.level.resize()
       })
@@ -685,8 +703,9 @@ export default {
       const names = levels.map(i => i.name)
       const values = levels.map(i => Number(i.value) || 0)
       const max = this.maxLevelValue
+      const getBarColor = (dataIndex) => (dataIndex === this.selectedLevelIndex ? '#5b5cf6' : '#d9dde6')
       this.charts.level.setOption({
-        grid: { left: '6%', right: '4%', top: '10%', bottom: '10%', containLabel: true },
+        grid: { left: '6%', right: '12%', top: '10%', bottom: '10%', containLabel: true },
         tooltip: {
           trigger: 'item',
           formatter: (p) => {
@@ -720,7 +739,7 @@ export default {
             barWidth: 18,
             itemStyle: {
               borderRadius: [6, 6, 6, 6],
-              color: (p) => (p.dataIndex === this.selectedLevelIndex ? '#5b5cf6' : '#d9dde6')
+              color: (p) => getBarColor(p.dataIndex)
             },
             label: {
               show: true,
@@ -732,6 +751,40 @@ export default {
               fontWeight: 700,
               fontSize: 12,
               formatter: (p) => p.name
+            }
+          },
+          {
+            type: 'bar',
+            data: values,
+            barWidth: 18,
+            silent: true,
+            barGap: '-100%',
+            itemStyle: {
+              color: 'transparent'
+            },
+            label: {
+              show: true,
+              position: 'right',
+              distance: 8,
+              formatter: (p) => {
+                const item = levels[p.dataIndex] || {}
+                const text = item.percentText || ''
+                if (!text) return ''
+                const key = p.dataIndex === this.selectedLevelIndex ? 'selected' : 'normal'
+                return `{${key}|${text}}`
+              },
+              rich: {
+                selected: {
+                  color: '#5b5cf6',
+                  fontWeight: 700,
+                  fontSize: 12
+                },
+                normal: {
+                  color: '#d9dde6',
+                  fontWeight: 700,
+                  fontSize: 12
+                }
+              }
             }
           }
         ]
@@ -1286,7 +1339,7 @@ export default {
   border-radius: 12px;
   background: #fafbff;
   padding: 14px 14px 12px;
-  min-height: 210px;
+  min-height: calc(210px - 2.9em);
   display: flex;
   flex-direction: column;
   cursor: default;
@@ -1336,11 +1389,11 @@ export default {
   font-size: 12px;
   color: #8a98b2;
   line-height: 1.45;
-  height: calc(1.45em * 4);
-  max-height: calc(1.45em * 4);
+  height: calc(1.45em * 2);
+  max-height: calc(1.45em * 2);
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 2;
   overflow: hidden;
 }
 
@@ -1372,6 +1425,10 @@ export default {
   padding: 2px 8px;
   font-size: 12px;
   white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
 }
 
 .more-tag {
@@ -1523,6 +1580,10 @@ export default {
   padding: 2px 8px;
   font-size: 12px;
   white-space: nowrap;
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
 }
 
 .table-more-tag {
