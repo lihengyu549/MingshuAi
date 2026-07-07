@@ -47,7 +47,8 @@
         <el-collapse-transition>
           <div v-show="showSearch" class="search-wrapper">
             <el-card class="search-card" shadow="never">
-              <el-form ref="queryForm" :model="queryParams" size="small" :inline="true" label-width="68px">
+              <el-form ref="queryForm" :model="queryParams" size="small" :inline="true" label-width="68px"
+                style="display: flex;justify-content: space-around;">
                 <el-form-item :label="$t('user.userName')" prop="userName">
                   <el-input v-model="queryParams.userName" :placeholder="$t('user.inputUserName')" clearable
                     style="width: 240px" @change="handleQuery" />
@@ -94,9 +95,9 @@
 
             <el-table v-loading="loading" class="tableBox" style="flex: 1;" height="100%" :data="userList"
               @selection-change="handleSelectionChange">
-              <el-table-column type="selection" width="50" align="center" />
+              <el-table-column type="selection" width="50" align="left" />
               <!-- <el-table-column :label="$t('user.userId')" align="center" key="userId" prop="userId" v-if="columns[0].visible" /> -->
-              <el-table-column v-if="columns[1].visible" key="userName" :label="$t('user.userName')" align="center"
+              <el-table-column v-if="columns[1].visible" key="userName" :label="$t('user.userName')" align="left"
                 prop="userName" :show-overflow-tooltip="true" />
               <!-- <el-table-column :label="$t('user.nickName')" align="center" key="nickName" prop="nickName" v-if="columns[2].visible"
               :show-overflow-tooltip="true" /> -->
@@ -108,50 +109,47 @@
                   <span>{{ scope.row.phonenumber || '-' }}</span>
                 </template>
               </el-table-column>
-              <el-table-column :label="$t('user.role')" prop="remark" align="center">
+              <el-table-column :label="$t('user.role')" prop="remark" align="left">
                 <template slot-scope="scope">
                   <span>{{ scope.row.remark || '-' }}</span>
                 </template>
               </el-table-column>
-              <el-table-column :label="$t('user.deptName')" prop="dept.deptName" align="center">
+              <el-table-column :label="$t('user.deptName')" prop="dept.deptName" align="left">
                 <template slot-scope="scope">
                   <el-tag type="primary">{{ scope.row.dept ? scope.row.dept.deptName : '-' }}</el-tag>
                 </template>
               </el-table-column>
-              <el-table-column v-if="columns[5].visible" key="status" :label="$t('status')" align="center">
+              <el-table-column v-if="columns[5].visible" key="status" :label="$t('status')" align="left">
                 <template slot-scope="scope">
-                  <span
-                    :class="[
-                      'status-pill',
-                      scope.row.status === '0' ? 'status-pill--enable' : 'status-pill--disable'
-                    ]"
-                  >
+                  <span :class="[
+                    'status-pill',
+                    scope.row.status === '0' ? 'status-pill--enable' : 'status-pill--disable'
+                  ]">
                     <span class="status-pill__dot"></span>
                     <span>{{ scope.row.status === '0' ? $t('enable') : $t('disable') }}</span>
                   </span>
                 </template>
               </el-table-column>
-              <el-table-column v-if="columns[6].visible" :label="$t('createdTime')" align="center" prop="createTime"
+              <el-table-column v-if="columns[6].visible" :label="$t('createdTime')" align="left" prop="createTime"
                 width="160">
                 <template slot-scope="scope">
                   <span>{{ parseTime(scope.row.createTime) }}</span>
                 </template>
               </el-table-column>
-              <el-table-column :label="$t('operation')" align="center" width="260"
+              <el-table-column :label="$t('operation')" align="left" width="260"
                 class-name="small-padding fixed-width">
                 <template slot-scope="scope">
-                  <el-button v-hasPermi="['system:user:edit']" size="mini" type="text" icon="el-icon-edit"
-                    @click="handleUpdate(scope.row)">
+                  <el-button v-hasPermi="['system:user:edit']" size="mini" type="text" @click="handleUpdate(scope.row)">
                     {{ $t('edit') }}
                   </el-button>
-                  <el-button v-if="scope.row.userId !== 1" v-hasPermi="['system:user:remove']" size="mini" type="text" class="text-danger"
-                    icon="el-icon-delete" @click="handleDelete(scope.row)">
+                  <el-button v-if="scope.row.userId !== 1" v-hasPermi="['system:user:remove']" size="mini" type="text"
+                    class="text-danger" @click="handleDelete(scope.row)">
                     {{ $t('delete') }}
                   </el-button>
-                  <el-button v-hasPermi="['system:user:resetPwd']" size="mini" type="text" icon="el-icon-key"
+                  <!-- <el-button v-hasPermi="['system:user:resetPwd']" size="mini" type="text" icon="el-icon-key"
                     @click="handleResetPwd(scope.row)">
                     {{ $t('resetPassword') }}
-                  </el-button>
+                  </el-button> -->
 
                   <!-- <el-dropdown size="mini" @command="(command) => handleCommand(command, scope.row)"
                   v-hasPermi="['system:user:resetPwd', 'system:user:edit']">
@@ -180,7 +178,8 @@
         <el-row>
           <el-col>
             <el-form-item :label="$t('user.userName')" prop="userName">
-              <el-input v-model="form.userName" :placeholder="$t('user.inputUserName')" maxlength="30" :disabled="isAdminEdit" />
+              <el-input v-model="form.userName" :placeholder="$t('user.inputUserName')" maxlength="30"
+                :disabled="isAdminEdit" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -221,8 +220,25 @@
         </el-row>
         <el-row>
           <el-col>
+            <el-form-item label="密码" prop="password" :required="form.userId === undefined">
+              <el-input v-model="form.password" placeholder="请输入密码" type="password" maxlength="20" show-password />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col>
+            <el-form-item label="确认密码" prop="confirmPassword" :required="form.userId === undefined">
+              <el-input v-model="form.confirmPassword" placeholder="请再次输入密码" type="password" maxlength="20"
+                show-password />
+                <span v-if="form.userId === undefined" class="form-tip">建议密码长度不能小于6位，不能包含空格。</span>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col>
             <el-form-item label="所属部门" prop="deptId">
-              <treeselect v-model="form.deptId" :options="deptOptions" :show-count="true" :placeholder="$t('user.selectDept')" />
+              <treeselect ref="deptIdSelect" v-model="form.deptId" class="dept-treeselect" :options="deptOptions"
+                :show-count="true" :default-expand-level="999" :placeholder="$t('user.selectDept')" />
               <div v-if="form.userId === undefined" class="form-tip">默认建议在当前选中部门下新增用户，便于后续直接归档到组织架构。</div>
             </el-form-item>
           </el-col>
@@ -231,7 +247,8 @@
           <el-col>
             <el-form-item :label="$t('status')" prop="status">
               <el-select v-model="form.status" style="width: 100%" :disabled="isAdminEdit">
-                <el-option v-for="dict in dict.type.sys_normal_disable" :key="dict.value" :label="dict.label" :value="dict.value" />
+                <el-option v-for="dict in dict.type.sys_normal_disable" :key="dict.value" :label="dict.label"
+                  :value="dict.value" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -279,7 +296,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog title="修改密码" class="custom-dialog" :visible.sync="resetPwdDialog.open" width="560px" append-to-body
+    <!-- <el-dialog title="修改密码" class="custom-dialog" :visible.sync="resetPwdDialog.open" width="560px" append-to-body
       :close-on-click-modal="false">
       <el-form ref="resetPwdFormRef" :model="resetPwdForm" :rules="resetPwdRules" label-position="top">
         <el-form-item label="目标用户">
@@ -289,15 +306,17 @@
           <el-input v-model="resetPwdForm.password" placeholder="请输入新密码" type="password" maxlength="20" show-password />
         </el-form-item>
         <el-form-item label="确认密码" prop="confirmPassword">
-          <el-input v-model="resetPwdForm.confirmPassword" placeholder="请再次输入新密码" type="password" maxlength="20" show-password />
+          <el-input v-model="resetPwdForm.confirmPassword" placeholder="请再次输入新密码" type="password" maxlength="20"
+            show-password />
         </el-form-item>
         <div class="form-tip">请输入新的登录密码，建议不少于 6 位。</div>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeResetPwdDialog">{{ $t('cancel') }}</el-button>
-        <el-button type="primary" :loading="resetPwdDialog.loading" @click="submitResetPwdDialog">{{ $t('confirm') }}</el-button>
+        <el-button type="primary" :loading="resetPwdDialog.loading" @click="submitResetPwdDialog">{{ $t('confirm')
+          }}</el-button>
       </div>
-    </el-dialog>
+    </el-dialog> -->
 
     <el-dialog title="移动部门" class="custom-dialog" :visible.sync="deptMoveDialog.open" width="560px" append-to-body
       :close-on-click-modal="false">
@@ -306,14 +325,16 @@
           <el-input :value="currentDeptName" disabled />
         </el-form-item>
         <el-form-item label="移动到" prop="parentId">
-          <treeselect v-model="deptMoveForm.parentId" :options="deptMoveOptions" :normalizer="deptTreeNormalizer"
-            :show-count="true" placeholder="请选择目标部门" />
+          <treeselect ref="deptMoveSelect" v-model="deptMoveForm.parentId" class="dept-treeselect"
+            :options="deptMoveOptions" :normalizer="deptTreeNormalizer" :show-count="true" :default-expand-level="999"
+            placeholder="请选择目标部门" />
           <div class="form-tip">移动部门后，其下所有子部门与用户会整体跟随，不会丢失数据。</div>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDeptMoveDialog">{{ $t('cancel') }}</el-button>
-        <el-button type="primary" :loading="deptMoveDialog.loading" @click="submitDeptMoveDialog">{{ $t('confirm') }}</el-button>
+        <el-button type="primary" :loading="deptMoveDialog.loading" @click="submitDeptMoveDialog">{{ $t('confirm')
+        }}</el-button>
       </div>
     </el-dialog>
 
@@ -330,7 +351,8 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDeptAddDialog">{{ $t('cancel') }}</el-button>
-        <el-button type="primary" :loading="deptAddDialog.loading" @click="submitDeptAddDialog">{{ $t('confirm') }}</el-button>
+        <el-button type="primary" :loading="deptAddDialog.loading" @click="submitDeptAddDialog">{{ $t('confirm')
+        }}</el-button>
       </div>
     </el-dialog>
 
@@ -344,7 +366,8 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDeptRenameDialog">{{ $t('cancel') }}</el-button>
-        <el-button type="primary" :loading="deptRenameDialog.loading" @click="submitDeptRenameDialog">{{ $t('confirm') }}</el-button>
+        <el-button type="primary" :loading="deptRenameDialog.loading" @click="submitDeptRenameDialog">{{ $t('confirm')
+        }}</el-button>
       </div>
     </el-dialog>
 
@@ -379,7 +402,7 @@
 </template>
 
 <script>
-import { listUser, getUser, delUser, addUser, updateUser, resetUserPwd, deptTreeSelect } from '@/api/system/user'
+import { listUser, getUser, delUser, addUser, updateUser, deptTreeSelect } from '@/api/system/user'
 import { getDept, addDept, updateDept as updateDeptInfo, delDept, listDeptExcludeChild } from '@/api/system/dept'
 import { getToken } from '@/utils/auth'
 import Treeselect from '@riophae/vue-treeselect'
@@ -418,8 +441,47 @@ const createRules = vm => ({
     { required: true, message: '所属部门不能为空', trigger: 'change' }
   ],
   password: [
-    { required: true, message: vm.$t('user.validation.passwordRequired'), trigger: 'blur' },
-    { min: 5, max: 20, message: vm.$t('user.validation.passwordLength', { min: 5, max: 20 }), trigger: 'blur' }
+    {
+      validator: (rule, value, callback) => {
+        const isEdit = vm.form && vm.form.userId !== undefined
+        if (!isEdit && !value) {
+          callback(new Error(vm.$t('user.validation.passwordRequired')))
+          return
+        }
+        if (value && (value.length < 5 || value.length > 20)) {
+          callback(new Error(vm.$t('user.validation.passwordLength', { min: 5, max: 20 })))
+          return
+        }
+        callback()
+      },
+      trigger: 'blur'
+    }
+  ],
+  confirmPassword: [
+    {
+      validator: (rule, value, callback) => {
+        const isEdit = vm.form && vm.form.userId !== undefined
+        const password = vm.form ? vm.form.password : ''
+        if (!isEdit && !value) {
+          callback(new Error('请再次输入密码'))
+          return
+        }
+        if (isEdit && !password && !value) {
+          callback()
+          return
+        }
+        if (!value) {
+          callback(new Error('请再次输入密码'))
+          return
+        }
+        if (value !== password) {
+          callback(new Error('两次输入密码不一致'))
+          return
+        }
+        callback()
+      },
+      trigger: 'blur'
+    }
   ],
   email: [
     {
@@ -481,33 +543,33 @@ export default {
       deptRenameRules: {
         deptName: [{ required: true, message: '部门名称不能为空', trigger: 'blur' }]
       },
-      resetPwdDialog: {
-        open: false,
-        loading: false
-      },
-      resetPwdForm: {
-        userId: undefined,
-        userName: '',
-        password: '',
-        confirmPassword: ''
-      },
-      resetPwdRules: {
-        password: [
-          { required: true, message: '请输入新密码', trigger: 'blur' },
-          { min: 6, max: 20, message: '密码长度必须介于 6 和 20 之间', trigger: 'blur' }
-        ],
-        confirmPassword: [
-          { required: true, message: '请再次输入新密码', trigger: 'blur' },
-          {
-            validator: (rule, value, callback) => {
-              if (!value) return callback()
-              if (value !== this.resetPwdForm.password) return callback(new Error('两次输入密码不一致'))
-              callback()
-            },
-            trigger: 'blur'
-          }
-        ]
-      },
+      // resetPwdDialog: {
+      //   open: false,
+      //   loading: false
+      // },
+      // resetPwdForm: {
+      //   userId: undefined,
+      //   userName: '',
+      //   password: '',
+      //   confirmPassword: ''
+      // },
+      // resetPwdRules: {
+      //   password: [
+      //     { required: true, message: '请输入新密码', trigger: 'blur' },
+      //     { min: 6, max: 20, message: '密码长度必须介于 6 和 20 之间', trigger: 'blur' }
+      //   ],
+      //   confirmPassword: [
+      //     { required: true, message: '请再次输入新密码', trigger: 'blur' },
+      //     {
+      //       validator: (rule, value, callback) => {
+      //         if (!value) return callback()
+      //         if (value !== this.resetPwdForm.password) return callback(new Error('两次输入密码不一致'))
+      //         callback()
+      //       },
+      //       trigger: 'blur'
+      //     }
+      //   ]
+      // },
       open: false,
       initPassword: undefined,
       dateRange: [],
@@ -893,6 +955,7 @@ export default {
         userName: undefined,
         nickName: undefined,
         password: undefined,
+        confirmPassword: undefined,
         phonenumber: undefined,
         email: undefined,
         sex: undefined,
@@ -923,18 +986,18 @@ export default {
       this.single = selection.length !== 1
       this.multiple = !selection.length
     },
-    handleCommand(command, row) {
-      switch (command) {
-        case 'handleResetPwd':
-          this.handleResetPwd(row)
-          break
-        case 'handleAuthRole':
-          this.handleAuthRole(row)
-          break
-        default:
-          break
-      }
-    },
+    // handleCommand(command, row) {
+    //   switch (command) {
+    //     case 'handleResetPwd':
+    //       this.handleResetPwd(row)
+    //       break
+    //     case 'handleAuthRole':
+    //       this.handleAuthRole(row)
+    //       break
+    //     default:
+    //       break
+    //   }
+    // },
     handleAdd() {
       this.reset()
       getUser().then(response => {
@@ -943,6 +1006,7 @@ export default {
         this.open = true
         this.titleKey = 'user.titleAdd'
         this.form.password = this.initPassword
+        this.form.confirmPassword = this.initPassword
         this.form.deptId = this.queryParams.deptId
       })
     },
@@ -958,50 +1022,51 @@ export default {
         this.open = true
         this.titleKey = 'user.titleEdit'
         this.form.password = ''
+        this.form.confirmPassword = ''
       })
     },
-    handleResetPwd(row) {
-      this.resetPwdDialog.open = true
-      this.resetPwdDialog.loading = false
-      this.resetPwdForm = {
-        userId: row.userId,
-        userName: row.userName,
-        password: '',
-        confirmPassword: ''
-      }
-      this.$nextTick(() => {
-        if (this.$refs.resetPwdFormRef) {
-          this.$refs.resetPwdFormRef.clearValidate && this.$refs.resetPwdFormRef.clearValidate()
-        }
-      })
-    },
-    closeResetPwdDialog() {
-      this.resetPwdDialog.open = false
-      this.resetPwdDialog.loading = false
-      this.resetPwdForm = { userId: undefined, userName: '', password: '', confirmPassword: '' }
-      if (this.$refs.resetPwdFormRef) {
-        this.$refs.resetPwdFormRef.resetFields && this.$refs.resetPwdFormRef.resetFields()
-      }
-    },
-    submitResetPwdDialog() {
-      if (!this.$refs.resetPwdFormRef) return
-      this.$refs.resetPwdFormRef.validate(valid => {
-        if (!valid) return
-        if (this.resetPwdForm.password !== this.resetPwdForm.confirmPassword) {
-          this.$modal.msgError('两次输入密码不一致')
-          return
-        }
-        this.resetPwdDialog.loading = true
-        resetUserPwd(this.resetPwdForm.userId, this.resetPwdForm.password)
-          .then(() => {
-            this.$modal.msgSuccess('修改成功')
-            this.closeResetPwdDialog()
-          })
-          .finally(() => {
-            this.resetPwdDialog.loading = false
-          })
-      })
-    },
+    // handleResetPwd(row) {
+    //   this.resetPwdDialog.open = true
+    //   this.resetPwdDialog.loading = false
+    //   this.resetPwdForm = {
+    //     userId: row.userId,
+    //     userName: row.userName,
+    //     password: '',
+    //     confirmPassword: ''
+    //   }
+    //   this.$nextTick(() => {
+    //     if (this.$refs.resetPwdFormRef) {
+    //       this.$refs.resetPwdFormRef.clearValidate && this.$refs.resetPwdFormRef.clearValidate()
+    //     }
+    //   })
+    // },
+    // closeResetPwdDialog() {
+    //   this.resetPwdDialog.open = false
+    //   this.resetPwdDialog.loading = false
+    //   this.resetPwdForm = { userId: undefined, userName: '', password: '', confirmPassword: '' }
+    //   if (this.$refs.resetPwdFormRef) {
+    //     this.$refs.resetPwdFormRef.resetFields && this.$refs.resetPwdFormRef.resetFields()
+    //   }
+    // },
+    // submitResetPwdDialog() {
+    //   if (!this.$refs.resetPwdFormRef) return
+    //   this.$refs.resetPwdFormRef.validate(valid => {
+    //     if (!valid) return
+    //     if (this.resetPwdForm.password !== this.resetPwdForm.confirmPassword) {
+    //       this.$modal.msgError('两次输入密码不一致')
+    //       return
+    //     }
+    //     this.resetPwdDialog.loading = true
+    //     resetUserPwd(this.resetPwdForm.userId, this.resetPwdForm.password)
+    //       .then(() => {
+    //         this.$modal.msgSuccess('修改成功')
+    //         this.closeResetPwdDialog()
+    //       })
+    //       .finally(() => {
+    //         this.resetPwdDialog.loading = false
+    //       })
+    //   })
+    // },
     handleAuthRole(row) {
       const userId = row.userId
       this.$router.push('/system/user-auth/role/' + userId)
@@ -1009,16 +1074,23 @@ export default {
     submitForm() {
       this.$refs.form.validate(valid => {
         if (!valid) return
-        this.form.nickName = this.form.userName
-        if (this.form.userId !== undefined) {
-          updateUser(this.form).then(() => {
+        const payload = {
+          ...this.form,
+          nickName: this.form.userName
+        }
+        if (payload.userId !== undefined && !payload.password) {
+          delete payload.password
+        }
+        delete payload.confirmPassword
+        if (payload.userId !== undefined) {
+          updateUser(payload).then(() => {
             this.$modal.msgSuccess(this.$t('user.updateSuccess'))
             this.open = false
             this.getList()
           })
           return
         }
-        addUser(this.form).then(() => {
+        addUser(payload).then(() => {
           this.$modal.msgSuccess(this.$t('user.addSuccess'))
           this.open = false
           this.getList()
@@ -1214,6 +1286,54 @@ export default {
 
 .deptTree ::v-deep .el-tree-node.is-current>.el-tree-node__content {
   background: #eff6ff;
+}
+
+.dept-treeselect {
+  width: 100%;
+}
+
+::v-deep .dept-treeselect .vue-treeselect__control {
+  height: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+::v-deep .dept-treeselect .vue-treeselect__value-container {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+}
+
+::v-deep .dept-treeselect .vue-treeselect__placeholder,
+::v-deep .dept-treeselect .vue-treeselect__single-value,
+::v-deep .dept-treeselect .vue-treeselect__input {
+  line-height: 38px !important;
+}
+
+::v-deep .dept-treeselect .vue-treeselect__input-container {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  padding-top: 0 !important;
+}
+
+::v-deep .dept-treeselect input.vue-treeselect__input {
+  height: 38px !important;
+  line-height: 38px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+::v-deep .dept-treeselect .vue-treeselect__menu {
+  padding: 6px;
+}
+
+::v-deep .dept-treeselect .vue-treeselect__option {
+  margin: 2px 0;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  border-radius: 6px;
 }
 
 .dept-tree-node {
