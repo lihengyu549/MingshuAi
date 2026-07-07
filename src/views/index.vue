@@ -279,7 +279,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="数据安全负责部门" min-width="180">
+        <el-table-column label="所属部门" min-width="180">
           <template slot-scope="{ row }">
             <div class="dept-cell">
               <i class="el-icon-office-building"></i>
@@ -287,7 +287,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="负责人" width="150">
+        <el-table-column label="数据安全负责人" width="150">
           <template slot-scope="{ row }">
             <div class="owner-cell">
               <span class="owner-avatar">{{ (row.owner || '').slice(0, 1) }}</span>
