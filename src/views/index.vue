@@ -17,7 +17,7 @@
             <el-card class="panel-card top-card hoverable" shadow="never">
               <div class="top-card-header">
                 <div class="top-card-icon top-card-icon-blue">
-                  <i class="el-icon-s-operation"></i>
+                  <svg-icon iconClass="数据总量" />
                 </div>
                 <div class="top-card-head">
                   <div class="top-card-title">数据总量</div>
