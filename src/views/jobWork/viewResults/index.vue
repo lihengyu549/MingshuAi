@@ -117,7 +117,7 @@
                 <template v-else>
                   <el-form-item :label="$t('viewResults.search.database')" prop="databaseName">
                     <el-select clearable v-model="queryParams.databaseName" @change="databaseNameFn"
-                      :placeholder="$t('pleaseSelect')">
+                      :placeholder="$t('pleaseSelect')" filterable>
                       <el-option v-for="item in surfaceList" :key="item" :label="item" :value="item">
                       </el-option>
                     </el-select>

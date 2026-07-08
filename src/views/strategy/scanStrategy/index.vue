@@ -96,7 +96,7 @@
                   </div>
                 </el-col>
                 <el-col :span="8">
-                  <div class="switch-card">
+                  <!-- <div class="switch-card">
                     <div class="switch-content">
                       <div class="switch-label">
                         <div class="label-text">{{ allData.DirtyData.DirtyData7.label }}</div>
@@ -105,11 +105,7 @@
                       <el-switch v-model="allData.DirtyData.DirtyData7.state" active-color="#009dff"
                         inactive-color="#e0e0e0"></el-switch>
                     </div>
-                  </div>
-                </el-col>
-              </el-row>
-              <el-row :gutter="16">
-                <el-col :span="8">
+                  </div> -->
                   <div class="switch-card">
                     <div class="switch-content">
                       <div class="switch-label">
@@ -122,6 +118,20 @@
                   </div>
                 </el-col>
               </el-row>
+              <!-- <el-row :gutter="16">
+                <el-col :span="8">
+                  <div class="switch-card">
+                    <div class="switch-content">
+                      <div class="switch-label">
+                        <div class="label-text">{{ allData.DirtyData.DirtyData6.label }}</div>
+                        <div class="label-desc">{{ $t('scanStrategy.containsBackupEtc') }}</div>
+                      </div>
+                      <el-switch v-model="allData.DirtyData.DirtyData6.state" active-color="#009dff"
+                        inactive-color="#e0e0e0"></el-switch>
+                    </div>
+                  </div>
+                </el-col>
+              </el-row> -->
             </div>
           </el-card>
           <el-card class="card" shadow="never">

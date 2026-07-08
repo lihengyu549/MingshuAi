@@ -741,7 +741,7 @@ export default {
   },
   watch: {
     filterName(val) {
-      this.$refs.tree.filter(val);
+      if (this.$refs.tree) this.$refs.tree.filter(val);
     },
     tags: {
       deep: true,
@@ -777,6 +777,9 @@ export default {
       handler(val) {
         this.handleTagChange(val, 'reverseRef');
       }
+    },
+    'queryParams.categoryId'(val) {
+      this.fetchLevelOptions(val)
     }
   },
   created() {
@@ -809,11 +812,6 @@ export default {
     },
     headerRemark() {
       return this.currentCategoryNode.categoryDescribe || ''
-    }
-  },
-  watch: {
-    'queryParams.categoryId'(val) {
-      this.fetchLevelOptions(val)
     }
   },
   methods: {
