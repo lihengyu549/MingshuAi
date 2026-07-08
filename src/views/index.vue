@@ -221,8 +221,8 @@
                 <div class="level-table-title">分类明细</div>
                 <span v-if="selectedLevelName" class="level-table-tag">{{ selectedLevelName }}</span>
               </div>
-              <el-table :data="levelTableData" size="mini" height="100%" class="cockpit-table"
-                :header-cell-style="{ background: '#f7f9fc' }">
+              <el-table ref="levelTableRef" :data="levelTableData" size="mini" height="100%" class="cockpit-table"
+                :header-cell-style="{ background: '#f7f9fc' }" :row-style="getLevelTableRowStyle">
                 <template slot="empty">
                   <el-empty :description="$t('noData')"></el-empty>
                 </template>
@@ -362,6 +362,7 @@ export default {
       selectedLevelName: '',
       middleBodyHeight: 0,
       middleSectionHeight: 0,
+      levelTableRowHeight: 0,
       charts: {
         level: null
       }
@@ -572,13 +573,17 @@ export default {
       const rawLevels = Array.isArray(data && data.levels)
         ? data.levels
         : (Array.isArray(data && data.list) ? data.list : (Array.isArray(data && data.data) ? data.data : []))
-      const levels = rawLevels.map((item, index) => ({
-        id: String(item.level != null ? item.level : (item.securityLevel != null ? item.securityLevel : (item.id || item.levelId || item.securityLevelId || item.code || index))),
-        name: item.name || item.securityLevelName || item.levelName || item.label || '',
-        value: Number(item.value != null ? item.value : (item.count != null ? item.count : item.num)) || 0,
-        percentText: item.percent != null ? String(item.percent) : '',
-        tooltip: item.tooltip || item.tip || ''
-      }))
+      const levels = rawLevels.map((item, index) => {
+        const value = Number(item.value != null ? item.value : (item.count != null ? item.count : item.num)) || 0
+        const percentText = item.percent != null ? String(item.percent) : ''
+        return {
+          id: String(item.level != null ? item.level : (item.securityLevel != null ? item.securityLevel : (item.id || item.levelId || item.securityLevelId || item.code || index))),
+          name: item.name || item.securityLevelName || item.levelName || item.label || '',
+          value,
+          percentText: value === 0 && percentText ? `暂无数据 ${percentText}` : percentText,
+          tooltip: item.tooltip || item.tip || ''
+        }
+      })
       return {
         levelLegend,
         levels
@@ -639,6 +644,7 @@ export default {
       const { manageLoading = true, levelName = '' } = options
       if (!levelId) {
         this.levelTableData = []
+        this.levelTableRowHeight = 0
         return Promise.resolve([])
       }
       if (levelName) this.selectedLevelName = levelName
@@ -668,6 +674,9 @@ export default {
           }
         })
         this.levelTableData = normalized
+        this.$nextTick(() => {
+          this.syncLevelTableRowHeight()
+        })
         return normalized
       }).finally(() => {
         if (manageLoading) {
@@ -695,7 +704,27 @@ export default {
       this.middleSectionHeight = headerHeight + bodyPadding + gridHeight
       this.$nextTick(() => {
         if (this.charts.level) this.charts.level.resize()
+        this.syncLevelTableRowHeight()
       })
+    },
+    syncLevelTableRowHeight() {
+      const tableVm = this.$refs.levelTableRef
+      const tableEl = tableVm && tableVm.$el
+      if (!tableEl) return
+      const bodyWrapper = tableEl.querySelector('.el-table__body-wrapper')
+      if (!bodyWrapper) return
+      const bodyHeight = bodyWrapper.clientHeight || 0
+      const count = Array.isArray(this.levelTableData) ? this.levelTableData.length : 0
+      if (!bodyHeight || !count) {
+        this.levelTableRowHeight = 0
+        return
+      }
+      const nextHeight = Math.floor(bodyHeight / 5)
+      this.levelTableRowHeight = nextHeight
+    },
+    getLevelTableRowStyle() {
+      if (!this.levelTableRowHeight) return {}
+      return { height: `${this.levelTableRowHeight}px` }
     },
     updateLevelChart() {
       if (!this.charts.level) return
