@@ -171,6 +171,14 @@
                       <el-option :label="$t('viewResults.options.no')" value="0" />
                     </el-select>
                   </el-form-item>
+                  <el-form-item label="过滤原因" prop="filterReason">
+                    <el-select clearable v-model="queryParams.filterReason" @change="inputSearch"
+                      :placeholder="$t('pleaseSelect')">
+                      <el-option v-for="item in dict.type.sys_filter_reason" :key="item.value" :label="item.label"
+                        :value="item.value">
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
                 </template>
               </el-form>
             </el-card>
@@ -639,7 +647,7 @@ import {
 import { getCategorySchemaLevelList } from "@/api/data"
 
 export default {
-  dicts: ['sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un', 'sys_confidence_level_status'],
+  dicts: ['sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un', 'sys_confidence_level_status', 'sys_filter_reason'],
   name: "ProxysResult",
   data() {
     return {
@@ -841,6 +849,7 @@ export default {
         projectId: '',
         securityLevel: [],
         confirm: '',
+        filterReason: '',
         databaseId: '',
         businessName: '',
         databaseName: '',

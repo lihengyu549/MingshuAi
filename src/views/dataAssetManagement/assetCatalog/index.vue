@@ -262,6 +262,13 @@
                           <el-option label="否" value="0" />
                         </el-select>
                       </el-form-item>
+                      <el-form-item label="过滤原因">
+                        <el-select v-model="drawerQueryParams.filterReason" placeholder="全部" clearable
+                          @change="handleDrawerSearch">
+                          <el-option v-for="item in dict.type.sys_filter_reason" :key="item.value" :label="item.label"
+                            :value="item.value"></el-option>
+                        </el-select>
+                      </el-form-item>
                     </el-form>
                   </el-card>
                 </div>
@@ -1164,7 +1171,7 @@ import { confirmIds, confirmList, cancelConfirm, cancelConfirmData, updateFiledR
 import Treeselect from "@riophae/vue-treeselect";
 import VirtualTree from "./components/VirtualTree.vue";
 export default {
-  dicts: ['sys_export_column', 'sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un', 'sys_confidence_level_status'],
+  dicts: ['sys_export_column', 'sys_classification_state', 'sys_classification_reasons', 'sys_classification_reasons_un', 'sys_confidence_level_status', 'sys_filter_reason'],
   name: "assetCatalog",
   components: { Treeselect, VirtualTree },
   data() {
@@ -1267,6 +1274,7 @@ export default {
         securityLevel: [],
         confirm: '',
         classificationReasons: '',
+        filterReason: '',
         confidenceLevel: '',
         pageNum: 1,
         pageSize: 10
@@ -3715,6 +3723,7 @@ export default {
         securityLevel: [],
         confirm: '',
         classificationReasons: '',
+        filterReason: '',
         confidenceLevel: '',
         pageNum: 1,
         pageSize: 10
