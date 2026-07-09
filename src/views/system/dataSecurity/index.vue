@@ -103,12 +103,69 @@
                                         :name="item.id">
                                         <template slot="title">
                                             <div class="collapse-title">
-                                                <span class="collapse-title__badge">{{ item.sort }}</span>
-                                                <span class="collapse-title__text">{{ item.title }}</span>
+                                                <div class="collapse-title__main">
+                                                    <span class="collapse-title__badge">{{ item.sort }}</span>
+                                                    <span class="collapse-title__text">{{ item.title }}</span>
+                                                </div>
+                                                <div v-if="getClauseResultOption(item.id)" class="collapse-title__meta">
+                                                    <span
+                                                        :class="['collapse-result-pill', `collapse-result-pill--${getClauseResultOption(item.id).type}`]">
+                                                        <i :class="getClauseResultOption(item.id).icon"></i>
+                                                        <span>{{ getClauseResultOption(item.id).label }}</span>
+                                                    </span>
+                                                </div>
                                             </div>
                                         </template>
                                         <div class="collapse-content">
-                                            {{ item.content }}
+                                            <div class="clause-form">
+                                                <div class="clause-form__section">
+                                                    <div class="clause-form__label">
+                                                        <i class="el-icon-s-operation"></i>
+                                                        <span>合规说明 / 整改记录</span>
+                                                    </div>
+                                                    <el-input v-model="getClauseState(item.id).note" type="textarea"
+                                                        :rows="3" resize="none"
+                                                        placeholder="请输入该小项的合规情况说明、整改措施或其他备注..." />
+                                                </div>
+
+                                                <div class="clause-form__section">
+                                                    <div class="clause-form__label">
+                                                        <i class="el-icon-picture-outline"></i>
+                                                        <span>图片证据 / 截图</span>
+                                                    </div>
+                                                    <div class="clause-form__upload-box">
+                                                        <i class="el-icon-plus"></i>
+                                                        <span>添加图片</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="clause-form__section">
+                                                    <div class="clause-form__label">
+                                                        <i class="el-icon-document"></i>
+                                                        <span>文件附件</span>
+                                                    </div>
+                                                    <el-button plain size="small" class="clause-form__attach-btn">
+                                                        <i class="el-icon-plus"></i>
+                                                        <span>添加附件</span>
+                                                    </el-button>
+                                                </div>
+
+                                                <div class="clause-form__section clause-form__section--last">
+                                                    <div class="clause-form__label">
+                                                        <i class="el-icon-star-off"></i>
+                                                        <span>结果判定</span>
+                                                    </div>
+                                                    <div class="result-button-group">
+                                                        <button v-for="option in resultOptions" :key="option.value"
+                                                            type="button"
+                                                            :class="['result-button', `result-button--${option.type}`, { 'is-active': getClauseState(item.id).result === option.value }]"
+                                                            @click="setClauseResult(item.id, option.value)">
+                                                            <i :class="option.icon"></i>
+                                                            <span>{{ option.label }}</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </el-collapse-item>
                                 </el-collapse>
@@ -463,7 +520,14 @@ export default {
             activeSystemId: systemList[0].id,
             activeTab: 'general',
             activeTreeNodeId: '',
-            activeCollapseNames: []
+            activeCollapseNames: [],
+            clauseFormState: {},
+            resultOptions: [
+                { label: '符合', value: 'success', type: 'success', icon: 'el-icon-check' },
+                { label: '部分符合', value: 'warning', type: 'warning', icon: 'el-icon-time' },
+                { label: '不符合', value: 'danger', type: 'danger', icon: 'el-icon-close' },
+                { label: '不适用', value: 'info', type: 'info', icon: 'el-icon-minus' }
+            ]
         }
     },
     computed: {
@@ -562,6 +626,23 @@ export default {
                 return ok + partial + risk + na
             }
             return 0
+        },
+        getClauseState(itemId) {
+            if (!this.clauseFormState[itemId]) {
+                this.$set(this.clauseFormState, itemId, {
+                    note: '',
+                    result: ''
+                })
+            }
+            return this.clauseFormState[itemId]
+        },
+        setClauseResult(itemId, result) {
+            const state = this.getClauseState(itemId)
+            state.result = result
+        },
+        getClauseResultOption(itemId) {
+            const state = this.getClauseState(itemId)
+            return this.resultOptions.find(option => option.value === state.result) || null
         }
     }
 }
@@ -1025,27 +1106,41 @@ export default {
 
 .security-collapse {
     border-top: none;
+    border-bottom: none;
+}
+
+::v-deep .security-collapse .el-collapse-item {
+    margin-bottom: 14px;
+    border: 1px solid #dbe4f3;
+    border-radius: 16px;
+    background: #fff;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+::v-deep .security-collapse .el-collapse-item.is-active {
+    border-color: #5b7cff;
+    box-shadow: 0 0 0 1px rgba(91, 124, 255, 0.08);
 }
 
 ::v-deep .security-collapse .el-collapse-item__header {
     height: auto;
-    min-height: 54px;
+    min-height: 60px;
     line-height: 1.6;
-    padding: 0 16px;
-    border: 1px solid #edf1f7;
-    border-radius: 14px;
-    margin-bottom: 14px;
+    padding: 0 18px 0 16px;
+    border: none;
     background: #fff;
 }
 
 ::v-deep .security-collapse .el-collapse-item__wrap {
+    border-top: 1px solid #eef2f8;
     border-bottom: none;
-    margin: -6px 0 14px;
-    border-radius: 0 0 14px 14px;
+    margin: 0;
+    background: #fff;
 }
 
 ::v-deep .security-collapse .el-collapse-item__content {
-    padding: 0 16px 16px;
+    padding: 18px 20px 18px;
     font-size: 14px;
     color: #6b7280;
     line-height: 1.9;
@@ -1054,8 +1149,18 @@ export default {
 .collapse-title {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-width: 0;
+    gap: 16px;
+    padding: 14px 0;
+}
+
+.collapse-title__main {
+    display: flex;
+    align-items: center;
     gap: 12px;
-    padding: 12px 0;
+    min-width: 0;
 }
 
 .collapse-title__badge {
@@ -1075,10 +1180,204 @@ export default {
     color: #1f2937;
     font-size: 14px;
     font-weight: 600;
+    min-width: 0;
+}
+
+.collapse-title__meta {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.collapse-result-pill {
+    height: 22px;
+    padding: 0 10px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.collapse-result-pill--success {
+    color: #16a34a;
+    background: #eaf8ef;
+}
+
+.collapse-result-pill--warning {
+    color: #d97706;
+    background: #fff3dc;
+}
+
+.collapse-result-pill--danger {
+    color: #dc2626;
+    background: #feecee;
+}
+
+.collapse-result-pill--info {
+    color: #64748b;
+    background: #f1f5f9;
 }
 
 .collapse-content {
-    padding-left: 40px;
+    padding-left: 0;
+}
+
+.clause-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.clause-form__section {
+    padding-top: 14px;
+    border-top: 1px dashed #e8edf6;
+}
+
+.clause-form__section:first-child {
+    padding-top: 0;
+    border-top: none;
+}
+
+.clause-form__section--last {
+    padding-bottom: 4px;
+}
+
+.clause-form__label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.clause-form__label i {
+    color: #7c8aa5;
+}
+
+::v-deep .clause-form .el-textarea__inner {
+    min-height: 86px !important;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #d7e0ef;
+    background: #ffffff;
+    color: #475569;
+    box-shadow: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+::v-deep .clause-form .el-textarea__inner::placeholder {
+    color: #b1bacb;
+}
+
+::v-deep .clause-form .el-textarea__inner:hover {
+    border-color: #c4d2eb;
+}
+
+::v-deep .clause-form .el-textarea__inner:focus {
+    border-color: #4f6ef7;
+    background: #ffffff;
+    box-shadow: 0 0 0 2px rgba(79, 110, 247, 0.12);
+}
+
+.clause-form__upload-box {
+    width: 72px;
+    height: 72px;
+    border: 1px dashed #d9e2f2;
+    border-radius: 12px;
+    background: #f9fbff;
+    color: #98a3b8;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clause-form__upload-box:hover {
+    border-color: #b7c8eb;
+    color: #6b7a90;
+}
+
+.clause-form__upload-box i {
+    font-size: 18px;
+}
+
+.clause-form__upload-box span {
+    font-size: 12px;
+}
+
+.clause-form__attach-btn {
+    height: 34px;
+    padding: 0 16px;
+    border-color: #dbe3f0;
+    border-radius: 10px;
+    color: #7c8aa5;
+    background: #fff;
+}
+
+.clause-form__attach-btn i {
+    margin-right: 4px;
+}
+
+.result-button-group {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.result-button {
+    height: 40px;
+    border: 1px solid #d7e0ef;
+    border-radius: 12px;
+    background: #fff;
+    color: #5f6b85;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.result-button:hover {
+    border-color: #b8c7e2;
+    transform: translateY(-1px);
+}
+
+.result-button--success.is-active {
+    color: #10b981;
+    background: #ecfdf5;
+    border-color: #10b981;
+    box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.08);
+}
+
+.result-button--warning.is-active {
+    color: #f59e0b;
+    background: #fffbeb;
+    border-color: #f59e0b;
+    box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.08);
+}
+
+.result-button--danger.is-active {
+    color: #ef4444;
+    background: #fef2f2;
+    border-color: #ef4444;
+    box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.08);
+}
+
+.result-button--info.is-active {
+    color: #64748b;
+    background: #f8fafc;
+    border-color: #94a3b8;
+    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
 }
 
 @media screen and (max-width: 1440px) {
@@ -1119,6 +1418,10 @@ export default {
     .security-tree-panel {
         border-right: none;
         border-bottom: 1px solid #edf1f7;
+    }
+
+    .result-button-group {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 </style>
