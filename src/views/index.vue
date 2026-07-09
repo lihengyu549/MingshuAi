@@ -110,7 +110,7 @@
             <div class="mini-stat">
               <div class="mini-left">
                 <div class="mini-icon" :style="{ color: '#5b5cf6' }">
-                  <svg-icon iconClass="QWen" class-name="mini-svg" />
+                  <svg-icon iconClass="qwen" class-name="mini-svg" />
                 </div>
                 <div class="mini-info">
                   <div class="mini-title">{{ dataView.rightCards.identify.title }}</div>
