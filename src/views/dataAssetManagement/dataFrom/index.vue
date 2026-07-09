@@ -297,8 +297,8 @@
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="数据安全责任人" prop="securityOwnerId">
-              <el-select v-model="form.securityOwnerId" filterable placeholder="请选择"
+            <el-form-item label="数据安全责任人" prop="ownerUserId">
+              <el-select v-model="form.ownerUserId" filterable placeholder="请选择"
                 @change="handleSecurityOwnerChange('form', $event)">
                 <el-option v-for="item in securityUserOptions" :key="item.userId" :label="item.userName"
                   :value="item.userId">
@@ -358,8 +358,8 @@
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="数据安全责任人" prop="securityOwnerId">
-              <el-select v-model="importData.securityOwnerId" filterable placeholder="请选择"
+            <el-form-item label="数据安全责任人" prop="ownerUserId">
+              <el-select v-model="importData.ownerUserId" filterable placeholder="请选择"
                 @change="handleSecurityOwnerChange('importData', $event)">
                 <el-option v-for="item in securityUserOptions" :key="item.userId" :label="item.userName"
                   :value="item.userId">
@@ -460,8 +460,8 @@
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="数据安全责任人" prop="securityOwnerId">
-              <el-select v-model="fileDirectoryData.securityOwnerId" filterable placeholder="请选择"
+            <el-form-item label="数据安全责任人" prop="ownerUserId">
+              <el-select v-model="fileDirectoryData.ownerUserId" filterable placeholder="请选择"
                 @change="handleSecurityOwnerChange('fileDirectoryData', $event, 'fileDirectoryForm')">
                 <el-option v-for="item in securityUserOptions" :key="item.userId" :label="item.userName"
                   :value="item.userId">
@@ -586,8 +586,8 @@
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="数据安全责任人" prop="securityOwnerId">
-              <el-select v-model="fileShareServerForm.securityOwnerId" filterable placeholder="请选择"
+            <el-form-item label="数据安全责任人" prop="ownerUserId">
+              <el-select v-model="fileShareServerForm.ownerUserId" filterable placeholder="请选择"
                 @change="handleSecurityOwnerChange('fileShareServerForm', $event, 'fileShareServerForm')">
                 <el-option v-for="item in securityUserOptions" :key="item.userId" :label="item.userName"
                   :value="item.userId">
@@ -817,7 +817,7 @@ export default {
         scheduleInterval: '',
         scheduleTime: '00:00',
         proceedOrOverwrite: '0',
-        securityOwnerId: null,
+        ownerUserId: null,
         securityDeptId: null,
         securityDeptName: '',
       },
@@ -908,7 +908,7 @@ export default {
         businessComment: [
           { required: true, message: this.$t('dataFrom.pleaseInputBusinessSystemDescription'), trigger: "blur" },
         ],
-        securityOwnerId: [
+        ownerUserId: [
           { required: true, message: '请选择数据安全责任人', trigger: "change" }
         ],
         securityDeptName: [
@@ -924,7 +924,7 @@ export default {
         businessName: '',
         businessComment: '',
         sourceName: '',
-        securityOwnerId: null,
+        ownerUserId: null,
         securityDeptId: null,
         securityDeptName: '',
         id: '' // 添加id字段用于编辑
@@ -954,7 +954,7 @@ export default {
         importFile: [
           { required: true, message: this.$t('selectRequired', { field: this.$t('dataFrom.importFile') }), trigger: "blur" },
         ],
-        securityOwnerId: [
+        ownerUserId: [
           { required: true, message: '请选择数据安全责任人', trigger: "change" }
         ],
         securityDeptName: [
@@ -975,7 +975,7 @@ export default {
         businessName: '',
         businessComment: '',
         uploadFiles: [], // 将directoryPath改为uploadFiles数组
-        securityOwnerId: null,
+        ownerUserId: null,
         securityDeptId: null,
         securityDeptName: '',
         id: '', // 添加id字段用于编辑
@@ -1003,7 +1003,7 @@ export default {
             trigger: "change"
           }
         ],
-        securityOwnerId: [
+        ownerUserId: [
           { required: true, message: '请选择数据安全责任人', trigger: "change" }
         ],
         securityDeptName: [
@@ -1030,7 +1030,7 @@ export default {
         scheduleInterval: '',
         scheduleTime: '00:00',
         proceedOrOverwrite: '0', // 默认传0
-        securityOwnerId: null,
+        ownerUserId: null,
         securityDeptId: null,
         securityDeptName: '',
         id: null,
@@ -1091,7 +1091,7 @@ export default {
         fileDataList: [
           { required: true, message: this.$t('dataFrom.scanContentRequired'), trigger: "change" }
         ],
-        securityOwnerId: [
+        ownerUserId: [
           { required: true, message: '请选择数据安全责任人', trigger: "change" }
         ],
         securityDeptName: [
@@ -1137,10 +1137,10 @@ export default {
         ])
         this.securityUserOptions = Array.isArray(usersRes.rows) ? usersRes.rows : []
         this.currentUserProfile = profileRes.data || null
-        if (this.form && !this.form.securityOwnerId) this.applyDefaultSecurity(this.form)
-        if (this.importData && !this.importData.securityOwnerId) this.applyDefaultSecurity(this.importData)
-        if (this.fileDirectoryData && !this.fileDirectoryData.securityOwnerId) this.applyDefaultSecurity(this.fileDirectoryData)
-        if (this.fileShareServerForm && !this.fileShareServerForm.securityOwnerId) this.applyDefaultSecurity(this.fileShareServerForm)
+        if (this.form && !this.form.ownerUserId) this.applyDefaultSecurity(this.form)
+        if (this.importData && !this.importData.ownerUserId) this.applyDefaultSecurity(this.importData)
+        if (this.fileDirectoryData && !this.fileDirectoryData.ownerUserId) this.applyDefaultSecurity(this.fileDirectoryData)
+        if (this.fileShareServerForm && !this.fileShareServerForm.ownerUserId) this.applyDefaultSecurity(this.fileShareServerForm)
       } catch (e) {
         this.securityUserOptions = []
         this.currentUserProfile = null
@@ -1149,7 +1149,7 @@ export default {
     applyDefaultSecurity(target) {
       if (!target || !this.currentUserProfile || !this.currentUserProfile.userId) return
       const profile = this.currentUserProfile
-      target.securityOwnerId = profile.userId
+      target.ownerUserId = profile.userId
       target.securityDeptId = profile.deptId || null
       target.securityDeptName = (profile.dept && profile.dept.deptName) ? profile.dept.deptName : ''
       this.applySecurityDeptByUserId(target, profile.userId)
@@ -1158,7 +1158,7 @@ export default {
       if (!target) return
       const matched = this.securityUserOptions.find(u => String(u.userId) === String(userId))
       if (!matched) return
-      target.securityOwnerId = matched.userId
+      target.ownerUserId = matched.userId
       target.securityDeptId = matched.deptId || null
       target.securityDeptName = matched.dept && matched.dept.deptName ? matched.dept.deptName : ''
     },
@@ -1168,7 +1168,7 @@ export default {
       this.applySecurityDeptByUserId(target, userId)
       const refName = refKey || modelKey
       if (this.$refs[refName] && this.$refs[refName].clearValidate) {
-        this.$refs[refName].clearValidate(['securityOwnerId', 'securityDeptName'])
+        this.$refs[refName].clearValidate(['ownerUserId', 'securityDeptName'])
       }
     },
     percent(value) {
@@ -1467,7 +1467,7 @@ export default {
         formData.append('businessName', this.importData.businessName);
         formData.append('businessComment', this.importData.businessComment);
         formData.append('tabelCheckedName', this.importData.importFile);
-        formData.append('securityOwnerId', this.importData.securityOwnerId || '');
+        formData.append('ownerUserId', this.importData.ownerUserId || '');
         formData.append('securityDeptId', this.importData.securityDeptId || '');
 
         const res = await importExcel(formData)
@@ -1574,7 +1574,7 @@ export default {
         scheduleInterval: '',
         scheduleTime: '00:00',
         proceedOrOverwrite: '0',
-        securityOwnerId: null,
+        ownerUserId: null,
         securityDeptId: null,
         securityDeptName: '',
       };
@@ -1631,6 +1631,7 @@ export default {
 
         let data = JSON.parse(JSON.stringify(this.form))
         delete data.projectName
+        delete data.securityOwnerId
         if (!Array.isArray(data.targetDatabase)) {
           let str = data.targetDatabase
           data.targetDatabase = str.trim()
@@ -1689,7 +1690,7 @@ export default {
       this.importData.id = ''
       this.titleExcel = this.$t('dataFrom.addExcelFile')
       this.importData.fileList = []
-      this.importData.securityOwnerId = null
+      this.importData.ownerUserId = null
       this.importData.securityDeptId = null
       this.importData.securityDeptName = ''
       this.applyDefaultSecurity(this.importData)
@@ -1705,7 +1706,7 @@ export default {
       this.importData.sourceName = ''
       this.importData.businessName = ''
       this.importData.fileList = []
-      this.importData.securityOwnerId = null
+      this.importData.ownerUserId = null
       this.importData.securityDeptId = null
       this.importData.securityDeptName = ''
       this.importData.importShow = false
@@ -1875,22 +1876,22 @@ export default {
         this.importData.sourceName = row.sourceName
         this.importData.businessName = row.businessName
         this.importData.businessComment = row.businessComment
-        this.importData.securityOwnerId = row.securityOwnerId != null ? row.securityOwnerId : null
+        this.importData.ownerUserId = row.ownerUserId != null ? row.ownerUserId : (row.securityOwnerId != null ? row.securityOwnerId : null)
         this.importData.securityDeptId = row.securityDeptId != null ? row.securityDeptId : null
         this.importData.securityDeptName = row.securityDeptName != null ? row.securityDeptName : ''
-        if (this.importData.securityOwnerId) {
-          this.applySecurityDeptByUserId(this.importData, this.importData.securityOwnerId)
+        if (this.importData.ownerUserId) {
+          this.applySecurityDeptByUserId(this.importData, this.importData.ownerUserId)
         } else {
           this.applyDefaultSecurity(this.importData)
         }
         this.importData.importShow = true
       } else if (row.sourceType == "DATABASE") {
         this.form = JSON.parse(JSON.stringify(row))
-        this.form.securityOwnerId = row.securityOwnerId != null ? row.securityOwnerId : null
+        this.form.ownerUserId = row.ownerUserId != null ? row.ownerUserId : (row.securityOwnerId != null ? row.securityOwnerId : null)
         this.form.securityDeptId = row.securityDeptId != null ? row.securityDeptId : null
         this.form.securityDeptName = row.securityDeptName != null ? row.securityDeptName : ''
-        if (this.form.securityOwnerId) {
-          this.applySecurityDeptByUserId(this.form, this.form.securityOwnerId)
+        if (this.form.ownerUserId) {
+          this.applySecurityDeptByUserId(this.form, this.form.ownerUserId)
         } else {
           this.applyDefaultSecurity(this.form)
         }
@@ -1934,11 +1935,11 @@ export default {
         this.fileDirectoryData.sourceName = row.sourceName;
         this.fileDirectoryData.businessName = row.businessName;
         this.fileDirectoryData.businessComment = row.businessComment;
-        this.fileDirectoryData.securityOwnerId = row.securityOwnerId != null ? row.securityOwnerId : null
+        this.fileDirectoryData.ownerUserId = row.ownerUserId != null ? row.ownerUserId : (row.securityOwnerId != null ? row.securityOwnerId : null)
         this.fileDirectoryData.securityDeptId = row.securityDeptId != null ? row.securityDeptId : null
         this.fileDirectoryData.securityDeptName = row.securityDeptName != null ? row.securityDeptName : ''
-        if (this.fileDirectoryData.securityOwnerId) {
-          this.applySecurityDeptByUserId(this.fileDirectoryData, this.fileDirectoryData.securityOwnerId)
+        if (this.fileDirectoryData.ownerUserId) {
+          this.applySecurityDeptByUserId(this.fileDirectoryData, this.fileDirectoryData.ownerUserId)
         } else {
           this.applyDefaultSecurity(this.fileDirectoryData)
         }
@@ -1965,11 +1966,11 @@ export default {
         this.fileShareServerForm.scheduleTime = row.databaseProxysTimer?.scheduleTime || '00:00';
         this.fileShareServerForm.proceedOrOverwrite = row.proceedOrOverwrite || '0';
         this.fileShareServerForm.share = row.share || '';
-        this.fileShareServerForm.securityOwnerId = row.securityOwnerId != null ? row.securityOwnerId : null
+        this.fileShareServerForm.ownerUserId = row.ownerUserId != null ? row.ownerUserId : (row.securityOwnerId != null ? row.securityOwnerId : null)
         this.fileShareServerForm.securityDeptId = row.securityDeptId != null ? row.securityDeptId : null
         this.fileShareServerForm.securityDeptName = row.securityDeptName != null ? row.securityDeptName : ''
-        if (this.fileShareServerForm.securityOwnerId) {
-          this.applySecurityDeptByUserId(this.fileShareServerForm, this.fileShareServerForm.securityOwnerId)
+        if (this.fileShareServerForm.ownerUserId) {
+          this.applySecurityDeptByUserId(this.fileShareServerForm, this.fileShareServerForm.ownerUserId)
         } else {
           this.applyDefaultSecurity(this.fileShareServerForm)
         }
@@ -2064,7 +2065,7 @@ export default {
       this.fileDirectoryData.businessComment = ''
       this.fileDirectoryData.uploadFiles = []
       this.fileDirectoryData.id = ''
-      this.fileDirectoryData.securityOwnerId = null
+      this.fileDirectoryData.ownerUserId = null
       this.fileDirectoryData.securityDeptId = null
       this.fileDirectoryData.securityDeptName = ''
       this.applyDefaultSecurity(this.fileDirectoryData)
@@ -2144,7 +2145,7 @@ export default {
         formData.append('sourceName', this.fileDirectoryData.sourceName);
         formData.append('businessName', this.fileDirectoryData.businessName);
         formData.append('businessComment', this.fileDirectoryData.businessComment);
-        formData.append('securityOwnerId', this.fileDirectoryData.securityOwnerId || '');
+        formData.append('ownerUserId', this.fileDirectoryData.ownerUserId || '');
         formData.append('securityDeptId', this.fileDirectoryData.securityDeptId || '');
 
         if (this.fileDirectoryData.id) {
@@ -2179,7 +2180,7 @@ export default {
       this.fileDirectoryData.businessName = ''
       this.fileDirectoryData.businessComment = ''
       this.fileDirectoryData.uploadFiles = []
-      this.fileDirectoryData.securityOwnerId = null
+      this.fileDirectoryData.ownerUserId = null
       this.fileDirectoryData.securityDeptId = null
       this.fileDirectoryData.securityDeptName = ''
       this.fileDirectoryData.id = ''
@@ -2288,7 +2289,7 @@ export default {
         scheduleTime: '00:00',
         proceedOrOverwrite: '0',
         share: '', // SMB共享目录
-        securityOwnerId: null,
+        ownerUserId: null,
         securityDeptId: null,
         securityDeptName: '',
         id: null,
