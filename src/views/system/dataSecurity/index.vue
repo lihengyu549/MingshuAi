@@ -787,11 +787,10 @@ export default {
     font-size: 12px;
     color: #8a94a6;
     line-height: 1.7;
-    min-height: 42px;
 }
 
 .system-card__meta {
-    margin-top: 12px;
+    margin-top: 8px;
     display: flex;
     align-items: center;
     gap: 8px;
