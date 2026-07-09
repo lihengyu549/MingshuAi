@@ -955,7 +955,6 @@ export default {
 .data-mapping-page {
   min-height: 100%;
   padding: 40px;
-  background: #f5f8fc;
 }
 
 .page-header {
