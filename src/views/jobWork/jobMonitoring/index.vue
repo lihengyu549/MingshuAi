@@ -712,7 +712,8 @@ export default {
             return this.routeData.sourceType === 'FILE_CATALOGUE' || this.routeData.sourceType === 'FILE_SERVER';
         },
         showAiVision() {
-            return true;
+            // Temporarily hide the AI vision tab.
+            return false;
         },
         visibleProcessingSteps() {
             if (!this.isFileServerTask) {
