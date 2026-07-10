@@ -1,8 +1,20 @@
 <template>
     <div class="app-container data-security-page">
         <div class="page-header">
-            <div class="page-header__title">第三级系统数据安全基本要求</div>
-            <div class="page-header__subtitle">基于 GA/T 2380-2026《网络安全等级保护数据安全基本要求》第六章</div>
+            <div class="page-header__main">
+                <div class="page-header__heading">
+                    <div class="page-header__title">第三级系统数据安全基本要求</div>
+                    <div class="page-header__subtitle">基于 GA/T 2380-2026《网络安全等级保护数据安全基本要求》第六章</div>
+                </div>
+                <div class="page-header__operations">
+                    <label class="form-label">所属标准</label>
+                    <el-select v-model="selectedStandard" class="standard-select" filterable size="small"
+                        placeholder="请选择所属标准" @change="handleStandardChange">
+                        <el-option v-for="item in treeOptions" :key="item.id" :label="item.categoryName"
+                            :value="String(item.id)" />
+                    </el-select>
+                </div>
+            </div>
         </div>
 
         <el-row :gutter="20" class="page-layout">
@@ -40,7 +52,7 @@
             <el-col :span="19" :xs="24" class="page-layout__right">
                 <el-card shadow="never" class="summary-card">
                     <div class="summary-stat-list">
-                        <div v-for="stat in currentSystem.summaryStats" :key="stat.label" class="summary-stat-item">
+                        <div v-for="stat in activeSystemSummaryStats" :key="stat.label" class="summary-stat-item">
                             <div class="summary-stat-item__label">{{ stat.label }}</div>
                             <div :class="['summary-stat-item__value', `summary-stat-item__value--${stat.theme}`]">{{
                                 stat.value }}</div>
@@ -179,6 +191,8 @@
 </template>
 
 <script>
+import { getFrameworks } from '@/api/system/protectCategory'
+
 const createClauseDetail = (prefix, title, description, items) => ({
     title,
     description,
@@ -516,7 +530,11 @@ export default {
     data() {
         const systemList = createSystemList()
         return {
+            query: {},
+            treeOptions: [],
+            selectedStandard: '',
             systemList,
+            activeSystem: systemList[0] || {},
             activeSystemId: systemList[0].id,
             activeTab: 'general',
             activeTreeNodeId: '',
@@ -530,9 +548,22 @@ export default {
             ]
         }
     },
+    created() {
+        this.query = this.normalizeRouteRow(this.$route.query.row)
+        this.selectedStandard = this.$route.query.categoryId
+            ? String(this.$route.query.categoryId)
+            : this.query.categoryId
+                ? String(this.query.categoryId)
+                : ''
+    },
     computed: {
         currentSystem() {
-            return this.systemList.find(item => item.id === this.activeSystemId) || this.systemList[0] || {}
+            return this.activeSystem && this.activeSystem.id
+                ? this.activeSystem
+                : this.systemList.find(item => item.id === this.activeSystemId) || this.systemList[0] || {}
+        },
+        activeSystemSummaryStats() {
+            return this.getSystemSummaryStats(this.currentSystem)
         },
         currentTabData() {
             const tabs = this.currentSystem.complianceTabs || {}
@@ -559,14 +590,63 @@ export default {
             return Math.round((this.completedCount / this.totalClauseCount) * 100)
         }
     },
-    mounted() {
+    async mounted() {
+        await this.loadStandardOptions()
         this.resetActiveTreeNode()
     },
     methods: {
+        normalizeRouteRow(row) {
+            if (!row) {
+                return {}
+            }
+            if (typeof row === 'string') {
+                try {
+                    return JSON.parse(row)
+                } catch (error) {
+                    return {}
+                }
+            }
+            return JSON.parse(JSON.stringify(row))
+        },
+        async loadStandardOptions() {
+            try {
+                const response = await getFrameworks()
+                this.treeOptions = Array.isArray(response.data) ? response.data : []
+                const hasSelectedStandard = this.treeOptions.some(item => String(item.id) === this.selectedStandard)
+                if (!hasSelectedStandard) {
+                    this.selectedStandard = this.treeOptions.length ? String(this.treeOptions[0].id) : ''
+                }
+            } catch (error) {
+                this.treeOptions = []
+                this.selectedStandard = ''
+                console.error('Failed to load standard options:', error)
+            }
+        },
+        handleStandardChange() {
+            this.activeSystem = this.systemList[0] || {}
+            this.activeSystemId = this.activeSystem.id || ''
+            this.activeTab = 'general'
+            this.resetActiveTreeNode()
+        },
         handleSystemSelect(item) {
+            this.activeSystem = item || {}
             this.activeSystemId = item.id
             this.activeTab = 'general'
             this.resetActiveTreeNode()
+        },
+        getSystemSummaryStats(system = {}) {
+            if (Array.isArray(system.summaryStats) && system.summaryStats.length) {
+                return system.summaryStats
+            }
+
+            return [
+                { label: '一般数据合规条目', value: system.generalClauseCount || 0, theme: 'primary' },
+                { label: '重要数据合规条目', value: system.importantClauseCount || 0, theme: 'purple' },
+                { label: '符合', value: system.okCount || 0, theme: 'success' },
+                { label: '部分符合', value: system.partialCount || 0, theme: 'warning' },
+                { label: '不符合', value: system.riskCount || 0, theme: 'danger' },
+                { label: '不适用', value: system.naCount || 0, theme: 'muted' }
+            ]
         },
         handleTabChange() {
             this.resetActiveTreeNode()
@@ -663,6 +743,17 @@ export default {
     margin-bottom: 20px;
 }
 
+.page-header__main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.page-header__heading {
+    min-width: 0;
+}
+
 .page-header__title {
     font-size: 22px;
     font-weight: 700;
@@ -676,10 +767,42 @@ export default {
     color: #8a94a6;
 }
 
+.page-header__operations {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.form-label {
+    font-size: 14px;
+    color: #303133;
+    white-space: nowrap;
+}
+
+.standard-select {
+    width: 240px;
+}
+
 .page-layout {
     flex: 1;
     min-height: 0;
     display: flex;
+}
+
+@media (max-width: 768px) {
+    .page-header__main {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .page-header__operations {
+        width: 100%;
+    }
+
+    .standard-select {
+        width: 100%;
+    }
 }
 
 .page-layout__left,
