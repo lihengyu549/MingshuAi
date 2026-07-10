@@ -64,23 +64,24 @@
                     <div slot="header" class="detail-card__header">
                         <div class="detail-card__title">合规条目详情</div>
                         <div class="detail-card__toolbar">
-                            <div class="detail-card__progress-text">{{ completedCount }} / {{ totalClauseCount }}</div>
+                            <div class="detail-card__progress-text">{{ detailProgress.completed }} / {{
+                                detailProgress.total }}</div>
                             <el-progress :percentage="progressPercent" :show-text="false" :stroke-width="8"
                                 color="#3b82f6" class="detail-card__progress" />
                             <el-button size="mini" plain icon="el-icon-download" disabled>暂不提供下载</el-button>
                         </div>
                     </div>
 
-                    <div class="detail-card__body">
+                    <div class="detail-card__body" v-loading="tabsLoading">
                         <el-tabs v-model="activeTab" class="security-tabs" @tab-click="handleTabChange">
-                            <el-tab-pane label="一般数据合规要求" name="general"></el-tab-pane>
-                            <el-tab-pane label="重要数据合规要求" name="important"></el-tab-pane>
+                            <el-tab-pane v-for="tab in securityTabs" :key="tab.id" :label="tab.label"
+                                :name="tab.id"></el-tab-pane>
                         </el-tabs>
 
                         <div class="security-content">
-                            <div class="security-tree-panel">
-                                <el-tree ref="clauseTree" :data="currentTreeData" node-key="id" default-expand-all
-                                    highlight-current :expand-on-click-node="false" :current-node-key="activeTreeNodeId"
+                            <div class="security-tree-panel" v-loading="treeLoading">
+                                <el-tree ref="clauseTree" :data="currentTreeData" node-key="id" highlight-current
+                                    :expand-on-click-node="false" :current-node-key="activeTreeNodeId" empty-text="暂无数据"
                                     @node-click="handleTreeNodeClick">
                                     <span slot-scope="{ node, data }" class="security-tree-node">
                                         <span class="security-tree-node__left">
@@ -104,89 +105,169 @@
                                 </el-tree>
                             </div>
 
-                            <div class="security-detail-panel">
-                                <div class="security-detail-panel__header">
-                                    <div class="security-detail-panel__title">{{ currentNodeDetail.title }}</div>
-                                    <div class="security-detail-panel__desc">{{ currentNodeDetail.description }}</div>
-                                </div>
-
-                                <el-collapse v-model="activeCollapseNames" class="security-collapse">
-                                    <el-collapse-item v-for="item in currentNodeDetail.items" :key="item.id"
-                                        :name="item.id">
-                                        <template slot="title">
-                                            <div class="collapse-title">
-                                                <div class="collapse-title__main">
-                                                    <span class="collapse-title__badge">{{ item.sort }}</span>
-                                                    <span class="collapse-title__text">{{ item.title }}</span>
-                                                </div>
-                                                <div v-if="getClauseResultOption(item.id)" class="collapse-title__meta">
-                                                    <span
-                                                        :class="['collapse-result-pill', `collapse-result-pill--${getClauseResultOption(item.id).type}`]">
-                                                        <i :class="getClauseResultOption(item.id).icon"></i>
-                                                        <span>{{ getClauseResultOption(item.id).label }}</span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </template>
-                                        <div class="collapse-content">
-                                            <div class="clause-form">
-                                                <div class="clause-form__section">
-                                                    <div class="clause-form__label">
-                                                        <i class="el-icon-s-operation"></i>
-                                                        <span>合规说明 / 整改记录</span>
-                                                    </div>
-                                                    <el-input v-model="getClauseState(item.id).note" type="textarea"
-                                                        :rows="3" resize="none"
-                                                        placeholder="请输入该小项的合规情况说明、整改措施或其他备注..." />
-                                                </div>
-
-                                                <div class="clause-form__section">
-                                                    <div class="clause-form__label">
-                                                        <i class="el-icon-picture-outline"></i>
-                                                        <span>图片证据 / 截图</span>
-                                                    </div>
-                                                    <div class="clause-form__upload-box">
-                                                        <i class="el-icon-plus"></i>
-                                                        <span>添加图片</span>
-                                                    </div>
-                                                </div>
-
-                                                <div class="clause-form__section">
-                                                    <div class="clause-form__label">
-                                                        <i class="el-icon-document"></i>
-                                                        <span>文件附件</span>
-                                                    </div>
-                                                    <el-button plain size="small" class="clause-form__attach-btn">
-                                                        <i class="el-icon-plus"></i>
-                                                        <span>添加附件</span>
-                                                    </el-button>
-                                                </div>
-
-                                                <div class="clause-form__section clause-form__section--last">
-                                                    <div class="clause-form__label">
-                                                        <i class="el-icon-star-off"></i>
-                                                        <span>结果判定</span>
-                                                    </div>
-                                                    <div class="result-button-group">
-                                                        <button v-for="option in resultOptions" :key="option.value"
-                                                            type="button"
-                                                            :class="['result-button', `result-button--${option.type}`, { 'is-active': getClauseState(item.id).result === option.value }]"
-                                                            @click="setClauseResult(item.id, option.value)">
-                                                            <i :class="option.icon"></i>
-                                                            <span>{{ option.label }}</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
+                            <div class="security-detail-panel" v-loading="detailLoading">
+                                <template v-if="hasNodeDetail">
+                                    <div class="security-detail-panel__header">
+                                        <div class="security-detail-panel__title">{{ currentNodeDetail.title }}</div>
+                                        <div class="security-detail-panel__desc">{{ currentNodeDetail.description }}
                                         </div>
-                                    </el-collapse-item>
-                                </el-collapse>
+                                    </div>
+
+                                    <el-collapse v-model="activeCollapseNames" class="security-collapse"
+                                        @change="handleCollapseChange">
+                                        <el-collapse-item v-for="item in currentNodeDetail.items" :key="item.id"
+                                            :name="item.id">
+                                            <template slot="title">
+                                                <div class="collapse-title">
+                                                    <div class="collapse-title__main">
+                                                        <span class="collapse-title__badge">{{ item.sort }}</span>
+                                                        <span class="collapse-title__text">{{ item.title }}</span>
+                                                    </div>
+                                                    <div v-if="getClauseResultOption(item.id)"
+                                                        class="collapse-title__meta">
+                                                        <span
+                                                            :class="['collapse-result-pill', `collapse-result-pill--${getClauseResultOption(item.id).type}`]">
+                                                            <i :class="getClauseResultOption(item.id).icon"></i>
+                                                            <span>{{ getClauseResultOption(item.id).label }}</span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <div class="collapse-content" v-loading="getClauseState(item.id).loading">
+                                                <div class="clause-form">
+                                                    <div class="clause-form__section">
+                                                        <div class="clause-form__label">
+                                                            <i class="el-icon-s-operation"></i>
+                                                            <span>合规说明 / 整改记录</span>
+                                                        </div>
+                                                        <el-input v-model="getClauseState(item.id).note" type="textarea"
+                                                            :rows="3" resize="none"
+                                                            placeholder="请输入该小项的合规情况说明、整改措施或其他备注..." />
+                                                    </div>
+
+                                                    <div class="clause-form__section">
+                                                        <div class="clause-form__label">
+                                                            <i class="el-icon-picture-outline"></i>
+                                                            <span>图片证据 / 截图</span>
+                                                        </div>
+                                                        <div class="clause-form__upload-box">
+                                                            <i class="el-icon-plus"></i>
+                                                            <span>添加图片</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="clause-form__section">
+                                                        <div class="clause-form__label">
+                                                            <i class="el-icon-document"></i>
+                                                            <span>文件附件</span>
+                                                        </div>
+                                                        <el-button plain size="small" class="clause-form__attach-btn">
+                                                            <i class="el-icon-plus"></i>
+                                                            <span>添加附件</span>
+                                                        </el-button>
+                                                    </div>
+
+                                                    <div class="clause-form__section clause-form__section--custom-upload">
+                                                        <div class="clause-form__label">
+                                                            <i class="el-icon-picture-outline"></i>
+                                                            <span>图片证据 / 截图</span>
+                                                        </div>
+                                                        <div class="clause-image-list">
+                                                            <div v-for="image in getClauseState(item.id).imageList"
+                                                                :key="image.uid" class="clause-image-card"
+                                                                @click="handleImagePreview(image)">
+                                                                <img :src="image.url" :alt="image.name"
+                                                                    class="clause-image-card__img">
+                                                                <button type="button" class="clause-image-card__remove"
+                                                                    @click.stop="removeClauseImage(item.id, image.uid)">
+                                                                    <i class="el-icon-close"></i>
+                                                                </button>
+                                                            </div>
+                                                            <el-upload :ref="`imageUpload-${item.id}`"
+                                                                class="clause-upload" action="#"
+                                                                :auto-upload="false" :show-file-list="false" multiple
+                                                                accept="image/*"
+                                                                :on-change="(file, fileList) => handleImageUploadChange(file, fileList, item.id)">
+                                                                <div class="clause-form__upload-box">
+                                                                    <i class="el-icon-plus"></i>
+                                                                    <span>添加图片</span>
+                                                                </div>
+                                                            </el-upload>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="clause-form__section clause-form__section--custom-upload">
+                                                        <div class="clause-form__label">
+                                                            <i class="el-icon-document"></i>
+                                                            <span>文件附件</span>
+                                                        </div>
+                                                        <div class="clause-file-list"
+                                                            v-if="getClauseState(item.id).fileList.length">
+                                                            <div v-for="file in getClauseState(item.id).fileList"
+                                                                :key="file.uid" class="clause-file-item">
+                                                                <div class="clause-file-item__main">
+                                                                    <div class="clause-file-item__badge">FILE</div>
+                                                                    <div class="clause-file-item__meta">
+                                                                        <div class="clause-file-item__name">{{ file.name }}</div>
+                                                                        <div class="clause-file-item__size">{{ formatFileSize(file.size) }}</div>
+                                                                    </div>
+                                                                </div>
+                                                                <button type="button" class="clause-file-item__remove"
+                                                                    @click="removeClauseFile(item.id, file.uid)">
+                                                                    <i class="el-icon-close"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <el-upload :ref="`fileUpload-${item.id}`" class="clause-upload"
+                                                            action="#"
+                                                            :auto-upload="false" :show-file-list="false" multiple
+                                                            :on-change="(file, fileList) => handleFileUploadChange(file, fileList, item.id)">
+                                                            <el-button plain size="small" class="clause-form__attach-btn">
+                                                                <i class="el-icon-plus"></i>
+                                                                <span>添加附件</span>
+                                                            </el-button>
+                                                        </el-upload>
+                                                    </div>
+
+                                                    <div class="clause-form__section clause-form__section--last">
+                                                        <div class="clause-form__label">
+                                                            <i class="el-icon-star-off"></i>
+                                                            <span>结果判定</span>
+                                                        </div>
+                                                        <div class="result-button-group">
+                                                            <button v-for="option in resultOptions" :key="option.value"
+                                                                type="button"
+                                                                :class="['result-button', `result-button--${option.type}`, { 'is-active': getClauseState(item.id).result === option.value }]"
+                                                                @click="setClauseResult(item.id, option.value)">
+                                                                <i :class="option.icon"></i>
+                                                                <span>{{ option.label }}</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="clause-form__submit">
+                                                            <el-button type="primary" size="small" plain
+                                                                :loading="getClauseState(item.id).submitting"
+                                                                @click="submitClauseItem(item)">
+                                                                保存
+                                                            </el-button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </el-collapse-item>
+                                    </el-collapse>
+                                </template>
+                                <el-empty v-else description="请选择左侧内容"></el-empty>
                             </div>
                         </div>
                     </div>
                 </el-card>
             </el-col>
         </el-row>
+
+        <el-dialog :visible.sync="imagePreviewVisible" append-to-body width="720px"
+            custom-class="clause-image-preview-dialog">
+            <img v-if="imagePreviewUrl" :src="imagePreviewUrl" alt="preview" class="clause-image-preview">
+        </el-dialog>
     </div>
 </template>
 
@@ -525,21 +606,194 @@ const createSystemList = () => ([
     }
 ])
 
+const MOCK_TAB_LABELS = {
+    general: '一般数据合规要求',
+    important: '重要数据合规要求'
+}
+
+const MOCK_RESULT_VALUES = ['success', 'warning', 'danger', 'info']
+const MOCK_IMAGE_SIZE = 14131
+const MOCK_FILE_SIZE = 14131
+
+const createMockImageDataUrl = (label = '证据') => `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="14" fill="#f4f7ff"/>
+  <rect x="12" y="12" width="96" height="96" rx="10" fill="#ffffff" stroke="#d9e3f5"/>
+  <path d="M28 80l18-18 12 12 20-24 14 18v16H28z" fill="#bcd1ff"/>
+  <circle cx="45" cy="42" r="8" fill="#7ea6ff"/>
+  <text x="60" y="98" text-anchor="middle" font-size="12" fill="#6b7a90">${label}</text>
+</svg>
+`)}`
+
+const createMockImageItem = (suffix = '1') => ({
+    uid: `mock-image-${suffix}`,
+    name: `123-${suffix}.png`,
+    size: MOCK_IMAGE_SIZE,
+    url: createMockImageDataUrl(`证据${suffix}`)
+})
+
+const createMockFileItem = (suffix = '1') => ({
+    uid: `mock-file-${suffix}`,
+    name: suffix === '1' ? '123.png' : `附件-${suffix}.pdf`,
+    size: MOCK_FILE_SIZE
+})
+const MOCK_STANDARD_OPTIONS = [
+    { id: 'mock-standard-1', categoryName: '默认所属标准' }
+]
+
+const cloneMockData = (data) => JSON.parse(JSON.stringify(data))
+
+const mockRequest = (data, delay = 180) => new Promise((resolve) => {
+    setTimeout(() => {
+        resolve({
+            code: 200,
+            data: cloneMockData(data)
+        })
+    }, delay)
+})
+
+const findMockNodeById = (list = [], id) => {
+    for (let i = 0; i < list.length; i += 1) {
+        const item = list[i]
+        if (String(item.id) === String(id)) {
+            return item
+        }
+        if (Array.isArray(item.children) && item.children.length) {
+            const target = findMockNodeById(item.children, id)
+            if (target) {
+                return target
+            }
+        }
+    }
+    return null
+}
+
+const toMockTreeNode = (node = {}) => ({
+    id: node.id,
+    code: node.code,
+    label: node.label,
+    total: node.total,
+    stats: node.stats || createTreeStats(0, 0, 0, 0),
+    hasChildren: Array.isArray(node.children) && node.children.length > 0,
+    children: [],
+    clickAction: Array.isArray(node.children) && node.children.length > 0 ? 'children' : 'detail'
+})
+
+const getMockProgress = (system = {}) => {
+    const stats = Array.isArray(system.summaryStats) ? system.summaryStats : []
+    const findValueByTheme = (theme) => {
+        const target = stats.find(item => item.theme === theme)
+        return target ? Number(target.value || 0) : 0
+    }
+    const general = Number(system.generalClauseCount || findValueByTheme('primary') || 0)
+    const important = Number(system.importantClauseCount || findValueByTheme('purple') || 0)
+    const total = general + important
+    const completed = Number(system.okCount || findValueByTheme('success') || 0)
+    return {
+        completedCount: completed,
+        totalCount: total
+    }
+}
+
+const mockFetchSecurityTabs = (system = {}) => {
+    const tabsConfig = system.complianceTabs || {}
+    const tabs = Object.keys(tabsConfig).map((key) => ({
+        id: key,
+        label: tabsConfig[key].label || MOCK_TAB_LABELS[key] || key
+    }))
+    return mockRequest({
+        tabs,
+        progress: getMockProgress(system)
+    })
+}
+
+const mockFetchTreeNodes = (system = {}, tabId, parentId = '') => {
+    const tabData = (system.complianceTabs || {})[tabId] || {}
+    const tree = Array.isArray(tabData.tree) ? tabData.tree : []
+    const sourceList = parentId
+        ? ((findMockNodeById(tree, parentId) || {}).children || [])
+        : tree
+    return mockRequest({
+        nodes: sourceList.map(toMockTreeNode)
+    })
+}
+
+const mockFetchNodeDetail = (system = {}, tabId, nodeId) => {
+    const tabData = (system.complianceTabs || {})[tabId] || {}
+    const tree = Array.isArray(tabData.tree) ? tabData.tree : []
+    const node = findMockNodeById(tree, nodeId) || {}
+    const detail = node.detail || {}
+    return mockRequest({
+        detail: {
+            title: detail.title || node.label || '',
+            description: detail.description || '',
+            items: Array.isArray(detail.items) ? detail.items.map((item, index) => ({
+                ...item,
+                result: item.result || MOCK_RESULT_VALUES[index % MOCK_RESULT_VALUES.length],
+                note: item.note || ''
+            })) : []
+        }
+    })
+}
+
+const mockFetchClauseForm = (system = {}, tabId, nodeId, clauseId) => {
+    const tabData = (system.complianceTabs || {})[tabId] || {}
+    const tree = Array.isArray(tabData.tree) ? tabData.tree : []
+    const node = findMockNodeById(tree, nodeId) || {}
+    const detail = node.detail || {}
+    const items = Array.isArray(detail.items) ? detail.items : []
+    const itemIndex = items.findIndex(item => String(item.id) === String(clauseId))
+    const item = itemIndex >= 0 ? items[itemIndex] : {}
+    return mockRequest({
+        form: {
+            id: clauseId,
+            note: item.content || item.note || '',
+            result: item.result || MOCK_RESULT_VALUES[(itemIndex >= 0 ? itemIndex : 0) % MOCK_RESULT_VALUES.length],
+            imageList: [createMockImageItem(itemIndex >= 0 ? itemIndex + 1 : 1)],
+            fileList: [createMockFileItem(itemIndex >= 0 ? itemIndex + 1 : 1)]
+        }
+    })
+}
+
+const mockSubmitClauseForm = (payload = {}) => mockRequest({
+    success: true,
+    ...payload
+}, 260)
+
 export default {
     name: 'DataSecurity',
     data() {
         const systemList = createSystemList()
+        const firstSystem = systemList[0] || {}
         return {
             query: {},
             treeOptions: [],
             selectedStandard: '',
             systemList,
-            activeSystem: systemList[0] || {},
-            activeSystemId: systemList[0].id,
-            activeTab: 'general',
+            activeSystem: firstSystem,
+            activeSystemId: firstSystem.id || '',
+            securityTabs: [],
+            activeTab: '',
+            treeNodes: [],
             activeTreeNodeId: '',
             activeCollapseNames: [],
             clauseFormState: {},
+            detailProgress: {
+                completed: 0,
+                total: 0
+            },
+            currentNodeDetail: {
+                title: '',
+                description: '',
+                items: []
+            },
+            activeDetailNode: null,
+            detailSelected: false,
+            tabsLoading: false,
+            treeLoading: false,
+            detailLoading: false,
+            imagePreviewVisible: false,
+            imagePreviewUrl: '',
             resultOptions: [
                 { label: '符合', value: 'success', type: 'success', icon: 'el-icon-check' },
                 { label: '部分符合', value: 'warning', type: 'warning', icon: 'el-icon-time' },
@@ -565,34 +819,24 @@ export default {
         activeSystemSummaryStats() {
             return this.getSystemSummaryStats(this.currentSystem)
         },
-        currentTabData() {
-            const tabs = this.currentSystem.complianceTabs || {}
-            return tabs[this.activeTab] || { tree: [] }
-        },
         currentTreeData() {
-            return this.currentTabData.tree || []
+            return this.treeNodes
         },
-        currentNodeDetail() {
-            return this.findNodeDetail(this.currentTreeData, this.activeTreeNodeId) || {
-                title: '请选择左侧条目',
-                description: '点击左侧树节点后，在此处查看对应的合规要求详情。',
-                items: []
-            }
-        },
-        totalClauseCount() {
-            return this.flattenLeafNodes(this.currentTreeData).length
-        },
-        completedCount() {
-            return this.flattenLeafNodes(this.currentTreeData).filter(item => (item.stats && item.stats.ok > 0)).length
+        hasNodeDetail() {
+            return this.detailSelected && (
+                !!this.currentNodeDetail.title ||
+                !!this.currentNodeDetail.description ||
+                (Array.isArray(this.currentNodeDetail.items) && this.currentNodeDetail.items.length > 0)
+            )
         },
         progressPercent() {
-            if (!this.totalClauseCount) return 0
-            return Math.round((this.completedCount / this.totalClauseCount) * 100)
+            if (!this.detailProgress.total) return 0
+            return Math.round((this.detailProgress.completed / this.detailProgress.total) * 100)
         }
     },
     async mounted() {
         await this.loadStandardOptions()
-        this.resetActiveTreeNode()
+        await this.reloadComplianceView()
     },
     methods: {
         normalizeRouteRow(row) {
@@ -608,31 +852,98 @@ export default {
             }
             return JSON.parse(JSON.stringify(row))
         },
+        extractResponseData(response) {
+            return response && Object.prototype.hasOwnProperty.call(response, 'data') ? response.data : response
+        },
+        extractList(source, preferredKeys = []) {
+            if (Array.isArray(source)) {
+                return source
+            }
+            if (!source || typeof source !== 'object') {
+                return []
+            }
+            const keys = [...preferredKeys, 'list', 'rows', 'records', 'items', 'tabs', 'tree', 'nodes']
+            for (let i = 0; i < keys.length; i += 1) {
+                const value = source[keys[i]]
+                if (Array.isArray(value)) {
+                    return value
+                }
+            }
+            return []
+        },
+        toNumber(value) {
+            const num = Number(value)
+            return Number.isFinite(num) ? num : 0
+        },
+        toBoolean(value) {
+            if (typeof value === 'boolean') return value
+            if (typeof value === 'number') return value === 1
+            if (typeof value === 'string') {
+                return ['1', 'true', 'yes', 'y'].includes(value.toLowerCase())
+            }
+            return false
+        },
+        formatFileSize(size) {
+            const fileSize = this.toNumber(size)
+            if (!fileSize) return '0 B'
+            if (fileSize < 1024) return `${fileSize} B`
+            if (fileSize < 1024 * 1024) return `${(fileSize / 1024).toFixed(1)} KB`
+            return `${(fileSize / 1024 / 1024).toFixed(1)} MB`
+        },
+        buildUploadUid(prefix = 'upload') {
+            return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`
+        },
+        normalizeUploadImage(item = {}) {
+            return {
+                uid: item.uid || this.buildUploadUid('image'),
+                name: item.name || 'image.png',
+                size: this.toNumber(item.size),
+                url: item.url || (item.response && item.response.url) || ''
+            }
+        },
+        normalizeUploadFile(item = {}) {
+            return {
+                uid: item.uid || this.buildUploadUid('file'),
+                name: item.name || 'file',
+                size: this.toNumber(item.size),
+                url: item.url || ''
+            }
+        },
+        clearUploadRef(refName) {
+            const target = this.$refs[refName]
+            if (!target) return
+            if (Array.isArray(target)) {
+                target.forEach(item => item && item.clearFiles && item.clearFiles())
+                return
+            }
+            if (target.clearFiles) {
+                target.clearFiles()
+            }
+        },
         async loadStandardOptions() {
             try {
                 const response = await getFrameworks()
-                this.treeOptions = Array.isArray(response.data) ? response.data : []
+                const list = Array.isArray(response.data) ? response.data : []
+                this.treeOptions = list.length ? list : cloneMockData(MOCK_STANDARD_OPTIONS)
                 const hasSelectedStandard = this.treeOptions.some(item => String(item.id) === this.selectedStandard)
                 if (!hasSelectedStandard) {
                     this.selectedStandard = this.treeOptions.length ? String(this.treeOptions[0].id) : ''
                 }
             } catch (error) {
-                this.treeOptions = []
-                this.selectedStandard = ''
+                this.treeOptions = cloneMockData(MOCK_STANDARD_OPTIONS)
+                this.selectedStandard = this.treeOptions.length ? String(this.treeOptions[0].id) : ''
                 console.error('Failed to load standard options:', error)
             }
         },
-        handleStandardChange() {
+        async handleStandardChange() {
             this.activeSystem = this.systemList[0] || {}
             this.activeSystemId = this.activeSystem.id || ''
-            this.activeTab = 'general'
-            this.resetActiveTreeNode()
+            await this.reloadComplianceView()
         },
-        handleSystemSelect(item) {
+        async handleSystemSelect(item) {
             this.activeSystem = item || {}
-            this.activeSystemId = item.id
-            this.activeTab = 'general'
-            this.resetActiveTreeNode()
+            this.activeSystemId = item && item.id ? item.id : ''
+            await this.reloadComplianceView()
         },
         getSystemSummaryStats(system = {}) {
             if (Array.isArray(system.summaryStats) && system.summaryStats.length) {
@@ -648,73 +959,346 @@ export default {
                 { label: '不适用', value: system.naCount || 0, theme: 'muted' }
             ]
         },
-        handleTabChange() {
-            this.resetActiveTreeNode()
-        },
-        handleTreeNodeClick(data) {
-            if (data.children && data.children.length) {
-                const firstLeaf = this.flattenLeafNodes([data])[0]
-                this.activeTreeNodeId = firstLeaf ? firstLeaf.id : data.id
-            } else {
-                this.activeTreeNodeId = data.id
+        createProgressFallback(system = this.currentSystem) {
+            const progress = getMockProgress(system)
+            return {
+                completed: this.toNumber(progress.completedCount),
+                total: this.toNumber(progress.totalCount)
             }
-            this.activeCollapseNames = this.currentNodeDetail.items.map(item => item.id)
         },
-        resetActiveTreeNode() {
-            const firstLeaf = this.flattenLeafNodes(this.currentTreeData)[0]
-            this.activeTreeNodeId = firstLeaf ? firstLeaf.id : ''
-            this.activeCollapseNames = this.currentNodeDetail.items.map(item => item.id)
-            this.$nextTick(() => {
-                if (this.$refs.clauseTree && this.activeTreeNodeId) {
-                    this.$refs.clauseTree.setCurrentKey(this.activeTreeNodeId)
+        normalizeProgress(payload = {}) {
+            const progress = payload.progress || payload.overallProgress || payload.summary || {}
+            return {
+                completed: this.toNumber(
+                    progress.completedCount ??
+                    progress.completed ??
+                    payload.completedCount ??
+                    payload.completed
+                ),
+                total: this.toNumber(
+                    progress.totalCount ??
+                    progress.total ??
+                    payload.totalCount ??
+                    payload.total
+                )
+            }
+        },
+        normalizeTabs(list = []) {
+            return (Array.isArray(list) ? list : []).map((item, index) => ({
+                ...item,
+                id: String(item.id || item.tabId || item.code || index + 1),
+                label: item.label || item.name || item.tabName || item.title || `标签${index + 1}`
+            }))
+        },
+        normalizeStats(item = {}) {
+            const stats = item.stats || item
+            return {
+                ok: this.toNumber(stats.ok ?? stats.successCount ?? stats.compliantCount),
+                partial: this.toNumber(stats.partial ?? stats.warningCount ?? stats.partialCount),
+                risk: this.toNumber(stats.risk ?? stats.dangerCount ?? stats.riskCount),
+                na: this.toNumber(stats.na ?? stats.infoCount ?? stats.naCount)
+            }
+        },
+        normalizeTreeNodes(list = []) {
+            return (Array.isArray(list) ? list : []).map((item, index) => {
+                const children = this.normalizeTreeNodes(item.children || [])
+                return {
+                    ...item,
+                    id: String(item.id || item.nodeId || item.code || `node-${index + 1}`),
+                    code: item.code || item.nodeCode || item.serialNo || '',
+                    label: item.label || item.name || item.title || `节点${index + 1}`,
+                    total: this.toNumber(item.total ?? item.totalCount ?? item.itemCount),
+                    stats: this.normalizeStats(item),
+                    hasChildren: item.hasChildren != null
+                        ? this.toBoolean(item.hasChildren)
+                        : this.toNumber(item.childCount) > 0,
+                    children,
+                    childrenLoaded: children.length > 0
                 }
             })
         },
-        flattenLeafNodes(list = []) {
-            const result = []
-            list.forEach(item => {
-                if (item.children && item.children.length) {
-                    result.push(...this.flattenLeafNodes(item.children))
+        normalizeDetailItems(list = []) {
+            return (Array.isArray(list) ? list : []).map((item, index) => ({
+                ...item,
+                id: String(item.id || item.itemId || item.detailId || item.clauseId || `${this.activeTreeNodeId}-${index + 1}`),
+                sort: item.sort || item.serialNo || String.fromCharCode(65 + index),
+                title: item.title || item.name || item.label || `条目${index + 1}`,
+                defaultResult: item.result || item.resultValue || item.status || '',
+                note: item.note || item.remark || ''
+            }))
+        },
+        normalizeNodeDetail(payload = {}, node = {}) {
+            const detailSource = payload.detail || payload.nodeDetail || payload
+            const itemList = this.extractList(detailSource, ['items', 'clauses'])
+            return {
+                title: detailSource.title || detailSource.label || node.label || '',
+                description: detailSource.description || detailSource.remark || detailSource.content || '',
+                items: this.normalizeDetailItems(itemList)
+            }
+        },
+        createClauseState(item = {}) {
+            return {
+                loading: false,
+                loaded: false,
+                submitting: false,
+                note: item.note || '',
+                result: item.defaultResult || item.result || '',
+                defaultResult: item.defaultResult || item.result || '',
+                imageList: Array.isArray(item.imageList) ? item.imageList.map(image => this.normalizeUploadImage(image)) : [],
+                fileList: Array.isArray(item.fileList) ? item.fileList.map(file => this.normalizeUploadFile(file)) : [],
+                raw: {}
+            }
+        },
+        clearDetailPanel() {
+            this.activeTreeNodeId = ''
+            this.activeCollapseNames = []
+            this.activeDetailNode = null
+            this.detailSelected = false
+            this.currentNodeDetail = {
+                title: '',
+                description: '',
+                items: []
+            }
+            this.clauseFormState = {}
+        },
+        async reloadComplianceView() {
+            this.securityTabs = []
+            this.activeTab = ''
+            this.treeNodes = []
+            this.detailProgress = this.createProgressFallback()
+            this.clearDetailPanel()
+            if (!this.activeSystemId) {
+                return
+            }
+            await this.loadComplianceTabs()
+        },
+        async loadComplianceTabs() {
+            this.tabsLoading = true
+            try {
+                const response = await mockFetchSecurityTabs(this.currentSystem)
+                const payload = this.extractResponseData(response) || {}
+                this.securityTabs = this.normalizeTabs(this.extractList(payload, ['tabs']))
+                const progress = this.normalizeProgress(payload)
+                this.detailProgress = progress.total ? progress : this.createProgressFallback()
+                this.activeTab = this.securityTabs.length ? this.securityTabs[0].id : ''
+                if (this.activeTab) {
+                    await this.loadTreeRoots()
                 } else {
-                    result.push(item)
+                    this.treeNodes = []
                 }
-            })
-            return result
-        },
-        findNodeDetail(list = [], id) {
-            for (let i = 0; i < list.length; i += 1) {
-                const item = list[i]
-                if (item.id === id && item.detail) {
-                    return item.detail
-                }
-                if (item.children && item.children.length) {
-                    const child = this.findNodeDetail(item.children, id)
-                    if (child) return child
-                }
+            } catch (error) {
+                this.securityTabs = []
+                this.activeTab = ''
+                this.treeNodes = []
+                this.detailProgress = this.createProgressFallback()
+                console.error('Failed to load compliance tabs:', error)
+            } finally {
+                this.tabsLoading = false
             }
-            return null
+        },
+        async handleTabChange() {
+            await this.loadTreeRoots()
+        },
+        async loadTreeRoots() {
+            if (!this.activeTab) {
+                this.treeNodes = []
+                this.clearDetailPanel()
+                return
+            }
+            this.treeLoading = true
+            this.treeNodes = []
+            this.clearDetailPanel()
+            try {
+                const response = await mockFetchTreeNodes(this.currentSystem, this.activeTab, '')
+                const payload = this.extractResponseData(response) || {}
+                this.treeNodes = this.normalizeTreeNodes(this.extractList(payload, ['tree', 'nodes']))
+            } catch (error) {
+                this.treeNodes = []
+                console.error('Failed to load root tree nodes:', error)
+            } finally {
+                this.treeLoading = false
+            }
+        },
+        resolveNodeAction(node = {}) {
+            return node.clickAction || node.requestType || node.actionType || node.nodeAction || ''
+        },
+        shouldRequestChildren(node = {}) {
+            const action = String(this.resolveNodeAction(node)).toLowerCase()
+            if (['children', 'child', 'loadchildren', 'next', 'sub', 'tree'].includes(action)) {
+                return true
+            }
+            if (['detail', 'form', 'content', 'leaf'].includes(action)) {
+                return false
+            }
+            if (node.hasChildren != null) {
+                return this.toBoolean(node.hasChildren)
+            }
+            if (node.isLeaf != null) {
+                return !this.toBoolean(node.isLeaf)
+            }
+            return this.toNumber(node.childCount) > 0
+        },
+        async handleTreeNodeClick(data, node) {
+            this.activeTreeNodeId = data.id
+            if (this.shouldRequestChildren(data)) {
+                this.clearDetailPanel()
+                this.activeTreeNodeId = data.id
+                await this.loadTreeChildren(data, node)
+                return
+            }
+            await this.loadNodeDetail(data)
+        },
+        async loadTreeChildren(data, node) {
+            if (data.childrenLoaded) {
+                node.expanded = !node.expanded
+                return
+            }
+            this.treeLoading = true
+            try {
+                const response = await mockFetchTreeNodes(this.currentSystem, this.activeTab, data.id)
+                const payload = this.extractResponseData(response) || {}
+                const children = this.normalizeTreeNodes(this.extractList(payload, ['tree', 'nodes']))
+                this.$set(data, 'children', children)
+                this.$set(data, 'childrenLoaded', true)
+                this.$set(data, 'hasChildren', children.length > 0)
+                this.$nextTick(() => {
+                    node.expanded = true
+                })
+            } catch (error) {
+                this.$set(data, 'children', [])
+                this.$set(data, 'childrenLoaded', true)
+                console.error('Failed to load child tree nodes:', error)
+            } finally {
+                this.treeLoading = false
+            }
+        },
+        async loadNodeDetail(data) {
+            this.detailLoading = true
+            this.detailSelected = false
+            this.activeDetailNode = data
+            this.currentNodeDetail = {
+                title: '',
+                description: '',
+                items: []
+            }
+            this.activeCollapseNames = []
+            this.clauseFormState = {}
+            try {
+                const response = await mockFetchNodeDetail(this.currentSystem, this.activeTab, data.id)
+                const payload = this.extractResponseData(response) || {}
+                this.currentNodeDetail = this.normalizeNodeDetail(payload, data)
+                this.currentNodeDetail.items.forEach((item) => {
+                    this.$set(this.clauseFormState, item.id, this.createClauseState(item))
+                })
+                this.detailSelected = true
+            } catch (error) {
+                this.detailSelected = false
+                console.error('Failed to load node detail:', error)
+            } finally {
+                this.detailLoading = false
+            }
         },
         getNodeTotal(node) {
             if (!node) return 0
             if (node.total != null) return node.total
-            if (node.detail && Array.isArray(node.detail.items)) return node.detail.items.length
-            if (Array.isArray(node.children) && node.children.length) {
-                return node.children.reduce((sum, child) => sum + this.getNodeTotal(child), 0)
-            }
-            if (node.stats) {
-                const { ok = 0, partial = 0, risk = 0, na = 0 } = node.stats
-                return ok + partial + risk + na
-            }
-            return 0
+            const stats = node.stats || {}
+            return this.toNumber(stats.ok) + this.toNumber(stats.partial) + this.toNumber(stats.risk) + this.toNumber(stats.na)
         },
         getClauseState(itemId) {
             if (!this.clauseFormState[itemId]) {
-                this.$set(this.clauseFormState, itemId, {
-                    note: '',
-                    result: ''
-                })
+                this.$set(this.clauseFormState, itemId, this.createClauseState())
             }
             return this.clauseFormState[itemId]
+        },
+        async handleCollapseChange(names) {
+            const activeNames = Array.isArray(names) ? names : names ? [names] : []
+            this.activeCollapseNames = activeNames
+            for (let i = 0; i < activeNames.length; i += 1) {
+                const item = this.currentNodeDetail.items.find(detailItem => detailItem.id === activeNames[i])
+                if (item) {
+                    await this.loadClauseForm(item)
+                }
+            }
+        },
+        async loadClauseForm(item) {
+            const state = this.getClauseState(item.id)
+            if (state.loading || state.loaded) {
+                return
+            }
+            state.loading = true
+            try {
+                const response = await mockFetchClauseForm(
+                    this.currentSystem,
+                    this.activeTab,
+                    this.activeDetailNode ? this.activeDetailNode.id : '',
+                    item.id
+                )
+                const payload = this.extractResponseData(response) || {}
+                const formData = payload.form || payload.detail || payload.item || payload
+                state.note = formData.note ?? formData.remark ?? state.note
+                state.result = formData.result ?? formData.resultValue ?? state.result
+                state.defaultResult = formData.result ?? formData.resultValue ?? state.defaultResult
+                state.imageList = Array.isArray(formData.imageList)
+                    ? formData.imageList.map(image => this.normalizeUploadImage(image))
+                    : state.imageList
+                state.fileList = Array.isArray(formData.fileList)
+                    ? formData.fileList.map(file => this.normalizeUploadFile(file))
+                    : state.fileList
+                state.raw = formData
+                state.loaded = true
+            } catch (error) {
+                console.error('Failed to load clause form:', error)
+            } finally {
+                state.loading = false
+            }
+        },
+        handleImagePreview(image) {
+            this.imagePreviewUrl = image.url || ''
+            this.imagePreviewVisible = !!this.imagePreviewUrl
+        },
+        handleImageUploadChange(file, fileList, itemId) {
+            const state = this.getClauseState(itemId)
+            const appendList = Array.isArray(fileList) && fileList.length ? fileList : [file]
+            appendList.forEach((currentFile) => {
+                const rawFile = currentFile && currentFile.raw ? currentFile.raw : currentFile
+                if (!rawFile || state.imageList.some(image => image.uid === currentFile.uid)) {
+                    return
+                }
+                if (!String(rawFile.type || '').startsWith('image/')) {
+                    return
+                }
+                state.imageList.push(this.normalizeUploadImage({
+                    uid: currentFile.uid,
+                    name: rawFile.name,
+                    size: rawFile.size,
+                    url: URL.createObjectURL(rawFile)
+                }))
+            })
+            this.clearUploadRef(`imageUpload-${itemId}`)
+        },
+        removeClauseImage(itemId, imageUid) {
+            const state = this.getClauseState(itemId)
+            state.imageList = state.imageList.filter(image => image.uid !== imageUid)
+        },
+        handleFileUploadChange(file, fileList, itemId) {
+            const state = this.getClauseState(itemId)
+            const appendList = Array.isArray(fileList) && fileList.length ? fileList : [file]
+            appendList.forEach((currentFile) => {
+                const rawFile = currentFile && currentFile.raw ? currentFile.raw : currentFile
+                if (!rawFile || state.fileList.some(fileItem => fileItem.uid === currentFile.uid)) {
+                    return
+                }
+                state.fileList.push(this.normalizeUploadFile({
+                    uid: currentFile.uid,
+                    name: rawFile.name,
+                    size: rawFile.size
+                }))
+            })
+            this.clearUploadRef(`fileUpload-${itemId}`)
+        },
+        removeClauseFile(itemId, fileUid) {
+            const state = this.getClauseState(itemId)
+            state.fileList = state.fileList.filter(file => file.uid !== fileUid)
         },
         setClauseResult(itemId, result) {
             const state = this.getClauseState(itemId)
@@ -722,7 +1306,51 @@ export default {
         },
         getClauseResultOption(itemId) {
             const state = this.getClauseState(itemId)
-            return this.resultOptions.find(option => option.value === state.result) || null
+            const resultValue = state.result || state.defaultResult
+            return this.resultOptions.find(option => option.value === resultValue) || null
+        },
+        buildClauseSubmitPayload(item, state) {
+            return {
+                ...state.raw,
+                categoryId: this.selectedStandard,
+                standardId: this.selectedStandard,
+                systemId: this.activeSystemId,
+                databaseId: this.activeSystemId,
+                tabId: this.activeTab,
+                nodeId: this.activeDetailNode ? this.activeDetailNode.id : '',
+                clauseId: item.id,
+                itemId: item.id,
+                note: state.note,
+                result: state.result || state.defaultResult || '',
+                imageList: state.imageList.map(image => ({
+                    uid: image.uid,
+                    name: image.name,
+                    size: image.size,
+                    url: image.url
+                })),
+                fileList: state.fileList.map(file => ({
+                    uid: file.uid,
+                    name: file.name,
+                    size: file.size,
+                    url: file.url
+                }))
+            }
+        },
+        async submitClauseItem(item) {
+            const state = this.getClauseState(item.id)
+            if (state.submitting) {
+                return
+            }
+            state.submitting = true
+            try {
+                await mockSubmitClauseForm(this.buildClauseSubmitPayload(item, state))
+                state.defaultResult = state.result || state.defaultResult
+                this.$message.success('保存成功')
+            } catch (error) {
+                console.error('Failed to submit clause form:', error)
+            } finally {
+                state.submitting = false
+            }
         }
     }
 }
@@ -1366,6 +1994,28 @@ export default {
     padding-bottom: 4px;
 }
 
+.clause-form>.clause-form__section:nth-child(2),
+.clause-form>.clause-form__section:nth-child(3) {
+    display: none;
+}
+
+.clause-form__section--custom-upload {
+    padding-top: 0;
+    border-top: none;
+}
+
+.clause-form__submit {
+    margin-top: 14px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.clause-image-preview {
+    width: 100%;
+    display: block;
+    border-radius: 12px;
+}
+
 .clause-form__label {
     display: flex;
     align-items: center;
@@ -1403,6 +2053,57 @@ export default {
     border-color: #4f6ef7;
     background: #ffffff;
     box-shadow: 0 0 0 2px rgba(79, 110, 247, 0.12);
+}
+
+.clause-image-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.clause-upload {
+    display: inline-flex;
+}
+
+.clause-image-card {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    border: 1px solid #d9e2f2;
+    overflow: hidden;
+    background: #f8fbff;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.clause-image-card__img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.clause-image-card__remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.68);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.clause-image-card:hover .clause-image-card__remove {
+    opacity: 1;
 }
 
 .clause-form__upload-box {
@@ -1445,6 +2146,73 @@ export default {
 
 .clause-form__attach-btn i {
     margin-right: 4px;
+}
+
+.clause-file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.clause-file-item {
+    min-height: 56px;
+    border: 1px solid #e4e9f2;
+    border-radius: 12px;
+    background: #f8fafc;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.clause-file-item__main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.clause-file-item__badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #98a3b8;
+    flex-shrink: 0;
+}
+
+.clause-file-item__meta {
+    min-width: 0;
+}
+
+.clause-file-item__name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    word-break: break-all;
+}
+
+.clause-file-item__size {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #98a3b8;
+}
+
+.clause-file-item__remove {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #98a3b8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.clause-file-item__remove:hover {
+    color: #ef4444;
 }
 
 .result-button-group {
