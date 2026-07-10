@@ -35,7 +35,6 @@
                 <div class="summary-metric">
                   <div class="summary-value">
                     <count-to :start-val="0" :end-val="dataView.summary.capacityGB" :duration="1500" />
-                    <span class="summary-unit">GB</span>
                   </div>
                   <div class="summary-key">总容量</div>
                   <div class="summary-subkey">存储占用</div>
