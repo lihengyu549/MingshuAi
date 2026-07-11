@@ -171,6 +171,7 @@
                                                         <div class="clause-form__label">
                                                             <i class="el-icon-picture-outline"></i>
                                                             <span>图片证据 / 截图</span>
+                                                            <span class="clause-form__label-hint">{{ imageUploadHint }}</span>
                                                         </div>
                                                         <div class="clause-image-list">
                                                             <div v-for="image in getClauseState(item.id).imageList"
@@ -183,10 +184,12 @@
                                                                     <i class="el-icon-close"></i>
                                                                 </button>
                                                             </div>
-                                                            <el-upload :ref="`imageUpload-${item.id}`"
+                                                            <el-upload v-if="!isClauseUploadLimitReached(item.id, 'image')" :ref="`imageUpload-${item.id}`"
                                                                 class="clause-upload" action="#"
                                                                 :auto-upload="false" :show-file-list="false" multiple
+                                                                :limit="uploadLimits.imageCount"
                                                                 accept="image/*"
+                                                                :on-exceed="() => handleClauseUploadExceed('image')"
                                                                 :on-change="(file, fileList) => handleImageUploadChange(file, fileList, item.id)">
                                                                 <div class="clause-form__upload-box">
                                                                     <i class="el-icon-plus"></i>
@@ -200,6 +203,7 @@
                                                         <div class="clause-form__label">
                                                             <i class="el-icon-document"></i>
                                                             <span>文件附件</span>
+                                                            <span class="clause-form__label-hint">{{ fileUploadHint }}</span>
                                                         </div>
                                                         <div class="clause-file-list"
                                                             v-if="getClauseState(item.id).fileList.length">
@@ -218,9 +222,11 @@
                                                                 </button>
                                                             </div>
                                                         </div>
-                                                        <el-upload :ref="`fileUpload-${item.id}`" class="clause-upload"
+                                                        <el-upload v-if="!isClauseUploadLimitReached(item.id, 'file')" :ref="`fileUpload-${item.id}`" class="clause-upload"
                                                             action="#"
                                                             :auto-upload="false" :show-file-list="false" multiple
+                                                            :limit="uploadLimits.fileCount"
+                                                            :on-exceed="() => handleClauseUploadExceed('file')"
                                                             :on-change="(file, fileList) => handleFileUploadChange(file, fileList, item.id)">
                                                             <el-button plain size="small" class="clause-form__attach-btn">
                                                                 <i class="el-icon-plus"></i>
@@ -794,6 +800,12 @@ export default {
             detailLoading: false,
             imagePreviewVisible: false,
             imagePreviewUrl: '',
+            uploadLimits: {
+                imageCount: 5,
+                imageSize: 5,
+                fileCount: 5,
+                fileSize: 10
+            },
             resultOptions: [
                 { label: '符合', value: 'success', type: 'success', icon: 'el-icon-check' },
                 { label: '部分符合', value: 'warning', type: 'warning', icon: 'el-icon-time' },
@@ -832,6 +844,14 @@ export default {
         progressPercent() {
             if (!this.detailProgress.total) return 0
             return Math.round((this.detailProgress.completed / this.detailProgress.total) * 100)
+        },
+        imageUploadHint() {
+            const { imageCount, imageSize } = this.uploadLimits
+            return `最多${imageCount}张，每张不超过${imageSize}MB`
+        },
+        fileUploadHint() {
+            const { fileCount, fileSize } = this.uploadLimits
+            return `最多${fileCount}个，每个不超过${fileSize}MB`
         }
     },
     async mounted() {
@@ -919,6 +939,28 @@ export default {
             if (target.clearFiles) {
                 target.clearFiles()
             }
+        },
+        isImageFile(file = {}) {
+            const fileType = String(file.type || '').toLowerCase()
+            const fileName = String(file.name || '').toLowerCase()
+            return fileType.startsWith('image/') || /\.(png|jpe?g|gif|bmp|webp|svg)$/.test(fileName)
+        },
+        isFileSizeAllowed(file = {}, limitMb = 0) {
+            if (!limitMb) return true
+            return this.toNumber(file.size) / 1024 / 1024 <= limitMb
+        },
+        handleClauseUploadExceed(type) {
+            if (type === 'image') {
+                this.$message.warning(`图片最多上传 ${this.uploadLimits.imageCount} 张`)
+                return
+            }
+            this.$message.warning(`附件最多上传 ${this.uploadLimits.fileCount} 个`)
+        },
+        isClauseUploadLimitReached(itemId, type) {
+            const state = this.getClauseState(itemId)
+            const currentList = type === 'image' ? state.imageList : state.fileList
+            const limit = type === 'image' ? this.uploadLimits.imageCount : this.uploadLimits.fileCount
+            return currentList.length >= limit
         },
         async loadStandardOptions() {
             try {
@@ -1259,12 +1301,22 @@ export default {
         handleImageUploadChange(file, fileList, itemId) {
             const state = this.getClauseState(itemId)
             const appendList = Array.isArray(fileList) && fileList.length ? fileList : [file]
+            let exceedCountLimit = false
             appendList.forEach((currentFile) => {
                 const rawFile = currentFile && currentFile.raw ? currentFile.raw : currentFile
                 if (!rawFile || state.imageList.some(image => image.uid === currentFile.uid)) {
                     return
                 }
-                if (!String(rawFile.type || '').startsWith('image/')) {
+                if (!this.isImageFile(rawFile)) {
+                    this.$message.warning(`"${rawFile.name}" 不是图片文件，无法上传`)
+                    return
+                }
+                if (!this.isFileSizeAllowed(rawFile, this.uploadLimits.imageSize)) {
+                    this.$message.warning(`"${rawFile.name}" 超过 ${this.uploadLimits.imageSize}MB，无法上传`)
+                    return
+                }
+                if (state.imageList.length >= this.uploadLimits.imageCount) {
+                    exceedCountLimit = true
                     return
                 }
                 state.imageList.push(this.normalizeUploadImage({
@@ -1274,18 +1326,34 @@ export default {
                     url: URL.createObjectURL(rawFile)
                 }))
             })
+            if (exceedCountLimit) {
+                this.handleClauseUploadExceed('image')
+            }
             this.clearUploadRef(`imageUpload-${itemId}`)
         },
         removeClauseImage(itemId, imageUid) {
             const state = this.getClauseState(itemId)
+            const removedImage = state.imageList.find(image => image.uid === imageUid)
+            if (removedImage && String(removedImage.url || '').startsWith('blob:')) {
+                URL.revokeObjectURL(removedImage.url)
+            }
             state.imageList = state.imageList.filter(image => image.uid !== imageUid)
         },
         handleFileUploadChange(file, fileList, itemId) {
             const state = this.getClauseState(itemId)
             const appendList = Array.isArray(fileList) && fileList.length ? fileList : [file]
+            let exceedCountLimit = false
             appendList.forEach((currentFile) => {
                 const rawFile = currentFile && currentFile.raw ? currentFile.raw : currentFile
                 if (!rawFile || state.fileList.some(fileItem => fileItem.uid === currentFile.uid)) {
+                    return
+                }
+                if (!this.isFileSizeAllowed(rawFile, this.uploadLimits.fileSize)) {
+                    this.$message.warning(`"${rawFile.name}" 超过 ${this.uploadLimits.fileSize}MB，无法上传`)
+                    return
+                }
+                if (state.fileList.length >= this.uploadLimits.fileCount) {
+                    exceedCountLimit = true
                     return
                 }
                 state.fileList.push(this.normalizeUploadFile({
@@ -1294,6 +1362,9 @@ export default {
                     size: rawFile.size
                 }))
             })
+            if (exceedCountLimit) {
+                this.handleClauseUploadExceed('file')
+            }
             this.clearUploadRef(`fileUpload-${itemId}`)
         },
         removeClauseFile(itemId, fileUid) {
@@ -1909,6 +1980,7 @@ export default {
 .collapse-title__main {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
     min-width: 0;
 }
@@ -2028,6 +2100,13 @@ export default {
 
 .clause-form__label i {
     color: #7c8aa5;
+}
+
+.clause-form__label-hint {
+    font-size: 12px;
+    font-weight: 400;
+    color: #8a94a6;
+    line-height: 1.5;
 }
 
 ::v-deep .clause-form .el-textarea__inner {
