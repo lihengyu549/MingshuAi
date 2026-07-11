@@ -19,7 +19,7 @@
 
         <el-row :gutter="20" class="page-layout">
             <el-col :span="5" :xs="24" class="page-layout__left">
-                <el-card shadow="never" class="left-panel-card">
+                <el-card shadow="never" class="left-panel-card" v-loading="systemListLoading">
                     <div class="system-list">
                         <div v-for="item in systemList" :key="item.id"
                             :class="['system-card', { 'is-active': item.id === activeSystemId }]"
@@ -113,8 +113,7 @@
                                         </div>
                                     </div>
 
-                                    <el-collapse v-model="activeCollapseNames" class="security-collapse"
-                                        @change="handleCollapseChange">
+                                    <el-collapse v-model="activeCollapseNames" class="security-collapse">
                                         <el-collapse-item v-for="item in currentNodeDetail.items" :key="item.id"
                                             :name="item.id">
                                             <template slot="title">
@@ -701,21 +700,103 @@ const getMockProgress = (system = {}) => {
     }
 }
 
-const mockFetchSecurityTabs = (system = {}) => {
-    const tabsConfig = system.complianceTabs || {}
-    const tabs = Object.keys(tabsConfig).map((key) => ({
-        id: key,
-        label: tabsConfig[key].label || MOCK_TAB_LABELS[key] || key
-    }))
+const buildMockDataBlocks = () => {
+    const sourceSystems = createSystemList()
+    const defaultStandardId = MOCK_STANDARD_OPTIONS[0] && MOCK_STANDARD_OPTIONS[0].id
+    const systemListByStandard = {
+        [defaultStandardId]: sourceSystems.map((system) => {
+            const { complianceTabs, ...rest } = system
+            return rest
+        })
+    }
+    const securityOverviewBySystem = {}
+    const treeSourceBySystemTab = {}
+    const nodeDetailBySystemTabNode = {}
+    const collectNodeMocks = (nodes = [], systemId, tabId) => {
+        ; (Array.isArray(nodes) ? nodes : []).forEach((node) => {
+            const detail = node.detail || {}
+            const detailItems = Array.isArray(detail.items) ? detail.items : []
+            if (detailItems.length || detail.title || detail.description) {
+                nodeDetailBySystemTabNode[systemId][tabId][node.id] = {
+                    title: detail.title || node.label || '',
+                    description: detail.description || '',
+                    items: detailItems.map((item, index) => ({
+                        ...item,
+                        result: item.result || MOCK_RESULT_VALUES[index % MOCK_RESULT_VALUES.length],
+                        note: item.note || '',
+                        imageList: [createMockImageItem(index + 1)],
+                        fileList: [createMockFileItem(index + 1)]
+                    }))
+                }
+            }
+            if (Array.isArray(node.children) && node.children.length) {
+                collectNodeMocks(node.children, systemId, tabId)
+            }
+        })
+    }
+
+    sourceSystems.forEach((system) => {
+        const tabsConfig = system.complianceTabs || {}
+        const tabIds = Object.keys(tabsConfig)
+        securityOverviewBySystem[system.id] = {
+            tabs: tabIds.map((tabId) => ({
+                id: tabId,
+                label: tabsConfig[tabId].label || MOCK_TAB_LABELS[tabId] || tabId
+            })),
+            progress: getMockProgress(system)
+        }
+        treeSourceBySystemTab[system.id] = {}
+        nodeDetailBySystemTabNode[system.id] = {}
+        tabIds.forEach((tabId) => {
+            const tree = Array.isArray(tabsConfig[tabId].tree) ? tabsConfig[tabId].tree : []
+            treeSourceBySystemTab[system.id][tabId] = tree
+            nodeDetailBySystemTabNode[system.id][tabId] = {}
+            collectNodeMocks(tree, system.id, tabId)
+        })
+    })
+
+    return {
+        systemListByStandard,
+        securityOverviewBySystem,
+        treeSourceBySystemTab,
+        nodeDetailBySystemTabNode
+    }
+}
+
+const {
+    systemListByStandard: MOCK_SYSTEM_LIST_BY_STANDARD,
+    securityOverviewBySystem: MOCK_SECURITY_OVERVIEW_BY_SYSTEM,
+    treeSourceBySystemTab: MOCK_TREE_SOURCE_BY_SYSTEM_TAB,
+    nodeDetailBySystemTabNode: MOCK_NODE_DETAIL_BY_SYSTEM_TAB_NODE
+} = buildMockDataBlocks()
+
+const createEmptyMockDetail = () => ({
+    title: '',
+    description: '',
+    items: []
+})
+
+const mockFetchSystemList = (standardId = '') => {
+    const fallbackStandardId = MOCK_STANDARD_OPTIONS[0] && MOCK_STANDARD_OPTIONS[0].id
     return mockRequest({
-        tabs,
-        progress: getMockProgress(system)
+        list: (MOCK_SYSTEM_LIST_BY_STANDARD[standardId] || MOCK_SYSTEM_LIST_BY_STANDARD[fallbackStandardId] || [])
     })
 }
 
-const mockFetchTreeNodes = (system = {}, tabId, parentId = '') => {
-    const tabData = (system.complianceTabs || {})[tabId] || {}
-    const tree = Array.isArray(tabData.tree) ? tabData.tree : []
+const mockFetchSecurityTabs = (systemId = '') => {
+    return mockRequest(
+        MOCK_SECURITY_OVERVIEW_BY_SYSTEM[systemId] || {
+            tabs: [],
+            progress: {
+                completedCount: 0,
+                totalCount: 0
+            }
+        }
+    )
+}
+
+const mockFetchTreeNodes = (systemId = '', tabId, parentId = '') => {
+    const tree = (((MOCK_TREE_SOURCE_BY_SYSTEM_TAB[systemId] || {})[tabId]) || [])
     const sourceList = parentId
         ? ((findMockNodeById(tree, parentId) || {}).children || [])
         : tree
@@ -724,40 +805,10 @@ const mockFetchTreeNodes = (system = {}, tabId, parentId = '') => {
     })
 }
 
-const mockFetchNodeDetail = (system = {}, tabId, nodeId) => {
-    const tabData = (system.complianceTabs || {})[tabId] || {}
-    const tree = Array.isArray(tabData.tree) ? tabData.tree : []
-    const node = findMockNodeById(tree, nodeId) || {}
-    const detail = node.detail || {}
+const mockFetchNodeDetail = (systemId = '', tabId, nodeId) => {
+    const detail = ((((MOCK_NODE_DETAIL_BY_SYSTEM_TAB_NODE[systemId] || {})[tabId]) || {})[nodeId]) || createEmptyMockDetail()
     return mockRequest({
-        detail: {
-            title: detail.title || node.label || '',
-            description: detail.description || '',
-            items: Array.isArray(detail.items) ? detail.items.map((item, index) => ({
-                ...item,
-                result: item.result || MOCK_RESULT_VALUES[index % MOCK_RESULT_VALUES.length],
-                note: item.note || ''
-            })) : []
-        }
-    })
-}
-
-const mockFetchClauseForm = (system = {}, tabId, nodeId, clauseId) => {
-    const tabData = (system.complianceTabs || {})[tabId] || {}
-    const tree = Array.isArray(tabData.tree) ? tabData.tree : []
-    const node = findMockNodeById(tree, nodeId) || {}
-    const detail = node.detail || {}
-    const items = Array.isArray(detail.items) ? detail.items : []
-    const itemIndex = items.findIndex(item => String(item.id) === String(clauseId))
-    const item = itemIndex >= 0 ? items[itemIndex] : {}
-    return mockRequest({
-        form: {
-            id: clauseId,
-            note: item.content || item.note || '',
-            result: item.result || MOCK_RESULT_VALUES[(itemIndex >= 0 ? itemIndex : 0) % MOCK_RESULT_VALUES.length],
-            imageList: [createMockImageItem(itemIndex >= 0 ? itemIndex + 1 : 1)],
-            fileList: [createMockFileItem(itemIndex >= 0 ? itemIndex + 1 : 1)]
-        }
+        detail
     })
 }
 
@@ -769,15 +820,13 @@ const mockSubmitClauseForm = (payload = {}) => mockRequest({
 export default {
     name: 'DataSecurity',
     data() {
-        const systemList = createSystemList()
-        const firstSystem = systemList[0] || {}
         return {
             query: {},
             treeOptions: [],
             selectedStandard: '',
-            systemList,
-            activeSystem: firstSystem,
-            activeSystemId: firstSystem.id || '',
+            systemList: [],
+            activeSystem: {},
+            activeSystemId: '',
             securityTabs: [],
             activeTab: '',
             treeNodes: [],
@@ -795,6 +844,7 @@ export default {
             },
             activeDetailNode: null,
             detailSelected: false,
+            systemListLoading: false,
             tabsLoading: false,
             treeLoading: false,
             detailLoading: false,
@@ -856,7 +906,7 @@ export default {
     },
     async mounted() {
         await this.loadStandardOptions()
-        await this.reloadComplianceView()
+        await this.loadSystemList()
     },
     methods: {
         normalizeRouteRow(row) {
@@ -977,10 +1027,49 @@ export default {
                 console.error('Failed to load standard options:', error)
             }
         },
+        async loadSystemList() {
+            this.systemListLoading = true
+            this.systemList = []
+            this.activeSystem = {}
+            this.activeSystemId = ''
+            this.securityTabs = []
+            this.activeTab = ''
+            this.treeNodes = []
+            this.detailProgress = {
+                completed: 0,
+                total: 0
+            }
+            this.clearDetailPanel()
+            if (!this.selectedStandard) {
+                this.systemListLoading = false
+                return
+            }
+            try {
+                const response = await mockFetchSystemList(this.selectedStandard)
+                const payload = this.extractResponseData(response) || {}
+                const list = this.extractList(payload, ['systems', 'list']).map(item => ({
+                    ...item,
+                    id: item.id || item.systemId || '',
+                    name: item.name || item.systemName || '--'
+                }))
+                this.systemList = list
+                const nextSystem = list[0] || {}
+                this.activeSystem = nextSystem
+                this.activeSystemId = nextSystem.id || ''
+                if (this.activeSystemId) {
+                    await this.reloadComplianceView()
+                }
+            } catch (error) {
+                this.systemList = []
+                this.activeSystem = {}
+                this.activeSystemId = ''
+                console.error('Failed to load system list:', error)
+            } finally {
+                this.systemListLoading = false
+            }
+        },
         async handleStandardChange() {
-            this.activeSystem = this.systemList[0] || {}
-            this.activeSystemId = this.activeSystem.id || ''
-            await this.reloadComplianceView()
+            await this.loadSystemList()
         },
         async handleSystemSelect(item) {
             this.activeSystem = item || {}
@@ -1117,7 +1206,7 @@ export default {
         async loadComplianceTabs() {
             this.tabsLoading = true
             try {
-                const response = await mockFetchSecurityTabs(this.currentSystem)
+                const response = await mockFetchSecurityTabs(this.activeSystemId)
                 const payload = this.extractResponseData(response) || {}
                 this.securityTabs = this.normalizeTabs(this.extractList(payload, ['tabs']))
                 const progress = this.normalizeProgress(payload)
@@ -1151,7 +1240,7 @@ export default {
             this.treeNodes = []
             this.clearDetailPanel()
             try {
-                const response = await mockFetchTreeNodes(this.currentSystem, this.activeTab, '')
+                const response = await mockFetchTreeNodes(this.activeSystemId, this.activeTab, '')
                 const payload = this.extractResponseData(response) || {}
                 this.treeNodes = this.normalizeTreeNodes(this.extractList(payload, ['tree', 'nodes']))
             } catch (error) {
@@ -1197,7 +1286,7 @@ export default {
             }
             this.treeLoading = true
             try {
-                const response = await mockFetchTreeNodes(this.currentSystem, this.activeTab, data.id)
+                const response = await mockFetchTreeNodes(this.activeSystemId, this.activeTab, data.id)
                 const payload = this.extractResponseData(response) || {}
                 const children = this.normalizeTreeNodes(this.extractList(payload, ['tree', 'nodes']))
                 this.$set(data, 'children', children)
@@ -1226,7 +1315,7 @@ export default {
             this.activeCollapseNames = []
             this.clauseFormState = {}
             try {
-                const response = await mockFetchNodeDetail(this.currentSystem, this.activeTab, data.id)
+                const response = await mockFetchNodeDetail(this.activeSystemId, this.activeTab, data.id)
                 const payload = this.extractResponseData(response) || {}
                 this.currentNodeDetail = this.normalizeNodeDetail(payload, data)
                 this.currentNodeDetail.items.forEach((item) => {
@@ -1251,48 +1340,6 @@ export default {
                 this.$set(this.clauseFormState, itemId, this.createClauseState())
             }
             return this.clauseFormState[itemId]
-        },
-        async handleCollapseChange(names) {
-            const activeNames = Array.isArray(names) ? names : names ? [names] : []
-            this.activeCollapseNames = activeNames
-            for (let i = 0; i < activeNames.length; i += 1) {
-                const item = this.currentNodeDetail.items.find(detailItem => detailItem.id === activeNames[i])
-                if (item) {
-                    await this.loadClauseForm(item)
-                }
-            }
-        },
-        async loadClauseForm(item) {
-            const state = this.getClauseState(item.id)
-            if (state.loading || state.loaded) {
-                return
-            }
-            state.loading = true
-            try {
-                const response = await mockFetchClauseForm(
-                    this.currentSystem,
-                    this.activeTab,
-                    this.activeDetailNode ? this.activeDetailNode.id : '',
-                    item.id
-                )
-                const payload = this.extractResponseData(response) || {}
-                const formData = payload.form || payload.detail || payload.item || payload
-                state.note = formData.note ?? formData.remark ?? state.note
-                state.result = formData.result ?? formData.resultValue ?? state.result
-                state.defaultResult = formData.result ?? formData.resultValue ?? state.defaultResult
-                state.imageList = Array.isArray(formData.imageList)
-                    ? formData.imageList.map(image => this.normalizeUploadImage(image))
-                    : state.imageList
-                state.fileList = Array.isArray(formData.fileList)
-                    ? formData.fileList.map(file => this.normalizeUploadFile(file))
-                    : state.fileList
-                state.raw = formData
-                state.loaded = true
-            } catch (error) {
-                console.error('Failed to load clause form:', error)
-            } finally {
-                state.loading = false
-            }
         },
         handleImagePreview(image) {
             this.imagePreviewUrl = image.url || ''
