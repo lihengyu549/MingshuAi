@@ -288,556 +288,8 @@
 import {
     getFrameworks, getGradeSecurityProtectionTypeByDatabaseId, getTreeGradeSecurityProtectionByDatabaseId
     , getGradeSecurityProtectionItemByParentId, saveGradeSecurityProtectionItem
-    , getDataSourceListByProjectId
+    , getDataSourceListByProjectId, deleteGradeSecurityProtectionItemFile
 } from '@/api/system/protectCategory'
-
-const createClauseDetail = (prefix, title, description, items) => ({
-    title,
-    description,
-    items: items.map((item, index) => ({
-        id: `${prefix}-${index + 1}`,
-        sort: String.fromCharCode(65 + index),
-        title: item.title,
-        content: item.content
-    }))
-})
-
-const createTreeStats = (ok, partial, risk, na) => ({ ok, partial, risk, na })
-
-const createComplianceTabs = () => ({
-    general: {
-        tree: [
-            {
-                id: 'general-6.5',
-                code: '6.5',
-                label: '安全计算环境',
-                stats: createTreeStats(2, 1, 0, 0),
-                total: 14,
-                children: [
-                    {
-                        id: 'general-6.5.1',
-                        code: '6.5.1',
-                        label: '身份鉴别',
-                        stats: createTreeStats(1, 1, 0, 0),
-                        total: 4,
-                        detail: createClauseDetail(
-                            'g-651',
-                            '6.5.1 身份鉴别',
-                            '针对一般数据处理系统，应围绕用户身份鉴别、账号生命周期与访问主体识别建立控制措施。',
-                            [
-                                {
-                                    title: '应建立身份标识的唯一性规则',
-                                    content: '对访问数据系统的账号进行唯一标识，确保账号、角色与岗位职责相匹配，并保留识别依据。'
-                                },
-                                {
-                                    title: '应强化关键用户的鉴别强度',
-                                    content: '对运维、审计、管理员等高权限账号采用多因素认证或等效增强身份鉴别措施。'
-                                },
-                                {
-                                    title: '应规范账号的开通、停用与注销',
-                                    content: '建立覆盖申请、审批、启用、停用和注销的账号流程，避免共享账号和长期闲置账号。'
-                                }
-                            ]
-                        )
-                    },
-                    {
-                        id: 'general-6.5.2',
-                        code: '6.5.2',
-                        label: '访问控制',
-                        stats: createTreeStats(1, 0, 0, 0),
-                        total: 7,
-                        detail: createClauseDetail(
-                            'g-652',
-                            '6.5.2 访问控制',
-                            '对于一般数据处理系统，访问控制要求应包括授权、最小权限、接口访问限制以及统一权限管理。',
-                            [
-                                {
-                                    title: '应在通信前对参与数据流动的内外部接口进行授权',
-                                    content: '建立接口调用前的访问授权流程，对接口身份、访问范围、请求频率和用途进行约束。'
-                                },
-                                {
-                                    title: '应对数据源和数据存储系统的访问进行权限边界控制',
-                                    content: '围绕导入导出、数据备份、数据发布及共享等环节设置差异化访问权限。'
-                                },
-                                {
-                                    title: '应对数据访问接口与数据服务调用行为进行控制',
-                                    content: '对查询、下载、写入、修改和删除等关键操作配置权限策略与审计留痕。'
-                                },
-                                {
-                                    title: '应基于数据分类分级实施主体到客体的访问控制策略',
-                                    content: '访问控制粒度应达到主体为用户或进程级，客体为接口、应用功能、文件和数据库表级。'
-                                },
-                                {
-                                    title: '应定期对数据处理流程中的各类账号进行识别与梳理',
-                                    content: '对僵尸账号、共享账号、过期账号和异常权限账号进行排查和整改。'
-                                },
-                                {
-                                    title: '应对数据处理活动使用的数据收集、共享、发布、销毁工具的访问进行权限控制',
-                                    content: '确保仅授权人员可以使用处理工具，并能追溯关键操作来源。'
-                                },
-                                {
-                                    title: '应通过统一的权限管理平台对各类数据系统的访问权限进行管理',
-                                    content: '统一维护角色、权限与资源映射关系，减少多系统重复授权与权限漂移风险。'
-                                }
-                            ]
-                        )
-                    },
-                    {
-                        id: 'general-6.5.3',
-                        code: '6.5.3',
-                        label: '安全审计',
-                        stats: createTreeStats(0, 0, 0, 1),
-                        total: 3,
-                        detail: createClauseDetail(
-                            'g-653',
-                            '6.5.3 安全审计',
-                            '针对数据处理活动，应记录关键访问行为、权限变更、接口调用与异常操作，支持追踪与责任认定。',
-                            [
-                                {
-                                    title: '应记录关键数据访问与操作日志',
-                                    content: '至少覆盖登录、查询、导出、修改、删除及权限变更等关键行为。'
-                                },
-                                {
-                                    title: '应设置审计日志保护措施',
-                                    content: '确保日志防篡改、可追溯，并设置适当的保留周期和访问控制。'
-                                },
-                                {
-                                    title: '应支持异常行为识别和告警联动',
-                                    content: '对高频下载、越权访问和异常时间段操作等行为进行识别和告警。'
-                                }
-                            ]
-                        )
-                    }
-                ]
-            },
-            {
-                id: 'general-6.6',
-                code: '6.6',
-                label: '数据源',
-                stats: createTreeStats(1, 0, 0, 0),
-                total: 3,
-                children: [
-                    {
-                        id: 'general-6.6.1',
-                        code: '6.6.1',
-                        label: '采集管理',
-                        stats: createTreeStats(1, 0, 0, 0),
-                        total: 3,
-                        detail: createClauseDetail(
-                            'g-661',
-                            '6.6.1 采集管理',
-                            '一般数据采集应遵循合法、正当、必要原则，并对采集范围、用途和来源进行记录。',
-                            [
-                                {
-                                    title: '应明确采集范围与用途',
-                                    content: '对采集的数据项、采集来源和业务用途进行事前梳理与审批。'
-                                },
-                                {
-                                    title: '应建立数据采集留痕机制',
-                                    content: '保留采集时间、采集人、采集工具及目标数据集等记录，支持后续核验。'
-                                }
-                            ]
-                        )
-                    }
-                ]
-            }
-        ]
-    },
-    important: {
-        tree: [
-            {
-                id: 'important-7.2',
-                code: '7.2',
-                label: '重要数据识别',
-                stats: createTreeStats(1, 0, 0, 0),
-                total: 2,
-                children: [
-                    {
-                        id: 'important-7.2.1',
-                        code: '7.2.1',
-                        label: '识别与认定',
-                        stats: createTreeStats(1, 0, 0, 0),
-                        total: 2,
-                        detail: createClauseDetail(
-                            'i-721',
-                            '7.2.1 识别与认定',
-                            '重要数据应结合行业要求、业务关键性、影响范围及敏感程度进行识别和认定。',
-                            [
-                                {
-                                    title: '应建立重要数据识别标准',
-                                    content: '依据业务连续性、社会影响、行业监管要求和敏感程度形成识别标准。'
-                                },
-                                {
-                                    title: '应形成认定台账',
-                                    content: '对重要数据目录、责任部门、责任人和处置要求建立完整台账并定期复核。'
-                                }
-                            ]
-                        )
-                    }
-                ]
-            },
-            {
-                id: 'important-7.3',
-                code: '7.3',
-                label: '重要数据全生命周期保护',
-                stats: createTreeStats(0, 1, 0, 0),
-                total: 3,
-                children: [
-                    {
-                        id: 'important-7.3.2',
-                        code: '7.3.2',
-                        label: '共享与开放',
-                        stats: createTreeStats(0, 1, 0, 0),
-                        total: 3,
-                        detail: createClauseDetail(
-                            'i-732',
-                            '7.3.2 共享与开放',
-                            '重要数据在共享、交换和开放过程中，应建立审批、脱敏、审计和回收控制措施。',
-                            [
-                                {
-                                    title: '应建立共享开放审批流程',
-                                    content: '共享前对接收方资质、共享范围、使用场景和保存期限进行审批。'
-                                },
-                                {
-                                    title: '应落实脱敏与最小化原则',
-                                    content: '在满足业务需求前提下，优先采用脱敏、去标识化和最小必要共享策略。'
-                                },
-                                {
-                                    title: '应留存共享操作日志与回收记录',
-                                    content: '对共享对象、内容、时间及回收处置情况形成闭环记录。'
-                                }
-                            ]
-                        )
-                    }
-                ]
-            }
-        ]
-    }
-})
-
-const createSystemList = () => ([
-    {
-        id: 'sys-1',
-        name: '核心交易数据库',
-        icon: 'el-icon-cpu',
-        description: '承载支付、结算与账务处理的核心生产数据。',
-        ip: '10.20.2.36',
-        databaseType: 'PostgreSQL 15',
-        tags: [
-            { text: '一般数据', theme: 'blue' },
-            { text: '重要数据', theme: 'purple' }
-        ],
-        summaryStats: [
-            { label: '一般数据合规条目', value: 3, theme: 'primary' },
-            { label: '重要数据合规条目', value: 1, theme: 'purple' },
-            { label: '符合', value: 1, theme: 'success' },
-            { label: '部分符合', value: 0, theme: 'warning' },
-            { label: '不符合', value: 0, theme: 'danger' },
-            { label: '不适用', value: 0, theme: 'muted' }
-        ],
-        complianceTabs: createComplianceTabs()
-    },
-    {
-        id: 'sys-2',
-        name: '用户管理系统',
-        icon: 'el-icon-user-solid',
-        description: '支撑账户生命周期、权限分配和身份校验。',
-        ip: '10.20.2.31',
-        databaseType: 'MySQL 8.0',
-        tags: [
-            { text: '一般数据', theme: 'blue' },
-            { text: '重要数据', theme: 'purple' }
-        ],
-        summaryStats: [
-            { label: '一般数据合规条目', value: 4, theme: 'primary' },
-            { label: '重要数据合规条目', value: 0, theme: 'purple' },
-            { label: '符合', value: 2, theme: 'success' },
-            { label: '部分符合', value: 1, theme: 'warning' },
-            { label: '不符合', value: 0, theme: 'danger' },
-            { label: '不适用', value: 1, theme: 'muted' }
-        ],
-        complianceTabs: createComplianceTabs()
-    },
-    {
-        id: 'sys-3',
-        name: '日志分析平台',
-        icon: 'el-icon-s-data',
-        description: '聚合审计日志、应用日志和安全事件日志。',
-        ip: '10.20.2.32',
-        databaseType: 'Elasticsearch 8.x',
-        tags: [
-            { text: '一般数据', theme: 'blue' },
-            { text: '重要数据', theme: 'purple' }
-        ],
-        summaryStats: [
-            { label: '一般数据合规条目', value: 2, theme: 'primary' },
-            { label: '重要数据合规条目', value: 2, theme: 'purple' },
-            { label: '符合', value: 1, theme: 'success' },
-            { label: '部分符合', value: 1, theme: 'warning' },
-            { label: '不符合', value: 0, theme: 'danger' },
-            { label: '不适用', value: 0, theme: 'muted' }
-        ],
-        complianceTabs: createComplianceTabs()
-    },
-    {
-        id: 'sys-4',
-        name: '数据备份系统',
-        icon: 'el-icon-copy-document',
-        description: '负责生产数据的备份归档与恢复演练。',
-        ip: '10.20.2.33',
-        databaseType: 'MinIO',
-        tags: [
-            { text: '一般数据', theme: 'blue' },
-            { text: '重要数据', theme: 'purple' }
-        ],
-        summaryStats: [
-            { label: '一般数据合规条目', value: 2, theme: 'primary' },
-            { label: '重要数据合规条目', value: 1, theme: 'purple' },
-            { label: '符合', value: 1, theme: 'success' },
-            { label: '部分符合', value: 0, theme: 'warning' },
-            { label: '不符合', value: 1, theme: 'danger' },
-            { label: '不适用', value: 0, theme: 'muted' }
-        ],
-        complianceTabs: createComplianceTabs()
-    },
-    {
-        id: 'sys-5',
-        name: 'API 网关系统',
-        icon: 'el-icon-s-promotion',
-        description: '统一承载服务编排、接口鉴权与访问路由能力。',
-        ip: '10.20.2.34',
-        databaseType: 'Kong 3.x',
-        tags: [
-            { text: '一般数据', theme: 'blue' },
-            { text: '重要数据', theme: 'purple' }
-        ],
-        summaryStats: [
-            { label: '一般数据合规条目', value: 3, theme: 'primary' },
-            { label: '重要数据合规条目', value: 0, theme: 'purple' },
-            { label: '符合', value: 2, theme: 'success' },
-            { label: '部分符合', value: 0, theme: 'warning' },
-            { label: '不符合', value: 0, theme: 'danger' },
-            { label: '不适用', value: 1, theme: 'muted' }
-        ],
-        complianceTabs: createComplianceTabs()
-    }
-])
-
-const MOCK_TAB_LABELS = {
-    general: '一般数据合规要求',
-    important: '重要数据合规要求'
-}
-
-const MOCK_RESULT_VALUES = ['success', 'warning', 'danger', 'info']
-const MOCK_IMAGE_SIZE = 14131
-const MOCK_FILE_SIZE = 14131
-
-const createMockImageDataUrl = (label = '证据') => `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
-  <rect width="120" height="120" rx="14" fill="#f4f7ff"/>
-  <rect x="12" y="12" width="96" height="96" rx="10" fill="#ffffff" stroke="#d9e3f5"/>
-  <path d="M28 80l18-18 12 12 20-24 14 18v16H28z" fill="#bcd1ff"/>
-  <circle cx="45" cy="42" r="8" fill="#7ea6ff"/>
-  <text x="60" y="98" text-anchor="middle" font-size="12" fill="#6b7a90">${label}</text>
-</svg>
-`)}`
-
-const createMockImageItem = (suffix = '1') => ({
-    key: `mock-image-${suffix}`,
-    name: `123-${suffix}.png`,
-    size: MOCK_IMAGE_SIZE,
-    url: createMockImageDataUrl(`证据${suffix}`)
-})
-
-const createMockFileItem = (suffix = '1') => ({
-    key: `mock-file-${suffix}`,
-    name: suffix === '1' ? '123.png' : `附件-${suffix}.pdf`,
-    size: MOCK_FILE_SIZE
-})
-const MOCK_STANDARD_OPTIONS = [
-    { id: 'mock-standard-1', categoryName: '默认所属标准' }
-]
-
-const cloneMockData = (data) => JSON.parse(JSON.stringify(data))
-
-const mockRequest = (data, delay = 180) => new Promise((resolve) => {
-    setTimeout(() => {
-        resolve({
-            code: 200,
-            data: cloneMockData(data)
-        })
-    }, delay)
-})
-
-const findMockNodeById = (list = [], id) => {
-    for (let i = 0; i < list.length; i += 1) {
-        const item = list[i]
-        if (String(item.id) === String(id)) {
-            return item
-        }
-        if (Array.isArray(item.children) && item.children.length) {
-            const target = findMockNodeById(item.children, id)
-            if (target) {
-                return target
-            }
-        }
-    }
-    return null
-}
-
-const toMockTreeNode = (node = {}) => ({
-    id: node.id,
-    code: node.code,
-    label: node.label,
-    total: node.total,
-    stats: node.stats || createTreeStats(0, 0, 0, 0),
-    hasChildren: Array.isArray(node.children) && node.children.length > 0,
-    children: [],
-    clickAction: Array.isArray(node.children) && node.children.length > 0 ? 'children' : 'detail'
-})
-
-const getMockProgress = (system = {}) => {
-    const stats = Array.isArray(system.summaryStats) ? system.summaryStats : []
-    const findValueByTheme = (theme) => {
-        const target = stats.find(item => item.theme === theme)
-        return target ? Number(target.value || 0) : 0
-    }
-    const general = Number(system.generalClauseCount || findValueByTheme('primary') || 0)
-    const important = Number(system.importantClauseCount || findValueByTheme('purple') || 0)
-    const total = general + important
-    const completed = Number(system.okCount || findValueByTheme('success') || 0)
-    return {
-        completedCount: completed,
-        totalCount: total
-    }
-}
-
-const buildMockDataBlocks = () => {
-    const sourceSystems = createSystemList()
-    const defaultStandardId = MOCK_STANDARD_OPTIONS[0] && MOCK_STANDARD_OPTIONS[0].id
-    const systemListByStandard = {
-        [defaultStandardId]: sourceSystems.map((system) => {
-            const { complianceTabs, ...rest } = system
-            void complianceTabs
-            return rest
-        })
-    }
-    const securityOverviewBySystem = {}
-    const treeSourceBySystemTab = {}
-    const nodeDetailBySystemTabNode = {}
-    const collectNodeMocks = (nodes = [], systemId, tabId) => {
-        ; (Array.isArray(nodes) ? nodes : []).forEach((node) => {
-            const detail = node.detail || {}
-            const detailItems = Array.isArray(detail.items) ? detail.items : []
-            if (detailItems.length || detail.title || detail.description) {
-                nodeDetailBySystemTabNode[systemId][tabId][node.id] = {
-                    title: detail.title || node.label || '',
-                    description: detail.description || '',
-                    items: detailItems.map((item, index) => ({
-                        ...item,
-                        result: item.result || MOCK_RESULT_VALUES[index % MOCK_RESULT_VALUES.length],
-                        note: item.note || '',
-                        imageList: [createMockImageItem(index + 1)],
-                        fileList: [createMockFileItem(index + 1)]
-                    }))
-                }
-            }
-            if (Array.isArray(node.children) && node.children.length) {
-                collectNodeMocks(node.children, systemId, tabId)
-            }
-        })
-    }
-
-    sourceSystems.forEach((system) => {
-        const tabsConfig = system.complianceTabs || {}
-        const tabIds = Object.keys(tabsConfig)
-        securityOverviewBySystem[system.id] = {
-            tabs: tabIds.map((tabId) => ({
-                id: tabId,
-                label: tabsConfig[tabId].label || MOCK_TAB_LABELS[tabId] || tabId
-            })),
-            progress: getMockProgress(system)
-        }
-        treeSourceBySystemTab[system.id] = {}
-        nodeDetailBySystemTabNode[system.id] = {}
-        tabIds.forEach((tabId) => {
-            const tree = Array.isArray(tabsConfig[tabId].tree) ? tabsConfig[tabId].tree : []
-            treeSourceBySystemTab[system.id][tabId] = tree
-            nodeDetailBySystemTabNode[system.id][tabId] = {}
-            collectNodeMocks(tree, system.id, tabId)
-        })
-    })
-
-    return {
-        systemListByStandard,
-        securityOverviewBySystem,
-        treeSourceBySystemTab,
-        nodeDetailBySystemTabNode
-    }
-}
-
-const {
-    systemListByStandard: MOCK_SYSTEM_LIST_BY_STANDARD,
-    securityOverviewBySystem: MOCK_SECURITY_OVERVIEW_BY_SYSTEM,
-    treeSourceBySystemTab: MOCK_TREE_SOURCE_BY_SYSTEM_TAB,
-    nodeDetailBySystemTabNode: MOCK_NODE_DETAIL_BY_SYSTEM_TAB_NODE
-} = buildMockDataBlocks()
-
-const createEmptyMockDetail = () => ({
-    title: '',
-    description: '',
-    items: []
-})
-
-const mockFetchSystemList = (standardId = '') => {
-    const fallbackStandardId = MOCK_STANDARD_OPTIONS[0] && MOCK_STANDARD_OPTIONS[0].id
-    return mockRequest({
-        list: (MOCK_SYSTEM_LIST_BY_STANDARD[standardId] || MOCK_SYSTEM_LIST_BY_STANDARD[fallbackStandardId] || [])
-    })
-}
-
-const mockFetchSecurityTabs = (systemId = '') => {
-    return mockRequest(
-        MOCK_SECURITY_OVERVIEW_BY_SYSTEM[systemId] || {
-            tabs: [],
-            progress: {
-                completedCount: 0,
-                totalCount: 0
-            }
-        }
-    )
-}
-
-const mockFetchTreeNodes = (systemId = '', tabId, parentId = '') => {
-    const tree = (((MOCK_TREE_SOURCE_BY_SYSTEM_TAB[systemId] || {})[tabId]) || [])
-    const sourceList = parentId
-        ? ((findMockNodeById(tree, parentId) || {}).children || [])
-        : tree
-    return mockRequest({
-        nodes: sourceList.map(toMockTreeNode)
-    })
-}
-
-const mockFetchNodeDetail = (systemId = '', tabId, nodeId) => {
-    const detail = ((((MOCK_NODE_DETAIL_BY_SYSTEM_TAB_NODE[systemId] || {})[tabId]) || {})[nodeId]) || createEmptyMockDetail()
-    return mockRequest({
-        detail
-    })
-}
-
-const mockSubmitClauseForm = (payload = {}) => mockRequest({
-    success: true,
-    ...payload
-}, 260)
-
-const LEGACY_MOCK_REQUESTS = {
-    mockFetchSystemList,
-    mockFetchSecurityTabs,
-    mockFetchTreeNodes,
-    mockFetchNodeDetail,
-    mockSubmitClauseForm
-}
-void LEGACY_MOCK_REQUESTS
 
 export default {
     name: 'DataSecurity',
@@ -993,29 +445,53 @@ export default {
         buildUploadKey(prefix = 'upload', item = {}) {
             const name = item.name || 'file'
             const size = this.toNumber(item.size)
-            const url = item.url || item.fileUrl || item.filePath || ''
+            const url = item.url || item.previewUrl || item.localUrl || item.imgUrl || item.fileUrl || item.filePath || ''
             const lastModified = item.lastModified || ''
             return `${prefix}-${name}-${size}-${lastModified}-${url || this.buildUploadUid(prefix)}`
         },
+        isLocalResourceUrl(url = '') {
+            const source = String(url || '').trim()
+            return source.startsWith('blob:') || source.startsWith('data:')
+        },
+        resolveResourceUrl(url = '') {
+            const source = String(url || '').trim()
+            if (!source) return ''
+            if (/^(https?:)?\/\//i.test(source) || source.startsWith('blob:') || source.startsWith('data:')) {
+                return source
+            }
+            const normalizedPath = source.replace(/^\/+/, '')
+            return `${window.location.origin}/${normalizedPath}`
+        },
         normalizeUploadImage(item = {}) {
+            const sourceUrl = item.url || item.imgUrl || item.fileUrl || item.filePath || item.downloadUrl || item.path || (item.response && item.response.url) || ''
+            const isLocalUrl = this.isLocalResourceUrl(sourceUrl)
             return {
                 key: item.key || this.buildUploadKey('image', item),
                 name: item.name || 'image.png',
                 size: this.toNumber(item.size),
                 sizeName: item.sizeName || '',
-                url: item.url || item.fileUrl || item.filePath || item.downloadUrl || item.path || (item.response && item.response.url) || '',
+                url: isLocalUrl ? '' : sourceUrl,
+                previewUrl: this.resolveResourceUrl(sourceUrl),
+                localUrl: isLocalUrl ? sourceUrl : '',
                 raw: item.raw || null
             }
         },
         normalizeUploadFile(item = {}) {
+            const sourceUrl = item.url || item.imgUrl || item.fileUrl || item.filePath || item.downloadUrl || item.path || ''
+            const isLocalUrl = this.isLocalResourceUrl(sourceUrl)
             return {
                 key: item.key || this.buildUploadKey('file', item),
                 name: item.name || 'file',
                 size: this.toNumber(item.size),
                 sizeName: item.sizeName || '',
-                url: item.url || item.fileUrl || item.filePath || item.downloadUrl || item.path || '',
+                url: isLocalUrl ? '' : sourceUrl,
+                previewUrl: this.resolveResourceUrl(sourceUrl),
+                localUrl: isLocalUrl ? sourceUrl : '',
                 raw: item.raw || null
             }
+        },
+        getResourcePreviewUrl(resource = {}) {
+            return resource.previewUrl || this.resolveResourceUrl(resource.url || resource.imgUrl || '')
         },
         normalizeRawList(value) {
             if (Array.isArray(value)) {
@@ -1069,14 +545,14 @@ export default {
                 const response = await getFrameworks()
                 const payload = this.extractResponseData(response) || {}
                 const list = this.extractList(payload, ['records', 'rows', 'list'])
-                this.treeOptions = list.length ? list : cloneMockData(MOCK_STANDARD_OPTIONS)
+                this.treeOptions = list
                 const hasSelectedStandard = this.treeOptions.some(item => String(item.id) === this.selectedStandard)
                 if (!hasSelectedStandard) {
                     this.selectedStandard = this.treeOptions.length ? String(this.treeOptions[0].id) : ''
                 }
             } catch (error) {
-                this.treeOptions = cloneMockData(MOCK_STANDARD_OPTIONS)
-                this.selectedStandard = this.treeOptions.length ? String(this.treeOptions[0].id) : ''
+                this.treeOptions = []
+                this.selectedStandard = ''
                 console.error('Failed to load standard options:', error)
             }
         },
@@ -1142,10 +618,17 @@ export default {
             ]
         },
         createProgressFallback(system = this.currentSystem) {
-            const progress = getMockProgress(system)
+            const stats = this.getSystemSummaryStats(system)
+            const findValueByTheme = (theme) => {
+                const target = stats.find(item => item.theme === theme)
+                return target ? this.toNumber(target.value) : 0
+            }
             return {
-                completed: this.toNumber(progress.completedCount),
-                total: this.toNumber(progress.totalCount)
+                completed: this.toNumber(system.okCount || findValueByTheme('success')),
+                total: this.toNumber(
+                    (system.generalClauseCount || findValueByTheme('primary')) +
+                    (system.importantClauseCount || findValueByTheme('purple'))
+                )
             }
         },
         normalizeProgress(payload = {}) {
@@ -1441,7 +924,7 @@ export default {
             return this.clauseFormState[itemId]
         },
         handleImagePreview(image) {
-            this.imagePreviewUrl = image.url || ''
+            this.imagePreviewUrl = this.getResourcePreviewUrl(image)
             this.imagePreviewName = image.name || '图片预览'
             this.imagePreviewVisible = !!this.imagePreviewUrl
         },
@@ -1474,7 +957,8 @@ export default {
                     key: nextKey,
                     name: rawFile.name,
                     size: rawFile.size,
-                    url: URL.createObjectURL(rawFile),
+                    previewUrl: URL.createObjectURL(rawFile),
+                    localUrl: '',
                     raw: rawFile
                 }))
             })
@@ -1483,13 +967,8 @@ export default {
             }
             this.clearUploadRef(`imageUpload-${itemId}`)
         },
-        removeClauseImage(itemId, imageKey) {
-            const state = this.getClauseState(itemId)
-            const removedImage = state.imageList.find(image => image.key === imageKey)
-            if (removedImage && String(removedImage.url || '').startsWith('blob:')) {
-                URL.revokeObjectURL(removedImage.url)
-            }
-            state.imageList = state.imageList.filter(image => image.key !== imageKey)
+        async removeClauseImage(itemId, imageKey) {
+            await this.removeClauseResource(itemId, imageKey, 'image')
         },
         handleFileUploadChange(file, fileList, itemId) {
             const state = this.getClauseState(itemId)
@@ -1516,6 +995,8 @@ export default {
                     key: nextKey,
                     name: rawFile.name,
                     size: rawFile.size,
+                    previewUrl: '',
+                    localUrl: '',
                     raw: rawFile
                 }))
             })
@@ -1524,9 +1005,57 @@ export default {
             }
             this.clearUploadRef(`fileUpload-${itemId}`)
         },
-        removeClauseFile(itemId, fileKey) {
+        async removeClauseFile(itemId, fileKey) {
+            await this.removeClauseResource(itemId, fileKey, 'file')
+        },
+        removeClauseResourceFromState(state, resourceKey, type) {
+            const listKey = type === 'image' ? 'imageList' : 'fileList'
+            const currentList = Array.isArray(state[listKey]) ? state[listKey] : []
+            const currentResource = currentList.find(item => item.key === resourceKey)
+            const previewUrl = currentResource ? this.getResourcePreviewUrl(currentResource) : ''
+            if (previewUrl && String(previewUrl).startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl)
+            }
+            state[listKey] = currentList.filter(item => item.key !== resourceKey)
+        },
+        buildDeleteClauseResourcePayload(itemId, resource = {}) {
+            return {
+                id: itemId,
+                url: resource.url || ''
+            }
+        },
+        async removeClauseResource(itemId, resourceKey, type = 'file') {
             const state = this.getClauseState(itemId)
-            state.fileList = state.fileList.filter(file => file.key !== fileKey)
+            const listKey = type === 'image' ? 'imageList' : 'fileList'
+            const currentList = Array.isArray(state[listKey]) ? state[listKey] : []
+            const currentResource = currentList.find(item => item.key === resourceKey)
+            if (!currentResource) {
+                return
+            }
+            if (!currentResource.url) {
+                this.removeClauseResourceFromState(state, resourceKey, type)
+                return
+            }
+            const resourceLabel = type === 'image' ? '图片' : '文件'
+            try {
+                await this.$confirm(`确认删除该${resourceLabel}吗？`, '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                })
+                await deleteGradeSecurityProtectionItemFile(this.buildDeleteClauseResourcePayload(itemId, currentResource))
+                if (this.activeDetailNode && this.activeDetailNode.id) {
+                    await this.loadNodeDetail(this.activeDetailNode)
+                } else {
+                    this.removeClauseResourceFromState(state, resourceKey, type)
+                }
+                this.$message.success('删除成功')
+            } catch (error) {
+                if (error === 'cancel' || error === 'close') {
+                    return
+                }
+                console.error(`Failed to delete ${resourceLabel}:`, error)
+            }
         },
         setClauseResult(itemId, result) {
             const state = this.getClauseState(itemId)

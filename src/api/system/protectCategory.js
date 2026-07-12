@@ -643,3 +643,12 @@ export function saveGradeSecurityProtectionItem(params) {
     data: params,
   })
 }
+
+// 等保合规/删除文件
+export function deleteGradeSecurityProtectionItemFile(data) {
+  return request({
+    url: '/system/gradeSecurityProtection/deleteGradeSecurityProtectionItemFile',
+    method: 'post',
+    data: data,
+  })
+}
