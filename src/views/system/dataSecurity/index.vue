@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div class="app-container data-security-page">
         <div class="page-header">
             <div class="page-header__main">
@@ -139,7 +139,7 @@
                                                             <i class="el-icon-s-operation"></i>
                                                             <span>合规说明 / 整改记录</span>
                                                         </div>
-                                                        <el-input v-model="getClauseState(item.id).note" type="textarea"
+                                                        <el-input v-model="getClauseState(item.id).gradeItemExplain" type="textarea"
                                                             :rows="3" resize="none"
                                                             placeholder="请输入该小项的合规情况说明、整改措施或其他备注..." />
                                                     </div>
@@ -176,12 +176,12 @@
                                                         </div>
                                                         <div class="clause-image-list">
                                                             <div v-for="image in getClauseState(item.id).imageList"
-                                                                :key="image.uid" class="clause-image-card"
+                                                                :key="image.key" class="clause-image-card"
                                                                 @click="handleImagePreview(image)">
                                                                 <img :src="image.url" :alt="image.name"
                                                                     class="clause-image-card__img">
                                                                 <button type="button" class="clause-image-card__remove"
-                                                                    @click.stop="removeClauseImage(item.id, image.uid)">
+                                                                    @click.stop="removeClauseImage(item.id, image.key)">
                                                                     <i class="el-icon-close"></i>
                                                                 </button>
                                                             </div>
@@ -212,18 +212,18 @@
                                                         <div class="clause-file-list"
                                                             v-if="getClauseState(item.id).fileList.length">
                                                             <div v-for="file in getClauseState(item.id).fileList"
-                                                                :key="file.uid" class="clause-file-item">
+                                                                :key="file.key" class="clause-file-item">
                                                                 <div class="clause-file-item__main">
                                                                     <div class="clause-file-item__badge">FILE</div>
                                                                     <div class="clause-file-item__meta">
                                                                         <div class="clause-file-item__name">{{ file.name
                                                                             }}</div>
                                                                         <div class="clause-file-item__size">{{
-                                                                            formatFileSize(file.size) }}</div>
+                                                                            file.sizeName || formatFileSize(file.size) }}</div>
                                                                     </div>
                                                                 </div>
                                                                 <button type="button" class="clause-file-item__remove"
-                                                                    @click="removeClauseFile(item.id, file.uid)">
+                                                                    @click="removeClauseFile(item.id, file.key)">
                                                                     <i class="el-icon-close"></i>
                                                                 </button>
                                                             </div>
@@ -250,7 +250,7 @@
                                                         <div class="result-button-group">
                                                             <button v-for="option in resultOptions" :key="option.value"
                                                                 type="button"
-                                                                :class="['result-button', `result-button--${option.type}`, { 'is-active': getClauseState(item.id).result === option.value }]"
+                                                                :class="['result-button', `result-button--${option.type}`, { 'is-active': getClauseState(item.id).gradeItemResult === option.value }]"
                                                                 @click="setClauseResult(item.id, option.value)">
                                                                 <i :class="option.icon"></i>
                                                                 <span>{{ option.label }}</span>
@@ -278,7 +278,7 @@
         </el-row>
 
         <el-dialog :visible.sync="imagePreviewVisible" append-to-body width="720px"
-            custom-class="clause-image-preview-dialog">
+            :title="imagePreviewName || '图片预览'" custom-class="clause-image-preview-dialog">
             <img v-if="imagePreviewUrl" :src="imagePreviewUrl" alt="preview" class="clause-image-preview">
         </el-dialog>
     </div>
@@ -643,14 +643,14 @@ const createMockImageDataUrl = (label = '证据') => `data:image/svg+xml;charset
 `)}`
 
 const createMockImageItem = (suffix = '1') => ({
-    uid: `mock-image-${suffix}`,
+    key: `mock-image-${suffix}`,
     name: `123-${suffix}.png`,
     size: MOCK_IMAGE_SIZE,
     url: createMockImageDataUrl(`证据${suffix}`)
 })
 
 const createMockFileItem = (suffix = '1') => ({
-    uid: `mock-file-${suffix}`,
+    key: `mock-file-${suffix}`,
     name: suffix === '1' ? '123.png' : `附件-${suffix}.pdf`,
     size: MOCK_FILE_SIZE
 })
@@ -872,6 +872,7 @@ export default {
             detailLoading: false,
             imagePreviewVisible: false,
             imagePreviewUrl: '',
+            imagePreviewName: '',
             uploadLimits: {
                 imageCount: 5,
                 imageSize: 5,
@@ -879,10 +880,10 @@ export default {
                 fileSize: 10
             },
             resultOptions: [
-                { label: '符合', value: 'success', type: 'success', icon: 'el-icon-check' },
-                { label: '部分符合', value: 'warning', type: 'warning', icon: 'el-icon-time' },
-                { label: '不符合', value: 'danger', type: 'danger', icon: 'el-icon-close' },
-                { label: '不适用', value: 'info', type: 'info', icon: 'el-icon-minus' }
+                { label: '符合', value: 'compliant', type: 'success', icon: 'el-icon-check' },
+                { label: '部分符合', value: 'partialCompliant', type: 'warning', icon: 'el-icon-time' },
+                { label: '不符合', value: 'nonCompliant', type: 'danger', icon: 'el-icon-close' },
+                { label: '不适用', value: 'notApplicable', type: 'info', icon: 'el-icon-minus' }
             ]
         }
     },
@@ -989,21 +990,46 @@ export default {
         buildUploadUid(prefix = 'upload') {
             return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`
         },
+        buildUploadKey(prefix = 'upload', item = {}) {
+            const name = item.name || 'file'
+            const size = this.toNumber(item.size)
+            const url = item.url || item.fileUrl || item.filePath || ''
+            const lastModified = item.lastModified || ''
+            return `${prefix}-${name}-${size}-${lastModified}-${url || this.buildUploadUid(prefix)}`
+        },
         normalizeUploadImage(item = {}) {
             return {
-                uid: item.uid || this.buildUploadUid('image'),
+                key: item.key || this.buildUploadKey('image', item),
                 name: item.name || 'image.png',
                 size: this.toNumber(item.size),
-                url: item.url || (item.response && item.response.url) || ''
+                sizeName: item.sizeName || '',
+                url: item.url || item.fileUrl || item.filePath || item.downloadUrl || item.path || (item.response && item.response.url) || '',
+                raw: item.raw || null
             }
         },
         normalizeUploadFile(item = {}) {
             return {
-                uid: item.uid || this.buildUploadUid('file'),
+                key: item.key || this.buildUploadKey('file', item),
                 name: item.name || 'file',
                 size: this.toNumber(item.size),
-                url: item.url || ''
+                sizeName: item.sizeName || '',
+                url: item.url || item.fileUrl || item.filePath || item.downloadUrl || item.path || '',
+                raw: item.raw || null
             }
+        },
+        normalizeRawList(value) {
+            if (Array.isArray(value)) {
+                return value
+            }
+            if (typeof value === 'string' && value) {
+                try {
+                    const parsed = JSON.parse(value)
+                    return Array.isArray(parsed) ? parsed : []
+                } catch (error) {
+                    return []
+                }
+            }
+            return []
         },
         clearUploadRef(refName) {
             const target = this.$refs[refName]
@@ -1206,11 +1232,14 @@ export default {
         normalizeDetailItems(list = []) {
             return (Array.isArray(list) ? list : []).map((item, index) => ({
                 ...item,
-                id: String(item.id || item.itemId || item.detailId || item.clauseId || `${this.activeTreeNodeId}-${index + 1}`),
-                sort: item.sort || item.serialNo || String.fromCharCode(65 + index),
-                title: item.title || item.name || item.label || `条目${index + 1}`,
-                defaultResult: item.result || item.resultValue || item.status || '',
-                note: item.note || item.remark || ''
+                id: String(item.id || item.gradeItemId || item.itemId || item.detailId || item.clauseId || `${this.activeTreeNodeId}-${index + 1}`),
+                sort: item.gradeItemSort || item.sort || item.serialNo || String(index + 1),
+                title: item.gradeItemName || item.name || item.label || `条目${index + 1}`,
+                defaultResult: item.gradeItemResult || item.result || item.resultValue || item.status || '',
+                gradeItemExplain: item.gradeItemExplain || item.note || item.remark || '',
+                gradeItemResult: item.gradeItemResult || item.result || item.resultValue || item.status || '',
+                imageList: this.normalizeRawList(item.gradeItemPictureList || item.pictureFileList || item.imageList),
+                fileList: this.normalizeRawList(item.gradeItemFileList || item.fileAttachmentList || item.fileList)
             }))
         },
         normalizeNodeDetail(payload = {}, node = {}) {
@@ -1227,9 +1256,9 @@ export default {
                 loading: false,
                 loaded: false,
                 submitting: false,
-                note: item.note || '',
-                result: item.defaultResult || item.result || '',
-                defaultResult: item.defaultResult || item.result || '',
+                gradeItemExplain: item.gradeItemExplain || '',
+                gradeItemResult: item.gradeItemResult || item.defaultResult || item.result || '',
+                defaultResult: item.gradeItemResult || item.defaultResult || item.result || '',
                 imageList: Array.isArray(item.imageList) ? item.imageList.map(image => this.normalizeUploadImage(image)) : [],
                 fileList: Array.isArray(item.fileList) ? item.fileList.map(file => this.normalizeUploadFile(file)) : [],
                 raw: { ...item }
@@ -1413,6 +1442,7 @@ export default {
         },
         handleImagePreview(image) {
             this.imagePreviewUrl = image.url || ''
+            this.imagePreviewName = image.name || '图片预览'
             this.imagePreviewVisible = !!this.imagePreviewUrl
         },
         handleImageUploadChange(file, fileList, itemId) {
@@ -1421,7 +1451,11 @@ export default {
             let exceedCountLimit = false
             appendList.forEach((currentFile) => {
                 const rawFile = currentFile && currentFile.raw ? currentFile.raw : currentFile
-                if (!rawFile || state.imageList.some(image => image.uid === currentFile.uid)) {
+                if (!rawFile) {
+                    return
+                }
+                const nextKey = this.buildUploadKey('image', rawFile)
+                if (state.imageList.some(image => image.key === nextKey)) {
                     return
                 }
                 if (!this.isImageFile(rawFile)) {
@@ -1437,10 +1471,11 @@ export default {
                     return
                 }
                 state.imageList.push(this.normalizeUploadImage({
-                    uid: currentFile.uid,
+                    key: nextKey,
                     name: rawFile.name,
                     size: rawFile.size,
-                    url: URL.createObjectURL(rawFile)
+                    url: URL.createObjectURL(rawFile),
+                    raw: rawFile
                 }))
             })
             if (exceedCountLimit) {
@@ -1448,13 +1483,13 @@ export default {
             }
             this.clearUploadRef(`imageUpload-${itemId}`)
         },
-        removeClauseImage(itemId, imageUid) {
+        removeClauseImage(itemId, imageKey) {
             const state = this.getClauseState(itemId)
-            const removedImage = state.imageList.find(image => image.uid === imageUid)
+            const removedImage = state.imageList.find(image => image.key === imageKey)
             if (removedImage && String(removedImage.url || '').startsWith('blob:')) {
                 URL.revokeObjectURL(removedImage.url)
             }
-            state.imageList = state.imageList.filter(image => image.uid !== imageUid)
+            state.imageList = state.imageList.filter(image => image.key !== imageKey)
         },
         handleFileUploadChange(file, fileList, itemId) {
             const state = this.getClauseState(itemId)
@@ -1462,7 +1497,11 @@ export default {
             let exceedCountLimit = false
             appendList.forEach((currentFile) => {
                 const rawFile = currentFile && currentFile.raw ? currentFile.raw : currentFile
-                if (!rawFile || state.fileList.some(fileItem => fileItem.uid === currentFile.uid)) {
+                if (!rawFile) {
+                    return
+                }
+                const nextKey = this.buildUploadKey('file', rawFile)
+                if (state.fileList.some(fileItem => fileItem.key === nextKey)) {
                     return
                 }
                 if (!this.isFileSizeAllowed(rawFile, this.uploadLimits.fileSize)) {
@@ -1474,9 +1513,10 @@ export default {
                     return
                 }
                 state.fileList.push(this.normalizeUploadFile({
-                    uid: currentFile.uid,
+                    key: nextKey,
                     name: rawFile.name,
-                    size: rawFile.size
+                    size: rawFile.size,
+                    raw: rawFile
                 }))
             })
             if (exceedCountLimit) {
@@ -1484,48 +1524,35 @@ export default {
             }
             this.clearUploadRef(`fileUpload-${itemId}`)
         },
-        removeClauseFile(itemId, fileUid) {
+        removeClauseFile(itemId, fileKey) {
             const state = this.getClauseState(itemId)
-            state.fileList = state.fileList.filter(file => file.uid !== fileUid)
+            state.fileList = state.fileList.filter(file => file.key !== fileKey)
         },
         setClauseResult(itemId, result) {
             const state = this.getClauseState(itemId)
-            state.result = result
+            state.gradeItemResult = result
         },
         getClauseResultOption(itemId) {
             const state = this.getClauseState(itemId)
-            const resultValue = state.result || state.defaultResult
+            const resultValue = state.gradeItemResult || state.defaultResult
             return this.resultOptions.find(option => option.value === resultValue) || null
         },
         buildClauseSubmitPayload(item, state) {
-            return {
-                ...state.raw,
-                projectId: this.selectedStandard,
-                categoryId: this.selectedStandard,
-                standardId: this.selectedStandard,
-                systemId: this.activeSystemId,
-                databaseId: this.activeSystemId,
-                type: this.activeTab,
-                tabId: this.activeTab,
-                nodeId: this.activeDetailNode ? this.activeDetailNode.id : '',
-                parentId: this.activeDetailNode ? this.activeDetailNode.id : '',
-                clauseId: item.id,
-                itemId: item.id,
-                note: state.note,
-                result: state.result || state.defaultResult || '',
-                imageList: state.imageList.map(image => ({
-                    uid: image.uid,
-                    name: image.name,
-                    size: image.size,
-                    url: image.url
-                })),
-                fileList: state.fileList.map(file => ({
-                    uid: file.uid,
-                    name: file.name,
-                    size: file.size,
-                    url: file.url
-                }))
-            }
+            const formData = new FormData()
+            formData.append('id', String(state.raw.id || state.raw.gradeItemId || item.id || ''))
+            formData.append('gradeItemExplain', state.gradeItemExplain != null ? String(state.gradeItemExplain) : '')
+            formData.append('gradeItemResult', state.gradeItemResult || state.defaultResult || '')
+            state.imageList.forEach((image) => {
+                if (image && image.raw) {
+                    formData.append('pictureFileList', image.raw)
+                }
+            })
+            state.fileList.forEach((fileItem) => {
+                if (fileItem && fileItem.raw) {
+                    formData.append('fileAttachmentList', fileItem.raw)
+                }
+            })
+            return formData
         },
         async submitClauseItem(item) {
             const state = this.getClauseState(item.id)
@@ -1535,7 +1562,7 @@ export default {
             state.submitting = true
             try {
                 await saveGradeSecurityProtectionItem(this.buildClauseSubmitPayload(item, state))
-                state.defaultResult = state.result || state.defaultResult
+                state.defaultResult = state.gradeItemResult || state.defaultResult
                 this.$message.success('保存成功')
             } catch (error) {
                 console.error('Failed to submit clause form:', error)
@@ -2206,6 +2233,27 @@ export default {
     width: 100%;
     display: block;
     border-radius: 12px;
+}
+
+::v-deep .clause-image-preview-dialog {
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+::v-deep .clause-image-preview-dialog .el-dialog__header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid #eef2f8;
+}
+
+::v-deep .clause-image-preview-dialog .el-dialog__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+::v-deep .clause-image-preview-dialog .el-dialog__body {
+    padding: 20px;
+    background: #fff;
 }
 
 .clause-form__label {

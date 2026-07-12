@@ -637,6 +637,9 @@ export function saveGradeSecurityProtectionItem(params) {
   return request({
     url: '/system/gradeSecurityProtection/saveGradeSecurityProtectionItem',
     method: 'post',
+    headers: {
+      "Content-Type": "multipart/form-data; ",
+    },
     data: params,
   })
 }
