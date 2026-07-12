@@ -595,3 +595,48 @@ export function getRightDataJson(params) {
     params: params,
   })
 }
+
+// 等保合规/获取数据源
+export function getDataSourceListByProjectId(params) {
+  return request({
+    url: '/system/gradeSecurityProtection/getDataSourceListByProjectId',
+    method: 'get',
+    params: params,
+  })
+}
+
+// 等保合规/获取数据源详情
+export function getGradeSecurityProtectionTypeByDatabaseId(params) {
+  return request({
+    url: '/system/gradeSecurityProtection/getGradeSecurityProtectionTypeByDatabaseId',
+    method: 'get',
+    params: params,
+  })
+}
+
+// 等保合规/获取树结构详情
+export function getTreeGradeSecurityProtectionByDatabaseId(params) {
+  return request({
+    url: '/system/gradeSecurityProtection/getTreeGradeSecurityProtectionByDatabaseId',
+    method: 'get',
+    params: params,
+  })
+}
+
+// 等保合规/获取右侧详情
+export function getGradeSecurityProtectionItemByParentId(params) {
+  return request({
+    url: '/system/gradeSecurityProtection/getGradeSecurityProtectionItemByParentId',
+    method: 'get',
+    params: params,
+  })
+}
+
+// 等保合规/保存右侧详情
+export function saveGradeSecurityProtectionItem(params) {
+  return request({
+    url: '/system/gradeSecurityProtection/saveGradeSecurityProtectionItem',
+    method: 'post',
+    data: params,
+  })
+}

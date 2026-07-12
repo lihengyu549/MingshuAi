@@ -74,8 +74,8 @@
 
                     <div class="detail-card__body" v-loading="tabsLoading">
                         <el-tabs v-model="activeTab" class="security-tabs" @tab-click="handleTabChange">
-                            <el-tab-pane v-for="tab in securityTabs" :key="tab.id" :label="tab.label"
-                                :name="tab.id"></el-tab-pane>
+                            <el-tab-pane v-for="tab in securityTabs" :key="tab.value" :label="tab.label"
+                                :name="tab.value"></el-tab-pane>
                         </el-tabs>
 
                         <div class="security-content">
@@ -166,11 +166,13 @@
                                                         </el-button>
                                                     </div>
 
-                                                    <div class="clause-form__section clause-form__section--custom-upload">
+                                                    <div
+                                                        class="clause-form__section clause-form__section--custom-upload">
                                                         <div class="clause-form__label">
                                                             <i class="el-icon-picture-outline"></i>
                                                             <span>图片证据 / 截图</span>
-                                                            <span class="clause-form__label-hint">{{ imageUploadHint }}</span>
+                                                            <span class="clause-form__label-hint">{{ imageUploadHint
+                                                                }}</span>
                                                         </div>
                                                         <div class="clause-image-list">
                                                             <div v-for="image in getClauseState(item.id).imageList"
@@ -183,10 +185,11 @@
                                                                     <i class="el-icon-close"></i>
                                                                 </button>
                                                             </div>
-                                                            <el-upload v-if="!isClauseUploadLimitReached(item.id, 'image')" :ref="`imageUpload-${item.id}`"
-                                                                class="clause-upload" action="#"
-                                                                :auto-upload="false" :show-file-list="false" multiple
-                                                                :limit="uploadLimits.imageCount"
+                                                            <el-upload
+                                                                v-if="!isClauseUploadLimitReached(item.id, 'image')"
+                                                                :ref="`imageUpload-${item.id}`" class="clause-upload"
+                                                                action="#" :auto-upload="false" :show-file-list="false"
+                                                                multiple :limit="uploadLimits.imageCount"
                                                                 accept="image/*"
                                                                 :on-exceed="() => handleClauseUploadExceed('image')"
                                                                 :on-change="(file, fileList) => handleImageUploadChange(file, fileList, item.id)">
@@ -198,11 +201,13 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="clause-form__section clause-form__section--custom-upload">
+                                                    <div
+                                                        class="clause-form__section clause-form__section--custom-upload">
                                                         <div class="clause-form__label">
                                                             <i class="el-icon-document"></i>
                                                             <span>文件附件</span>
-                                                            <span class="clause-form__label-hint">{{ fileUploadHint }}</span>
+                                                            <span class="clause-form__label-hint">{{ fileUploadHint
+                                                                }}</span>
                                                         </div>
                                                         <div class="clause-file-list"
                                                             v-if="getClauseState(item.id).fileList.length">
@@ -211,8 +216,10 @@
                                                                 <div class="clause-file-item__main">
                                                                     <div class="clause-file-item__badge">FILE</div>
                                                                     <div class="clause-file-item__meta">
-                                                                        <div class="clause-file-item__name">{{ file.name }}</div>
-                                                                        <div class="clause-file-item__size">{{ formatFileSize(file.size) }}</div>
+                                                                        <div class="clause-file-item__name">{{ file.name
+                                                                            }}</div>
+                                                                        <div class="clause-file-item__size">{{
+                                                                            formatFileSize(file.size) }}</div>
                                                                     </div>
                                                                 </div>
                                                                 <button type="button" class="clause-file-item__remove"
@@ -221,13 +228,14 @@
                                                                 </button>
                                                             </div>
                                                         </div>
-                                                        <el-upload v-if="!isClauseUploadLimitReached(item.id, 'file')" :ref="`fileUpload-${item.id}`" class="clause-upload"
-                                                            action="#"
-                                                            :auto-upload="false" :show-file-list="false" multiple
-                                                            :limit="uploadLimits.fileCount"
+                                                        <el-upload v-if="!isClauseUploadLimitReached(item.id, 'file')"
+                                                            :ref="`fileUpload-${item.id}`" class="clause-upload"
+                                                            action="#" :auto-upload="false" :show-file-list="false"
+                                                            multiple :limit="uploadLimits.fileCount"
                                                             :on-exceed="() => handleClauseUploadExceed('file')"
                                                             :on-change="(file, fileList) => handleFileUploadChange(file, fileList, item.id)">
-                                                            <el-button plain size="small" class="clause-form__attach-btn">
+                                                            <el-button plain size="small"
+                                                                class="clause-form__attach-btn">
                                                                 <i class="el-icon-plus"></i>
                                                                 <span>添加附件</span>
                                                             </el-button>
@@ -277,7 +285,11 @@
 </template>
 
 <script>
-import { getFrameworks } from '@/api/system/protectCategory'
+import {
+    getFrameworks, getGradeSecurityProtectionTypeByDatabaseId, getTreeGradeSecurityProtectionByDatabaseId
+    , getGradeSecurityProtectionItemByParentId, saveGradeSecurityProtectionItem
+    , getDataSourceListByProjectId
+} from '@/api/system/protectCategory'
 
 const createClauseDetail = (prefix, title, description, items) => ({
     title,
@@ -706,6 +718,7 @@ const buildMockDataBlocks = () => {
     const systemListByStandard = {
         [defaultStandardId]: sourceSystems.map((system) => {
             const { complianceTabs, ...rest } = system
+            void complianceTabs
             return rest
         })
     }
@@ -817,6 +830,15 @@ const mockSubmitClauseForm = (payload = {}) => mockRequest({
     ...payload
 }, 260)
 
+const LEGACY_MOCK_REQUESTS = {
+    mockFetchSystemList,
+    mockFetchSecurityTabs,
+    mockFetchTreeNodes,
+    mockFetchNodeDetail,
+    mockSubmitClauseForm
+}
+void LEGACY_MOCK_REQUESTS
+
 export default {
     name: 'DataSecurity',
     data() {
@@ -866,11 +888,15 @@ export default {
     },
     created() {
         this.query = this.normalizeRouteRow(this.$route.query.row)
-        this.selectedStandard = this.$route.query.categoryId
-            ? String(this.$route.query.categoryId)
-            : this.query.categoryId
-                ? String(this.query.categoryId)
-                : ''
+        this.selectedStandard = this.$route.query.projectId
+            ? String(this.$route.query.projectId)
+            : this.query.projectId
+                ? String(this.query.projectId)
+                : this.$route.query.categoryId
+                    ? String(this.$route.query.categoryId)
+                    : this.query.categoryId
+                        ? String(this.query.categoryId)
+                        : ''
     },
     computed: {
         currentSystem() {
@@ -1015,7 +1041,8 @@ export default {
         async loadStandardOptions() {
             try {
                 const response = await getFrameworks()
-                const list = Array.isArray(response.data) ? response.data : []
+                const payload = this.extractResponseData(response) || {}
+                const list = this.extractList(payload, ['records', 'rows', 'list'])
                 this.treeOptions = list.length ? list : cloneMockData(MOCK_STANDARD_OPTIONS)
                 const hasSelectedStandard = this.treeOptions.some(item => String(item.id) === this.selectedStandard)
                 if (!hasSelectedStandard) {
@@ -1045,13 +1072,11 @@ export default {
                 return
             }
             try {
-                const response = await mockFetchSystemList(this.selectedStandard)
+                const response = await getDataSourceListByProjectId({
+                    projectId: this.selectedStandard
+                })
                 const payload = this.extractResponseData(response) || {}
-                const list = this.extractList(payload, ['systems', 'list']).map(item => ({
-                    ...item,
-                    id: item.id || item.systemId || '',
-                    name: item.name || item.systemName || '--'
-                }))
+                const list = this.extractList(payload, ['dataSourceList', 'databaseList', 'systems', 'list']).map((item, index) => this.normalizeDataSourceItem(item, index))
                 this.systemList = list
                 const nextSystem = list[0] || {}
                 this.activeSystem = nextSystem
@@ -1114,12 +1139,42 @@ export default {
                 )
             }
         },
-        normalizeTabs(list = []) {
-            return (Array.isArray(list) ? list : []).map((item, index) => ({
+        normalizeTagList(tags = []) {
+            return (Array.isArray(tags) ? tags : []).map((tag, index) => {
+                if (typeof tag === 'string') {
+                    return {
+                        text: tag,
+                        theme: index % 2 === 0 ? 'blue' : 'purple'
+                    }
+                }
+                return {
+                    text: tag.text || tag.label || tag.name || `标签${index + 1}`,
+                    theme: tag.theme || (index % 2 === 0 ? 'blue' : 'purple')
+                }
+            })
+        },
+        normalizeDataSourceItem(item = {}, index = 0) {
+            return {
                 ...item,
-                id: String(item.id || item.tabId || item.code || index + 1),
-                label: item.label || item.name || item.tabName || item.title || `标签${index + 1}`
-            }))
+                id: String(item.id || item.databaseId || item.dataSourceId || item.value || `database-${index + 1}`),
+                name: item.name || item.databaseName || item.dataSourceName || item.sourceName || item.label || `数据源${index + 1}`,
+                description: item.description || item.remark || item.comment || '暂无描述',
+                ip: item.ip || item.host || item.address || item.url || '--',
+                databaseType: item.databaseType || item.dbType || item.typeName || item.type || '--',
+                icon: item.icon || 'el-icon-cpu',
+                tags: this.normalizeTagList(item.tags)
+            }
+        },
+        normalizeTabs(list = []) {
+            return (Array.isArray(list) ? list : []).map((item, index) => {
+                const value = String(item.value ?? item.type ?? item.id ?? item.tabId ?? item.code ?? index + 1)
+                return {
+                    ...item,
+                    id: value,
+                    value,
+                    label: item.label || item.name || item.tabName || item.title || `标签${index + 1}`
+                }
+            })
         },
         normalizeStats(item = {}) {
             const stats = item.stats || item
@@ -1177,7 +1232,7 @@ export default {
                 defaultResult: item.defaultResult || item.result || '',
                 imageList: Array.isArray(item.imageList) ? item.imageList.map(image => this.normalizeUploadImage(image)) : [],
                 fileList: Array.isArray(item.fileList) ? item.fileList.map(file => this.normalizeUploadFile(file)) : [],
-                raw: {}
+                raw: { ...item }
             }
         },
         clearDetailPanel() {
@@ -1206,12 +1261,14 @@ export default {
         async loadComplianceTabs() {
             this.tabsLoading = true
             try {
-                const response = await mockFetchSecurityTabs(this.activeSystemId)
+                const response = await getGradeSecurityProtectionTypeByDatabaseId({
+                    databaseId: this.activeSystemId
+                })
                 const payload = this.extractResponseData(response) || {}
-                this.securityTabs = this.normalizeTabs(this.extractList(payload, ['tabs']))
+                this.securityTabs = this.normalizeTabs(this.extractList(payload, ['types', 'tabs', 'list', 'rows', 'records']))
                 const progress = this.normalizeProgress(payload)
                 this.detailProgress = progress.total ? progress : this.createProgressFallback()
-                this.activeTab = this.securityTabs.length ? this.securityTabs[0].id : ''
+                this.activeTab = this.securityTabs.length ? this.securityTabs[0].value : ''
                 if (this.activeTab) {
                     await this.loadTreeRoots()
                 } else {
@@ -1240,9 +1297,13 @@ export default {
             this.treeNodes = []
             this.clearDetailPanel()
             try {
-                const response = await mockFetchTreeNodes(this.activeSystemId, this.activeTab, '')
+                const response = await getTreeGradeSecurityProtectionByDatabaseId({
+                    databaseId: this.activeSystemId,
+                    type: this.activeTab,
+                    parentId: 0
+                })
                 const payload = this.extractResponseData(response) || {}
-                this.treeNodes = this.normalizeTreeNodes(this.extractList(payload, ['tree', 'nodes']))
+                this.treeNodes = this.normalizeTreeNodes(this.extractList(payload, ['tree', 'nodes', 'children', 'list', 'rows', 'records']))
             } catch (error) {
                 this.treeNodes = []
                 console.error('Failed to load root tree nodes:', error)
@@ -1272,7 +1333,6 @@ export default {
         async handleTreeNodeClick(data, node) {
             this.activeTreeNodeId = data.id
             if (this.shouldRequestChildren(data)) {
-                this.clearDetailPanel()
                 this.activeTreeNodeId = data.id
                 await this.loadTreeChildren(data, node)
                 return
@@ -1280,15 +1340,21 @@ export default {
             await this.loadNodeDetail(data)
         },
         async loadTreeChildren(data, node) {
+            this.clearDetailPanel()
+            this.activeTreeNodeId = data.id
             if (data.childrenLoaded) {
                 node.expanded = !node.expanded
                 return
             }
             this.treeLoading = true
             try {
-                const response = await mockFetchTreeNodes(this.activeSystemId, this.activeTab, data.id)
+                const response = await getTreeGradeSecurityProtectionByDatabaseId({
+                    databaseId: this.activeSystemId,
+                    type: this.activeTab,
+                    parentId: data.id
+                })
                 const payload = this.extractResponseData(response) || {}
-                const children = this.normalizeTreeNodes(this.extractList(payload, ['tree', 'nodes']))
+                const children = this.normalizeTreeNodes(this.extractList(payload, ['tree', 'nodes', 'children', 'list', 'rows', 'records']))
                 this.$set(data, 'children', children)
                 this.$set(data, 'childrenLoaded', true)
                 this.$set(data, 'hasChildren', children.length > 0)
@@ -1315,7 +1381,11 @@ export default {
             this.activeCollapseNames = []
             this.clauseFormState = {}
             try {
-                const response = await mockFetchNodeDetail(this.activeSystemId, this.activeTab, data.id)
+                const response = await getGradeSecurityProtectionItemByParentId({
+                    databaseId: this.activeSystemId,
+                    type: this.activeTab,
+                    parentId: data.id
+                })
                 const payload = this.extractResponseData(response) || {}
                 this.currentNodeDetail = this.normalizeNodeDetail(payload, data)
                 this.currentNodeDetail.items.forEach((item) => {
@@ -1430,12 +1500,15 @@ export default {
         buildClauseSubmitPayload(item, state) {
             return {
                 ...state.raw,
+                projectId: this.selectedStandard,
                 categoryId: this.selectedStandard,
                 standardId: this.selectedStandard,
                 systemId: this.activeSystemId,
                 databaseId: this.activeSystemId,
+                type: this.activeTab,
                 tabId: this.activeTab,
                 nodeId: this.activeDetailNode ? this.activeDetailNode.id : '',
+                parentId: this.activeDetailNode ? this.activeDetailNode.id : '',
                 clauseId: item.id,
                 itemId: item.id,
                 note: state.note,
@@ -1461,7 +1534,7 @@ export default {
             }
             state.submitting = true
             try {
-                await mockSubmitClauseForm(this.buildClauseSubmitPayload(item, state))
+                await saveGradeSecurityProtectionItem(this.buildClauseSubmitPayload(item, state))
                 state.defaultResult = state.result || state.defaultResult
                 this.$message.success('保存成功')
             } catch (error) {
