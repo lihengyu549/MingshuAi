@@ -32,7 +32,6 @@
                                     <span>{{ item.name }}</span>
                                 </div>
                             </div>
-                            <div class="system-card__desc">{{ item.description }}</div>
                             <div class="system-card__meta">
                                 <span>{{ item.ip }}</span>
                                 <span class="system-card__dot"></span>
@@ -700,9 +699,10 @@ export default {
                 return {
                     ...item,
                     id: String(item.id || item.nodeId || item.code || `node-${index + 1}`),
-                    code: item.code || item.nodeCode || item.serialNo || '',
-                    label: item.label || item.name || item.title || `节点${index + 1}`,
-                    total: this.toNumber(item.total ?? item.totalCount ?? item.itemCount),
+                    code: item.gradeSerial || item.code || item.nodeCode || item.serialNo || '',
+                    label: item.gradeName || item.label || item.name || item.title || `节点${index + 1}`,
+                    description: item.gradeDescribe || item.description || item.remark || '',
+                    total: this.toNumber(item.count ?? item.total ?? item.totalCount ?? item.itemCount),
                     stats: this.normalizeStats(item),
                     hasChildren: item.hasChildren != null
                         ? this.toBoolean(item.hasChildren)
@@ -729,8 +729,8 @@ export default {
             const detailSource = payload.detail || payload.nodeDetail || payload
             const itemList = this.extractList(detailSource, ['items', 'clauses'])
             return {
-                title: detailSource.title || detailSource.label || node.label || '',
-                description: detailSource.description || detailSource.remark || detailSource.content || '',
+                title: detailSource.gradeName || detailSource.title || detailSource.label || node.label || '',
+                description: detailSource.gradeDescribe || detailSource.description || detailSource.remark || detailSource.content || node.description || '',
                 items: this.normalizeDetailItems(itemList)
             }
         },
