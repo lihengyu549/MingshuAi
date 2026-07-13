@@ -177,7 +177,7 @@
                                                             <div v-for="image in getClauseState(item.id).imageList"
                                                                 :key="image.key" class="clause-image-card"
                                                                 @click="handleImagePreview(image)">
-                                                                <img :src="image.url" :alt="image.name"
+                                                                <img :src="getResourcePreviewUrl(image)" :alt="image.name"
                                                                     class="clause-image-card__img">
                                                                 <button type="button" class="clause-image-card__remove"
                                                                     @click.stop="removeClauseImage(item.id, image.key)">
@@ -458,11 +458,10 @@ export default {
             if (/^(https?:)?\/\//i.test(source) || source.startsWith('blob:') || source.startsWith('data:')) {
                 return source
             }
-            const normalizedPath = source.replace(/^\/+/, '')
-            return `${window.location.origin}/${normalizedPath}`
+            return `${window.location.origin}/${source.replace(/^\/+/, '')}`
         },
         normalizeUploadImage(item = {}) {
-            const sourceUrl = item.url || item.imgUrl || item.fileUrl || item.filePath || item.downloadUrl || item.path || (item.response && item.response.url) || ''
+            const sourceUrl = item.url || item.previewUrl || item.localUrl || item.imgUrl || item.fileUrl || item.filePath || item.downloadUrl || item.path || (item.response && item.response.url) || ''
             const isLocalUrl = this.isLocalResourceUrl(sourceUrl)
             return {
                 key: item.key || this.buildUploadKey('image', item),
