@@ -238,7 +238,8 @@
           <el-col>
             <el-form-item label="所属部门" prop="deptId">
               <treeselect ref="deptIdSelect" v-model="form.deptId" class="dept-treeselect" :options="deptOptions"
-                :show-count="true" :default-expand-level="999" :placeholder="$t('user.selectDept')" />
+                :normalizer="deptTreeNormalizer" :show-count="true" :default-expand-level="999"
+                :placeholder="$t('user.selectDept')" @input="handleDeptChange" />
               <div v-if="form.userId === undefined" class="form-tip">默认建议在当前选中部门下新增用户，便于后续直接归档到组织架构。</div>
             </el-form-item>
           </el-col>
@@ -821,11 +822,27 @@ export default {
       })
     },
     deptTreeNormalizer(node) {
+      if (node.children && !node.children.length) {
+        delete node.children
+      }
       return {
         id: node.id || node.deptId,
         label: node.label || node.deptName,
         children: node.children
       }
+    },
+    normalizeDeptValue(value) {
+      if (Array.isArray(value)) {
+        const lastValue = value[value.length - 1]
+        return this.normalizeDeptValue(lastValue)
+      }
+      if (value && typeof value === 'object') {
+        return value.id || value.deptId || value.value || value.key || undefined
+      }
+      return value
+    },
+    handleDeptChange(value) {
+      this.form.deptId = this.normalizeDeptValue(value)
     },
     findDeptNodeById(list, id) {
       if (!Array.isArray(list)) return null
@@ -1076,7 +1093,11 @@ export default {
         if (!valid) return
         const payload = {
           ...this.form,
+          deptId: this.normalizeDeptValue(this.form.deptId),
           nickName: this.form.userName
+        }
+        if (!Array.isArray(payload.postIds) || !payload.postIds.length) {
+          delete payload.postIds
         }
         if (payload.userId !== undefined && !payload.password) {
           delete payload.password
