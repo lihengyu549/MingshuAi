@@ -661,6 +661,7 @@ export default {
             })
         },
         normalizeDataSourceItem(item = {}, index = 0) {
+            const isFileSource = this.toBoolean(item.isFileSource)
             return {
                 ...item,
                 id: String(item.id || item.databaseId || item.dataSourceId || item.value || `database-${index + 1}`),
@@ -668,7 +669,8 @@ export default {
                 description: item.description || item.remark || item.comment || '暂无描述',
                 ip: item.ip || item.host || item.address || item.url || '--',
                 databaseType: item.databaseType || item.dbType || item.typeName || item.type || '--',
-                icon: item.icon || 'el-icon-cpu',
+                isFileSource,
+                icon: isFileSource ? 'el-icon-folder' : 'el-icon-coin',
                 tags: this.normalizeTagList(item.tags)
             }
         },
