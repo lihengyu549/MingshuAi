@@ -622,7 +622,12 @@ export default {
                 return target ? this.toNumber(target.value) : 0
             }
             return {
-                completed: this.toNumber(system.okCount || findValueByTheme('success')),
+                completed: this.toNumber(
+                    this.toNumber(system.okCount ?? findValueByTheme('success')) +
+                    this.toNumber(system.partialCount ?? findValueByTheme('warning')) +
+                    this.toNumber(system.riskCount ?? findValueByTheme('danger')) +
+                    this.toNumber(system.naCount ?? findValueByTheme('muted'))
+                ),
                 total: this.toNumber(
                     (system.generalClauseCount || findValueByTheme('primary')) +
                     (system.importantClauseCount || findValueByTheme('purple'))
@@ -924,6 +929,182 @@ export default {
             }
             return this.clauseFormState[itemId]
         },
+        normalizeClauseResultValue(value) {
+            const nextValue = String(value || '').trim()
+            return this.resultOptions.some(option => option.value === nextValue) ? nextValue : ''
+        },
+        getResultStatKey(result) {
+            const resultKeyMap = {
+                compliant: 'ok',
+                partialCompliant: 'partial',
+                nonCompliant: 'risk',
+                notApplicable: 'na'
+            }
+            return resultKeyMap[this.normalizeClauseResultValue(result)] || ''
+        },
+        ensureNodeStats(node = {}) {
+            if (!node.stats || typeof node.stats !== 'object') {
+                this.$set(node, 'stats', {
+                    ok: 0,
+                    partial: 0,
+                    risk: 0,
+                    na: 0
+                })
+            }
+            const statusKeys = ['ok', 'partial', 'risk', 'na']
+            statusKeys.forEach((key) => {
+                if (!Object.prototype.hasOwnProperty.call(node.stats, key)) {
+                    this.$set(node.stats, key, 0)
+                }
+            })
+            return node.stats
+        },
+        updateStatusCount(target, key, delta) {
+            if (!target || !key || !delta) {
+                return
+            }
+            const currentValue = this.toNumber(target[key])
+            this.$set(target, key, Math.max(0, currentValue + delta))
+        },
+        applyStatusDelta(target, previousResult, nextResult) {
+            const previousKey = this.getResultStatKey(previousResult)
+            const nextKey = this.getResultStatKey(nextResult)
+            if (previousKey) {
+                this.updateStatusCount(target, previousKey, -1)
+            }
+            if (nextKey) {
+                this.updateStatusCount(target, nextKey, 1)
+            }
+        },
+        findTreeNodePathById(nodes = [], targetId, trail = []) {
+            const nodeList = Array.isArray(nodes) ? nodes : []
+            for (let index = 0; index < nodeList.length; index += 1) {
+                const currentNode = nodeList[index]
+                const nextTrail = [...trail, currentNode]
+                if (currentNode.id === targetId) {
+                    return nextTrail
+                }
+                const childPath = this.findTreeNodePathById(currentNode.children || [], targetId, nextTrail)
+                if (childPath.length) {
+                    return childPath
+                }
+            }
+            return []
+        },
+        updateTreeNodeStatusCounters(previousResult, nextResult) {
+            if (previousResult === nextResult || !this.activeTreeNodeId) {
+                return
+            }
+            const nodePath = this.findTreeNodePathById(this.treeNodes, this.activeTreeNodeId)
+            nodePath.forEach((node) => {
+                this.applyStatusDelta(this.ensureNodeStats(node), previousResult, nextResult)
+            })
+        },
+        getActiveSystemRecord() {
+            return this.systemList.find(item => item.id === this.activeSystemId) || this.activeSystem || null
+        },
+        updateSummaryStatusCounters(previousResult, nextResult) {
+            if (previousResult === nextResult) {
+                return
+            }
+            const systemRecord = this.getActiveSystemRecord()
+            if (!systemRecord) {
+                return
+            }
+
+            const fieldKeyMap = {
+                ok: 'okCount',
+                partial: 'partialCount',
+                risk: 'riskCount',
+                na: 'naCount'
+            }
+            const previousKey = this.getResultStatKey(previousResult)
+            const nextKey = this.getResultStatKey(nextResult)
+
+            if (previousKey) {
+                this.updateStatusCount(systemRecord, fieldKeyMap[previousKey], -1)
+            }
+            if (nextKey) {
+                this.updateStatusCount(systemRecord, fieldKeyMap[nextKey], 1)
+            }
+
+            if (Array.isArray(systemRecord.summaryStats)) {
+                const summaryThemeMap = {
+                    ok: 'success',
+                    partial: 'warning',
+                    risk: 'danger',
+                    na: 'muted'
+                }
+                const previousSummary = systemRecord.summaryStats.find(item => item.theme === summaryThemeMap[previousKey])
+                const nextSummary = systemRecord.summaryStats.find(item => item.theme === summaryThemeMap[nextKey])
+                if (previousSummary) {
+                    this.updateStatusCount(previousSummary, 'value', -1)
+                }
+                if (nextSummary) {
+                    this.updateStatusCount(nextSummary, 'value', 1)
+                }
+            }
+
+            if (this.activeSystem && this.activeSystem !== systemRecord) {
+                Object.keys(fieldKeyMap).forEach((key) => {
+                    this.$set(this.activeSystem, fieldKeyMap[key], systemRecord[fieldKeyMap[key]])
+                })
+                if (Array.isArray(systemRecord.summaryStats)) {
+                    this.$set(this.activeSystem, 'summaryStats', systemRecord.summaryStats)
+                }
+            }
+        },
+        updateDetailProgress(previousResult, nextResult) {
+            const hadPreviousSelection = !!this.normalizeClauseResultValue(previousResult)
+            const hasNextSelection = !!this.normalizeClauseResultValue(nextResult)
+            let delta = 0
+
+            if (!hadPreviousSelection && hasNextSelection) {
+                delta = 1
+            } else if (hadPreviousSelection && !hasNextSelection) {
+                delta = -1
+            }
+
+            if (!delta) {
+                return
+            }
+
+            const nextCompleted = this.toNumber(this.detailProgress.completed) + delta
+            const maxCompleted = this.toNumber(this.detailProgress.total)
+            const normalizedCompleted = maxCompleted
+                ? Math.min(nextCompleted, maxCompleted)
+                : nextCompleted
+            this.$set(this.detailProgress, 'completed', Math.max(0, normalizedCompleted))
+        },
+        syncClauseResultState(itemId, nextResult) {
+            const currentItem = (this.currentNodeDetail.items || []).find(detailItem => detailItem.id === itemId)
+            if (currentItem) {
+                this.$set(currentItem, 'gradeItemResult', nextResult)
+                this.$set(currentItem, 'defaultResult', nextResult)
+            }
+
+            const state = this.getClauseState(itemId)
+            state.gradeItemResult = nextResult
+            state.defaultResult = nextResult
+            state.raw = {
+                ...state.raw,
+                gradeItemResult: nextResult
+            }
+        },
+        applyClauseSaveResultChange(previousResult, nextResult, itemId) {
+            const normalizedPrevious = this.normalizeClauseResultValue(previousResult)
+            const normalizedNext = this.normalizeClauseResultValue(nextResult)
+
+            if (normalizedPrevious === normalizedNext) {
+                this.syncClauseResultState(itemId, normalizedNext)
+                return
+            }
+
+            this.updateTreeNodeStatusCounters(normalizedPrevious, normalizedNext)
+            this.updateSummaryStatusCounters(normalizedPrevious, normalizedNext)
+            this.updateDetailProgress(normalizedPrevious, normalizedNext)
+            this.syncClauseResultState(itemId, normalizedNext)
+        },
         handleImagePreview(image) {
             this.imagePreviewUrl = this.getResourcePreviewUrl(image)
             this.imagePreviewName = image.name || '图片预览'
@@ -1089,10 +1270,12 @@ export default {
             if (state.submitting) {
                 return
             }
+            const previousResult = this.normalizeClauseResultValue(state.defaultResult)
+            const nextResult = this.normalizeClauseResultValue(state.gradeItemResult)
             state.submitting = true
             try {
                 await saveGradeSecurityProtectionItem(this.buildClauseSubmitPayload(item, state))
-                state.defaultResult = state.gradeItemResult || ''
+                this.applyClauseSaveResultChange(previousResult, nextResult, item.id)
                 this.$message.success('保存成功')
             } catch (error) {
                 console.error('Failed to submit clause form:', error)
@@ -1731,7 +1914,6 @@ export default {
 
 .clause-form__section {
     padding-top: 14px;
-    border-top: 1px dashed #e8edf6;
 }
 
 .clause-form__section:first-child {
@@ -1754,7 +1936,9 @@ export default {
 }
 
 .clause-form__submit {
-    margin-top: 14px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e8edf6;
     display: flex;
     justify-content: flex-end;
 }
