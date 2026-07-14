@@ -67,7 +67,7 @@
                                 detailProgress.total }}</div>
                             <el-progress :percentage="progressPercent" :show-text="false" :stroke-width="8"
                                 color="#3b82f6" class="detail-card__progress" />
-                            <el-button size="mini" plain icon="el-icon-download" disabled>暂不提供下载</el-button>
+                            <!-- <el-button size="mini" plain icon="el-icon-download" disabled>暂不提供下载</el-button> -->
                         </div>
                     </div>
 
