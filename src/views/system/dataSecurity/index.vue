@@ -3,7 +3,7 @@
         <div class="page-header">
             <div class="page-header__main">
                 <div class="page-header__heading">
-                    <div class="page-header__title">第三级系统数据安全基本要求</div>
+                    <div class="page-header__title">等保数据安全基本要求</div>
                     <div class="page-header__subtitle">基于 GA/T 2380-2026《网络安全等级保护数据安全基本要求》第六章</div>
                 </div>
                 <div class="page-header__operations">
