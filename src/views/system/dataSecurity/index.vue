@@ -256,7 +256,7 @@
                                                             </button>
                                                         </div>
                                                         <div class="clause-form__submit">
-                                                            <el-button type="primary" size="small" plain
+                                                            <el-button class="clause-form__submit-btn" type="primary" size="small" icon="el-icon-document"
                                                                 :loading="getClauseState(item.id).submitting"
                                                                 @click="submitClauseItem(item)">
                                                                 保存
@@ -1756,6 +1756,12 @@ export default {
     display: flex;
     justify-content: flex-end;
 }
+
+.clause-form__submit-btn {
+    border-radius: 10px;
+    background-color: #4a6cf7;
+}
+
 
 .clause-image-preview {
     width: 100%;
