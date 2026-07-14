@@ -1031,7 +1031,22 @@ export default {
       this.reset()
       const userId = row.userId || this.ids
       getUser(userId).then(response => {
-        this.form = response.data
+        this.form = {
+          userId: undefined,
+          deptId: undefined,
+          userName: undefined,
+          nickName: undefined,
+          password: '',
+          confirmPassword: '',
+          phonenumber: undefined,
+          email: undefined,
+          sex: undefined,
+          status: '0',
+          remark: undefined,
+          postIds: [],
+          roleIds: [],
+          ...(response.data || {})
+        }
         this.postOptions = response.posts
         this.roleOptions = response.roles
         this.$set(this.form, 'postIds', response.postIds)
