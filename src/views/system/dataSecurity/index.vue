@@ -1058,18 +1058,18 @@ export default {
         },
         setClauseResult(itemId, result) {
             const state = this.getClauseState(itemId)
-            state.gradeItemResult = result
+            state.gradeItemResult = state.gradeItemResult === result ? '' : result
         },
         getClauseResultOption(itemId) {
             const state = this.getClauseState(itemId)
-            const resultValue = state.gradeItemResult || state.defaultResult
+            const resultValue = state.gradeItemResult
             return this.resultOptions.find(option => option.value === resultValue) || null
         },
         buildClauseSubmitPayload(item, state) {
             const formData = new FormData()
             formData.append('id', String(state.raw.id || state.raw.gradeItemId || item.id || ''))
             formData.append('gradeItemExplain', state.gradeItemExplain != null ? String(state.gradeItemExplain) : '')
-            formData.append('gradeItemResult', state.gradeItemResult || state.defaultResult || '')
+            formData.append('gradeItemResult', state.gradeItemResult || '')
             state.imageList.forEach((image) => {
                 if (image && image.raw) {
                     formData.append('pictureFileList', image.raw)
@@ -1090,7 +1090,7 @@ export default {
             state.submitting = true
             try {
                 await saveGradeSecurityProtectionItem(this.buildClauseSubmitPayload(item, state))
-                state.defaultResult = state.gradeItemResult || state.defaultResult
+                state.defaultResult = state.gradeItemResult || ''
                 this.$message.success('保存成功')
             } catch (error) {
                 console.error('Failed to submit clause form:', error)
