@@ -34,7 +34,7 @@
                 </div>
                 <div class="summary-metric">
                   <div class="summary-value">
-                    <count-to :start-val="0" :end-val="dataView.summary.capacityGB" :duration="1500" />
+                    <span>{{ dataView.summary.capacityGB }}</span>
                   </div>
                   <div class="summary-key">总容量</div>
                   <div class="summary-subkey">存储占用</div>
@@ -867,30 +867,26 @@ export default {
           }
         }
         if (!data || typeof data !== 'object') data = {}
-        const toNumber = (v) => {
-          const n = Number(v)
-          return Number.isFinite(n) ? n : 0
-        }
         const summary = data.summary || data.summaryData || data.summaryInfo || {}
         this.dataView.summary = {
-          objectCount: toNumber(summary.objectCount || summary.objectNum || summary.totalObjectCount),
-          capacityGB: toNumber(summary.capacityGB || summary.capacity || summary.totalCapacityGB)
+          objectCount: summary.objectCount || summary.objectNum || summary.totalObjectCount || 0,
+          capacityGB: summary.capacityGB || summary.capacity || summary.totalCapacityGB
         }
         const structured = data.structured || data.structuredData || {}
         this.dataView.structured = {
-          sourceCount: toNumber(structured.sourceCount || structured.sourceNum || structured.count),
-          sizeGB: toNumber(structured.sizeGB || structured.capacityGB || structured.size),
-          fieldCount: toNumber(structured.fieldCount || structured.fieldNum || structured.fields),
+          sourceCount: structured.sourceCount || structured.sourceNum || structured.count || 0,
+          sizeGB: structured.sizeGB || structured.capacityGB || structured.size || 0,
+          fieldCount: structured.fieldCount || structured.fieldNum || structured.fields || 0,
           sensitiveLabel: structured.sensitiveLabel || this.dataView.structured.sensitiveLabel,
-          sensitivePercent: toNumber(structured.sensitivePercent || structured.sensitiveRate || structured.percent)
+          sensitivePercent: structured.sensitivePercent || structured.sensitiveRate || structured.percent || 0
         }
         const unstructured = data.unstructured || data.unstructuredData || {}
         this.dataView.unstructured = {
-          sourceCount: toNumber(unstructured.sourceCount || unstructured.sourceNum || unstructured.count),
-          sizeGB: toNumber(unstructured.sizeGB || unstructured.capacityGB || unstructured.size),
-          fileCount: toNumber(unstructured.fileCount || unstructured.fileNum || unstructured.files),
+          sourceCount: unstructured.sourceCount || unstructured.sourceNum || unstructured.count || 0,
+          sizeGB: unstructured.sizeGB || unstructured.capacityGB || unstructured.size || 0,
+          fileCount: unstructured.fileCount || unstructured.fileNum || unstructured.files || 0,
           sensitiveLabel: unstructured.sensitiveLabel || this.dataView.unstructured.sensitiveLabel,
-          sensitivePercent: toNumber(unstructured.sensitivePercent || unstructured.sensitiveRate || unstructured.percent)
+          sensitivePercent: unstructured.sensitivePercent || unstructured.sensitiveRate || unstructured.percent || 0
         }
         const rightCards = (data.rightCards && typeof data.rightCards === 'object') ? data.rightCards : {}
         const identifyItem = rightCards.identify || {}
@@ -898,11 +894,11 @@ export default {
         this.dataView.rightCards = {
           identify: {
             title: identifyItem.title || '识别数量',
-            value: toNumber(identifyItem.value)
+            value: identifyItem.value || 0
           },
           review: {
             title: reviewItem.title || '审查数量',
-            value: toNumber(reviewItem.value)
+            value: reviewItem.value || 0
           }
         }
       }).finally(() => {
