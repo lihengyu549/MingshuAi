@@ -61,7 +61,7 @@
                       <span class="source-unit">个</span>
                     </div>
                     <div class="source-sub">
-                      {{ dataView.structured.sizeGB }}GB · {{ dataView.structured.fieldCount }}字段
+                      {{ dataView.structured.sizeGB }} · {{ dataView.structured.fieldCount }}字段
                     </div>
                   </div>
                   <div class="badge-row">
@@ -87,7 +87,7 @@
                       <span class="source-unit">个</span>
                     </div>
                     <div class="source-sub">
-                      {{ dataView.unstructured.sizeGB }}GB · {{ dataView.unstructured.fileCount }}个文件
+                      {{ dataView.unstructured.sizeGB }} · {{ dataView.unstructured.fileCount }}个文件
                     </div>
                   </div>
                   <div class="badge-row">
