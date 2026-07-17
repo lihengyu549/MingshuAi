@@ -82,7 +82,7 @@
 </template>
 
 <script>
-import { getAiConfigList, updateAiConfigById, testConnection } from "@/api/system/modelPage";
+import { getAiConfigListByVision, updateAiConfigByVision, testConnectionByVision } from "@/api/system/modelPage";
 
 export default {
     name: 'VisualModel',
@@ -128,7 +128,7 @@ export default {
                 let params = {
                     aiType: '3'
                 }
-                let src = await getAiConfigList(params)
+                let src = await getAiConfigListByVision(params)
                 this.models = []
                 if (src && src.data) {
                     src.data.forEach(item => {
@@ -188,7 +188,7 @@ export default {
                     timeOut: this.currentModel.timeout,
                     aiType: '3',
                 }
-                const response = await testConnection(model);
+                const response = await testConnectionByVision(model);
                 if (response && response.code === 200) {
                     this.$message.success(this.$t('textModel.connectionSuccess') || '连接测试成功');
                 } else {
@@ -209,7 +209,7 @@ export default {
                 timeOut: this.currentModel.timeout
             }
             try {
-                await updateAiConfigById(response)
+                await updateAiConfigByVision(response)
                 this.init()
                 this.$message.success(this.$t('textModel.saveSuccess') || '配置保存成功');
             } catch (error) {

@@ -170,3 +170,57 @@ export function finishDrillById(id) {
         data: { id }
     })
 }
+
+ //视觉模型-获取模型列表
+export function getAiConfigListByVision(data) {
+    return request({
+        url: '/system/ai/getAiConfigListByVision',
+        method: 'get',
+        params: data
+    })
+}
+
+//视觉模型-保存模型配置
+export function updateAiConfigByVision(data) {
+    return request({
+        url: '/system/ai/updateAiConfigByVision',
+        method: 'post',
+        data: data
+    })
+}
+
+//视觉模型-测试模型链接
+export function testConnectionByVision(data) {
+    return request({
+        url: '/system/ai/testConnectionByVision',
+        method: 'post',
+        data: data
+    })
+}
+
+//向量模型-获取模型列表
+export function getAiConfigListByVector(data) {
+    return request({
+        url: '/system/ai/getAiConfigListByVector',
+        method: 'get',
+        params: data
+    })
+}
+
+//向量模型-保存模型配置
+export function updateAiConfigByVector(data) {
+    return request({
+        url: '/system/ai/updateAiConfigByVector',
+        method: 'post',
+        data: data
+    })
+}
+
+//向量模型-测试模型链接
+export function testConnectionByVector(data) {
+    return request({
+        url: '/system/ai/testConnectionByVector',
+        method: 'post',
+        data: data
+    })
+}
