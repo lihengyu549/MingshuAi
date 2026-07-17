@@ -720,7 +720,7 @@ export default {
         },
         handleReturn() {
             this.$router.push({
-                path: '/classificationTask/viewResults',
+                path: '/core/classificationTask/viewResults',
                 query: {
                     drawerData: this.$route.query.drawerData,
                     isReturn: true

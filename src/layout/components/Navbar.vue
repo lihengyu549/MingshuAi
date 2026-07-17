@@ -201,7 +201,45 @@ export default {
     getNavbarActiveOverride(currentPath) {
       const path = currentPath || ''
       const matched = navbarActiveOverrideList.find(item => path === item.from || path.startsWith(item.from + '/'))
-      return matched ? matched.to : ''
+      if (matched) {
+        return matched.to
+      }
+
+      const categoryPrefix = this.getCategoryPrefix(path)
+      const normalizedPath = this.stripCategoryPrefix(path)
+      const normalizedMatch = navbarActiveOverrideList.find(item =>
+        normalizedPath === item.from || normalizedPath.startsWith(item.from + '/')
+      )
+
+      if (!normalizedMatch) {
+        return ''
+      }
+
+      return categoryPrefix ? categoryPrefix + normalizedMatch.to : normalizedMatch.to
+    },
+    getCategoryPrefix(path) {
+      const currentPath = path || ''
+      const segments = currentPath.split('/').filter(Boolean)
+      if (segments.length === 0) {
+        return ''
+      }
+
+      const firstSegment = segments[0]
+      if (firstSegment === 'core' || firstSegment === 'system') {
+        return '/' + firstSegment
+      }
+
+      return ''
+    },
+    stripCategoryPrefix(path) {
+      const currentPath = path || ''
+      const prefix = this.getCategoryPrefix(currentPath)
+      if (!prefix) {
+        return currentPath
+      }
+
+      const normalizedPath = currentPath.slice(prefix.length)
+      return normalizedPath.startsWith('/') ? normalizedPath : '/' + normalizedPath
     },
     isNavbarChildActive(item) {
       const p = item && item.path ? item.path : ''

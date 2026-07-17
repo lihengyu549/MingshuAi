@@ -918,7 +918,7 @@ export default {
     },
     handleCompleteList(row) {
       this.$router.push({
-        path: '/serverPrewies/sensitiveData',
+        path: '/core/serverPrewies/sensitiveData',
         query: { categoryId: this.categoryId }
       });
     }

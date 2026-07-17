@@ -1422,7 +1422,7 @@ export default {
       sessionStorage.setItem('hierarchicalTask_search_state', JSON.stringify(this.queryParams));
       if (row.publishStatus == 0) {
         this.$router.push({
-          path: '/classificationTask/viewResults',
+          path: '/core/classificationTask/viewResults',
           query: { drawerData: row }
         });
       } else {
@@ -1433,7 +1433,7 @@ export default {
     assetLookFn(row) {
       sessionStorage.setItem('hierarchicalTask_search_state', JSON.stringify(this.queryParams));
       this.$router.push({
-        path: '/dataAssetManagement/assetCatalog',
+        path: '/core/dataAssetManagement/assetCatalog',
         query: {
           taskRow: JSON.stringify(row)
         }
@@ -1517,7 +1517,7 @@ export default {
       }
       sessionStorage.setItem('hierarchicalTask_queryParams', JSON.stringify(this.queryParams))
       sessionStorage.setItem('jobMonitoring_routeData', JSON.stringify(routeData))
-      this.$router.push({ path: '/classificationTask/jobMonitoring', query: { id: row.id } })
+      this.$router.push({ path: '/core/classificationTask/jobMonitoring', query: { id: row.id } })
     },
   }
 };

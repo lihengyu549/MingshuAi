@@ -26,26 +26,24 @@ const permission = {
     },
     SET_SIDEBAR_ROUTERS: (state, routes) => {
       state.sidebarRouters = routes
-    },
+    }
   },
   actions: {
-    // 生成路由
     GenerateRoutes({ commit, rootState }, payload = {}) {
       return new Promise((resolve, reject) => {
         const language = payload.language || rootState.app.language || 'zh'
-        // 向后端请求路由数据
         getRouters({ language }).then(res => {
           const sdata = JSON.parse(JSON.stringify(res.data))
           const rdata = JSON.parse(JSON.stringify(res.data))
           const sidebarRoutes = filterAsyncRouter(sdata)
           const rewriteRoutes = filterAsyncRouter(rdata, false, true)
-          const asyncRoutes = filterDynamicRoutes(dynamicRoutes);
-          
+          const asyncRoutes = filterDynamicRoutes(dynamicRoutes)
+
           const categorizedSidebarRoutes = categorizeRoutes(sidebarRoutes, language)
           const categorizedRewriteRoutes = categorizeRoutes(rewriteRoutes, language)
-          
+
           rewriteRoutes.push({ path: '*', redirect: '/404', hidden: true })
-          router.addRoutes(asyncRoutes);
+          router.addRoutes(asyncRoutes)
           commit('SET_ROUTES', categorizedRewriteRoutes)
           commit('SET_SIDEBAR_ROUTERS', constantRoutes.concat(categorizedSidebarRoutes))
           commit('SET_DEFAULT_ROUTES', categorizedSidebarRoutes)
@@ -66,14 +64,12 @@ const permission = {
   }
 }
 
-// 遍历后台传来的路由字符串，转换为组件对象
 function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
   return asyncRouterMap.filter(route => {
     if (type && route.children) {
       route.children = filterChildren(route.children)
     }
     if (route.component) {
-      // Layout ParentView 组件特殊处理
       if (route.component === 'Layout') {
         route.component = Layout
       } else if (route.component === 'ParentView') {
@@ -87,125 +83,98 @@ function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
     if (route.children != null && route.children && route.children.length) {
       route.children = filterAsyncRouter(route.children, route, type)
     } else {
-      delete route['children']
-      delete route['redirect']
+      delete route.children
+      delete route.redirect
     }
     return true
   })
 }
 
-// 将路由分为核心功能和系统管理两部分
 function categorizeRoutes(routes, language = 'zh') {
   const categoryTitles = getCategoryTitles(language)
+  const hasCoreRoot = routes.some(route => isCategoryRoot(route, '/core', categoryTitles.coreFunctions))
+  const hasSystemRoot = routes.some(route => isCategoryRoot(route, '/system', categoryTitles.systemManagement))
 
-  // 检查是否已经存在系统管理或核心功能的根节点
-  const hasSystemRoot = routes.some(route => 
-    route.path === '/system' || 
-    (route.meta && route.meta.title === categoryTitles.systemManagement)
-  )
-  
-  // 如果已经存在系统管理根节点，添加分类标记并创建核心功能分组
-   if (hasSystemRoot) {
-     const result = []
-     const coreFunctions = []
-     const processedRoutes = new Set() // 用于跟踪已处理的路由
-     
-     // 分离核心功能路由
-     routes.forEach((route, index) => {
-       // 判断是否为系统管理路由（根据路径或其他标识）
-       const isSystemManagement = route.path && (
-         route.path.startsWith('/system/') || 
-         route.path.startsWith('/monitor/') ||
-         route.path.startsWith('/tool/') ||
-         route.path.startsWith('/jobWork/')
-       )
-       
-       // 核心业务功能路径判断
-       const isCoreBusiness = route.path && (
-         route.path.startsWith('/dataAssetManagement/') ||
-         route.path.startsWith('/standard/') ||
-         route.path.startsWith('/strategy/') ||
-         route.path.startsWith('/APIAbutment/') ||
-         route.path.startsWith('/hierarchicalTask/')
-       )
-       
-       // 检查标题中的关键词，但要排除数据资产相关的
-       const titleContainsSystemKeywords = route.meta && route.meta.title && hasSystemKeyword(route.meta.title, language)
-       
-       const finalIsSystemManagement = !isCoreBusiness && (isSystemManagement || titleContainsSystemKeywords)
-       
-       if (!finalIsSystemManagement && !(route.path === '/system' || (route.meta && route.meta.title === categoryTitles.systemManagement))) {
-         // 为核心功能路由添加 hideChildrenInNavbar 标记，用于L型菜单展示
-         const routeWithFlag = addHideChildrenFlag(route)
-         coreFunctions.push(routeWithFlag)
-         processedRoutes.add(index)
-       }
-     })
-     
-     // 添加核心功能分组
-     if (coreFunctions.length > 0) {
-        result.push({
-          path: '/core-functions-category',
-          component: Layout,
-          meta: {
-           title: categoryTitles.coreFunctions,
-           icon: '',
-           type: 'category'
-          },
-         children: coreFunctions,
-         alwaysShow: true
-       })
-     }
-     
-     // 处理系统管理根节点和未处理的路由
-     routes.forEach((route, index) => {
-       if (route.path === '/system' || (route.meta && route.meta.title === categoryTitles.systemManagement)) {
-         // 为系统管理根节点创建新的结构，子菜单添加 hideChildrenInNavbar 标记
-         const processedChildren = route.children ? route.children.map(child => {
-           const childPath = child.path.startsWith('/') ? child.path : '/' + child.path
-           const fullPath = route.path === '/' ? childPath : route.path + childPath
-           return {
-             ...child,
-             path: fullPath,
-             meta: child.children && child.children.length > 0 ? {
-               ...child.meta,
-               hideChildrenInNavbar: true
-             } : child.meta
-           }
-         }) : []
-         
-         result.push({
-           ...route,
-           meta: {
-             ...route.meta,
-             type: 'category'
-           },
-           children: processedChildren,
-           alwaysShow: true
-         })
-       } else if (!processedRoutes.has(index)) {
-         const routeWithFlag = addHideChildrenFlag(route)
-         result.push(routeWithFlag)
-       }
-     })
-     
-     return result
-   }
-  
-  // 原有的分类逻辑（当不存在系统管理根节点时）
+  if (hasCoreRoot) {
+    return routes.map(route => {
+      if (isCategoryRoot(route, '/core', categoryTitles.coreFunctions)) {
+        return buildCategoryRoute(route)
+      }
+
+      if (hasSystemRoot && isCategoryRoot(route, '/system', categoryTitles.systemManagement)) {
+        return buildCategoryRoute(route)
+      }
+
+      return addHideChildrenFlag(route)
+    })
+  }
+
+  if (hasSystemRoot) {
+    const result = []
+    const coreFunctions = []
+    const processedRoutes = new Set()
+
+    routes.forEach((route, index) => {
+      const isSystemManagement = route.path && (
+        route.path.startsWith('/system/') ||
+        route.path.startsWith('/monitor/') ||
+        route.path.startsWith('/tool/') ||
+        route.path.startsWith('/jobWork/')
+      )
+
+      const isCoreBusiness = route.path && (
+        route.path.startsWith('/dataAssetManagement/') ||
+        route.path.startsWith('/standard/') ||
+        route.path.startsWith('/strategy/') ||
+        route.path.startsWith('/APIAbutment/') ||
+        route.path.startsWith('/hierarchicalTask/')
+      )
+
+      const titleContainsSystemKeywords = route.meta && route.meta.title && hasSystemKeyword(route.meta.title, language)
+      const finalIsSystemManagement = !isCoreBusiness && (isSystemManagement || titleContainsSystemKeywords)
+
+      if (!finalIsSystemManagement && !isCategoryRoot(route, '/system', categoryTitles.systemManagement)) {
+        coreFunctions.push(addHideChildrenFlag(route))
+        processedRoutes.add(index)
+      }
+    })
+
+    if (coreFunctions.length > 0) {
+      result.push({
+        path: '/core-functions-category',
+        component: Layout,
+        meta: {
+          title: categoryTitles.coreFunctions,
+          icon: '',
+          type: 'category'
+        },
+        children: coreFunctions,
+        alwaysShow: true
+      })
+    }
+
+    routes.forEach((route, index) => {
+      if (isCategoryRoot(route, '/system', categoryTitles.systemManagement)) {
+        result.push(buildCategoryRoute(route))
+      } else if (!processedRoutes.has(index)) {
+        result.push(addHideChildrenFlag(route))
+      }
+    })
+
+    return result
+  }
+
   const coreFunctions = []
   const systemManagement = []
-  
+
   routes.forEach(route => {
-    // 判断是否为系统管理路由（根据路径或其他标识）
     const isSystemManagement = route.path && (
-      route.path.startsWith('/system/') || 
+      route.path.startsWith('/system/') ||
       route.path.startsWith('/monitor/') ||
       route.path.startsWith('/tool/') ||
       route.path.startsWith('/jobWork/')
     )
-    
-    // 核心业务功能路径判断
+
     const isCoreBusiness = route.path && (
       route.path.startsWith('/dataAssetManagement/') ||
       route.path.startsWith('/standard/') ||
@@ -213,24 +182,19 @@ function categorizeRoutes(routes, language = 'zh') {
       route.path.startsWith('/APIAbutment/') ||
       route.path.startsWith('/hierarchicalTask/')
     )
-    
-    // 检查标题中的关键词，但要排除数据资产相关的
+
     const titleContainsSystemKeywords = route.meta && route.meta.title && hasSystemKeyword(route.meta.title, language)
-    
     const finalIsSystemManagement = !isCoreBusiness && (isSystemManagement || titleContainsSystemKeywords)
-    
+
     if (finalIsSystemManagement) {
       systemManagement.push(route)
     } else {
-      // 为核心功能路由添加 hideChildrenInNavbar 标记，用于L型菜单展示
-      const routeWithFlag = addHideChildrenFlag(route)
-      coreFunctions.push(routeWithFlag)
+      coreFunctions.push(addHideChildrenFlag(route))
     }
   })
-  
+
   const categorizedRoutes = []
-  
-  // 添加核心功能分组
+
   if (coreFunctions.length > 0) {
     categorizedRoutes.push({
       path: '/core-functions',
@@ -244,8 +208,7 @@ function categorizeRoutes(routes, language = 'zh') {
       alwaysShow: true
     })
   }
-  
-  // 添加系统管理分组
+
   if (systemManagement.length > 0) {
     categorizedRoutes.push({
       path: '/system-management',
@@ -259,7 +222,7 @@ function categorizeRoutes(routes, language = 'zh') {
       alwaysShow: true
     })
   }
-  
+
   return categorizedRoutes.length > 0 ? categorizedRoutes : routes
 }
 
@@ -296,7 +259,6 @@ function hasSystemKeyword(title, language) {
   )
 }
 
-// 为路由添加 hideChildrenInNavbar 标记，用于L型菜单展示
 function addHideChildrenFlag(route) {
   if (route.children && route.children.length > 0) {
     return {
@@ -317,9 +279,52 @@ function addHideChildrenFlag(route) {
   return route
 }
 
+function isCategoryRoot(route, expectedPath, expectedTitle) {
+  if (!route) return false
+  const compactPath = expectedPath.replace(/^\//, '')
+  return route.path === expectedPath || route.path === compactPath || (route.meta && route.meta.title === expectedTitle)
+}
+
+function buildCategoryRoute(route) {
+  return {
+    ...route,
+    meta: {
+      ...route.meta,
+      type: 'category'
+    },
+    children: processCategoryChildren(route),
+    alwaysShow: true
+  }
+}
+
+function processCategoryChildren(route) {
+  if (!route.children || route.children.length === 0) {
+    return []
+  }
+
+  return route.children.map(child => {
+    const normalizedChild = normalizeCategoryChildPath(route.path, child)
+    return addHideChildrenFlag(normalizedChild)
+  })
+}
+
+function normalizeCategoryChildPath(parentPath, child) {
+  if (!child || !child.path) {
+    return child
+  }
+
+  const normalizedParentPath = parentPath && parentPath.startsWith('/') ? parentPath : `/${parentPath}`
+  const childPath = child.path.startsWith('/') ? child.path : `/${child.path}`
+
+  return {
+    ...child,
+    path: normalizedParentPath === '/' ? childPath : normalizedParentPath + childPath
+  }
+}
+
 function filterChildren(childrenMap, lastRouter = false) {
-  var children = []
-  childrenMap.forEach((el, index) => {
+  let children = []
+  childrenMap.forEach(el => {
     if (el.children && el.children.length) {
       if (el.component === 'ParentView' && !lastRouter) {
         el.children.forEach(c => {
@@ -341,7 +346,6 @@ function filterChildren(childrenMap, lastRouter = false) {
   return children
 }
 
-// 动态路由遍历，验证是否具备权限
 export function filterDynamicRoutes(routes) {
   const res = []
   routes.forEach(route => {
@@ -359,13 +363,7 @@ export function filterDynamicRoutes(routes) {
 }
 
 export const loadView = (view) => {
-    return (resolve) => require([`@/views/${view}`], resolve)
-  //   if (process.env.NODE_ENV === 'development') {
-  //   return (resolve) => require([`@/views/${view}`], resolve)
-  // } else {
-  //   // 使用 import 实现生产环境的路由懒加载
-  //   return () => import(`@/views/${view}`)
-  // }
+  return (resolve) => require([`@/views/${view}`], resolve)
 }
 
 export default permission

@@ -1338,7 +1338,7 @@ export default {
                     // 更新latestFullData为保存的数据，确保状态一致
                     this.latestFullData = saveData;
                     // 保存成功后跳转到管理页面
-                    this.$router.push({ path: '/standard/jobMonitoring', query: { id: this.generate.id } });
+                    this.$router.push({ path: '/core/standard/jobMonitoring', query: { id: this.generate.id } });
                 } else {
                     this.$message.error(this.$t('hierarchicalStructure.saveFailed') + (response.message || this.$t('hierarchicalStructure.unknownError')));
                 }

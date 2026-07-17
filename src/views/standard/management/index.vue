@@ -314,7 +314,7 @@ export default {
   methods: {
     // 跳转
     push() {
-      this.$router.push({ path: '/standard/hierarchicalStructure' })
+      this.$router.push({ path: '/core/standard/hierarchicalStructure' })
     },
     // 自定义校验规则
     validateRuleContent(rule, value, callback) {
@@ -384,7 +384,7 @@ export default {
       this.form.importFile = row.fileName
     },
     detailFn(row) {
-      this.$router.push({ path: '/standard/jobMonitoring', query: { id: row.id, dataSource: row.dataSource } })
+      this.$router.push({ path: '/core/standard/jobMonitoring', query: { id: row.id, dataSource: row.dataSource } })
     },
     deleteFn(row) {
       this.$confirm(this.$t('management.deleteConfirm'), this.$t('tip'), {

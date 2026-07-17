@@ -1627,7 +1627,7 @@ export default {
     },
     handleBack() {
       this.$router.push({
-        path: '/classificationTask/hierarchicalTask',
+        path: '/core/classificationTask/hierarchicalTask',
         query: { isReturn: true }
       });
     },

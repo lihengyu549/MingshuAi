@@ -816,7 +816,7 @@ export default {
   },
   methods: {
     goBackToManagement() {
-      this.$router.push({ path: '/standard/management' })
+      this.$router.push({ path: '/core/standard/management' })
     },
     getRiskStyle(level) {
       const styles = {
@@ -1348,7 +1348,7 @@ export default {
 
     goToMenuEdit(data) {
       this.$router.push({
-        path: '/standard/editMenu',
+        path: '/core/standard/editMenu',
         query: { id: data.id }
       });
     },
