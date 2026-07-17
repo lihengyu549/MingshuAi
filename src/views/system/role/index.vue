@@ -258,6 +258,21 @@ export default {
     this.getList();
   },
   methods: {
+    filterVisibleTree(tree) {
+      if (!Array.isArray(tree)) {
+        return [];
+      }
+      return tree.reduce((result, node) => {
+        if (node && node.hidden === true) {
+          return result;
+        }
+        result.push({
+          ...node,
+          children: this.filterVisibleTree(node && node.children)
+        });
+        return result;
+      }, []);
+    },
     /** 查询角色列表 */
     getList() {
       this.loading = true;
@@ -271,7 +286,7 @@ export default {
     /** 查询菜单树结构 */
     getMenuTreeselect() {
       menuTreeselect().then(response => {
-        this.menuOptions = response.data;
+        this.menuOptions = this.filterVisibleTree(response.data);
       });
     },
     // 所有菜单节点数据
@@ -295,7 +310,7 @@ export default {
     /** 根据角色ID查询菜单树结构 */
     getRoleMenuTreeselect(roleId) {
       return roleMenuTreeselect(roleId).then(response => {
-        this.menuOptions = response.menus;
+        this.menuOptions = this.filterVisibleTree(response.menus);
         return response;
       });
     },
@@ -431,7 +446,9 @@ export default {
             let checkedKeys = res.checkedKeys
             checkedKeys.forEach((v) => {
               this.$nextTick(() => {
-                this.$refs.menu.setChecked(v, true, false);
+                if (this.$refs.menu.getNode(v)) {
+                  this.$refs.menu.setChecked(v, true, false);
+                }
               })
             })
           });
