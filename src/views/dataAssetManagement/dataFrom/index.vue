@@ -1227,6 +1227,8 @@ export default {
 
       // 手动校验必填字段，避免 validateField 因动态 prop 导致回调断链
       const ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+      const domainPattern = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+      const hostnamePattern = /^[a-zA-Z0-9\-]+$/;
       const portPattern = /^([1-9]\d{0,3}|0)$|^([1-5]\d{4})$|^6[0-4]\d{3}$|^65[0-4]\d{2}$|^655[0-2]\d$|^6553[0-5]$/;
 
       if (!form.targetIp) {
@@ -1234,7 +1236,7 @@ export default {
         this.$refs.fileShareServerForm.validateField('targetIp');
         return;
       }
-      if (!ipPattern.test(form.targetIp)) {
+      if (!ipPattern.test(form.targetIp) && !domainPattern.test(form.targetIp) && !hostnamePattern.test(form.targetIp) && form.targetIp !== 'localhost') {
         this.$message.warning(this.$t('dataFrom.pleaseInputValidIp'));
         this.$refs.fileShareServerForm.validateField('targetIp');
         return;
