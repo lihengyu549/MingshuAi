@@ -109,9 +109,9 @@
                   <span>{{ scope.row.phonenumber || '-' }}</span>
                 </template>
               </el-table-column>
-              <el-table-column :label="$t('user.role')" prop="remark" align="left">
+              <el-table-column :label="$t('user.role')" prop="roles" align="left">
                 <template slot-scope="scope">
-                  <span>{{ scope.row.remark || '-' }}</span>
+                  <span>{{ formatRoleNames(scope.row.roles) }}</span>
                 </template>
               </el-table-column>
               <el-table-column :label="$t('user.deptName')" prop="dept.deptName" align="left">
@@ -204,9 +204,9 @@
         </el-row> -->
         <el-row>
           <el-col>
-            <el-form-item :label="$t('user.role')" prop="roleIds">
-              <el-select v-model="form.roleIds" multiple :placeholder="$t('user.selectRole')" style="width: 100%"
-                :disabled="isAdminEdit" @change="handleRoleSelectChange">
+            <el-form-item :label="$t('user.role')" prop="roleId">
+              <el-select v-model="form.roleId" :placeholder="$t('user.selectRole')" style="width: 100%"
+                :disabled="isAdminEdit">
                 <el-option v-for="item in roleOptions" :key="item.roleId" :label="item.roleName" :value="item.roleId"
                   :disabled="item.status == 1" />
               </el-select>
@@ -435,7 +435,7 @@ const createRules = vm => ({
       trigger: 'blur'
     }
   ],
-  roleIds: [
+  roleId: [
     { required: true, message: vm.$t('user.validation.roleRequired'), trigger: 'change' }
   ],
   deptId: [
@@ -979,7 +979,7 @@ export default {
         status: '0',
         remark: undefined,
         postIds: [],
-        roleIds: []
+        roleId: undefined
       }
       this.resetForm('form')
     },
@@ -1044,13 +1044,13 @@ export default {
           status: '0',
           remark: undefined,
           postIds: [],
-          roleIds: [],
+          roleId: undefined,
           ...(response.data || {})
         }
         this.postOptions = response.posts
         this.roleOptions = response.roles
         this.$set(this.form, 'postIds', response.postIds)
-        this.$set(this.form, 'roleIds', response.roleIds)
+        this.$set(this.form, 'roleId', Array.isArray(response.roleIds) ? response.roleIds[0] : response.roleIds)
         this.open = true
         this.titleKey = 'user.titleEdit'
         this.form.password = ''
@@ -1109,7 +1109,8 @@ export default {
         const payload = {
           ...this.form,
           deptId: this.normalizeDeptValue(this.form.deptId),
-          nickName: this.form.userName
+          nickName: this.form.userName,
+          roleIds: this.form.roleId === undefined || this.form.roleId === null ? [] : [this.form.roleId]
         }
         if (!Array.isArray(payload.postIds) || !payload.postIds.length) {
           delete payload.postIds
@@ -1118,6 +1119,7 @@ export default {
           delete payload.password
         }
         delete payload.confirmPassword
+        delete payload.roleId
         if (payload.userId !== undefined) {
           updateUser(payload).then(() => {
             this.$modal.msgSuccess(this.$t('user.updateSuccess'))
@@ -1172,10 +1174,10 @@ export default {
     submitFileForm() {
       this.$refs.upload.submit()
     },
-    handleRoleSelectChange(value) {
-      if (value && value.length > 1) {
-        this.form.roleIds = [value[value.length - 1]]
-      }
+    formatRoleNames(roles) {
+      if (!Array.isArray(roles)) return '-'
+      const roleNames = roles.map(role => role && role.roleName).filter(Boolean)
+      return roleNames.length ? roleNames.join(', ') : '-'
     }
   }
 }

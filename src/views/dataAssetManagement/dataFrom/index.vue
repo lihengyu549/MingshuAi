@@ -625,7 +625,7 @@ import Result from './components/result.vue'
 import TableSelector from './components/TableSelector.vue'
 import FileDirectoryTransfer from "./components/FileDirectoryTransfer.vue";
 import { getFeatureSelect, relevancyDataDict } from "@/api/system/IndustryExperience";
-import { listUser, getUserProfile } from "@/api/system/user";
+import { selectUserAll, getUserProfile } from "@/api/system/user";
 export default {
   dicts: ['sys_datasource_type', 'sys_db_type'],
   name: "Proxys",
@@ -1132,10 +1132,10 @@ export default {
     async initSecurityMeta() {
       try {
         const [usersRes, profileRes] = await Promise.all([
-          listUser({ pageNum: 1, pageSize: 10000 }),
+          selectUserAll(),
           getUserProfile(),
         ])
-        this.securityUserOptions = Array.isArray(usersRes.rows) ? usersRes.rows : []
+        this.securityUserOptions = Array.isArray(usersRes.data) ? usersRes.data : []
         this.currentUserProfile = profileRes.data || null
         if (this.form && !this.form.ownerUserId) this.applyDefaultSecurity(this.form)
         if (this.importData && !this.importData.ownerUserId) this.applyDefaultSecurity(this.importData)

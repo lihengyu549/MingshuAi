@@ -10,6 +10,14 @@ export function listUser(query) {
   })
 }
 
+// 查询用户列表（权限放开的查询）
+export function selectUserAll() {
+  return request({
+    url: '/system/user/selectUserAll',
+    method: 'get',
+  })
+}
+
 // 查询用户详细
 export function getUser(userId) {
   return request({
